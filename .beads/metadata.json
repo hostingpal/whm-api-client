@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "whm_api_client",
+  "project_id": "e62d2984-2bee-473f-97cf-9212abc14192"
+}
