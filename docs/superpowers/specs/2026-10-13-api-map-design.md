@@ -319,5 +319,5 @@ byte-identical. No live capture is necessary to validate these properties.
 The existing Beads dependencies remain the delivery order: audited inputs,
 schema/design, ingestion, then independent parity and capability work, followed
 by drift/regression gates. The concrete implementation plan follows approval
-of this written design. Commits and remote synchronization remain subject to
-the repository's conservative profile.
+of this written design. Commits, pushes, and pull requests follow the
+repository's Git Workflow in AGENTS.md.
