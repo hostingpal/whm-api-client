@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hostingpal.github.io/whm-api-client/schema/toolchain-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "manifest",
+    "annotations",
+    "registry",
+    "symbols",
+    "baseline",
+    "schema_dir",
+    "map",
+    "map_checksum",
+    "report_json",
+    "report_markdown",
+    "examples"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "manifest": {
+      "type": "string",
+      "minLength": 1
+    },
+    "annotations": {
+      "type": "string",
+      "minLength": 1
+    },
+    "registry": {
+      "type": "string",
+      "minLength": 1
+    },
+    "symbols": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseline": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schema_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "map": {
+      "type": "string",
+      "minLength": 1
+    },
+    "map_checksum": {
+      "type": "string",
+      "minLength": 1
+    },
+    "report_json": {
+      "type": "string",
+      "minLength": 1
+    },
+    "report_markdown": {
+      "type": "string",
+      "minLength": 1
+    },
+    "examples": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "schema"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "schema": {
+            "enum": [
+              "api-map-v1.schema.json",
+              "capability-profile-v1.schema.json",
+              "capability-report-v1.schema.json",
+              "capability-explanations-v1.schema.json",
+              "drift-report-v1.schema.json"
+            ]
+          }
+        }
+      }
+    },
+    "test_evidence": {
+      "type": "string",
+      "minLength": 1
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

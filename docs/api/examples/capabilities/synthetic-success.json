@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "origin": "https://synthetic.example.invalid:2087",
+  "context": {
+    "username": "root",
+    "cpanel_context": null
+  },
+  "captured_at": "2026-10-13T12:00:00Z",
+  "server_version": "11.88.0.9999",
+  "capture_status": "success",
+  "advertised_names": [
+    "MixedCase",
+    "Module/mixedCase",
+    "listaccts"
+  ],
+  "evidence": [
+    {
+      "function": "version",
+      "route": "/json-api/version?api.version=1",
+      "status": "success",
+      "http_status": 200,
+      "api_result": 1
+    },
+    {
+      "function": "applist",
+      "route": "/json-api/applist?api.version=1",
+      "status": "success",
+      "http_status": 200,
+      "api_result": 1
+    }
+  ],
+  "uapi_inventory": "unavailable",
+  "direct_uapi_auth": "unverified"
+}

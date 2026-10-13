@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hostingpal.github.io/whm-api-client/schema/php-symbols-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "symbols",
+    "diagnostics"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "symbols": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "declaring_class",
+          "file",
+          "line",
+          "public",
+          "static",
+          "abstract",
+          "providers"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_\\\\]*::[A-Za-z_][A-Za-z0-9_]*$"
+          },
+          "kind": {
+            "enum": [
+              "method",
+              "test",
+              "provider",
+              "constructor"
+            ]
+          },
+          "declaring_class": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_\\\\]*$"
+          },
+          "file": {
+            "type": "string",
+            "pattern": "^(src|tests)/.+\\.php$",
+            "not": {
+              "pattern": "(^|/)[.]{1,2}(/|$)|\\\\"
+            }
+          },
+          "line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "public": {
+            "type": "boolean"
+          },
+          "static": {
+            "type": "boolean"
+          },
+          "abstract": {
+            "type": "boolean"
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_\\\\]*::[A-Za-z_][A-Za-z0-9_]*$"
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "severity",
+          "code",
+          "message",
+          "class",
+          "file"
+        ],
+        "properties": {
+          "severity": {
+            "enum": [
+              "info",
+              "warning",
+              "error"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "class": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string",
+            "pattern": "^(src|tests)/.+\\.php$"
+          }
+        }
+      }
+    }
+  }
+}

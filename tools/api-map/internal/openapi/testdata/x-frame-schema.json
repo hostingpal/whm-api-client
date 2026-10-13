@@ -1,0 +1,16 @@
+{
+  "properties": {
+    "access-control-allow-origin": {},
+    "content-type": {},
+    "date": {},
+    "referrer-policy": {},
+    "server": {},
+    "strict-transport-security": {},
+    "transfer-encoding": {},
+    "vary": {},
+    "x-frame-options": {},
+    "x-slack-backend": {},
+    "x-via": {}
+  },
+  "type": "object"
+}

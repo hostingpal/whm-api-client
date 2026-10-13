@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+namespace FixtureInventory\Grouped {
+    final class First
+    {
+        public function first(string $name = 'example'): string
+        {
+            return "Hello {$name}";
+        }
+    }
+
+    final class Second
+    {
+        public function second(): void
+        {
+        }
+    }
+}
+
+namespace FixtureInventory\Other {
+    abstract class Third
+    {
+        abstract public static function third(): void;
+    }
+}

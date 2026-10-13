@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hostingpal.github.io/whm-api-client/schema/source-manifest-v1.schema.json",
+  "type": "object",
+  "required": ["schema_version", "snapshot_id", "hash_algorithm", "sources"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "snapshot_id": {"type": "string", "minLength": 1},
+    "hash_algorithm": {"const": "sha256"},
+    "scope": {"type": "array", "items": {"type": "string"}},
+    "hash_description": {"type": "string"},
+    "sources": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "url", "file", "retrieved_at", "compression", "bytes", "sha256", "stored_bytes", "stored_sha256"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "kind": {"enum": ["openapi", "prose", "reference"]},
+          "api_family": {"enum": ["whm-api-1", "cpanel-uapi"]},
+          "url": {"type": "string", "pattern": "^https://[^/]+/"},
+          "resolved_url": {"type": "string", "pattern": "^https://[^/]+/"},
+          "retrieved_at": {"type": "string", "minLength": 1},
+          "file": {"type": "string", "minLength": 1},
+          "compression": {"enum": ["gzip", "none"]},
+          "bytes": {"type": "integer", "minimum": 0, "maximum": 9223372036854775807},
+          "stored_bytes": {"type": "integer", "minimum": 0, "maximum": 9223372036854775807},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "stored_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "content_type": {"type": "string"},
+          "openapi": {"type": "string"},
+          "version": {"type": "string"},
+          "paths": {"type": "integer", "minimum": 0},
+          "operations": {"type": "integer", "minimum": 0}
+        },
+        "allOf": [{"if": {"properties": {"kind": {"const": "openapi"}}}, "then": {"required": ["api_family"]}}]
+      }
+    },
+    "unavailable_supplemental_sources": {"type": "array", "items": {"type": "object"}}
+  }
+}

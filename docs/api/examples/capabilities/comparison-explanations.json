@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "explanations": [
+    {
+      "side": "docs-only",
+      "name": "EcosystemFeatures/is_ready",
+      "category": "namespace/alias",
+      "certainty": "confirmed",
+      "rationale": "Synthetic reviewed alias relationship only; not observed server behavior.",
+      "evidence": [
+        {
+          "source_id": "synthetic-review",
+          "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "prose_locator": "Synthetic alias example paragraph 1"
+        }
+      ],
+      "related_name": "is_ready"
+    },
+    {
+      "side": "runtime-only",
+      "name": "custom_plugin_call",
+      "category": "plugin",
+      "certainty": "possible",
+      "rationale": "Synthetic plugin hypothesis only; the saved advertised name establishes no cause.",
+      "evidence": [
+        {
+          "source_id": "synthetic-review",
+          "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "prose_locator": "Synthetic plugin example paragraph 2"
+        }
+      ]
+    }
+  ]
+}

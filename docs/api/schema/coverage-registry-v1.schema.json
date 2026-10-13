@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hostingpal.github.io/whm-api-client/schema/coverage-registry-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "entries",
+    "infrastructure",
+    "exclusions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "variant_id",
+          "symbol",
+          "status",
+          "tests",
+          "contract_units",
+          "live_evidence_ids"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^(whm1|uapi):[^/#][^#]*$"
+          },
+          "variant_id": {
+            "type": "string",
+            "pattern": "^(whm1|uapi):[^/#][^#]*#[A-Z]+$"
+          },
+          "symbol": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_\\\\]*::[A-Za-z_][A-Za-z0-9_]*$"
+          },
+          "status": {
+            "enum": [
+              "implemented",
+              "partial"
+            ]
+          },
+          "tests": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_\\\\]*::[A-Za-z_][A-Za-z0-9_]*$"
+            },
+            "uniqueItems": true
+          },
+          "contract_units": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "hash",
+                "tests"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "hash": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "tests": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z_][A-Za-z0-9_\\\\]*::[A-Za-z_][A-Za-z0-9_]*$"
+                  },
+                  "minItems": 1,
+                  "uniqueItems": true
+                }
+              }
+            }
+          },
+          "live_evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "mapping_group": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mapping_rationale": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "dependentRequired": {
+          "mapping_group": [
+            "mapping_rationale"
+          ],
+          "mapping_rationale": [
+            "mapping_group"
+          ]
+        }
+      }
+    },
+    "infrastructure": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "symbol",
+          "reason"
+        ],
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_\\\\]*::[A-Za-z_][A-Za-z0-9_]*$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "exclusions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "reason",
+          "evidence"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "pattern": "^(whm1|uapi):[^/#][^#]*$"
+          },
+          "variant_id": {
+            "type": "string",
+            "pattern": "^(whm1|uapi):[^/#][^#]*#[A-Z]+$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "https://hostingpal.github.io/whm-api-client/schema/api-map-v1.schema.json#/$defs/locator"
+            },
+            "minItems": 1
+          }
+        }
+      }
+    }
+  }
+}

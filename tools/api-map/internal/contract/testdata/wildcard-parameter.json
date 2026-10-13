@@ -1,0 +1,18 @@
+{
+  "provenance": {
+    "pointer": "/paths/~1Email~1reorder_filters/get/parameters/0",
+    "source_id": "cpanel-openapi",
+    "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc"
+  },
+  "projection": "Exact single parameter declaration from pinned canonical map; no schema fields changed.",
+  "definition": {
+    "description": "A mail filter name.\n\nFor each mail filter to reorder, supply a `filter*` parameter, where `*` is a number that represents the filter's order.\n\nFor example, to set `coffee` as the first email filter and `cheesecloth` as the second, set `coffee` as the `filter1` parameter's value, and `cheesecloth` as the value for the `filter2` parameter.",
+    "in": "query",
+    "name": "filter*",
+    "required": true,
+    "schema": {
+      "example": "coffee",
+      "type": "string"
+    }
+  }
+}

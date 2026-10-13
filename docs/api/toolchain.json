@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "manifest": "docs/api/sources/2026-10-13/manifest.json",
+  "annotations": "docs/api/annotations.json",
+  "registry": "docs/api/coverage/registry.json",
+  "symbols": "docs/api/coverage/symbols.json",
+  "baseline": "docs/api/coverage/baseline.json",
+  "schema_dir": "docs/api/schema",
+  "map": ".cache/api-map/map.json",
+  "map_checksum": "docs/api/map.sha256",
+  "report_json": "docs/api/coverage/report.json",
+  "report_markdown": "docs/api/coverage/report.md",
+  "examples": [
+    {
+      "path": "docs/api/examples/api-map-v1.json",
+      "schema": "api-map-v1.schema.json"
+    },
+    {
+      "path": "docs/api/examples/capabilities/comparison-explanations.json",
+      "schema": "capability-explanations-v1.schema.json"
+    },
+    {
+      "path": "docs/api/examples/capabilities/comparison-map.json",
+      "schema": "api-map-v1.schema.json"
+    },
+    {
+      "path": "docs/api/examples/capabilities/comparison-profile.json",
+      "schema": "capability-profile-v1.schema.json"
+    },
+    {
+      "path": "docs/api/examples/capabilities/comparison.json",
+      "schema": "capability-report-v1.schema.json"
+    },
+    {
+      "path": "docs/api/examples/capabilities/synthetic-failed.json",
+      "schema": "capability-profile-v1.schema.json"
+    },
+    {
+      "path": "docs/api/examples/capabilities/synthetic-partial.json",
+      "schema": "capability-profile-v1.schema.json"
+    },
+    {
+      "path": "docs/api/examples/capabilities/synthetic-success.json",
+      "schema": "capability-profile-v1.schema.json"
+    },
+    {
+      "path": "docs/api/examples/drift/changed.json",
+      "schema": "drift-report-v1.schema.json"
+    },
+    {
+      "path": "docs/api/examples/drift/unchanged.json",
+      "schema": "drift-report-v1.schema.json"
+    }
+  ]
+}

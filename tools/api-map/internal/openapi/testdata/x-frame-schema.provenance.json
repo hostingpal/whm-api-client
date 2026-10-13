@@ -1,0 +1,8 @@
+{
+  "original_file": "whm.openapi.json.gz",
+  "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+  "pointers": [
+    "/paths/~1verify_slack_access/get/responses/200/content/application~1json/schema/properties/data/properties/results/items/properties/result/properties/payload/properties/headers"
+  ],
+  "projection": "Exact schema object containing the x-frame-options data property; no field rewrites."
+}

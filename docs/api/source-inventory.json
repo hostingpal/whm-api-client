@@ -1,0 +1,2237 @@
+{
+  "audit_date": "2026-10-13",
+  "scope": "Read-only structural audit of official snapshots; counts describe source content, not independently verified runtime behavior.",
+  "sources": {
+    "whm": {
+      "file": "sources/2026-10-13/whm.openapi.json.gz",
+      "bytes": 4538528,
+      "sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+      "openapi_version": "3.0.2",
+      "info": {
+        "contact": {
+          "email": "cs@cpanel.net",
+          "name": "WebPros International, LLC",
+          "url": "https://cpanel.net/support/"
+        },
+        "description": "WHM API.",
+        "license": {
+          "name": "cPanel License",
+          "url": "https://cpanel.net/legal-notices/"
+        },
+        "termsOfService": "https://cpanel.net/legal-notices/",
+        "title": "WHM API",
+        "version": "11.138.0.10"
+      },
+      "duplicate_json_keys": [],
+      "exact_paths_casefold_collisions": {},
+      "uapi_module_casefold_collisions": {},
+      "paths": 630,
+      "operations": 630,
+      "methods": {
+        "get": 610,
+        "post": 20
+      },
+      "path_method_combinations": {
+        "get": 610,
+        "post": 20
+      },
+      "operation_ids": {
+        "missing": [],
+        "duplicate_exact": {},
+        "duplicate_casefolded": {},
+        "no_hyphen": [
+          {
+            "path": "/EcosystemFeatures/is_ready",
+            "method": "get",
+            "operationId": "is_ready"
+          },
+          {
+            "path": "/EcosystemFeatures/local_disable",
+            "method": "get",
+            "operationId": "local_disable"
+          },
+          {
+            "path": "/EcosystemFeatures/local_enable",
+            "method": "get",
+            "operationId": "local_enable"
+          },
+          {
+            "path": "/get_commerce",
+            "method": "get",
+            "operationId": "get_commerce"
+          },
+          {
+            "path": "/get_ecommerce",
+            "method": "get",
+            "operationId": "get_ecommerce"
+          },
+          {
+            "path": "/set_commerce",
+            "method": "get",
+            "operationId": "set_commerce"
+          },
+          {
+            "path": "/set_ecommerce",
+            "method": "get",
+            "operationId": "set_ecommerce"
+          }
+        ]
+      },
+      "slash_qualified_whm_functions": [
+        {
+          "path": "/360Monitoring/register_server_with_360_monitoring",
+          "method": "get",
+          "operationId": "360Monitoring-register_server_with_360_monitoring"
+        },
+        {
+          "path": "/360Monitoring/set_360_agent_polling",
+          "method": "get",
+          "operationId": "360Monitoring-set_360_agent_polling"
+        },
+        {
+          "path": "/360Monitoring/webpros_auth_callback",
+          "method": "post",
+          "operationId": "360Monitoring-webpros_auth_callback"
+        },
+        {
+          "path": "/360Monitoring/webpros_auth_clear",
+          "method": "get",
+          "operationId": "360Monitoring-webpros_auth_clear"
+        },
+        {
+          "path": "/360Monitoring/webpros_auth_start",
+          "method": "get",
+          "operationId": "360Monitoring-webpros_auth_start"
+        },
+        {
+          "path": "/360Monitoring/webpros_auth_status",
+          "method": "get",
+          "operationId": "360Monitoring-webpros_auth_status"
+        },
+        {
+          "path": "/360Monitoring/webpros_auth_token",
+          "method": "get",
+          "operationId": "360Monitoring-webpros_auth_token"
+        },
+        {
+          "path": "/EcosystemFeatures/is_ready",
+          "method": "get",
+          "operationId": "is_ready"
+        },
+        {
+          "path": "/EcosystemFeatures/local_disable",
+          "method": "get",
+          "operationId": "local_disable"
+        },
+        {
+          "path": "/EcosystemFeatures/local_enable",
+          "method": "get",
+          "operationId": "local_enable"
+        }
+      ],
+      "namespace_count_from_paths": null,
+      "multi_method_paths": [],
+      "servers": {
+        "root": [
+          {
+            "description": "A server running WHM.",
+            "url": "https://{host}:{port}/json-api",
+            "variables": {
+              "host": {
+                "default": "whm-server.tld",
+                "description": "The hostname of a server running WHM."
+              },
+              "port": {
+                "default": "2087",
+                "description": "The WHM port."
+              }
+            }
+          }
+        ],
+        "path_overrides": [],
+        "operation_overrides": []
+      },
+      "security": {
+        "root": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "path_overrides": [],
+        "operation_overrides": [],
+        "schemes": {
+          "BasicAuth": {
+            "scheme": "basic",
+            "type": "http"
+          }
+        }
+      },
+      "components": {
+        "schemas": 155,
+        "securitySchemes": 1
+      },
+      "references": {
+        "occurrences": 278,
+        "unique_targets": 133,
+        "external": [],
+        "unresolved": [],
+        "cycles": [],
+        "ref_siblings": [],
+        "discriminator_mapping_count": 100,
+        "bad_discriminator_mappings": []
+      },
+      "operation_extension_stats": {
+        "x-codeSamples": {
+          "present": 630,
+          "absent": 0,
+          "types": {
+            "array": 630
+          }
+        },
+        "x-cpanel-api-version": {
+          "present": 630,
+          "absent": 0,
+          "types": {
+            "string": 630
+          },
+          "value_counts": {
+            "\"WHM API 1\"": 630
+          }
+        },
+        "x-cpanel-available-version": {
+          "present": 630,
+          "absent": 0,
+          "types": {
+            "integer": 3,
+            "string": 627
+          },
+          "value_counts": {
+            "\"100\"": 3,
+            "\"108\"": 2,
+            "\"11\"": 96,
+            "\"11.0\"": 2,
+            "\"11.118\"": 2,
+            "\"11.122\"": 4,
+            "\"11.132\"": 8,
+            "\"11.28\"": 5,
+            "\"11.32\"": 22,
+            "\"11.34\"": 1,
+            "\"11.36\"": 1,
+            "\"11.38\"": 36,
+            "\"11.38.1\"": 1,
+            "\"11.40\"": 18,
+            "\"11.42\"": 1,
+            "\"11.44\"": 35,
+            "\"11.46\"": 22,
+            "\"11.48\"": 35,
+            "\"11.50\"": 14,
+            "\"11.52\"": 37,
+            "\"11.52.0.8\"": 1,
+            "\"11.72\"": 1,
+            "\"11.96\"": 1,
+            "\"11.98\"": 6,
+            "\"116\"": 1,
+            "\"118\"": 2,
+            "\"124\"": 5,
+            "\"136\"": 2,
+            "\"54\"": 31,
+            "\"56\"": 24,
+            "\"58\"": 26,
+            "\"58.0.12\"": 1,
+            "\"60\"": 12,
+            "\"62\"": 11,
+            "\"64\"": 14,
+            "\"66\"": 10,
+            "\"68\"": 10,
+            "\"70\"": 6,
+            "\"74\"": 5,
+            "\"76\"": 9,
+            "\"78\"": 17,
+            "\"78.0.6\"": 1,
+            "\"80\"": 10,
+            "\"82\"": 3,
+            "\"84\"": 10,
+            "\"86\"": 27,
+            "\"88\"": 10,
+            "\"90\"": 7,
+            "\"94\"": 3,
+            "\"98\"": 6,
+            "\"cPanel 11.100\"": 1,
+            "\"cPanel 11.44\"": 1,
+            "\"cPanel 11.48\"": 5,
+            "\"cPanel 122\"": 3,
+            "96": 2,
+            "98": 1
+          }
+        },
+        "x-cpanel-cli-support": {
+          "present": 17,
+          "absent": 613,
+          "types": {
+            "boolean": 17
+          },
+          "value_counts": {
+            "false": 14,
+            "true": 3
+          }
+        },
+        "x-cpanel-internal-only": {
+          "present": 1,
+          "absent": 629,
+          "types": {
+            "boolean": 1
+          },
+          "value_counts": {
+            "false": 1
+          }
+        },
+        "x-readonly": {
+          "present": 616,
+          "absent": 14,
+          "types": {
+            "boolean": 616
+          },
+          "value_counts": {
+            "false": 380,
+            "true": 236
+          }
+        }
+      },
+      "all_x_prefixed_key_stats": {
+        "x-additionalPropertiesName": {
+          "count": 8,
+          "types": {
+            "string": 8
+          },
+          "value_counts": {
+            "\"domain\"": 2,
+            "\"enhancement_id\"": 1,
+            "\"header-name\"": 1,
+            "\"provider_key\"": 2,
+            "\"username\"": 1,
+            "\"x_properties\"": 1
+          }
+        },
+        "x-cache": {
+          "count": 1,
+          "types": {
+            "string": 1
+          },
+          "value_counts": {
+            "\"HIT\"": 1
+          }
+        },
+        "x-codeSamples": {
+          "count": 630,
+          "types": {
+            "array": 630
+          },
+          "sample_pointer": "/paths/~1360Monitoring~1register_server_with_360_monitoring/get/x-codeSamples"
+        },
+        "x-cpanel-api-version": {
+          "count": 630,
+          "types": {
+            "string": 630
+          },
+          "value_counts": {
+            "\"WHM API 1\"": 630
+          }
+        },
+        "x-cpanel-available-version": {
+          "count": 630,
+          "types": {
+            "integer": 3,
+            "string": 627
+          },
+          "value_counts": {
+            "\"100\"": 3,
+            "\"108\"": 2,
+            "\"11\"": 96,
+            "\"11.0\"": 2,
+            "\"11.118\"": 2,
+            "\"11.122\"": 4,
+            "\"11.132\"": 8,
+            "\"11.28\"": 5,
+            "\"11.32\"": 22,
+            "\"11.34\"": 1,
+            "\"11.36\"": 1,
+            "\"11.38\"": 36,
+            "\"11.38.1\"": 1,
+            "\"11.40\"": 18,
+            "\"11.42\"": 1,
+            "\"11.44\"": 35,
+            "\"11.46\"": 22,
+            "\"11.48\"": 35,
+            "\"11.50\"": 14,
+            "\"11.52\"": 37,
+            "\"11.52.0.8\"": 1,
+            "\"11.72\"": 1,
+            "\"11.96\"": 1,
+            "\"11.98\"": 6,
+            "\"116\"": 1,
+            "\"118\"": 2,
+            "\"124\"": 5,
+            "\"136\"": 2,
+            "\"54\"": 31,
+            "\"56\"": 24,
+            "\"58\"": 26,
+            "\"58.0.12\"": 1,
+            "\"60\"": 12,
+            "\"62\"": 11,
+            "\"64\"": 14,
+            "\"66\"": 10,
+            "\"68\"": 10,
+            "\"70\"": 6,
+            "\"74\"": 5,
+            "\"76\"": 9,
+            "\"78\"": 17,
+            "\"78.0.6\"": 1,
+            "\"80\"": 10,
+            "\"82\"": 3,
+            "\"84\"": 10,
+            "\"86\"": 27,
+            "\"88\"": 10,
+            "\"90\"": 7,
+            "\"94\"": 3,
+            "\"98\"": 6,
+            "\"cPanel 11.100\"": 1,
+            "\"cPanel 11.44\"": 1,
+            "\"cPanel 11.48\"": 5,
+            "\"cPanel 122\"": 3,
+            "96": 2,
+            "98": 1
+          }
+        },
+        "x-cpanel-cli-support": {
+          "count": 17,
+          "types": {
+            "boolean": 17
+          },
+          "value_counts": {
+            "false": 14,
+            "true": 3
+          }
+        },
+        "x-cpanel-internal-only": {
+          "count": 1,
+          "types": {
+            "boolean": 1
+          },
+          "value_counts": {
+            "false": 1
+          }
+        },
+        "x-frame-options": {
+          "count": 1,
+          "types": {
+            "object": 1
+          },
+          "sample_pointer": "/paths/~1verify_slack_access/get/responses/200/content/application~1json/schema/properties/data/properties/results/items/properties/result/properties/payload/properties/headers/properties/x-frame-options"
+        },
+        "x-readonly": {
+          "count": 616,
+          "types": {
+            "boolean": 616
+          },
+          "value_counts": {
+            "false": 380,
+            "true": 236
+          }
+        },
+        "x-slack-backend": {
+          "count": 1,
+          "types": {
+            "object": 1
+          },
+          "sample_pointer": "/paths/~1verify_slack_access/get/responses/200/content/application~1json/schema/properties/data/properties/results/items/properties/result/properties/payload/properties/headers/properties/x-slack-backend"
+        },
+        "x-tagGroups": {
+          "count": 1,
+          "types": {
+            "array": 1
+          },
+          "sample_pointer": "/x-tagGroups"
+        },
+        "x-via": {
+          "count": 1,
+          "types": {
+            "object": 1
+          },
+          "sample_pointer": "/paths/~1verify_slack_access/get/responses/200/content/application~1json/schema/properties/data/properties/results/items/properties/result/properties/payload/properties/headers/properties/x-via"
+        }
+      },
+      "x_prefixed_data_keys_not_vendor_extensions": [
+        {
+          "pointer": "/paths/~1cors_proxy_get/get/responses/200/content/application~1json/schema/properties/data/properties/_cp_redirects/items/properties/headers/example",
+          "key": "x-cache"
+        },
+        {
+          "pointer": "/paths/~1verify_slack_access/get/responses/200/content/application~1json/schema/properties/data/properties/results/items/properties/result/properties/payload/properties/headers/properties",
+          "key": "x-frame-options"
+        },
+        {
+          "pointer": "/paths/~1verify_slack_access/get/responses/200/content/application~1json/schema/properties/data/properties/results/items/properties/result/properties/payload/properties/headers/properties",
+          "key": "x-slack-backend"
+        },
+        {
+          "pointer": "/paths/~1verify_slack_access/get/responses/200/content/application~1json/schema/properties/data/properties/results/items/properties/result/properties/payload/properties/headers/properties",
+          "key": "x-via"
+        }
+      ],
+      "readonly_by_method": {
+        "get:absent": 13,
+        "get:false": 363,
+        "get:true": 234,
+        "post:absent": 1,
+        "post:false": 17,
+        "post:true": 2
+      },
+      "readonly_post_operations": [
+        {
+          "path": "/personalization_get",
+          "method": "post",
+          "operationId": "Personalization-personalization_get"
+        },
+        {
+          "path": "/php_fpm_config_get",
+          "method": "post",
+          "operationId": "PHP-php_fpm_config_get"
+        }
+      ],
+      "deprecated_operations": [
+        {
+          "path": "/accesshash",
+          "method": "get",
+          "operationId": "Resellers-accesshash"
+        },
+        {
+          "path": "/disable_mail_sni",
+          "method": "get",
+          "operationId": "SSL-disable_mail_sni"
+        },
+        {
+          "path": "/dumpzone",
+          "method": "get",
+          "operationId": "DNS-dumpzone"
+        },
+        {
+          "path": "/get_available_featurelists",
+          "method": "get",
+          "operationId": "FeatureLists-get_available_featurelists"
+        },
+        {
+          "path": "/get_ecommerce",
+          "method": "get",
+          "operationId": "get_ecommerce"
+        },
+        {
+          "path": "/get_remote_access_hash",
+          "method": "get",
+          "operationId": "Resellers-get_remote_access_hash"
+        },
+        {
+          "path": "/read_featurelist",
+          "method": "get",
+          "operationId": "FeatureLists-read_featurelist"
+        },
+        {
+          "path": "/set_ecommerce",
+          "method": "get",
+          "operationId": "set_ecommerce"
+        }
+      ],
+      "schema_keyword_occurrence_counts": {
+        "nullable": 148,
+        "allOf": 121,
+        "oneOf": 181,
+        "anyOf": 46,
+        "not": 0,
+        "discriminator": 9,
+        "readOnly": 0,
+        "writeOnly": 0
+      },
+      "nullable_values": {
+        "true": 148
+      },
+      "deprecated_keyword_occurrences": 21,
+      "parameter_stats": {
+        "count": 1426,
+        "in": {
+          "query": 1426
+        },
+        "style": {
+          "absent": 1409,
+          "form": 15,
+          "spaceDelimited": 2
+        },
+        "content_parameters": [
+          {
+            "path": "/add_override_features_for_user",
+            "method": "get",
+            "operationId": "Accounts-add_override_features_for_user",
+            "parameter": "features",
+            "content_media_types": [
+              "application/json"
+            ]
+          },
+          {
+            "path": "/php_set_vhost_versions",
+            "method": "get",
+            "operationId": "PHP-php_set_vhost_versions",
+            "parameter": "php_fpm_pool_parms",
+            "content_media_types": [
+              "application/json"
+            ]
+          },
+          {
+            "path": "/remove_override_features_for_user",
+            "method": "get",
+            "operationId": "Accounts-remove_override_features_for_user",
+            "parameter": "features",
+            "content_media_types": [
+              "application/json"
+            ]
+          },
+          {
+            "path": "/set_autossl_metadata",
+            "method": "get",
+            "operationId": "SSL-set_autossl_metadata",
+            "parameter": "metadata_json",
+            "content_media_types": [
+              "application/json"
+            ]
+          },
+          {
+            "path": "/set_provider_display_configurations",
+            "method": "get",
+            "operationId": "Authentication-set_provider_display_configurations",
+            "parameter": "configurations",
+            "content_media_types": [
+              "application/json"
+            ]
+          },
+          {
+            "path": "/start_profile_activation",
+            "method": "get",
+            "operationId": "Cpanel-start_profile_activation",
+            "parameter": "optional",
+            "content_media_types": [
+              "application/json"
+            ]
+          },
+          {
+            "path": "/update_customizations",
+            "method": "post",
+            "operationId": "Customizations-update_customizations",
+            "parameter": "data",
+            "content_media_types": [
+              "application/json"
+            ]
+          }
+        ]
+      },
+      "request_bodies": [
+        {
+          "path": "/360Monitoring/webpros_auth_callback",
+          "method": "post",
+          "operationId": "360Monitoring-webpros_auth_callback",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/addzonerecord",
+          "method": "post",
+          "operationId": "DNS-addzonerecord",
+          "required_present": false,
+          "required": null,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/backup_destination_set",
+          "method": "post",
+          "operationId": "Backup-backup_destination_set",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/batch_create_cphulk_records",
+          "method": "post",
+          "operationId": "cPHulk-batch_create_cphulk_records",
+          "required_present": false,
+          "required": null,
+          "media_types": [
+            "application/json"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/editzonerecord",
+          "method": "post",
+          "operationId": "DNS-editzonerecord",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/enqueue_transfer_item",
+          "method": "get",
+          "operationId": "Transfers-enqueue_transfer_item",
+          "required_present": false,
+          "required": null,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/personalization_get",
+          "method": "post",
+          "operationId": "Personalization-personalization_get",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/json"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/personalization_set",
+          "method": "post",
+          "operationId": "Personalization-personalization_set",
+          "required_present": false,
+          "required": null,
+          "media_types": [
+            "application/json"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/php_fpm_config_get",
+          "method": "post",
+          "operationId": "PHP-php_fpm_config_get",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/json"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/php_fpm_config_set",
+          "method": "post",
+          "operationId": "PHP-php_fpm_config_set",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/json"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/restore_config_from_upload",
+          "method": "post",
+          "operationId": "Cpanel-restore_config_from_upload",
+          "required_present": false,
+          "required": null,
+          "media_types": [
+            "multipart/form-data"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/save_connected_application",
+          "method": "post",
+          "operationId": "ConnectedApplications-save_connected_application",
+          "required_present": false,
+          "required": null,
+          "media_types": [
+            "application/json"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/twofactorauth_set_tfa_config_for_user",
+          "method": "post",
+          "operationId": "TwoFactorAuth-twofactorauth_set_tfa_config_for_user",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/json"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/update_sql_config",
+          "method": "post",
+          "operationId": "Mysql-update_sql_config",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/json"
+          ],
+          "query_parameters_present": false
+        }
+      ],
+      "request_body_media_types": {
+        "application/json": 8,
+        "application/x-www-form-urlencoded": 5,
+        "multipart/form-data": 1
+      },
+      "post_without_request_body": [
+        {
+          "path": "/add_configclusterserver",
+          "method": "post",
+          "operationId": "ClusterServer-add_configclusterserver"
+        },
+        {
+          "path": "/fetch_connected_application",
+          "method": "post",
+          "operationId": "ConnectedApplications-fetch_connected_application"
+        },
+        {
+          "path": "/list_connected_applications",
+          "method": "post",
+          "operationId": "ConnectedApplications-list_connected_applications"
+        },
+        {
+          "path": "/php_ini_set_content",
+          "method": "post",
+          "operationId": "PHP-php_ini_set_content"
+        },
+        {
+          "path": "/remove_connected_application",
+          "method": "post",
+          "operationId": "ConnectedApplications-remove_connected_application"
+        },
+        {
+          "path": "/update_customizations",
+          "method": "post",
+          "operationId": "Customizations-update_customizations"
+        },
+        {
+          "path": "/update_updateconf",
+          "method": "post",
+          "operationId": "CpUpdate-update_updateconf"
+        }
+      ],
+      "response_codes": {
+        "200": 630
+      },
+      "response_media_types": {
+        "application/json": 630
+      },
+      "code_sample_object_key_shapes": {
+        "label,lang,source": 1252
+      },
+      "code_sample_labels": {
+        "CLI": 616,
+        "CLI (Mail service group)": 1,
+        "CLI (general proxy)": 1,
+        "CLI (multiple service groups)": 1,
+        "HTTP": 1,
+        "HTTP Request (Wire Format)": 12,
+        "URL": 617,
+        "URL (Mail service group)": 1,
+        "URL (general proxy)": 1,
+        "URL (multiple service groups)": 1
+      },
+      "tag_count_per_operation": {
+        "1": 119,
+        "2": 506,
+        "3": 3,
+        "4": 2
+      },
+      "missing_available_version": [],
+      "function_candidates_by_exact_path": 630
+    },
+    "cpanel": {
+      "file": "sources/2026-10-13/cpanel.openapi.json.gz",
+      "bytes": 8010177,
+      "sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+      "openapi_version": "3.0.2",
+      "info": {
+        "contact": {
+          "email": "cs@cpanel.net",
+          "name": "WebPros International, LLC",
+          "url": "https://cpanel.net/support/"
+        },
+        "description": "UAPI accesses the cPanel interface's features. Use this API to access and modify cPanel account data and settings.",
+        "license": {
+          "name": "cPanel License",
+          "url": "https://cpanel.net/legal-notices/"
+        },
+        "termsOfService": "https://cpanel.net/legal-notices/",
+        "title": "cPanel UAPI",
+        "version": "11.138.0.10"
+      },
+      "duplicate_json_keys": [],
+      "exact_paths_casefold_collisions": {},
+      "uapi_module_casefold_collisions": {},
+      "paths": 693,
+      "operations": 695,
+      "methods": {
+        "get": 662,
+        "post": 33
+      },
+      "path_method_combinations": {
+        "get": 660,
+        "get,post": 2,
+        "post": 31
+      },
+      "operation_ids": {
+        "missing": [],
+        "duplicate_exact": {},
+        "duplicate_casefolded": {},
+        "no_hyphen": []
+      },
+      "slash_qualified_whm_functions": [],
+      "namespace_count_from_paths": 105,
+      "multi_method_paths": [
+        {
+          "path": "/WebApp/redeploy",
+          "variants": [
+            {
+              "path": "/WebApp/redeploy",
+              "method": "get",
+              "operationId": "WebApp-redeploy",
+              "parameter_names": [
+                "name"
+              ],
+              "request_media_types": []
+            },
+            {
+              "path": "/WebApp/redeploy",
+              "method": "post",
+              "operationId": "WebApp-redeploy-post",
+              "parameter_names": [
+                "name"
+              ],
+              "request_media_types": [
+                "application/x-www-form-urlencoded"
+              ]
+            }
+          ]
+        },
+        {
+          "path": "/WebApp/stage",
+          "variants": [
+            {
+              "path": "/WebApp/stage",
+              "method": "get",
+              "operationId": "WebApp-stage",
+              "parameter_names": [
+                "name",
+                "source",
+                "source_type",
+                "appdir",
+                "branch",
+                "mode",
+                "parent",
+                "runtime",
+                "ssh_key_name"
+              ],
+              "request_media_types": []
+            },
+            {
+              "path": "/WebApp/stage",
+              "method": "post",
+              "operationId": "WebApp-stage-post",
+              "parameter_names": [
+                "name",
+                "source",
+                "source_type",
+                "appdir",
+                "branch",
+                "mode",
+                "parent",
+                "runtime",
+                "ssh_key_name"
+              ],
+              "request_media_types": [
+                "application/x-www-form-urlencoded"
+              ]
+            }
+          ]
+        }
+      ],
+      "servers": {
+        "root": [
+          {
+            "description": "A server running cPanel.",
+            "url": "https://{host}:{port}/execute",
+            "variables": {
+              "host": {
+                "default": "cpanel-server.tld",
+                "description": "The hostname of a server running cPanel."
+              },
+              "port": {
+                "default": "2083",
+                "description": "The cPanel port."
+              }
+            }
+          }
+        ],
+        "path_overrides": [],
+        "operation_overrides": []
+      },
+      "security": {
+        "root": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "path_overrides": [],
+        "operation_overrides": [],
+        "schemes": {
+          "BasicAuth": {
+            "scheme": "basic",
+            "type": "http"
+          }
+        }
+      },
+      "components": {
+        "schemas": 42,
+        "securitySchemes": 1
+      },
+      "references": {
+        "occurrences": 81,
+        "unique_targets": 41,
+        "external": [],
+        "unresolved": [],
+        "cycles": [
+          [
+            "#/components/schemas/ServiceAccount",
+            "#/components/schemas/ServiceAccount"
+          ]
+        ],
+        "ref_siblings": [],
+        "discriminator_mapping_count": 11,
+        "bad_discriminator_mappings": []
+      },
+      "operation_extension_stats": {
+        "x-codeSamples": {
+          "present": 695,
+          "absent": 0,
+          "types": {
+            "array": 695
+          }
+        },
+        "x-cpanel-api-version": {
+          "present": 695,
+          "absent": 0,
+          "types": {
+            "string": 695
+          },
+          "value_counts": {
+            "\"UAPI\"": 695
+          }
+        },
+        "x-cpanel-available-version": {
+          "present": 693,
+          "absent": 2,
+          "types": {
+            "integer": 115,
+            "string": 578
+          },
+          "value_counts": {
+            "\"11\"": 1,
+            "\"11.32\"": 3,
+            "\"124\"": 2,
+            "\"WordPress Manager 3.0\"": 9,
+            "\"cPStore 76\"": 1,
+            "\"cPanel 100\"": 4,
+            "\"cPanel 11\"": 1,
+            "\"cPanel 11.114\"": 1,
+            "\"cPanel 11.116\"": 1,
+            "\"cPanel 11.130\"": 2,
+            "\"cPanel 11.42\"": 156,
+            "\"cPanel 11.44\"": 15,
+            "\"cPanel 11.46\"": 8,
+            "\"cPanel 11.48\"": 11,
+            "\"cPanel 11.50\"": 10,
+            "\"cPanel 11.52\"": 20,
+            "\"cPanel 116\"": 1,
+            "\"cPanel 120\"": 7,
+            "\"cPanel 122\"": 3,
+            "\"cPanel 124\"": 1,
+            "\"cPanel 132\"": 1,
+            "\"cPanel 134\"": 5,
+            "\"cPanel 136\"": 7,
+            "\"cPanel 138\"": 35,
+            "\"cPanel 54\"": 38,
+            "\"cPanel 54.0.16\"": 1,
+            "\"cPanel 56\"": 18,
+            "\"cPanel 60\"": 6,
+            "\"cPanel 62\"": 10,
+            "\"cPanel 64\"": 6,
+            "\"cPanel 66\"": 12,
+            "\"cPanel 68\"": 7,
+            "\"cPanel 70\"": 13,
+            "\"cPanel 72\"": 7,
+            "\"cPanel 74\"": 14,
+            "\"cPanel 76\"": 1,
+            "\"cPanel 78\"": 19,
+            "\"cPanel 80\"": 8,
+            "\"cPanel 82\"": 42,
+            "\"cPanel 84\"": 21,
+            "\"cPanel 86\"": 11,
+            "\"cPanel 88\"": 13,
+            "\"cPanel 90\"": 5,
+            "\"cPanel 92\"": 1,
+            "\"cPanel 94\"": 11,
+            "\"cPanel 96\"": 7,
+            "\"cPanel 98\"": 2,
+            "102": 2,
+            "104": 2,
+            "106": 1,
+            "108": 9,
+            "110": 42,
+            "116": 1,
+            "118": 2,
+            "120": 2,
+            "130": 4,
+            "136": 8,
+            "137": 14,
+            "138": 13,
+            "82": 8,
+            "90": 3,
+            "94": 2,
+            "96": 2
+          }
+        },
+        "x-cpanel-cli-support": {
+          "present": 2,
+          "absent": 693,
+          "types": {
+            "boolean": 2
+          },
+          "value_counts": {
+            "false": 2
+          }
+        },
+        "x-cpanel-internal-only": {
+          "present": 27,
+          "absent": 668,
+          "types": {
+            "boolean": 27
+          },
+          "value_counts": {
+            "false": 27
+          }
+        },
+        "x-cpanel-minimum-compatible-version": {
+          "present": 1,
+          "absent": 694,
+          "types": {
+            "integer": 1
+          },
+          "value_counts": {
+            "80": 1
+          }
+        },
+        "x-cpanel-plugin": {
+          "present": 34,
+          "absent": 661,
+          "types": {
+            "string": 34
+          },
+          "value_counts": {
+            "\"ActiveSessions\"": 1,
+            "\"BackupInfo\"": 3,
+            "\"ExtractInfo\"": 3,
+            "\"Plugins\"": 2,
+            "\"SiteQuality\"": 13,
+            "\"Trash\"": 2,
+            "\"WebProsMCP\"": 2,
+            "\"WebsiteBackup\"": 8
+          }
+        },
+        "x-cpanel-rpm": {
+          "present": 1,
+          "absent": 694,
+          "types": {
+            "string": 1
+          },
+          "value_counts": {
+            "\"cpanel-ccs-calendarserver\"": 1
+          }
+        },
+        "x-cpanel-rpm-version": {
+          "present": 1,
+          "absent": 694,
+          "types": {
+            "integer": 1
+          },
+          "value_counts": {
+            "69": 1
+          }
+        },
+        "x-readonly": {
+          "present": 614,
+          "absent": 81,
+          "types": {
+            "boolean": 614
+          },
+          "value_counts": {
+            "false": 337,
+            "true": 277
+          }
+        },
+        "x-rollback": {
+          "present": 350,
+          "absent": 345,
+          "types": {
+            "string": 350
+          },
+          "value_counts": {
+            "\"clean\"": 27,
+            "\"lossy\"": 1,
+            "\"none\"": 322
+          }
+        }
+      },
+      "all_x_prefixed_key_stats": {
+        "x-additionalPropertiesName": {
+          "count": 9,
+          "types": {
+            "string": 9
+          },
+          "value_counts": {
+            "\"apiToken\"": 1,
+            "\"application_name\"": 1,
+            "\"certificate_properties\"": 1,
+            "\"domain\"": 1,
+            "\"example_parameter\"": 1,
+            "\"feature\"": 1,
+            "\"grouping-param-value-1\"": 1,
+            "\"grouping-param-value-2\"": 1,
+            "\"grouping-param-value-3\"": 1
+          }
+        },
+        "x-codeSamples": {
+          "count": 695,
+          "types": {
+            "array": 695
+          },
+          "sample_pointer": "/paths/~1AccountEnhancements~1has_enhancement/get/x-codeSamples"
+        },
+        "x-cpanel-api-version": {
+          "count": 695,
+          "types": {
+            "string": 695
+          },
+          "value_counts": {
+            "\"UAPI\"": 695
+          }
+        },
+        "x-cpanel-available-version": {
+          "count": 693,
+          "types": {
+            "integer": 115,
+            "string": 578
+          },
+          "value_counts": {
+            "\"11\"": 1,
+            "\"11.32\"": 3,
+            "\"124\"": 2,
+            "\"WordPress Manager 3.0\"": 9,
+            "\"cPStore 76\"": 1,
+            "\"cPanel 100\"": 4,
+            "\"cPanel 11\"": 1,
+            "\"cPanel 11.114\"": 1,
+            "\"cPanel 11.116\"": 1,
+            "\"cPanel 11.130\"": 2,
+            "\"cPanel 11.42\"": 156,
+            "\"cPanel 11.44\"": 15,
+            "\"cPanel 11.46\"": 8,
+            "\"cPanel 11.48\"": 11,
+            "\"cPanel 11.50\"": 10,
+            "\"cPanel 11.52\"": 20,
+            "\"cPanel 116\"": 1,
+            "\"cPanel 120\"": 7,
+            "\"cPanel 122\"": 3,
+            "\"cPanel 124\"": 1,
+            "\"cPanel 132\"": 1,
+            "\"cPanel 134\"": 5,
+            "\"cPanel 136\"": 7,
+            "\"cPanel 138\"": 35,
+            "\"cPanel 54\"": 38,
+            "\"cPanel 54.0.16\"": 1,
+            "\"cPanel 56\"": 18,
+            "\"cPanel 60\"": 6,
+            "\"cPanel 62\"": 10,
+            "\"cPanel 64\"": 6,
+            "\"cPanel 66\"": 12,
+            "\"cPanel 68\"": 7,
+            "\"cPanel 70\"": 13,
+            "\"cPanel 72\"": 7,
+            "\"cPanel 74\"": 14,
+            "\"cPanel 76\"": 1,
+            "\"cPanel 78\"": 19,
+            "\"cPanel 80\"": 8,
+            "\"cPanel 82\"": 42,
+            "\"cPanel 84\"": 21,
+            "\"cPanel 86\"": 11,
+            "\"cPanel 88\"": 13,
+            "\"cPanel 90\"": 5,
+            "\"cPanel 92\"": 1,
+            "\"cPanel 94\"": 11,
+            "\"cPanel 96\"": 7,
+            "\"cPanel 98\"": 2,
+            "102": 2,
+            "104": 2,
+            "106": 1,
+            "108": 9,
+            "110": 42,
+            "116": 1,
+            "118": 2,
+            "120": 2,
+            "130": 4,
+            "136": 8,
+            "137": 14,
+            "138": 13,
+            "82": 8,
+            "90": 3,
+            "94": 2,
+            "96": 2
+          }
+        },
+        "x-cpanel-cli-support": {
+          "count": 2,
+          "types": {
+            "boolean": 2
+          },
+          "value_counts": {
+            "false": 2
+          }
+        },
+        "x-cpanel-internal-only": {
+          "count": 27,
+          "types": {
+            "boolean": 27
+          },
+          "value_counts": {
+            "false": 27
+          }
+        },
+        "x-cpanel-minimum-compatible-version": {
+          "count": 1,
+          "types": {
+            "integer": 1
+          },
+          "value_counts": {
+            "80": 1
+          }
+        },
+        "x-cpanel-plugin": {
+          "count": 34,
+          "types": {
+            "string": 34
+          },
+          "value_counts": {
+            "\"ActiveSessions\"": 1,
+            "\"BackupInfo\"": 3,
+            "\"ExtractInfo\"": 3,
+            "\"Plugins\"": 2,
+            "\"SiteQuality\"": 13,
+            "\"Trash\"": 2,
+            "\"WebProsMCP\"": 2,
+            "\"WebsiteBackup\"": 8
+          }
+        },
+        "x-cpanel-rpm": {
+          "count": 1,
+          "types": {
+            "string": 1
+          },
+          "value_counts": {
+            "\"cpanel-ccs-calendarserver\"": 1
+          }
+        },
+        "x-cpanel-rpm-version": {
+          "count": 1,
+          "types": {
+            "integer": 1
+          },
+          "value_counts": {
+            "69": 1
+          }
+        },
+        "x-readonly": {
+          "count": 614,
+          "types": {
+            "boolean": 614
+          },
+          "value_counts": {
+            "false": 337,
+            "true": 277
+          }
+        },
+        "x-rollback": {
+          "count": 350,
+          "types": {
+            "string": 350
+          },
+          "value_counts": {
+            "\"clean\"": 27,
+            "\"lossy\"": 1,
+            "\"none\"": 322
+          }
+        },
+        "x-tagGroups": {
+          "count": 1,
+          "types": {
+            "array": 1
+          },
+          "sample_pointer": "/x-tagGroups"
+        }
+      },
+      "x_prefixed_data_keys_not_vendor_extensions": [],
+      "readonly_by_method": {
+        "get:absent": 64,
+        "get:false": 322,
+        "get:true": 276,
+        "post:absent": 17,
+        "post:false": 15,
+        "post:true": 1
+      },
+      "readonly_post_operations": [
+        {
+          "path": "/Personalization/get",
+          "method": "post",
+          "operationId": "Personalization-get"
+        }
+      ],
+      "deprecated_operations": [
+        {
+          "path": "/DCV/ensure_domains_can_pass_dcv",
+          "method": "get",
+          "operationId": "DCV-ensure_domains_can_pass_dcv"
+        },
+        {
+          "path": "/SSL/check_shared_cert",
+          "method": "get",
+          "operationId": "SSL-check_shared_cert"
+        },
+        {
+          "path": "/Sitejet/get_templates",
+          "method": "get",
+          "operationId": "Sitejet-get_templates"
+        },
+        {
+          "path": "/Sitejet/set_template",
+          "method": "get",
+          "operationId": "Sitejet-set_template"
+        },
+        {
+          "path": "/Themes/get_theme_base",
+          "method": "get",
+          "operationId": "Themes-get_theme_base"
+        }
+      ],
+      "schema_keyword_occurrence_counts": {
+        "nullable": 2537,
+        "allOf": 20,
+        "oneOf": 75,
+        "anyOf": 29,
+        "not": 0,
+        "discriminator": 3,
+        "readOnly": 0,
+        "writeOnly": 0
+      },
+      "nullable_values": {
+        "false": 3,
+        "true": 2534
+      },
+      "deprecated_keyword_occurrences": 8,
+      "parameter_stats": {
+        "count": 1182,
+        "in": {
+          "query": 1182
+        },
+        "style": {
+          "absent": 1171,
+          "form": 7,
+          "pipeDelimited": 4
+        },
+        "content_parameters": [
+          {
+            "path": "/Batch/strict",
+            "method": "get",
+            "operationId": "Batch-strict",
+            "parameter": "command",
+            "content_media_types": [
+              "application/json"
+            ]
+          },
+          {
+            "path": "/Market/request_ssl_certificates",
+            "method": "get",
+            "operationId": "Market-request_ssl_certificates",
+            "parameter": "certificate",
+            "content_media_types": [
+              "application/json"
+            ]
+          },
+          {
+            "path": "/Market/request_ssl_certificates",
+            "method": "get",
+            "operationId": "Market-request_ssl_certificates",
+            "parameter": "identity_verification",
+            "content_media_types": [
+              "application/json"
+            ]
+          },
+          {
+            "path": "/VersionControl/create",
+            "method": "get",
+            "operationId": "VersionControl-create",
+            "parameter": "source_repository",
+            "content_media_types": [
+              "application/json"
+            ]
+          },
+          {
+            "path": "/VersionControl/update",
+            "method": "get",
+            "operationId": "VersionControl-update",
+            "parameter": "source_repository",
+            "content_media_types": [
+              "application/json"
+            ]
+          }
+        ]
+      },
+      "request_bodies": [
+        {
+          "path": "/Backup/restore_databases",
+          "method": "post",
+          "operationId": "Backup-restore_databases",
+          "required_present": false,
+          "required": null,
+          "media_types": [
+            "multipart/form-data"
+          ],
+          "query_parameters_present": true
+        },
+        {
+          "path": "/Backup/restore_email_filters",
+          "method": "post",
+          "operationId": "Backup-restore_email_filters",
+          "required_present": false,
+          "required": null,
+          "media_types": [
+            "multipart/form-data"
+          ],
+          "query_parameters_present": true
+        },
+        {
+          "path": "/Backup/restore_email_forwarders",
+          "method": "post",
+          "operationId": "Backup-restore_email_forwarders",
+          "required_present": false,
+          "required": null,
+          "media_types": [
+            "multipart/form-data"
+          ],
+          "query_parameters_present": true
+        },
+        {
+          "path": "/Backup/restore_files",
+          "method": "post",
+          "operationId": "Backup-restore_files",
+          "required_present": false,
+          "required": null,
+          "media_types": [
+            "multipart/form-data"
+          ],
+          "query_parameters_present": true
+        },
+        {
+          "path": "/ClamScanner/disinfect_files",
+          "method": "post",
+          "operationId": "ClamScanner-disinfect_files",
+          "required_present": false,
+          "required": null,
+          "media_types": [
+            "application/json"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/ContactInformation/set_notification_preferences",
+          "method": "post",
+          "operationId": "ContactInformation-set_notification_preferences",
+          "required_present": false,
+          "required": null,
+          "media_types": [
+            "application/json"
+          ],
+          "query_parameters_present": true
+        },
+        {
+          "path": "/Fileman/upload_files",
+          "method": "post",
+          "operationId": "Fileman-upload_files",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "multipart/form-data"
+          ],
+          "query_parameters_present": true
+        },
+        {
+          "path": "/Personalization/get",
+          "method": "post",
+          "operationId": "Personalization-get",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/json"
+          ],
+          "query_parameters_present": true
+        },
+        {
+          "path": "/Personalization/set",
+          "method": "post",
+          "operationId": "Personalization-set",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/json"
+          ],
+          "query_parameters_present": true
+        },
+        {
+          "path": "/SSL/fetch_key_and_cabundle_for_certificate",
+          "method": "post",
+          "operationId": "SSL-fetch_key_and_cabundle_for_certificate",
+          "required_present": false,
+          "required": null,
+          "media_types": [
+            "multipart/form-data"
+          ],
+          "query_parameters_present": true
+        },
+        {
+          "path": "/SSL/upload_cert",
+          "method": "post",
+          "operationId": "SSL-upload_cert",
+          "required_present": false,
+          "required": null,
+          "media_types": [
+            "multipart/form-data"
+          ],
+          "query_parameters_present": true
+        },
+        {
+          "path": "/SSL/upload_key",
+          "method": "post",
+          "operationId": "SSL-upload_key",
+          "required_present": false,
+          "required": null,
+          "media_types": [
+            "multipart/form-data"
+          ],
+          "query_parameters_present": true
+        },
+        {
+          "path": "/StatsManager/save_configuration",
+          "method": "post",
+          "operationId": "StatsManager-save_configuration",
+          "required_present": false,
+          "required": null,
+          "media_types": [
+            "application/json"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/WPX/change_admin_password",
+          "method": "post",
+          "operationId": "WPX-change_admin_password",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/WPX/create_nova_for_wordpress_website",
+          "method": "post",
+          "operationId": "WPX-create_nova_for_wordpress_website",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/WPX/create_website",
+          "method": "post",
+          "operationId": "WPX-create_website",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/WPX/import_website",
+          "method": "post",
+          "operationId": "WPX-import_website",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/WPX/remove_installation",
+          "method": "post",
+          "operationId": "WPX-remove_installation",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/WPX/set_language",
+          "method": "post",
+          "operationId": "WPX-set_language",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/WebApp/redeploy",
+          "method": "post",
+          "operationId": "WebApp-redeploy-post",
+          "required_present": true,
+          "required": false,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": true
+        },
+        {
+          "path": "/WebApp/stage",
+          "method": "post",
+          "operationId": "WebApp-stage-post",
+          "required_present": true,
+          "required": false,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": true
+        },
+        {
+          "path": "/WebsiteBackup/create_backup",
+          "method": "post",
+          "operationId": "WebsiteBackup-create_backup",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/WebsiteBackup/delete_backup",
+          "method": "post",
+          "operationId": "WebsiteBackup-delete_backup",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/WebsiteBackup/extract_backup",
+          "method": "post",
+          "operationId": "WebsiteBackup-extract_backup",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": false
+        },
+        {
+          "path": "/WebsiteBackup/restore_backup",
+          "method": "post",
+          "operationId": "WebsiteBackup-restore_backup",
+          "required_present": true,
+          "required": true,
+          "media_types": [
+            "application/x-www-form-urlencoded"
+          ],
+          "query_parameters_present": false
+        }
+      ],
+      "request_body_media_types": {
+        "application/json": 5,
+        "application/x-www-form-urlencoded": 12,
+        "multipart/form-data": 8
+      },
+      "post_without_request_body": [
+        {
+          "path": "/DCV/check_domains_via_dns",
+          "method": "post",
+          "operationId": "DCV-check_domains_via_dns"
+        },
+        {
+          "path": "/Domain/convert_temporary_to_registered",
+          "method": "post",
+          "operationId": "Domain-convert_temporary_to_registered"
+        },
+        {
+          "path": "/Domain/rename_domain",
+          "method": "post",
+          "operationId": "Domain-rename_domain"
+        },
+        {
+          "path": "/SiteQuality/create_project",
+          "method": "post",
+          "operationId": "SiteQuality-create_project"
+        },
+        {
+          "path": "/SiteQuality/create_site_quality_user",
+          "method": "post",
+          "operationId": "SiteQuality-create_site_quality_user"
+        },
+        {
+          "path": "/SiteQuality/get_all_scores",
+          "method": "post",
+          "operationId": "SiteQuality-get_all_scores"
+        },
+        {
+          "path": "/SiteQuality/update_domain",
+          "method": "post",
+          "operationId": "SiteQuality-update_domain"
+        },
+        {
+          "path": "/Trash/remove",
+          "method": "post",
+          "operationId": "Trash-remove"
+        }
+      ],
+      "response_codes": {
+        "200": 695
+      },
+      "response_media_types": {
+        "application/json": 695
+      },
+      "code_sample_object_key_shapes": {
+        "label,lang,source": 2723
+      },
+      "code_sample_labels": {
+        "CLI": 693,
+        "CLI (Regex)": 2,
+        "HTTP Request (Wire Format)": 12,
+        "LiveAPI PHP": 672,
+        "LiveAPI Perl": 672,
+        "URL": 670,
+        "URL (Regex)": 2
+      },
+      "tag_count_per_operation": {
+        "1": 163,
+        "2": 530,
+        "3": 2
+      },
+      "missing_available_version": [
+        {
+          "path": "/ContactInformation/get_notification_preferences",
+          "method": "get",
+          "operationId": "ContactInformation-get_notification_preferences"
+        },
+        {
+          "path": "/ContactInformation/set_notification_preferences",
+          "method": "post",
+          "operationId": "ContactInformation-set_notification_preferences"
+        }
+      ],
+      "function_candidates_by_exact_path": 693
+    }
+  },
+  "cross_family_duplicate_operation_ids": {
+    "EmailAuth-apply_dmarc": [
+      {
+        "family": "whm",
+        "path": "/apply_dmarc",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/EmailAuth/apply_dmarc",
+        "method": "get"
+      }
+    ],
+    "EmailAuth-disable_dkim": [
+      {
+        "family": "whm",
+        "path": "/disable_dkim",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/EmailAuth/disable_dkim",
+        "method": "get"
+      }
+    ],
+    "SSL-disable_mail_sni": [
+      {
+        "family": "whm",
+        "path": "/disable_mail_sni",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/SSL/disable_mail_sni",
+        "method": "get"
+      }
+    ],
+    "EmailAuth-enable_dkim": [
+      {
+        "family": "whm",
+        "path": "/enable_dkim",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/EmailAuth/enable_dkim",
+        "method": "get"
+      }
+    ],
+    "SSL-enable_mail_sni": [
+      {
+        "family": "whm",
+        "path": "/enable_mail_sni",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/SSL/enable_mail_sni",
+        "method": "get"
+      }
+    ],
+    "EmailAuth-ensure_dkim_keys_exist": [
+      {
+        "family": "whm",
+        "path": "/ensure_dkim_keys_exist",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/EmailAuth/ensure_dkim_keys_exist",
+        "method": "get"
+      }
+    ],
+    "Mailboxes-expunge_mailbox_messages": [
+      {
+        "family": "whm",
+        "path": "/expunge_mailbox_messages",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/Mailboxes/expunge_mailbox_messages",
+        "method": "get"
+      }
+    ],
+    "Mailboxes-expunge_messages_for_mailbox_guid": [
+      {
+        "family": "whm",
+        "path": "/expunge_messages_for_mailbox_guid",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/Mailboxes/expunge_messages_for_mailbox_guid",
+        "method": "get"
+      }
+    ],
+    "EmailAuth-fetch_dkim_private_keys": [
+      {
+        "family": "whm",
+        "path": "/fetch_dkim_private_keys",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/EmailAuth/fetch_dkim_private_keys",
+        "method": "get"
+      }
+    ],
+    "InProductSurvey-get_in_product_survey_url": [
+      {
+        "family": "whm",
+        "path": "/get_in_product_survey_url",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/InProductSurvey/get_in_product_survey_url",
+        "method": "get"
+      }
+    ],
+    "Market-get_login_url": [
+      {
+        "family": "whm",
+        "path": "/get_login_url",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/Market/get_login_url",
+        "method": "get"
+      }
+    ],
+    "Mailboxes-get_mailbox_status_list": [
+      {
+        "family": "whm",
+        "path": "/get_mailbox_status_list",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/Mailboxes/get_mailbox_status_list",
+        "method": "get"
+      }
+    ],
+    "UserData-get_scoped_userdata": [
+      {
+        "family": "whm",
+        "path": "/get_scoped_userdata",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/UserData/get_scoped_userdata",
+        "method": "get"
+      }
+    ],
+    "DNS-has_local_authority": [
+      {
+        "family": "whm",
+        "path": "/has_local_authority",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/DNS/has_local_authority",
+        "method": "get"
+      }
+    ],
+    "EmailAuth-install_dkim_private_keys": [
+      {
+        "family": "whm",
+        "path": "/install_dkim_private_keys",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/EmailAuth/install_dkim_private_keys",
+        "method": "get"
+      }
+    ],
+    "EmailAuth-install_spf_records": [
+      {
+        "family": "whm",
+        "path": "/install_spf_records",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/EmailAuth/install_spf_records",
+        "method": "get"
+      }
+    ],
+    "DNS-is_alias_available": [
+      {
+        "family": "whm",
+        "path": "/is_alias_available",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/DNS/is_alias_available",
+        "method": "get"
+      }
+    ],
+    "DNS-is_https_available": [
+      {
+        "family": "whm",
+        "path": "/is_https_available",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/DNS/is_https_available",
+        "method": "get"
+      }
+    ],
+    "SSL-is_sni_supported": [
+      {
+        "family": "whm",
+        "path": "/is_sni_supported",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/SSL/is_sni_supported",
+        "method": "get"
+      }
+    ],
+    "DNS-is_svcb_available": [
+      {
+        "family": "whm",
+        "path": "/is_svcb_available",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/DNS/is_svcb_available",
+        "method": "get"
+      }
+    ],
+    "SSL-mail_sni_status": [
+      {
+        "family": "whm",
+        "path": "/mail_sni_status",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/SSL/mail_sni_status",
+        "method": "get"
+      }
+    ],
+    "SSL-rebuild_mail_sni_config": [
+      {
+        "family": "whm",
+        "path": "/rebuild_mail_sni_config",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/SSL/rebuild_mail_sni_config",
+        "method": "get"
+      }
+    ],
+    "EmailAuth-remove_dmarc": [
+      {
+        "family": "whm",
+        "path": "/remove_dmarc",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/EmailAuth/remove_dmarc",
+        "method": "get"
+      }
+    ],
+    "UserData-set_scoped_userdata": [
+      {
+        "family": "whm",
+        "path": "/set_scoped_userdata",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/UserData/set_scoped_userdata",
+        "method": "get"
+      }
+    ],
+    "EmailAuth-validate_current_dkims": [
+      {
+        "family": "whm",
+        "path": "/validate_current_dkims",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/EmailAuth/validate_current_dkims",
+        "method": "get"
+      }
+    ],
+    "EmailAuth-validate_current_dmarcs": [
+      {
+        "family": "whm",
+        "path": "/validate_current_dmarcs",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/EmailAuth/validate_current_dmarcs",
+        "method": "get"
+      }
+    ],
+    "EmailAuth-validate_current_ptrs": [
+      {
+        "family": "whm",
+        "path": "/validate_current_ptrs",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/EmailAuth/validate_current_ptrs",
+        "method": "get"
+      }
+    ],
+    "EmailAuth-validate_current_spfs": [
+      {
+        "family": "whm",
+        "path": "/validate_current_spfs",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/EmailAuth/validate_current_spfs",
+        "method": "get"
+      }
+    ],
+    "Market-validate_login_token": [
+      {
+        "family": "whm",
+        "path": "/validate_login_token",
+        "method": "get"
+      },
+      {
+        "family": "cpanel",
+        "path": "/Market/validate_login_token",
+        "method": "get"
+      }
+    ]
+  },
+  "total": {
+    "paths": 1323,
+    "operations": 1325,
+    "cross_family_duplicate_operation_id_count": 29
+  },
+  "methodology": "Counts describe parsed source content. Function candidates are distinct case-sensitive paths; aliases are not inferred. Recursive keyword counts count source nodes rather than expanded references. Vendor-extension counts distinguish schema/data keys as listed."
+}

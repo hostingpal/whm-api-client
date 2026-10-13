@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Proposed Go documentation, API-map and parity-tooling design for WHM API 1 and cPanel UAPI.">
+<meta name="source-sha256" content="65a76fa36fbe9fe88def6d878a63748e875edbf329c2467665d3c65887a620d2">
+<title>WHM &amp; UAPI · API Map Foundation Implementation Plan</title>
+<style>
+
+:root { color-scheme: light; --ink:#1d302c; --body:#3c4b47; --muted:#596e63; --accent:#167765; --line:#dfe6df; --paper:#f7f8f3; --rail:#132d27; }
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:28px; }
+body { margin:0; background:var(--paper); color:var(--body); font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+a { color:var(--accent); text-decoration-thickness:1px; text-underline-offset:3px; }
+a:hover { color:#095241; }
+a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visible { outline:3px solid #e4b552; outline-offset:5px; border-radius:3px; }
+.skip { position:fixed; top:-100px; left:16px; z-index:10; background:white; padding:10px 18px; }
+.skip:focus { top:12px; }
+.sidebar { position:fixed; inset:0 auto 0 0; width:276px; display:flex; flex-direction:column; padding:36px 24px 24px; background:var(--rail); color:#e4eee9; overflow-y:auto; }
+.brand { margin:0 0 8px; color:#9ac5b5; font-size:11px; font-weight:700; letter-spacing:.19em; text-transform:uppercase; }
+.sidebar-title { color:#fff; font-size:22px; line-height:1.25; letter-spacing:-.03em; font-weight:650; margin:0 0 32px; }
+nav summary { list-style:none; font-size:10px; color:#98b4a9; letter-spacing:.18em; font-weight:700; text-transform:uppercase; margin:0 0 14px; cursor:pointer; }
+nav summary::-webkit-details-marker { display:none; }
+nav ol { list-style:none; margin:0; padding:0; }
+nav li { margin:0 0 3px; }
+nav a { display:flex; gap:12px; padding:10px 10px; font-size:12px; line-height:1.5; color:#bad0c6; border-radius:7px; text-decoration:none; }
+nav a span { color:#6f9988; font-size:10px; line-height:1.8; font-variant-numeric:tabular-nums; }
+nav a:hover,nav a[aria-current="location"] { background:#23473b; color:white; }
+.sidebar-footer { margin-top:auto; padding-top:30px; color:#93b1a3; font-size:11px; }
+.sidebar-footer strong { color:#d4e6dd; font-weight:500; }
+.main { margin-left:276px; padding:44px 64px 64px; }
+.document { max-width:1060px; margin:0 auto; }
+.toolbar { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:52px; font-size:12px; }
+.eyebrow { color:var(--muted); text-transform:uppercase; letter-spacing:.15em; font-size:10px; font-weight:700; }
+.actions { display:flex; align-items:center; gap:20px; }
+.actions a { color:var(--muted); text-decoration:none; }
+.print { border:1px solid #cbd9ce; background:transparent; padding:7px 12px; border-radius:6px; font:inherit; color:var(--ink); cursor:pointer; }
+.print:hover { background:#edf2e9; }
+.hero { margin-bottom:48px; padding-bottom:36px; border-bottom:1px solid var(--line); }
+.badges { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+.badge { display:inline-block; padding:4px 10px; border-radius:5px; font-size:10px; text-transform:uppercase; letter-spacing:.07em; font-weight:700; background:#e2ede2; color:#235e48; }
+.badge.draft { background:#eee5ce; color:#735621; }
+h1 { color:var(--ink); max-width:830px; font-size:clamp(30px,3.8vw,50px); font-weight:650; line-height:1.12; letter-spacing:-.045em; margin:0 0 22px; }
+.intro { max-width:670px; color:var(--muted); font-size:17px; line-height:1.65; margin:0; }
+.metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:30px; }
+.metric { border-left:2px solid #b3ccbb; padding:0 16px; }
+.metric strong { display:block; color:var(--ink); font-size:28px; font-weight:550; line-height:1.25; letter-spacing:-.025em; }
+.metric span { display:block; font-size:11px; line-height:1.5; color:var(--muted); margin-top:4px; }
+article>p { font-size:13px; color:var(--muted); margin-bottom:30px; }
+blockquote { margin:0 0 24px; padding:16px 20px; border-left:3px solid #b3ccbb; background:#edf2e9; font-size:13px; }
+blockquote p { margin:0; }
+p.step { border-left:2px solid #b3ccbb; padding-left:14px; margin-top:24px; }
+section { margin:0 0 48px; scroll-margin-top:28px; }
+h2 { display:flex; align-items:baseline; gap:14px; margin:0 0 22px; padding-top:24px; border-top:1px solid var(--line); color:var(--ink); font-size:25px; line-height:1.3; font-weight:600; letter-spacing:-.025em; }
+.section-number { font-size:11px; line-height:1.4; color:#4b7564; font-weight:600; letter-spacing:.05em; flex:0 0 auto; }
+p { margin:0 0 18px; max-width:84ch; }
+code { font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace; font-size:.82em; background:#eaf0e8; color:#275d48; padding:.17em .32em; border-radius:4px; overflow-wrap:anywhere; }
+pre { padding:20px; overflow:auto; border-radius:8px; background:#eaf0e8; }
+pre code { padding:0; }
+ul { padding-left:22px; max-width:84ch; }
+li { padding-left:5px; margin:0 0 12px; }
+li::marker { color:#74a58a; }
+.table-scroll { max-width:100%; overflow-x:auto; margin:24px 0; background:white; border:1px solid var(--line); border-radius:9px; }
+table { width:100%; border-collapse:collapse; font-size:14px; line-height:1.6; text-align:left; }
+th { padding:13px 18px; background:#ecf1e9; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#587362; }
+td { padding:14px 18px; vertical-align:top; border-top:1px solid var(--line); }
+td:first-child { width:24%; min-width:145px; }
+td code { white-space:normal; }
+.architecture { margin:28px 0; padding:18px 12px 12px; background:#fff; border:1px solid var(--line); border-radius:12px; }
+.diagram-scroll { overflow-x:auto; }
+.architecture svg { display:block; width:100%; min-width:690px; height:auto; }
+.node rect { fill:#f1f5ef; stroke:#d4e1d5; }
+.node text { font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; fill:#355344; text-anchor:middle; }
+.node.map rect { fill:#225d48; stroke:#225d48; }
+.node.map text { fill:white; font-weight:600; font-size:14px; }
+.node.report rect { fill:#e4eee2; stroke:#b7cdb9; }
+figcaption { color:var(--muted); padding:12px 12px 0; border-top:1px solid #edf0e9; font-size:11px; line-height:1.6; }
+.endnote { border-top:1px solid var(--line); padding-top:22px; display:flex; justify-content:space-between; gap:20px; color:var(--muted); font-size:11px; }
+@media(min-width:1500px) { .main { padding-left:88px; padding-right:88px; } }
+@media(max-width:1100px) { .sidebar { width:240px; padding:30px 18px; } .main { margin-left:240px; padding:32px; } h2 { font-size:22px; } }
+@media(max-width:760px) { .sidebar { position:static; width:auto; padding:22px 24px; overflow:visible; } .sidebar-title { font-size:20px; margin-bottom:18px; } .brand { font-size:9px; } nav summary { margin-bottom:0; } nav summary::after { content:" +"; } nav details[open] summary { margin-bottom:14px; } nav a { padding:6px 0; font-size:12px; } nav ol { columns:2; column-gap:20px; } nav li { break-inside:avoid; } .sidebar-footer { display:none; } .main { margin-left:0; padding:28px 22px 40px; } .toolbar { margin-bottom:32px; gap:12px; } .eyebrow { font-size:9px; } .actions { gap:10px; font-size:10px; } .print { padding:6px 8px; } h1 { font-size:35px; } .intro { font-size:15px; } .metrics { gap:8px; } .metric { padding:0 10px; } .metric strong { font-size:24px; } .metric span { font-size:10px; } body { font-size:15px; } h2 { font-size:22px; gap:9px; } .hero { margin-bottom:32px; } td,th { padding:12px; } table { font-size:12px; } .endnote { flex-direction:column; gap:8px; } }
+@media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+@media print { @page { margin:18mm; } body { background:white; font-size:10pt; color:#222; } .sidebar,.toolbar,.skip,.endnote a { display:none; } .main { margin:0; padding:0; } .document { max-width:none; } h1 { font-size:27pt; } h2 { font-size:17pt; break-after:avoid; } p,li { orphans:3; widows:3; } section { margin-bottom:24px; } .hero { margin-bottom:24px; } .table-scroll { overflow:visible; } table { font-size:9pt; } tr { break-inside:avoid; } thead { display:table-header-group; } .architecture { break-inside:avoid; } .architecture svg { min-width:0; } a { color:inherit; } .badge,code,th,.node rect { print-color-adjust:exact; -webkit-print-color-adjust:exact; } }
+</style>
+</head>
+<body id="top">
+<a class="skip" href="#design-content">Skip to plan</a>
+<aside class="sidebar" aria-label="Document navigation"><p class="brand">HostingPal / Engineering</p><p class="sidebar-title">WHM &amp; UAPI<br>Implementation plans</p><nav aria-label="Table of contents"><details open><summary>In this plan</summary><ol><li><a href="#global-constraints"><span>01</span>Global constraints</a></li>
+<li><a href="#review-focus"><span>02</span>Review focus</a></li>
+<li><a href="#task-1-publish-map-schema-and-shared-model"><span>03</span>Task 1 — Publish map schema and shared model</a></li>
+<li><a href="#task-2-verify-sources-and-refresh-immutable-snapshots"><span>04</span>Task 2 — Verify sources and refresh immutable snapshots</a></li>
+<li><a href="#task-3-index-references-and-effective-contracts"><span>05</span>Task 3 — Index references and effective contracts</a></li>
+<li><a href="#task-4-build-the-canonical-map-and-initial-cli"><span>06</span>Task 4 — Build the canonical map and initial CLI</a></li></ol></details></nav><div class="sidebar-footer"><strong>whm-api-client-gwi</strong><br>Implementation plan · 13 October 2026</div></aside>
+<main class="main"><div class="document"><div class="toolbar"><span class="eyebrow">Approved design / Implementation plan</span><div class="actions"><a href="2026-10-13-api-map-foundation.md">Markdown source ↗</a><button class="print" type="button" onclick="window.print()">Print / PDF</button></div></div><header class="hero"><div class="badges"><span class="badge">Implemented · review complete</span><span class="badge">Go selected</span></div><h1>API Map Foundation Implementation Plan</h1><p class="intro">Implementation sequence, interfaces, and validation for the approved Go toolchain.</p><div class="metrics" aria-label="Implementation plan overview"><div class="metric"><strong>4</strong><span>Component plans</span></div><div class="metric"><strong>10</strong><span>Beads implementation tasks</span></div><div class="metric"><strong>0</strong><span>Live calls required for validation</span></div></div></header><article id="design-content" aria-label="Full implementation plan">
+<blockquote><p><strong>For agentic workers:</strong> Use the execution skill selected at handoff. Read the <a href="2026-10-13-api-map-implementation-plan.html">overview</a> and approved spec first. Numbered steps are instructions; all task state stays in Beads.</p></blockquote>
+<p><strong>Goal:</strong> Publish the canonical map contract and produce it deterministically from verified official sources.</p>
+<p><strong>Architecture:</strong> A lossless document loader feeds a cycle-aware OpenAPI index, then a normalized map builder. The CLI wraps those packages without adding implicit network operations.</p>
+<p><strong>Tech stack:</strong> Go 1.24+, the two dependencies selected in the overview, and JSON Schema 2020-12. <strong>Spec:</strong> <a href="../specs/2026-10-13-api-map-design.html">approved design</a>.</p>
+<section id="global-constraints" aria-labelledby="global-constraints-heading"><h2 id="global-constraints-heading"><span class="section-number">01</span>Global constraints</h2>
+<p>All overview constraints apply: map version <code>1.0</code>, original OpenAPI 3.0 trees, exact case and numeric values, explicit source refresh only, no live API calls, and no commits or remote synchronization. Preserve current workspace changes.</p>
+</section>
+<section id="review-focus" aria-labelledby="review-focus-heading"><h2 id="review-focus-heading"><span class="section-number">02</span>Review focus</h2>
+<p>The tests below cover source tampering and decompression limits; empty paths and unknown fields; recursive/discriminator references; inherited contracts with explicit empty security; and stale annotations/alias collisions. Counts are asserted only for the pinned snapshot, not arbitrary future inputs.</p>
+</section>
+<section id="task-1-publish-map-schema-and-shared-model" aria-labelledby="task-1-publish-map-schema-and-shared-model-heading"><h2 id="task-1-publish-map-schema-and-shared-model-heading"><span class="section-number">03</span>Task 1 — Publish map schema and shared model</h2>
+<p><strong>Beads:</strong> <code>whm-api-client-gwi.2</code>.</p>
+<p><strong>Files:</strong> Create <code>docs/api/schema/api-map-v1.schema.json</code>, <code>docs/api/schema/annotations-v1.schema.json</code>, <code>docs/api/examples/api-map-v1.json</code>, <code>tools/api-map/go.mod</code>, <code>go.sum</code>, <code>internal/model/{model.go,json.go,model_test.go,testdata/map-valid.json}</code>, and <code>internal/schema/{schema.go,sync.go,schema_test.go,assets/}</code> under the Go module. Create <code>internal/testutil/fixtures.go</code> with <code>Read(t testing.TB, path string) []byte</code>.</p>
+<p><strong>Interfaces:</strong> Define the model types in the overview; <code>model.DecodeMap(data []byte) (Map, error)</code>; <code>model.Encode(value any) ([]byte, error)</code>; <code>model.WriteAtomic(path string, data []byte) error</code>; <code>schema.Validate(name string, value any) error</code>. <code>model.Map.Sources</code> is <code>[]model.Object</code>; <code>Documents</code> is <code>map[string]model.Object</code>. These types avoid altering optional manifest fields.</p>
+<p class="step">1. Write schema/model tests before implementation. A minimal synthetic example includes one namespaced WHM function and a UAPI function with GET/POST variants. Include required-null, absent-default, and explicit-false values. Record the example as synthetic, not observed API behavior.</p>
+<pre><code>   func TestMapRoundTripPreservesSourceNumbers(t *testing.T) {
+       input := testutil.Read(t, &quot;testdata/map-valid.json&quot;)
+       m, err := model.DecodeMap(input)
+       if err != nil { t.Fatal(err) }
+       value := m.Documents[&quot;synthetic-uapi&quot;][&quot;x-large-integer&quot;]
+       if value != json.Number(&quot;9007199254740993&quot;) { t.Fatalf(&quot;rounded: %v&quot;, value) }
+       encoded, err := model.Encode(m)
+       if err != nil { t.Fatal(err) }
+       if !bytes.Contains(encoded, []byte(&quot;9007199254740993&quot;)) { t.Fatal(&quot;lost number&quot;) }
+   }</code></pre>
+<p>Add <code>TestMapSchemaRejectsInvalidShape</code> for unknown normalized keys, invalid families/methods/risk values, empty variants, and locators with neither or both pointer/prose locator. Raw document keys remain unrestricted. Add <code>TestSchemaLoaderNeverFetchesRemote</code> and <code>TestAtomicWritePreservesPrevious</code>. 2. Run <code>go -C tools/api-map test ./internal/model ./internal/schema</code>; initially it must fail for missing model/schema behavior. Module/dependency setup is part of this task, not a separate deliverable. 3. Implement the interfaces and strict wrapper schemas. Preserve complete raw documents without applying JSON Schema 2020-12 rules to their nested OpenAPI schemas. Use <code>json.Number</code>, deterministic JSON, and no ignored encode errors. The annotations-file wrapper has <code>schema_version:&quot;1.0&quot;</code>, <code>annotations</code>, and <code>aliases</code>; the CLI passes its two arrays to the builder independently. Embed schema copies; make <code>sync.go</code> a build-ignored generator with a <code>go:generate</code> directive in <code>schema.go</code>. Resolve schema references only from the embedded registry. 4. Run the same tests, <code>go -C tools/api-map generate ./internal/schema</code>, and <code>go -C tools/api-map test ./...</code>. <code>TestEmbeddedSchemasMatchPublished</code> must compare every published schema byte-for-byte. Record the schema, examples, Go rationale, and validation in Beads; close <code>gwi.2</code> only when they pass.</p>
+</section>
+<section id="task-2-verify-sources-and-refresh-immutable-snapshots" aria-labelledby="task-2-verify-sources-and-refresh-immutable-snapshots-heading"><h2 id="task-2-verify-sources-and-refresh-immutable-snapshots-heading"><span class="section-number">04</span>Task 2 — Verify sources and refresh immutable snapshots</h2>
+<p><strong>Beads:</strong> <code>whm-api-client-gwi.3.1</code>; depends on Task 1.</p>
+<p><strong>Files:</strong> Create <code>internal/source/{manifest.go,decode.go,load.go,refresh.go, source_test.go,refresh_test.go,testdata/}</code> and <code>docs/api/schema/source-manifest-v1.schema.json</code>. Embed the new schema.</p>
+<p><strong>Interfaces:</strong> <code>source.Bundle{Records []model.Object, Documents map[string]model.Object}</code>; <code>source.Limits</code>; <code>source.DefaultLimits() Limits</code>; <code>source.Load(manifestPath string, limits Limits) (Bundle, error)</code>; <code>source.Refresh(ctx context.Context, request RefreshRequest, client *http.Client) (string, error)</code>. <code>RefreshRequest</code> has the old manifest path, new snapshot directory, limits, and an injected clock. Its result is the newly published manifest path.</p>
+<p class="step">1. Write <code>TestLoadPinnedSources</code> and table tests asserting these results:</p>
+<pre><code>   changed compressed byte / wrong raw hash / wrong size -&gt; error, no bundle
+   duplicate JSON or YAML key -&gt; error before map decoding
+   9007199254740993 / null / false / empty string -&gt; exact preserved values
+   ../outside or a symlink escaping the snapshot -&gt; error
+   YAML non-string keys/custom tags/cyclic aliases -&gt; error
+   ordinary local reference loading -&gt; zero HTTP requests</code></pre>
+<p><code>TestRefreshIsAtomicAndAllowlisted</code> must cover failed second downloads, existing destination directories, redirects off the allowlist, and corrupt OpenAPI input: no partial manifest becomes selected. A counting test transport supplies public-document fixtures for permitted URLs; it receives no auth headers. Test TLS rejection with an untrusted local TLS server separately. 2. Run <code>go -C tools/api-map test ./internal/source -run &#x27;TestLoad|TestRefresh&#x27;</code>; verify failure before implementing these behaviors. 3. Implement loading and refresh with production HTTPS hosts restricted to <code>api.docs.cpanel.net</code> and <code>docs.cpanel.net</code>. Check each redirect before sending it; permit at most three redirects and a 30-second overall request deadline. Limits are 32 MiB compressed/input bytes per file, 64 MiB decompressed bytes, 256 MiB per source set, depth 128, and 10,000 expanded YAML alias nodes. Check bounded reads before allocation. Tests can supply smaller limits. Preserve absent/null values; reject trailing JSON and multiple YAML documents. 4. Recompute retrieval time, raw/stored hashes, sizes, product/spec versions, and path/operation counts for refreshed inputs. Count only keys beginning with <code>/</code> as paths; retain Paths Object extensions without counting them. A methodless path survives in the source tree but creates no logical API operation. Preserve original sources; stage downloads separately and publish only after every input validates. Local/external reference targets are resolved using the manifest&#x27;s file and URL identities, never by opportunistic downloads. Explicit refresh may pin allowlisted external references; ordinary loading must reject missing ones. 5. Run the source tests and <code>go -C tools/api-map test ./...</code>. The existing 23 cached inputs must verify without network access. No real refresh is required to prove the implementation; the immutable 2026-10-13 cache remains unchanged.</p>
+</section>
+<section id="task-3-index-references-and-effective-contracts" aria-labelledby="task-3-index-references-and-effective-contracts-heading"><h2 id="task-3-index-references-and-effective-contracts-heading"><span class="section-number">05</span>Task 3 — Index references and effective contracts</h2>
+<p><strong>Beads:</strong> <code>whm-api-client-gwi.3.2</code>; depends on Task 2.</p>
+<p><strong>Files:</strong> Create <code>internal/openapi/{index.go,resolve.go,operations.go, inheritance.go,diagnostics.go,index_test.go,testdata/}</code>.</p>
+<p><strong>Interfaces:</strong> <code>openapi.NewIndex(documents map[string]model.Object) (*Index, error)</code>; <code>(*Index).Resolve(sourceID, ref string) (Resolved, error)</code> where <code>Resolved</code> contains <code>Value any</code> and <code>Origin model.Locator</code>; <code>openapi.Analyze(bundle source.Bundle) (Analysis, error)</code> where <code>Analysis</code> contains exact path/method candidates, effective declarations, and diagnostics. Candidate fields are source ID, full path, lowercase method, operation/path-item locators, effective parameters/security/servers, and original operation object.</p>
+<p class="step">1. Create small source-derived fixtures with extraction provenance. Pin the following assertions in <code>TestAnalyzeDocumentContracts</code>:</p>
+<pre><code>   UAPI ServiceAccount self-ref -&gt; resolves; one cycle; zero unresolved refs
+   UAPI Payload discriminator -&gt; 3 mapping targets, including allOf/oneOf closure
+   missing discriminator target -&gt; error, not merely a warning
+   UAPI Batch/strict command -&gt; query content schema; no invented request body
+   WHM enqueue_transfer_item GET -&gt; form body retained + GET_BODY diagnostic
+   empty path item + Paths Object extension -&gt; remain in original document
+   x-frame-options schema property -&gt; data, not a vendor-extension declaration</code></pre>
+<p>Add synthetic <code>TestInheritance</code> fixtures: operation <code>(name,in)</code> overrides the path declaration; same-name query/header parameters remain two entries; same-scope duplicates fail; <code>security:[]</code> overrides inherited authentication; operation/path/root server precedence is preserved. Path-item <code>$ref</code> cycles fail; legitimate schema cycles remain symbolic. Reject unsupported OpenAPI versions and malformed required structures without dropping operations. 2. Run <code>go -C tools/api-map test ./internal/openapi</code>; confirm failing cases. 3. Implement reference traversal with visited/active sets and bounded depth. Resolve JSON Pointer escapes and relative source URLs against pinned source identity. Validate discriminator targets independently of <code>$ref</code> traversal. Preserve unknown source fields; distinguish warnings (missing metadata, GET bodies) from errors (unresolved references, duplicate declarations). Missing upstream operation IDs yield diagnostics; canonical IDs are path-based. 4. Run the package and full Go tests. On the full pinned specs, verify 278 WHM and 81 UAPI <code>$ref</code> occurrences, zero unresolved/external targets, and the legitimate UAPI schema cycle. No eager recursive expansion is permitted.</p>
+</section>
+<section id="task-4-build-the-canonical-map-and-initial-cli" aria-labelledby="task-4-build-the-canonical-map-and-initial-cli-heading"><h2 id="task-4-build-the-canonical-map-and-initial-cli-heading"><span class="section-number">06</span>Task 4 — Build the canonical map and initial CLI</h2>
+<p><strong>Beads:</strong> <code>whm-api-client-gwi.3.3</code>; depends on Task 3.</p>
+<p><strong>Files:</strong> Create <code>internal/mapbuild/{build.go,annotations.go,aliases.go,risk.go, build_test.go,testdata/}</code>, <code>internal/cli/{run.go,sources.go,map.go,run_test.go}</code>, <code>cmd/api-map/main.go</code>, <code>docs/api/annotations.json</code>, and <code>docs/api/map.sha256</code>. Update <code>docs/api/README.md</code> and both agent guides with usable commands.</p>
+<p><strong>Interfaces:</strong> <code>mapbuild.Build(bundle source.Bundle, annotations []model.Annotation, aliases []model.Alias) (model.Map, error)</code> and the overview&#x27;s <code>cli.Run</code>. Command forms are <code>sources verify --manifest PATH</code>, <code>sources refresh --manifest PATH --output-dir NEW_DIR</code>, and <code>map build --manifest PATH --annotations PATH --output PATH</code>.</p>
+<p class="step">1. Write <code>TestBuildCanonicalIdentity</code>, <code>TestRiskEvidence</code>, <code>TestAnnotationsAndAliases</code>, and <code>TestBuildIsDeterministic</code> with these exact fixture expectations:</p>
+<pre><code>   WHM apply_dmarc + UAPI EmailAuth/apply_dmarc -&gt; two distinct IDs
+   WHM EcosystemFeatures/is_ready -&gt; retains namespace despite short operationId
+   UAPI WebApp/stage -&gt; one operation, two variants, POST body and query retained
+   SiteQuality/get_all_scores -&gt; required + nullable + null default; risk unknown
+   CCS/add_delegate -&gt; integer/string RPM/version extensions retained
+   x-readonly true / false / absent -&gt; read-only / mutating / unknown
+   conflicting risk evidence -&gt; unknown + diagnostic
+   stale annotation hash / alias cycle / ambiguous alias target -&gt; build error
+   reordered input object keys -&gt; equal output; reordered semantic arrays preserved</code></pre>
+<p>CLI tests assert exit codes 0/1/2, clean JSON stdout, safe stderr diagnostics, and previous-output preservation when a build fails. 2. Run <code>go -C tools/api-map test ./internal/mapbuild ./internal/cli</code>; verify failures before the builder/commands exist. 3. Build exact family/path IDs, sort normalized arrays, and retain complete parsed documents including methodless paths. Add only reviewed family token annotations backed by the pinned token-guide hashes and locators; retain BasicAuth source declarations. Preserve unresolved audit discrepancies as attributed diagnostics, not undocumented transport variants. 4. Run all Go tests, build twice into separate cache files using the command below, and compare bytes. Expect 1,323 logical IDs and 1,325 variants, with 29 cross-family upstream-ID collisions reported without canonical collisions. Validate the map against its schema, save the checksum, and close <code>gwi.3</code> only after its three children meet acceptance.</p>
+<pre><code>   go -C tools/api-map run ./cmd/api-map map build --manifest ../../docs/api/sources/2026-10-13/manifest.json --annotations ../../docs/api/annotations.json --output ../../.cache/api-map/map.json</code></pre>
+</section>
+</article><footer class="endnote"><span>Implementation reference. Progress and completion are tracked in Beads.</span><a href="#top">Back to top ↑</a></footer></div></main>
+<script>
+const links = [...document.querySelectorAll('nav a')];
+const sections = [...document.querySelectorAll('article section')];
+function updateCurrentSection() {
+    let current = sections[0];
+    for (const section of sections) {
+        if (section.getBoundingClientRect().top <= 150) current = section;
+    }
+    for (const link of links) {
+        if (link.hash === '#' + current.id) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+    }
+}
+let queued = false;
+window.addEventListener('scroll', () => {
+    if (!queued) requestAnimationFrame(() => { updateCurrentSection(); queued = false; });
+    queued = true;
+}, {passive:true});
+updateCurrentSection();
+if (window.matchMedia('(max-width:760px)').matches) document.querySelector('nav details').open = false;
+</script>
+</body>
+</html>

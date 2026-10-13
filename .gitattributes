@@ -1,0 +1,25 @@
+* text=auto eol=lf
+
+/.agents export-ignore
+/.aws export-ignore
+/.beads export-ignore
+/.beads.gate.lock export-ignore
+/.beads-credential-key export-ignore
+/.cache export-ignore
+/.claude export-ignore
+/.codex export-ignore
+/.cursor export-ignore
+/.dolt export-ignore
+/*.db export-ignore
+/*.gate.lock* export-ignore
+/.editorconfig export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/AGENTS.md export-ignore
+/CLAUDE.md export-ignore
+/composer.lock export-ignore
+/phpcs.xml.dist export-ignore
+/phpstan.neon.dist export-ignore
+/phpunit.xml.dist export-ignore
+/tests export-ignore
+/vendor export-ignore

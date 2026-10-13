@@ -1,0 +1,103 @@
+{
+  "explanations": [
+    {
+      "category": "namespace/alias",
+      "certainty": "confirmed",
+      "evidence": [
+        {
+          "prose_locator": "Synthetic alias example paragraph 1",
+          "source_id": "synthetic-review",
+          "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "name": "EcosystemFeatures/is_ready",
+      "rationale": "Synthetic reviewed alias relationship only; not observed server behavior.",
+      "related_name": "is_ready",
+      "side": "docs-only"
+    },
+    {
+      "category": "plugin",
+      "certainty": "possible",
+      "evidence": [
+        {
+          "prose_locator": "Synthetic plugin example paragraph 2",
+          "source_id": "synthetic-review",
+          "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "name": "custom_plugin_call",
+      "rationale": "Synthetic plugin hypothesis only; the saved advertised name establishes no cause.",
+      "side": "runtime-only"
+    },
+    {
+      "category": "unknown",
+      "certainty": "unknown",
+      "evidence": [],
+      "name": "is_ready",
+      "rationale": "No reviewed evidence establishes the cause of this difference.",
+      "side": "runtime-only"
+    }
+  ],
+  "profile": {
+    "advertised_names": [
+      "accountsummary",
+      "listaccts",
+      "is_ready",
+      "custom_plugin_call"
+    ],
+    "capture_status": "success",
+    "captured_at": "2026-10-13T12:00:00Z",
+    "context": {
+      "cpanel_context": "synthetic_context",
+      "username": "root"
+    },
+    "direct_uapi_auth": "unverified",
+    "evidence": [
+      {
+        "api_result": 1,
+        "function": "version",
+        "http_status": 200,
+        "route": "/json-api/version?api.version=1",
+        "status": "success"
+      },
+      {
+        "api_result": 1,
+        "function": "applist",
+        "http_status": 200,
+        "route": "/json-api/applist?api.version=1",
+        "status": "success"
+      }
+    ],
+    "origin": "https://synthetic.example.invalid:2087",
+    "schema_version": "1.0",
+    "server_version": "11.88.0.9999",
+    "uapi_inventory": "unavailable"
+  },
+  "schema_version": "1.0",
+  "uapi": {
+    "advertised_count": null,
+    "docs_only": null,
+    "documented_count": 1,
+    "family": "uapi",
+    "inventory_status": "unavailable",
+    "runtime_only": null,
+    "shared": null
+  },
+  "whm": {
+    "advertised_count": 4,
+    "docs_only": [
+      "EcosystemFeatures/is_ready"
+    ],
+    "documented_count": 3,
+    "family": "whm1",
+    "inventory_status": "available",
+    "runtime_only": [
+      "custom_plugin_call",
+      "is_ready"
+    ],
+    "shared": [
+      "accountsummary",
+      "listaccts"
+    ]
+  }
+}

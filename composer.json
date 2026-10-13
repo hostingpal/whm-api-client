@@ -1,0 +1,55 @@
+{
+  "name": "hostingpal/whm-api-client",
+  "description": "Framework-independent PHP client foundation for the WHM API and cPanel UAPI.",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": "^8.3",
+    "php-http/discovery": "^1.20",
+    "psr/http-client": "^1.0",
+    "psr/http-client-implementation": "^1.0",
+    "psr/http-factory": "^1.0",
+    "psr/http-factory-implementation": "^1.0",
+    "psr/http-message": "^1.1 || ^2.0"
+  },
+  "require-dev": {
+    "nyholm/psr7": "^1.8",
+    "php-http/mock-client": "^1.6",
+    "phpstan/phpstan": "^2.1",
+    "phpunit/phpunit": "^12.0",
+    "slevomat/coding-standard": "^8.31",
+    "squizlabs/php_codesniffer": "^4.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "HostingPal\\WhmApiClient\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "HostingPal\\WhmApiClient\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "check": [
+      "@phpcs",
+      "@phpstan",
+      "@test"
+    ],
+    "phpcs": "phpcs",
+    "phpcbf": "phpcbf",
+    "phpstan": "phpstan analyse --memory-limit=512M",
+    "test": "phpunit",
+    "api-map:check": "go -C tools/api-map run ./cmd/api-map check --root ../.."
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": false,
+      "php-http/discovery": false
+    },
+    "platform": {
+      "php": "8.3.0"
+    },
+    "sort-packages": true
+  }
+}

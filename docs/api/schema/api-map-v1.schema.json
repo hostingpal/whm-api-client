@@ -1,0 +1,655 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hostingpal.github.io/whm-api-client/schema/api-map-v1.schema.json",
+  "title": "Canonical API map v1",
+  "description": "Strict normalized wrapper; documents and resolved parameter definitions retain their original OpenAPI 3.0 dialect and unknown source fields.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "minItems": 0
+    },
+    "documents": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/operation"
+      },
+      "minItems": 0
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/alias"
+      },
+      "minItems": 0
+    },
+    "annotations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/annotation"
+      },
+      "minItems": 0
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnostic"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "schema_version",
+    "sources",
+    "documents",
+    "operations",
+    "aliases",
+    "annotations",
+    "diagnostics"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "locator": {
+      "type": "object",
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "pointer": {
+          "type": "string",
+          "pattern": "^(?:/(?:[^~]|~[01])*)*$"
+        },
+        "prose_locator": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "source_id",
+        "source_sha256"
+      ],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": [
+            "pointer"
+          ],
+          "not": {
+            "required": [
+              "prose_locator"
+            ]
+          }
+        },
+        {
+          "required": [
+            "prose_locator"
+          ],
+          "not": {
+            "required": [
+              "pointer"
+            ]
+          }
+        }
+      ]
+    },
+    "effective_value": {
+      "type": "object",
+      "properties": {
+        "present": {
+          "type": "boolean"
+        },
+        "value": {},
+        "locator": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/locator"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "level": {
+          "enum": [
+            "operation",
+            "path",
+            "root",
+            "none"
+          ]
+        }
+      },
+      "required": [
+        "present",
+        "value",
+        "locator",
+        "level"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "present": {
+                "const": false
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "null"
+              },
+              "locator": {
+                "type": "null"
+              },
+              "level": {
+                "const": "none"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "locator": {
+                "$ref": "#/$defs/locator"
+              },
+              "level": {
+                "enum": [
+                  "operation",
+                  "path",
+                  "root"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "risk": {
+      "type": "object",
+      "properties": {
+        "classification": {
+          "enum": [
+            "read-only",
+            "mutating",
+            "destructive",
+            "unknown"
+          ]
+        },
+        "destructive_potential": {
+          "enum": [
+            "yes",
+            "no",
+            "unknown"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/locator"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "classification",
+        "destructive_potential",
+        "evidence"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "classification": {
+                "enum": [
+                  "read-only",
+                  "mutating",
+                  "destructive"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/locator"
+                },
+                "minItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "classification": {
+                "const": "read-only"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "destructive_potential": {
+                "const": "no"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "classification": {
+                "const": "mutating"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "destructive_potential": {
+                "const": "unknown"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "classification": {
+                "const": "destructive"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "destructive_potential": {
+                "const": "yes"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "classification": {
+                "const": "unknown"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "destructive_potential": {
+                "const": "unknown"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "parameter": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "in": {
+          "enum": [
+            "query",
+            "header",
+            "path",
+            "cookie"
+          ]
+        },
+        "definition": {
+          "type": "object"
+        },
+        "locator": {
+          "$ref": "#/$defs/locator"
+        }
+      },
+      "required": [
+        "name",
+        "in",
+        "definition",
+        "locator"
+      ],
+      "additionalProperties": false
+    },
+    "variant": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(whm1|uapi):[^/#][^#]*#(GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH|TRACE)$"
+        },
+        "method": {
+          "enum": [
+            "GET",
+            "PUT",
+            "POST",
+            "DELETE",
+            "OPTIONS",
+            "HEAD",
+            "PATCH",
+            "TRACE"
+          ]
+        },
+        "upstream_operation_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "operation_locator": {
+          "$ref": "#/$defs/locator"
+        },
+        "path_item_locator": {
+          "$ref": "#/$defs/locator"
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/parameter"
+          },
+          "minItems": 0
+        },
+        "security": {
+          "$ref": "#/$defs/effective_value"
+        },
+        "servers": {
+          "$ref": "#/$defs/effective_value"
+        },
+        "risk": {
+          "$ref": "#/$defs/risk"
+        }
+      },
+      "required": [
+        "id",
+        "method",
+        "upstream_operation_id",
+        "operation_locator",
+        "path_item_locator",
+        "parameters",
+        "security",
+        "servers",
+        "risk"
+      ],
+      "additionalProperties": false
+    },
+    "operation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(whm1|uapi):[^/#][^#]*$"
+        },
+        "family": {
+          "enum": [
+            "whm1",
+            "uapi"
+          ]
+        },
+        "module": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "function": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^/."
+        },
+        "provenance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/locator"
+          },
+          "minItems": 1
+        },
+        "variants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/variant"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "id",
+        "family",
+        "module",
+        "function",
+        "path",
+        "provenance",
+        "variants"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "family": {
+                "const": "whm1"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "module": {
+                "type": "null"
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^whm1:"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "module": {
+                "type": "string",
+                "minLength": 1
+              },
+              "id": {
+                "type": "string",
+                "pattern": "^uapi:[^/]+/[^/]+$"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "alias": {
+      "type": "object",
+      "properties": {
+        "alias_id": {
+          "type": "string",
+          "pattern": "^(whm1|uapi):[^/#][^#]*(#[A-Z]+)?$"
+        },
+        "target_id": {
+          "type": "string",
+          "pattern": "^(whm1|uapi):[^/#][^#]*(#[A-Z]+)?$"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/locator"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "alias_id",
+        "target_id",
+        "reason",
+        "evidence"
+      ],
+      "additionalProperties": false
+    },
+    "annotation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "enum": [
+            "family",
+            "operation",
+            "variant"
+          ]
+        },
+        "target_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "conclusion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/locator"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "id",
+        "scope",
+        "target_id",
+        "kind",
+        "conclusion",
+        "rationale",
+        "evidence"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "scope": {
+                "const": "family"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "target_id": {
+                "enum": [
+                  "whm1",
+                  "uapi"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "scope": {
+                "const": "operation"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "pattern": "^(whm1|uapi):[^/#][^#]*$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "scope": {
+                "const": "variant"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "pattern": "^(whm1|uapi):[^/#][^#]*#(GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH|TRACE)$"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "diagnostic": {
+      "type": "object",
+      "properties": {
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ]
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "locator": {
+          "$ref": "#/$defs/locator"
+        },
+        "canonical_id": {
+          "type": "string",
+          "pattern": "^(whm1|uapi):[^/#][^#]*(#[A-Z]+)?$"
+        }
+      },
+      "required": [
+        "severity",
+        "code",
+        "message",
+        "locator"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

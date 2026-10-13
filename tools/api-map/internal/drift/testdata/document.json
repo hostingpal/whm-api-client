@@ -1,0 +1,20 @@
+{
+  "openapi": "3.0.3",
+  "info": {"title": "Synthetic drift fixture", "version": "1"},
+  "security": [{"BasicAuth": []}],
+  "paths": {
+    "/Demo/inspect": {
+      "get": {
+        "description": "Inspect the synthetic node.",
+        "parameters": [{"name": "value", "in": "query", "schema": {"type": "string", "nullable": true, "default": null}}],
+        "responses": {"200": {"description": "Node", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Node"}}}}}
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {"BasicAuth": {"type": "http", "scheme": "basic"}},
+    "schemas": {
+      "Node": {"type": "object", "properties": {"description": {"type": "string", "enum": ["old"]}, "next": {"$ref": "#/components/schemas/Node"}}}
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hostingpal.github.io/whm-api-client/schema/live-evidence-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "records"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "operation_id",
+          "variant_id",
+          "revision",
+          "host",
+          "version",
+          "account_context",
+          "observed_at",
+          "route",
+          "authentication",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "operation_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "variant_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "revision": {
+            "type": "string",
+            "minLength": 1
+          },
+          "host": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "account_context": {
+            "type": "string",
+            "minLength": 1
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "route": {
+            "enum": [
+              "direct-uapi",
+              "whm-bridge",
+              "direct-whm"
+            ]
+          },
+          "authentication": {
+            "enum": [
+              "cpanel-token",
+              "whm-token"
+            ]
+          },
+          "status": {
+            "enum": [
+              "verified",
+              "failed",
+              "unverified"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

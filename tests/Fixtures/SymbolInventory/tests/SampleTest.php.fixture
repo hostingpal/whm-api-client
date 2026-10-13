@@ -1,0 +1,63 @@
+<?php
+
+declare(strict_types=1);
+
+namespace FixtureInventory\Tests;
+
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
+use FixtureInventory\{
+    ExternalValues,
+    ExternalValues/* grouped alias */as GroupedValues,
+    Tests as ProviderNamespace,
+    function unusedFunction,
+    const UNUSED_CONSTANT
+};
+
+final class SampleTest extends TestCase
+{
+    public static int $calls = 0;
+
+    #[DataProvider('values')]
+    public function testValues(): void
+    {
+    }
+
+    #[Test]
+    #[DataProviderExternal(SampleTest::class, 'values')]
+    public function checksValues(): void
+    {
+    }
+
+    #[DataProviderExternal(ExternalValues::class, 'cases')]
+    public function testGroupedProvider(): void
+    {
+    }
+
+    #[DataProviderExternal(GroupedValues::class, 'cases')]
+    public function testAliasedGroupedProvider(): void
+    {
+    }
+
+    #[DataProviderExternal(ProviderNamespace\SampleTest::class, 'values')]
+    public function testQualifiedGroupedProvider(): void
+    {
+    }
+
+    #[DataProviderExternal(namespace\SampleTest::class, 'values')]
+    public function testNamespaceRelativeProvider(): void
+    {
+    }
+
+    public static function values(): array
+    {
+        self::$calls++;
+        return [[]];
+    }
+
+    public function helper(): void
+    {
+    }
+}

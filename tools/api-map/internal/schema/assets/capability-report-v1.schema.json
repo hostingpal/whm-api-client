@@ -1,0 +1,303 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "profile": {
+      "$ref": "https://hostingpal.github.io/whm-api-client/schema/capability-profile-v1.schema.json"
+    },
+    "whm": {
+      "$ref": "#/$defs/inventory"
+    },
+    "uapi": {
+      "$ref": "#/$defs/inventory"
+    },
+    "explanations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/explanation"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "profile",
+    "whm",
+    "uapi",
+    "explanations"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hostingpal.github.io/whm-api-client/schema/capability-report-v1.schema.json",
+  "$defs": {
+    "inventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "family": {
+          "enum": [
+            "whm1",
+            "uapi"
+          ]
+        },
+        "inventory_status": {
+          "enum": [
+            "available",
+            "unavailable"
+          ]
+        },
+        "documented_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "advertised_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "shared": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "docs_only": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "runtime_only": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "family",
+        "inventory_status",
+        "documented_count",
+        "advertised_count",
+        "shared",
+        "docs_only",
+        "runtime_only"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "inventory_status": {
+                "const": "unavailable"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "advertised_count": {
+                "type": "null"
+              },
+              "shared": {
+                "type": "null"
+              },
+              "docs_only": {
+                "type": "null"
+              },
+              "runtime_only": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "advertised_count": {
+                "type": "integer"
+              },
+              "shared": {
+                "type": "array"
+              },
+              "docs_only": {
+                "type": "array"
+              },
+              "runtime_only": {
+                "type": "array"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "explanation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "side": {
+          "enum": [
+            "docs-only",
+            "runtime-only"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "enum": [
+            "version",
+            "plugin",
+            "role/permission",
+            "namespace/alias",
+            "unknown"
+          ]
+        },
+        "certainty": {
+          "enum": [
+            "confirmed",
+            "possible",
+            "unknown"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "https://hostingpal.github.io/whm-api-client/schema/api-map-v1.schema.json#/$defs/locator"
+          }
+        },
+        "related_name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "side",
+        "name",
+        "category",
+        "certainty",
+        "rationale",
+        "evidence"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "related_name"
+            ]
+          },
+          "then": {
+            "properties": {
+              "category": {
+                "const": "namespace/alias"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "category": {
+                "const": "unknown"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "certainty": {
+                "const": "unknown"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "evidence": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "properties": {
+        "whm": {
+          "properties": {
+            "family": {
+              "const": "whm1"
+            }
+          }
+        },
+        "uapi": {
+          "properties": {
+            "family": {
+              "const": "uapi"
+            },
+            "inventory_status": {
+              "const": "unavailable"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile": {
+            "properties": {
+              "capture_status": {
+                "const": "success"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "whm": {
+            "properties": {
+              "inventory_status": {
+                "const": "available"
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "whm": {
+            "properties": {
+              "inventory_status": {
+                "const": "unavailable"
+              }
+            }
+          },
+          "explanations": {
+            "maxItems": 0
+          }
+        }
+      }
+    }
+  ]
+}

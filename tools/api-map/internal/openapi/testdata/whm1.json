@@ -1,0 +1,565 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "contact": {
+      "email": "cs@cpanel.net",
+      "name": "WebPros International, LLC",
+      "url": "https://cpanel.net/support/"
+    },
+    "description": "WHM API.",
+    "license": {
+      "name": "cPanel License",
+      "url": "https://cpanel.net/legal-notices/"
+    },
+    "termsOfService": "https://cpanel.net/legal-notices/",
+    "title": "WHM API",
+    "version": "11.138.0.10"
+  },
+  "security": [
+    {
+      "BasicAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "A server running WHM.",
+      "url": "https://{host}:{port}/json-api",
+      "variables": {
+        "host": {
+          "default": "whm-server.tld",
+          "description": "The hostname of a server running WHM."
+        },
+        "port": {
+          "default": "2087",
+          "description": "The WHM port."
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/enqueue_transfer_item": {
+      "get": {
+        "x-readonly": false,
+        "description": "This function adds a transfer session to a queue. For more information about how this function works with other\nfunctions in the transfer and restore process, read our\n[Guide to Transfer and Restore API Functions](https://go.cpanel.net/transferrestoreAPIguide) documentation.\n\n**Important:**\n\nThe `module` parameter determines which additional parameters to use with the function.",
+        "operationId": "Transfers-enqueue_transfer_item",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/schemas-Transfers_EnqueueTransferItem_Type"
+              }
+            }
+          },
+          "description": "An enqueue transfer item."
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "metadata": {
+                      "properties": {
+                        "command": {
+                          "description": "The method name called.",
+                          "example": "enqueue_transfer_item",
+                          "type": "string"
+                        },
+                        "reason": {
+                          "description": "The reason the API function failed when the `metadata.result` field is `0`. This field may display a success message when a function succeeds.",
+                          "example": "OK",
+                          "type": "string"
+                        },
+                        "result": {
+                          "description": "* `1` - Success\n* `0` - Failed: Check the reason field for more details.",
+                          "enum": [
+                            0,
+                            1
+                          ],
+                          "example": 1,
+                          "type": "integer"
+                        },
+                        "version": {
+                          "description": "The version of the API function.",
+                          "example": 1,
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "HTTP Request was successful."
+          }
+        },
+        "summary": "Add module to transfer session",
+        "tags": [
+          "Transfers",
+          "cPanel Account Transfer"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "CLI",
+            "lang": "Shell",
+            "source": "whmapi1 --input=json --output=jsonpretty \\\n  enqueue_transfer_item\n"
+          },
+          {
+            "label": "HTTP Request (Wire Format)",
+            "lang": "HTTP",
+            "source": "GET /cpsess##########/json-api/enqueue_transfer_item HTTP/1.1\nHost: example.com:2083\nCookie: ###################################\nContent-Type: application/json\nContent-Length: 0\n\n"
+          }
+        ],
+        "x-cpanel-api-version": "WHM API 1",
+        "x-cpanel-available-version": "11.44"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Transfers_EnqueueTransferItem_Base": {
+        "properties": {
+          "module": {
+            "description": "The transfer system module.\n\n* `LegacyAccountBackup` \u2014 This module restores legacy-account backup files.\n* `FeatureListRemoteRoot` \u2014 This module transfers the feature list from the remote server.\n* `PackageRemoteRoot` \u2014 This module transfers the package settings.\n* `AccountLocal` \u2014 This module restores backup files.\n* `AccountRemoteRoot` \u2014 This module uses the `root` credentials to transfer account settings that are not a part of a package.\n* `AccountRemoteUser` \u2014 This module uses the account's user credentials to transfer account settings that are not a part of a package.\n\n**Note:**\n\n* The `module` parameter determines which additional parameters to use with the function.\n* You **must** perform each module action as a separate step.\n\nWhen you call this function, you **must** include the additional parameters for the desired transfer system module. Select a module from the menu to view its required additional parameters:",
+            "example": "AccountRemoteRoot",
+            "type": "string"
+          },
+          "size": {
+            "default": 1,
+            "description": "The size of the content to transfer, in bytes.\nThe restore system uses this value to determine the best filesystem\npartition for the restored account\u2019s home directory. For best\nresults, give as accurate of a value as possible.",
+            "example": 133698,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "transfer_session_id": {
+            "description": "The transfer session's ID.",
+            "example": "vm5docscpanelcopya20140211211719FxjU",
+            "type": "string"
+          }
+        },
+        "required": [
+          "transfer_session_id",
+          "module"
+        ],
+        "type": "object"
+      },
+      "Transfers_EnqueueTransferItem_Type_AccountLocal_or_AccountRemoteRoot": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Transfers_EnqueueTransferItem_Type_Account_Base"
+          },
+          {
+            "properties": {
+              "force": {
+                "description": "Whether to overwrite an account with an identical username.\n\n* `1` \u2014 Overwrite the account.\n* `0` \u2014 Do **not** overwrite the account.\n\nThis parameter performs the following actions:\n\n* Restores the cPanel account on the destination server.\n* Overwrites all account settings, data, and databases.\n* Ignores errors and warnings for naming conflicts.\n\n**Note:**\n\n* The values you enter for the `user` and `localuser` parameters **must** match.\n* You cannot use this parameter if you called the WHM API 1 `create_remote_root_transfer_session` function with the `unrestricted_restore` parameter set to `1`.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "example": 1,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "Transfers_EnqueueTransferItem_Type_AccountRemoteRoot": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Transfers_EnqueueTransferItem_Type_AccountLocal_or_AccountRemoteRoot"
+          },
+          {
+            "properties": {
+              "live_transfer": {
+                "default": 0,
+                "description": "Whether to use the [*Live Transfer*](https://go.cpanel.net/livetransfers) feature.\n\n* `1` \u2014 Use.\n* `0` \u2014 Do **not** use.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "example": 1,
+                "type": "integer"
+              },
+              "xferpoint": {
+                "description": "Whether to use the [*Express Transfer*](https://go.cpanel.net/livetransfer) feature.\n\n* `1` \u2014 Use.\n* `0` \u2014 Do **not** use.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "example": 1,
+                "type": "integer"
+              }
+            }
+          }
+        ]
+      },
+      "Transfers_EnqueueTransferItem_Type_Account_Base": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Transfers_EnqueueTransferItem_Base"
+          },
+          {
+            "properties": {
+              "customip": {
+                "description": "The custom IP address to assign to the transferred account.\n\n**Note:**\n\nThis parameter requires that the `ip` parameter has a value of `1`.",
+                "example": "192.168.0.1",
+                "type": "string"
+              },
+              "detected_remote_user": {
+                "description": "The user account name that the remote server returns when you query the user account.",
+                "example": "user",
+                "type": "string"
+              },
+              "domain": {
+                "description": "The domain name.",
+                "example": "example.com",
+                "format": "domain",
+                "type": "string"
+              },
+              "ip": {
+                "description": "Whether to assign a dedicated IP address to the transferred account.\n\n* `1` \u2014 Assign a dedicated IP address.\n* `0` \u2014 Do **not** assign a dedicated IP address.\n\n**Note:**\n\nIf no dedicated IP address exists, the system assigns the account to a shared IP address.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "example": 1,
+                "type": "integer"
+              },
+              "localuser": {
+                "description": "The local account's username.",
+                "example": "localuser",
+                "format": "username",
+                "type": "string"
+              },
+              "mail_location": {
+                "default": ".existing",
+                "description": "The server on which the account's email will reside after it completes the transfer.\n\n* `.local` \u2014 The local server.\n* `.existing` \u2014 Use the location defined in the account's backup data.\n* The alias (friendly name) of a remote [cPanel & WHM linked server node.](https://go.cpanel.net/whmdocsLinkServerNodes). For example, the `example-alias` for the `servernode.example.com` domain.\n\n**Note:**\n\nThe system will use the `.local` option if:\n  * The system cannot use the cPanel & WHM linked server node when you call the `.existing` option.\n  * The cPanel & WHM linked server node's alias (friendly name) is invalid.",
+                "example": ".local",
+                "oneOf": [
+                  {
+                    "enum": [
+                      ".local",
+                      ".existing"
+                    ],
+                    "type": "string"
+                  },
+                  {
+                    "description": "A remote cPanel & WHM linked server node's alias (friendly name).",
+                    "type": "string"
+                  }
+                ]
+              },
+              "overwrite_sameowner_dbs": {
+                "description": "Whether to allow the system to overwrite the account's existing databases with the databases in the backup file.\n\n* `1` \u2014 Overwrite.\n* `0` \u2014 Do **not** overwrite.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "example": 1,
+                "type": "integer"
+              },
+              "overwrite_sameowner_dbusers": {
+                "description": "Whether to allow the system to overwrite the account's existing database users with the database users in the backup file.\n\n* `1` \u2014 Overwrite.\n* `0` \u2014 Do **not** overwrite.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "example": 1,
+                "type": "integer"
+              },
+              "overwrite_with_delete": {
+                "description": "Whether to replace and delete **all** directories and files on the destination server.\n\n* `1` \u2014 Overwrite.\n* `0` \u2014 Do **not** overwrite.\n\n**Warning:**\n\nIf you use this parameter, the system deletes **every** directory and file on the destination server. The system does **not** delete the directories and files from the source server.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "example": 1,
+                "type": "integer"
+              },
+              "replaceip": {
+                "description": "The lines in the domain's zonefile to replace with the new IP address.\n\n* `all` \u2014 Replace all of the matching `A` record addresses in the zone file with the new IP address, including custom `A` records.\n* `basic` \u2014 Replace **only** the cPanel-managed `A` records for this IP address. This includes the main domain and any [service subdomains](https://go.cpanel.net/ServiceProxySubdomains).",
+                "enum": [
+                  "all",
+                  "basic"
+                ],
+                "example": "all",
+                "type": "string"
+              },
+              "reseller": {
+                "description": "Whether to make the account a reseller.\n\n* `1` \u2014 Make the account a reseller account.\n* `0` \u2014 Do **not** make the account a reseller account.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "example": 1,
+                "type": "integer"
+              },
+              "shared_mysql_server": {
+                "description": "Whether one of the following conditions is true:\n\n* The target and remote servers share the same remote MySQL server.\n* The target server is the remote MySQL server for the remote server.\n* The remote server is the remote MySQL server for the target server.\n\nValue:\n\n* `1` \u2014 One is true.\n* `0` \u2014 None are true.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "example": 1,
+                "type": "integer"
+              },
+              "skipaccount": {
+                "description": "Whether to skip the recreation of the account.\n\n* `1` \u2014 Skip.\n* `0` \u2014 Restore.\n\n**Note:**\n\n* The values you enter for the `user` and `localuser` parameters **must** match.\n* This parameter is similar to the `force` parameter, but performs none of the account creation steps.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "example": 1,
+                "type": "integer"
+              },
+              "skipacctdb": {
+                "description": "Whether to skip the transfer of the account's databases.\n\n* `1` \u2014 Skip.\n* `0` \u2014 Restore.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "example": 1,
+                "type": "integer"
+              },
+              "skipbwdata": {
+                "description": "Whether to skip the transfer of the account's bandwidth data.\n\n* `1` \u2014 Skip.\n* `0` \u2014 Restore.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "example": 1,
+                "type": "integer"
+              },
+              "skiphomedir": {
+                "description": "Whether to skip the contents of the home directory.\n\n* `1` \u2014 Skip.\n* `0` \u2014 Restore.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "example": 1,
+                "type": "integer"
+              },
+              "skipres": {
+                "description": "Whether to skip restoration of the account's reseller permissions.\n\n* `1` \u2014 Skip.\n* `0` \u2014 Restore.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "example": 1,
+                "type": "integer"
+              },
+              "user": {
+                "description": "The account to transfer.",
+                "example": "user",
+                "format": "username",
+                "type": "string"
+              }
+            },
+            "required": [
+              "user",
+              "localuser"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Transfers_EnqueueTransferItem_Type_FeatureListRemoteRoot": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Transfers_EnqueueTransferItem_Base"
+          },
+          {
+            "properties": {
+              "featurelist": {
+                "description": "The feature list's name.",
+                "example": "user_features",
+                "type": "string"
+              }
+            },
+            "required": [
+              "featurelist"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Transfers_EnqueueTransferItem_Type_LegacyAccountBackup": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Transfers_EnqueueTransferItem_Base"
+          },
+          {
+            "properties": {
+              "mysql_dbs_to_restore": {
+                "description": "A comma-separated list of MySQL databases to restore, which will overwrite those databases on the account.\n\n**Note:**\n\nThe default behavior is to select and overwrite all databases.\n\n**Warning:**\n\nThe _Restricted Restore_ feature does not allow an account to overwrite data that it does not own. If the transfer session's `unrestricted_restore` parameter has a value of `0`, this parameter is ignored.",
+                "example": "msdb1,msdb2,msdb3",
+                "type": "string"
+              },
+              "overwrite_all_dbs": {
+                "description": "Whether to allow the system to overwrite all of the account's databases with the databases in the backup file.\n\n* `1` \u2014 Overwrite.\n* `0` \u2014 Do **not** overwrite.\n\n**Note:**\n\nYou may use only **one** of the following parameters:\n\n* `overwrite_all_dbs`\n* `overwrite_sameowner_dbs`\n* Both the `mysql_dbs_to_restore` and `pgsql_dbs_to_restore` parameters.\n\nIf you do not use any of these parameters, the system will restore all of the databases on the account, but will **not** overwrite any of them.\n\n**Warning:**\n\nThe _Restricted Restore_ feature does not allow an account to overwrite data that it does not own. If the transfer session's `unrestricted_restore` parameter has a value of `0`, the `overwrite_all_dbs` parameter will automatically change to a value of `0` and the `overwrite_sameowner_dbs` parameter will change to a value of `1`. This prevents the restore system from overwriting databases that the account does not own.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "type": "integer"
+              },
+              "overwrite_sameowner_dbs": {
+                "description": "Whether to allow the system to overwrite the account's existing databases with the databases in the backup file.\n\n* `1` \u2014 Overwrite.\n* `0` \u2014 Do **not** overwrite.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "type": "integer"
+              },
+              "overwrite_sameowner_dbusers": {
+                "description": "Whether to allow the system to overwrite the account's existing database users with the database users in the backup file.\n\n* `1` \u2014 Overwrite.\n* `0` \u2014 Do **not** overwrite.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "type": "integer"
+              },
+              "pgsql_dbs_to_restore": {
+                "description": "A comma-separated list of PostgreSQL\u00ae databases to restore, which will overwrite those databases on the account.\n\n**Note:**\n\nThe default behavior is to select and overwrite all databases.\n\n**Warning:**\n\nThe _Restricted Restore_ feature does not allow an account to overwrite data that it does not own. If the transfer session's `unrestricted_restore` parameter has a value of `0`, this parameter is ignored.",
+                "example": "pgdb1,pgdb2,pgdb3",
+                "type": "string"
+              },
+              "restoreall": {
+                "description": "Whether to recreate the account on the target server.\n\n* `1` \u2014 Recreate.\n* `0` \u2014 Do **not** recreate.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "type": "integer"
+              },
+              "restorebwdata": {
+                "description": "Whether to restore bandwidth data.\n\n* `1` \u2014 Restore.\n* `0` \u2014 Do **not** restore.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "type": "integer"
+              },
+              "restoreip": {
+                "description": "Whether to assign the account's dedicated IP address that is stored in the backup file.\n\n* `1` \u2014 Assign.\n* `0` \u2014 Do **not** assign.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "type": "integer"
+              },
+              "restoremail": {
+                "description": "Whether to restore the account's mail data.\n\n* `1` \u2014 Restore.\n* `0` \u2014 Do **not** restore.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "type": "integer"
+              },
+              "restoremysql": {
+                "description": "Whether to restore MySQL\u00ae database data.\n\n* `1` \u2014 Restore.\n* `0` \u2014 Do **not** restore.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "type": "integer"
+              },
+              "restoresubs": {
+                "description": "Whether to restore the account's subdomains.\n\n* `1` \u2014 Restore.\n* `0` \u2014 Do **not** restore.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "type": "integer"
+              },
+              "restoretype": {
+                "description": "The backup type to restore.\n\n* `monthly`\n* `weekly`\n* `daily`",
+                "enum": [
+                  "monthly",
+                  "weekly",
+                  "daily"
+                ],
+                "example": "daily",
+                "type": "string"
+              },
+              "unrestricted_restore": {
+                "description": "Whether to bypass the *Restricted Restore* system.\n\n* `1` \u2014 Bypass.\n* `0` \u2014 Do **not** bypass.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "type": "integer"
+              },
+              "user": {
+                "description": "The account's username.",
+                "example": "user",
+                "format": "username",
+                "type": "string"
+              }
+            },
+            "required": [
+              "user",
+              "restoretype"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Transfers_EnqueueTransferItem_Type_PackageRemoteRoot": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Transfers_EnqueueTransferItem_Base"
+          },
+          {
+            "properties": {
+              "package": {
+                "description": "The package's name.",
+                "example": "user_package",
+                "type": "string"
+              }
+            },
+            "required": [
+              "package"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "schemas-Transfers_EnqueueTransferItem_Type": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/Transfers_EnqueueTransferItem_Type_AccountLocal_or_AccountRemoteRoot"
+          },
+          {
+            "$ref": "#/components/schemas/Transfers_EnqueueTransferItem_Type_AccountRemoteRoot"
+          },
+          {
+            "$ref": "#/components/schemas/Transfers_EnqueueTransferItem_Type_Account_Base"
+          },
+          {
+            "$ref": "#/components/schemas/Transfers_EnqueueTransferItem_Type_FeatureListRemoteRoot"
+          },
+          {
+            "$ref": "#/components/schemas/Transfers_EnqueueTransferItem_Type_LegacyAccountBackup"
+          },
+          {
+            "$ref": "#/components/schemas/Transfers_EnqueueTransferItem_Type_PackageRemoteRoot"
+          }
+        ],
+        "discriminator": {
+          "mapping": {
+            "AccountLocal": "#/components/schemas/Transfers_EnqueueTransferItem_Type_AccountLocal_or_AccountRemoteRoot",
+            "AccountRemoteRoot": "#/components/schemas/Transfers_EnqueueTransferItem_Type_AccountRemoteRoot",
+            "AccountRemoteUser": "#/components/schemas/Transfers_EnqueueTransferItem_Type_Account_Base",
+            "FeatureListRemoteRoot": "#/components/schemas/Transfers_EnqueueTransferItem_Type_FeatureListRemoteRoot",
+            "LegacyAccountBackup": "#/components/schemas/Transfers_EnqueueTransferItem_Type_LegacyAccountBackup",
+            "PackageRemoteRoot": "#/components/schemas/Transfers_EnqueueTransferItem_Type_PackageRemoteRoot"
+          },
+          "propertyName": "module"
+        }
+      }
+    }
+  }
+}

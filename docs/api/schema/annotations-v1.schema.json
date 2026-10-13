@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hostingpal.github.io/whm-api-client/schema/annotations-v1.schema.json",
+  "title": "Reviewed API map annotations and aliases v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "annotations": {
+      "type": "array",
+      "items": {
+        "$ref": "api-map-v1.schema.json#/$defs/annotation"
+      },
+      "minItems": 0
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "$ref": "api-map-v1.schema.json#/$defs/alias"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "schema_version",
+    "annotations",
+    "aliases"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,323 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "origin": {
+      "type": "string",
+      "pattern": "^(https://[^/?#@]+|)$"
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "username": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_]*$"
+        },
+        "cpanel_context": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[A-Za-z0-9_]+$"
+        }
+      },
+      "required": [
+        "username",
+        "cpanel_context"
+      ]
+    },
+    "captured_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+    },
+    "server_version": {
+      "type": "string"
+    },
+    "capture_status": {
+      "enum": [
+        "success",
+        "partial",
+        "failed"
+      ]
+    },
+    "advertised_names": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {
+        "$ref": "#/$defs/evidence"
+      }
+    },
+    "uapi_inventory": {
+      "const": "unavailable"
+    },
+    "direct_uapi_auth": {
+      "const": "unverified"
+    }
+  },
+  "required": [
+    "schema_version",
+    "origin",
+    "context",
+    "captured_at",
+    "server_version",
+    "capture_status",
+    "advertised_names",
+    "evidence",
+    "uapi_inventory",
+    "direct_uapi_auth"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hostingpal.github.io/whm-api-client/schema/capability-profile-v1.schema.json",
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "function": {
+          "enum": [
+            "version",
+            "applist"
+          ]
+        },
+        "route": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "success",
+            "failed"
+          ]
+        },
+        "http_status": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 599
+        },
+        "api_result": {
+          "type": "integer"
+        },
+        "error_category": {
+          "enum": [
+            "invalid_configuration",
+            "invalid_data",
+            "invalid_json",
+            "response_read",
+            "response_too_large",
+            "authentication",
+            "http_status",
+            "api_result",
+            "transport",
+            "redirect",
+            "timeout",
+            "cancelled"
+          ]
+        }
+      },
+      "required": [
+        "function",
+        "route",
+        "status"
+      ],
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "function": {
+                  "const": "version"
+                },
+                "route": {
+                  "const": "/json-api/version?api.version=1"
+                }
+              }
+            },
+            {
+              "properties": {
+                "function": {
+                  "const": "applist"
+                },
+                "route": {
+                  "const": "/json-api/applist?api.version=1"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "success"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "http_status",
+              "api_result"
+            ],
+            "properties": {
+              "http_status": {
+                "minimum": 200,
+                "maximum": 299
+              },
+              "api_result": {
+                "const": 1
+              }
+            },
+            "not": {
+              "required": [
+                "error_category"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "error_category"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "capture_status": {
+          "const": "success"
+        },
+        "advertised_names": {
+          "minItems": 1
+        },
+        "origin": {
+          "minLength": 1
+        },
+        "context": {
+          "properties": {
+            "username": {
+              "minLength": 1
+            }
+          }
+        },
+        "server_version": {
+          "minLength": 1
+        },
+        "evidence": {
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [
+            {
+              "properties": {
+                "function": {
+                  "const": "version"
+                },
+                "status": {
+                  "const": "success"
+                }
+              }
+            },
+            {
+              "properties": {
+                "function": {
+                  "const": "applist"
+                },
+                "status": {
+                  "const": "success"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "capture_status": {
+          "const": "partial"
+        },
+        "advertised_names": {
+          "maxItems": 0
+        },
+        "origin": {
+          "minLength": 1
+        },
+        "context": {
+          "properties": {
+            "username": {
+              "minLength": 1
+            }
+          }
+        },
+        "server_version": {
+          "minLength": 1
+        },
+        "evidence": {
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [
+            {
+              "properties": {
+                "function": {
+                  "const": "version"
+                },
+                "status": {
+                  "const": "success"
+                }
+              }
+            },
+            {
+              "properties": {
+                "function": {
+                  "const": "applist"
+                },
+                "status": {
+                  "const": "failed"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "properties": {
+        "capture_status": {
+          "const": "failed"
+        },
+        "advertised_names": {
+          "maxItems": 0
+        },
+        "server_version": {
+          "const": ""
+        },
+        "evidence": {
+          "maxItems": 1,
+          "prefixItems": [
+            {
+              "properties": {
+                "function": {
+                  "const": "version"
+                },
+                "status": {
+                  "const": "failed"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

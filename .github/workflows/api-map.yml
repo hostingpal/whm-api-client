@@ -1,0 +1,46 @@
+name: Offline API map and PHP checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    env:
+      GOCACHE: ${{ github.workspace }}/.cache/go-build
+      GOMODCACHE: ${{ github.workspace }}/.cache/go-mod
+    steps:
+      # Reviewed official release commits, 2026-10-13.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.24'
+          cache-dependency-path: tools/api-map/go.sum
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          extensions: dom, mbstring, xml, xmlwriter
+          coverage: none
+      - name: Install locked development dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --no-progress
+          go -C tools/api-map mod download
+          go -C tools/api-map mod verify
+      - name: Validate offline
+        env:
+          GOPROXY: 'off'
+          GOSUMDB: 'off'
+        run: |
+          test -z "$(gofmt -l tools/api-map)"
+          go -C tools/api-map test ./...
+          go -C tools/api-map vet ./...
+          composer validate
+          composer check
+          composer api-map:check

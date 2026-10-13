@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Proposed Go documentation, API-map and parity-tooling design for WHM API 1 and cPanel UAPI.">
+<meta name="source-sha256" content="742ced4f6fee590e20745076cd4d3a07ececc0cd910e92214891c3a255aa3765">
+<title>WHM &amp; UAPI · PHP and Test Parity Implementation Plan</title>
+<style>
+
+:root { color-scheme: light; --ink:#1d302c; --body:#3c4b47; --muted:#596e63; --accent:#167765; --line:#dfe6df; --paper:#f7f8f3; --rail:#132d27; }
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:28px; }
+body { margin:0; background:var(--paper); color:var(--body); font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+a { color:var(--accent); text-decoration-thickness:1px; text-underline-offset:3px; }
+a:hover { color:#095241; }
+a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visible { outline:3px solid #e4b552; outline-offset:5px; border-radius:3px; }
+.skip { position:fixed; top:-100px; left:16px; z-index:10; background:white; padding:10px 18px; }
+.skip:focus { top:12px; }
+.sidebar { position:fixed; inset:0 auto 0 0; width:276px; display:flex; flex-direction:column; padding:36px 24px 24px; background:var(--rail); color:#e4eee9; overflow-y:auto; }
+.brand { margin:0 0 8px; color:#9ac5b5; font-size:11px; font-weight:700; letter-spacing:.19em; text-transform:uppercase; }
+.sidebar-title { color:#fff; font-size:22px; line-height:1.25; letter-spacing:-.03em; font-weight:650; margin:0 0 32px; }
+nav summary { list-style:none; font-size:10px; color:#98b4a9; letter-spacing:.18em; font-weight:700; text-transform:uppercase; margin:0 0 14px; cursor:pointer; }
+nav summary::-webkit-details-marker { display:none; }
+nav ol { list-style:none; margin:0; padding:0; }
+nav li { margin:0 0 3px; }
+nav a { display:flex; gap:12px; padding:10px 10px; font-size:12px; line-height:1.5; color:#bad0c6; border-radius:7px; text-decoration:none; }
+nav a span { color:#6f9988; font-size:10px; line-height:1.8; font-variant-numeric:tabular-nums; }
+nav a:hover,nav a[aria-current="location"] { background:#23473b; color:white; }
+.sidebar-footer { margin-top:auto; padding-top:30px; color:#93b1a3; font-size:11px; }
+.sidebar-footer strong { color:#d4e6dd; font-weight:500; }
+.main { margin-left:276px; padding:44px 64px 64px; }
+.document { max-width:1060px; margin:0 auto; }
+.toolbar { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:52px; font-size:12px; }
+.eyebrow { color:var(--muted); text-transform:uppercase; letter-spacing:.15em; font-size:10px; font-weight:700; }
+.actions { display:flex; align-items:center; gap:20px; }
+.actions a { color:var(--muted); text-decoration:none; }
+.print { border:1px solid #cbd9ce; background:transparent; padding:7px 12px; border-radius:6px; font:inherit; color:var(--ink); cursor:pointer; }
+.print:hover { background:#edf2e9; }
+.hero { margin-bottom:48px; padding-bottom:36px; border-bottom:1px solid var(--line); }
+.badges { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+.badge { display:inline-block; padding:4px 10px; border-radius:5px; font-size:10px; text-transform:uppercase; letter-spacing:.07em; font-weight:700; background:#e2ede2; color:#235e48; }
+.badge.draft { background:#eee5ce; color:#735621; }
+h1 { color:var(--ink); max-width:830px; font-size:clamp(30px,3.8vw,50px); font-weight:650; line-height:1.12; letter-spacing:-.045em; margin:0 0 22px; }
+.intro { max-width:670px; color:var(--muted); font-size:17px; line-height:1.65; margin:0; }
+.metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:30px; }
+.metric { border-left:2px solid #b3ccbb; padding:0 16px; }
+.metric strong { display:block; color:var(--ink); font-size:28px; font-weight:550; line-height:1.25; letter-spacing:-.025em; }
+.metric span { display:block; font-size:11px; line-height:1.5; color:var(--muted); margin-top:4px; }
+article>p { font-size:13px; color:var(--muted); margin-bottom:30px; }
+blockquote { margin:0 0 24px; padding:16px 20px; border-left:3px solid #b3ccbb; background:#edf2e9; font-size:13px; }
+blockquote p { margin:0; }
+p.step { border-left:2px solid #b3ccbb; padding-left:14px; margin-top:24px; }
+section { margin:0 0 48px; scroll-margin-top:28px; }
+h2 { display:flex; align-items:baseline; gap:14px; margin:0 0 22px; padding-top:24px; border-top:1px solid var(--line); color:var(--ink); font-size:25px; line-height:1.3; font-weight:600; letter-spacing:-.025em; }
+.section-number { font-size:11px; line-height:1.4; color:#4b7564; font-weight:600; letter-spacing:.05em; flex:0 0 auto; }
+p { margin:0 0 18px; max-width:84ch; }
+code { font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace; font-size:.82em; background:#eaf0e8; color:#275d48; padding:.17em .32em; border-radius:4px; overflow-wrap:anywhere; }
+pre { padding:20px; overflow:auto; border-radius:8px; background:#eaf0e8; }
+pre code { padding:0; }
+ul { padding-left:22px; max-width:84ch; }
+li { padding-left:5px; margin:0 0 12px; }
+li::marker { color:#74a58a; }
+.table-scroll { max-width:100%; overflow-x:auto; margin:24px 0; background:white; border:1px solid var(--line); border-radius:9px; }
+table { width:100%; border-collapse:collapse; font-size:14px; line-height:1.6; text-align:left; }
+th { padding:13px 18px; background:#ecf1e9; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#587362; }
+td { padding:14px 18px; vertical-align:top; border-top:1px solid var(--line); }
+td:first-child { width:24%; min-width:145px; }
+td code { white-space:normal; }
+.architecture { margin:28px 0; padding:18px 12px 12px; background:#fff; border:1px solid var(--line); border-radius:12px; }
+.diagram-scroll { overflow-x:auto; }
+.architecture svg { display:block; width:100%; min-width:690px; height:auto; }
+.node rect { fill:#f1f5ef; stroke:#d4e1d5; }
+.node text { font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; fill:#355344; text-anchor:middle; }
+.node.map rect { fill:#225d48; stroke:#225d48; }
+.node.map text { fill:white; font-weight:600; font-size:14px; }
+.node.report rect { fill:#e4eee2; stroke:#b7cdb9; }
+figcaption { color:var(--muted); padding:12px 12px 0; border-top:1px solid #edf0e9; font-size:11px; line-height:1.6; }
+.endnote { border-top:1px solid var(--line); padding-top:22px; display:flex; justify-content:space-between; gap:20px; color:var(--muted); font-size:11px; }
+@media(min-width:1500px) { .main { padding-left:88px; padding-right:88px; } }
+@media(max-width:1100px) { .sidebar { width:240px; padding:30px 18px; } .main { margin-left:240px; padding:32px; } h2 { font-size:22px; } }
+@media(max-width:760px) { .sidebar { position:static; width:auto; padding:22px 24px; overflow:visible; } .sidebar-title { font-size:20px; margin-bottom:18px; } .brand { font-size:9px; } nav summary { margin-bottom:0; } nav summary::after { content:" +"; } nav details[open] summary { margin-bottom:14px; } nav a { padding:6px 0; font-size:12px; } nav ol { columns:2; column-gap:20px; } nav li { break-inside:avoid; } .sidebar-footer { display:none; } .main { margin-left:0; padding:28px 22px 40px; } .toolbar { margin-bottom:32px; gap:12px; } .eyebrow { font-size:9px; } .actions { gap:10px; font-size:10px; } .print { padding:6px 8px; } h1 { font-size:35px; } .intro { font-size:15px; } .metrics { gap:8px; } .metric { padding:0 10px; } .metric strong { font-size:24px; } .metric span { font-size:10px; } body { font-size:15px; } h2 { font-size:22px; gap:9px; } .hero { margin-bottom:32px; } td,th { padding:12px; } table { font-size:12px; } .endnote { flex-direction:column; gap:8px; } }
+@media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+@media print { @page { margin:18mm; } body { background:white; font-size:10pt; color:#222; } .sidebar,.toolbar,.skip,.endnote a { display:none; } .main { margin:0; padding:0; } .document { max-width:none; } h1 { font-size:27pt; } h2 { font-size:17pt; break-after:avoid; } p,li { orphans:3; widows:3; } section { margin-bottom:24px; } .hero { margin-bottom:24px; } .table-scroll { overflow:visible; } table { font-size:9pt; } tr { break-inside:avoid; } thead { display:table-header-group; } .architecture { break-inside:avoid; } .architecture svg { min-width:0; } a { color:inherit; } .badge,code,th,.node rect { print-color-adjust:exact; -webkit-print-color-adjust:exact; } }
+</style>
+</head>
+<body id="top">
+<a class="skip" href="#design-content">Skip to plan</a>
+<aside class="sidebar" aria-label="Document navigation"><p class="brand">HostingPal / Engineering</p><p class="sidebar-title">WHM &amp; UAPI<br>Implementation plans</p><nav aria-label="Table of contents"><details open><summary>In this plan</summary><ol><li><a href="#global-constraints"><span>01</span>Global constraints</a></li>
+<li><a href="#review-focus"><span>02</span>Review focus</a></li>
+<li><a href="#task-5-inventory-php-symbols-and-validate-registries"><span>03</span>Task 5 — Inventory PHP symbols and validate registries</a></li>
+<li><a href="#task-6-count-contracts-and-emit-coverage-reports"><span>04</span>Task 6 — Count contracts and emit coverage reports</a></li></ol></details></nav><div class="sidebar-footer"><strong>whm-api-client-gwi</strong><br>Implementation plan · 13 October 2026</div></aside>
+<main class="main"><div class="document"><div class="toolbar"><span class="eyebrow">Approved design / Implementation plan</span><div class="actions"><a href="2026-10-13-api-map-parity.md">Markdown source ↗</a><button class="print" type="button" onclick="window.print()">Print / PDF</button></div></div><header class="hero"><div class="badges"><span class="badge">Implemented · review complete</span><span class="badge">Go selected</span></div><h1>PHP and Test Parity Implementation Plan</h1><p class="intro">Implementation sequence, interfaces, and validation for the approved Go toolchain.</p><div class="metrics" aria-label="Implementation plan overview"><div class="metric"><strong>4</strong><span>Component plans</span></div><div class="metric"><strong>10</strong><span>Beads implementation tasks</span></div><div class="metric"><strong>0</strong><span>Live calls required for validation</span></div></div></header><article id="design-content" aria-label="Full implementation plan">
+<blockquote><p><strong>For agentic workers:</strong> Use the execution skill selected at handoff. Read the <a href="2026-10-13-api-map-implementation-plan.html">overview</a>, foundation interfaces, and approved spec first. Track work only in Beads.</p></blockquote>
+<p><strong>Goal:</strong> Report PHP endpoint and contract-test coverage without crediting generic transport methods, missing symbols, or unverified claims.</p>
+<p><strong>Architecture:</strong> A PHP development tool inventories trusted project symbols. A Go registry validator and comparator bind those symbols to the canonical map and produce independent function, variant, contract, and evidence counts.</p>
+<p><strong>Tech stack:</strong> PHP 8.3+ tokens/reflection, PHPUnit, and the foundation Go module. <strong>Spec:</strong> <a href="../specs/2026-10-13-api-map-design.html">approved design</a>.</p>
+<section id="global-constraints" aria-labelledby="global-constraints-heading"><h2 id="global-constraints-heading"><span class="section-number">01</span>Global constraints</h2>
+<p>All overview constraints apply. PHP runtime <code>src/</code> remains framework-independent and unchanged by this tool. Sources/test classes may be autoloaded for reflection but constructors, providers, test methods, attributes, and endpoint methods are never executed during inventory. Coverage is explicit; current endpoint coverage is zero. This plan depends on <code>gwi.3</code>.</p>
+</section>
+<section id="review-focus" aria-labelledby="review-focus-heading"><h2 id="review-focus-heading"><span class="section-number">02</span>Review focus</h2>
+<p>Test inherited assertions/providers versus real tests; anonymous or unautoloadable classes; existing method names mapped to nonexistent operations; referenced-schema changes behind stable <code>$ref</code> strings; and declaration/passing-test/live-evidence distinctions. Treat PHP symbol existence as a structural check, not proof that a test asserts the correct contract.</p>
+</section>
+<section id="task-5-inventory-php-symbols-and-validate-registries" aria-labelledby="task-5-inventory-php-symbols-and-validate-registries-heading"><h2 id="task-5-inventory-php-symbols-and-validate-registries-heading"><span class="section-number">03</span>Task 5 — Inventory PHP symbols and validate registries</h2>
+<p><strong>Beads:</strong> <code>whm-api-client-gwi.4.1</code>.</p>
+<p><strong>Files:</strong> Create <code>tools/php-symbols/{export.php,SymbolInventory.php}</code>, <code>tests/Tooling/SymbolInventoryTest.php</code>, <code>tests/Fixtures/SymbolInventory/</code>, <code>internal/parity/{registry.go,symbols.go,registry_test.go,testdata/}</code> under the Go module, <code>docs/api/coverage/{registry.json,symbols.json}</code>, and published/embedded <code>coverage-registry-v1.schema.json</code> and <code>php-symbols-v1.schema.json</code>. Extend <code>phpcs.xml.dist</code> and <code>phpstan.neon.dist</code> to check <code>tools/php-symbols/</code>.</p>
+<p><strong>Interfaces:</strong> PHP <code>SymbolInventory::scan(string $root): array</code> emits <code>schema_version</code>, <code>symbols</code>, and <code>diagnostics</code>. The CLI is <code>php tools/php-symbols/export.php --root PATH --output PATH</code>. Go provides <code>parity.LoadRegistry(data []byte) (Registry, error)</code>, <code>parity.LoadSymbols(data []byte) (Symbols, error)</code>, and <code>parity.ValidateRegistry(m model.Map, r Registry, s Symbols) []model.Diagnostic</code>.</p>
+<p class="step">1. Write PHP tests before the exporter. Exact current-repository expectations:</p>
+<pre><code>   HttpTransport -&gt; public __construct and send, both infrastructure
+   HttpTransportTest -&gt; 8 declared tests, 2 public static data providers
+   inherited PHPUnit methods -&gt; excluded from project-declared symbols
+   anonymous exception class -&gt; excluded from named package declarations
+   constructors/providers/attribute constructors -&gt; invocation count stays zero
+   named declaration with failed autoload -&gt; diagnostic, never silently omitted</code></pre>
+<p>Test PSR-4 paths, bracketed namespaces, multiple named declarations, and <code>Foo::class</code> tokens that must not be mistaken for class declarations. A synthetic registry test binds a real public symbol to an unknown canonical operation: validation must fail. Another binds a provider to a test slot: it must fail despite the public method existing. 2. Run <code>vendor/bin/phpunit tests/Tooling/SymbolInventoryTest.php</code> and <code>go -C tools/api-map test ./internal/parity -run &#x27;TestRegistry|TestSymbols&#x27;</code>; confirm failure before implementation. 3. Discover named project declarations with <code>token_get_all(..., TOKEN_PARSE)</code> under the configured <code>src/</code> and <code>tests/</code> roots. Load trusted classes through Composer to verify methods with reflection; never rely solely on Composer&#x27;s classmap or <code>get_declared_classes()</code>. Check declaring file/root and retain autoload errors as diagnostics. Do not call <code>ReflectionAttribute::newInstance</code> or evaluate arbitrary default expressions. Test discovery uses declared public <code>test*</code> methods or <code>#[Test]</code>; provider references come from declaration metadata without invocation. 4. Symbol records contain fully qualified <code>Class::method</code> IDs (no leading backslash), kind (<code>method</code>, <code>test</code>, <code>provider</code>, <code>constructor</code>), declaring class, relative file, declaration line, public/static/abstract flags, and provider references. Sort IDs, remove timestamps/absolute paths, and use strict types and maximum PHPStan compatibility for exporter code. 5. Registry entries contain canonical operation/variant IDs, public PHP symbols, <code>implemented</code>/<code>partial</code> status, contract-unit claims (<code>id</code>, <code>hash</code>, test IDs), and separately linked live evidence IDs. Infrastructure symbols and excluded operations have explicit reasons. Intentional multiple-method mappings need a shared mapping-group ID and rationale; otherwise duplicates are errors. Start with no endpoint entries and explicit transport/provider infrastructure. 6. Run PHP/Go tests, PHPCS/PHPStan, and export <code>docs/api/coverage/symbols.json</code>. Confirm repeated exports are identical and the initial registry validates without reporting the transport as an implemented operation.</p>
+</section>
+<section id="task-6-count-contracts-and-emit-coverage-reports" aria-labelledby="task-6-count-contracts-and-emit-coverage-reports-heading"><h2 id="task-6-count-contracts-and-emit-coverage-reports-heading"><span class="section-number">04</span>Task 6 — Count contracts and emit coverage reports</h2>
+<p><strong>Beads:</strong> <code>whm-api-client-gwi.4.2</code>; depends on Task 5.</p>
+<p><strong>Files:</strong> Create <code>internal/contract/{units.go,hash.go,units_test.go,testdata/}</code>, <code>internal/parity/{report.go,render.go,evidence.go,report_test.go}</code>, and <code>internal/cli/parity.go</code>. Publish/embed <code>parity-report-v1.schema.json</code> and <code>test-evidence-v1.schema.json</code>. Generate <code>docs/api/coverage/{report.json,report.md}</code>.</p>
+<p><strong>Interfaces:</strong> <code>contract.Units(m model.Map, v model.Variant) ([]Unit, error)</code>; <code>contract.Hash(m model.Map, origin model.Locator) (string, error)</code>; <code>parity.Compare(m model.Map, r Registry, s Symbols, e Evidence) (Report, error)</code>; <code>parity.Markdown(report Report) []byte</code>. <code>Unit</code> contains ID, kind, source locator, and SHA-256 contract hash. <code>Evidence</code> contains optional test-run outcomes and optional live records; absence means not-run/unverified, never passed.</p>
+<p class="step">1. Add table tests with exact expected facts:</p>
+<pre><code>   empty registry against pinned map -&gt; implemented 0/1323, variants 0/1325
+   WebApp/stage GET-only mapping -&gt; partial function; 1/2 variants declared
+   one same-name query/header pair -&gt; two parameter units
+   one body with two media types -&gt; two body units
+   response 200 JSON + response 400 JSON -&gt; two response units
+   source-derived wildcard/indexed family -&gt; one declaration, no invented expansion
+   missing PHP symbol / unknown ID / accidental duplicate -&gt; invalid report diagnostic
+   registered existing test with no run record -&gt; declared, not passed
+   direct UAPI record + bridge record -&gt; separate route/auth evidence counters
+   changed referenced schema behind unchanged $ref -&gt; changed hash, stale claim
+   description/example-only edit -&gt; unchanged contract hash</code></pre>
+<p>Add <code>TestAliasResolutionPreservesDenominator</code> and <code>TestRegistryClaimsCannotInflateCoverage</code>: aliases must resolve explicitly, duplicate claims count once, excluded IDs show gross/excluded/net counts, and an incomplete variant&#x27;s function cannot become complete. 2. Run <code>go -C tools/api-map test ./internal/contract ./internal/parity</code>; verify the new behaviors fail first. 3. Contract IDs are JSON-encoded tuples to avoid delimiter collisions: <code>[variant,&quot;parameter&quot;,name,in]</code>, <code>[variant,&quot;body&quot;,mediaType]</code>, and <code>[variant,&quot;response&quot;,status,mediaType]</code>. A response with no documented schema produces a missing-schema diagnostic, not a claimable response-contract unit; expose that gap separately from the response-schema denominator. Hash normalized contract content plus its reachable reference/discriminator graph, with cycle-safe locators. Omit presentation-only keys <code>description</code>, <code>summary</code>, <code>example</code>, <code>examples</code>, <code>externalDocs</code>, and <code>x-codeSamples</code> only at OpenAPI metadata positions; same-named schema properties remain data. Do not include whole-source hashes in contract hashes, so unrelated prose edits do not invalidate every unit. Evidence still records provenance hashes. 4. Report implemented/missing/partial/excluded/orphaned/duplicate/unknown states by family and module/tag. WHM tags may overlap: label tag subtotals as non-additive; global counts always deduplicate IDs. Report function/variant, parameter/body/response contracts, declared tests, passing test outcomes, and live evidence independently with explicit numerators and denominators. Test-run records carry run ID, revision, completion time, command, and per-symbol passed/failed/skipped outcomes; mismatched revisions are stale. Do not infer test outcomes from symbol discovery or method names. 5. Add <code>parity report --map PATH --registry PATH --symbols PATH --output PATH --markdown PATH [--test-evidence PATH] [--live-evidence PATH]</code>. Invalid mappings produce diagnostics and exit 1 rather than a misleading successful report. Regenerate the initial JSON/Markdown reports from the pinned map, with no live/test evidence supplied. Repeat generation and compare bytes. 6. Run all Go tests, <code>composer check</code>, and schema validation. Confirm zero endpoint coverage despite passing HTTP transport tests. Close <code>gwi.4</code> only after both children pass; symbol existence alone does not close contract work.</p>
+</section>
+</article><footer class="endnote"><span>Implementation reference. Progress and completion are tracked in Beads.</span><a href="#top">Back to top ↑</a></footer></div></main>
+<script>
+const links = [...document.querySelectorAll('nav a')];
+const sections = [...document.querySelectorAll('article section')];
+function updateCurrentSection() {
+    let current = sections[0];
+    for (const section of sections) {
+        if (section.getBoundingClientRect().top <= 150) current = section;
+    }
+    for (const link of links) {
+        if (link.hash === '#' + current.id) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+    }
+}
+let queued = false;
+window.addEventListener('scroll', () => {
+    if (!queued) requestAnimationFrame(() => { updateCurrentSection(); queued = false; });
+    queued = true;
+}, {passive:true});
+updateCurrentSection();
+if (window.matchMedia('(max-width:760px)').matches) document.querySelector('nav details').open = false;
+</script>
+</body>
+</html>

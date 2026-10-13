@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Proposed Go documentation, API-map and parity-tooling design for WHM API 1 and cPanel UAPI.">
+<meta name="source-sha256" content="bcbceb919c5abaaca546d1147acb6a1e23d063a8eeecadde1d849f585e3e2710">
+<title>WHM &amp; UAPI · Server Capability Profiles Implementation Plan</title>
+<style>
+
+:root { color-scheme: light; --ink:#1d302c; --body:#3c4b47; --muted:#596e63; --accent:#167765; --line:#dfe6df; --paper:#f7f8f3; --rail:#132d27; }
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:28px; }
+body { margin:0; background:var(--paper); color:var(--body); font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+a { color:var(--accent); text-decoration-thickness:1px; text-underline-offset:3px; }
+a:hover { color:#095241; }
+a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visible { outline:3px solid #e4b552; outline-offset:5px; border-radius:3px; }
+.skip { position:fixed; top:-100px; left:16px; z-index:10; background:white; padding:10px 18px; }
+.skip:focus { top:12px; }
+.sidebar { position:fixed; inset:0 auto 0 0; width:276px; display:flex; flex-direction:column; padding:36px 24px 24px; background:var(--rail); color:#e4eee9; overflow-y:auto; }
+.brand { margin:0 0 8px; color:#9ac5b5; font-size:11px; font-weight:700; letter-spacing:.19em; text-transform:uppercase; }
+.sidebar-title { color:#fff; font-size:22px; line-height:1.25; letter-spacing:-.03em; font-weight:650; margin:0 0 32px; }
+nav summary { list-style:none; font-size:10px; color:#98b4a9; letter-spacing:.18em; font-weight:700; text-transform:uppercase; margin:0 0 14px; cursor:pointer; }
+nav summary::-webkit-details-marker { display:none; }
+nav ol { list-style:none; margin:0; padding:0; }
+nav li { margin:0 0 3px; }
+nav a { display:flex; gap:12px; padding:10px 10px; font-size:12px; line-height:1.5; color:#bad0c6; border-radius:7px; text-decoration:none; }
+nav a span { color:#6f9988; font-size:10px; line-height:1.8; font-variant-numeric:tabular-nums; }
+nav a:hover,nav a[aria-current="location"] { background:#23473b; color:white; }
+.sidebar-footer { margin-top:auto; padding-top:30px; color:#93b1a3; font-size:11px; }
+.sidebar-footer strong { color:#d4e6dd; font-weight:500; }
+.main { margin-left:276px; padding:44px 64px 64px; }
+.document { max-width:1060px; margin:0 auto; }
+.toolbar { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:52px; font-size:12px; }
+.eyebrow { color:var(--muted); text-transform:uppercase; letter-spacing:.15em; font-size:10px; font-weight:700; }
+.actions { display:flex; align-items:center; gap:20px; }
+.actions a { color:var(--muted); text-decoration:none; }
+.print { border:1px solid #cbd9ce; background:transparent; padding:7px 12px; border-radius:6px; font:inherit; color:var(--ink); cursor:pointer; }
+.print:hover { background:#edf2e9; }
+.hero { margin-bottom:48px; padding-bottom:36px; border-bottom:1px solid var(--line); }
+.badges { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+.badge { display:inline-block; padding:4px 10px; border-radius:5px; font-size:10px; text-transform:uppercase; letter-spacing:.07em; font-weight:700; background:#e2ede2; color:#235e48; }
+.badge.draft { background:#eee5ce; color:#735621; }
+h1 { color:var(--ink); max-width:830px; font-size:clamp(30px,3.8vw,50px); font-weight:650; line-height:1.12; letter-spacing:-.045em; margin:0 0 22px; }
+.intro { max-width:670px; color:var(--muted); font-size:17px; line-height:1.65; margin:0; }
+.metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:30px; }
+.metric { border-left:2px solid #b3ccbb; padding:0 16px; }
+.metric strong { display:block; color:var(--ink); font-size:28px; font-weight:550; line-height:1.25; letter-spacing:-.025em; }
+.metric span { display:block; font-size:11px; line-height:1.5; color:var(--muted); margin-top:4px; }
+article>p { font-size:13px; color:var(--muted); margin-bottom:30px; }
+blockquote { margin:0 0 24px; padding:16px 20px; border-left:3px solid #b3ccbb; background:#edf2e9; font-size:13px; }
+blockquote p { margin:0; }
+p.step { border-left:2px solid #b3ccbb; padding-left:14px; margin-top:24px; }
+section { margin:0 0 48px; scroll-margin-top:28px; }
+h2 { display:flex; align-items:baseline; gap:14px; margin:0 0 22px; padding-top:24px; border-top:1px solid var(--line); color:var(--ink); font-size:25px; line-height:1.3; font-weight:600; letter-spacing:-.025em; }
+.section-number { font-size:11px; line-height:1.4; color:#4b7564; font-weight:600; letter-spacing:.05em; flex:0 0 auto; }
+p { margin:0 0 18px; max-width:84ch; }
+code { font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace; font-size:.82em; background:#eaf0e8; color:#275d48; padding:.17em .32em; border-radius:4px; overflow-wrap:anywhere; }
+pre { padding:20px; overflow:auto; border-radius:8px; background:#eaf0e8; }
+pre code { padding:0; }
+ul { padding-left:22px; max-width:84ch; }
+li { padding-left:5px; margin:0 0 12px; }
+li::marker { color:#74a58a; }
+.table-scroll { max-width:100%; overflow-x:auto; margin:24px 0; background:white; border:1px solid var(--line); border-radius:9px; }
+table { width:100%; border-collapse:collapse; font-size:14px; line-height:1.6; text-align:left; }
+th { padding:13px 18px; background:#ecf1e9; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#587362; }
+td { padding:14px 18px; vertical-align:top; border-top:1px solid var(--line); }
+td:first-child { width:24%; min-width:145px; }
+td code { white-space:normal; }
+.architecture { margin:28px 0; padding:18px 12px 12px; background:#fff; border:1px solid var(--line); border-radius:12px; }
+.diagram-scroll { overflow-x:auto; }
+.architecture svg { display:block; width:100%; min-width:690px; height:auto; }
+.node rect { fill:#f1f5ef; stroke:#d4e1d5; }
+.node text { font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; fill:#355344; text-anchor:middle; }
+.node.map rect { fill:#225d48; stroke:#225d48; }
+.node.map text { fill:white; font-weight:600; font-size:14px; }
+.node.report rect { fill:#e4eee2; stroke:#b7cdb9; }
+figcaption { color:var(--muted); padding:12px 12px 0; border-top:1px solid #edf0e9; font-size:11px; line-height:1.6; }
+.endnote { border-top:1px solid var(--line); padding-top:22px; display:flex; justify-content:space-between; gap:20px; color:var(--muted); font-size:11px; }
+@media(min-width:1500px) { .main { padding-left:88px; padding-right:88px; } }
+@media(max-width:1100px) { .sidebar { width:240px; padding:30px 18px; } .main { margin-left:240px; padding:32px; } h2 { font-size:22px; } }
+@media(max-width:760px) { .sidebar { position:static; width:auto; padding:22px 24px; overflow:visible; } .sidebar-title { font-size:20px; margin-bottom:18px; } .brand { font-size:9px; } nav summary { margin-bottom:0; } nav summary::after { content:" +"; } nav details[open] summary { margin-bottom:14px; } nav a { padding:6px 0; font-size:12px; } nav ol { columns:2; column-gap:20px; } nav li { break-inside:avoid; } .sidebar-footer { display:none; } .main { margin-left:0; padding:28px 22px 40px; } .toolbar { margin-bottom:32px; gap:12px; } .eyebrow { font-size:9px; } .actions { gap:10px; font-size:10px; } .print { padding:6px 8px; } h1 { font-size:35px; } .intro { font-size:15px; } .metrics { gap:8px; } .metric { padding:0 10px; } .metric strong { font-size:24px; } .metric span { font-size:10px; } body { font-size:15px; } h2 { font-size:22px; gap:9px; } .hero { margin-bottom:32px; } td,th { padding:12px; } table { font-size:12px; } .endnote { flex-direction:column; gap:8px; } }
+@media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+@media print { @page { margin:18mm; } body { background:white; font-size:10pt; color:#222; } .sidebar,.toolbar,.skip,.endnote a { display:none; } .main { margin:0; padding:0; } .document { max-width:none; } h1 { font-size:27pt; } h2 { font-size:17pt; break-after:avoid; } p,li { orphans:3; widows:3; } section { margin-bottom:24px; } .hero { margin-bottom:24px; } .table-scroll { overflow:visible; } table { font-size:9pt; } tr { break-inside:avoid; } thead { display:table-header-group; } .architecture { break-inside:avoid; } .architecture svg { min-width:0; } a { color:inherit; } .badge,code,th,.node rect { print-color-adjust:exact; -webkit-print-color-adjust:exact; } }
+</style>
+</head>
+<body id="top">
+<a class="skip" href="#design-content">Skip to plan</a>
+<aside class="sidebar" aria-label="Document navigation"><p class="brand">HostingPal / Engineering</p><p class="sidebar-title">WHM &amp; UAPI<br>Implementation plans</p><nav aria-label="Table of contents"><details open><summary>In this plan</summary><ol><li><a href="#global-constraints"><span>01</span>Global constraints</a></li>
+<li><a href="#review-focus"><span>02</span>Review focus</a></li>
+<li><a href="#task-7-implement-the-opt-in-collector"><span>03</span>Task 7 — Implement the opt-in collector</a></li>
+<li><a href="#task-8-compare-saved-profiles-with-documentation"><span>04</span>Task 8 — Compare saved profiles with documentation</a></li></ol></details></nav><div class="sidebar-footer"><strong>whm-api-client-gwi</strong><br>Implementation plan · 13 October 2026</div></aside>
+<main class="main"><div class="document"><div class="toolbar"><span class="eyebrow">Approved design / Implementation plan</span><div class="actions"><a href="2026-10-13-api-map-capabilities.md">Markdown source ↗</a><button class="print" type="button" onclick="window.print()">Print / PDF</button></div></div><header class="hero"><div class="badges"><span class="badge">Implemented · review complete</span><span class="badge">Go selected</span></div><h1>Server Capability Profiles Implementation Plan</h1><p class="intro">Implementation sequence, interfaces, and validation for the approved Go toolchain.</p><div class="metrics" aria-label="Implementation plan overview"><div class="metric"><strong>4</strong><span>Component plans</span></div><div class="metric"><strong>10</strong><span>Beads implementation tasks</span></div><div class="metric"><strong>0</strong><span>Live calls required for validation</span></div></div></header><article id="design-content" aria-label="Full implementation plan">
+<blockquote><p><strong>For agentic workers:</strong> Use the execution skill selected at handoff. Read the <a href="2026-10-13-api-map-implementation-plan.html">overview</a> and approved spec first. Beads is the sole task tracker.</p></blockquote>
+<p><strong>Goal:</strong> Collect narrowly scoped WHM inventory only when requested, then compare saved profiles with documentation independently of PHP coverage.</p>
+<p><strong>Architecture:</strong> A fixed two-call HTTPS collector emits a sanitized profile. A pure comparator accepts that profile and the canonical map; neither comparison nor tests contact the supplied real server.</p>
+<p><strong>Tech stack:</strong> Go <code>net/http</code>, <code>httptest</code>, local TLS fixtures, and shared model and schema packages. <strong>Spec:</strong> <a href="../specs/2026-10-13-api-map-design.html">approved design</a>.</p>
+<section id="global-constraints" aria-labelledby="global-constraints-heading"><h2 id="global-constraints-heading"><span class="section-number">01</span>Global constraints</h2>
+<p>All overview constraints apply. Live calls require explicit opt-in. Only <code>version</code> and <code>applist</code> are callable; HTTPS verification stays enabled, redirects and retries are disabled, and credentials never enter artifacts/logs. No direct UAPI inventory endpoint is invented. This plan depends on <code>gwi.3</code> and may run alongside parity work.</p>
+</section>
+<section id="review-focus" aria-labelledby="review-focus-heading"><h2 id="review-focus-heading"><span class="section-number">02</span>Review focus</h2>
+<p>Cover API failure inside HTTP 200; unauthorized inventories; hostile bodies or transport errors containing the token; server/API-version confusion; and namespaced/case-sensitive advertised names. Failed inventory must never be interpreted as an empty successful list or as proof of unsupported APIs.</p>
+</section>
+<section id="task-7-implement-the-opt-in-collector" aria-labelledby="task-7-implement-the-opt-in-collector-heading"><h2 id="task-7-implement-the-opt-in-collector-heading"><span class="section-number">03</span>Task 7 — Implement the opt-in collector</h2>
+<p><strong>Beads:</strong> <code>whm-api-client-gwi.5.1</code>.</p>
+<p><strong>Files:</strong> Create <code>internal/capability/{profile.go,capture.go,sanitize.go, capture_test.go,testdata/}</code>, <code>internal/cli/capabilities.go</code>, and published/embedded <code>capability-profile-v1.schema.json</code>. Add synthetic profiles under <code>docs/api/examples/capabilities/</code>. Real output defaults to ignored <code>.cache/api-map/</code>.</p>
+<p><strong>Interfaces:</strong> <code>capability.Capture(ctx context.Context, config CaptureConfig, client *http.Client, now func() time.Time) (Profile, error)</code>. <code>CaptureConfig</code> contains HTTPS origin, WHM username, optional cPanel context, explicit opt-in, and token. The token field is excluded from JSON/debug output. <code>Profile</code> contains schema version, origin, context, capture time, server version, capture status, exact advertised names, safe operation evidence, and <code>uapi_inventory:&quot;unavailable&quot;</code> / <code>direct_uapi_auth:&quot;unverified&quot;</code>.</p>
+<p class="step">1. Start a local TLS server and write <code>TestCaptureAllowlistAndOptIn</code>. Assert zero requests without opt-in or with invalid origin/empty credentials. Success sends exactly these requests, with no session path:</p>
+<pre><code>   GET /json-api/version?api.version=1
+   GET /json-api/applist?api.version=1
+   Authorization: whm root:synthetic-test-token</code></pre>
+<p>Source-backed success fixtures are:</p>
+<pre><code>   {&quot;data&quot;:{&quot;version&quot;:&quot;11.88.0.9999&quot;},&quot;metadata&quot;:{&quot;command&quot;:&quot;version&quot;,&quot;reason&quot;:&quot;OK&quot;,&quot;result&quot;:1,&quot;version&quot;:1}}
+   {&quot;data&quot;:{&quot;app&quot;:[&quot;accountsummary&quot;,&quot;listaccts&quot;]},&quot;metadata&quot;:{&quot;command&quot;:&quot;applist&quot;,&quot;reason&quot;:&quot;OK&quot;,&quot;result&quot;:1,&quot;version&quot;:1}}</code></pre>
+<p>Assert server version is <code>data.version</code>, not integer <code>metadata.version</code>. Preserve mixed-case/slash-qualified name strings without asserting how a specific real server would advertise them. Reject malformed usable-data fields as collector validity failures, not claims about upstream requiredness. 2. Add <code>TestCaptureFailsSafely</code>: HTTP 401/403/500; API <code>result:0</code> within HTTP 200; invalid/trailing JSON; truncated/oversized body; wrong field types; untrusted certificate; redirect to a second server; timeout/cancellation; and a transport error/body/header/reason containing the synthetic token. Assert no retries, no redirected request, no successful empty inventory, and no secret/raw message in errors, JSON, stderr, or profile evidence. 3. Run <code>go -C tools/api-map test ./internal/capability -run TestCapture</code> and confirm failures before implementing capture. 4. Implement a cloned client that refuses redirects, preserves verified TLS, limits each response to 8 MiB, and applies a 15-second request timeout within a 30-second capture context. Normalize origin to scheme/host/port only; reject userinfo, paths other than <code>/</code>, query, fragment, and plain HTTP. The production CLI constructs a verified-TLS transport; reject an injected standard transport with <code>InsecureSkipVerify</code> enabled rather than trusting it. A failed first operation stops capture; a failed second operation yields a failed/partial profile with no successful inventory claim. Keep only local error category, numeric HTTP/API status if available, and allowlisted function. Never copy <code>metadata.reason</code> or arbitrary transport error strings. 5. Add <code>capabilities capture --opt-in --host ORIGIN --user USER --token-env NAME --output PATH [--cpanel-context NAME]</code>. Default profile values are <code>https://test.oblak.host:2087</code>, root, and token environment name <code>OBLAK_TEST_WHM_KEY</code>; default cPanel context is absent unless explicitly provided. Do not accept a token value as a CLI argument or read shell files. Failure exits 1 and may write only a clearly failed sanitized profile. 6. Run collector/CLI tests and schema validation. Tests use <code>httptest</code> clients with explicit trusted local roots; the real server is not contacted.</p>
+</section>
+<section id="task-8-compare-saved-profiles-with-documentation" aria-labelledby="task-8-compare-saved-profiles-with-documentation-heading"><h2 id="task-8-compare-saved-profiles-with-documentation-heading"><span class="section-number">04</span>Task 8 — Compare saved profiles with documentation</h2>
+<p><strong>Beads:</strong> <code>whm-api-client-gwi.5.2</code>; depends on Task 7.</p>
+<p><strong>Files:</strong> Create <code>internal/capability/{compare.go,render.go,compare_test.go}</code>, published/embedded <code>capability-report-v1.schema.json</code>, and synthetic <code>docs/api/examples/capabilities/comparison.{json,md}</code>.</p>
+<p><strong>Interfaces:</strong> <code>capability.Compare(m model.Map, p Profile, explanations []Explanation) (Comparison, error)</code> and <code>capability.Markdown(report Comparison) []byte</code>. An explanation names the exact difference, category, certainty, rationale, and evidence; categories are version, plugin, role/permission, namespace/alias, unknown.</p>
+<p class="step">1. Write <code>TestCompareKeepsEvidenceSeparate</code> with documented names <code>accountsummary</code>, <code>listaccts</code>, <code>EcosystemFeatures/is_ready</code> and advertised <code>accountsummary</code>, <code>listaccts</code>, <code>is_ready</code>, <code>custom_plugin_call</code>. Assert two shared, one docs-only, two runtime-only, no automatic alias, and no unsupported assertion. A reviewed explicit alias may add an explained relationship but preserves the original difference sets. 2. Add tests proving case is preserved, duplicate advertised strings do not inflate counts, failed capture returns unavailable comparison rather than 100% docs-only, and unknown version formats retain unknown explanations. UAPI inventory stays unavailable; feature lists cannot supply its denominator. Changing the saved host does not change the public documentation denominator or any PHP implementation count. 3. Run the comparator tests to see failures, then implement the pure set comparison and evidenced explanation records. Keep server version, API family, account context, capture time, and capture status visible in both outputs. 4. Add <code>capabilities compare --map PATH --profile PATH --output PATH --markdown PATH [--explanations PATH]</code>. Regenerate synthetic JSON/Markdown examples and confirm repeated output is identical. Run all Go tests and close <code>gwi.5</code> only after both children pass; report real-server verification as not run.</p>
+</section>
+</article><footer class="endnote"><span>Implementation reference. Progress and completion are tracked in Beads.</span><a href="#top">Back to top ↑</a></footer></div></main>
+<script>
+const links = [...document.querySelectorAll('nav a')];
+const sections = [...document.querySelectorAll('article section')];
+function updateCurrentSection() {
+    let current = sections[0];
+    for (const section of sections) {
+        if (section.getBoundingClientRect().top <= 150) current = section;
+    }
+    for (const link of links) {
+        if (link.hash === '#' + current.id) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+    }
+}
+let queued = false;
+window.addEventListener('scroll', () => {
+    if (!queued) requestAnimationFrame(() => { updateCurrentSection(); queued = false; });
+    queued = true;
+}, {passive:true});
+updateCurrentSection();
+if (window.matchMedia('(max-width:760px)').matches) document.querySelector('nav details').open = false;
+</script>
+</body>
+</html>

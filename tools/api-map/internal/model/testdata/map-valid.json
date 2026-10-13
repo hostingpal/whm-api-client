@@ -1,0 +1,249 @@
+{
+  "schema_version": "1.0",
+  "sources": [
+    {
+      "id": "synthetic-whm",
+      "synthetic": true,
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "note": "Synthetic schema example; not observed API behavior."
+    },
+    {
+      "id": "synthetic-uapi",
+      "synthetic": true,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ],
+  "documents": {
+    "synthetic-uapi": {
+      "openapi": "3.0.3",
+      "x-large-integer": 9007199254740993,
+      "x-readonly": false,
+      "paths": {
+        "/Demo/inspect": {
+          "get": {
+            "security": [],
+            "parameters": [
+              {
+                "name": "required_null",
+                "in": "query",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "nullable": true,
+                  "default": null
+                }
+              },
+              {
+                "name": "absent_default",
+                "in": "query",
+                "schema": {
+                  "type": "boolean",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          "post": {}
+        }
+      },
+      "components": {
+        "schemas": {
+          "Nullable": {
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
+          "AbsentDefault": {
+            "type": "boolean",
+            "nullable": false
+          }
+        }
+      }
+    },
+    "synthetic-whm": {
+      "openapi": "3.0.3",
+      "paths": {
+        "/Namespace/inspect": {
+          "get": {}
+        }
+      }
+    }
+  },
+  "operations": [
+    {
+      "id": "uapi:Demo/inspect",
+      "family": "uapi",
+      "module": "Demo",
+      "function": "inspect",
+      "path": "/Demo/inspect",
+      "provenance": [
+        {
+          "source_id": "synthetic-uapi",
+          "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "pointer": "/paths/~1Demo~1inspect/get"
+        }
+      ],
+      "variants": [
+        {
+          "id": "uapi:Demo/inspect#GET",
+          "method": "GET",
+          "upstream_operation_id": null,
+          "operation_locator": {
+            "source_id": "synthetic-uapi",
+            "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "pointer": "/paths/~1Demo~1inspect/get"
+          },
+          "path_item_locator": {
+            "source_id": "synthetic-uapi",
+            "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "pointer": "/paths/~1Demo~1inspect"
+          },
+          "parameters": [
+            {
+              "name": "required_null",
+              "in": "query",
+              "definition": {
+                "name": "required_null",
+                "in": "query",
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "nullable": true,
+                  "default": null
+                }
+              },
+              "locator": {
+                "source_id": "synthetic-uapi",
+                "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "pointer": "/paths/~1Demo~1inspect/get/parameters/0"
+              }
+            },
+            {
+              "name": "absent_default",
+              "in": "query",
+              "definition": {
+                "name": "absent_default",
+                "in": "query",
+                "schema": {
+                  "type": "boolean",
+                  "nullable": false
+                }
+              },
+              "locator": {
+                "source_id": "synthetic-uapi",
+                "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "pointer": "/paths/~1Demo~1inspect/get/parameters/1"
+              }
+            }
+          ],
+          "security": {
+            "present": true,
+            "value": [],
+            "locator": {
+              "source_id": "synthetic-uapi",
+              "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "pointer": "/paths/~1Demo~1inspect/get/security"
+            },
+            "level": "operation"
+          },
+          "servers": {
+            "present": false,
+            "value": null,
+            "locator": null,
+            "level": "none"
+          },
+          "risk": {
+            "classification": "unknown",
+            "destructive_potential": "unknown",
+            "evidence": []
+          }
+        },
+        {
+          "id": "uapi:Demo/inspect#POST",
+          "method": "POST",
+          "upstream_operation_id": null,
+          "operation_locator": {
+            "source_id": "synthetic-uapi",
+            "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "pointer": "/paths/~1Demo~1inspect/post"
+          },
+          "path_item_locator": {
+            "source_id": "synthetic-uapi",
+            "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "pointer": "/paths/~1Demo~1inspect"
+          },
+          "parameters": [],
+          "security": {
+            "present": false,
+            "value": null,
+            "locator": null,
+            "level": "none"
+          },
+          "servers": {
+            "present": false,
+            "value": null,
+            "locator": null,
+            "level": "none"
+          },
+          "risk": {
+            "classification": "unknown",
+            "destructive_potential": "unknown",
+            "evidence": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "whm1:Namespace/inspect",
+      "family": "whm1",
+      "module": null,
+      "function": "Namespace/inspect",
+      "path": "/Namespace/inspect",
+      "provenance": [
+        {
+          "source_id": "synthetic-whm",
+          "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "pointer": "/paths/~1Namespace~1inspect/get"
+        }
+      ],
+      "variants": [
+        {
+          "id": "whm1:Namespace/inspect#GET",
+          "method": "GET",
+          "upstream_operation_id": null,
+          "operation_locator": {
+            "source_id": "synthetic-whm",
+            "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "pointer": "/paths/~1Namespace~1inspect/get"
+          },
+          "path_item_locator": {
+            "source_id": "synthetic-whm",
+            "source_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "pointer": "/paths/~1Namespace~1inspect"
+          },
+          "parameters": [],
+          "security": {
+            "present": false,
+            "value": null,
+            "locator": null,
+            "level": "none"
+          },
+          "servers": {
+            "present": false,
+            "value": null,
+            "locator": null,
+            "level": "none"
+          },
+          "risk": {
+            "classification": "unknown",
+            "destructive_potential": "unknown",
+            "evidence": []
+          }
+        }
+      ]
+    }
+  ],
+  "aliases": [],
+  "annotations": [],
+  "diagnostics": []
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "annotations": [
+    {
+      "id": "whm1-token-authentication",
+      "scope": "family",
+      "target_id": "whm1",
+      "kind": "token-authentication",
+      "conclusion": "Authorization: whm username:token",
+      "rationale": "Reviewed explicit token-header contract supplements the upstream BasicAuth declaration. Authentication route/account context remains family-specific; this evidence does not authorize an API call.",
+      "evidence": [
+        {
+          "source_id": "whm--tokens",
+          "source_sha256": "d7f8f62dbe58cb2dbdb4ad37b7edc6bac5469a114b7eddee7af7dc8cd51e924d",
+          "prose_locator": "#using-an-api-token: Authorization header instruction"
+        }
+      ]
+    },
+    {
+      "id": "uapi-token-authentication",
+      "scope": "family",
+      "target_id": "uapi",
+      "kind": "token-authentication",
+      "conclusion": "Authorization: cpanel username:token",
+      "rationale": "Reviewed explicit token-header contract supplements the upstream BasicAuth declaration. Authentication route/account context remains family-specific; this evidence does not authorize an API call.",
+      "evidence": [
+        {
+          "source_id": "cpanel--tokens",
+          "source_sha256": "23196e776440d6c2697d2d760216bbfbbd8884a4a71e6ab53fbeb2ce948800c1",
+          "prose_locator": "#using-an-api-token: Authorization header instruction"
+        }
+      ]
+    }
+  ],
+  "aliases": []
+}

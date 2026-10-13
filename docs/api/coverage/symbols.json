@@ -1,0 +1,783 @@
+{
+    "schema_version": "1.0",
+    "symbols": [
+        {
+            "id": "HostingPal\\WhmApiClient\\Api\\AbstractApiClient::config",
+            "kind": "method",
+            "declaring_class": "HostingPal\\WhmApiClient\\Api\\AbstractApiClient",
+            "file": "src/Api/AbstractApiClient.php",
+            "line": 38,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Api\\AbstractApiClient::responseMeta",
+            "kind": "method",
+            "declaring_class": "HostingPal\\WhmApiClient\\Api\\AbstractApiClient",
+            "file": "src/Api/AbstractApiClient.php",
+            "line": 49,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials::__construct",
+            "kind": "constructor",
+            "declaring_class": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials",
+            "file": "src/Authentication/TokenCredentials.php",
+            "line": 27,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials::__debugInfo",
+            "kind": "method",
+            "declaring_class": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials",
+            "file": "src/Authentication/TokenCredentials.php",
+            "line": 78,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials::authorizationHeader",
+            "kind": "method",
+            "declaring_class": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials",
+            "file": "src/Authentication/TokenCredentials.php",
+            "line": 66,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials::validateUsername",
+            "kind": "method",
+            "declaring_class": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials",
+            "file": "src/Authentication/TokenCredentials.php",
+            "line": 48,
+            "public": true,
+            "static": true,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Client::__construct",
+            "kind": "constructor",
+            "declaring_class": "HostingPal\\WhmApiClient\\Client",
+            "file": "src/Client.php",
+            "line": 43,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Client::uapi",
+            "kind": "method",
+            "declaring_class": "HostingPal\\WhmApiClient\\Client",
+            "file": "src/Client.php",
+            "line": 74,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Client::whm",
+            "kind": "method",
+            "declaring_class": "HostingPal\\WhmApiClient\\Client",
+            "file": "src/Client.php",
+            "line": 57,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Config\\ClientConfig::__construct",
+            "kind": "constructor",
+            "declaring_class": "HostingPal\\WhmApiClient\\Config\\ClientConfig",
+            "file": "src/Config/ClientConfig.php",
+            "line": 33,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Config\\ClientConfig::baseUri",
+            "kind": "method",
+            "declaring_class": "HostingPal\\WhmApiClient\\Config\\ClientConfig",
+            "file": "src/Config/ClientConfig.php",
+            "line": 62,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Config\\ClientConfigFactory::fromArray",
+            "kind": "method",
+            "declaring_class": "HostingPal\\WhmApiClient\\Config\\ClientConfigFactory",
+            "file": "src/Config/ClientConfigFactory.php",
+            "line": 42,
+            "public": true,
+            "static": true,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Http\\HttpTransport::__construct",
+            "kind": "constructor",
+            "declaring_class": "HostingPal\\WhmApiClient\\Http\\HttpTransport",
+            "file": "src/Http/HttpTransport.php",
+            "line": 38,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Http\\HttpTransport::send",
+            "kind": "method",
+            "declaring_class": "HostingPal\\WhmApiClient\\Http\\HttpTransport",
+            "file": "src/Http/HttpTransport.php",
+            "line": 59,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Response\\ResponseMetadata::__construct",
+            "kind": "constructor",
+            "declaring_class": "HostingPal\\WhmApiClient\\Response\\ResponseMetadata",
+            "file": "src/Response/ResponseMetadata.php",
+            "line": 34,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Api\\AbstractApiClientTest::testRequestLifecycleClearsMetadataAndKeepsRetainedSnapshots",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Api\\AbstractApiClientTest",
+            "file": "tests/Api/AbstractApiClientTest.php",
+            "line": 17,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest::invalidTokens",
+            "kind": "provider",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest",
+            "file": "tests/Authentication/TokenCredentialsTest.php",
+            "line": 61,
+            "public": true,
+            "static": true,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest::invalidUsernames",
+            "kind": "provider",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest",
+            "file": "tests/Authentication/TokenCredentialsTest.php",
+            "line": 38,
+            "public": true,
+            "static": true,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest::testBuildsCpanelAuthorizationHeader",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest",
+            "file": "tests/Authentication/TokenCredentialsTest.php",
+            "line": 22,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest::testBuildsWhmAuthorizationHeader",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest",
+            "file": "tests/Authentication/TokenCredentialsTest.php",
+            "line": 15,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest::testDoesNotExposeTokenWhenDebugged",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest",
+            "file": "tests/Authentication/TokenCredentialsTest.php",
+            "line": 73,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest::testRejectsInvalidTokenWithoutExposingIt",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest",
+            "file": "tests/Authentication/TokenCredentialsTest.php",
+            "line": 50,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": [
+                "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest::invalidTokens"
+            ]
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest::testRejectsInvalidUsername",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest",
+            "file": "tests/Authentication/TokenCredentialsTest.php",
+            "line": 30,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": [
+                "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest::invalidUsernames"
+            ]
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\ClientTest::invalidTargets",
+            "kind": "provider",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\ClientTest",
+            "file": "tests/ClientTest.php",
+            "line": 110,
+            "public": true,
+            "static": true,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\ClientTest::testCpanelCredentialsCannotSelectAnotherAccount",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\ClientTest",
+            "file": "tests/ClientTest.php",
+            "line": 76,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\ClientTest::testCpanelCredentialsCannotSelectWhm",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\ClientTest",
+            "file": "tests/ClientTest.php",
+            "line": 92,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\ClientTest::testDifferentFacadesDoNotShareAccountHandles",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\ClientTest",
+            "file": "tests/ClientTest.php",
+            "line": 119,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\ClientTest::testDirectUapiUsesItsTokenAccountAndCpanelPort",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\ClientTest",
+            "file": "tests/ClientTest.php",
+            "line": 66,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\ClientTest::testDiscoversHttpImplementationsWithoutExecutingAnOperation",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\ClientTest",
+            "file": "tests/ClientTest.php",
+            "line": 128,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\ClientTest::testRejectsInvalidExplicitTargetsEvenWithADefault",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\ClientTest",
+            "file": "tests/ClientTest.php",
+            "line": 101,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": [
+                "HostingPal\\WhmApiClient\\Tests\\ClientTest::invalidTargets"
+            ]
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\ClientTest::testSelectsStableWhmAndAccountHandlesWithoutMakingRequests",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\ClientTest",
+            "file": "tests/ClientTest.php",
+            "line": 23,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\ClientTest::testUsesConfiguredDefaultWhmTargetWithoutChangingAuthentication",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\ClientTest",
+            "file": "tests/ClientTest.php",
+            "line": 47,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\ClientTest::testWhmRootCredentialsDoNotSupplyAnImplicitCpanelTarget",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\ClientTest",
+            "file": "tests/ClientTest.php",
+            "line": 58,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::invalidHosts",
+            "kind": "provider",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest",
+            "file": "tests/Config/ClientConfigFactoryTest.php",
+            "line": 110,
+            "public": true,
+            "static": true,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::invalidOptions",
+            "kind": "provider",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest",
+            "file": "tests/Config/ClientConfigFactoryTest.php",
+            "line": 79,
+            "public": true,
+            "static": true,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::invalidPorts",
+            "kind": "provider",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest",
+            "file": "tests/Config/ClientConfigFactoryTest.php",
+            "line": 139,
+            "public": true,
+            "static": true,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::testAcceptsMatchingDefaultAccountForDirectCpanel",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest",
+            "file": "tests/Config/ClientConfigFactoryTest.php",
+            "line": 158,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::testDirectConfigurationRejectsInvalidPorts",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest",
+            "file": "tests/Config/ClientConfigFactoryTest.php",
+            "line": 131,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": [
+                "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::invalidPorts"
+            ]
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::testDirectConfigurationRejectsMalformedHosts",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest",
+            "file": "tests/Config/ClientConfigFactoryTest.php",
+            "line": 102,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": [
+                "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::invalidHosts"
+            ]
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::testDirectConfigurationValidatesDefaultAccount",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest",
+            "file": "tests/Config/ClientConfigFactoryTest.php",
+            "line": 171,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::testDirectCpanelUsesItsAccountAndSecureCpanelPort",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest",
+            "file": "tests/Config/ClientConfigFactoryTest.php",
+            "line": 29,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::testErrorsAndDebuggingDoNotExposeFactoryToken",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest",
+            "file": "tests/Config/ClientConfigFactoryTest.php",
+            "line": 183,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::testNormalizesIpv6ForSecureUri",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest",
+            "file": "tests/Config/ClientConfigFactoryTest.php",
+            "line": 52,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": [
+                "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::validIpv6Hosts"
+            ]
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::testPreservesExplicitWhmAccountAndDefaultCpanelTarget",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest",
+            "file": "tests/Config/ClientConfigFactoryTest.php",
+            "line": 39,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::testRejectsDifferentDefaultAccountForDirectCpanel",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest",
+            "file": "tests/Config/ClientConfigFactoryTest.php",
+            "line": 146,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::testRejectsInvalidFactoryOptions",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest",
+            "file": "tests/Config/ClientConfigFactoryTest.php",
+            "line": 71,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": [
+                "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::invalidOptions"
+            ]
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::testWhmDefaultsToRootAndSecureWhmPort",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest",
+            "file": "tests/Config/ClientConfigFactoryTest.php",
+            "line": 17,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::validIpv6Hosts",
+            "kind": "provider",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest",
+            "file": "tests/Config/ClientConfigFactoryTest.php",
+            "line": 63,
+            "public": true,
+            "static": true,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest::errorStatuses",
+            "kind": "provider",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest",
+            "file": "tests/Http/HttpTransportTest.php",
+            "line": 135,
+            "public": true,
+            "static": true,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest::requestBodies",
+            "kind": "provider",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest",
+            "file": "tests/Http/HttpTransportTest.php",
+            "line": 66,
+            "public": true,
+            "static": true,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest::testBuildsRequestsWithInjectedImplementations",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest",
+            "file": "tests/Http/HttpTransportTest.php",
+            "line": 39,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": [
+                "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest::requestBodies"
+            ]
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest::testDiscoversClientAndFactoriesWithoutMakingNetworkRequests",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest",
+            "file": "tests/Http/HttpTransportTest.php",
+            "line": 74,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest::testDiscoversOmittedFactoriesAndPreservesTheInjectedClient",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest",
+            "file": "tests/Http/HttpTransportTest.php",
+            "line": 83,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest::testPreservesTransportExceptions",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest",
+            "file": "tests/Http/HttpTransportTest.php",
+            "line": 141,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest::testReportsMissingHttpClient",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest",
+            "file": "tests/Http/HttpTransportTest.php",
+            "line": 97,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest::testReportsMissingRequestFactory",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest",
+            "file": "tests/Http/HttpTransportTest.php",
+            "line": 105,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest::testReportsMissingStreamFactory",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest",
+            "file": "tests/Http/HttpTransportTest.php",
+            "line": 113,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest::testReturnsHttpErrorResponsesForLaterApiHandling",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest",
+            "file": "tests/Http/HttpTransportTest.php",
+            "line": 122,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": [
+                "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest::errorStatuses"
+            ]
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Response\\ResponseMetadataTest::testRejectsInvalidHttpStatus",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Response\\ResponseMetadataTest",
+            "file": "tests/Response/ResponseMetadataTest.php",
+            "line": 55,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Response\\ResponseMetadataTest::testRejectsObjectsThatCouldMutateASnapshot",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Response\\ResponseMetadataTest",
+            "file": "tests/Response/ResponseMetadataTest.php",
+            "line": 39,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Response\\ResponseMetadataTest::testRejectsRecursiveMetadata",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Response\\ResponseMetadataTest",
+            "file": "tests/Response/ResponseMetadataTest.php",
+            "line": 46,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Response\\ResponseMetadataTest::testRepresentsUnavailableFamilyMetadataWithoutInventingSuccess",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Response\\ResponseMetadataTest",
+            "file": "tests/Response/ResponseMetadataTest.php",
+            "line": 31,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Response\\ResponseMetadataTest::testRetainsIndependentWhmAndUapiMetadataSnapshots",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Response\\ResponseMetadataTest",
+            "file": "tests/Response/ResponseMetadataTest.php",
+            "line": 14,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Tooling\\SymbolInventoryTest::testRepositoryIncludesOnlyDeclaredPublicTransportAndTestMethods",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Tooling\\SymbolInventoryTest",
+            "file": "tests/Tooling/SymbolInventoryTest.php",
+            "line": 13,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\Tests\\Tooling\\SymbolInventoryTest::testTokenDiscoveryAndReflectionNeverInvokeFixtureCode",
+            "kind": "test",
+            "declaring_class": "HostingPal\\WhmApiClient\\Tests\\Tooling\\SymbolInventoryTest",
+            "file": "tests/Tooling/SymbolInventoryTest.php",
+            "line": 36,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\UapiClient::__construct",
+            "kind": "constructor",
+            "declaring_class": "HostingPal\\WhmApiClient\\UapiClient",
+            "file": "src/UapiClient.php",
+            "line": 30,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\UapiClient::isBridged",
+            "kind": "method",
+            "declaring_class": "HostingPal\\WhmApiClient\\UapiClient",
+            "file": "src/UapiClient.php",
+            "line": 59,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\UapiClient::username",
+            "kind": "method",
+            "declaring_class": "HostingPal\\WhmApiClient\\UapiClient",
+            "file": "src/UapiClient.php",
+            "line": 49,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        },
+        {
+            "id": "HostingPal\\WhmApiClient\\WhmClient::__construct",
+            "kind": "constructor",
+            "declaring_class": "HostingPal\\WhmApiClient\\WhmClient",
+            "file": "src/WhmClient.php",
+            "line": 29,
+            "public": true,
+            "static": false,
+            "abstract": false,
+            "providers": []
+        }
+    ],
+    "diagnostics": []
+}

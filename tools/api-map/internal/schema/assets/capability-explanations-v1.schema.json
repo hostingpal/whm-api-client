@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "explanations": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "https://hostingpal.github.io/whm-api-client/schema/capability-report-v1.schema.json#/$defs/explanation"
+          },
+          {
+            "properties": {
+              "evidence": {
+                "minItems": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "explanations"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hostingpal.github.io/whm-api-client/schema/capability-explanations-v1.schema.json"
+}

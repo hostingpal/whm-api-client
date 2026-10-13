@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "origin": "https://synthetic.example.invalid:2087",
+  "context": {
+    "username": "root",
+    "cpanel_context": null
+  },
+  "captured_at": "2026-10-13T12:00:00Z",
+  "server_version": "",
+  "capture_status": "failed",
+  "advertised_names": [],
+  "evidence": [
+    {
+      "function": "version",
+      "route": "/json-api/version?api.version=1",
+      "status": "failed",
+      "http_status": 401,
+      "error_category": "authentication"
+    }
+  ],
+  "uapi_inventory": "unavailable",
+  "direct_uapi_auth": "unverified"
+}

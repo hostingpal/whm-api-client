@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+namespace FixtureInventory;
+
+#[\Attribute]
+final class DangerousAttribute
+{
+    public static int $calls = 0;
+
+    public function __construct(mixed $argument = null)
+    {
+        self::$calls++;
+    }
+}
+
+final class Client
+{
+    public static int $calls = 0;
+
+    #[DangerousAttribute]
+    public function __construct()
+    {
+        self::$calls++;
+    }
+
+    #[DangerousAttribute(new DangerousAttribute())]
+    public function defaults(object $value = new DangerousAttribute()): void
+    {
+    }
+
+    public function send(): void
+    {
+        $reference = Client::class;
+        $anonymous = new class {
+            public function hidden(): void
+            {
+            }
+        };
+    }
+}

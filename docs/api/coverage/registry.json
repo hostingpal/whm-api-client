@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "entries": [],
+  "infrastructure": [
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\AbstractApiClient::config",
+      "reason": "Returns the shared client configuration; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\AbstractApiClient::responseMeta",
+      "reason": "Reads the client-local latest response metadata; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials::__construct",
+      "reason": "Constructs and validates generic token credentials; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials::__debugInfo",
+      "reason": "Redacts token credentials for debugging; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials::authorizationHeader",
+      "reason": "Formats the shared token authorization header; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials::validateUsername",
+      "reason": "Validates shared credential/account syntax; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Client::__construct",
+      "reason": "Constructs the client facade from shared configuration and HTTP transport; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Client::uapi",
+      "reason": "Selects and caches a UAPI handle for a configured or explicit cPanel account; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Client::whm",
+      "reason": "Selects and caches the WHM family handle; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Config\\ClientConfig::__construct",
+      "reason": "Validates shared host, port, credentials and account configuration; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Config\\ClientConfig::baseUri",
+      "reason": "Formats the configured HTTPS origin; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Config\\ClientConfigFactory::fromArray",
+      "reason": "Builds validated shared configuration from options; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Http\\HttpTransport::__construct",
+      "reason": "Generic HTTP infrastructure; does not implement a WHM or cPanel endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Http\\HttpTransport::send",
+      "reason": "Generic HTTP infrastructure; does not implement a WHM or cPanel endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ResponseMetadata::__construct",
+      "reason": "Constructs an immutable HTTP status and envelope metadata snapshot; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest::errorStatuses",
+      "reason": "Data provider for offline HTTP infrastructure tests."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest::requestBodies",
+      "reason": "Data provider for offline HTTP infrastructure tests."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\UapiClient::__construct",
+      "reason": "Constructs a UAPI family handle with its target account and shared transport/configuration; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\UapiClient::isBridged",
+      "reason": "Reports whether the UAPI handle uses WHM credential routing; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\UapiClient::username",
+      "reason": "Returns the selected cPanel account identity; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\WhmClient::__construct",
+      "reason": "Constructs a WHM family handle using shared configuration and transport; no endpoint operation."
+    }
+  ],
+  "exclusions": []
+}

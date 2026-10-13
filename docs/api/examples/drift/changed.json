@@ -1,0 +1,83 @@
+{
+  "added_operations": [],
+  "added_variants": [],
+  "after_sources": [
+    {
+      "api_family": "cpanel-uapi",
+      "file": "document.json",
+      "id": "synthetic",
+      "kind": "openapi",
+      "retrieved_at": "2026-10-13T00:00:00Z",
+      "sha256": "b62e6f5f927149a02d4fa133b9a746c62885095fedcea9b7eb99d7acf332c40b",
+      "synthetic": true,
+      "url": "https://example.test/api.json",
+      "version": "1"
+    }
+  ],
+  "before_sources": [
+    {
+      "api_family": "cpanel-uapi",
+      "file": "document.json",
+      "id": "synthetic",
+      "kind": "openapi",
+      "retrieved_at": "2026-10-13T00:00:00Z",
+      "sha256": "74fecd3503c0f70674bc2b33f40a4423af5da2361c5684edf295ae11e3c1b09b",
+      "synthetic": true,
+      "url": "https://example.test/api.json",
+      "version": "1"
+    }
+  ],
+  "changes": [
+    {
+      "after": {
+        "absent": false,
+        "hash": "c40bb5c2c25218116b341d89f88238a29d3974c3c245402d122d5ce059f26e98",
+        "locator": {
+          "pointer": "/paths/~1Demo~1inspect/get/description",
+          "source_id": "synthetic",
+          "source_sha256": "b62e6f5f927149a02d4fa133b9a746c62885095fedcea9b7eb99d7acf332c40b"
+        }
+      },
+      "before": {
+        "absent": false,
+        "hash": "aecf42169d97c174b2562c891e622ddec2e275827f8a5fb9baa0252d163faa42",
+        "locator": {
+          "pointer": "/paths/~1Demo~1inspect/get/description",
+          "source_id": "synthetic",
+          "source_sha256": "74fecd3503c0f70674bc2b33f40a4423af5da2361c5684edf295ae11e3c1b09b"
+        }
+      },
+      "category": "documentation",
+      "id": "source:[\"synthetic\",\"/paths/~1Demo~1inspect/get/description\"]",
+      "variant_id": "uapi:Demo/inspect#GET"
+    },
+    {
+      "after": {
+        "absent": false,
+        "hash": "feb41ddf34cbec8f93cea472a7f97b722d5e1484c27beb1949ce20cc9d477e33",
+        "locator": {
+          "pointer": "/paths/~1Demo~1inspect/get/responses/200/content/application~1json",
+          "source_id": "synthetic",
+          "source_sha256": "b62e6f5f927149a02d4fa133b9a746c62885095fedcea9b7eb99d7acf332c40b"
+        }
+      },
+      "before": {
+        "absent": false,
+        "hash": "656e9fee5ede9f137fb47939c44a0075e72b5a62eb90d10b95e0ca6d673248a7",
+        "locator": {
+          "pointer": "/paths/~1Demo~1inspect/get/responses/200/content/application~1json",
+          "source_id": "synthetic",
+          "source_sha256": "74fecd3503c0f70674bc2b33f40a4423af5da2361c5684edf295ae11e3c1b09b"
+        }
+      },
+      "category": "response",
+      "id": "unit:[\"uapi:Demo/inspect#GET\",\"response\",\"200\",\"application/json\"]",
+      "variant_id": "uapi:Demo/inspect#GET"
+    }
+  ],
+  "confirmed_aliases": [],
+  "provenance_changed": true,
+  "removed_operations": [],
+  "removed_variants": [],
+  "schema_version": "1.0"
+}

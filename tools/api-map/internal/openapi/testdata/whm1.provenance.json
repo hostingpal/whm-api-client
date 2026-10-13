@@ -1,0 +1,20 @@
+{
+  "original_file": "whm.openapi.json.gz",
+  "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+  "pointers": [
+    "/openapi",
+    "/info",
+    "/security",
+    "/servers",
+    "/paths/~1enqueue_transfer_item",
+    "/components/schemas/Transfers_EnqueueTransferItem_Base",
+    "/components/schemas/Transfers_EnqueueTransferItem_Type_AccountLocal_or_AccountRemoteRoot",
+    "/components/schemas/Transfers_EnqueueTransferItem_Type_AccountRemoteRoot",
+    "/components/schemas/Transfers_EnqueueTransferItem_Type_Account_Base",
+    "/components/schemas/Transfers_EnqueueTransferItem_Type_FeatureListRemoteRoot",
+    "/components/schemas/Transfers_EnqueueTransferItem_Type_LegacyAccountBackup",
+    "/components/schemas/Transfers_EnqueueTransferItem_Type_PackageRemoteRoot",
+    "/components/schemas/schemas-Transfers_EnqueueTransferItem_Type"
+  ],
+  "projection": "Exact selected objects plus transitive schema $ref and discriminator mapping closure; no field rewrites."
+}

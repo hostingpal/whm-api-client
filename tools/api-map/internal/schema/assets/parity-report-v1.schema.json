@@ -1,0 +1,547 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hostingpal.github.io/whm-api-client/schema/parity-report-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "valid",
+    "revision",
+    "summary",
+    "operations",
+    "groups",
+    "live_routes",
+    "diagnostics",
+    "sources",
+    "evidence",
+    "mappings"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "valid": {
+      "type": "boolean"
+    },
+    "revision": {
+      "type": "string"
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "family",
+          "module",
+          "tags",
+          "state",
+          "variants"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "family": {
+            "enum": [
+              "whm1",
+              "uapi"
+            ]
+          },
+          "module": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "state": {
+            "enum": [
+              "implemented",
+              "partial",
+              "missing",
+              "excluded"
+            ]
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "state",
+                "units",
+                "claimed_units",
+                "tests",
+                "test_status",
+                "live_evidence_ids",
+                "missing_response_schemas"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "state": {
+                  "enum": [
+                    "implemented",
+                    "partial",
+                    "missing",
+                    "excluded"
+                  ]
+                },
+                "units": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "kind",
+                      "locator",
+                      "hash"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "kind": {
+                        "enum": [
+                          "parameter",
+                          "body",
+                          "response"
+                        ]
+                      },
+                      "locator": {
+                        "$ref": "api-map-v1.schema.json#/$defs/locator"
+                      },
+                      "hash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    }
+                  }
+                },
+                "claimed_units": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "tests": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "test_status": {
+                  "enum": [
+                    "not-run",
+                    "passed",
+                    "failed",
+                    "skipped",
+                    "unknown",
+                    "stale"
+                  ]
+                },
+                "live_evidence_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "missing_response_schemas": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "family",
+          "name",
+          "non_additive",
+          "summary"
+        ],
+        "properties": {
+          "family": {
+            "enum": [
+              "whm1",
+              "uapi"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "non_additive": {
+            "type": "boolean"
+          },
+          "summary": {
+            "$ref": "#/$defs/summary"
+          }
+        }
+      }
+    },
+    "live_routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "route",
+          "authentication",
+          "coverage"
+        ],
+        "properties": {
+          "route": {
+            "type": "string",
+            "minLength": 1
+          },
+          "authentication": {
+            "type": "string",
+            "minLength": 1
+          },
+          "coverage": {
+            "$ref": "#/$defs/count"
+          }
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "api-map-v1.schema.json#/$defs/diagnostic"
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "test_runs",
+        "live",
+        "live_provided"
+      ],
+      "properties": {
+        "revision": {
+          "type": "string"
+        },
+        "test_runs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "run_id",
+              "revision",
+              "completed_at",
+              "command",
+              "outcomes"
+            ],
+            "properties": {
+              "run_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "revision": {
+                "type": "string",
+                "minLength": 1
+              },
+              "completed_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "command": {
+                "type": "string",
+                "minLength": 1
+              },
+              "outcomes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "symbol",
+                    "status"
+                  ],
+                  "properties": {
+                    "symbol": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "status": {
+                      "enum": [
+                        "passed",
+                        "failed",
+                        "skipped"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "live": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "operation_id",
+              "variant_id",
+              "revision",
+              "host",
+              "version",
+              "account_context",
+              "observed_at",
+              "route",
+              "authentication",
+              "status"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "operation_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "variant_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "revision": {
+                "type": "string",
+                "minLength": 1
+              },
+              "host": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "account_context": {
+                "type": "string",
+                "minLength": 1
+              },
+              "observed_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "route": {
+                "enum": [
+                  "direct-uapi",
+                  "whm-bridge",
+                  "direct-whm"
+                ]
+              },
+              "authentication": {
+                "enum": [
+                  "cpanel-token",
+                  "whm-token"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "verified",
+                  "failed",
+                  "unverified"
+                ]
+              }
+            }
+          }
+        },
+        "live_provided": {
+          "type": "boolean"
+        }
+      }
+    },
+    "mappings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation_id",
+          "variant_id",
+          "symbol",
+          "status",
+          "tests",
+          "contract_units",
+          "valid"
+        ],
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "variant_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "symbol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": [
+              "implemented",
+              "partial"
+            ]
+          },
+          "tests": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "contract_units": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "hash",
+                "tests"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "hash": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "tests": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                }
+              }
+            }
+          },
+          "valid": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "count": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "numerator",
+        "denominator",
+        "gross",
+        "excluded"
+      ],
+      "properties": {
+        "numerator": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "denominator": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "gross": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "excluded": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "functions",
+        "variants",
+        "parameters",
+        "bodies",
+        "responses",
+        "declared_tests",
+        "passing_tests",
+        "live_verified",
+        "missing_response_schemas"
+      ],
+      "properties": {
+        "functions": {
+          "$ref": "#/$defs/count"
+        },
+        "variants": {
+          "$ref": "#/$defs/count"
+        },
+        "parameters": {
+          "$ref": "#/$defs/count"
+        },
+        "bodies": {
+          "$ref": "#/$defs/count"
+        },
+        "responses": {
+          "$ref": "#/$defs/count"
+        },
+        "declared_tests": {
+          "$ref": "#/$defs/count"
+        },
+        "passing_tests": {
+          "$ref": "#/$defs/count"
+        },
+        "live_verified": {
+          "$ref": "#/$defs/count"
+        },
+        "missing_response_schemas": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

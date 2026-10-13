@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hostingpal.github.io/whm-api-client/schema/drift-report-v1.schema.json",
+  "title": "Source contract drift report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "before_sources",
+    "after_sources",
+    "provenance_changed",
+    "added_operations",
+    "removed_operations",
+    "added_variants",
+    "removed_variants",
+    "confirmed_aliases",
+    "changes"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "before_sources": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "after_sources": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "provenance_changed": {
+      "type": "boolean"
+    },
+    "added_operations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "removed_operations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "added_variants": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "removed_variants": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "confirmed_aliases": {
+      "type": "array",
+      "items": {
+        "$ref": "api-map-v1.schema.json#/$defs/alias"
+      }
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/change"
+      }
+    }
+  },
+  "$defs": {
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "absent",
+        "locator",
+        "hash"
+      ],
+      "properties": {
+        "absent": {
+          "type": "boolean"
+        },
+        "locator": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "api-map-v1.schema.json#/$defs/locator"
+            }
+          ]
+        },
+        "hash": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "absent": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "locator": {
+                "type": "null"
+              },
+              "hash": {
+                "const": ""
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "locator": {
+                "$ref": "api-map-v1.schema.json#/$defs/locator"
+              },
+              "hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "category",
+        "variant_id",
+        "before",
+        "after"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "enum": [
+            "parameter",
+            "body",
+            "response",
+            "auth",
+            "availability",
+            "deprecation",
+            "risk",
+            "documentation",
+            "uninterpreted"
+          ]
+        },
+        "variant_id": {
+          "type": "string"
+        },
+        "before": {
+          "$ref": "#/$defs/snapshot"
+        },
+        "after": {
+          "$ref": "#/$defs/snapshot"
+        }
+      },
+      "not": {
+        "properties": {
+          "before": {
+            "properties": {
+              "absent": {
+                "const": true
+              }
+            }
+          },
+          "after": {
+            "properties": {
+              "absent": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

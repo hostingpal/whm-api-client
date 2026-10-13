@@ -1,0 +1,14 @@
+{
+  "original_file": "whm.openapi.json.gz",
+  "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+  "pointers": [
+    "/openapi",
+    "/info",
+    "/security",
+    "/servers",
+    "/components",
+    "/paths/~1apply_dmarc",
+    "/paths/~1EcosystemFeatures~1is_ready"
+  ],
+  "projection": "Exact selected paths and complete components; top-level metadata retained. No selected field rewrites."
+}

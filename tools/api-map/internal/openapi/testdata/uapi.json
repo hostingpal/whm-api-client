@@ -1,0 +1,726 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "contact": {
+      "email": "cs@cpanel.net",
+      "name": "WebPros International, LLC",
+      "url": "https://cpanel.net/support/"
+    },
+    "description": "UAPI accesses the cPanel interface's features. Use this API to access and modify cPanel account data and settings.",
+    "license": {
+      "name": "cPanel License",
+      "url": "https://cpanel.net/legal-notices/"
+    },
+    "termsOfService": "https://cpanel.net/legal-notices/",
+    "title": "cPanel UAPI",
+    "version": "11.138.0.10"
+  },
+  "security": [
+    {
+      "BasicAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "A server running cPanel.",
+      "url": "https://{host}:{port}/execute",
+      "variables": {
+        "host": {
+          "default": "cpanel-server.tld",
+          "description": "The hostname of a server running cPanel."
+        },
+        "port": {
+          "default": "2083",
+          "description": "The cPanel port."
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/Batch/strict": {
+      "get": {
+        "x-readonly": false,
+        "x-rollback": "none",
+        "description": "This function combines calls for multiple UAPI functions and performs them in order.\n\n**Note:**\n\n* If a function call in the list fails, the `Batch::strict` function does not run further function calls in the list.\n* Due to the potential length of calls of this function, we recommend that you use the HTTP POST method for extremely long batch commands.",
+        "operationId": "Batch-strict",
+        "parameters": [
+          {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "multiple": {
+                    "summary": "Call multiple UAPI functions.",
+                    "value": [
+                      "command=[\"PasswdStrength\",\"get_required_strength\",{\"app\":\"webdisk\"}]",
+                      "command=[\"SSH\",\"get_port\"]"
+                    ]
+                  },
+                  "multiple_indexed": {
+                    "summary": "Call multiple UAPI functions using indexed parameters.",
+                    "value": [
+                      "command-0=[\"PasswdStrength\",\"get_required_strength\",{\"app\":\"webdisk\"}]",
+                      "command-1=[\"SSH\",\"get_port\"]"
+                    ]
+                  }
+                },
+                "schema": {
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "additionalProperties": true,
+                        "type": "object"
+                      }
+                    ]
+                  },
+                  "maxItems": 3,
+                  "minItems": 2,
+                  "type": "array"
+                }
+              }
+            },
+            "description": "A UAPI function call, encoded as a JSON array with two or three items:\n\n* The UAPI module.\n* The UAPI function.\n* A JSON object containing the parameters to pass to this function. You can omit this value if you do not pass any parameters to the function.\n\nTo submit multiple commands, duplicate the parameter name, or index all parameter names and increment the index for each one.\n\n* When using the cPanel LiveAPI PHP Library, you **must** increment the parameter name when you submit the arguments in an associative array. For example:\u00a0use `command-0`,\u00a0`command-1`,\u00a0and `command-2`.\n* When using the cPanel LiveAPI Perl Library, you **must** increment the parameter name when you submit the arguments in a hash. For example:\u00a0use `command-0`,\u00a0`command-1`,\u00a0and `command-2`.\n* You do **not** need to add an index to `command` parameters for query string calls of this function.",
+            "in": "query",
+            "name": "command",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "apiversion": {
+                      "description": "The version of the API.",
+                      "example": 3,
+                      "type": "integer"
+                    },
+                    "func": {
+                      "description": "The name of the method called.",
+                      "example": "strict",
+                      "type": "string"
+                    },
+                    "module": {
+                      "description": "The name of the module called.",
+                      "example": "Batch",
+                      "type": "string"
+                    },
+                    "result": {
+                      "properties": {
+                        "data": {
+                          "description": "An array of objects that contain function output. Each object contains the output data and metadata from one of the `command` parameter's functions.\n\nFor more information about UAPI return data and metadata, read our [UAPI - Return Data](https://go.cpanel.net/UAPIReturnData) documentation.",
+                          "example": [
+                            {
+                              "data": {
+                                "strength": 65
+                              },
+                              "errors": null,
+                              "messages": null,
+                              "metadata": {},
+                              "status": 1,
+                              "warnings": null
+                            },
+                            {
+                              "data": {
+                                "port": 22
+                              },
+                              "errors": null,
+                              "messages": null,
+                              "metadata": {},
+                              "status": 1,
+                              "warnings": null
+                            }
+                          ],
+                          "items": {
+                            "properties": {
+                              "data": {
+                                "additionalProperties": true,
+                                "description": "The data returned by an individual UAPI call invoked through this `Batch::strict` call.",
+                                "type": "object"
+                              },
+                              "errors": {
+                                "description": "List of errors if the API failed.",
+                                "example": null,
+                                "items": {
+                                  "type": "string"
+                                },
+                                "nullable": true,
+                                "type": "array"
+                              },
+                              "messages": {
+                                "description": "List of messages generated by the API.",
+                                "example": null,
+                                "items": {
+                                  "type": "string"
+                                },
+                                "nullable": true,
+                                "type": "array"
+                              },
+                              "metadata": {
+                                "properties": {
+                                  "transformed": {
+                                    "description": "Post-processing may have transformed the data.",
+                                    "enum": [
+                                      1
+                                    ],
+                                    "example": 1,
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "status": {
+                                "description": "- 1 - Success\n- 0 - Failed: Check the errors field for more details.",
+                                "enum": [
+                                  0,
+                                  1
+                                ],
+                                "example": 1,
+                                "type": "integer"
+                              },
+                              "warnings": {
+                                "description": "List of warnings generated by the API. Warnings describe non-critical failures or other problematic conditions noted while running an API.",
+                                "example": null,
+                                "items": {
+                                  "type": "string"
+                                },
+                                "nullable": true,
+                                "type": "array"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "errors": {
+                          "description": "List of errors if the API failed.",
+                          "example": null,
+                          "items": {
+                            "type": "string"
+                          },
+                          "nullable": true,
+                          "type": "array"
+                        },
+                        "messages": {
+                          "description": "List of messages generated by the API.",
+                          "example": null,
+                          "items": {
+                            "type": "string"
+                          },
+                          "nullable": true,
+                          "type": "array"
+                        },
+                        "metadata": {
+                          "properties": {
+                            "transformed": {
+                              "description": "Post-processing may have transformed the data.",
+                              "enum": [
+                                1
+                              ],
+                              "example": 1,
+                              "type": "integer"
+                            }
+                          }
+                        },
+                        "status": {
+                          "description": "- 1 - Success\n- 0 - Failed: Check the errors field for more details.",
+                          "enum": [
+                            0,
+                            1
+                          ],
+                          "example": 1,
+                          "type": "integer"
+                        },
+                        "warnings": {
+                          "description": "List of warnings generated by the API. Warnings describe non-critical failures or other problematic conditions noted while running an API.",
+                          "example": null,
+                          "items": {
+                            "type": "string"
+                          },
+                          "nullable": true,
+                          "type": "array"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "HTTP Request was successful."
+          }
+        },
+        "summary": "Run multiple UAPI functions in order",
+        "tags": [
+          "Batch"
+        ],
+        "x-codeSamples": [
+          {
+            "label": "CLI",
+            "lang": "Shell",
+            "source": "uapi --output=jsonpretty --user=username Batch strict command-0='[ \"PasswdStrength\", \"get_required_strength\", { \"app\": \"webdisk\"} ]' command-1='[\"SSH\",\"get_port\"]'"
+          },
+          {
+            "label": "URL",
+            "lang": "HTTP",
+            "source": "https://hostname.example.com:2083/cpsess##########/execute/Batch/strict?command-0=%5b%20%22PasswdStrength%22%2c%20%22get_required_strength%22%2c%20%7b%20%22app%22%3a%20%22webdisk%22%7d%20%5d&command-1=%5B%22SSH%22%2C%22get_port%22%5D"
+          },
+          {
+            "label": "LiveAPI Perl",
+            "lang": "Perl",
+            "source": "#--------------------------------------------------------------------------------------\n# Instructions:\n#--------------------------------------------------------------------------------------\n# <theme-name> is the theme assigned to cPanel account.\n# 1) cd /usr/local/cpanel/base/frontend/<theme-name>\n# 2) mkdir api_examples\n# 3) cd api_examples\n# 4) create a file Batch_strict.live.pl and put this code into that file.\n# 5) In your browser login to a cPanel account.\n# 6) Manually change the url from: .../frontend/<theme-name>/\n#    to .../frontend/<theme-name>/api_examples/Batch_strict.live.pl\n#--------------------------------------------------------------------------------------\n\nuse strict;\n\nuse Cpanel::LiveAPI ();\n\nmy $cpanel = Cpanel::LiveAPI->new(); # Connect to cPanel - only do this once.\n\n# Print the header\nprint \"Content-type: text/plain\\r\\n\\r\\n\";\n\n# Call the API\nmy $response = $cpanel->uapi(\n    q/Batch/,\n    q/strict/,\n    {\n        'command-0' => '[ \"PasswdStrength\", \"get_required_strength\", { \"app\": \"webdisk\"} ]',\n        'command-1' => '[\"SSH\",\"get_port\"]',\n    }\n);\n\n# Handle the response\nif ($response->{cpanelresult}{result}{status}) {\n    my $data = $response->{cpanelresult}{result}{data};\n    foreach my $item (@{$data}) {\n        # Do something with the $item\n    }\n\n    # So you can see the data shape we print it here.\n    print to_json($data);\n}\nelse {\n    # Report errors:\n    print to_json($response->{cpanelresult}{result}{errors});\n}\n\n# Disconnect from cPanel - only do this once.\n$cpanel->end();\n\n#--------------------------------------------------------------------------------------\n# Helper function to convert a perl object to html printable json\n#--------------------------------------------------------------------------------------\nsub to_json {\n    require JSON;\n    my $str = JSON->new->pretty->encode($_[0]);\n    return $str;\n}\n"
+          },
+          {
+            "label": "LiveAPI PHP",
+            "lang": "PHP",
+            "source": "<?php\n//--------------------------------------------------------------------------------------\n// Instructions:\n//--------------------------------------------------------------------------------------\n// <theme-name> is the theme assigned to cPanel account.\n// 1) cd /usr/local/cpanel/base/frontend/<theme-name>\n// 2) mkdir api_examples\n// 3) cd api_examples\n// 4) create a file Batch_strict.live.php and put this code into that file.\n// 5) In your browser login to a cPanel account.\n// 6) Manually change the url from: .../frontend/<theme-name>/\n//    to .../frontend/<theme-name>/api_examples/Batch_strict.live.php\n//--------------------------------------------------------------------------------------\n\n// Instantiate the CPANEL object.\nrequire_once \"/usr/local/cpanel/php/cpanel.php\";\n\n// Print the header\nheader('Content-Type: text/plain');\n\n// Connect to cPanel - only do this once.\n$cpanel = new CPANEL();\n\n// Call the API\n$response = $cpanel->uapi(\n    'Batch',\n    'strict',\n    array (\n        'command-0' => '[ \"PasswdStrength\", \"get_required_strength\", { \"app\": \"webdisk\"} ]',\n        'command-1' => '[\"SSH\",\"get_port\"]',\n    )\n);\n\n// Handle the response\nif ($response['cpanelresult']['result']['status']) {\n    $data = $response['cpanelresult']['result']['data'];\n    foreach ($data as $item) {\n        // Do something with the $item\n    }\n\n    // So you can see the data shape we print it here.\n    print to_json($data);\n}\nelse {\n    // Report errors:\n    print to_json($response['cpanelresult']['result']['errors']);\n}\n\n// Disconnect from cPanel - only do this once.\n$cpanel->end();\n\n//--------------------------------------------------------------------------------------\n// Helper function to convert a PHP value to html printable json\n//--------------------------------------------------------------------------------------\nfunction to_json($data) {\n    return json_encode($data, JSON_PRETTY_PRINT);\n}"
+          }
+        ],
+        "x-cpanel-api-version": "UAPI",
+        "x-cpanel-available-version": "cPanel 54"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Payload": {
+        "description": "The zone\u2019s content.",
+        "items": {
+          "discriminator": {
+            "mapping": {
+              "comment": "#/components/schemas/ResponseComment",
+              "control": "#/components/schemas/ResponseControl",
+              "record": "#/components/schemas/ResponseRR"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/ResponseRR"
+            },
+            {
+              "$ref": "#/components/schemas/ResponseControl"
+            },
+            {
+              "$ref": "#/components/schemas/ResponseComment"
+            }
+          ]
+        },
+        "type": "array"
+      },
+      "ResponseBase": {
+        "properties": {
+          "line_index": {
+            "description": "The line\u2019s index in the zone file.",
+            "example": 22,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": {
+            "description": "The type of object in the zone file:\n\n* `record` - A resource record.\n* `control` - A control statement.\n* `comment` - A line comment.",
+            "enum": [
+              "record",
+              "control",
+              "comment"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ResponseComment": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResponseControlOrComment"
+          }
+        ],
+        "title": "Comment"
+      },
+      "ResponseControl": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResponseControlOrComment"
+          }
+        ],
+        "title": "Control"
+      },
+      "ResponseControlOrComment": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResponseBase"
+          },
+          {
+            "properties": {
+              "text_b64": {
+                "description": "The line\u2019s text, encoded to base64.",
+                "example": "OyBab25lIGZpbGUgZm9yIHRleGFzLmNvbQ==",
+                "format": "base64",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "ResponseRR": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResponseBase"
+          },
+          {
+            "properties": {
+              "data_b64": {
+                "description": "The resource record\u2019s content, encoded to base64.",
+                "items": {
+                  "example": "dGV4YXMuY29tLg==",
+                  "format": "base64",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "dname_b64": {
+                "description": "The resource record\u2019s owner, encoded to base64. A base64-decoded owner that lacks a trailing period (`.`) is a subdomain of the zone.",
+                "example": "dGV4YXMuY29tLg==",
+                "format": "base64",
+                "type": "string"
+              },
+              "record_type": {
+                "description": "The resource record\u2019s type.",
+                "example": "MX",
+                "type": "string"
+              },
+              "ttl": {
+                "description": "The resource record\u2019s TTL (Time-to-Live).",
+                "example": 14400,
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "title": "Resource Record"
+      },
+      "ServiceAccount": {
+        "properties": {
+          "alternate_email": {
+            "description": "An alternate email address for the subaccount's user.",
+            "example": "user@example.com",
+            "format": "email",
+            "nullable": true,
+            "type": "string"
+          },
+          "avatar_url": {
+            "description": "The user's subaccount profile photo.",
+            "example": "https://img.example.com/avatars/example.jpg",
+            "format": "url",
+            "nullable": true,
+            "type": "string"
+          },
+          "can_delete": {
+            "description": "Whether the cPanel account user can delete the subaccount.\n* `1` - Can delete.\n* `0` - Cannot delete.",
+            "enum": [
+              0,
+              1
+            ],
+            "example": 0,
+            "type": "integer"
+          },
+          "can_set_password": {
+            "description": "Whether the cPanel account user can change the subaccount's password.\n* `1` - Can change.\n* `0` - Cannot change.\n\n**Note:**\n\n  The function returns a `0` value for subaccounts that inherit their password from the cPanel account.",
+            "enum": [
+              0,
+              1
+            ],
+            "example": 1,
+            "type": "integer"
+          },
+          "can_set_quota": {
+            "description": "Whether the cPanel account user can change the subaccount's disk usage quota.\n* `1` - Can change.\n* `0` - Cannot change.",
+            "enum": [
+              0,
+              1
+            ],
+            "example": 0,
+            "type": "integer"
+          },
+          "dismissed": {
+            "description": "Whether the cPanel account user dismissed the merge prompt for the service account.\n* `1` - Dismissed.\n* `0` - Did not dismiss.\n\n**Note:**\n\n  Only service accounts return this value.",
+            "enum": [
+              0,
+              1
+            ],
+            "example": 1,
+            "type": "integer"
+          },
+          "domain": {
+            "description": "The subaccount user's associated domain.",
+            "example": "example.com",
+            "format": "domain",
+            "nullable": true,
+            "type": "string"
+          },
+          "full_username": {
+            "description": "The subaccount's username and domain name. A valid username, the `@` character, and the associated domain.",
+            "example": "user@example.com",
+            "type": "string"
+          },
+          "guid": {
+            "description": "The subaccount unique identifier.",
+            "example": "N4641:EXAMPLE.COM:564CC8A7:A82EA007D8348AC631C0170F9418EC1DEB0D164CC5A722A87C55EF5DD2AD98D4",
+            "type": "string"
+          },
+          "has_siblings": {
+            "description": "Whether the service account shares a `full_username` value with another service account.\n* `1` - Shares.\n* `0` - Does not share.",
+            "enum": [
+              0,
+              1
+            ],
+            "example": 0,
+            "type": "integer"
+          },
+          "issues": {
+            "description": "Information about any issues or problems with the subaccount.",
+            "items": {
+              "properties": {
+                "area": {
+                  "description": "The affected section of cPanel & WHM.",
+                  "example": "quota",
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "The set quota megabyte (MB) limit for the affected subaccount.",
+                  "example": 1500,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "message": {
+                  "description": "The description of the issue.",
+                  "example": "Your account is over quota.",
+                  "type": "string"
+                },
+                "service": {
+                  "description": "The affected service.",
+                  "enum": [
+                    "email",
+                    "ftp",
+                    "webdisk"
+                  ],
+                  "example": "email",
+                  "type": "string"
+                },
+                "type": {
+                  "description": "The type of issue.",
+                  "enum": [
+                    "error",
+                    "info",
+                    "warning"
+                  ],
+                  "example": "info",
+                  "type": "string"
+                },
+                "used": {
+                  "description": "The number of megabytes (MB) that the account currently uses.",
+                  "example": 2000,
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "merge_candidates": {
+            "description": "An array of service account objects that the system could merge for this subaccount.",
+            "items": {
+              "$ref": "#/components/schemas/ServiceAccount"
+            },
+            "type": "array"
+          },
+          "parent_type": {
+            "description": "The type of account that could own the service account.\n* `sub` - A subaccount.\n* `hypothetical` - A hypothetical subaccount that does not yet exist, but the user could create as part of a merge.\n* `null` - Not a merge candidate.",
+            "enum": [
+              "sub",
+              "hypothetical"
+            ],
+            "example": "hypothetical",
+            "nullable": true,
+            "type": "string"
+          },
+          "phone_number": {
+            "description": "The subaccount user's phone number. A valid phone number that conforms to [ITU-T's E.164-recommended standard](https://en.wikipedia.org/wiki/ITU-T) for the representation of telephone numbers.",
+            "example": "+15551234567",
+            "nullable": true,
+            "type": "string"
+          },
+          "real_name": {
+            "description": "The name of the subaccount's user.\n* A first name, a last name, or a first name and last name.\n* An empty or null string.",
+            "example": "John Doe",
+            "nullable": true,
+            "type": "string"
+          },
+          "services": {
+            "description": "Information about the subaccount's access to email, FTP, and Web Disk.",
+            "properties": {
+              "email": {
+                "description": "Information that indicates the subaccount's email status.",
+                "properties": {
+                  "enabled": {
+                    "description": "Whether the subaccount can access Webmail, POP, and IMAP services.\n* `1` - Can access.\n* `0` - Cannot access.",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "example": 1,
+                    "type": "integer"
+                  },
+                  "quota": {
+                    "description": "The maximum amount of disk space allocated to subaccount's email account, in megabytes (MB).",
+                    "example": 100,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              },
+              "ftp": {
+                "description": "This object contains the information that indicates the subaccount's FTP status.",
+                "properties": {
+                  "enabled": {
+                    "description": "Whether the subaccount can access FTP.\n* `1` - Can access.\n* `0` - Cannot access.",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "example": 0,
+                    "type": "integer"
+                  },
+                  "homedir": {
+                    "description": "The subaccount's FTP home directory, relative to the cPanel account's home directory.",
+                    "example": "/subaccount",
+                    "format": "path",
+                    "type": "string"
+                  },
+                  "quota": {
+                    "description": "The subaccount's FTP disk space quota.\n* `1` to `999999` - The maximum disk space that the subaccount may use, in megabytes (MB).\n* `0` - Unlimited.",
+                    "example": 100,
+                    "maximum": 999999,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              },
+              "special": {
+                "description": "Whether the account is a system-created special account that the user cannot remove.\n* `1` - A special account.\n* `0` - Not a special account.",
+                "enum": [
+                  0,
+                  1
+                ],
+                "example": 1,
+                "type": "integer"
+              },
+              "webdisk": {
+                "description": "This object contains information that indicates the subaccount's Web Disk status.",
+                "properties": {
+                  "enabled": {
+                    "description": "Whether the subaccount can access Web Disk.\n* `1` - Can access.\n* `0` - Cannot access.",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "example": 0,
+                    "type": "integer"
+                  },
+                  "enabledigest": {
+                    "description": "Whether the subaccount's Web Disk service has enabled Digest Authentication.\n* `1` - Digest Authentication is enabled.\n* `0` - Digest Authentication is not enabled.",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "example": 0,
+                    "type": "integer"
+                  },
+                  "homedir": {
+                    "description": "The subaccount's Web Disk home directory, relative to the cPanel account's home directory.",
+                    "example": "/bob",
+                    "format": "path",
+                    "type": "string"
+                  },
+                  "perms": {
+                    "description": "Whether to grant write permissions to the subaccount.\n* `ro` - Read-only permissions.\n* `rw` - Read and write permissions.",
+                    "enum": [
+                      "ro",
+                      "rw"
+                    ],
+                    "example": "rw",
+                    "type": "string"
+                  },
+                  "private": {
+                    "description": "Whether to set the Web Disk directory's permissions to public or private.\n* `1` - Private (0700).\n* `0` - Public (0755).",
+                    "enum": [
+                      0,
+                      1
+                    ],
+                    "example": 0,
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "special": {
+            "description": "Whether the account is a system-created special account that the user **cannot** remove.\n* `1` - A special account.\n* `0` - Not a special account.",
+            "enum": [
+              0,
+              1
+            ],
+            "example": 0,
+            "type": "integer"
+          },
+          "sub_account_exists": {
+            "description": "Whether a subaccount exists with the same username.\n* `1` - Exists.\n* `0` - Does not exist.\n\n**Note:**\n\n  The function returns a null value if the account is not a service account.",
+            "enum": [
+              0,
+              1
+            ],
+            "example": 0,
+            "type": "integer"
+          },
+          "synced_password": {
+            "description": "Whether the user has synchronized the passwords for each of the subaccount's service accounts.\n* `1` - Synchronized.\n* `0` - Not synchronized.\n\n**Note:**\n\n  The function returns a null value if the account is not a subaccount.",
+            "enum": [
+              0,
+              1
+            ],
+            "example": 0,
+            "type": "integer"
+          },
+          "type": {
+            "description": "The type of account.\n* `cpanel` - The cPanel account.\n* `hypothetical` - A hypothetical subaccount that does not exist, but that the user could create as part of a merge.\n* `service` - A service account.\n* `sub` - A subaccount.",
+            "enum": [
+              "cpanel",
+              "hypothetical",
+              "service",
+              "sub"
+            ],
+            "example": "sub",
+            "type": "string"
+          },
+          "username": {
+            "description": "The username for the subaccount.",
+            "example": "example",
+            "format": "username",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}

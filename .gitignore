@@ -5,3 +5,7 @@
 .beads-credential-key
 .beads/proxieddb/
 *.gate.lock*
+
+# Composer dependencies and development tool caches
+/vendor/
+/.cache/

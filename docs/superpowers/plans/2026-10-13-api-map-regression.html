@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Proposed Go documentation, API-map and parity-tooling design for WHM API 1 and cPanel UAPI.">
+<meta name="source-sha256" content="ca470fadae602b36dfb18ecada88f9b940d8dc9dea7718114589c086816acc5c">
+<title>WHM &amp; UAPI · API Drift and CI Regression Implementation Plan</title>
+<style>
+
+:root { color-scheme: light; --ink:#1d302c; --body:#3c4b47; --muted:#596e63; --accent:#167765; --line:#dfe6df; --paper:#f7f8f3; --rail:#132d27; }
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:28px; }
+body { margin:0; background:var(--paper); color:var(--body); font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+a { color:var(--accent); text-decoration-thickness:1px; text-underline-offset:3px; }
+a:hover { color:#095241; }
+a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visible { outline:3px solid #e4b552; outline-offset:5px; border-radius:3px; }
+.skip { position:fixed; top:-100px; left:16px; z-index:10; background:white; padding:10px 18px; }
+.skip:focus { top:12px; }
+.sidebar { position:fixed; inset:0 auto 0 0; width:276px; display:flex; flex-direction:column; padding:36px 24px 24px; background:var(--rail); color:#e4eee9; overflow-y:auto; }
+.brand { margin:0 0 8px; color:#9ac5b5; font-size:11px; font-weight:700; letter-spacing:.19em; text-transform:uppercase; }
+.sidebar-title { color:#fff; font-size:22px; line-height:1.25; letter-spacing:-.03em; font-weight:650; margin:0 0 32px; }
+nav summary { list-style:none; font-size:10px; color:#98b4a9; letter-spacing:.18em; font-weight:700; text-transform:uppercase; margin:0 0 14px; cursor:pointer; }
+nav summary::-webkit-details-marker { display:none; }
+nav ol { list-style:none; margin:0; padding:0; }
+nav li { margin:0 0 3px; }
+nav a { display:flex; gap:12px; padding:10px 10px; font-size:12px; line-height:1.5; color:#bad0c6; border-radius:7px; text-decoration:none; }
+nav a span { color:#6f9988; font-size:10px; line-height:1.8; font-variant-numeric:tabular-nums; }
+nav a:hover,nav a[aria-current="location"] { background:#23473b; color:white; }
+.sidebar-footer { margin-top:auto; padding-top:30px; color:#93b1a3; font-size:11px; }
+.sidebar-footer strong { color:#d4e6dd; font-weight:500; }
+.main { margin-left:276px; padding:44px 64px 64px; }
+.document { max-width:1060px; margin:0 auto; }
+.toolbar { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:52px; font-size:12px; }
+.eyebrow { color:var(--muted); text-transform:uppercase; letter-spacing:.15em; font-size:10px; font-weight:700; }
+.actions { display:flex; align-items:center; gap:20px; }
+.actions a { color:var(--muted); text-decoration:none; }
+.print { border:1px solid #cbd9ce; background:transparent; padding:7px 12px; border-radius:6px; font:inherit; color:var(--ink); cursor:pointer; }
+.print:hover { background:#edf2e9; }
+.hero { margin-bottom:48px; padding-bottom:36px; border-bottom:1px solid var(--line); }
+.badges { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+.badge { display:inline-block; padding:4px 10px; border-radius:5px; font-size:10px; text-transform:uppercase; letter-spacing:.07em; font-weight:700; background:#e2ede2; color:#235e48; }
+.badge.draft { background:#eee5ce; color:#735621; }
+h1 { color:var(--ink); max-width:830px; font-size:clamp(30px,3.8vw,50px); font-weight:650; line-height:1.12; letter-spacing:-.045em; margin:0 0 22px; }
+.intro { max-width:670px; color:var(--muted); font-size:17px; line-height:1.65; margin:0; }
+.metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:30px; }
+.metric { border-left:2px solid #b3ccbb; padding:0 16px; }
+.metric strong { display:block; color:var(--ink); font-size:28px; font-weight:550; line-height:1.25; letter-spacing:-.025em; }
+.metric span { display:block; font-size:11px; line-height:1.5; color:var(--muted); margin-top:4px; }
+article>p { font-size:13px; color:var(--muted); margin-bottom:30px; }
+blockquote { margin:0 0 24px; padding:16px 20px; border-left:3px solid #b3ccbb; background:#edf2e9; font-size:13px; }
+blockquote p { margin:0; }
+p.step { border-left:2px solid #b3ccbb; padding-left:14px; margin-top:24px; }
+section { margin:0 0 48px; scroll-margin-top:28px; }
+h2 { display:flex; align-items:baseline; gap:14px; margin:0 0 22px; padding-top:24px; border-top:1px solid var(--line); color:var(--ink); font-size:25px; line-height:1.3; font-weight:600; letter-spacing:-.025em; }
+.section-number { font-size:11px; line-height:1.4; color:#4b7564; font-weight:600; letter-spacing:.05em; flex:0 0 auto; }
+p { margin:0 0 18px; max-width:84ch; }
+code { font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace; font-size:.82em; background:#eaf0e8; color:#275d48; padding:.17em .32em; border-radius:4px; overflow-wrap:anywhere; }
+pre { padding:20px; overflow:auto; border-radius:8px; background:#eaf0e8; }
+pre code { padding:0; }
+ul { padding-left:22px; max-width:84ch; }
+li { padding-left:5px; margin:0 0 12px; }
+li::marker { color:#74a58a; }
+.table-scroll { max-width:100%; overflow-x:auto; margin:24px 0; background:white; border:1px solid var(--line); border-radius:9px; }
+table { width:100%; border-collapse:collapse; font-size:14px; line-height:1.6; text-align:left; }
+th { padding:13px 18px; background:#ecf1e9; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#587362; }
+td { padding:14px 18px; vertical-align:top; border-top:1px solid var(--line); }
+td:first-child { width:24%; min-width:145px; }
+td code { white-space:normal; }
+.architecture { margin:28px 0; padding:18px 12px 12px; background:#fff; border:1px solid var(--line); border-radius:12px; }
+.diagram-scroll { overflow-x:auto; }
+.architecture svg { display:block; width:100%; min-width:690px; height:auto; }
+.node rect { fill:#f1f5ef; stroke:#d4e1d5; }
+.node text { font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; fill:#355344; text-anchor:middle; }
+.node.map rect { fill:#225d48; stroke:#225d48; }
+.node.map text { fill:white; font-weight:600; font-size:14px; }
+.node.report rect { fill:#e4eee2; stroke:#b7cdb9; }
+figcaption { color:var(--muted); padding:12px 12px 0; border-top:1px solid #edf0e9; font-size:11px; line-height:1.6; }
+.endnote { border-top:1px solid var(--line); padding-top:22px; display:flex; justify-content:space-between; gap:20px; color:var(--muted); font-size:11px; }
+@media(min-width:1500px) { .main { padding-left:88px; padding-right:88px; } }
+@media(max-width:1100px) { .sidebar { width:240px; padding:30px 18px; } .main { margin-left:240px; padding:32px; } h2 { font-size:22px; } }
+@media(max-width:760px) { .sidebar { position:static; width:auto; padding:22px 24px; overflow:visible; } .sidebar-title { font-size:20px; margin-bottom:18px; } .brand { font-size:9px; } nav summary { margin-bottom:0; } nav summary::after { content:" +"; } nav details[open] summary { margin-bottom:14px; } nav a { padding:6px 0; font-size:12px; } nav ol { columns:2; column-gap:20px; } nav li { break-inside:avoid; } .sidebar-footer { display:none; } .main { margin-left:0; padding:28px 22px 40px; } .toolbar { margin-bottom:32px; gap:12px; } .eyebrow { font-size:9px; } .actions { gap:10px; font-size:10px; } .print { padding:6px 8px; } h1 { font-size:35px; } .intro { font-size:15px; } .metrics { gap:8px; } .metric { padding:0 10px; } .metric strong { font-size:24px; } .metric span { font-size:10px; } body { font-size:15px; } h2 { font-size:22px; gap:9px; } .hero { margin-bottom:32px; } td,th { padding:12px; } table { font-size:12px; } .endnote { flex-direction:column; gap:8px; } }
+@media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+@media print { @page { margin:18mm; } body { background:white; font-size:10pt; color:#222; } .sidebar,.toolbar,.skip,.endnote a { display:none; } .main { margin:0; padding:0; } .document { max-width:none; } h1 { font-size:27pt; } h2 { font-size:17pt; break-after:avoid; } p,li { orphans:3; widows:3; } section { margin-bottom:24px; } .hero { margin-bottom:24px; } .table-scroll { overflow:visible; } table { font-size:9pt; } tr { break-inside:avoid; } thead { display:table-header-group; } .architecture { break-inside:avoid; } .architecture svg { min-width:0; } a { color:inherit; } .badge,code,th,.node rect { print-color-adjust:exact; -webkit-print-color-adjust:exact; } }
+</style>
+</head>
+<body id="top">
+<a class="skip" href="#design-content">Skip to plan</a>
+<aside class="sidebar" aria-label="Document navigation"><p class="brand">HostingPal / Engineering</p><p class="sidebar-title">WHM &amp; UAPI<br>Implementation plans</p><nav aria-label="Table of contents"><details open><summary>In this plan</summary><ol><li><a href="#global-constraints"><span>01</span>Global constraints</a></li>
+<li><a href="#review-focus"><span>02</span>Review focus</a></li>
+<li><a href="#task-9-report-source-contract-drift"><span>03</span>Task 9 — Report source-contract drift</a></li>
+<li><a href="#task-10-enforce-baselines-and-run-offline-ci"><span>04</span>Task 10 — Enforce baselines and run offline CI</a></li></ol></details></nav><div class="sidebar-footer"><strong>whm-api-client-gwi</strong><br>Implementation plan · 13 October 2026</div></aside>
+<main class="main"><div class="document"><div class="toolbar"><span class="eyebrow">Approved design / Implementation plan</span><div class="actions"><a href="2026-10-13-api-map-regression.md">Markdown source ↗</a><button class="print" type="button" onclick="window.print()">Print / PDF</button></div></div><header class="hero"><div class="badges"><span class="badge">Implemented · review complete</span><span class="badge">Go selected</span></div><h1>API Drift and CI Regression Implementation Plan</h1><p class="intro">Implementation sequence, interfaces, and validation for the approved Go toolchain.</p><div class="metrics" aria-label="Implementation plan overview"><div class="metric"><strong>4</strong><span>Component plans</span></div><div class="metric"><strong>10</strong><span>Beads implementation tasks</span></div><div class="metric"><strong>0</strong><span>Live calls required for validation</span></div></div></header><article id="design-content" aria-label="Full implementation plan">
+<blockquote><p><strong>For agentic workers:</strong> Use the execution skill selected at handoff. Read the <a href="2026-10-13-api-map-implementation-plan.html">overview</a>, dependent component plans, and approved spec first. Track status in Beads only.</p></blockquote>
+<p><strong>Goal:</strong> Make upstream documentation changes visible and prevent established implementation/test coverage from silently regressing.</p>
+<p><strong>Architecture:</strong> A pure drift comparator reuses reference-aware contract units. A separate baseline checker protects exact mappings and claims. CI runs these against pinned artifacts, independently of optional server profiles.</p>
+<p><strong>Tech stack:</strong> Go test/vet, the existing Composer checks, and GitHub Actions. <strong>Spec:</strong> <a href="../specs/2026-10-13-api-map-design.html">approved design</a>.</p>
+<section id="global-constraints" aria-labelledby="global-constraints-heading"><h2 id="global-constraints-heading"><span class="section-number">01</span>Global constraints</h2>
+<p>All overview constraints apply. Upstream, implementation, and runtime differences remain separate reports. Baselines are explicit reviewed artifacts, never automatically ratcheted by CI. Initial zero coverage passes. No credentials, live servers, commits, pushes, or Dolt remote synchronization are required. This plan depends on <code>gwi.4</code> and <code>gwi.5</code>.</p>
+</section>
+<section id="review-focus" aria-labelledby="review-focus-heading"><h2 id="review-focus-heading"><span class="section-number">02</span>Review focus</h2>
+<p>Test referenced-schema edits with stable pointers; documentation-only edits; unconfirmed renames; denominator changes that conceal lost implementations; and failure paths that overwrite or silently update checked baselines.</p>
+</section>
+<section id="task-9-report-source-contract-drift" aria-labelledby="task-9-report-source-contract-drift-heading"><h2 id="task-9-report-source-contract-drift-heading"><span class="section-number">03</span>Task 9 — Report source-contract drift</h2>
+<p><strong>Beads:</strong> <code>whm-api-client-gwi.6.1</code>.</p>
+<p><strong>Files:</strong> Create <code>internal/drift/{diff.go,render.go,diff_test.go,testdata/}</code>, <code>internal/cli/drift.go</code>, published/embedded <code>drift-report-v1.schema.json</code>, and <code>docs/api/examples/drift/{unchanged.json,changed.json,changed.md}</code>.</p>
+<p><strong>Interfaces:</strong> <code>drift.Compare(before, after model.Map) (Report, error)</code> and <code>drift.Markdown(report Report) []byte</code>. <code>Report</code> contains source versions/hashes, added/removed IDs and variants, confirmed alias relationships, and categorized changes (<code>parameter</code>, <code>body</code>, <code>response</code>, <code>auth</code>, <code>availability</code>, <code>deprecation</code>, <code>risk</code>, <code>documentation</code>, <code>uninterpreted</code>). Each change identifies before/after locators and normalized hashes or explicit absent values.</p>
+<p class="step">1. Write <code>TestDriftCategories</code> with one edit per fixture:</p>
+<pre><code>   identical map -&gt; no changes
+   description/example only -&gt; documentation change, no contract change
+   source timestamp only -&gt; provenance change, no invented operation change
+   referenced schema enum changes behind same $ref -&gt; contract change
+   parameter default null becomes absent -&gt; parameter change
+   same-name schema property called description changes enum -&gt; contract change
+   inherited security becomes explicit [] -&gt; auth change
+   GET gains POST variant -&gt; variant addition, no extra logical operation
+   risk/availability/rollback/deprecation changes -&gt; corresponding metadata change
+   old path removed + similar new path -&gt; removed/added, not inferred rename
+   explicit validated alias -&gt; confirmed rename relationship, original delta retained
+   unknown retained OpenAPI field changes -&gt; uninterpreted change, not silently ignored</code></pre>
+<p>A synthetic cyclic schema edit must terminate and produce one stable change set. Invalid maps or alias cycles must fail before comparison. 2. Run <code>go -C tools/api-map test ./internal/drift -run TestDrift</code>; verify the expected failing tests before implementing the comparator. 3. Reuse <code>contract.Units</code>/<code>Hash</code> from the parity plan; do not invent a second incompatible contract-hashing algorithm. Compare noncontract metadata and presentation separately, traversing schema/data positions correctly. Source hashes identify changed inputs but do not by themselves prove every contract changed. Missing versus explicit null remains visible. 4. Add <code>drift report --before PATH --after PATH --output PATH --markdown PATH</code>. A detected upstream change exits 0 with a nonempty report; malformed inputs exit 1. Upstream additions are findings, not automatically PHP regressions. Generate and validate unchanged/changed synthetic reports; run all Go tests.</p>
+</section>
+<section id="task-10-enforce-baselines-and-run-offline-ci" aria-labelledby="task-10-enforce-baselines-and-run-offline-ci-heading"><h2 id="task-10-enforce-baselines-and-run-offline-ci-heading"><span class="section-number">04</span>Task 10 — Enforce baselines and run offline CI</h2>
+<p><strong>Beads:</strong> <code>whm-api-client-gwi.6.2</code>; depends on Task 9.</p>
+<p><strong>Files:</strong> Create <code>internal/parity/{baseline.go,baseline_test.go}</code>, <code>internal/cli/{check.go,check_test.go}</code>, <code>docs/api/coverage/baseline.json</code>, published/embedded <code>coverage-baseline-v1.schema.json</code>, <code>docs/api/toolchain.json</code>, <code>.github/workflows/api-map.yml</code>, and <code>tools/api-map/README.md</code>. Update root <code>README.md</code>, <code>docs/api/README.md</code>, <code>AGENTS.md</code>, and <code>CLAUDE.md</code>. Add a separate Composer <code>api-map:check</code> script; the existing PHP-only <code>check</code> script remains intact.</p>
+<p><strong>Interfaces:</strong> <code>parity.CheckBaseline(current Report, baseline Baseline) []Violation</code>; <code>cli.Check(ctx context.Context, root string, stdout, stderr io.Writer) int</code>. <code>Baseline</code> contains schema version and protected operation/variant IDs, PHP symbols, contract IDs/hashes, and test-symbol mappings. Live evidence is optional report data and cannot make an offline baseline pass or fail.</p>
+<p class="step">1. Write <code>TestBaselineProtectsMappings</code>, including these assertions:</p>
+<pre><code>   current zero report + empty baseline -&gt; zero violations
+   protected A removed while unrelated B added -&gt; regression
+   protected A mapped to nonexistent ID -&gt; invalid mapping + regression
+   A loses one variant, contract claim, or test mapping -&gt; regression
+   denominator grows because upstream adds C -&gt; no implementation regression
+   unsupported/removed documented A still in registry -&gt; orphan requiring review
+   changed source contract hash -&gt; stale claim requiring review, not silent pass
+   absent live server evidence -&gt; no offline regression</code></pre>
+<p><code>TestCheckIsReadOnlyAndOffline</code> uses a temporary miniature repository with stubbed trusted PHP exporter/test artifacts. Block all HTTP requests; assert no network attempt, unchanged baseline bytes, and unchanged checked reports after both passing and failing checks. Exit 3 identifies baseline regressions; invalid source/schema/registry input exits 1. 2. Run <code>go -C tools/api-map test ./internal/parity ./internal/cli</code>; confirm these new assertions fail before implementing baseline/check behavior. 3. Implement exact-set protection. A higher percentage or unchanged count must never conceal lost IDs/claims. <code>check --root PATH</code> reads <code>docs/api/toolchain.json</code> for manifest, annotations, registry, symbols, baseline, schema, and expected report/checksum paths, resolving them relative to that explicit repository root. The configuration contains no tokens or live hosts and permits no executable shell snippets. Use fixed argv for the trusted PHP exporter. 4. In a temporary output directory, verify sources and embedded schema equality, build the map twice, compare bytes and the committed checksum, export fresh symbols, validate registries/evidence, regenerate parity reports, and compare them to checked artifacts. Then enforce the baseline. Validate the saved synthetic capability/drift examples, but do not capture or compare a real server automatically. Propagate cancellation and clean temporary outputs. 5. Create the empty baseline and initial configuration. Document explicit artifact regeneration commands and manual baseline-review requirements. There is no automatic baseline-update switch in <code>check</code>. Set Composer <code>api-map:check</code> to <code>go -C tools/api-map run ./cmd/api-map check --root ../..</code>. 6. Add GitHub Actions jobs with PHP 8.3 and Go 1.24. Install pinned Composer/Go dependencies, verify formatting (<code>gofmt -l</code> must return no files), run Go test/vet, <code>composer validate</code>, <code>composer check</code>, and <code>composer api-map:check</code>. Pin third-party actions to reviewed commit SHAs at implementation time. Disable persistence of checkout credentials; provide no WHM/cPanel secrets. Test commands use pinned local sources; package installation may use normal package-network access. CI does not publish artifacts, commit, or push. 7. Run the overview&#x27;s final commands. Demonstrate a passing unchanged baseline and failing removed/mis-mapped protected fixtures without modifying the real baseline. Confirm documentation commands, schemas, deterministic outputs, PHP formatting/static analysis/tests, and dependency boundaries. Close the remaining Beads and epic only after every acceptance criterion is met; report live verification as not run and retain uncommitted work for review.</p>
+</section>
+</article><footer class="endnote"><span>Implementation reference. Progress and completion are tracked in Beads.</span><a href="#top">Back to top ↑</a></footer></div></main>
+<script>
+const links = [...document.querySelectorAll('nav a')];
+const sections = [...document.querySelectorAll('article section')];
+function updateCurrentSection() {
+    let current = sections[0];
+    for (const section of sections) {
+        if (section.getBoundingClientRect().top <= 150) current = section;
+    }
+    for (const link of links) {
+        if (link.hash === '#' + current.id) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+    }
+}
+let queued = false;
+window.addEventListener('scroll', () => {
+    if (!queued) requestAnimationFrame(() => { updateCurrentSection(); queued = false; });
+    queued = true;
+}, {passive:true});
+updateCurrentSection();
+if (window.matchMedia('(max-width:760px)').matches) document.querySelector('nav details').open = false;
+</script>
+</body>
+</html>

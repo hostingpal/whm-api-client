@@ -1,0 +1,16 @@
+{
+  "original_file": "cpanel.openapi.json.gz",
+  "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+  "pointers": [
+    "/openapi",
+    "/info",
+    "/security",
+    "/servers",
+    "/components",
+    "/paths/~1EmailAuth~1apply_dmarc",
+    "/paths/~1WebApp~1stage",
+    "/paths/~1SiteQuality~1get_all_scores",
+    "/paths/~1CCS~1add_delegate"
+  ],
+  "projection": "Exact selected paths and complete components; top-level metadata retained. No selected field rewrites."
+}

@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Approved Go documentation, API-map and parity-tooling design for WHM API 1 and cPanel UAPI.">
+<meta name="source-sha256" content="96af0202f2e12af684243238b77cae3214d3d1149e6b8cbde7dd990a3a81d34a">
+<title>WHM &amp; UAPI · Documentation Toolchain Design</title>
+<style>
+
+:root { color-scheme: light; --ink:#1d302c; --body:#3c4b47; --muted:#596e63; --accent:#167765; --line:#dfe6df; --paper:#f7f8f3; --rail:#132d27; }
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; scroll-padding-top:28px; }
+body { margin:0; background:var(--paper); color:var(--body); font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+a { color:var(--accent); text-decoration-thickness:1px; text-underline-offset:3px; }
+a:hover { color:#095241; }
+a:focus-visible,button:focus-visible,summary:focus-visible,[tabindex]:focus-visible { outline:3px solid #e4b552; outline-offset:5px; border-radius:3px; }
+.skip { position:fixed; top:-100px; left:16px; z-index:10; background:white; padding:10px 18px; }
+.skip:focus { top:12px; }
+.sidebar { position:fixed; inset:0 auto 0 0; width:276px; display:flex; flex-direction:column; padding:36px 24px 24px; background:var(--rail); color:#e4eee9; overflow-y:auto; }
+.brand { margin:0 0 8px; color:#9ac5b5; font-size:11px; font-weight:700; letter-spacing:.19em; text-transform:uppercase; }
+.sidebar-title { color:#fff; font-size:22px; line-height:1.25; letter-spacing:-.03em; font-weight:650; margin:0 0 32px; }
+nav summary { list-style:none; font-size:10px; color:#98b4a9; letter-spacing:.18em; font-weight:700; text-transform:uppercase; margin:0 0 14px; cursor:pointer; }
+nav summary::-webkit-details-marker { display:none; }
+nav ol { list-style:none; margin:0; padding:0; }
+nav li { margin:0 0 3px; }
+nav a { display:flex; gap:12px; padding:10px 10px; font-size:12px; line-height:1.5; color:#bad0c6; border-radius:7px; text-decoration:none; }
+nav a span { color:#6f9988; font-size:10px; line-height:1.8; font-variant-numeric:tabular-nums; }
+nav a:hover,nav a[aria-current="location"] { background:#23473b; color:white; }
+.sidebar-footer { margin-top:auto; padding-top:30px; color:#93b1a3; font-size:11px; }
+.sidebar-footer strong { color:#d4e6dd; font-weight:500; }
+.main { margin-left:276px; padding:44px 64px 64px; }
+.document { max-width:1060px; margin:0 auto; }
+.toolbar { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:52px; font-size:12px; }
+.eyebrow { color:var(--muted); text-transform:uppercase; letter-spacing:.15em; font-size:10px; font-weight:700; }
+.actions { display:flex; align-items:center; gap:20px; }
+.actions a { color:var(--muted); text-decoration:none; }
+.print { border:1px solid #cbd9ce; background:transparent; padding:7px 12px; border-radius:6px; font:inherit; color:var(--ink); cursor:pointer; }
+.print:hover { background:#edf2e9; }
+.hero { margin-bottom:48px; padding-bottom:36px; border-bottom:1px solid var(--line); }
+.badges { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px; }
+.badge { display:inline-block; padding:4px 10px; border-radius:5px; font-size:10px; text-transform:uppercase; letter-spacing:.07em; font-weight:700; background:#e2ede2; color:#235e48; }
+.badge.draft { background:#eee5ce; color:#735621; }
+h1 { color:var(--ink); max-width:830px; font-size:clamp(30px,3.8vw,50px); font-weight:650; line-height:1.12; letter-spacing:-.045em; margin:0 0 22px; }
+.intro { max-width:670px; color:var(--muted); font-size:17px; line-height:1.65; margin:0; }
+.metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:30px; }
+.metric { border-left:2px solid #b3ccbb; padding:0 16px; }
+.metric strong { display:block; color:var(--ink); font-size:28px; font-weight:550; line-height:1.25; letter-spacing:-.025em; }
+.metric span { display:block; font-size:11px; line-height:1.5; color:var(--muted); margin-top:4px; }
+article>p { font-size:13px; color:var(--muted); margin-bottom:30px; }
+blockquote { margin:0 0 24px; padding:16px 20px; border-left:3px solid #b3ccbb; background:#edf2e9; font-size:13px; }
+blockquote p { margin:0; }
+p.step { border-left:2px solid #b3ccbb; padding-left:14px; margin-top:24px; }
+section { margin:0 0 48px; scroll-margin-top:28px; }
+h2 { display:flex; align-items:baseline; gap:14px; margin:0 0 22px; padding-top:24px; border-top:1px solid var(--line); color:var(--ink); font-size:25px; line-height:1.3; font-weight:600; letter-spacing:-.025em; }
+.section-number { font-size:11px; line-height:1.4; color:#4b7564; font-weight:600; letter-spacing:.05em; flex:0 0 auto; }
+p { margin:0 0 18px; max-width:84ch; }
+code { font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace; font-size:.82em; background:#eaf0e8; color:#275d48; padding:.17em .32em; border-radius:4px; overflow-wrap:anywhere; }
+pre { padding:20px; overflow:auto; border-radius:8px; background:#eaf0e8; }
+pre code { padding:0; }
+ul { padding-left:22px; max-width:84ch; }
+li { padding-left:5px; margin:0 0 12px; }
+li::marker { color:#74a58a; }
+.table-scroll { max-width:100%; overflow-x:auto; margin:24px 0; background:white; border:1px solid var(--line); border-radius:9px; }
+table { width:100%; border-collapse:collapse; font-size:14px; line-height:1.6; text-align:left; }
+th { padding:13px 18px; background:#ecf1e9; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#587362; }
+td { padding:14px 18px; vertical-align:top; border-top:1px solid var(--line); }
+td:first-child { width:24%; min-width:145px; }
+td code { white-space:normal; }
+.architecture { margin:28px 0; padding:18px 12px 12px; background:#fff; border:1px solid var(--line); border-radius:12px; }
+.diagram-scroll { overflow-x:auto; }
+.architecture svg { display:block; width:100%; min-width:690px; height:auto; }
+.node rect { fill:#f1f5ef; stroke:#d4e1d5; }
+.node text { font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; fill:#355344; text-anchor:middle; }
+.node.map rect { fill:#225d48; stroke:#225d48; }
+.node.map text { fill:white; font-weight:600; font-size:14px; }
+.node.report rect { fill:#e4eee2; stroke:#b7cdb9; }
+figcaption { color:var(--muted); padding:12px 12px 0; border-top:1px solid #edf0e9; font-size:11px; line-height:1.6; }
+.endnote { border-top:1px solid var(--line); padding-top:22px; display:flex; justify-content:space-between; gap:20px; color:var(--muted); font-size:11px; }
+@media(min-width:1500px) { .main { padding-left:88px; padding-right:88px; } }
+@media(max-width:1100px) { .sidebar { width:240px; padding:30px 18px; } .main { margin-left:240px; padding:32px; } h2 { font-size:22px; } }
+@media(max-width:760px) { .sidebar { position:static; width:auto; padding:22px 24px; overflow:visible; } .sidebar-title { font-size:20px; margin-bottom:18px; } .brand { font-size:9px; } nav summary { margin-bottom:0; } nav summary::after { content:" +"; } nav details[open] summary { margin-bottom:14px; } nav a { padding:6px 0; font-size:12px; } nav ol { columns:2; column-gap:20px; } nav li { break-inside:avoid; } .sidebar-footer { display:none; } .main { margin-left:0; padding:28px 22px 40px; } .toolbar { margin-bottom:32px; gap:12px; } .eyebrow { font-size:9px; } .actions { gap:10px; font-size:10px; } .print { padding:6px 8px; } h1 { font-size:35px; } .intro { font-size:15px; } .metrics { gap:8px; } .metric { padding:0 10px; } .metric strong { font-size:24px; } .metric span { font-size:10px; } body { font-size:15px; } h2 { font-size:22px; gap:9px; } .hero { margin-bottom:32px; } td,th { padding:12px; } table { font-size:12px; } .endnote { flex-direction:column; gap:8px; } }
+@media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+@media print { @page { margin:18mm; } body { background:white; font-size:10pt; color:#222; } .sidebar,.toolbar,.skip,.endnote a { display:none; } .main { margin:0; padding:0; } .document { max-width:none; } h1 { font-size:27pt; } h2 { font-size:17pt; break-after:avoid; } p,li { orphans:3; widows:3; } section { margin-bottom:24px; } .hero { margin-bottom:24px; } .table-scroll { overflow:visible; } table { font-size:9pt; } tr { break-inside:avoid; } thead { display:table-header-group; } .architecture { break-inside:avoid; } .architecture svg { min-width:0; } a { color:inherit; } .badge,code,th,.node rect { print-color-adjust:exact; -webkit-print-color-adjust:exact; } }
+</style>
+</head>
+<body id="top">
+<a class="skip" href="#design-content">Skip to design</a>
+<aside class="sidebar" aria-label="Document navigation"><p class="brand">HostingPal / Engineering</p><p class="sidebar-title">WHM &amp; UAPI<br>Documentation toolchain</p><nav aria-label="Table of contents"><details open><summary>In this design</summary><ol><li><a href="#intended-outcome"><span>01</span>Intended outcome</a></li>
+<li><a href="#approach-and-boundaries"><span>02</span>Approach and boundaries</a></li>
+<li><a href="#canonical-identity-and-transport-variants"><span>03</span>Canonical identity and transport variants</a></li>
+<li><a href="#versioned-map-contract"><span>04</span>Versioned map contract</a></li>
+<li><a href="#source-supplements-availability-and-risk"><span>05</span>Source supplements, availability, and risk</a></li>
+<li><a href="#cli-behavior-and-reproducibility"><span>06</span>CLI behavior and reproducibility</a></li>
+<li><a href="#php-and-test-coverage-registry"><span>07</span>PHP and test coverage registry</a></li>
+<li><a href="#server-capability-profiles"><span>08</span>Server capability profiles</a></li>
+<li><a href="#drift-and-ci-baseline"><span>09</span>Drift and CI baseline</a></li>
+<li><a href="#validation-and-delivery-boundaries"><span>10</span>Validation and delivery boundaries</a></li></ol></details></nav><div class="sidebar-footer"><strong>whm-api-client-gwi</strong><br>Design review · 13 October 2026</div></aside>
+<main class="main"><div class="document"><div class="toolbar"><span class="eyebrow">Architecture / Design review</span><div class="actions"><a href="2026-10-13-api-map-design.md">Markdown source ↗</a><button class="print" type="button" onclick="window.print()">Print / PDF</button></div></div><header class="hero"><div class="badges"><span class="badge">Implemented · review complete</span><span class="badge">Go selected</span></div><h1>Documentation, API map, and parity tooling</h1><p class="intro">A reproducible view of documented APIs, PHP implementation, test coverage, and server capabilities.</p><div class="metrics" aria-label="Initial documentation snapshot"><div class="metric"><strong>630</strong><span>WHM HTTP operations</span></div><div class="metric"><strong>695</strong><span>UAPI HTTP variants · 693 paths</span></div><div class="metric"><strong>0</strong><span>API endpoints implemented</span></div></div></header><article id="design-content" aria-label="Full design">
+<p>Status: approved by the user for implementation planning on 2026-10-13. Go was selected by the user on 2026-10-13. Beads: <code>whm-api-client-gwi</code>, with delivery tracked in its existing six children.</p>
+<section id="intended-outcome" aria-labelledby="intended-outcome-heading"><h2 id="intended-outcome-heading"><span class="section-number">01</span>Intended outcome</h2>
+<p>Give this PHP library a reproducible answer to four separate questions: what the official API documentation describes, what the PHP library implements, which contracts its tests cover, and what a particular server advertises. Make upstream changes and implementation regressions reviewable without live credentials. Initial endpoint coverage is zero; an HTTP transport is not an endpoint implementation.</p>
+<p>The tool targets WHM API 1 and cPanel UAPI. Legacy cPanel API 1/2, WHM API 0, PHP endpoint implementation, Laravel integration, and mutating/destructive server tests are outside this epic. A bridge operation belongs to WHM&#x27;s map; UAPI-through-WHM test evidence belongs to the relevant UAPI operation and must remain distinguishable from direct UAPI authentication evidence.</p>
+<p>The <a href="../../api/source-audit.md">source audit</a> and <a href="../../api/sources/2026-10-13/manifest.json">manifest</a> establish the first inputs: 630 WHM HTTP operations and 695 UAPI variants across 693 UAPI paths, with source version 11.138.0.10. These figures are evidence for this snapshot only.</p>
+</section>
+<section id="approach-and-boundaries" aria-labelledby="approach-and-boundaries-heading"><h2 id="approach-and-boundaries-heading"><span class="section-number">02</span>Approach and boundaries</h2>
+<p>Use a standalone Go module in <code>tools/api-map/</code>, producing an <code>api-map</code> binary. It has no place in Composer&#x27;s runtime dependencies or the PHP <code>src/</code> namespace. The Go baseline is 1.24; development may use the installed newer toolchain. Prefer standard-library JSON, hashing, HTTP, and command parsing. Use <a href="https://pkg.go.dev/go.yaml.in/yaml/v3"><code>go.yaml.in/yaml/v3</code></a> for YAML input and <a href="https://pkg.go.dev/github.com/santhosh-tekuri/jsonschema/v6"><code>github.com/santhosh-tekuri/jsonschema/v6</code></a> to validate the published map/registry/report schemas. Pin dependencies in the tool&#x27;s own <code>go.mod</code> and <code>go.sum</code> during implementation.</p>
+<p>The chosen ingestion approach is a lossless JSON-compatible source tree plus a small normalized index. A strongly typed OpenAPI model alone risks dropping unrecognized extensions or inconsistent vendor metadata; retaining a source tree lets diagnostics report those inconsistencies. An SDK/code generator would couple documentation analysis to PHP implementation and does not solve the separate coverage/evidence questions. Rust could provide the same design, but Go is the user&#x27;s selected language and suits this standalone CLI.</p>
+<p>Split responsibilities into source loading, reference indexing, canonical map construction, implementation parity, capability comparison, and drift checks. Only explicit source refresh and capability capture may access the network. All comparison and generation commands operate on local artifacts.</p>
+<figure class="architecture" aria-labelledby="architecture-caption">
+<div class="diagram-scroll" tabindex="0" role="region" aria-label="Architecture diagram; scroll horizontally on narrow screens">
+<svg viewBox="0 0 920 430" role="img" aria-labelledby="diagram-title diagram-description" xmlns="http://www.w3.org/2000/svg">
+<title id="diagram-title">Documentation toolchain architecture</title>
+<desc id="diagram-description">Pinned official sources and reviewed annotations feed the canonical map. The map and implementation registry feed PHP and test parity, which feeds the coverage baseline check. The map and versioned server inventory feed capability comparison. The map and previous map feed upstream drift.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#78938c"/></marker></defs>
+<g class="edges" fill="none" stroke="#78938c" stroke-width="1.8" marker-end="url(#arrow)">
+<path data-edge="S-M" d="M207 61 H231 V111 H258"/>
+<path data-edge="A-M" d="M207 161 H231 V111 H258"/>
+<path data-edge="M-P" d="M441 111 H472 V61 H500"/>
+<path data-edge="M-C" d="M441 111 H472 V216 H500"/>
+<path data-edge="M-D" d="M441 111 H472 V371 H500"/>
+<path data-edge="R-P" d="M595 121 V91"/>
+<path data-edge="I-C" d="M732 216 H690"/>
+<path data-edge="O-D" d="M732 371 H690"/>
+<path data-edge="P-B" d="M690 61 H732"/>
+</g>
+<g class="node source"><rect x="12" y="31" width="195" height="60" rx="10"/><text x="109.5" y="57"><tspan>Pinned official</tspan><tspan x="109.5" dy="20">sources</tspan></text></g>
+<g class="node source"><rect x="12" y="131" width="195" height="60" rx="10"/><text x="109.5" y="157"><tspan>Reviewed</tspan><tspan x="109.5" dy="20">annotations</tspan></text></g>
+<g class="node map"><rect x="258" y="76" width="183" height="70" rx="12"/><text x="349.5" y="116">Canonical map</text></g>
+<g class="node report"><rect x="500" y="31" width="190" height="60" rx="10"/><text x="595" y="57"><tspan>PHP and</tspan><tspan x="595" dy="20">test parity</tspan></text></g>
+<g class="node source"><rect x="500" y="121" width="190" height="52" rx="10"/><text x="595" y="143"><tspan>Implementation</tspan><tspan x="595" dy="19">registry</tspan></text></g>
+<g class="node report"><rect x="500" y="186" width="190" height="60" rx="10"/><text x="595" y="212"><tspan>Capability</tspan><tspan x="595" dy="20">comparison</tspan></text></g>
+<g class="node source"><rect x="732" y="190" width="176" height="52" rx="10"/><text x="820" y="212"><tspan>Versioned server</tspan><tspan x="820" dy="19">inventory</tspan></text></g>
+<g class="node report"><rect x="500" y="341" width="190" height="60" rx="10"/><text x="595" y="376">Upstream drift</text></g>
+<g class="node source"><rect x="732" y="345" width="176" height="52" rx="10"/><text x="820" y="376">Previous map</text></g>
+<g class="node report"><rect x="732" y="35" width="176" height="52" rx="10"/><text x="820" y="57"><tspan>Coverage</tspan><tspan x="820" dy="19">baseline check</tspan></text></g>
+</svg></div>
+<figcaption id="architecture-caption">One documented API map, with separate implementation, server capability, and upstream change reports.</figcaption>
+</figure>
+</section>
+<section id="canonical-identity-and-transport-variants" aria-labelledby="canonical-identity-and-transport-variants-heading"><h2 id="canonical-identity-and-transport-variants-heading"><span class="section-number">03</span>Canonical identity and transport variants</h2>
+<p>A logical operation ID is its family prefix plus exact path without the leading slash: <code>whm1:accountsummary</code>, <code>whm1:EcosystemFeatures/is_ready</code>, or <code>uapi:DomainInfo/list_domains</code>. WHM preserves the complete function path, including namespaces. UAPI also records module and function separately. Preserve spelling and case; tags and upstream <code>operationId</code> remain source metadata, not canonical identity.</p>
+<p>A transport variant ID adds <code>#</code> and the uppercase HTTP method, for example <code>uapi:WebApp/stage#POST</code>. Source JSON pointers retain lowercase method keys. The two WebApp GET/POST pairs become two logical operations with two variants each. Each variant preserves its own query parameters and body; shared names do not make those contracts interchangeable.</p>
+<p>Do not synthesize undocumented variants from examples. Supplemental evidence such as the SSL POST tutorial is recorded as a discrepancy until a reviewed annotation explicitly admits another transport. A WHM bridge does not create hundreds of additional synthetic UAPI transport variants.</p>
+<p>Aliases are explicit records with source/target IDs, reason, and evidence. Resolve them with cycle and collision checks. Never collapse two paths based on similar names or a shared upstream ID. A possible rename in drift output remains an added/removed pair until an explicit alias confirms it.</p>
+</section>
+<section id="versioned-map-contract" aria-labelledby="versioned-map-contract-heading"><h2 id="versioned-map-contract-heading"><span class="section-number">04</span>Versioned map contract</h2>
+<p>Publish <code>docs/api/schema/api-map-v1.schema.json</code> using JSON Schema 2020-12. Its normalized structure is strict; retained OpenAPI objects use their declared OpenAPI dialect and are not misrepresented as 2020-12 response schemas. The map has these top-level members:</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Versioned map contract table"><table><thead><tr><th scope="col">Member</th><th scope="col">Meaning</th></tr></thead><tbody><tr><td><code>schema_version</code></td><td>Exact interchange version <code>1.0</code></td></tr><tr><td><code>sources</code></td><td>Manifest source IDs, URLs, hashes, retrieval times, product/spec versions</td></tr><tr><td><code>documents</code></td><td>Complete parsed OpenAPI source trees, including components, the original Paths Object, empty path items, and extensions</td></tr><tr><td><code>operations</code></td><td>Sorted logical operations containing case-sensitive identity and HTTP variants</td></tr><tr><td><code>aliases</code></td><td>Reviewed, evidenced identity relationships</td></tr><tr><td><code>annotations</code></td><td>Source supplements/discrepancies, separately attributed</td></tr><tr><td><code>diagnostics</code></td><td>Sorted findings with severity, code, source ID, and JSON pointer or prose locator</td></tr></tbody></table></div>
+<p>An operation contains <code>id</code>, <code>family</code>, <code>module</code> (null for WHM), <code>function</code>, <code>path</code>, source provenance, and a nonempty <code>variants</code> array. A variant contains its ID, method, operation/path-item source pointers, effective parameters/ security/servers, and an evidenced risk classification. The complete source objects in <code>documents</code> preserve parameter/body/response schemas, defaults, nullability, examples, deprecations, serialization fields, and all extensions without a hand-maintained list of allowed vendor fields. Variants reference those objects instead of duplicating their full bodies. Each effective parameter also points to the declaration it came from.</p>
+<p>Retaining each parsed document preserves the complete source graph even for empty or metadata-only path items and extensions on the Paths Object. References resolve within their original source document, not against the surrounding map&#x27;s JSON paths. Preserve schema references rather than recursively expanding them: UAPI <code>ServiceAccount</code> already contains a recursion cycle. Check <code>$ref</code> targets and discriminator mapping targets with cycle-aware traversal. A legitimate schema cycle is not an unresolved-reference error; alias cycles are errors.</p>
+<p>Parameter inheritance follows <code>(name, in)</code> with operation declarations taking precedence over path declarations. Duplicate declarations in one scope are diagnostics, not last-write-wins input. Parameters expressed using <code>content</code> are as important as those using <code>schema</code>. Requiredness, nullable false/true, an absent default, and an explicit null default remain distinguishable. Parse JSON numbers without float64 rounding. Reject duplicate JSON/YAML mapping keys before a map decoder can discard them. YAML permits JSON-compatible mappings and scalar types; reject non-string keys, custom tags, cyclic aliases, and unbounded alias expansion with clear diagnostics.</p>
+<p>Preserve unsupported OpenAPI fields and emit diagnostics when the normalized view cannot interpret them. Unsupported specification versions fail explicitly. Malformed structures, missing IDs required by the map, duplicate canonical IDs, broken references, and hash mismatches prevent publishing a new map. Do not silently omit a broken operation to obtain a successful build.</p>
+</section>
+<section id="source-supplements-availability-and-risk" aria-labelledby="source-supplements-availability-and-risk-heading"><h2 id="source-supplements-availability-and-risk-heading"><span class="section-number">05</span>Source supplements, availability, and risk</h2>
+<p>Reviewed annotations identify their source hash, JSON pointer or guide locator, affected operation/family, kind, conclusion, and rationale. They add evidence without modifying the pinned input. Hash changes invalidate a supplement until it is reviewed against the new source; a refresh never silently carries it forward as verified.</p>
+<p>Token authentication is a family supplement because both OpenAPI documents declare BasicAuth only. Preserve the exact upstream security requirement and the separately documented <code>whm</code>/<code>cpanel</code> token headers. Response semantics, nullable wire encoding, and conflicting methods remain per-operation facts or unresolved diagnostics. The tool does not implement API request execution.</p>
+<p>Keep all availability values in their original types/text. Structured deprecation and reviewed prose deprecation are separately attributed. Internal-only, CLI support, plugin, RPM, minimum-compatible-version, and rollback fields remain present/absent exactly as published. Any derived version comparison must identify its parsing rule; unparseable product/plugin version strings yield unknown, not an invented ordering.</p>
+<p>Risk values are <code>read-only</code>, <code>mutating</code>, <code>destructive</code>, or <code>unknown</code>. A source <code>x-readonly:true</code> supports read-only classification. A false value supports mutating classification with destructive potential explicitly unresolved; stronger destructive classification needs a reviewed operation-specific annotation. Missing metadata stays unknown. Conflicting evidence becomes an unknown classification plus a diagnostic. Each classification carries evidence; GET, function-name patterns, or absent rollback metadata never grant safety. No classification authorizes an API call.</p>
+</section>
+<section id="cli-behavior-and-reproducibility" aria-labelledby="cli-behavior-and-reproducibility-heading"><h2 id="cli-behavior-and-reproducibility-heading"><span class="section-number">06</span>CLI behavior and reproducibility</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="CLI behavior and reproducibility table"><table><thead><tr><th scope="col">Command</th><th scope="col">Inputs and result</th></tr></thead><tbody><tr><td><code>sources verify</code></td><td>Validate manifest hashes, sizes, formats, and local source paths</td></tr><tr><td><code>sources refresh</code></td><td>Explicitly fetch allowlisted official inputs into a new snapshot; never overwrite an existing snapshot</td></tr><tr><td><code>map build</code></td><td>Pinned sources + reviewed annotations → map JSON and diagnostics</td></tr><tr><td><code>parity report</code></td><td>Map + PHP symbol inventory + registry → JSON and Markdown coverage reports</td></tr><tr><td><code>capabilities capture</code></td><td>Explicit opt-in WHM version/applist → sanitized capability profile</td></tr><tr><td><code>capabilities compare</code></td><td>Map + saved profile → categorized differences</td></tr><tr><td><code>drift report</code></td><td>Old/new maps → source-contract changes</td></tr><tr><td><code>check</code></td><td>Rebuild/validate local inputs and compare parity to the checked baseline</td></tr></tbody></table></div>
+<p>Every command accepts explicit input/output paths. Deterministic artifacts exclude generation-time clocks, absolute workspace paths, environment-specific values, and random IDs. Retained source retrieval timestamps come from the manifest. Sort normalized records by canonical IDs and object keys while preserving semantically ordered source arrays. Write validated outputs atomically. Emit identical bytes for identical inputs. Diagnostics go to stderr or a selected file without corrupting JSON stdout.</p>
+<p>Ordinary commands disable remote reference loading. Local references must stay within the selected snapshot, including after symlink resolution. Explicit refresh permits HTTPS sources on <code>api.docs.cpanel.net</code> and <code>docs.cpanel.net</code>, checks redirect destinations before following them, and uses time/size limits. External references must be fetched during refresh and added to the manifest before offline generation can resolve them. The current inputs need no external references. Bound source nesting, reference traversal, decompressed sizes, and YAML expansion; failure leaves the prior selected source set intact.</p>
+</section>
+<section id="php-and-test-coverage-registry" aria-labelledby="php-and-test-coverage-registry-heading"><h2 id="php-and-test-coverage-registry-heading"><span class="section-number">07</span>PHP and test coverage registry</h2>
+<p>Use an explicit JSON registry under <code>docs/api/coverage/</code>, with its own versioned schema. Entries bind canonical IDs/variants to public PHP <code>Class::method</code> symbols, status (<code>implemented</code> or <code>partial</code>), contract-unit declarations, offline test symbols, and separately identified live evidence. Exclusions require reasons and documentation provenance. Keep infrastructure classifications explicit, initially including <code>HttpTransport</code>; generic dispatch does not count as implemented endpoint coverage.</p>
+<p>A small development-only PHP exporter uses Composer autoloading and reflection over named project classes to emit a symbol inventory without instantiating clients or executing endpoint methods. It checks that registered public methods and PHPUnit test methods exist under the appropriate project directories. Only trusted repository code is loaded. The Go comparator validates registry links against this inventory and the canonical map. Existing symbols prove a mapping is structurally valid, not that its assertions are semantically adequate.</p>
+<p>Report implemented, missing, partial, deprecated/excluded, orphaned, duplicate, and unknown mappings by family and UAPI module/WHM tag. Multiple public methods for one operation require explicit mapping rationale instead of accidental double counting. Unclassified public API methods are reported and cannot inflate the numerator. A claim of full implementation requires all included variants and declared contract units; partial work stays partial.</p>
+<p>Coverage dimensions and denominators are independent:</p>
+<ul><li>Functions: unique canonical operation IDs, with excluded IDs and gross/net totals shown separately. An operation is complete only when all included variants are complete.</li><li>Transports: documented <code>(operation ID, method)</code> variants.</li><li>Parameters: effective <code>(variant ID, name, in)</code> declarations; wildcard/indexed parameter families count as documented declarations, not arbitrary expansions.</li><li>Body contracts: each declared <code>(variant ID, media type)</code>.</li><li>Response contracts: each documented <code>(variant ID, status, media type)</code> schema. This is schema-level coverage, not a claim that every nested field was tested.</li><li>Offline contract tests: variants with registered executable tests and their declared contract-unit assertions. Report the declaration separately from the latest test-run result; a test name alone does not prove passing coverage.</li><li>Live evidence: verified operation/variant IDs with host, version, time, route, and account context. Direct UAPI and WHM bridge evidence remain distinct.</li></ul>
+<p>Contract-unit claims bind to source pointers and normalized contract hashes. A changed contract makes the claim stale pending review. The initial reports must truthfully show zero endpoint implementation/test coverage even though the HTTP transport has its own unit tests.</p>
+</section>
+<section id="server-capability-profiles" aria-labelledby="server-capability-profiles-heading"><h2 id="server-capability-profiles-heading"><span class="section-number">08</span>Server capability profiles</h2>
+<p>The optional collector permits only the documented WHM <code>version</code> and <code>applist</code> operations. It requires explicit opt-in, HTTPS with certificate verification, and a token supplied through an environment variable. The default named profile is <code>test.oblak.host:2087</code> as WHM root, with cPanel context <code>npr</code> recorded if provided. Other hosts require an explicit profile configuration; this server does not define the public library&#x27;s support target.</p>
+<p>The collector has no arbitrary function argument and never probes every mapped operation. It disallows redirects, bounds time/body size, and does not retry unknown operations. Persist only host, version, capture timestamp, account context, route, advertised names, and minimal sanitized result metadata. Never persist or print the token, Authorization header, session path, or raw diagnostic response. Use safe, fixed error categories for transport/auth/API failures. Keep real server profiles out of routine public fixtures; use synthetic profiles for CI.</p>
+<p>Compare advertised WHM names with the exact documented function identities. Report intersection, runtime-only, and docs-only sets independently from PHP coverage. Difference annotations may record version, plugin, role/permission, namespace/alias, or unknown explanations, with evidence and certainty. Do not auto-resolve namespace differences or equate docs-only with unsupported.</p>
+<p>There is no complete UAPI function inventory in the audited sources. Report UAPI runtime enumeration as unavailable and any direct authentication evidence as unverified until separately supplied. Features/account access data must not be relabeled as an operation inventory. No new UAPI inventory call is invented.</p>
+</section>
+<section id="drift-and-ci-baseline" aria-labelledby="drift-and-ci-baseline-heading"><h2 id="drift-and-ci-baseline-heading"><span class="section-number">09</span>Drift and CI baseline</h2>
+<p>Compare canonical identities, transport variants, parameters, body/response schemas, effective auth, availability, deprecation, and risk evidence. Report description/example-only changes separately from contract changes. Source version labels alone are insufficient; compare content hashes and normalized contracts. Confirmed aliases explain renames without erasing the original added/removed evidence.</p>
+<p>Keep upstream drift, registry regressions, and capability differences in separate report sections/artifacts. The coverage baseline records protected implemented IDs, variants, contract hashes, and test mappings—not merely a percentage that could improve when the denominator shrinks. Initial zero coverage passes, but invalid/orphaned/duplicate mappings still fail. Removing a protected implementation, changing its mapping to an unknown ID, or weakening its contract/test claims fails even if an unrelated operation was added.</p>
+<p>Baseline updates are explicit reviewed artifact changes; CI never rewrites them. Adding operations upstream changes the documented denominator but is not automatically a PHP regression. CI runs Go tests, deterministic generation, registry/schema checks, baseline checks, and existing <code>composer check</code> using pinned inputs. Dependency installation may need its normal package cache or network; the actual checks need no live API services or credentials.</p>
+</section>
+<section id="validation-and-delivery-boundaries" aria-labelledby="validation-and-delivery-boundaries-heading"><h2 id="validation-and-delivery-boundaries-heading"><span class="section-number">10</span>Validation and delivery boundaries</h2>
+<p>Source audit completion requires hash verification, reconciled path/variant counts, and documented contract gaps. Schema/design completion requires a published schema, representative map examples, and recorded language choice. The implementation must cover duplicate keys/IDs, recursive and unresolved references, inherited parameters, query-content schemas, exact casing and dotted/indexed names, nullable/optional distinctions, GET bodies, multiple methods, and preserved vendor extensions.</p>
+<p>Parity fixtures include incomplete, duplicate, orphaned, aliased, and removed mappings. Capability fixtures cover version/plugin/namespace differences, permission ambiguity, failed authentication, and unavailable UAPI enumeration. Drift fixtures cover changed contracts and stable unchanged input. CI tests must demonstrate an unchanged zero baseline passing and a removed/mis-mapped protected implementation failing. Two builds from the same pinned sources must be byte-identical. No live capture is necessary to validate these properties.</p>
+<p>The existing Beads dependencies remain the delivery order: audited inputs, schema/design, ingestion, then independent parity and capability work, followed by drift/regression gates. The concrete implementation plan follows approval of this written design. Commits and remote synchronization remain subject to the repository&#x27;s conservative profile.</p>
+</section>
+</article><footer class="endnote"><span>Readable edition of the 13 October 2026 design. The full proposal is preserved above.</span><a href="#top">Back to top ↑</a></footer></div></main>
+<script>
+const links = [...document.querySelectorAll('nav a')];
+const sections = [...document.querySelectorAll('article section')];
+function updateCurrentSection() {
+    let current = sections[0];
+    for (const section of sections) {
+        if (section.getBoundingClientRect().top <= 150) current = section;
+    }
+    for (const link of links) {
+        if (link.hash === '#' + current.id) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+    }
+}
+let queued = false;
+window.addEventListener('scroll', () => {
+    if (!queued) requestAnimationFrame(() => { updateCurrentSection(); queued = false; });
+    queued = true;
+}, {passive:true});
+updateCurrentSection();
+if (window.matchMedia('(max-width:760px)').matches) document.querySelector('nav details').open = false;
+</script>
+</body>
+</html>

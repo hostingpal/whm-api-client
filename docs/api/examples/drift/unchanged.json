@@ -1,0 +1,36 @@
+{
+  "added_operations": [],
+  "added_variants": [],
+  "after_sources": [
+    {
+      "api_family": "cpanel-uapi",
+      "file": "document.json",
+      "id": "synthetic",
+      "kind": "openapi",
+      "retrieved_at": "2026-10-13T00:00:00Z",
+      "sha256": "74fecd3503c0f70674bc2b33f40a4423af5da2361c5684edf295ae11e3c1b09b",
+      "synthetic": true,
+      "url": "https://example.test/api.json",
+      "version": "1"
+    }
+  ],
+  "before_sources": [
+    {
+      "api_family": "cpanel-uapi",
+      "file": "document.json",
+      "id": "synthetic",
+      "kind": "openapi",
+      "retrieved_at": "2026-10-13T00:00:00Z",
+      "sha256": "74fecd3503c0f70674bc2b33f40a4423af5da2361c5684edf295ae11e3c1b09b",
+      "synthetic": true,
+      "url": "https://example.test/api.json",
+      "version": "1"
+    }
+  ],
+  "changes": [],
+  "confirmed_aliases": [],
+  "provenance_changed": false,
+  "removed_operations": [],
+  "removed_variants": [],
+  "schema_version": "1.0"
+}

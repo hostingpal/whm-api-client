@@ -56,22 +56,177 @@ This protocol applies when ending a Beads implementation workflow. It is subordi
 - Do not commit or push without clear authority from the active profile or the current user request.
 - If a required sync or push is blocked, stop and report the exact command and error.
 <!-- END BEADS INTEGRATION -->
+## Project Scope
 
+`hostingpal/whm-api-client` is a standalone PHP Composer library in the
+`HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
+and cPanel UAPI surface. The initial scaffold provides HTTP infrastructure and
+development tooling. Official API inputs and contract discrepancies are pinned
+under `docs/api/`; endpoint implementation remains separate work. Do not invent
+endpoints, authentication rules, request payloads, or response schemas to fill
+gaps in those sources.
 
-## Build & Test
+The core package must remain framework-independent. A future Laravel
+integration belongs in a separate Composer package and will use Guzzle. The
+Go documentation tool under `tools/api-map/` produces a canonical API map;
+implementation parity and further commands are tracked under `gwi`. Go is a
+development-tool choice, not a runtime dependency of the PHP package. Preserve pinned documentation snapshots and
+refresh them explicitly; routine checks must remain offline. The tool design
+is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
 
-_Add your build and test commands here_
+## Architecture and Conventions
+
+- Follow the [agreed PHP client interface](docs/superpowers/specs/2026-10-13-php-client-design.md):
+  `whm()` and `uapi(?string $user = null)` expose typed operation groups; UAPI
+  routes internally through direct cPanel access or WHM according to configured
+  credentials. There is no separate public `bridge()` selector. WHM credentials
+  require an explicit or configured default cPanel target; never assume `root`
+  is that target. Preserve account isolation and per-client `responseMeta()`.
+  `src/Client.php` now provides configuration and account selection using the
+  existing PSR transport. Endpoint groups, authenticated request execution, and
+  envelope parsing remain separate work; do not claim endpoint coverage from
+  scaffold classes or tests.
+- Production code lives in `src/`; tests live in `tests/` with a matching
+  directory structure.
+- `src/Http/HttpTransport.php` is the HTTP infrastructure entry point. Use a
+  PSR-18 client and PSR-17 factories, supplied explicitly or resolved through
+  `php-http/discovery`.
+- Keep public HTTP contracts based on PSR interfaces. Do not couple the core
+  runtime to Laravel, Guzzle, or another concrete HTTP implementation.
+- Use PSR-12 plus the selected Slevomat rules in `phpcs.xml.dist`, strict types
+  in PHP files, and the repository's `.editorconfig`. The focused rule set covers
+  imports, arrays, trailing commas, spacing, and strict comparisons/calls; keep
+  multiline arrow functions and PSR-12 spacing. Keep code compatible with
+  PHPStan's maximum level.
+- Test HTTP behavior with local doubles; routine tests must not require live
+  WHM or cPanel services or credentials.
+
+## Documentation Requirements
+
+- Document production classes, public APIs, configuration options, and
+  non-obvious internal behavior as part of the implementation, not as a later
+  cleanup task. Keep PHPDoc, usage examples, and README guidance current.
+- Every API endpoint method must have a short PHPDoc summary and a separate
+  detailed description covering its purpose, account scope, meaningful
+  parameter behavior, returned payload, and relevant failure or metadata
+  semantics. Use the reviewed source contract; do not invent missing details.
+- Include `@see` links to the exact official operation documentation on
+  `https://api.docs.cpanel.net/` (the canonical cPanel developer documentation
+  host). Add relevant guide links when authentication or bridge behavior needs
+  context. Preserve the link between the PHP method and its pinned API-map
+  identity; a link to the documentation homepage alone is not sufficient.
+- Document array responses with precise PHPStan-compatible array shapes,
+  including nested fields, optional keys, nullable values, and list element
+  types. Use reusable `@phpstan-type` and `@phpstan-import-type` aliases where
+  helpful. Apply the same precision to structured array inputs. Do not use bare
+  `array` or `array<string, mixed>` as a substitute for a known endpoint schema.
+- Keep concrete DTO and collection return types when those are the public
+  contract; document their fields and mapping shapes rather than weakening
+  their return types to arrays. For genuinely opaque upstream metadata, explain
+  the boundary instead of guessing a shape. Document applicable `@throws`
+  contracts and preserve omitted, null, empty, and zero semantics.
+
+## Build and Validation
+
+Run commands from the repository root:
 
 ```bash
-# Example:
-# npm install
-# npm test
+composer install --no-interaction
+composer validate
+composer check
 ```
 
-## Architecture Overview
+`composer check` runs the PSR-12/Slevomat formatting check, static analysis, and
+tests. The individual commands are:
 
-_Add a brief overview of your project architecture_
+```bash
+composer phpcs
+composer phpcbf
+composer phpstan
+composer test
+```
 
-## Conventions & Patterns
+`composer phpcbf` applies formatting fixes. Tool configuration lives in
+`phpcs.xml.dist` (PSR-12 and selected Slevomat rules), `phpstan.neon.dist` (maximum level), and
+`phpunit.xml.dist`.
 
-_Add your project-specific conventions here_
+PHPCS resolves Slevomat through the ruleset's explicit `installed_paths` setting.
+The Composer standards-installer plugin remains disabled; do not require a
+global PHPCS configuration or introduce WordPress runtime dependencies.
+
+Go documentation tooling (Go 1.24+) uses a separate module and cache:
+
+```bash
+export GOCACHE="$PWD/.cache/go-build"
+export GOMODCACHE="$PWD/.cache/go-mod"
+go -C tools/api-map test ./...
+go -C tools/api-map run ./cmd/api-map sources verify --manifest ../../docs/api/sources/2026-10-13/manifest.json
+go -C tools/api-map run ./cmd/api-map map build --manifest ../../docs/api/sources/2026-10-13/manifest.json --annotations ../../docs/api/annotations.json --output ../../.cache/api-map/map.json
+sha256sum -c docs/api/map.sha256
+```
+
+The map build validates before atomically replacing its output. Pinned sources,
+reviewed hash-bound annotations, and ordinary checks remain offline. Only an
+explicit `sources refresh --manifest PATH --output-dir NEW_DIR` command may
+fetch documentation; it validates a new immutable snapshot. Review annotations
+again when their source hashes change. Maps retain upstream response envelopes
+and BasicAuth alongside token-guide evidence. Generated large maps live under
+`.cache/api-map/`; `docs/api/map.sha256` records the reviewed deterministic map.
+`composer check` continues to validate the PHP package offline.
+
+Offline implementation parity uses explicit PHP symbol and registry declarations:
+
+```bash
+php tools/php-symbols/export.php --root . --output docs/api/coverage/symbols.json
+go -C tools/api-map run ./cmd/api-map parity report --map ../../.cache/api-map/map.json --registry ../../docs/api/coverage/registry.json --symbols ../../docs/api/coverage/symbols.json --output ../../docs/api/coverage/report.json --markdown ../../docs/api/coverage/report.md
+```
+
+Optional `--test-evidence PATH` and `--live-evidence PATH` read saved artifacts;
+`--revision REVISION` independently identifies the code revision being assessed.
+Without a matching revision, saved outcomes remain stale/unverified. Declared
+PHP tests do not prove passing outcomes, and infrastructure tests do not count
+as endpoint coverage. Invalid registry mappings emit diagnostic reports and
+exit 1. Contract hashes follow reachable schemas and discriminator mappings;
+response schemas retain the complete upstream envelope.
+
+Live capability capture is a separate, explicitly opted-in command, never a
+routine check:
+
+```bash
+go -C tools/api-map run ./cmd/api-map capabilities capture --opt-in --host https://test.oblak.host:2087 --user root --token-env OBLAK_TEST_WHM_KEY --output ../../.cache/api-map/capability-profile.json
+```
+
+Capture only requests WHM `version` and `applist`. Keep real credentials and
+profiles outside committed fixtures. UAPI runtime inventory remains unavailable;
+WHM bridge evidence never establishes direct UAPI authentication.
+
+
+
+Offline toolchain integration (Go 1.24+, Composer dependencies installed):
+
+```bash
+composer api-map:check
+go -C tools/api-map vet ./...
+go -C tools/api-map generate ./internal/schema
+```
+
+`api-map:check` runs `check --root ../..`, reading `docs/api/toolchain.json`.
+It builds in temporary storage, checks exact schema copies/map reproducibility,
+fresh PHP symbols, checked parity artifacts, synthetic capability/drift examples,
+and exact operation/variant/PHP/contract/test baseline mappings. It is read-only
+and offline; it has no baseline-update flag. Review baseline edits manually.
+Invalid input/mappings exit 1; valid-input baseline regressions exit 3. Live
+verification never affects the offline baseline. Keep `composer check` PHP-only.
+See `tools/api-map/README.md` for explicit artifact regeneration and the saved
+`capabilities compare` / `drift report` commands. The CI workflow uses locked
+dependencies and receives no WHM/cPanel secrets.
+
+
+## Maintaining Agent Guidance
+
+`AGENTS.md` and `CLAUDE.md` are independent files. Update both whenever project
+scope, architecture, conventions, or development commands change so their
+project guidance stays aligned. Preserve generated Beads blocks and keep
+project-specific additions outside those blocks. Follow the conservative
+Beads profile: do not commit, push, or run Dolt remote sync without explicit
+authorization.

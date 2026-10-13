@@ -1,0 +1,1 @@
+{"openapi":"3.0.2","info":{"title":"Fixture","version":"1"},"paths":{"/ping":{"get":{"responses":{"200":{"description":"OK"}}}},"/methodless":{},"x-note":"keep"},"x-number":9007199254740993,"x-null":null,"x-false":false,"x-empty":""}

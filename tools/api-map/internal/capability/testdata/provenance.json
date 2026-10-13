@@ -1,0 +1,14 @@
+{
+  "version-success.json": {
+    "source_id": "whm-openapi",
+    "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+    "pointer": "/paths/~1version/get/responses/200/content/application~1json/schema",
+    "projection": "Object built recursively from property examples. This is collector test data, not a declaration that upstream properties are required."
+  },
+  "applist-success.json": {
+    "source_id": "whm-openapi",
+    "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+    "pointer": "/paths/~1applist/get/responses/200/content/application~1json/schema",
+    "projection": "Object built recursively from property examples. This is collector test data, not a declaration that upstream properties are required."
+  }
+}
