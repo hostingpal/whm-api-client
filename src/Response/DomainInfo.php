@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Response;
 
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
-use stdClass;
 
 /**
  * Retain one domain record from WHM get_domain_info as an immutable snapshot.
@@ -122,65 +121,63 @@ final readonly class DomainInfo
      */
     public static function fromPayload(mixed $payload, ResponseMetadata $metadata): self
     {
-        if (!$payload instanceof stdClass) {
-            throw new InvalidResponseException('Invalid WHM domain record.', $metadata);
-        }
-
+        $read = new PayloadReader($metadata, 'WHM domain record');
+        $payload = $read->object($payload);
         $values = [];
         if (property_exists($payload, 'docroot')) {
-            $values['docroot'] = self::stringValue($payload->docroot, $metadata);
+            $values['docroot'] = $read->string($payload->docroot);
         }
 
         if (property_exists($payload, 'domain')) {
-            $values['domain'] = self::stringValue($payload->domain, $metadata);
+            $values['domain'] = $read->string($payload->domain);
         }
 
         if (property_exists($payload, 'domain_type')) {
-            $values['domain_type'] = self::stringValue($payload->domain_type, $metadata);
+            $values['domain_type'] = $read->string($payload->domain_type);
         }
 
         if (property_exists($payload, 'ipv4')) {
-            $values['ipv4'] = self::stringValue($payload->ipv4, $metadata);
+            $values['ipv4'] = $read->string($payload->ipv4);
         }
 
         if (property_exists($payload, 'ipv4_ssl')) {
-            $values['ipv4_ssl'] = self::stringValue($payload->ipv4_ssl, $metadata);
+            $values['ipv4_ssl'] = $read->string($payload->ipv4_ssl);
         }
 
         if (property_exists($payload, 'ipv6')) {
-            $values['ipv6'] = self::nullableStringValue($payload->ipv6, $metadata);
+            $values['ipv6'] = $read->nullableString($payload->ipv6);
         }
 
         if (property_exists($payload, 'ipv6_is_dedicated')) {
-            $values['ipv6_is_dedicated'] = self::flagValue($payload->ipv6_is_dedicated, $metadata);
+            $values['ipv6_is_dedicated'] = $read->flag($payload->ipv6_is_dedicated);
         }
 
         if (property_exists($payload, 'modsecurity_enabled')) {
-            $values['modsecurity_enabled'] = self::flagValue($payload->modsecurity_enabled, $metadata);
+            $values['modsecurity_enabled'] = $read->flag($payload->modsecurity_enabled);
         }
 
         if (property_exists($payload, 'parent_domain')) {
-            $values['parent_domain'] = self::stringValue($payload->parent_domain, $metadata);
+            $values['parent_domain'] = $read->string($payload->parent_domain);
         }
 
         if (property_exists($payload, 'php_version')) {
-            $values['php_version'] = self::stringValue($payload->php_version, $metadata);
+            $values['php_version'] = $read->string($payload->php_version);
         }
 
         if (property_exists($payload, 'port')) {
-            $values['port'] = self::portValue($payload->port, $metadata);
+            $values['port'] = self::portValue($payload->port, $read);
         }
 
         if (property_exists($payload, 'port_ssl')) {
-            $values['port_ssl'] = self::portValue($payload->port_ssl, $metadata);
+            $values['port_ssl'] = self::portValue($payload->port_ssl, $read);
         }
 
         if (property_exists($payload, 'user')) {
-            $values['user'] = self::stringValue($payload->user, $metadata);
+            $values['user'] = $read->string($payload->user);
         }
 
         if (property_exists($payload, 'user_owner')) {
-            $values['user_owner'] = self::stringValue($payload->user_owner, $metadata);
+            $values['user_owner'] = $read->string($payload->user_owner);
         }
 
         return new self($values);
@@ -199,36 +196,6 @@ final readonly class DomainInfo
         return $this->payload;
     }
 
-    /** Validate a present non-null string without narrowing its contents. */
-    private static function stringValue(mixed $value, ResponseMetadata $metadata): string
-    {
-        if (!is_string($value)) {
-            throw new InvalidResponseException('Invalid WHM domain record.', $metadata);
-        }
-
-        return $value;
-    }
-
-    /** Preserve the IPv6 field's explicitly nullable string contract. */
-    private static function nullableStringValue(mixed $value, ResponseMetadata $metadata): ?string
-    {
-        return $value === null ? null : self::stringValue($value, $metadata);
-    }
-
-    /**
-     * Retain an integer flag without accepting booleans or numeric strings.
-     *
-     * @return 0|1
-     */
-    private static function flagValue(mixed $value, ResponseMetadata $metadata): int
-    {
-        if ($value !== 0 && $value !== 1) {
-            throw new InvalidResponseException('Invalid WHM domain record.', $metadata);
-        }
-
-        return $value;
-    }
-
     /**
      * Accept pinned integer ports and the bounded decimal-string runtime form.
      *
@@ -237,7 +204,7 @@ final readonly class DomainInfo
      *
      * @return int|numeric-string
      */
-    private static function portValue(mixed $value, ResponseMetadata $metadata): int|string
+    private static function portValue(mixed $value, PayloadReader $read): int|string
     {
         if (is_int($value)) {
             return $value;
@@ -248,7 +215,7 @@ final readonly class DomainInfo
             || preg_match('/\A(?:0|[1-9][0-9]*)\z/', $value) !== 1
             || (string) (int) $value !== $value
         ) {
-            throw new InvalidResponseException('Invalid WHM domain record.', $metadata);
+            $read->fail();
         }
 
         return $value;

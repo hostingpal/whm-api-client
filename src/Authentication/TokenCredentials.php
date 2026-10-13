@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Authentication;
 
 use InvalidArgumentException;
+use LogicException;
 use SensitiveParameter;
 
 /**
  * Holds validated token credentials for one authentication account.
  *
  * Credentials are immutable. Debug output redacts the token, while the
- * authorization header exposes it for the HTTP transport to send.
+ * authorization header exposes it for the HTTP transport to send. Serialization
+ * is refused so tokens cannot leak into caches, queues, or sessions; var_export()
+ * cannot be intercepted and must not be used on credentials or configuration.
  */
 final readonly class TokenCredentials
 {
@@ -69,6 +72,36 @@ final readonly class TokenCredentials
     }
 
     /**
+     * Replaces raw and common encoded occurrences of the token in diagnostic text.
+     *
+     * Covers RFC 3986 and form URL encoding (upper- or lowercase hex escapes)
+     * and the JSON string form. Used before retaining third-party messages, such
+     * as transport exception messages, that could echo the authenticated request.
+     */
+    public function redact(string $text): string
+    {
+        $encoded = rawurlencode($this->token);
+        $forms = [
+            $this->token,
+            $encoded,
+            urlencode($this->token),
+            preg_replace_callback(
+                '/%[0-9A-F]{2}/',
+                static fn (array $hex): string => strtolower($hex[0]),
+                $encoded,
+            ) ?? $encoded,
+        ];
+        $json = json_encode($this->token);
+        if (is_string($json)) {
+            $forms[] = substr($json, 1, -1);
+        }
+        $forms = array_values(array_unique($forms));
+        usort($forms, static fn (string $first, string $second): int => strlen($second) <=> strlen($first));
+
+        return str_replace($forms, '[REDACTED]', $text);
+    }
+
+    /**
      * Returns safe credential details for debug output.
      *
      * The token field contains a redaction marker rather than the stored token.
@@ -78,5 +111,29 @@ final readonly class TokenCredentials
     public function __debugInfo(): array
     {
         return ['type' => $this->type->value, 'username' => $this->username, 'token' => '[REDACTED]'];
+    }
+
+    /**
+     * Refuse serialization so the token never reaches caches, queues, or sessions.
+     *
+     * Configuration objects holding these credentials inherit the refusal.
+     *
+     * @return array<string, mixed>
+     * @throws LogicException Always.
+     */
+    public function __serialize(): array
+    {
+        throw new LogicException('Token credentials cannot be serialized.');
+    }
+
+    /**
+     * Refuse restoring credentials from serialized data.
+     *
+     * @param array<string, mixed> $data
+     * @throws LogicException Always.
+     */
+    public function __unserialize(array $data): void
+    {
+        throw new LogicException('Token credentials cannot be unserialized.');
     }
 }

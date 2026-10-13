@@ -142,9 +142,27 @@ WHM operations require WHM credentials.
 
 The default account setting belongs to client configuration. The client
 accepts an RNIDS-style options array or immutable `ClientConfig` through
-`Client::__construct`, plus an optional PSR-backed `HttpTransport`. See the
+`Client::__construct`, plus a required PSR-backed `HttpTransport`. See the
 [base client configuration](../../../README.md#base-client) for the implemented
-options and validation behavior.
+options and validation behavior. Handles do not expose the configuration or its
+credentials: an account-scoped UAPI handle built from WHM root credentials must
+not hand out the root token. Credentials refuse serialization.
+
+## Return conventions
+
+Decided 2026-10-13 (`whm-api-client-8x0.6`, review of the first slices): a public
+value never exposes wire-type variants. Records whose fields vary in wire type
+(pinned integers plus observed strings or booleans) are immutable DTOs. Their
+camelCase properties are normalized (flags to `0|1`, numeric-string ports to
+`int`) and use null for omission, and `toArray()` returns the reviewed wire shape
+with original keys, presence, and values. Lists of such records are
+iterable/countable containers whose list property is null when the upstream member
+is omitted. Precise PHPStan array shapes remain for payloads whose fields each have
+a single type, and scalars or `list<string>` are returned directly. `DomainInfo`
+ports and the WHM feature records (`FeatureCatalog`, `FeatureListData`,
+`UserFeatureSettings`) follow this rule. Load averages are the one deliberate exception: `ServerLoadAverage` keeps
+`int|float|numeric-string` because no lossless normalization preserves their
+precision and trailing zeros.
 
 ## Shared UAPI implementation
 
@@ -173,17 +191,21 @@ Reserved bridge fields take precedence over endpoint parameters. Selecting or
 caching a group does not execute the callback or reset metadata.
 
 Request execution resets metadata before query validation and I/O, then records
-a usable envelope before API or payload errors. WHM feature `userSettings()` also
-uses an injected `beginRequest` lifecycle hook before locally validating and
-building indexed parameters, since invalid input never reaches request execution.
-Retain this ordering when adding group-level validation.
+a usable envelope before API or payload errors. Groups never validate request
+parameters before calling the request callback: multi-value input is passed
+through as `list<string>` (repeated keys) or `NumberedList` (WHM `name`, `name-1`,
+... convention), and the shared encoder validates it after the reset. Payloads are
+validated through the internal `PayloadReader`, which attaches the response
+snapshot to every `InvalidResponseException`.
 
-The core remains framework-independent, using PSR-18 and PSR-17 injection or
-discovery. Laravel integration remains a separate Composer package.
+The core remains framework-independent, using PSR-18 and PSR-17 interfaces.
+Laravel integration remains a separate Composer package.
 
-The injected or discovered PSR client must verify TLS and disable redirects for
-authenticated requests. The API layer rejects HTTP 3xx responses and does not
-retry requests. Query values use RFC 3986 encoding, preserving dotted names.
+The PSR-18 client is explicit and must verify TLS, disable redirects, and set
+timeouts for authenticated requests. `HttpTransport::discover()` is the explicit
+opt-in to a discovered client whose defaults the library cannot verify; PSR-17
+factories may still be discovered. The API layer rejects HTTP 3xx responses and
+does not retry requests. Query values use RFC 3986 encoding, preserving dotted names.
 
 ## Account isolation and response metadata
 
@@ -220,15 +242,23 @@ concurrent execution requires per-request snapshots.
 The implemented `ResponseMetadata::$whm` map contains the WHM envelope's raw
 `metadata`; `$uapi` contains the UAPI result envelope without `data`, preserving
 available status, errors, messages, warnings, and metadata. Nested JSON metadata
-objects become arrays. Either map may be null when unavailable.
+objects become arrays. Either map may be null when unavailable. Typed accessors
+(`whmResult()`, `whmReason()`, `uapiStatus()`, `uapiErrors()`, `uapiWarnings()`,
+`uapiMessages()`) read the documented envelope fields and return null or an empty
+list for absent or non-conforming values, skipping non-string list entries. `errors()` combines the WHM reason when
+the WHM result is `0` with the UAPI errors.
 
 `ApiException` exposes public readonly `?ResponseMetadata $metadata`, matching
 the selected client's snapshot for that attempt. Its subclasses distinguish
 `ApiErrorException` (WHM or UAPI outcome failure), `HttpException` (HTTP outside
 200–299), `InvalidResponseException` (unusable envelope, outcome, or payload), and
-`TransportException` (PSR transport failure). Messages exclude raw bodies and
-credentials; transport failures omit the original exception chain because it can
-retain authenticated requests. Metadata preserves upstream diagnostic values.
+`TransportException` (PSR transport failure). `ApiException::errors()` exposes
+the snapshot's upstream error text. Messages exclude raw bodies, credentials, and
+upstream error text. Transport failures omit the original exception chain because
+it can retain authenticated requests; they record the PSR failure kind
+(`network`, `request`, `other`), the cause class, and the cause message with the
+configured token redacted, outside `getMessage()`. Metadata preserves upstream
+diagnostic values.
 
 ## Implementation verification
 

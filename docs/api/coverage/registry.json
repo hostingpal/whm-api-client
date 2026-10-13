@@ -417,7 +417,12 @@
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testReturnedArraysAreDetachedFromSourceObjects",
-        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::testCatalogKeepsOmittedAndEmptyListsDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::testCatalogRejectsMalformedListsWithTheResponseSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::testNormalizesPluginFlagWhileExportingTheWireValue",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::testOmittedFieldsAreNullAndAbsentFromTheExport",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::testRejectsInvalidRecordsWithTheResponseSnapshot"
       ],
       "contract_units": [
         {
@@ -478,7 +483,12 @@
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
-        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureSettingTest::testExposesAllReviewedFieldsWithNormalizedFlags",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureSettingTest::testListDataKeepsOmittedEmptyAndPresentFieldsDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureSettingTest::testListDataRejectsMalformedContainersWithTheResponseSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureSettingTest::testOptionalFieldsAreNullWhileExplicitMeridianNullIsExported",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureSettingTest::testRejectsInvalidRecordsWithTheResponseSnapshot"
       ],
       "contract_units": [
         {
@@ -579,7 +589,12 @@
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsPreservesObservedStringDefaultFlags",
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsRejectsEmptyParameterListsBeforeRequesting",
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsSupportsDocumentedNumberedParameters",
-        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::testCollectionKeepsOmittedAndEmptyListsDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::testCollectionRejectsMalformedListsWithTheResponseSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::testExplicitNullOverrideIsExportedButOmissionIsNot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::testNormalizesTheListSettingAndKeepsTheOverride",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::testRejectsInvalidRecordsWithTheResponseSnapshot"
       ],
       "contract_units": [
         {
@@ -1048,12 +1063,12 @@
   ],
   "infrastructure": [
     {
-      "symbol": "HostingPal\\WhmApiClient\\Api\\AbstractApiClient::config",
-      "reason": "Returns the shared client configuration; no endpoint operation."
-    },
-    {
       "symbol": "HostingPal\\WhmApiClient\\Api\\AbstractApiClient::responseMeta",
       "reason": "Reads the client-local latest response metadata; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\NumberedList::__construct",
+      "reason": "Marks WHM numbered multi-value query input for the shared encoder, which validates it after the metadata reset; no endpoint operation."
     },
     {
       "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Dns::__construct",
@@ -1096,8 +1111,20 @@
       "reason": "Redacts token credentials for debugging; no endpoint operation."
     },
     {
+      "symbol": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials::__serialize",
+      "reason": "Refuses credential serialization so tokens cannot be persisted; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials::__unserialize",
+      "reason": "Refuses restoring credentials from serialized data; no endpoint operation."
+    },
+    {
       "symbol": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials::authorizationHeader",
       "reason": "Formats the shared token authorization header; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials::redact",
+      "reason": "Redacts the configured token from diagnostic text; no endpoint operation."
     },
     {
       "symbol": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials::validateUsername",
@@ -1132,12 +1159,24 @@
       "reason": "Constructs a safe API exception with an optional immutable response metadata snapshot; no endpoint operation."
     },
     {
+      "symbol": "HostingPal\\WhmApiClient\\Exception\\ApiException::errors",
+      "reason": "Returns upstream error text from the exception metadata snapshot without I/O; no endpoint operation."
+    },
+    {
       "symbol": "HostingPal\\WhmApiClient\\Exception\\HttpException::__construct",
       "reason": "Constructs a safe HTTP failure with status and optional response metadata; no endpoint operation."
     },
     {
+      "symbol": "HostingPal\\WhmApiClient\\Exception\\TransportException::__construct",
+      "reason": "Constructs a classified transport failure with a redacted cause message and no chained cause; no endpoint operation."
+    },
+    {
       "symbol": "HostingPal\\WhmApiClient\\Http\\HttpTransport::__construct",
       "reason": "Generic HTTP infrastructure; does not implement a WHM or cPanel endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Http\\HttpTransport::discover",
+      "reason": "Generic HTTP infrastructure; explicit opt-in to discovered PSR implementations; does not implement a WHM or cPanel endpoint."
     },
     {
       "symbol": "HostingPal\\WhmApiClient\\Http\\HttpTransport::send",
@@ -1176,8 +1215,140 @@
       "reason": "Reads HTTP and API outcomes and preserves metadata for the seven reviewed read-only operations; this shared reader is not an endpoint operation."
     },
     {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\FeatureCatalog::count",
+      "reason": "Counts present feature records without I/O; an omitted list counts as zero."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\FeatureCatalog::fromPayload",
+      "reason": "Validates and snapshots reviewed feature records after execution; hydration is not an endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\FeatureCatalog::getIterator",
+      "reason": "Iterates immutable feature records without I/O; an omitted list iterates empty."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\FeatureCatalog::toArray",
+      "reason": "Exports reviewed feature fields with optional presence and wire values preserved; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\FeatureListData::count",
+      "reason": "Counts present feature records without I/O; an omitted list counts as zero."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\FeatureListData::fromPayload",
+      "reason": "Validates and snapshots reviewed feature records after execution; hydration is not an endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\FeatureListData::getIterator",
+      "reason": "Iterates immutable feature records without I/O; an omitted list iterates empty."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\FeatureListData::toArray",
+      "reason": "Exports reviewed feature fields with optional presence and wire values preserved; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\FeatureMetadata::fromPayload",
+      "reason": "Validates and snapshots reviewed feature records after execution; hydration is not an endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\FeatureMetadata::toArray",
+      "reason": "Exports reviewed feature fields with optional presence and wire values preserved; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\FeatureSetting::fromPayload",
+      "reason": "Validates and snapshots reviewed feature records after execution; hydration is not an endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\FeatureSetting::toArray",
+      "reason": "Exports reviewed feature fields with optional presence and wire values preserved; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\PayloadReader::__construct",
+      "reason": "Shared internal payload validation primitive used after execution; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\PayloadReader::boolFlag",
+      "reason": "Shared internal payload validation primitive used after execution; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\PayloadReader::fail",
+      "reason": "Shared internal payload validation primitive used after execution; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\PayloadReader::field",
+      "reason": "Shared internal payload validation primitive used after execution; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\PayloadReader::flag",
+      "reason": "Shared internal payload validation primitive used after execution; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\PayloadReader::listOf",
+      "reason": "Shared internal payload validation primitive used after execution; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\PayloadReader::nonNegativeInt",
+      "reason": "Shared internal payload validation primitive used after execution; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\PayloadReader::nullable",
+      "reason": "Shared internal payload validation primitive used after execution; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\PayloadReader::nullableString",
+      "reason": "Shared internal payload validation primitive used after execution; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\PayloadReader::object",
+      "reason": "Shared internal payload validation primitive used after execution; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\PayloadReader::positiveInt",
+      "reason": "Shared internal payload validation primitive used after execution; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\PayloadReader::string",
+      "reason": "Shared internal payload validation primitive used after execution; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\PayloadReader::stringFlag",
+      "reason": "Shared internal payload validation primitive used after execution; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\PayloadReader::strings",
+      "reason": "Shared internal payload validation primitive used after execution; no endpoint operation."
+    },
+    {
       "symbol": "HostingPal\\WhmApiClient\\Response\\ResponseMetadata::__construct",
       "reason": "Constructs an immutable HTTP status and envelope metadata snapshot; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ResponseMetadata::errors",
+      "reason": "Reads documented envelope fields from the immutable metadata snapshot without I/O; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ResponseMetadata::uapiErrors",
+      "reason": "Reads documented envelope fields from the immutable metadata snapshot without I/O; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ResponseMetadata::uapiMessages",
+      "reason": "Reads documented envelope fields from the immutable metadata snapshot without I/O; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ResponseMetadata::uapiStatus",
+      "reason": "Reads documented envelope fields from the immutable metadata snapshot without I/O; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ResponseMetadata::uapiWarnings",
+      "reason": "Reads documented envelope fields from the immutable metadata snapshot without I/O; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ResponseMetadata::whmReason",
+      "reason": "Reads documented envelope fields from the immutable metadata snapshot without I/O; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ResponseMetadata::whmResult",
+      "reason": "Reads documented envelope fields from the immutable metadata snapshot without I/O; no endpoint operation."
     },
     {
       "symbol": "HostingPal\\WhmApiClient\\Response\\ServerDiskUsage::count",
@@ -1220,11 +1391,43 @@
       "reason": "Exports reviewed load windows with optional presence and native or observed decimal-string numeric values preserved; no endpoint operation."
     },
     {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\UserFeatureSetting::fromPayload",
+      "reason": "Validates and snapshots reviewed feature records after execution; hydration is not an endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\UserFeatureSetting::toArray",
+      "reason": "Exports reviewed feature fields with optional presence and wire values preserved; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\UserFeatureSettings::count",
+      "reason": "Counts present feature records without I/O; an omitted list counts as zero."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\UserFeatureSettings::fromPayload",
+      "reason": "Validates and snapshots reviewed feature records after execution; hydration is not an endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\UserFeatureSettings::getIterator",
+      "reason": "Iterates immutable feature records without I/O; an omitted list iterates empty."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\UserFeatureSettings::toArray",
+      "reason": "Exports reviewed feature fields with optional presence and wire values preserved; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\QueryEncodingTest::invalidNumberedLists",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
       "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::failedResponses",
       "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
     },
     {
       "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::filters",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\TransportFailureTest::failures",
       "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
     },
     {
@@ -1372,6 +1575,22 @@
       "reason": "Supplies offline regression cases for pinned integer and observed decimal-string port values; no endpoint or passing outcome claim."
     },
     {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::invalidRecords",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::pluginFlags",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureSettingTest::invalidRecords",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\PayloadReaderTest::invalidValues",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
       "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::invalidPayloads",
       "reason": "Supplies offline PHPUnit server-contract cases; a data provider is not an endpoint or a passing test outcome."
     },
@@ -1382,6 +1601,10 @@
     {
       "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::invalidPayloads",
       "reason": "Supplies offline PHPUnit server-contract cases; a data provider is not an endpoint or a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::invalidRecords",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
     },
     {
       "symbol": "HostingPal\\WhmApiClient\\Tests\\Support\\LiveCurlClient::__construct",
@@ -1410,6 +1633,14 @@
     {
       "symbol": "HostingPal\\WhmApiClient\\Tests\\Support\\LiveTestEnvironment::requireReady",
       "reason": "Validates live opt-in, token presence, and cURL availability before requests without disclosing values."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Support\\WhmQueryClient::__construct",
+      "reason": "Offline test double exposing the shared GET executor for query-encoding tests; does not implement an endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Support\\WhmQueryClient::get",
+      "reason": "Offline test double exposing the shared GET executor for query-encoding tests; does not implement an endpoint."
     },
     {
       "symbol": "HostingPal\\WhmApiClient\\UapiClient::__construct",

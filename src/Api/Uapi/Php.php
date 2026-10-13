@@ -6,10 +6,9 @@ namespace HostingPal\WhmApiClient\Api\Uapi;
 
 use Closure;
 use HostingPal\WhmApiClient\Exception\ApiException;
-use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Response\ApiResponse;
+use HostingPal\WhmApiClient\Response\PayloadReader;
 use InvalidArgumentException;
-use stdClass;
 
 /** Expose reviewed PHP discovery through direct and bridged UAPI. */
 final readonly class Php
@@ -50,25 +49,9 @@ final readonly class Php
     public function listVersions(): array
     {
         $response = ($this->request)('php_get_installed_versions', []);
-        if (!$response->data instanceof stdClass || !is_array($response->data->versions ?? null)) {
-            throw new InvalidResponseException('Missing or invalid PHP versions payload.', $response->metadata);
-        }
+        $read = new PayloadReader($response->metadata, 'PHP versions payload');
 
-        $versions = $response->data->versions;
-        if (!array_is_list($versions)) {
-            throw new InvalidResponseException('Invalid PHP versions payload.', $response->metadata);
-        }
-
-        $result = [];
-        foreach ($versions as $version) {
-            if (!is_string($version)) {
-                throw new InvalidResponseException('Invalid PHP versions payload.', $response->metadata);
-            }
-
-            $result[] = $version;
-        }
-
-        return $result;
+        return $read->strings($read->field($response->data, 'versions'));
     }
 
     /**
@@ -94,15 +77,9 @@ final readonly class Php
     public function systemDefaultVersion(): ?string
     {
         $response = ($this->request)('php_get_system_default_version', []);
-        if (
-            !$response->data instanceof stdClass
-            || !property_exists($response->data, 'version')
-            || ($response->data->version !== null && !is_string($response->data->version))
-        ) {
-            throw new InvalidResponseException('Missing or invalid default PHP version payload.', $response->metadata);
-        }
+        $read = new PayloadReader($response->metadata, 'default PHP version payload');
 
-        return $response->data->version;
+        return $read->nullableString($read->field($response->data, 'version'));
     }
 
     /**
@@ -130,11 +107,9 @@ final readonly class Php
             $query['vhost'] = $vhost;
         }
         $response = ($this->request)('php_get_domain_handler', $query);
-        if (!$response->data instanceof stdClass || !is_string($response->data->php_handler ?? null)) {
-            throw new InvalidResponseException('Missing or invalid PHP handler payload.', $response->metadata);
-        }
+        $read = new PayloadReader($response->metadata, 'PHP handler payload');
 
-        return $response->data->php_handler;
+        return $read->string($read->field($response->data, 'php_handler'));
     }
 
     /**
@@ -172,22 +147,8 @@ final readonly class Php
             $query['system_default'] = $systemDefault ? 1 : 0;
         }
         $response = ($this->request)('php_get_impacted_domains', $query);
-        if (
-            !$response->data instanceof stdClass
-            || !is_array($response->data->domains ?? null)
-            || !array_is_list($response->data->domains)
-        ) {
-            throw new InvalidResponseException('Missing or invalid impacted domains payload.', $response->metadata);
-        }
+        $read = new PayloadReader($response->metadata, 'impacted domains payload');
 
-        $domains = [];
-        foreach ($response->data->domains as $domainName) {
-            if (!is_string($domainName)) {
-                throw new InvalidResponseException('Invalid impacted domains payload.', $response->metadata);
-            }
-            $domains[] = $domainName;
-        }
-
-        return $domains;
+        return $read->strings($read->field($response->data, 'domains'));
     }
 }

@@ -120,8 +120,13 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   domain/builtin aliases/PHP default/handler/impacted domains/features/DNS lookup/
   generated domains. New `whm()->php()`, `whm()->features()`, `uapi()->features()`
   and `uapi()->dns()` selectors remain inert and account-bound. See README for the
-  complete mapping. New structured arrays have precise PHPStan shapes; preserve
-  optional fields, null, empty lists and flag wire types. Observed WHM feature
+  complete mapping. Follow the spec's return conventions: public values never
+  expose wire-type variants. Records whose flags vary on the wire are DTOs with
+  normalized `0|1` camelCase properties and wire-preserving `toArray()` (WHM feature
+  metadata/list data/user settings return `FeatureCatalog`, `FeatureListData` and
+  `UserFeatureSettings`); single-typed payloads keep precise PHPStan array shapes.
+  Load averages are the deliberate exception (`int|float|numeric-string` keeps
+  precision). Preserve optional fields, null and empty lists. Observed WHM feature
   compatibility is field-specific (exact string 0/1 or booleans); PHP handlers also
   accept observed lsapi. UAPI impactedDomains accepts one domain or a nonempty list
   encoded as repeated domain keys, with invalid lists clearing metadata before I/O.
@@ -135,10 +140,12 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   operation name and query parameters. Groups own endpoint parameter construction;
   WHM and UAPI handles own route construction, with one account-bound UAPI helper
   for direct and bridged execution. Reserved bridge fields take precedence over
-  endpoint parameters. Keep the separate WHM Features lifecycle hook: userSettings
-  clears metadata before local indexed-parameter validation, even when validation
-  prevents the request callback from running. Selectors only bind callbacks and
-  cache groups; they perform no I/O or metadata reset.
+  endpoint parameters. Groups never validate request parameters before the
+  callback: multi-value input passes through as `list<string>` (repeated keys) or
+  `NumberedList` (WHM `name`, `name-1`, ...), and the shared encoder validates it
+  after the metadata reset. Validate payloads with the internal `PayloadReader`,
+  which attaches the response snapshot to every failure. Selectors only bind
+  callbacks and cache groups; they perform no I/O or metadata reset.
 - Each attempt clears old response metadata. A usable envelope records an
   immutable snapshot before API or payload errors. `ResponseMetadata::$whm`
   retains raw WHM metadata; `$uapi` retains the UAPI result envelope without `data`.
@@ -146,8 +153,15 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   `ApiErrorException`, `HttpException`, `InvalidResponseException`, and
   `TransportException` failures. Both bridge outcomes are checked. Do not apply
   these operations' status semantics universally or claim generic bridge coverage.
-- Authenticated operations perform no retries. Injected or discovered PSR clients
-  must verify TLS and disable redirects; the API layer rejects HTTP 3xx responses.
+  Typed metadata accessors and `errors()` read the documented envelope fields;
+  `ApiException::errors()` exposes upstream error text outside `getMessage()`.
+  `TransportException` records the PSR failure kind, cause class and token-redacted
+  cause message without chaining the cause.
+- Authenticated operations perform no retries. `Client` requires an explicit
+  `HttpTransport`; its PSR-18 client must verify TLS, disable redirects and set
+  timeouts, and `HttpTransport::discover()` is the explicit opt-in for unverified
+  discovered defaults. The API layer rejects HTTP 3xx responses. Handles never
+  expose `ClientConfig` or credentials, and credentials refuse serialization.
   Direct UAPI supports the pinned `result` wrapper and the observed bare result
   object. A present `result` takes precedence even if malformed; the bare form
   requires top-level `status`. Authorized direct library verification on
@@ -157,9 +171,9 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   tests and WHM bridge evidence do not establish other endpoint or route coverage.
 - Production code lives in `src/`; tests live in `tests/` with a matching
   directory structure.
-- `src/Http/HttpTransport.php` is the HTTP infrastructure entry point. Use a
-  PSR-18 client and PSR-17 factories, supplied explicitly or resolved through
-  `php-http/discovery`.
+- `src/Http/HttpTransport.php` is the HTTP infrastructure entry point. It requires
+  an explicit PSR-18 client; PSR-17 factories may be supplied or resolved through
+  `php-http/discovery`, and `HttpTransport::discover()` opts in to a discovered client.
 - Keep public HTTP contracts based on PSR interfaces. Do not couple the core
   runtime to Laravel, Guzzle, or another concrete HTTP implementation.
 - Use PSR-12 plus the selected Slevomat rules in `phpcs.xml.dist`, strict types

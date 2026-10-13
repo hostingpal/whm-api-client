@@ -6,10 +6,9 @@ namespace HostingPal\WhmApiClient\Api\Uapi;
 
 use Closure;
 use HostingPal\WhmApiClient\Exception\ApiException;
-use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Response\AccountDomains;
 use HostingPal\WhmApiClient\Response\ApiResponse;
-use stdClass;
+use HostingPal\WhmApiClient\Response\PayloadReader;
 
 /** Expose the same account-domain contract through direct and bridged UAPI. */
 final readonly class Domains
@@ -47,8 +46,7 @@ final readonly class Domains
      */
     public function list(?bool $hideTemporaryDomains = null): AccountDomains
     {
-        $query = $hideTemporaryDomains === null ? [] : ['hide_temporary_domains' => $hideTemporaryDomains ? 1 : 0];
-        $response = ($this->request)('list_domains', $query);
+        $response = ($this->request)('list_domains', self::temporaryFilter($hideTemporaryDomains));
 
         return AccountDomains::fromPayload($response->data, $response->metadata);
     }
@@ -72,17 +70,10 @@ final readonly class Domains
      */
     public function primary(?bool $hideTemporaryDomains = null): ?string
     {
-        $query = $hideTemporaryDomains === null ? [] : ['hide_temporary_domains' => $hideTemporaryDomains ? 1 : 0];
-        $response = ($this->request)('primary_domain', $query);
-        if (
-            !$response->data instanceof stdClass
-            || !property_exists($response->data, 'primary_domain')
-            || ($response->data->primary_domain !== null && !is_string($response->data->primary_domain))
-        ) {
-            throw new InvalidResponseException('Missing or invalid primary domain payload.', $response->metadata);
-        }
+        $response = ($this->request)('primary_domain', self::temporaryFilter($hideTemporaryDomains));
+        $read = new PayloadReader($response->metadata, 'primary domain payload');
 
-        return $response->data->primary_domain;
+        return $read->nullableString($read->field($response->data, 'primary_domain'));
     }
 
     /**
@@ -106,20 +97,21 @@ final readonly class Domains
      */
     public function builtinAliases(?bool $hideTemporaryDomains = null): array
     {
-        $query = $hideTemporaryDomains === null ? [] : ['hide_temporary_domains' => $hideTemporaryDomains ? 1 : 0];
-        $response = ($this->request)('main_domain_builtin_subdomain_aliases', $query);
-        if (!is_array($response->data) || !array_is_list($response->data)) {
-            throw new InvalidResponseException('Missing or invalid built-in aliases payload.', $response->metadata);
-        }
+        $response = ($this->request)(
+            'main_domain_builtin_subdomain_aliases',
+            self::temporaryFilter($hideTemporaryDomains),
+        );
 
-        $aliases = [];
-        foreach ($response->data as $alias) {
-            if (!is_string($alias)) {
-                throw new InvalidResponseException('Invalid built-in aliases payload.', $response->metadata);
-            }
-            $aliases[] = $alias;
-        }
+        return (new PayloadReader($response->metadata, 'built-in aliases payload'))->strings($response->data);
+    }
 
-        return $aliases;
+    /**
+     * Encode the optional temporary-domain filter: null omits it, false sends 0, true sends 1.
+     *
+     * @return array{}|array{hide_temporary_domains: 0|1}
+     */
+    private static function temporaryFilter(?bool $hideTemporaryDomains): array
+    {
+        return $hideTemporaryDomains === null ? [] : ['hide_temporary_domains' => $hideTemporaryDomains ? 1 : 0];
     }
 }

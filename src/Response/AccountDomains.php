@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Response;
 
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
-use stdClass;
 
 /**
  * Retain the reviewed domain listing for one cPanel account.
@@ -76,28 +75,21 @@ final readonly class AccountDomains
      */
     public static function fromPayload(mixed $payload, ResponseMetadata $metadata): self
     {
-        if (!$payload instanceof stdClass) {
-            throw new InvalidResponseException('Invalid domain listing payload.', $metadata);
-        }
-
+        $read = new PayloadReader($metadata, 'domain listing payload');
+        $payload = $read->object($payload);
         $values = [];
         if (property_exists($payload, 'main_domain')) {
-            $mainDomain = $payload->main_domain;
-            if ($mainDomain !== null && !is_string($mainDomain)) {
-                throw new InvalidResponseException('Invalid domain listing payload.', $metadata);
-            }
-
-            $values['main_domain'] = $mainDomain;
+            $values['main_domain'] = $read->nullableString($payload->main_domain);
         }
 
         foreach (['addon_domains', 'parked_domains', 'sub_domains'] as $field) {
             if (property_exists($payload, $field)) {
-                $values[$field] = self::domainList($payload->{$field}, $metadata);
+                $values[$field] = $read->strings($payload->{$field});
             }
         }
 
         if (property_exists($payload, 'is_temporary')) {
-            $values['is_temporary'] = self::temporaryFlags($payload->is_temporary, $metadata);
+            $values['is_temporary'] = self::temporaryFlags($payload->is_temporary, $read);
         }
 
         return new self($values);
@@ -117,48 +109,16 @@ final readonly class AccountDomains
     }
 
     /**
-     * Validate a JSON list and detach any references to its string values.
-     *
-     * @return list<string>
-     * @throws InvalidResponseException If a list or one of its items has an invalid type.
-     */
-    private static function domainList(mixed $value, ResponseMetadata $metadata): array
-    {
-        if (!is_array($value) || !array_is_list($value)) {
-            throw new InvalidResponseException('Invalid domain listing payload.', $metadata);
-        }
-
-        $copy = [];
-        foreach ($value as $domain) {
-            if (!is_string($domain)) {
-                throw new InvalidResponseException('Invalid domain listing payload.', $metadata);
-            }
-
-            $copy[] = $domain;
-        }
-
-        return $copy;
-    }
-
-    /**
      * Validate an object of integer temporary flags and copy it into an array map.
      *
      * @return array<string, 0|1>
      * @throws InvalidResponseException If the object or a flag has an invalid type.
      */
-    private static function temporaryFlags(mixed $value, ResponseMetadata $metadata): array
+    private static function temporaryFlags(mixed $value, PayloadReader $read): array
     {
-        if (!$value instanceof stdClass) {
-            throw new InvalidResponseException('Invalid domain listing payload.', $metadata);
-        }
-
         $copy = [];
-        foreach (get_object_vars($value) as $domain => $flag) {
-            if (!is_string($domain) || ($flag !== 0 && $flag !== 1)) {
-                throw new InvalidResponseException('Invalid domain listing payload.', $metadata);
-            }
-
-            $copy[$domain] = $flag;
+        foreach (get_object_vars($read->object($value)) as $domain => $flag) {
+            $copy[is_string($domain) ? $domain : $read->fail()] = $read->flag($flag);
         }
 
         return $copy;

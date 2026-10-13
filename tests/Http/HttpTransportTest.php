@@ -17,7 +17,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\RequestInterface;
+use ReflectionParameter;
 use RuntimeException;
+use SensitiveParameter;
 
 final class HttpTransportTest extends TestCase
 {
@@ -75,7 +77,7 @@ final class HttpTransportTest extends TestCase
     {
         Psr18ClientDiscovery::setStrategies([MockClientStrategy::class, CommonPsr17ClassesStrategy::class]);
 
-        $response = (new HttpTransport())->send('GET', 'https://example.test/resource');
+        $response = HttpTransport::discover()->send('GET', 'https://example.test/resource');
 
         self::assertSame(200, $response->getStatusCode());
     }
@@ -94,12 +96,26 @@ final class HttpTransportTest extends TestCase
         self::assertSame('payload', (string) $request->getBody());
     }
 
-    public function testReportsMissingHttpClient(): void
+    public function testMarksHeadersAsSensitiveInStackTraces(): void
     {
-        $factory = new Psr17Factory();
+        $parameter = new ReflectionParameter([HttpTransport::class, 'send'], 'headers');
+
+        self::assertNotSame([], $parameter->getAttributes(SensitiveParameter::class));
+    }
+
+    public function testRequiresAnExplicitHttpClient(): void
+    {
+        $parameter = new ReflectionParameter([HttpTransport::class, '__construct'], 'httpClient');
+
+        self::assertFalse($parameter->allowsNull());
+        self::assertFalse($parameter->isOptional());
+    }
+
+    public function testReportsMissingDiscoveredHttpClient(): void
+    {
         $this->expectException(NotFoundException::class);
 
-        new HttpTransport(null, $factory, $factory);
+        HttpTransport::discover();
     }
 
     public function testReportsMissingRequestFactory(): void

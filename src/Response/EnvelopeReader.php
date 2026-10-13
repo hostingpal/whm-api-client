@@ -62,8 +62,8 @@ final class EnvelopeReader
         };
         $uapiMetadata = null;
         if ($uapi instanceof stdClass) {
-            $uapiMetadata = self::metadata($uapi);
-            unset($uapiMetadata['data']);
+            // The payload is validated by its endpoint; never copy it into metadata.
+            $uapiMetadata = self::metadata($uapi, 'data');
         }
         try {
             $metadata = $whm === null && $uapiMetadata === null
@@ -132,7 +132,10 @@ final class EnvelopeReader
     private static function outcome(mixed $value, string $family, ?ResponseMetadata $metadata): void
     {
         if ($value === 0) {
-            throw new ApiErrorException($family . ' operation failed; inspect response metadata.', $metadata);
+            throw new ApiErrorException(
+                $family . ' operation failed; inspect errors() or response metadata.',
+                $metadata,
+            );
         }
 
         if ($value !== 1) {
@@ -143,13 +146,18 @@ final class EnvelopeReader
     /**
      * Convert an opaque metadata object into the existing immutable-map boundary.
      *
+     * The optional excluded top-level member is skipped before conversion, so
+     * large payloads are not copied only to be discarded.
+     *
      * @return array<array-key, mixed>
      */
-    private static function metadata(stdClass $object): array
+    private static function metadata(stdClass $object, ?string $exclude = null): array
     {
         $result = [];
         foreach (get_object_vars($object) as $key => $value) {
-            $result[$key] = self::jsonValue($value);
+            if ($key !== $exclude) {
+                $result[$key] = self::jsonValue($value);
+            }
         }
 
         return $result;

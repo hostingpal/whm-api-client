@@ -113,25 +113,24 @@ final class WhmFeaturesTest extends TestCase
 
     public function testUserSettingsSupportsDocumentedNumberedParameters(): void
     {
-        $calls = [];
-        $group = new Features(static function (string $operation, array $parameters) use (&$calls): ApiResponse {
-            $calls[] = [$operation, $parameters];
+        [$client, $http] = self::client();
+        foreach (range(1, 3) as $ignored) {
+            $http->addResponse(new Response(200, [], self::response('get_users_features_settings', '{}')));
+        }
 
-            return new ApiResponse((object) [], new ResponseMetadata(200, ['result' => 1]));
-        }, self::withoutMetadataOwner(...));
-
-        $group->userSettings(['alice', 'bob', 'carol'], ['ssl', 'ftp', 'cron']);
-        $group->userSettings('alice', '');
-        $group->userSettings(['alice'], null);
+        $features = $client->whm()->features();
+        $features->userSettings(['alice', 'bob', 'carol'], ['ssl', 'ftp', 'cron']);
+        $features->userSettings('alice', '');
+        $features->userSettings(['alice'], null);
 
         self::assertSame([
-            ['get_users_features_settings', [
-                'user' => 'alice', 'user-1' => 'bob', 'user-2' => 'carol',
-                'feature' => 'ssl', 'feature-1' => 'ftp', 'feature-2' => 'cron',
-            ]],
-            ['get_users_features_settings', ['user' => 'alice', 'feature' => '']],
-            ['get_users_features_settings', ['user' => 'alice']],
-        ], $calls);
+            'api.version=1&user=alice&user-1=bob&user-2=carol&feature=ssl&feature-1=ftp&feature-2=cron',
+            'api.version=1&user=alice&feature=',
+            'api.version=1&user=alice',
+        ], array_map(
+            static fn (RequestInterface $request): string => $request->getUri()->getQuery(),
+            $http->getRequests(),
+        ));
     }
 
     public function testFeatureQueriesEncodeUserSuppliedValues(): void
@@ -152,22 +151,26 @@ final class WhmFeaturesTest extends TestCase
 
     public function testUserSettingsRejectsEmptyParameterListsBeforeRequesting(): void
     {
-        $group = new Features(static function (): ApiResponse {
-            self::fail('Invalid parameter lists must not make a request.');
-        }, self::withoutMetadataOwner(...));
+        [$client, $http] = self::client();
 
-        $this->expectException(InvalidArgumentException::class);
-        $group->userSettings([]);
+        try {
+            $client->whm()->features()->userSettings([]);
+            self::fail('Expected an invalid parameter list.');
+        } catch (InvalidArgumentException) {
+            self::assertSame([], $http->getRequests());
+        }
     }
 
     public function testEmptyFeatureParameterListIsNotSilentlyOmitted(): void
     {
-        $group = new Features(static function (): ApiResponse {
-            self::fail('Invalid parameter lists must not make a request.');
-        }, self::withoutMetadataOwner(...));
+        [$client, $http] = self::client();
 
-        $this->expectException(InvalidArgumentException::class);
-        $group->userSettings('alice', []);
+        try {
+            $client->whm()->features()->userSettings('alice', []);
+            self::fail('Expected an invalid parameter list.');
+        } catch (InvalidArgumentException) {
+            self::assertSame([], $http->getRequests());
+        }
     }
 
     public function testInvalidParameterListsClearOnlyCurrentMetadataBeforeIo(): void
@@ -215,7 +218,7 @@ final class WhmFeaturesTest extends TestCase
             ['id' => 'custom', 'is_plugin' => '1'],
         ]], self::group(
             '{"features":[{"id":"ssl","is_plugin":"0"},{"id":"custom","is_plugin":"1"}]}',
-        )->metadata());
+        )->metadata()->toArray());
     }
 
     public function testListDataPreservesObservedStringAndBooleanFlags(): void
@@ -230,7 +233,7 @@ final class WhmFeaturesTest extends TestCase
                 . '"is_standalone_experience":false,"is_meridian_only":false,"suppress_plugin_label":true},'
                 . '{"id":"custom","is_disabled":"1","value":"0",'
                 . '"is_standalone_experience":true,"is_meridian_only":true,"suppress_plugin_label":false}]}',
-        )->listData('default'));
+        )->listData('default')->toArray());
     }
 
     public function testUserSettingsPreservesObservedStringDefaultFlags(): void
@@ -241,7 +244,7 @@ final class WhmFeaturesTest extends TestCase
         ]], self::group(
             '{"users_features_settings":[{"cpuser_setting":null,"feature_list_setting":"1"},'
                 . '{"cpuser_setting":0,"feature_list_setting":"0"}]}',
-        )->userSettings('alice'));
+        )->userSettings('alice')->toArray());
     }
 
     public function testReturnedArraysAreDetachedFromSourceObjects(): void
@@ -251,9 +254,9 @@ final class WhmFeaturesTest extends TestCase
         $group = new Features(static fn (): ApiResponse => new ApiResponse(
             $payload,
             new ResponseMetadata(200, ['result' => 1]),
-        ), self::withoutMetadataOwner(...));
+        ));
 
-        $result = $group->metadata();
+        $result = $group->metadata()->toArray();
         $record->name = 'changed';
 
         self::assertSame(['features' => [['id' => 'ssl', 'name' => 'SSL', 'is_plugin' => 0]]], $result);
@@ -386,12 +389,7 @@ final class WhmFeaturesTest extends TestCase
         return new Features(static fn (): ApiResponse => new ApiResponse(
             json_decode($data, false, 512, JSON_THROW_ON_ERROR),
             $metadata ?? new ResponseMetadata(200, ['result' => 1]),
-        ), self::withoutMetadataOwner(...));
-    }
-
-    /** Standalone payload tests have no client metadata state to reset. */
-    private static function withoutMetadataOwner(): void
-    {
+        ));
     }
 
     /** @return array{Client, MockClient} */
@@ -418,12 +416,12 @@ final class WhmFeaturesTest extends TestCase
     private static function execute(Features $group, string $method): array|bool
     {
         return match ($method) {
-            'metadata' => $group->metadata(),
+            'metadata' => $group->metadata()->toArray(),
             'names' => $group->names(),
-            'listData' => $group->listData('disabled'),
+            'listData' => $group->listData('disabled')->toArray(),
             'lists' => $group->lists(),
             'listsByPackageType' => $group->listsByPackageType(),
-            'userSettings' => $group->userSettings('alice'),
+            'userSettings' => $group->userSettings('alice')->toArray(),
             default => $group->userHasFeature('alice', 'unknown_feature'),
         };
     }

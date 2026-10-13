@@ -13033,7 +13033,12 @@
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
-        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureSettingTest::testExposesAllReviewedFieldsWithNormalizedFlags",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureSettingTest::testListDataKeepsOmittedEmptyAndPresentFieldsDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureSettingTest::testListDataRejectsMalformedContainersWithTheResponseSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureSettingTest::testOptionalFieldsAreNullWhileExplicitMeridianNullIsExported",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureSettingTest::testRejectsInvalidRecordsWithTheResponseSnapshot"
       ],
       "valid": true,
       "variant_id": "whm1:get_featurelist_data#GET"
@@ -13512,7 +13517,12 @@
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsPreservesObservedStringDefaultFlags",
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsRejectsEmptyParameterListsBeforeRequesting",
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsSupportsDocumentedNumberedParameters",
-        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::testCollectionKeepsOmittedAndEmptyListsDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::testCollectionRejectsMalformedListsWithTheResponseSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::testExplicitNullOverrideIsExportedButOmissionIsNot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::testNormalizesTheListSettingAndKeepsTheOverride",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::testRejectsInvalidRecordsWithTheResponseSnapshot"
       ],
       "valid": true,
       "variant_id": "whm1:get_users_features_settings#GET"
@@ -13800,7 +13810,12 @@
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
         "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testReturnedArraysAreDetachedFromSourceObjects",
-        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::testCatalogKeepsOmittedAndEmptyListsDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::testCatalogRejectsMalformedListsWithTheResponseSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::testNormalizesPluginFlagWhileExportingTheWireValue",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::testOmittedFieldsAreNullAndAbsentFromTheExport",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::testRejectsInvalidRecordsWithTheResponseSnapshot"
       ],
       "valid": true,
       "variant_id": "whm1:get_feature_metadata#GET"
@@ -61026,7 +61041,12 @@
             "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
             "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
             "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testReturnedArraysAreDetachedFromSourceObjects",
-            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::testCatalogKeepsOmittedAndEmptyListsDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::testCatalogRejectsMalformedListsWithTheResponseSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::testNormalizesPluginFlagWhileExportingTheWireValue",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::testOmittedFieldsAreNullAndAbsentFromTheExport",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureMetadataTest::testRejectsInvalidRecordsWithTheResponseSnapshot"
           ],
           "units": [
             {
@@ -61110,7 +61130,12 @@
             "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
             "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
             "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
-            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureSettingTest::testExposesAllReviewedFieldsWithNormalizedFlags",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureSettingTest::testListDataKeepsOmittedEmptyAndPresentFieldsDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureSettingTest::testListDataRejectsMalformedContainersWithTheResponseSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureSettingTest::testOptionalFieldsAreNullWhileExplicitMeridianNullIsExported",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\FeatureSettingTest::testRejectsInvalidRecordsWithTheResponseSnapshot"
           ],
           "units": [
             {
@@ -63081,7 +63106,12 @@
             "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsPreservesObservedStringDefaultFlags",
             "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsRejectsEmptyParameterListsBeforeRequesting",
             "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsSupportsDocumentedNumberedParameters",
-            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::testCollectionKeepsOmittedAndEmptyListsDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::testCollectionRejectsMalformedListsWithTheResponseSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::testExplicitNullOverrideIsExportedButOmissionIsNot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::testNormalizesTheListSettingAndKeepsTheOverride",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::testRejectsInvalidRecordsWithTheResponseSnapshot"
           ],
           "units": [
             {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient;
 
 use HostingPal\WhmApiClient\Api\AbstractApiClient;
+use HostingPal\WhmApiClient\Api\NumberedList;
 use HostingPal\WhmApiClient\Api\Whm\Domains;
 use HostingPal\WhmApiClient\Api\Whm\Features;
 use HostingPal\WhmApiClient\Api\Whm\Php;
@@ -76,7 +77,7 @@ final class WhmClient extends AbstractApiClient
      */
     public function features(): Features
     {
-        return $this->features ??= new Features($this->request(...), $this->beginRequest(...));
+        return $this->features ??= new Features($this->request(...));
     }
 
     /**
@@ -93,9 +94,9 @@ final class WhmClient extends AbstractApiClient
      * Execute a read-only operation declared by an internal operation group.
      *
      * Groups supply endpoint parameters; the API version cannot be overridden.
-     * Execution clears metadata before query validation or I/O. Groups that
-     * validate inputs before calling this helper must invoke beginRequest first.
-     * @param array<string, string|int> $query
+     * Execution clears metadata before query validation or I/O, so groups pass
+     * multi-value input through unvalidated (see NumberedList).
+     * @param array<string, string|int|NumberedList> $query
      */
     private function request(string $operation, array $query): ApiResponse
     {

@@ -58,4 +58,59 @@ final class ResponseMetadataTest extends TestCase
 
         new ResponseMetadata(0);
     }
+
+    public function testExposesTypedWhmDiagnostics(): void
+    {
+        $meta = new ResponseMetadata(200, ['result' => 0, 'reason' => 'Access denied']);
+
+        self::assertSame(0, $meta->whmResult());
+        self::assertSame('Access denied', $meta->whmReason());
+        self::assertNull($meta->uapiStatus());
+        self::assertSame([], $meta->uapiErrors());
+        self::assertSame(['Access denied'], $meta->errors());
+    }
+
+    public function testExposesTypedUapiDiagnosticsWithoutSuccessfulWhmReason(): void
+    {
+        $meta = new ResponseMetadata(
+            200,
+            ['result' => 1, 'reason' => 'OK'],
+            ['status' => 0, 'errors' => ['Domain missing'], 'warnings' => ['Check DNS'], 'messages' => null],
+        );
+
+        self::assertSame(1, $meta->whmResult());
+        self::assertSame(0, $meta->uapiStatus());
+        self::assertSame(['Domain missing'], $meta->uapiErrors());
+        self::assertSame(['Check DNS'], $meta->uapiWarnings());
+        self::assertSame([], $meta->uapiMessages());
+        self::assertSame(['Domain missing'], $meta->errors());
+    }
+
+    public function testIgnoresNonConformingDiagnosticValues(): void
+    {
+        $meta = new ResponseMetadata(
+            200,
+            ['result' => '0', 'reason' => ['nested']],
+            ['status' => '1', 'errors' => 'single string', 'warnings' => [1, 'kept'], 'messages' => ['a' => 'b']],
+        );
+
+        self::assertNull($meta->whmResult());
+        self::assertNull($meta->whmReason());
+        self::assertNull($meta->uapiStatus());
+        self::assertSame([], $meta->uapiErrors());
+        self::assertSame(['kept'], $meta->uapiWarnings());
+        self::assertSame([], $meta->uapiMessages());
+        self::assertSame([], $meta->errors());
+    }
+
+    public function testReportsNoDiagnosticsWhenFamilyMetadataIsUnavailable(): void
+    {
+        $meta = new ResponseMetadata(502);
+
+        self::assertNull($meta->whmResult());
+        self::assertNull($meta->whmReason());
+        self::assertNull($meta->uapiStatus());
+        self::assertSame([], $meta->uapiWarnings());
+        self::assertSame([], $meta->errors());
+    }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Response;
 
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
-use stdClass;
 
 /**
  * Retain the server's one-, five-, and fifteen-minute load averages.
@@ -56,19 +55,17 @@ final readonly class ServerLoadAverage
      */
     public static function fromPayload(mixed $payload, ResponseMetadata $metadata): self
     {
-        if (!$payload instanceof stdClass) {
-            throw new InvalidResponseException('Invalid WHM load-average payload.', $metadata);
-        }
-
+        $read = new PayloadReader($metadata, 'WHM load-average payload');
+        $payload = $read->object($payload);
         $values = [];
         if (property_exists($payload, 'one')) {
-            $values['one'] = self::number($payload->one, $metadata);
+            $values['one'] = self::number($payload->one, $read);
         }
         if (property_exists($payload, 'five')) {
-            $values['five'] = self::number($payload->five, $metadata);
+            $values['five'] = self::number($payload->five, $read);
         }
         if (property_exists($payload, 'fifteen')) {
-            $values['fifteen'] = self::number($payload->fifteen, $metadata);
+            $values['fifteen'] = self::number($payload->fifteen, $read);
         }
 
         return new self($values);
@@ -89,7 +86,7 @@ final readonly class ServerLoadAverage
      *
      * @return int|float|numeric-string
      */
-    private static function number(mixed $value, ResponseMetadata $metadata): int|float|string
+    private static function number(mixed $value, PayloadReader $read): int|float|string
     {
         if (
             is_string($value) && is_numeric($value)
@@ -100,7 +97,7 @@ final readonly class ServerLoadAverage
         }
 
         if ((!is_int($value) && !is_float($value)) || !is_finite((float) $value)) {
-            throw new InvalidResponseException('Invalid WHM load-average value.', $metadata);
+            $read->fail();
         }
 
         return $value;

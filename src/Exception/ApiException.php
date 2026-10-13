@@ -27,4 +27,18 @@ class ApiException extends RuntimeException
     {
         parent::__construct($message);
     }
+
+    /**
+     * Return the upstream error descriptions recorded for this attempt.
+     *
+     * Delegates to ResponseMetadata::errors(); an attempt without a usable
+     * envelope yields an empty list. The text is excluded from getMessage()
+     * because it can name accounts or domains.
+     *
+     * @return list<string>
+     */
+    public function errors(): array
+    {
+        return $this->metadata?->errors() ?? [];
+    }
 }

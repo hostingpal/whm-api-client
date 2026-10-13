@@ -8,6 +8,9 @@ use Closure;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
+use HostingPal\WhmApiClient\Response\FeatureCatalog;
+use HostingPal\WhmApiClient\Response\FeatureListData;
+use HostingPal\WhmApiClient\Response\UserFeatureSettings;
 use HostingPal\WhmApiClient\Tests\Support\LiveCurlClient;
 use HostingPal\WhmApiClient\Tests\Support\LiveTestEnvironment;
 use HostingPal\WhmApiClient\UapiClient;
@@ -37,13 +40,15 @@ final class InventoryLiveTest extends TestCase
     /** @return iterable<string, array{Closure(WhmClient): mixed}> */
     public static function whmOperations(): iterable
     {
-        yield 'feature metadata' => [static fn (WhmClient $whm): array => $whm->features()->metadata()];
+        yield 'feature metadata' => [static fn (WhmClient $whm): FeatureCatalog => $whm->features()->metadata()];
         yield 'feature names' => [static fn (WhmClient $whm): array => $whm->features()->names()];
-        yield 'feature list data' => [static fn (WhmClient $whm): array => $whm->features()->listData('default')];
+        yield 'feature list data' => [
+            static fn (WhmClient $whm): FeatureListData => $whm->features()->listData('default'),
+        ];
         yield 'feature lists' => [static fn (WhmClient $whm): array => $whm->features()->lists()];
         yield 'feature package types' => [static fn (WhmClient $whm): array => $whm->features()->listsByPackageType()];
         yield 'user feature settings' => [
-            static fn (WhmClient $whm): array => $whm->features()->userSettings('npr', 'autossl'),
+            static fn (WhmClient $whm): UserFeatureSettings => $whm->features()->userSettings('npr', 'autossl'),
         ];
         yield 'user feature access' => [
             static fn (WhmClient $whm): bool => $whm->features()->userHasFeature('npr', 'autossl'),

@@ -27,21 +27,23 @@ Concrete HTTP implementations are supplied by the consuming application.
 
 ## Base client
 
-The constructor accepts an options array or a validated, immutable `ClientConfig`.
-Pass an existing `HttpTransport` as the second argument to inject HTTP dependencies;
-otherwise the existing transport discovers its PSR implementations. Construction
-and account selection perform no network requests.
+The constructor accepts an options array or a validated, immutable `ClientConfig`,
+plus a required `HttpTransport` wrapping your configured PSR-18 client (see
+[HTTP integration](#http-integration)). `HttpTransport::discover()` is the explicit
+opt-in for a discovered client with defaults this library cannot verify.
+Construction and account selection perform no network requests.
 
 ```php
 use HostingPal\WhmApiClient\Client;
 
-// $whmToken is supplied by the consuming application.
+// $whmToken is supplied by the consuming application; $transport wraps its
+// configured PSR-18 client (verified TLS, redirects disabled, timeouts set).
 $client = new Client([
     'host' => 'whm.example.com',
     'authType' => 'whm',
     'token' => $whmToken,
     'defaultCpanelUser' => 'npr', // Optional; enables uapi() without an argument.
-]);
+], $transport);
 
 $whm = $client->whm();
 $npr = $client->uapi('npr');
@@ -61,7 +63,7 @@ $client = new Client([
     'authType' => 'cpanel',
     'username' => 'npr',
     'token' => $cpanelToken,
-]);
+], $transport);
 
 $npr = $client->uapi(); // Direct route for npr.
 ```
@@ -75,11 +77,14 @@ $npr = $client->uapi(); // Direct route for npr.
 | `port` | Optional integer from 1 to 65535; defaults to 2087 for WHM or 2083 for cPanel. |
 | `defaultCpanelUser` | Optional target used by `uapi()` with WHM credentials. With cPanel credentials it must match the token owner. |
 
-Configuration builds HTTPS base addresses. The injected or discovered PSR client
-must verify TLS certificates and disable redirects for authenticated requests.
-The API layer rejects HTTP 3xx responses and performs no retries. HTTP timeouts
-and other transport options are configured on that client, not in this options
-array; see the explicit [HTTP integration example](#http-integration).
+Configuration builds HTTPS base addresses. The injected PSR client must verify
+TLS certificates, disable redirects, and set timeouts for authenticated requests;
+`HttpTransport::discover()` keeps whatever defaults the discovered client ships
+with. The API layer rejects HTTP 3xx responses and performs no retries. Transport
+options are configured on that client, not in this options array; see the explicit
+[HTTP integration example](#http-integration). Handles never expose the
+configuration or credentials, and credentials refuse serialization so tokens
+cannot reach caches, queues, or sessions; do not `var_export()` configuration.
 
 `uapi(null)` follows the same default rules as `uapi()`. An explicit empty username
 is invalid. WHM credentials without an explicit or default cPanel target raise
@@ -252,12 +257,12 @@ methods retain the selected cPanel account on either credential route.
 | `whm()->php()->oldFpmFlag()` | `php_get_old_fpm_flag` | `0\|1\|2` |
 | `whm()->php()->isConversionInProgress()` | `is_conversion_in_progress` | `bool` |
 | `whm()->php()->vhostsByVersion(string $version)` | `php_get_vhosts_by_version` | `list<string>` |
-| `whm()->features()->metadata()` | `get_feature_metadata` | Feature metadata shape |
+| `whm()->features()->metadata()` | `get_feature_metadata` | `FeatureCatalog` of `FeatureMetadata` |
 | `whm()->features()->names()` | `get_feature_names` | Feature names shape |
-| `whm()->features()->listData(string $featureList)` | `get_featurelist_data` | Feature list configuration shape |
+| `whm()->features()->listData(string $featureList)` | `get_featurelist_data` | `FeatureListData` of `FeatureSetting` |
 | `whm()->features()->lists()` | `get_featurelists` | Feature list names shape |
 | `whm()->features()->listsByPackageType()` | `get_featurelists_by_package_types` | Feature lists by package type shape |
-| `whm()->features()->userSettings($user, $feature = null)` | `get_users_features_settings` | Account feature settings shape |
+| `whm()->features()->userSettings($user, $feature = null)` | `get_users_features_settings` | `UserFeatureSettings` of `UserFeatureSetting` |
 | `whm()->features()->userHasFeature(string $user, string $feature)` | `verify_user_has_feature` | `bool` |
 | `uapi()->domains()->primary(?bool $hideTemporaryDomains = null)` | `DomainInfo/primary_domain` | `?string` |
 | `uapi()->domains()->builtinAliases(?bool $hideTemporaryDomains = null)` | `DomainInfo/main_domain_builtin_subdomain_aliases` | `list<string>` |
@@ -269,9 +274,13 @@ methods retain the selected cPanel account on either credential route.
 | `uapi()->dns()->generatedDomains(string $domain)` | `DNS/fetch_cpanel_generated_domains` | `list<array{domain?: string}>` |
 
 Precise nested array shapes and exact official operation links are documented on
-these methods. Structured feature returns retain optional member presence, empty
-lists and flag wire types. The feature fields described in the runtime audit also
-accept exact string `0`/`1` or booleans where observed, preserving their wire type.
+these methods. Return conventions: a public value never exposes wire-type variants.
+Records whose flags vary on the wire are immutable DTOs (iterable/countable
+containers where they hold lists) whose camelCase properties normalize flags to
+`0|1` and use null for omission, while `toArray()` returns the reviewed wire shape
+with original keys, presence and values, including the exact string `'0'`/`'1'` or
+boolean forms observed in the runtime audit. Array returns are kept for payloads
+whose fields each have a single type. Load averages are the one deliberate exception: `ServerLoadAverage` keeps `int|float|numeric-string` because no lossless normalization preserves their precision and trailing zeros.
 Scalar/list convenience methods require their selected
 field; malformed payloads raise `InvalidResponseException` carrying the current
 metadata. Nullable UAPI scalar fields accept explicit null. DNS lookup preserves
@@ -283,6 +292,10 @@ $whm = $client->whm();
 $versions = $whm->php()->listVersions();
 $handlers = $whm->php()->handlers();
 $settings = $whm->features()->userSettings(['npr'], ['autossl', 'sslmanager']);
+foreach ($settings as $setting) {
+    $effective = $setting->cpuserSetting ?? $setting->featureListSetting; // 0|1|null
+}
+$wire = $settings->toArray(); // Original keys and wire values.
 
 $account = $client->uapi('npr');
 $primary = $account->domains()->primary();
@@ -296,8 +309,9 @@ $dnsLines = $account->dns()->lookup('npr.rs'); // Textual lines, not DNS record 
 feature name or nonempty list. Omitting the feature filter asks for all features.
 `userHasFeature()` is an access check: upstream also returns true for unknown
 features. The `disabled` feature list reverses the interpretation of `value`;
-its flag values are returned unchanged. A null `cpuser_setting` means there
-is no account override.
+flag properties are normalized to `0|1` and `toArray()` keeps the wire values.
+A null `cpuserSetting` means there is no account override (or the field was
+omitted; `toArray()` distinguishes the two).
 
 UAPI feature-map names follow PHP array-key conversion, including integer keys
 for canonical numeric JSON names. PHP package strings are open, including custom packages.
@@ -327,6 +341,13 @@ warnings, and metadata. Nested JSON metadata objects are represented as arrays. 
 retain both maps and check both outcomes; outer WHM success alone is insufficient.
 These outcome rules apply to the implemented operations.
 
+Typed accessors read the documented envelope fields without coercion:
+`whmResult()`, `whmReason()`, `uapiStatus()`, `uapiErrors()`, `uapiWarnings()` and
+`uapiMessages()` return null or an empty list for absent or non-conforming values and
+skip non-string list entries.
+`errors()` returns the WHM reason when the WHM result is `0`, followed by the UAPI
+errors, so a successful outer bridge reason such as `OK` is never reported as an error.
+
 API failures extend `HostingPal\WhmApiClient\Exception\ApiException`. Its public
 readonly `$metadata` property contains the same snapshot as `responseMeta()`,
 or null when no usable API metadata was received:
@@ -338,9 +359,28 @@ or null when no usable API metadata was received:
 | `InvalidResponseException` | The envelope, outcome, or endpoint payload cannot satisfy the reviewed contract. |
 | `TransportException` | The PSR HTTP transport reports a request failure. |
 
-Exception messages exclude raw bodies and credentials. Transport exceptions do
-not retain the original exception chain, which may contain an authenticated
-request. Metadata preserves upstream diagnostics and may include account data.
+`ApiException::errors()` returns the upstream error descriptions from its
+snapshot (empty without metadata). Exception messages exclude raw bodies,
+credentials, and upstream error text, which can name accounts or domains; read it
+through `errors()` and log it deliberately. `TransportException` never retains the
+original exception chain, which may contain an authenticated request. Instead,
+`$failure` reports the PSR interface the client used: `network` (typically
+connection, DNS, timeout), `request`, or `other`. Classification follows the
+client (Guzzle, for example, can report certificate verification failures as `request`); `$causeClass` names the PSR exception; and `$causeMessage` keeps its
+message with the configured token redacted. The cause message can include the
+request URL, so it is excluded from `getMessage()`. Metadata preserves upstream
+diagnostics and may include account data.
+
+```php
+try {
+    $client->uapi('npr')->dns()->lookup('example.com');
+} catch (ApiErrorException $exception) {
+    $reasons = $exception->errors(); // e.g. ['The domain does not exist.']
+} catch (TransportException $exception) {
+    $kind = $exception->failure;          // As classified by the PSR client.
+    $detail = $exception->causeMessage;   // Token redacted; may contain the URL.
+}
+```
 
 Direct UAPI supports the pinned `result` wrapper and the bare result object
 observed during an authorized live request on 2026-10-13. A present `result`
@@ -423,15 +463,17 @@ requirements for consumers come from `composer.json`, not this lockfile.
 
 ## HTTP integration
 
-The transport accepts a PSR-18 client, a PSR-17 request factory, and a PSR-17
-stream factory. Each omitted dependency is resolved independently through
-HTTP discovery:
+The transport requires a PSR-18 client, because that client owns the policy the
+API layer relies on: verified TLS, disabled redirects, and timeouts. The PSR-17
+request and stream factories carry no such policy; each omitted factory is resolved
+through HTTP discovery. A fully discovered transport is an explicit opt-in:
 
 ```php
 use HostingPal\WhmApiClient\Http\HttpTransport;
 
-// Requires discoverable HTTP implementations to be installed.
-$transport = new HttpTransport();
+// Keeps the discovered client's own defaults, which are often missing a timeout
+// and whose redirect policy depends on the implementation. Prefer injection.
+$transport = HttpTransport::discover();
 ```
 
 For example, a consuming application can install Guzzle:

@@ -6,11 +6,10 @@ namespace HostingPal\WhmApiClient\Api\Whm;
 
 use Closure;
 use HostingPal\WhmApiClient\Exception\ApiException;
-use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Response\ApiResponse;
+use HostingPal\WhmApiClient\Response\PayloadReader;
 use HostingPal\WhmApiClient\Response\ServerDiskUsage;
 use HostingPal\WhmApiClient\Response\ServerLoadAverage;
-use stdClass;
 
 /** Expose reviewed server-level WHM operations. */
 final readonly class Server
@@ -41,11 +40,9 @@ final readonly class Server
     public function version(): string
     {
         $response = ($this->request)('version', []);
-        if (!$response->data instanceof stdClass || !is_string($response->data->version ?? null)) {
-            throw new InvalidResponseException('Missing or invalid server version payload.', $response->metadata);
-        }
+        $read = new PayloadReader($response->metadata, 'server version payload');
 
-        return $response->data->version;
+        return $read->string($read->field($response->data, 'version'));
     }
 
     /**
@@ -64,11 +61,9 @@ final readonly class Server
     public function hostname(): string
     {
         $response = ($this->request)('gethostname', []);
-        if (!$response->data instanceof stdClass || !is_string($response->data->hostname ?? null)) {
-            throw new InvalidResponseException('Missing or invalid server hostname payload.', $response->metadata);
-        }
+        $read = new PayloadReader($response->metadata, 'server hostname payload');
 
-        return $response->data->hostname;
+        return $read->string($read->field($response->data, 'hostname'));
     }
 
     /**

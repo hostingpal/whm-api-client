@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Response;
 
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
-use stdClass;
 
 /**
  * Retain one drive partition from WHM getdiskusage as an immutable snapshot.
@@ -110,65 +109,58 @@ final readonly class DiskPartition
      */
     public static function fromPayload(mixed $payload, ResponseMetadata $metadata): self
     {
-        if (!$payload instanceof stdClass) {
-            throw new InvalidResponseException('Invalid WHM disk partition record.', $metadata);
-        }
-
+        $read = new PayloadReader($metadata, 'WHM disk partition record');
+        $payload = $read->object($payload);
         $values = [];
         if (property_exists($payload, 'available')) {
-            $values['available'] = self::positiveIntegerValue($payload->available, $metadata);
+            $values['available'] = $read->positiveInt($payload->available);
         }
 
         if (property_exists($payload, 'device')) {
-            $values['device'] = self::stringValue($payload->device, $metadata);
+            $values['device'] = $read->string($payload->device);
         }
 
         if (property_exists($payload, 'disk')) {
-            $values['disk'] = self::stringValue($payload->disk, $metadata);
+            $values['disk'] = $read->string($payload->disk);
         }
 
         if (property_exists($payload, 'filesystem')) {
-            $values['filesystem'] = self::stringValue($payload->filesystem, $metadata);
+            $values['filesystem'] = $read->string($payload->filesystem);
         }
 
         if (property_exists($payload, 'inodes_available')) {
-            $values['inodes_available'] = $payload->inodes_available === null
-                ? null
-                : self::positiveIntegerValue($payload->inodes_available, $metadata);
+            $values['inodes_available'] = $read->nullable($payload->inodes_available, $read->positiveInt(...));
         }
 
         if (property_exists($payload, 'inodes_ipercentage')) {
-            $values['inodes_ipercentage'] = $payload->inodes_ipercentage === null
-                ? null
-                : self::nonNegativeIntegerValue($payload->inodes_ipercentage, $metadata);
+            $values['inodes_ipercentage'] = $read->nullable(
+                $payload->inodes_ipercentage,
+                $read->nonNegativeInt(...),
+            );
         }
 
         if (property_exists($payload, 'inodes_total')) {
-            $values['inodes_total'] = $payload->inodes_total === null
-                ? null
-                : self::positiveIntegerValue($payload->inodes_total, $metadata);
+            $values['inodes_total'] = $read->nullable($payload->inodes_total, $read->positiveInt(...));
         }
 
         if (property_exists($payload, 'inodes_used')) {
-            $values['inodes_used'] = $payload->inodes_used === null
-                ? null
-                : self::positiveIntegerValue($payload->inodes_used, $metadata);
+            $values['inodes_used'] = $read->nullable($payload->inodes_used, $read->positiveInt(...));
         }
 
         if (property_exists($payload, 'mount')) {
-            $values['mount'] = self::stringValue($payload->mount, $metadata);
+            $values['mount'] = $read->string($payload->mount);
         }
 
         if (property_exists($payload, 'percentage')) {
-            $values['percentage'] = self::nonNegativeIntegerValue($payload->percentage, $metadata);
+            $values['percentage'] = $read->nonNegativeInt($payload->percentage);
         }
 
         if (property_exists($payload, 'total')) {
-            $values['total'] = self::positiveIntegerValue($payload->total, $metadata);
+            $values['total'] = $read->positiveInt($payload->total);
         }
 
         if (property_exists($payload, 'used')) {
-            $values['used'] = self::positiveIntegerValue($payload->used, $metadata);
+            $values['used'] = $read->positiveInt($payload->used);
         }
 
         return new self($values);
@@ -184,43 +176,5 @@ final readonly class DiskPartition
     public function toArray(): array
     {
         return $this->payload;
-    }
-
-    /** Validate a present non-null string without narrowing its contents. */
-    private static function stringValue(mixed $value, ResponseMetadata $metadata): string
-    {
-        if (!is_string($value)) {
-            throw new InvalidResponseException('Invalid WHM disk partition record.', $metadata);
-        }
-
-        return $value;
-    }
-
-    /**
-     * Validate the pinned minimum of one without coercion or an upper bound.
-     *
-     * @return positive-int
-     */
-    private static function positiveIntegerValue(mixed $value, ResponseMetadata $metadata): int
-    {
-        if (!is_int($value) || $value < 1) {
-            throw new InvalidResponseException('Invalid WHM disk partition record.', $metadata);
-        }
-
-        return $value;
-    }
-
-    /**
-     * Validate nonnegative percentage integers without coercion.
-     *
-     * @return int<0, max>
-     */
-    private static function nonNegativeIntegerValue(mixed $value, ResponseMetadata $metadata): int
-    {
-        if (!is_int($value) || $value < 0) {
-            throw new InvalidResponseException('Invalid WHM disk partition record.', $metadata);
-        }
-
-        return $value;
     }
 }

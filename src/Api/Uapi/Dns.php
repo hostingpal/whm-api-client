@@ -6,9 +6,8 @@ namespace HostingPal\WhmApiClient\Api\Uapi;
 
 use Closure;
 use HostingPal\WhmApiClient\Exception\ApiException;
-use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Response\ApiResponse;
-use stdClass;
+use HostingPal\WhmApiClient\Response\PayloadReader;
 
 /** Expose reviewed DNS discovery through the selected cPanel account's UAPI route. */
 final readonly class Dns
@@ -43,25 +42,12 @@ final readonly class Dns
     public function lookup(string $domain): ?array
     {
         $response = ($this->request)('lookup', ['domain' => $domain]);
+        $read = new PayloadReader($response->metadata, 'DNS lookup payload');
         if (!$response->hasData) {
-            throw new InvalidResponseException('Missing DNS lookup payload.', $response->metadata);
-        }
-        if ($response->data === null) {
-            return null;
-        }
-        if (!is_array($response->data) || !array_is_list($response->data)) {
-            throw new InvalidResponseException('Invalid DNS lookup payload.', $response->metadata);
+            $read->fail();
         }
 
-        $lines = [];
-        foreach ($response->data as $line) {
-            if (!is_string($line)) {
-                throw new InvalidResponseException('Invalid DNS lookup response line.', $response->metadata);
-            }
-            $lines[] = $line;
-        }
-
-        return $lines;
+        return $read->nullable($response->data, $read->strings(...));
     }
 
     /**
@@ -85,25 +71,23 @@ final readonly class Dns
     public function generatedDomains(string $domain): array
     {
         $response = ($this->request)('fetch_cpanel_generated_domains', ['domain' => $domain]);
-        if (!is_array($response->data) || !array_is_list($response->data)) {
-            throw new InvalidResponseException('Missing or invalid generated domains payload.', $response->metadata);
-        }
+        $read = new PayloadReader($response->metadata, 'generated domains payload');
 
-        $domains = [];
-        foreach ($response->data as $record) {
-            if (!$record instanceof stdClass) {
-                throw new InvalidResponseException('Invalid generated domain record.', $response->metadata);
-            }
-            $item = [];
-            if (property_exists($record, 'domain')) {
-                if (!is_string($record->domain)) {
-                    throw new InvalidResponseException('Invalid generated domain name.', $response->metadata);
-                }
-                $item['domain'] = $record->domain;
-            }
-            $domains[] = $item;
-        }
+        return $read->listOf(
+            $response->data,
+            static fn (mixed $record): array => self::generatedDomain($record, $read),
+        );
+    }
 
-        return $domains;
+    /**
+     * Copy one generated-domain record, preserving an omitted domain.
+     *
+     * @return array{domain?: string}
+     */
+    private static function generatedDomain(mixed $record, PayloadReader $read): array
+    {
+        $record = $read->object($record);
+
+        return property_exists($record, 'domain') ? ['domain' => $read->string($record->domain)] : [];
     }
 }

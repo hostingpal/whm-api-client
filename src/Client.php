@@ -15,8 +15,8 @@ use SensitiveParameter;
  * Select WHM and account-scoped UAPI clients from one credential configuration.
  *
  * Handles share an HTTP transport but retain separate account and metadata state.
- * Selection prepares context without I/O. Terminal operations expose server
- * versions, WHM domain inventory, account domains, and installed PHP versions.
+ * Selection prepares context without I/O; terminal operations live on each
+ * handle's operation groups (the README lists the operation mapping).
  * Credentials select direct cPanel access or account-scoped execution through WHM.
  *
  * @phpstan-import-type ClientOptions from ClientConfigFactory
@@ -35,28 +35,27 @@ final class Client
     /**
      * Create a client from validated options or an immutable configuration.
      *
-     * An omitted transport discovers its PSR HTTP implementations. Construction
-     * performs no network requests and never treats a WHM user as a UAPI target.
-     * The supplied or discovered PSR client must verify TLS and disable redirects
-     * for authenticated requests. Terminal API operations do not retry failures.
+     * The transport is explicit: its PSR-18 client must verify TLS, disable
+     * redirects, and set timeouts for authenticated requests. HttpTransport::discover()
+     * is the explicit opt-in for a discovered client with unverified defaults.
+     * Construction performs no network requests and never treats a WHM user as a
+     * UAPI target. Terminal API operations do not retry failures.
      *
      * @param ClientOptions|ClientConfig $config
      * @throws InvalidArgumentException If configuration values are invalid.
-     * @throws \Http\Discovery\Exception\NotFoundException If HTTP discovery fails.
      */
-    public function __construct(#[SensitiveParameter] array|ClientConfig $config, ?HttpTransport $transport = null)
+    public function __construct(#[SensitiveParameter] array|ClientConfig $config, HttpTransport $transport)
     {
         $this->config = is_array($config) ? ClientConfigFactory::fromArray($config) : $config;
-        $this->transport = $transport ?? new HttpTransport();
+        $this->transport = $transport;
     }
 
     /**
      * Return the configured WHM client handle.
      *
      * Repeated calls reuse the handle and its metadata state. cPanel credentials
-     * cannot authorize WHM access; no request is made by this selector.
-     * The server()->version() terminal method returns the server's version string.
-     * The domains()->list() terminal method returns an immutable ServerDomains collection.
+     * cannot authorize WHM access; no request is made by this selector. Its
+     * server, domains, php and features groups execute WHM operations on demand.
      *
      * @throws \LogicException If the configuration contains cPanel credentials.
      */
@@ -71,9 +70,8 @@ final class Client
      * Direct cPanel credentials default to their own account. WHM credentials use
      * the explicit target or configured default cPanel account. Each target has
      * a stable handle; selecting another account never changes an existing one.
-     * The domains()->list() terminal method returns an immutable AccountDomains
-     * payload; php()->listVersions() returns a list of installed PHP package names.
-     * Both update only the selected handle's response metadata.
+     * Its domains, php, dns and features groups execute UAPI operations on demand
+     * and update only the selected handle's response metadata.
      *
      * @param string|null $user Target account; null resolves the configured default.
      * @throws InvalidArgumentException If the target is missing, invalid, or mismatched.

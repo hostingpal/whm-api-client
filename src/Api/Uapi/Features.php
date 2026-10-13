@@ -6,9 +6,8 @@ namespace HostingPal\WhmApiClient\Api\Uapi;
 
 use Closure;
 use HostingPal\WhmApiClient\Exception\ApiException;
-use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Response\ApiResponse;
-use stdClass;
+use HostingPal\WhmApiClient\Response\PayloadReader;
 
 /** Expose the selected cPanel account's feature inventory through either UAPI route. */
 final readonly class Features
@@ -43,18 +42,8 @@ final readonly class Features
     public function list(): array
     {
         $response = ($this->request)('list_features', []);
-        if (!$response->data instanceof stdClass) {
-            throw new InvalidResponseException('Missing or invalid feature map payload.', $response->metadata);
-        }
+        $read = new PayloadReader($response->metadata, 'feature map payload');
 
-        $features = [];
-        foreach (get_object_vars($response->data) as $name => $enabled) {
-            if ($enabled !== 0 && $enabled !== 1) {
-                throw new InvalidResponseException('Invalid feature flag payload.', $response->metadata);
-            }
-            $features[$name] = $enabled;
-        }
-
-        return $features;
+        return array_map($read->flag(...), get_object_vars($read->object($response->data)));
     }
 }

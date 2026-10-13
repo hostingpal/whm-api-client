@@ -19,17 +19,17 @@ final class SymbolInventoryTest extends TestCase
         self::assertSame([], $inventory['diagnostics']);
         $transport = array_values(array_filter($inventory['symbols'], static fn (array $symbol): bool =>
             $symbol['declaring_class'] === 'HostingPal\\WhmApiClient\\Http\\HttpTransport'));
-        self::assertSame(['constructor', 'method'], array_column($transport, 'kind'));
-        self::assertSame(['__construct', 'send'], array_map(static fn (array $symbol): string =>
+        self::assertSame(['constructor', 'method', 'method'], array_column($transport, 'kind'));
+        self::assertSame(['__construct', 'discover', 'send'], array_map(static fn (array $symbol): string =>
             substr($symbol['id'], (int) strrpos($symbol['id'], '::') + 2), $transport));
         $tests = array_values(array_filter($inventory['symbols'], static fn (array $symbol): bool =>
             $symbol['declaring_class'] === 'HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest'));
-        self::assertCount(8, array_filter($tests, static fn (array $symbol): bool => $symbol['kind'] === 'test'));
+        self::assertCount(10, array_filter($tests, static fn (array $symbol): bool => $symbol['kind'] === 'test'));
         $providers = array_values(array_filter($tests, static fn (array $symbol): bool =>
             $symbol['kind'] === 'provider'));
         self::assertCount(2, $providers);
         self::assertSame([true, true], array_column($providers, 'static'));
-        self::assertCount(10, $tests);
+        self::assertCount(12, $tests);
         self::assertSame($inventory, (new SymbolInventory())->scan(dirname(__DIR__, 2)));
     }
 

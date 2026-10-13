@@ -8,7 +8,6 @@ use ArrayIterator;
 use Countable;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use IteratorAggregate;
-use stdClass;
 
 /**
  * Retain the reviewed WHM server domain inventory as an immutable collection.
@@ -50,24 +49,16 @@ final readonly class ServerDomains implements Countable, IteratorAggregate
      */
     public static function fromPayload(mixed $payload, ResponseMetadata $metadata): self
     {
-        if (!$payload instanceof stdClass) {
-            throw new InvalidResponseException('Invalid WHM server domain listing.', $metadata);
-        }
-
+        $read = new PayloadReader($metadata, 'WHM server domain listing');
+        $payload = $read->object($payload);
         if (!property_exists($payload, 'domains')) {
             return new self(null);
         }
 
-        if (!is_array($payload->domains) || !array_is_list($payload->domains)) {
-            throw new InvalidResponseException('Invalid WHM server domain listing.', $metadata);
-        }
-
-        $domains = [];
-        foreach ($payload->domains as $domain) {
-            $domains[] = DomainInfo::fromPayload($domain, $metadata);
-        }
-
-        return new self($domains);
+        return new self($read->listOf(
+            $payload->domains,
+            static fn (mixed $domain): DomainInfo => DomainInfo::fromPayload($domain, $metadata),
+        ));
     }
 
     /**

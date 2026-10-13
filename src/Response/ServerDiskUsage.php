@@ -8,7 +8,6 @@ use ArrayIterator;
 use Countable;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use IteratorAggregate;
-use stdClass;
 
 /**
  * Retain the WHM server's drive partition information as an immutable collection.
@@ -49,24 +48,16 @@ final readonly class ServerDiskUsage implements Countable, IteratorAggregate
      */
     public static function fromPayload(mixed $payload, ResponseMetadata $metadata): self
     {
-        if (!$payload instanceof stdClass) {
-            throw new InvalidResponseException('Invalid WHM server disk usage.', $metadata);
-        }
-
+        $read = new PayloadReader($metadata, 'WHM server disk usage');
+        $payload = $read->object($payload);
         if (!property_exists($payload, 'partition')) {
             return new self(null);
         }
 
-        if (!is_array($payload->partition) || !array_is_list($payload->partition)) {
-            throw new InvalidResponseException('Invalid WHM server disk usage.', $metadata);
-        }
-
-        $partitions = [];
-        foreach ($payload->partition as $partition) {
-            $partitions[] = DiskPartition::fromPayload($partition, $metadata);
-        }
-
-        return new self($partitions);
+        return new self($read->listOf(
+            $payload->partition,
+            static fn (mixed $partition): DiskPartition => DiskPartition::fromPayload($partition, $metadata),
+        ));
     }
 
     /**

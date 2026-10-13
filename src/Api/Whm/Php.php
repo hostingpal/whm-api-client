@@ -6,9 +6,8 @@ namespace HostingPal\WhmApiClient\Api\Whm;
 
 use Closure;
 use HostingPal\WhmApiClient\Exception\ApiException;
-use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Response\ApiResponse;
-use stdClass;
+use HostingPal\WhmApiClient\Response\PayloadReader;
 
 /**
  * Read server-wide PHP configuration and PHP-FPM status through WHM.
@@ -49,7 +48,10 @@ final readonly class Php
      */
     public function listVersions(): array
     {
-        return self::stringList(($this->request)('php_get_installed_versions', []), 'versions');
+        $response = ($this->request)('php_get_installed_versions', []);
+        $read = self::reader($response);
+
+        return $read->strings($read->field($response->data, 'versions'));
     }
 
     /**
@@ -69,12 +71,9 @@ final readonly class Php
     public function systemDefaultVersion(): string
     {
         $response = ($this->request)('php_get_system_default_version', []);
-        $version = self::field($response, 'version');
-        if (!is_string($version)) {
-            throw new InvalidResponseException('Invalid default PHP version payload.', $response->metadata);
-        }
+        $read = self::reader($response);
 
-        return $version;
+        return $read->string($read->field($response->data, 'version'));
     }
 
     /**
@@ -99,42 +98,12 @@ final readonly class Php
     public function handlers(?string $version = null): array
     {
         $response = ($this->request)('php_get_handlers', $version === null ? [] : ['version' => $version]);
-        $records = self::field($response, 'version_handlers');
-        if (!is_array($records) || !array_is_list($records)) {
-            throw new InvalidResponseException('Invalid PHP handlers list.', $response->metadata);
-        }
+        $read = self::reader($response);
 
-        $result = [];
-        foreach ($records as $record) {
-            if (!$record instanceof stdClass) {
-                throw new InvalidResponseException('Invalid PHP handlers record.', $response->metadata);
-            }
-
-            $item = [];
-            if (property_exists($record, 'available_handlers')) {
-                if (!is_array($record->available_handlers) || !array_is_list($record->available_handlers)) {
-                    throw new InvalidResponseException('Invalid available PHP handlers.', $response->metadata);
-                }
-
-                $item['available_handlers'] = [];
-                foreach ($record->available_handlers as $handler) {
-                    $item['available_handlers'][] = self::handler($handler, $response);
-                }
-            }
-            if (property_exists($record, 'current_handler')) {
-                $item['current_handler'] = self::handler($record->current_handler, $response);
-            }
-            if (property_exists($record, 'version')) {
-                if (!is_string($record->version)) {
-                    throw new InvalidResponseException('Invalid PHP handler version.', $response->metadata);
-                }
-
-                $item['version'] = $record->version;
-            }
-            $result[] = $item;
-        }
-
-        return $result;
+        return $read->listOf(
+            $read->field($response->data, 'version_handlers'),
+            static fn (mixed $record): array => self::versionHandlers($record, $read),
+        );
     }
 
     /**
@@ -154,7 +123,10 @@ final readonly class Php
      */
     public function defaultAccountsToFpm(): bool
     {
-        return self::booleanFlag(($this->request)('php_get_default_accounts_to_fpm', []), 'default_accounts_to_fpm');
+        $response = ($this->request)('php_get_default_accounts_to_fpm', []);
+        $read = self::reader($response);
+
+        return $read->flag($read->field($response->data, 'default_accounts_to_fpm')) === 1;
     }
 
     /**
@@ -176,12 +148,10 @@ final readonly class Php
     public function oldFpmFlag(): int
     {
         $response = ($this->request)('php_get_old_fpm_flag', []);
-        $flag = self::field($response, 'old_fpm_flag');
-        if (!in_array($flag, [0, 1, 2], true)) {
-            throw new InvalidResponseException('Invalid old PHP-FPM flag.', $response->metadata);
-        }
+        $read = self::reader($response);
+        $flag = $read->field($response->data, 'old_fpm_flag');
 
-        return $flag;
+        return in_array($flag, [0, 1, 2], true) ? $flag : $read->fail();
     }
 
     /**
@@ -200,7 +170,10 @@ final readonly class Php
      */
     public function isConversionInProgress(): bool
     {
-        return self::booleanFlag(($this->request)('is_conversion_in_progress', []), 'inProgress');
+        $response = ($this->request)('is_conversion_in_progress', []);
+        $read = self::reader($response);
+
+        return $read->flag($read->field($response->data, 'inProgress')) === 1;
     }
 
     /**
@@ -221,52 +194,41 @@ final readonly class Php
      */
     public function vhostsByVersion(string $version): array
     {
-        return self::stringList(($this->request)('php_get_vhosts_by_version', ['version' => $version]), 'vhosts');
+        $response = ($this->request)('php_get_vhosts_by_version', ['version' => $version]);
+        $read = self::reader($response);
+
+        return $read->strings($read->field($response->data, 'vhosts'));
     }
 
-    /** Read a required field at the intentionally unvalidated JSON boundary. */
-    private static function field(ApiResponse $response, string $field): mixed
+    /** Bind payload validation failures to this response's snapshot. */
+    private static function reader(ApiResponse $response): PayloadReader
     {
-        if (!$response->data instanceof stdClass || !property_exists($response->data, $field)) {
-            throw new InvalidResponseException('Missing or invalid PHP payload field: ' . $field, $response->metadata);
-        }
-
-        return $response->data->{$field};
+        return new PayloadReader($response->metadata, 'PHP payload');
     }
 
     /**
-     * Validate a required list without normalizing its string values.
+     * Copy one handler record, preserving optional field presence.
      *
-     * @return list<string>
+     * @return VersionHandlers
      */
-    private static function stringList(ApiResponse $response, string $field): array
+    private static function versionHandlers(mixed $record, PayloadReader $read): array
     {
-        $values = self::field($response, $field);
-        if (!is_array($values) || !array_is_list($values)) {
-            throw new InvalidResponseException('Invalid PHP payload list: ' . $field, $response->metadata);
+        $record = $read->object($record);
+        $item = [];
+        if (property_exists($record, 'available_handlers')) {
+            $item['available_handlers'] = $read->listOf(
+                $record->available_handlers,
+                static fn (mixed $handler): string => self::handler($handler, $read),
+            );
+        }
+        if (property_exists($record, 'current_handler')) {
+            $item['current_handler'] = self::handler($record->current_handler, $read);
+        }
+        if (property_exists($record, 'version')) {
+            $item['version'] = $read->string($record->version);
         }
 
-        $result = [];
-        foreach ($values as $value) {
-            if (!is_string($value)) {
-                throw new InvalidResponseException('Invalid PHP payload list item: ' . $field, $response->metadata);
-            }
-
-            $result[] = $value;
-        }
-
-        return $result;
-    }
-
-    /** Convert a pinned integer flag only after validating its exact wire type. */
-    private static function booleanFlag(ApiResponse $response, string $field): bool
-    {
-        $flag = self::field($response, $field);
-        if (!in_array($flag, [0, 1], true)) {
-            throw new InvalidResponseException('Invalid PHP payload flag: ' . $field, $response->metadata);
-        }
-
-        return $flag === 1;
+        return $item;
     }
 
     /**
@@ -274,12 +236,8 @@ final readonly class Php
      *
      * @return Handler
      */
-    private static function handler(mixed $handler, ApiResponse $response): string
+    private static function handler(mixed $handler, PayloadReader $read): string
     {
-        if (!in_array($handler, ['suphp', 'cgi', 'dso', 'none', 'lsapi'], true)) {
-            throw new InvalidResponseException('Invalid PHP handler.', $response->metadata);
-        }
-
-        return $handler;
+        return in_array($handler, ['suphp', 'cgi', 'dso', 'none', 'lsapi'], true) ? $handler : $read->fail();
     }
 }
