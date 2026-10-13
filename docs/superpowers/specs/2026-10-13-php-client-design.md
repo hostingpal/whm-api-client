@@ -7,8 +7,13 @@ The [first read-only slice](2026-10-13-first-api-slice-design.md), tracked under
 authenticated execution, response parsing, and metadata. The domain/PHP inventory
 slice (`whm-api-client-8x0.1.5`) adds WHM domain records and UAPI installed PHP
 versions. The server identity/health slice (`whm-api-client-8x0.1.6`) adds WHM
-hostname, load averages, and disk partition usage. Other endpoint groups and
-broader execution features remain open.
+hostname, load averages, and disk partition usage. The account lifecycle slice
+(`whm-api-client-8x0.1.16`) adds form-encoded POST execution, a per-request outcome
+policy, generic `call()` on both handles, and the WHM `accounts()` group
+(`createacct`, `suspendacct`, `unsuspendacct`, `removeacct`, `passwd`,
+`changepackage`, `modifyacct`, `listaccts`, `accountsummary`, `listpkgs`); see the
+[scaling decision](#scaling-decision-typed-core-plus-generic-calls). Other endpoint
+groups remain open.
 
 Decision record: `whm-api-client-8x0.1.2`. Runtime execution and authentication:
 `whm-api-client-8x0.1`. Concrete payload returns and response metadata:
@@ -164,6 +169,12 @@ ports and the WHM feature records (`FeatureCatalog`, `FeatureListData`,
 `int|float|numeric-string` because no lossless normalization preserves their
 precision and trailing zeros.
 
+Amended 2026-10-14 (`whm-api-client-8x0.7`): new typed groups return precise array
+shapes rather than wire-preserving DTOs. Where a field's observed wire type differs
+from the pinned type, the shape normalizes it when the conversion is lossless (the
+account record's decimal-string `uid` becomes `int`); the raw payload stays
+available through `call()`. Existing DTOs keep their contracts.
+
 ## Shared UAPI implementation
 
 Direct and bridged access expose the same `UapiClient` interface, operation groups,
@@ -259,6 +270,48 @@ it can retain authenticated requests; they record the PSR failure kind
 (`network`, `request`, `other`), the cause class, and the cause message with the
 configured token redacted, outside `getMessage()`. Metadata preserves upstream
 diagnostic values.
+
+## Scaling decision: typed core plus generic calls
+
+Decided 2026-10-14 (`whm-api-client-8x0.7`). The pinned map holds 1,323 functions
+and 1,325 variants. The first 29 hand-written operations cost about 90 source and
+150 test lines each, which extrapolates to well over 100,000 lines, and the runtime
+discrepancies found among them (bare direct UAPI envelope, string ports, string and
+boolean flags, null inodes, decimal `uid`) show that strictly generated DTOs for
+every operation would fail on real servers. The library therefore has three tiers:
+
+1. **Foundation** (done): transport, credentials, routes, envelope reading with a
+   per-request `OutcomePolicy`, GET and form-encoded POST execution, metadata and
+   typed exceptions.
+2. **Generic calls**: `whm()->call()` and `uapi()->call()` reach every documented
+   function through that foundation and return `CallResult` (payload converted to
+   arrays, presence flag, metadata) without a schema. They are infrastructure in
+   the coverage registry, never endpoint coverage.
+3. **Typed groups on demand**: reviewed operations that consumers rely on
+   (inventory, server health, PHP, features, and the account lifecycle that
+   HostingPal's provisioning needs), hand-written in the lean pattern below with
+   offline contract tests, registry entries and, for read-only operations, live
+   verification.
+
+Generating thin signatures from the map remains possible later, once the typed
+groups show which shapes consumers need; it is not pursued now.
+
+### Lean pattern for new typed groups
+
+- Precise `@phpstan-type` array shapes are the default for inputs and records;
+  DTO classes are reserved for records that need behaviour or iteration.
+- Present fields are validated against their pinned types with the shared
+  `PayloadReader`; unknown fields are ignored; documented enumerations are not
+  enforced at runtime. A field whose observed wire type differs from the pinned
+  one is normalized when lossless and the observation is recorded in the source
+  audit; wire preservation (`toArray()`) is not extended to new groups.
+- Docblocks carry a one-sentence summary, a short description of scope,
+  parameters, return and failure semantics, the pinned API-map identity and the
+  official `@see` link; lifecycle narration (metadata reset, no retries, envelope
+  retention) lives once on the group class and the base client.
+- Mutations use POST; secret-bearing parameters never use GET.
+- Registry entries claim only the contract units a method actually sends and
+  declare `partial` when alias or alternative parameters are left to `call()`.
 
 ## Implementation verification
 

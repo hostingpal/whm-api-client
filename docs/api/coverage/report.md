@@ -4,12 +4,12 @@ Valid registry: **true**. Test revision: `unknown (no revision asserted)`.
 
 | Dimension | Covered | Net denominator | Gross | Excluded |
 | --- | ---: | ---: | ---: | ---: |
-| Functions | 29 | 1323 | 1323 | 0 |
-| Variants | 29 | 1325 | 1325 | 0 |
-| Parameters | 16 | 2608 | 2608 | 0 |
+| Functions | 35 | 1323 | 1323 | 0 |
+| Variants | 35 | 1325 | 1325 | 0 |
+| Parameters | 144 | 2608 | 2608 | 0 |
 | Bodies | 0 | 39 | 39 | 0 |
-| Response schemas | 29 | 1325 | 1325 | 0 |
-| Variants with declared tests | 29 | 1325 | 1325 | 0 |
+| Response schemas | 39 | 1325 | 1325 | 0 |
+| Variants with declared tests | 39 | 1325 | 1325 | 0 |
 | Variants with passing test outcomes | 0 | 1325 | 1325 | 0 |
 | Variants with verified live evidence | 0 | 1325 | 1325 | 0 |
 
@@ -129,23 +129,23 @@ WHM tag subtotals overlap and are non-additive. Global totals deduplicate canoni
 | uapi | WordPressSite | 0/2 | 0/2 |
 | uapi | ZoneEdit | 0/1 | 0/1 |
 | uapi | cPGreyList | 0/6 | 0/6 |
-| whm1 | (all) | 19/630 | 19/630 |
+| whm1 | (all) | 25/630 | 25/630 |
 | whm1 | 360 Monitoring (non-additive) | 0/7 | 0/7 |
 | whm1 | API Authentication (non-additive) | 0/1 | 0/1 |
 | whm1 | API Execution (non-additive) | 0/5 | 0/5 |
 | whm1 | API Statistics (non-additive) | 0/2 | 0/2 |
 | whm1 | API Token Management (non-additive) | 0/6 | 0/6 |
-| whm1 | Account Creation (non-additive) | 0/4 | 0/4 |
+| whm1 | Account Creation (non-additive) | 1/4 | 1/4 |
 | whm1 | Account Enhancement (non-additive) | 0/2 | 0/2 |
 | whm1 | Account Enhancement Limit (non-additive) | 0/2 | 0/2 |
 | whm1 | Account Enhancements (non-additive) | 0/6 | 0/6 |
 | whm1 | Account Limit (non-additive) | 0/2 | 0/2 |
 | whm1 | Account Limits (non-additive) | 0/2 | 0/2 |
-| whm1 | Account Management (non-additive) | 0/17 | 0/17 |
+| whm1 | Account Management (non-additive) | 2/17 | 2/17 |
 | whm1 | Account Permissions (non-additive) | 0/3 | 0/3 |
 | whm1 | Account Restoration (non-additive) | 0/16 | 0/16 |
 | whm1 | Account Settings (non-additive) | 0/9 | 0/9 |
-| whm1 | Accounts (non-additive) | 0/10 | 0/10 |
+| whm1 | Accounts (non-additive) | 1/10 | 1/10 |
 | whm1 | Applications (non-additive) | 0/2 | 0/2 |
 | whm1 | Authentication (non-additive) | 0/31 | 0/31 |
 | whm1 | Authentication Providers (non-additive) | 0/1 | 0/1 |
@@ -174,7 +174,7 @@ WHM tag subtotals overlap and are non-additive. Global totals deduplicate canoni
 | whm1 | Feature Lists (non-additive) | 5/11 | 5/11 |
 | whm1 | Greylisting (non-additive) | 0/15 | 0/15 |
 | whm1 | Hosting Plan Extensions (non-additive) | 0/3 | 0/3 |
-| whm1 | Hosting Plans (non-additive) | 0/6 | 0/6 |
+| whm1 | Hosting Plans (non-additive) | 1/6 | 1/6 |
 | whm1 | IP Addresses (non-additive) | 0/16 | 0/16 |
 | whm1 | IPv4 Address Settings (non-additive) | 0/5 | 0/5 |
 | whm1 | IPv6 Address Settings (non-additive) | 0/8 | 0/8 |
@@ -202,7 +202,7 @@ WHM tag subtotals overlap and are non-additive. Global totals deduplicate canoni
 | whm1 | PHP (non-additive) | 4/14 | 4/14 |
 | whm1 | PHP-FPM (non-additive) | 3/9 | 3/9 |
 | whm1 | Package Manager Settings (non-additive) | 0/4 | 0/4 |
-| whm1 | Packages (non-additive) | 7/26 | 7/26 |
+| whm1 | Packages (non-additive) | 9/26 | 9/26 |
 | whm1 | Passwords (non-additive) | 0/3 | 0/3 |
 | whm1 | Plugin-Based Features (non-additive) | 0/3 | 0/3 |
 | whm1 | PostgreSQL Databases (non-additive) | 0/3 | 0/3 |
@@ -239,7 +239,7 @@ WHM tag subtotals overlap and are non-additive. Global totals deduplicate canoni
 | whm1 | Styles (non-additive) | 0/1 | 0/1 |
 | whm1 | Support Access (non-additive) | 0/8 | 0/8 |
 | whm1 | Support Tickets (non-additive) | 0/14 | 0/14 |
-| whm1 | Suspensions (non-additive) | 0/4 | 0/4 |
+| whm1 | Suspensions (non-additive) | 2/4 | 2/4 |
 | whm1 | System Information (non-additive) | 3/8 | 3/8 |
 | whm1 | Ticket Management (non-additive) | 0/6 | 0/6 |
 | whm1 | Transfer Configuration (non-additive) | 0/4 | 0/4 |
@@ -971,7 +971,7 @@ Not verified: no matching live evidence supplied.
 | `whm1:abort_transfer_session` | missing |
 | `whm1:accept_eula` | missing |
 | `whm1:accesshash` | missing |
-| `whm1:accountsummary` | missing |
+| `whm1:accountsummary` | partial |
 | `whm1:acctcounts` | missing |
 | `whm1:activate_zone_key` | missing |
 | `whm1:add_autossl_user_excluded_domains` | missing |
@@ -1019,7 +1019,7 @@ Not verified: no matching live evidence supplied.
 | `whm1:batch_create_cphulk_records` | missing |
 | `whm1:block_incoming_email_from_country` | missing |
 | `whm1:block_incoming_email_from_domain` | missing |
-| `whm1:changepackage` | missing |
+| `whm1:changepackage` | implemented |
 | `whm1:check_remote_ssh_connection` | missing |
 | `whm1:cluster_member_has_trust_with` | missing |
 | `whm1:configurebackgroundprocesskiller` | missing |
@@ -1054,7 +1054,7 @@ Not verified: no matching live evidence supplied.
 | `whm1:create_remote_user_transfer_session` | missing |
 | `whm1:create_subdomain` | missing |
 | `whm1:create_user_session` | missing |
-| `whm1:createacct` | missing |
+| `whm1:createacct` | implemented |
 | `whm1:current_mysql_version` | missing |
 | `whm1:deactivate_zone_key` | missing |
 | `whm1:delete_account_archives` | missing |
@@ -1279,14 +1279,14 @@ Not verified: no matching live evidence supplied.
 | `whm1:list_rpms` | missing |
 | `whm1:list_user_child_nodes` | missing |
 | `whm1:list_users` | missing |
-| `whm1:listaccts` | missing |
+| `whm1:listaccts` | implemented |
 | `whm1:listacls` | missing |
 | `whm1:listcrts` | missing |
 | `whm1:listips` | missing |
 | `whm1:listipv6s` | missing |
 | `whm1:listlockedaccounts` | missing |
 | `whm1:listmxs` | missing |
-| `whm1:listpkgs` | missing |
+| `whm1:listpkgs` | implemented |
 | `whm1:listresellers` | missing |
 | `whm1:listsshkeys` | missing |
 | `whm1:listsuspended` | missing |
@@ -1301,7 +1301,7 @@ Not verified: no matching live evidence supplied.
 | `whm1:massmodifyacct` | missing |
 | `whm1:matchpkgs` | missing |
 | `whm1:modify_account_enhancement` | missing |
-| `whm1:modifyacct` | missing |
+| `whm1:modifyacct` | partial |
 | `whm1:modsec_add_rule` | missing |
 | `whm1:modsec_add_vendor` | missing |
 | `whm1:modsec_assemble_config_text` | missing |
@@ -1360,7 +1360,7 @@ Not verified: no matching live evidence supplied.
 | `whm1:package_manager_upgrade` | missing |
 | `whm1:parse_dns_zone` | missing |
 | `whm1:participate_in_analytics` | missing |
-| `whm1:passwd` | missing |
+| `whm1:passwd` | partial |
 | `whm1:pause_transfer_session` | missing |
 | `whm1:personalization_get` | missing |
 | `whm1:personalization_set` | missing |
@@ -1413,7 +1413,7 @@ Not verified: no matching live evidence supplied.
 | `whm1:remove_integration_link` | missing |
 | `whm1:remove_override_features_for_user` | missing |
 | `whm1:remove_zone_key` | missing |
-| `whm1:removeacct` | missing |
+| `whm1:removeacct` | partial |
 | `whm1:removezonerecord` | missing |
 | `whm1:rename_mysql_database` | missing |
 | `whm1:rename_mysql_user` | missing |
@@ -1510,7 +1510,7 @@ Not verified: no matching live evidence supplied.
 | `whm1:start_profile_activation` | missing |
 | `whm1:start_transfer_session` | missing |
 | `whm1:suspend_outgoing_email` | missing |
-| `whm1:suspendacct` | missing |
+| `whm1:suspendacct` | implemented |
 | `whm1:suspendreseller` | missing |
 | `whm1:system_needs_reboot` | missing |
 | `whm1:systemloadavg` | implemented |
@@ -1555,7 +1555,7 @@ Not verified: no matching live evidence supplied.
 | `whm1:unset_nsec3_for_domains` | missing |
 | `whm1:unsetupreseller` | missing |
 | `whm1:unsuspend_outgoing_email` | missing |
-| `whm1:unsuspendacct` | missing |
+| `whm1:unsuspendacct` | implemented |
 | `whm1:unsuspendreseller` | missing |
 | `whm1:untrack_acct_id` | missing |
 | `whm1:update_configclusterserver` | missing |

@@ -159,4 +159,29 @@ final readonly class PayloadReader
 
         return $items;
     }
+
+    /**
+     * Copy a decoded JSON value, converting objects to associative arrays.
+     *
+     * Lists stay lists, scalars and null are unchanged, and the result holds no
+     * reference to the decoded source objects. Numeric object keys become integer
+     * array keys. No schema is applied; use this for opaque or generic payloads.
+     */
+    public function json(mixed $value): mixed
+    {
+        if ($value instanceof stdClass) {
+            $copy = [];
+            foreach (get_object_vars($value) as $key => $item) {
+                $copy[$key] = $this->json($item);
+            }
+
+            return $copy;
+        }
+
+        if (is_array($value)) {
+            return array_map($this->json(...), $value);
+        }
+
+        return $value;
+    }
 }

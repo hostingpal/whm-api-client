@@ -392,3 +392,44 @@ passed **1,087 tests and 4,757 assertions**, with formatting, maximum-level stat
 analysis, Composer validation and offline API-map checks also passing. Coverage
 now declares 29 implemented operations; these live observations remain scoped to
 the tested server/date and working tree, without saved revision-bound evidence.
+
+## Runtime observations: 2026-10-14
+
+The account lifecycle slice (`whm-api-client-8x0.1.16`) was verified against the
+same immutable 2026-10-13 sources with authorized read-only requests to
+`test.oblak.host` through the actual PHP client (verified TLS, redirects disabled,
+no retries, no mutations).
+
+POST execution: the pinned WHM OpenAPI warns that the server records the URL query
+string in its access log, recommends POST for secret-bearing functions, and shows a
+documented `POST /json-api/<function>?api.version=1` request with the parameters
+in the body; the pinned UAPI tutorials send form-encoded POST bodies to
+`/execute/...`. The library therefore keeps the routing fields in the query string
+and form-encodes operation parameters. Runtime confirmation on 2026-10-14: WHM
+`version` and a filtered `listaccts` over POST returned the same payloads as GET
+(HTTP 200, result 1); direct UAPI `DomainInfo/primary_domain` as `npr` over POST and
+the WHM bridge `uapi_cpanel` over POST both returned HTTP 200/status 1 with payloads
+identical to GET. No mutating function was executed.
+
+Account inventory (`listaccts`, `accountsummary`): every observed field matched its
+pinned type except `uid`, which was a decimal string rather than the pinned integer.
+`suspendtime` was integer `0` for an unsuspended account (pinned nullable timestamp
+or string), `standalone_feature` and `standalone_feature_name` were empty strings,
+and several limits (`maxaddons`, `maxparked`,
+`min_defer_fail_to_trigger_protection`) were numeric strings within the pinned
+`string|integer` union. Compatibility is restricted to `uid`: canonical nonnegative
+decimal strings within PHP's integer range are normalized to the pinned integer;
+other representations are rejected with metadata retained.
+
+Packages (`listpkgs`): the observed record carried only `CPMOD`, `DIGESTAUTH`,
+`FEATURELIST`, `IP`, `LANG`, `name` and an undocumented `PACKAGE_TYPE`, which the
+typed record ignores. All pinned fields are optional, so no compatibility was needed.
+
+After these corrections the full explicitly opted-in read-only live suite passed
+**46 tests and 328 assertions** (39 previous plus 7 new). The offline suite passed
+**1,256 tests and 5,431 assertions** with formatting, maximum-level static analysis,
+Composer validation and offline API-map checks. Coverage now declares 39 registry
+operations, 35 of them implemented and 4 partial (`accountsummary`, `removeacct`,
+`passwd`, `modifyacct`) because alias or alternative parameters are left to `call()`.
+The approval-gated mutating lifecycle test has not been executed; these observations
+remain scoped to the tested server/date without saved revision-bound evidence.

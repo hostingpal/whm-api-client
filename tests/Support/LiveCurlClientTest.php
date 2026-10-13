@@ -16,27 +16,84 @@ use RuntimeException;
 final class LiveCurlClientTest extends TestCase
 {
     #[DataProvider('outsideApprovedScope')]
-    public function testRejectsOutOfScopeRequestsBeforeExecutingCurl(string $method, string $uri): void
-    {
+    public function testRejectsOutOfScopeRequestsBeforeExecutingCurl(
+        string $method,
+        string $uri,
+        string $body = '',
+        ?string $lifecycleAccount = null,
+    ): void {
         $executed = false;
         $client = new LiveCurlClient(static function (RequestInterface $request) use (&$executed): ResponseInterface {
             $executed = true;
 
             return new Response(200);
-        });
+        }, $lifecycleAccount);
 
         try {
-            $client->sendRequest(new Request($method, $uri, ['Authorization' => 'whm root:synthetic-token']));
+            $client->sendRequest(new Request($method, $uri, ['Authorization' => 'whm root:synthetic-token'], $body));
             self::fail('The live transport accepted a request outside its approved scope.');
         } catch (LogicException) {
             self::assertFalse($executed, 'Rejected requests must not reach the cURL execution boundary.');
         }
     }
 
-    /** @return iterable<string, array{string, string}> */
+    /** @return iterable<string, array{string, string, 2?: string, 3?: ?string}> */
     public static function outsideApprovedScope(): iterable
     {
-        yield 'write method' => ['POST', 'https://test.oblak.host:2087/json-api/version?api.version=1'];
+        yield 'unapproved write' => ['POST', 'https://test.oblak.host:2087/json-api/gethostname?api.version=1'];
+        yield 'approved write with another body' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/version?api.version=1',
+            'extra=1',
+        ];
+        yield 'write filter with another account' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/listaccts?api.version=1',
+            'search=root&searchmethod=exact&searchtype=user',
+        ];
+        yield 'other method' => ['PUT', 'https://test.oblak.host:2087/json-api/version?api.version=1'];
+        yield 'read with body' => ['GET', 'https://test.oblak.host:2087/json-api/version?api.version=1', 'x=1'];
+        yield 'mutation without lifecycle account' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/createacct?api.version=1',
+            'username=lifecycle1&domain=lifecycle1.example',
+        ];
+        yield 'mutation targeting another account' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/removeacct?api.version=1',
+            'username=npr',
+            'lifecycle1',
+        ];
+        yield 'mutation targeting the protected account via user' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/suspendacct?api.version=1',
+            'user=npr&reason=x',
+            'lifecycle1',
+        ];
+        yield 'mutation without a target' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/passwd?api.version=1',
+            'password=x',
+            'lifecycle1',
+        ];
+        yield 'unlisted mutation for the lifecycle account' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/removeacct',
+            'username=lifecycle1',
+            'lifecycle1',
+        ];
+        yield 'unlisted operation for the lifecycle account' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/terminate?api.version=1',
+            'username=lifecycle1',
+            'lifecycle1',
+        ];
+        yield 'summary of another account during a lifecycle' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/accountsummary?api.version=1&user=root',
+            '',
+            'lifecycle1',
+        ];
         yield 'unencrypted' => ['GET', 'http://test.oblak.host:2087/json-api/version?api.version=1'];
         yield 'another host' => ['GET', 'https://elsewhere.example:2087/json-api/version?api.version=1'];
         yield 'wrong port' => ['GET', 'https://test.oblak.host:2083/json-api/version?api.version=1'];
@@ -159,6 +216,63 @@ final class LiveCurlClientTest extends TestCase
         ];
         yield 'direct domains' => ['https://test.oblak.host:2083/execute/DomainInfo/list_domains'];
         yield 'direct PHP' => ['https://test.oblak.host:2083/execute/LangPHP/php_get_installed_versions'];
+        yield 'WHM accounts' => ['https://test.oblak.host:2087/json-api/listaccts?api.version=1'];
+        yield 'WHM filtered accounts' => [
+            'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
+                . '&search=npr&searchmethod=exact&searchtype=user',
+        ];
+        yield 'WHM account summary' => ['https://test.oblak.host:2087/json-api/accountsummary?api.version=1&user=npr'];
+        yield 'WHM packages' => ['https://test.oblak.host:2087/json-api/listpkgs?api.version=1'];
+        yield 'WHM creatable packages' => [
+            'https://test.oblak.host:2087/json-api/listpkgs?api.version=1&want=creatable',
+        ];
+    }
+
+    #[DataProvider('approvedPosts')]
+    public function testAllowsExactlyTheApprovedReadOnlyPosts(string $uri, string $body): void
+    {
+        $client = new LiveCurlClient(static fn (RequestInterface $request): ResponseInterface => new Response(204));
+
+        self::assertSame(204, $client->sendRequest(new Request('POST', $uri, [], $body))->getStatusCode());
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function approvedPosts(): iterable
+    {
+        yield 'WHM version' => ['https://test.oblak.host:2087/json-api/version?api.version=1', ''];
+        yield 'WHM filtered accounts' => [
+            'https://test.oblak.host:2087/json-api/listaccts?api.version=1',
+            'search=npr&searchmethod=exact&searchtype=user',
+        ];
+        yield 'direct primary domain' => ['https://test.oblak.host:2083/execute/DomainInfo/primary_domain', ''];
+        yield 'bridged primary domain' => [
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=DomainInfo&cpanel.function=primary_domain',
+            '',
+        ];
+    }
+
+    public function testApprovesLifecycleMutationsOnlyForTheNamedThrowawayAccount(): void
+    {
+        $client = new LiveCurlClient(
+            static fn (RequestInterface $request): ResponseInterface => new Response(204),
+            'lifecycle1',
+        );
+        $prefix = 'https://test.oblak.host:2087/json-api/';
+        $approved = [
+            ['POST', $prefix . 'createacct?api.version=1', 'username=lifecycle1&domain=lc.example'],
+            ['POST', $prefix . 'suspendacct?api.version=1', 'user=lifecycle1&reason=test&disallowun=0'],
+            ['POST', $prefix . 'unsuspendacct?api.version=1', 'user=lifecycle1'],
+            ['POST', $prefix . 'passwd?api.version=1', 'user=lifecycle1&password=x'],
+            ['POST', $prefix . 'changepackage?api.version=1', 'user=lifecycle1&pkg=default'],
+            ['POST', $prefix . 'modifyacct?api.version=1', 'user=lifecycle1&contactemail=a%40b.example'],
+            ['POST', $prefix . 'removeacct?api.version=1', 'username=lifecycle1&keepdns=0'],
+            ['GET', $prefix . 'accountsummary?api.version=1&user=lifecycle1', ''],
+            ['GET', $prefix . 'listpkgs?api.version=1&want=creatable', ''],
+        ];
+        foreach ($approved as [$method, $uri, $body]) {
+            self::assertSame(204, $client->sendRequest(new Request($method, $uri, [], $body))->getStatusCode());
+        }
     }
 
     #[DataProvider('missingPrerequisites')]
@@ -190,5 +304,38 @@ final class LiveCurlClientTest extends TestCase
         $tokens = LiveTestEnvironment::requireReady('1', 'synthetic-whm', 'synthetic-cpanel', true);
 
         self::assertSame(['whm' => 'synthetic-whm', 'cpanel' => 'synthetic-cpanel'], $tokens);
+    }
+
+    #[DataProvider('missingMutationPrerequisites')]
+    public function testMutationsRequireTheirOwnOptInAndAThrowawayTarget(
+        string|false $optIn,
+        string|false $account,
+        string|false $domain,
+    ): void {
+        $this->expectException(RuntimeException::class);
+
+        LiveTestEnvironment::requireMutationsReady($optIn, $account, $domain);
+    }
+
+    /** @return iterable<string, array{string|false, string|false, string|false}> */
+    public static function missingMutationPrerequisites(): iterable
+    {
+        yield 'no opt in' => [false, 'lifecycle1', 'lifecycle1.example'];
+        yield 'read-only opt in only' => ['yes', 'lifecycle1', 'lifecycle1.example'];
+        yield 'no account' => ['1', false, 'lifecycle1.example'];
+        yield 'empty account' => ['1', '', 'lifecycle1.example'];
+        yield 'protected test account' => ['1', 'npr', 'lifecycle1.example'];
+        yield 'root' => ['1', 'root', 'lifecycle1.example'];
+        yield 'invalid username' => ['1', 'Life-Cycle', 'lifecycle1.example'];
+        yield 'no domain' => ['1', 'lifecycle1', false];
+        yield 'invalid domain' => ['1', 'lifecycle1', 'not a domain'];
+        yield 'bare label' => ['1', 'lifecycle1', 'localhost'];
+    }
+
+    public function testAcceptsCompleteMutationPrerequisites(): void
+    {
+        $target = LiveTestEnvironment::requireMutationsReady('1', 'lifecycle1', 'lifecycle1.example');
+
+        self::assertSame(['account' => 'lifecycle1', 'domain' => 'lifecycle1.example'], $target);
     }
 }
