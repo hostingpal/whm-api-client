@@ -1,6 +1,1051 @@
 {
   "schema_version": "1.0",
-  "entries": [],
+  "entries": [
+    {
+      "operation_id": "uapi:DNS/fetch_cpanel_generated_domains",
+      "variant_id": "uapi:DNS/fetch_cpanel_generated_domains#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Dns::generatedDomains",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testBridgeGroupsKeepTargetsAndMetadataIsolated",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"uapi:DNS/fetch_cpanel_generated_domains#GET\",\"parameter\",\"domain\",\"query\"]",
+          "hash": "961c865fb35491f6d0ca14e8f93b4b0f4f70a417cc762ec9d7fb92aaa81b4413",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount"
+          ]
+        },
+        {
+          "id": "[\"uapi:DNS/fetch_cpanel_generated_domains#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "4d73cb9f4399759bd0cd164a3b92bb3b026be63b9d35cd112e42be123d0c86ff",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testBridgeGroupsKeepTargetsAndMetadataIsolated",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "account-inventory-read-only-slice",
+      "mapping_rationale": "The account-scoped method implements this reviewed read-only UAPI operation through direct cPanel-token or internal WHM-token routing. UapiInventoryTest successfulOperations datasets generated, generated empty cover each route and concrete return; invalidPayloads has the matching operation dataset. Parameter validation conditions remain upstream API decisions. Live declarations exercise this operation through each credential route; no saved revision-bound live outcomes, generic bridge coverage, or BasicAuth implementation are claimed."
+    },
+    {
+      "operation_id": "uapi:DNS/lookup",
+      "variant_id": "uapi:DNS/lookup#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Dns::lookup",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testDnsLookupRejectsMissingDataInsteadOfReturningExplicitNull",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"uapi:DNS/lookup#GET\",\"parameter\",\"domain\",\"query\"]",
+          "hash": "7660d66ffd75a9cee033c6c1b0ec78ca37ffffd3f0247d92e1878e5e4aa26ed8",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount"
+          ]
+        },
+        {
+          "id": "[\"uapi:DNS/lookup#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "95c20a403cac69dbed3bb7c07a7072fb73cef3704da99421c646593808a94168",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testDnsLookupRejectsMissingDataInsteadOfReturningExplicitNull",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "account-inventory-read-only-slice",
+      "mapping_rationale": "The account-scoped method implements this reviewed read-only UAPI operation through direct cPanel-token or internal WHM-token routing. UapiInventoryTest successfulOperations datasets lookup, lookup null, lookup empty cover each route and concrete return; invalidPayloads has the matching operation dataset. Parameter validation conditions remain upstream API decisions. Live declarations exercise this operation through each credential route; no saved revision-bound live outcomes, generic bridge coverage, or BasicAuth implementation are claimed."
+    },
+    {
+      "operation_id": "uapi:DomainInfo/list_domains",
+      "variant_id": "uapi:DomainInfo/list_domains#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Domains::list",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testBridgeRetainsBothEnvelopesAndSelectedAccountIsolation",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testDirectDomainsAcceptObservedHttpEnvelope",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testDirectDomainsUseCpanelCredentialsAndPreserveFilterOmission",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testFailuresReplaceOldMetadataAndKeepExceptionSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testBridgedAccountDomains",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testDirectAccountDomains",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testCopiesMutablePayloadsAndNestedReferencesIntoAnIndependentSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testKeepsOmittedFieldsDistinctFromExplicitNullAndEmptyValues",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testMapsTheReviewedDomainFieldsAndIgnoresUnknownExtensions",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testPreservesBlankDomainValuesFromSuccessfulButIncompleteResponses",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testRejectsMalformedKnownFieldsWithTheResponseSnapshot"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"uapi:DomainInfo/list_domains#GET\",\"parameter\",\"hide_temporary_domains\",\"query\"]",
+          "hash": "e0628eb60a6c42bfe8e0b0020423145742a7e180d51185928c6ee94d7d1141dc",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testBridgeRetainsBothEnvelopesAndSelectedAccountIsolation",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testDirectDomainsUseCpanelCredentialsAndPreserveFilterOmission"
+          ]
+        },
+        {
+          "id": "[\"uapi:DomainInfo/list_domains#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "e1d4fa0d705e701f129692395f56107c1d1718e73d011a79bfb0da3ea2b2c670",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testBridgeRetainsBothEnvelopesAndSelectedAccountIsolation",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testDirectDomainsAcceptObservedHttpEnvelope",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testDirectDomainsUseCpanelCredentialsAndPreserveFilterOmission",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testFailuresReplaceOldMetadataAndKeepExceptionSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testBridgedAccountDomains",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testDirectAccountDomains",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testCopiesMutablePayloadsAndNestedReferencesIntoAnIndependentSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testKeepsOmittedFieldsDistinctFromExplicitNullAndEmptyValues",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testMapsTheReviewedDomainFieldsAndIgnoresUnknownExtensions",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testPreservesBlankDomainValuesFromSuccessfulButIncompleteResponses",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testRejectsMalformedKnownFieldsWithTheResponseSnapshot"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "account-domains-read-only-slice",
+      "mapping_rationale": "The typed account-scoped method implements the reviewed DomainInfo/list_domains parameter and full response-envelope contracts using direct cPanel-token or internal WHM-token bridge routing. This does not claim generic uapi_cpanel implementation, BasicAuth support, or saved revision-bound live evidence."
+    },
+    {
+      "operation_id": "uapi:DomainInfo/main_domain_builtin_subdomain_aliases",
+      "variant_id": "uapi:DomainInfo/main_domain_builtin_subdomain_aliases#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Domains::builtinAliases",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"uapi:DomainInfo/main_domain_builtin_subdomain_aliases#GET\",\"parameter\",\"hide_temporary_domains\",\"query\"]",
+          "hash": "a28327b59438cf59bfdaf6f696c4abcf53aac556347eff04bff4fee90dcd985d",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount"
+          ]
+        },
+        {
+          "id": "[\"uapi:DomainInfo/main_domain_builtin_subdomain_aliases#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "477b24c62647b7ad88122ba2205402276dfbd4c9500c77efa5234a27d95439b5",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "account-inventory-read-only-slice",
+      "mapping_rationale": "The account-scoped method implements this reviewed read-only UAPI operation through direct cPanel-token or internal WHM-token routing. UapiInventoryTest successfulOperations datasets aliases, aliases false, aliases true cover each route and concrete return; invalidPayloads has the matching operation dataset. Parameter validation conditions remain upstream API decisions. Live declarations exercise this operation through each credential route; no saved revision-bound live outcomes, generic bridge coverage, or BasicAuth implementation are claimed."
+    },
+    {
+      "operation_id": "uapi:DomainInfo/primary_domain",
+      "variant_id": "uapi:DomainInfo/primary_domain#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Domains::primary",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"uapi:DomainInfo/primary_domain#GET\",\"parameter\",\"hide_temporary_domains\",\"query\"]",
+          "hash": "3d373e6d7b2856ae2a6de01cfa3960cd8594750db9c008fe25856f22999643a6",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount"
+          ]
+        },
+        {
+          "id": "[\"uapi:DomainInfo/primary_domain#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "73f98691a71e356d3d3daf334e6dc28ba3879b2fb89ebca90b70d1db65b717fb",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "account-inventory-read-only-slice",
+      "mapping_rationale": "The account-scoped method implements this reviewed read-only UAPI operation through direct cPanel-token or internal WHM-token routing. UapiInventoryTest successfulOperations datasets primary, primary false, primary true cover each route and concrete return; invalidPayloads has the matching operation dataset. Parameter validation conditions remain upstream API decisions. Live declarations exercise this operation through each credential route; no saved revision-bound live outcomes, generic bridge coverage, or BasicAuth implementation are claimed."
+    },
+    {
+      "operation_id": "uapi:Features/list_features",
+      "variant_id": "uapi:Features/list_features#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Features::list",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testBridgeGroupsKeepTargetsAndMetadataIsolated",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"uapi:Features/list_features#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "1cc55a51f4191b57553abbbe99cad15f5a03b7cff23076e096258ad364596afd",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testBridgeGroupsKeepTargetsAndMetadataIsolated",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "account-inventory-read-only-slice",
+      "mapping_rationale": "The account-scoped method implements this reviewed read-only UAPI operation through direct cPanel-token or internal WHM-token routing. UapiInventoryTest successfulOperations datasets features, features empty, features numeric name cover each route and concrete return; invalidPayloads has the matching operation dataset. Parameter validation conditions remain upstream API decisions. Live declarations exercise this operation through each credential route; no saved revision-bound live outcomes, generic bridge coverage, or BasicAuth implementation are claimed."
+    },
+    {
+      "operation_id": "uapi:LangPHP/php_get_domain_handler",
+      "variant_id": "uapi:LangPHP/php_get_domain_handler#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Php::domainHandler",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"uapi:LangPHP/php_get_domain_handler#GET\",\"parameter\",\"type\",\"query\"]",
+          "hash": "99011467681c722a51dbdc646f789293f6d9bb6a427de5ac04b618f3a046d036",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata"
+          ]
+        },
+        {
+          "id": "[\"uapi:LangPHP/php_get_domain_handler#GET\",\"parameter\",\"vhost\",\"query\"]",
+          "hash": "31299a1f74a38640f833eed6fe2018dc98f7cd5663c7d48d506a2778d9187236",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata"
+          ]
+        },
+        {
+          "id": "[\"uapi:LangPHP/php_get_domain_handler#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "bd5eb9fcbec038d2d196f3b55eb107afb2366bf151a3d9458149d17d96423916",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "account-inventory-read-only-slice",
+      "mapping_rationale": "The account-scoped method implements this reviewed read-only UAPI operation through direct cPanel-token or internal WHM-token routing. UapiInventoryTest successfulOperations datasets handler home, handler vhost cover each route and concrete return; invalidPayloads has the matching operation dataset. Parameter validation conditions remain upstream API decisions. Live declarations exercise this operation through each credential route; no saved revision-bound live outcomes, generic bridge coverage, or BasicAuth implementation are claimed."
+    },
+    {
+      "operation_id": "uapi:LangPHP/php_get_impacted_domains",
+      "variant_id": "uapi:LangPHP/php_get_impacted_domains#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Php::impactedDomains",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInvalidImpactedDomainListClearsMetadataBeforeIo",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"uapi:LangPHP/php_get_impacted_domains#GET\",\"parameter\",\"domain\",\"query\"]",
+          "hash": "11ea3e7c95d82ad1b4c66935fe51d93d09ce743e5cde8977472d93fc60d1600e",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInvalidImpactedDomainListClearsMetadataBeforeIo",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata"
+          ]
+        },
+        {
+          "id": "[\"uapi:LangPHP/php_get_impacted_domains#GET\",\"parameter\",\"system_default\",\"query\"]",
+          "hash": "6886282de43716063641c1a6146548b82d5828f2bae1d08d639b2f7eba09e52b",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata"
+          ]
+        },
+        {
+          "id": "[\"uapi:LangPHP/php_get_impacted_domains#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "04d1d31be4aed56d28c05b171b4dcf2de66f70505a27e8f8f903c48c9d8e2b4f",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "account-inventory-read-only-slice",
+      "mapping_rationale": "The account-scoped method implements the reviewed read-only UAPI operation through direct cPanel-token or internal WHM-token routing. UapiInventoryTest successfulOperations datasets impacted domain, impacted default, impacted both, impacted list, impacted list false, impacted list true, and impacted encoded list cover each route, ordered repeated domain keys, RFC3986 encoding, omitted/false/true system_default, and concrete returned lists. Invalid list datasets verify empty, associative, sparse, nonstring and nested domain arrays clear stale metadata before I/O. API-level domain/system_default selection rules remain upstream decisions. Live declarations exercise one domain through each credential route; no saved revision-bound live outcomes, generic bridge coverage, or BasicAuth implementation are claimed."
+    },
+    {
+      "operation_id": "uapi:LangPHP/php_get_installed_versions",
+      "variant_id": "uapi:LangPHP/php_get_installed_versions#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Php::listVersions",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testBridgeListVersionsKeepsAccountTargetsAndMetadataIsolated",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testDirectListVersionsAuthenticatesAndPreservesPackageNames",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testEmptyVersionsRemainAnEmptyList",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testFailuresReplaceOldMetadataAndRetainExceptionSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testInvalidPayloadKeepsCurrentMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testBridgedPhpVersions",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testDirectPhpVersions"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"uapi:LangPHP/php_get_installed_versions#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "4b48c5a9bedef448390b45eb25f359bc79f8195a3a15e8b25d364c4088278b09",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testBridgeListVersionsKeepsAccountTargetsAndMetadataIsolated",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testDirectListVersionsAuthenticatesAndPreservesPackageNames",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testEmptyVersionsRemainAnEmptyList",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testFailuresReplaceOldMetadataAndRetainExceptionSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testInvalidPayloadKeepsCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testBridgedPhpVersions",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testDirectPhpVersions"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "php-versions-read-only-slice",
+      "mapping_rationale": "The typed string-list method implements the reviewed LangPHP/php_get_installed_versions response-envelope contract in the selected account context using direct cPanel-token or internal WHM-token bridge routing. Missing versions cannot satisfy the concrete list return. This does not claim generic uapi_cpanel implementation, BasicAuth support, or saved revision-bound live evidence."
+    },
+    {
+      "operation_id": "uapi:LangPHP/php_get_system_default_version",
+      "variant_id": "uapi:LangPHP/php_get_system_default_version#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Php::systemDefaultVersion",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"uapi:LangPHP/php_get_system_default_version#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "2f6530734e8b43a17188152319ec74ef4fc6f8f7dbde5371652cf9382442fe9a",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "account-inventory-read-only-slice",
+      "mapping_rationale": "The account-scoped method implements this reviewed read-only UAPI operation through direct cPanel-token or internal WHM-token routing. UapiInventoryTest successfulOperations datasets default, default null cover each route and concrete return; invalidPayloads has the matching operation dataset. Parameter validation conditions remain upstream API decisions. Live declarations exercise this operation through each credential route; no saved revision-bound live outcomes, generic bridge coverage, or BasicAuth implementation are claimed."
+    },
+    {
+      "operation_id": "whm1:get_domain_info",
+      "variant_id": "whm1:get_domain_info#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Domains::list",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testAcceptsObservedStringPortsWithoutChangingTheirExportedWireTypes",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testDomainAndServerGroupsShareOnlyTheirOwningWhmMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testFailuresReplaceStaleMetadataWithoutRetries",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testListsServerDomainsImmediatelyWithWhmCredentialsAndAnInertStableSelector",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testTransportFailureClearsMetadataWithoutRetriesOrLeakingCredentials",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testWhmDomainInventory",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testDetachesMutableInputReferencesAndExportedArrays",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testMapsEveryReviewedFieldWithoutNarrowingTheDomainType",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testNormalizesPortPropertiesWhilePreservingWireValues",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testRejectsMalformedRecordsWithTheResponseSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testRetainsOmittedFieldsSeparatelyFromExplicitNullZeroAndBlankValues",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testHydratesRecordsInOrderAndExposesCountableIterableDomains",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testInputObjectsListReferencesAndExportsCannotAlterTheSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testOmittedAndEmptyDomainListsRemainDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testRejectsMalformedContainersAndRecordsWithTheResponseSnapshot"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:get_domain_info#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "d2352ac9465f41703210e39ad7753e48c488db05909276ba68500feb0d9fa01e",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testAcceptsObservedStringPortsWithoutChangingTheirExportedWireTypes",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testDomainAndServerGroupsShareOnlyTheirOwningWhmMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testFailuresReplaceStaleMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testListsServerDomainsImmediatelyWithWhmCredentialsAndAnInertStableSelector",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testWhmDomainInventory",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testDetachesMutableInputReferencesAndExportedArrays",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testMapsEveryReviewedFieldWithoutNarrowingTheDomainType",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testNormalizesPortPropertiesWhilePreservingWireValues",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testRejectsMalformedRecordsWithTheResponseSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testRetainsOmittedFieldsSeparatelyFromExplicitNullZeroAndBlankValues",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testHydratesRecordsInOrderAndExposesCountableIterableDomains",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testInputObjectsListReferencesAndExportsCannotAlterTheSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testOmittedAndEmptyDomainListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testRejectsMalformedContainersAndRecordsWithTheResponseSnapshot"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "server-domains-read-only-slice",
+      "mapping_rationale": "The typed server-domain collection implements the reviewed get_domain_info response-envelope contract with WHM-token authentication and preserves optional list/record fields, nullable IPv6, integer flags, and observed decimal-string port wire values with normalized integer properties. This does not claim BasicAuth support or saved revision-bound live evidence."
+    },
+    {
+      "operation_id": "whm1:get_feature_metadata",
+      "variant_id": "whm1:get_feature_metadata#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Features::metadata",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMetadataPreservesObservedStringPluginFlags",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testReturnedArraysAreDetachedFromSourceObjects",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:get_feature_metadata#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "a8ce3a7169e86f1c5999cfe74ae2aea0038edfe535043d007718e7c1adedaa4a",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMetadataPreservesObservedStringPluginFlags",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testReturnedArraysAreDetachedFromSourceObjects",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "whm-features-read-only-slice",
+      "mapping_rationale": "The method implements the reviewed read-only WHM operation using WHM-token authentication, current immutable metadata snapshots, and no retries. Preserves optional feature records, strings, and pinned integer plugin flags plus exact string 0/1 flags observed at runtime. Unknown extensions are ignored and returned arrays detach source objects. Runtime observations remain separate from pinned source contracts; these test declarations do not claim saved revision-bound live evidence."
+    },
+    {
+      "operation_id": "whm1:get_feature_names",
+      "variant_id": "whm1:get_feature_names#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Features::names",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:get_feature_names#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "351b116024d58654d54476bffcd663aa4816651d7037628373b1df291fcad3ff",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "whm-features-read-only-slice",
+      "mapping_rationale": "The method implements the reviewed read-only WHM operation using WHM-token authentication, current immutable metadata snapshots, and no retries. Preserves optional feature ID/name records and omitted versus empty lists without inventing account scope or narrowing feature names. Runtime observations remain separate from pinned source contracts; these test declarations do not claim saved revision-bound live evidence."
+    },
+    {
+      "operation_id": "whm1:get_featurelist_data",
+      "variant_id": "whm1:get_featurelist_data#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Features::listData",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testListDataPreservesObservedStringAndBooleanFlags",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:get_featurelist_data#GET\",\"parameter\",\"featurelist\",\"query\"]",
+          "hash": "041c2f33d18fa68851b38d592328b40ca3904459d1f227f82c8f6a2769895e7f",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests"
+          ]
+        },
+        {
+          "id": "[\"whm1:get_featurelist_data#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "e21feb04d70627602288f74a0d002bc2374562efff51bcf5ff8a55bcdc60f6c8",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testListDataPreservesObservedStringAndBooleanFlags",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "whm-features-read-only-slice",
+      "mapping_rationale": "The method implements the reviewed read-only WHM operation using WHM-token authentication, current immutable metadata snapshots, and no retries. Accepts a named list and preserves all reviewed optional settings, required id/is_disabled/value, explicit nullable is_meridian_only, and disabled-list inverted value semantics. Exact string is_disabled/value and boolean presentation flags are separately reviewed runtime compatibility; the original wire types are retained. Runtime observations remain separate from pinned source contracts; these test declarations do not claim saved revision-bound live evidence."
+    },
+    {
+      "operation_id": "whm1:get_featurelists",
+      "variant_id": "whm1:get_featurelists#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Features::lists",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:get_featurelists#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "920ac718a94abf34fa97241b7db03a79d374b2215a9a4ceb1af21e965b749734",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "whm-features-read-only-slice",
+      "mapping_rationale": "The method implements the reviewed read-only WHM operation using WHM-token authentication, current immutable metadata snapshots, and no retries. Preserves the optional list of names visible to the authenticated WHM user, including root/reseller visibility semantics and omission versus empty lists. Runtime observations remain separate from pinned source contracts; these test declarations do not claim saved revision-bound live evidence."
+    },
+    {
+      "operation_id": "whm1:get_featurelists_by_package_types",
+      "variant_id": "whm1:get_featurelists_by_package_types#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Features::listsByPackageType",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:get_featurelists_by_package_types#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "070de1dd734771a96b559cf43b9a57c899d8021d7ff0ca88affc3dfd4103c2d6",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "whm-features-read-only-slice",
+      "mapping_rationale": "The method implements the reviewed read-only WHM operation using WHM-token authentication, current immutable metadata snapshots, and no retries. Preserves the optional package grouping, required standard names within a present grouping, and optional nova names without conflating omitted and empty lists. Runtime observations remain separate from pinned source contracts; these test declarations do not claim saved revision-bound live evidence."
+    },
+    {
+      "operation_id": "whm1:get_users_features_settings",
+      "variant_id": "whm1:get_users_features_settings#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Features::userSettings",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testEmptyFeatureParameterListIsNotSilentlyOmitted",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testFeatureQueriesEncodeUserSuppliedValues",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testInvalidParameterListsClearOnlyCurrentMetadataBeforeIo",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsPreservesObservedStringDefaultFlags",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsRejectsEmptyParameterListsBeforeRequesting",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsSupportsDocumentedNumberedParameters",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:get_users_features_settings#GET\",\"parameter\",\"feature\",\"query\"]",
+          "hash": "702bae07095e31ec405078c926e19b5c0f704894fcc63735b6602e4cb321d2a6",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testEmptyFeatureParameterListIsNotSilentlyOmitted",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testFeatureQueriesEncodeUserSuppliedValues",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testInvalidParameterListsClearOnlyCurrentMetadataBeforeIo",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsSupportsDocumentedNumberedParameters"
+          ]
+        },
+        {
+          "id": "[\"whm1:get_users_features_settings#GET\",\"parameter\",\"user\",\"query\"]",
+          "hash": "bbbaeb7212b5a55ad851f6f526fbb463349ab0d896e13973482ffbcd4772d22a",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testFeatureQueriesEncodeUserSuppliedValues",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testInvalidParameterListsClearOnlyCurrentMetadataBeforeIo",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsRejectsEmptyParameterListsBeforeRequesting",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsSupportsDocumentedNumberedParameters"
+          ]
+        },
+        {
+          "id": "[\"whm1:get_users_features_settings#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "1cda5650db3d103e42a0e1e6eb558d164ebfc99bb54afb8d723a4ad81e166595",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsPreservesObservedStringDefaultFlags",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "whm-features-read-only-slice",
+      "mapping_rationale": "The method implements the reviewed read-only WHM operation using WHM-token authentication, current immutable metadata snapshots, and no retries. Supports the pinned user and optional feature parameters including numbered repetition, explicit omission, URL encoding, and empty input-list rejection with current metadata clearing before I/O. Preserves nullable integer cpuser_setting and pinned integer feature_list_setting plus separately observed exact string 0/1 defaults, retaining original wire types. Runtime observations remain separate from pinned source contracts; these test declarations do not claim saved revision-bound live evidence."
+    },
+    {
+      "operation_id": "whm1:getdiskusage",
+      "variant_id": "whm1:getdiskusage#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Server::diskUsage",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testDiskUsagePreservesObservedZeroUsageAndUnavailableInodes",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testFailuresReplaceStaleMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testServerHealthOperationsAuthenticateAndExecuteExactlyOnce",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testSuccessiveServerOperationsReplaceOnlyTheirOwningMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testTransportFailureClearsMetadataWithoutRetryOrCredentialLeak",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\WhmServerLiveTest::testDiskUsageContainsACompletePartitionAndRecordsWhmMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testDetachesMutableInputReferencesAndExportedArrays",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testDoesNotInventPercentageUpperBoundsOrCrossFieldConstraints",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testMapsEveryReviewedFieldAndIgnoresUnknownExtensions",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testOmittedFieldsRemainNullAndAbsentFromTheExport",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testPreservesObservedExplicitNullInodeFieldsSeparatelyFromOmission",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testPreservesObservedZeroDiskPercentage",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testRejectsMalformedRecordsWithTheResponseSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testRetainsDocumentedMinimaAndBlankStringsWithoutCoercion",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testHydratesRecordsInOrderAndExposesCountableIterablePartitions",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testInputObjectsListReferencesAndExportsCannotAlterTheSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testOmittedAndEmptyPartitionListsRemainDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testRejectsMalformedContainersAndRecordsWithTheResponseSnapshot"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:getdiskusage#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "90b54d53d4cbe4dafafe6dea1a4da835858960009285287a3d24a4c686a4f98f",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testDiskUsagePreservesObservedZeroUsageAndUnavailableInodes",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testFailuresReplaceStaleMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testServerHealthOperationsAuthenticateAndExecuteExactlyOnce",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testSuccessiveServerOperationsReplaceOnlyTheirOwningMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\WhmServerLiveTest::testDiskUsageContainsACompletePartitionAndRecordsWhmMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testDetachesMutableInputReferencesAndExportedArrays",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testDoesNotInventPercentageUpperBoundsOrCrossFieldConstraints",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testMapsEveryReviewedFieldAndIgnoresUnknownExtensions",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testOmittedFieldsRemainNullAndAbsentFromTheExport",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testPreservesObservedExplicitNullInodeFieldsSeparatelyFromOmission",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testPreservesObservedZeroDiskPercentage",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testRejectsMalformedRecordsWithTheResponseSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testRetainsDocumentedMinimaAndBlankStringsWithoutCoercion",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testHydratesRecordsInOrderAndExposesCountableIterablePartitions",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testInputObjectsListReferencesAndExportsCannotAlterTheSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testOmittedAndEmptyPartitionListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testRejectsMalformedContainersAndRecordsWithTheResponseSnapshot"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "server-information-read-only-slice",
+      "mapping_rationale": "The typed server-scoped partition collection implements the reviewed getdiskusage response-envelope contract using WHM-token authentication and preserves optional lists and record fields. Authorized runtime evidence additionally supports zero disk percentage and explicit null for inodes_available, inodes_ipercentage, inodes_total, and inodes_used, retaining null separately from omission. Other pinned minima and types remain enforced; the pinned contract and its hash remain unchanged. This does not claim BasicAuth support or saved revision-bound live evidence."
+    },
+    {
+      "operation_id": "whm1:gethostname",
+      "variant_id": "whm1:gethostname#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Server::hostname",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testFailuresReplaceStaleMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testHostnamePreservesTheUpstreamString",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testHostnameRequiresAStringAndRetainsFailureMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testServerHealthOperationsAuthenticateAndExecuteExactlyOnce",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testSuccessiveServerOperationsReplaceOnlyTheirOwningMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testTransportFailureClearsMetadataWithoutRetryOrCredentialLeak",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\WhmServerLiveTest::testHostnameMatchesTheApprovedServerAndRecordsWhmMetadata"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:gethostname#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "3de33e23a9a295e0c389d5d380285f6748f1856acd57b2a3c75aeb59fdcc85bc",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testFailuresReplaceStaleMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testHostnamePreservesTheUpstreamString",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testHostnameRequiresAStringAndRetainsFailureMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testServerHealthOperationsAuthenticateAndExecuteExactlyOnce",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testSuccessiveServerOperationsReplaceOnlyTheirOwningMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\WhmServerLiveTest::testHostnameMatchesTheApprovedServerAndRecordsWhmMetadata"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "server-information-read-only-slice",
+      "mapping_rationale": "The typed server-scoped accessor implements the reviewed gethostname response-envelope contract using WHM-token authentication and returns the hostname string unchanged. Missing or non-string hostname values cannot satisfy the concrete scalar return. This does not claim BasicAuth support or saved revision-bound live evidence."
+    },
+    {
+      "operation_id": "whm1:is_conversion_in_progress",
+      "variant_id": "whm1:is_conversion_in_progress#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Php::isConversionInProgress",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:is_conversion_in_progress#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "08fa81fbde144e0c8f5a0cfdff2cf2d607191e71e3000e25d6fddb1ce0ab23c5",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "server-php-read-only-slice",
+      "mapping_rationale": "The server-scoped method implements the reviewed read-only WHM operation using WHM-token authentication, exact pinned payload validation, required selected scalar/list fields, current metadata snapshots, and no retries. No cPanel account target or saved revision-bound live evidence is claimed."
+    },
+    {
+      "operation_id": "whm1:php_get_default_accounts_to_fpm",
+      "variant_id": "whm1:php_get_default_accounts_to_fpm#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Php::defaultAccountsToFpm",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:php_get_default_accounts_to_fpm#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "52d0fc4797f2a9a76c58e759902907913f6af35b3bcbd697835df920f3c9a807",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "server-php-read-only-slice",
+      "mapping_rationale": "The server-scoped method implements the reviewed read-only WHM operation using WHM-token authentication, exact pinned payload validation, required selected scalar/list fields, current metadata snapshots, and no retries. No cPanel account target or saved revision-bound live evidence is claimed."
+    },
+    {
+      "operation_id": "whm1:php_get_handlers",
+      "variant_id": "whm1:php_get_handlers#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Php::handlers",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testHandlersPreserveObservedLsapiCompatibility",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testHandlersPreserveOptionalFieldsAndVersionParameterPresence",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:php_get_handlers#GET\",\"parameter\",\"version\",\"query\"]",
+          "hash": "404d8a441424ba14ef8fa4d6c3ba433f735cb86199b71cd2a6dfc7a31be42215",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testHandlersPreserveOptionalFieldsAndVersionParameterPresence"
+          ]
+        },
+        {
+          "id": "[\"whm1:php_get_handlers#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "e98a2b618187d10b8241f472ae38feab11179e24c86aa261b65a14ef3c8a70ee",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testHandlersPreserveObservedLsapiCompatibility",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testHandlersPreserveOptionalFieldsAndVersionParameterPresence",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "server-php-read-only-slice",
+      "mapping_rationale": "The server-scoped method implements the reviewed read-only WHM operation using WHM-token authentication, pinned payload validation plus observed lsapi handler compatibility, required selected list fields, current metadata snapshots, and no retries. No cPanel account target or saved revision-bound live evidence is claimed."
+    },
+    {
+      "operation_id": "whm1:php_get_installed_versions",
+      "variant_id": "whm1:php_get_installed_versions#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Php::listVersions",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:php_get_installed_versions#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "6b81bd1a62e9819a87e726fc389530c7b94f9dec2b13057c01cf92f82799a4f5",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "server-php-read-only-slice",
+      "mapping_rationale": "The server-scoped method implements the reviewed read-only WHM operation using WHM-token authentication, exact pinned payload validation, required selected scalar/list fields, current metadata snapshots, and no retries. No cPanel account target or saved revision-bound live evidence is claimed."
+    },
+    {
+      "operation_id": "whm1:php_get_old_fpm_flag",
+      "variant_id": "whm1:php_get_old_fpm_flag#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Php::oldFpmFlag",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:php_get_old_fpm_flag#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "c981e0c4925395218c8d08dec51d651184ab398027adc7e11109d8bcad515200",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "server-php-read-only-slice",
+      "mapping_rationale": "The server-scoped method implements the reviewed read-only WHM operation using WHM-token authentication, exact pinned payload validation, required selected scalar/list fields, current metadata snapshots, and no retries. No cPanel account target or saved revision-bound live evidence is claimed."
+    },
+    {
+      "operation_id": "whm1:php_get_system_default_version",
+      "variant_id": "whm1:php_get_system_default_version#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Php::systemDefaultVersion",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:php_get_system_default_version#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "12cee50dfdb82c05d145358b69c49468d5c31be461d30ca86911c4d74161a2a8",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "server-php-read-only-slice",
+      "mapping_rationale": "The server-scoped method implements the reviewed read-only WHM operation using WHM-token authentication, exact pinned payload validation, required selected scalar/list fields, current metadata snapshots, and no retries. No cPanel account target or saved revision-bound live evidence is claimed."
+    },
+    {
+      "operation_id": "whm1:php_get_vhosts_by_version",
+      "variant_id": "whm1:php_get_vhosts_by_version#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Php::vhostsByVersion",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:php_get_vhosts_by_version#GET\",\"parameter\",\"version\",\"query\"]",
+          "hash": "14f68b3e256d4efb00b432d630ed9a90ca02ab9cf6d895951ca1768007855af5",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata"
+          ]
+        },
+        {
+          "id": "[\"whm1:php_get_vhosts_by_version#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "7ff945e525adbb8d1ad198414cf43ef90950310ca0f18dc76a0697fef8875912",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "server-php-read-only-slice",
+      "mapping_rationale": "The server-scoped method implements the reviewed read-only WHM operation using WHM-token authentication, exact pinned payload validation, required selected scalar/list fields, current metadata snapshots, and no retries. No cPanel account target or saved revision-bound live evidence is claimed."
+    },
+    {
+      "operation_id": "whm1:systemloadavg",
+      "variant_id": "whm1:systemloadavg#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Server::loadAverage",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testFailuresReplaceStaleMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testLoadAveragePreservesObservedDecimalStringResponse",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testServerHealthOperationsAuthenticateAndExecuteExactlyOnce",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testSuccessiveServerOperationsReplaceOnlyTheirOwningMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testTransportFailureClearsMetadataWithoutRetryOrCredentialLeak",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\WhmServerLiveTest::testLoadAverageContainsThreeRealMeasurementsAndRecordsWhmMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testDetachesInputReferencesAndExportedArrays",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testMapsLoadWindowsWithoutCoercingNumbersOrAddingBounds",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testOmittedWindowsRemainAbsentInsteadOfBecomingZeros",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testPreservesObservedDecimalStringsWithoutLosingPrecisionOrTrailingZeros",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testRejectsInvalidWindowsWithTheMetadataSnapshot"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:systemloadavg#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "ae6d42c71aae938ee4a3bc8aaa32fd47d297495d3e9c2fdfa95d827a29939871",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testFailuresReplaceStaleMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testLoadAveragePreservesObservedDecimalStringResponse",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testServerHealthOperationsAuthenticateAndExecuteExactlyOnce",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testSuccessiveServerOperationsReplaceOnlyTheirOwningMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\WhmServerLiveTest::testLoadAverageContainsThreeRealMeasurementsAndRecordsWhmMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testDetachesInputReferencesAndExportedArrays",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testMapsLoadWindowsWithoutCoercingNumbersOrAddingBounds",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testOmittedWindowsRemainAbsentInsteadOfBecomingZeros",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testPreservesObservedDecimalStringsWithoutLosingPrecisionOrTrailingZeros",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testRejectsInvalidWindowsWithTheMetadataSnapshot"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "server-information-read-only-slice",
+      "mapping_rationale": "The typed server-scoped payload implements the reviewed systemloadavg response-envelope contract using WHM-token authentication and preserves optional load windows and native numeric types without unit conversion. Authorized runtime evidence additionally supports finite decimal strings, preserved unchanged in properties and exports; the pinned numeric contract and its hash remain unchanged. This does not claim BasicAuth support or saved revision-bound live evidence."
+    },
+    {
+      "operation_id": "whm1:verify_user_has_feature",
+      "variant_id": "whm1:verify_user_has_feature#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Features::userHasFeature",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testAccessFlagsRemainStrictAndDoNotCheckFeatureExistence",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:verify_user_has_feature#GET\",\"parameter\",\"feature\",\"query\"]",
+          "hash": "82df5d4eec469288fd27ec7a1e2d07ccc05b7539f6def92a589930837e2ea3e2",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testAccessFlagsRemainStrictAndDoNotCheckFeatureExistence",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests"
+          ]
+        },
+        {
+          "id": "[\"whm1:verify_user_has_feature#GET\",\"parameter\",\"user\",\"query\"]",
+          "hash": "55bf7e028bc0287b62ec4e953cf3c3c195da7bc734d438d11dd512fb4babfc89",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests"
+          ]
+        },
+        {
+          "id": "[\"whm1:verify_user_has_feature#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "3ef9f359f6c75eb8f749667b8ce4b65d03973258522b858a7354f3ba14b4618b",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testAccessFlagsRemainStrictAndDoNotCheckFeatureExistence",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "whm-features-read-only-slice",
+      "mapping_rationale": "The method implements the reviewed read-only WHM operation using WHM-token authentication, current immutable metadata snapshots, and no retries. Maps required user/feature inputs and requires strict integer has_feature 0/1 for its boolean return. Unknown features can yield true upstream, so this is an access check rather than an existence check; no string or boolean flag compatibility is applied. Runtime observations remain separate from pinned source contracts; these test declarations do not claim saved revision-bound live evidence."
+    },
+    {
+      "operation_id": "whm1:version",
+      "variant_id": "whm1:version#GET",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Server::version",
+      "status": "implemented",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testFailuresReplaceOldMetadataAndKeepExceptionSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testTransportFailureClearsMetadataAndDoesNotExposeTheOriginalException",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testWhmVersionAuthenticatesAndReturnsTheUnmodifiedVersion",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testWhmVersion"
+      ],
+      "contract_units": [
+        {
+          "id": "[\"whm1:version#GET\",\"response\",\"200\",\"application/json\"]",
+          "hash": "d2b2a06b751ad48cc3b7b251fa1bd5b11a1a14bb34fc6798801e809bcacfbfab",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testFailuresReplaceOldMetadataAndKeepExceptionSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testWhmVersionAuthenticatesAndReturnsTheUnmodifiedVersion",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testWhmVersion"
+          ]
+        }
+      ],
+      "live_evidence_ids": [],
+      "mapping_group": "server-version-read-only-slice",
+      "mapping_rationale": "The typed server-scoped method implements the reviewed version response-envelope contract with WHM-token authentication. The pinned BasicAuth source evidence is retained; BasicAuth support and saved revision-bound live evidence are not claimed."
+    }
+  ],
   "infrastructure": [
     {
       "symbol": "HostingPal\\WhmApiClient\\Api\\AbstractApiClient::config",
@@ -9,6 +1054,38 @@
     {
       "symbol": "HostingPal\\WhmApiClient\\Api\\AbstractApiClient::responseMeta",
       "reason": "Reads the client-local latest response metadata; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Dns::__construct",
+      "reason": "Constructs an internal typed inventory group or response boundary without implementing an API operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Domains::__construct",
+      "reason": "Binds the typed domain group to its owning account and metadata lifecycle; construction does not execute an endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Features::__construct",
+      "reason": "Constructs an internal typed inventory group or response boundary without implementing an API operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Php::__construct",
+      "reason": "Binds PHP discovery to its selected account and metadata lifecycle without executing an endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Domains::__construct",
+      "reason": "Binds the server-domain group to its WHM client without executing an endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Features::__construct",
+      "reason": "Constructs an internal typed inventory group or response boundary without implementing an API operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Php::__construct",
+      "reason": "Constructs an internal typed inventory group or response boundary without implementing an API operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Server::__construct",
+      "reason": "Binds the typed server group to its owning WHM metadata lifecycle; construction does not execute an endpoint."
     },
     {
       "symbol": "HostingPal\\WhmApiClient\\Authentication\\TokenCredentials::__construct",
@@ -51,6 +1128,14 @@
       "reason": "Builds validated shared configuration from options; no endpoint operation."
     },
     {
+      "symbol": "HostingPal\\WhmApiClient\\Exception\\ApiException::__construct",
+      "reason": "Constructs a safe API exception with an optional immutable response metadata snapshot; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Exception\\HttpException::__construct",
+      "reason": "Constructs a safe HTTP failure with status and optional response metadata; no endpoint operation."
+    },
+    {
       "symbol": "HostingPal\\WhmApiClient\\Http\\HttpTransport::__construct",
       "reason": "Generic HTTP infrastructure; does not implement a WHM or cPanel endpoint."
     },
@@ -59,8 +1144,200 @@
       "reason": "Generic HTTP infrastructure; does not implement a WHM or cPanel endpoint."
     },
     {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\AccountDomains::fromPayload",
+      "reason": "Validates and snapshots the reviewed domain payload after endpoint execution; hydration is not a separate endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\AccountDomains::toArray",
+      "reason": "Exports the immutable reviewed domain fields while retaining field presence; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ApiResponse::__construct",
+      "reason": "Carries a decoded payload and its metadata between internal execution and endpoint validation; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\DiskPartition::fromPayload",
+      "reason": "Validates and snapshots a reviewed drive-partition record, including documented runtime exceptions, after execution; hydration is not an endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\DiskPartition::toArray",
+      "reason": "Exports reviewed drive-partition fields while retaining optional presence and observed explicit inode nulls; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\DomainInfo::fromPayload",
+      "reason": "Validates and snapshots a reviewed domain record after execution; hydration is not an endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\DomainInfo::toArray",
+      "reason": "Exports reviewed record fields with optional presence preserved; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\EnvelopeReader::read",
+      "reason": "Reads HTTP and API outcomes and preserves metadata for the seven reviewed read-only operations; this shared reader is not an endpoint operation."
+    },
+    {
       "symbol": "HostingPal\\WhmApiClient\\Response\\ResponseMetadata::__construct",
       "reason": "Constructs an immutable HTTP status and envelope metadata snapshot; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ServerDiskUsage::count",
+      "reason": "Counts present partition records without I/O; an omitted inventory counts as zero."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ServerDiskUsage::fromPayload",
+      "reason": "Validates and snapshots the reviewed partition inventory after execution; hydration is not an endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ServerDiskUsage::getIterator",
+      "reason": "Iterates immutable partition records without I/O; an omitted inventory iterates empty."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ServerDiskUsage::toArray",
+      "reason": "Exports the reviewed partition inventory with optional list and record-field presence preserved; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ServerDomains::count",
+      "reason": "Counts present domain records without I/O; omitted inventory counts as zero."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ServerDomains::fromPayload",
+      "reason": "Validates and snapshots the reviewed domain inventory after execution; hydration is not an endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ServerDomains::getIterator",
+      "reason": "Iterates the immutable domain records without I/O; omitted inventory iterates empty."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ServerDomains::toArray",
+      "reason": "Exports the reviewed domain inventory with optional list presence preserved; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ServerLoadAverage::fromPayload",
+      "reason": "Validates and snapshots optional load windows and observed decimal strings after execution; hydration is not an endpoint."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ServerLoadAverage::toArray",
+      "reason": "Exports reviewed load windows with optional presence and native or observed decimal-string numeric values preserved; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::failedResponses",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::filters",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::invalidArguments",
+      "reason": "Supplies offline contract cases or explicit live-test cases; a data provider does not implement an endpoint or establish a passing outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::invalidDomainLists",
+      "reason": "Supplies offline contract cases or explicit live-test cases; a data provider does not implement an endpoint or establish a passing outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::invalidPayloads",
+      "reason": "Supplies offline contract cases or explicit live-test cases; a data provider does not implement an endpoint or establish a passing outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::missingLookupData",
+      "reason": "Supplies offline contract cases or explicit live-test cases; a data provider does not implement an endpoint or establish a passing outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::routes",
+      "reason": "Supplies offline contract cases or explicit live-test cases; a data provider does not implement an endpoint or establish a passing outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::successfulOperations",
+      "reason": "Supplies offline contract cases or explicit live-test cases; a data provider does not implement an endpoint or establish a passing outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::directEnvelopes",
+      "reason": "Supplies offline PHPUnit contract cases; a data provider is not an endpoint or a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::failedResponses",
+      "reason": "Supplies offline PHPUnit contract cases; a data provider is not an endpoint or a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::invalidPayloads",
+      "reason": "Supplies offline PHPUnit contract cases; a data provider is not an endpoint or a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::routes",
+      "reason": "Supplies offline PHPUnit contract cases; a data provider is not an endpoint or a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::failedResponses",
+      "reason": "Supplies offline PHPUnit contract cases; a data provider is not an endpoint or a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::failedResponses",
+      "reason": "Supplies offline contract cases or explicit live-test cases; a data provider does not implement an endpoint or establish a passing outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::invalidPayloads",
+      "reason": "Supplies offline contract cases or explicit live-test cases; a data provider does not implement an endpoint or establish a passing outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::operations",
+      "reason": "Supplies offline contract cases or explicit live-test cases; a data provider does not implement an endpoint or establish a passing outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::boundaryPayloads",
+      "reason": "Supplies offline contract cases or explicit live-test cases; a data provider does not implement an endpoint or establish a passing outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::failedResponses",
+      "reason": "Supplies offline contract cases or explicit live-test cases; a data provider does not implement an endpoint or establish a passing outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::invalidPayloads",
+      "reason": "Supplies offline contract cases or explicit live-test cases; a data provider does not implement an endpoint or establish a passing outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::operations",
+      "reason": "Supplies offline contract cases or explicit live-test cases; a data provider does not implement an endpoint or establish a passing outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::failedResponses",
+      "reason": "Supplies offline PHPUnit server-contract cases; a data provider is not an endpoint or a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::invalidHostnames",
+      "reason": "Supplies offline PHPUnit server-contract cases; a data provider is not an endpoint or a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::operations",
+      "reason": "Supplies offline PHPUnit server-contract cases; a data provider is not an endpoint or a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest::invalidTokens",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Authentication\\TokenCredentialsTest::invalidUsernames",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\ClientTest::invalidTargets",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::invalidHosts",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::invalidOptions",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::invalidPorts",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Config\\ClientConfigFactoryTest::validIpv6Hosts",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
     },
     {
       "symbol": "HostingPal\\WhmApiClient\\Tests\\Http\\HttpTransportTest::errorStatuses",
@@ -71,12 +1348,92 @@
       "reason": "Data provider for offline HTTP infrastructure tests."
     },
     {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::uapiOperations",
+      "reason": "Supplies offline contract cases or explicit live-test cases; a data provider does not implement an endpoint or establish a passing outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::whmOperations",
+      "reason": "Supplies offline contract cases or explicit live-test cases; a data provider does not implement an endpoint or establish a passing outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::invalidPayloads",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::invalidPayloads",
+      "reason": "Supplies offline PHPUnit server-contract cases; a data provider is not an endpoint or a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::invalidPayloads",
+      "reason": "Supplies offline PHPUnit contract cases; a data provider is not an endpoint or a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::validPorts",
+      "reason": "Supplies offline regression cases for pinned integer and observed decimal-string port values; no endpoint or passing outcome claim."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::invalidPayloads",
+      "reason": "Supplies offline PHPUnit server-contract cases; a data provider is not an endpoint or a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::invalidPayloads",
+      "reason": "Supplies offline PHPUnit contract cases; a data provider is not an endpoint or a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::invalidPayloads",
+      "reason": "Supplies offline PHPUnit server-contract cases; a data provider is not an endpoint or a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Support\\LiveCurlClient::__construct",
+      "reason": "Constructs a test-only HTTPS adapter with an offline-testable execution boundary; no endpoint implementation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Support\\LiveCurlClient::sendRequest",
+      "reason": "Restricts explicitly opted-in live test transport to reviewed GET routes; generic test infrastructure, not endpoint implementation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Support\\LiveCurlClientTest::approvedUris",
+      "reason": "Supplies offline allowlist guard cases; no endpoint or passing outcome claim."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Support\\LiveCurlClientTest::missingPrerequisites",
+      "reason": "Supplies offline opt-in and prerequisite rejection cases; no endpoint or passing outcome claim."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Support\\LiveCurlClientTest::outsideApprovedScope",
+      "reason": "Supplies offline live-transport rejection cases; no endpoint or passing outcome claim."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Support\\LiveTestEnvironment::fromEnvironment",
+      "reason": "Loads explicit live-test prerequisites without network I/O; no endpoint implementation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Support\\LiveTestEnvironment::requireReady",
+      "reason": "Validates live opt-in, token presence, and cURL availability before requests without disclosing values."
+    },
+    {
       "symbol": "HostingPal\\WhmApiClient\\UapiClient::__construct",
       "reason": "Constructs a UAPI family handle with its target account and shared transport/configuration; no endpoint operation."
     },
     {
+      "symbol": "HostingPal\\WhmApiClient\\UapiClient::dns",
+      "reason": "Selects a stable typed inventory group without I/O; no API operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\UapiClient::domains",
+      "reason": "Selects and caches the typed domain group for one account without performing I/O; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\UapiClient::features",
+      "reason": "Selects a stable typed inventory group without I/O; no API operation."
+    },
+    {
       "symbol": "HostingPal\\WhmApiClient\\UapiClient::isBridged",
       "reason": "Reports whether the UAPI handle uses WHM credential routing; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\UapiClient::php",
+      "reason": "Selects and caches the typed PHP group for the account without performing I/O."
     },
     {
       "symbol": "HostingPal\\WhmApiClient\\UapiClient::username",
@@ -85,6 +1442,22 @@
     {
       "symbol": "HostingPal\\WhmApiClient\\WhmClient::__construct",
       "reason": "Constructs a WHM family handle using shared configuration and transport; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\WhmClient::domains",
+      "reason": "Selects and caches the typed WHM domain group without performing I/O."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\WhmClient::features",
+      "reason": "Selects a stable typed inventory group without I/O; no API operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\WhmClient::php",
+      "reason": "Selects a stable typed inventory group without I/O; no API operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\WhmClient::server",
+      "reason": "Selects and caches the typed server group without performing I/O; no endpoint operation."
     }
   ],
   "exclusions": []

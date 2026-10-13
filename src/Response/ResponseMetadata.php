@@ -15,10 +15,10 @@ use InvalidArgumentException;
  */
 final readonly class ResponseMetadata
 {
-    /** @var array<string, mixed>|null */
+    /** @var array<array-key, mixed>|null */
     public ?array $whm;
 
-    /** @var array<string, mixed>|null */
+    /** @var array<array-key, mixed>|null */
     public ?array $uapi;
 
     /**
@@ -27,8 +27,10 @@ final readonly class ResponseMetadata
      * Null indicates unavailable family metadata. Nested array references are
      * detached; objects and non-JSON values are rejected to preserve immutability.
      *
-     * @param array<string, mixed>|null $whm
-     * @param array<string, mixed>|null $uapi
+     * Numeric JSON object keys become integer PHP array keys at this opaque boundary.
+     *
+     * @param array<array-key, mixed>|null $whm
+     * @param array<array-key, mixed>|null $uapi
      * @throws InvalidArgumentException If status or metadata values are invalid.
      */
     public function __construct(public int $httpStatus, ?array $whm = null, ?array $uapi = null)

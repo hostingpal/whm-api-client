@@ -1,9 +1,14 @@
 # PHP client interface and UAPI routing
 
-Status: public interface direction agreed on 2026-10-13. Base configuration,
-WHM/UAPI account selection, and metadata lifecycle scaffolding are implemented
-under `whm-api-client-8x0.1.3`. Authenticated execution, response parsing, and
-endpoint groups remain open. Endpoint examples below describe the planned API.
+Status: public interface direction agreed on 2026-10-13. Base configuration and
+WHM/UAPI account selection are implemented under `whm-api-client-8x0.1.3`.
+The [first read-only slice](2026-10-13-first-api-slice-design.md), tracked under
+`whm-api-client-8x0.1.4`, implements WHM version and UAPI domain listing with
+authenticated execution, response parsing, and metadata. The domain/PHP inventory
+slice (`whm-api-client-8x0.1.5`) adds WHM domain records and UAPI installed PHP
+versions. The server identity/health slice (`whm-api-client-8x0.1.6`) adds WHM
+hostname, load averages, and disk partition usage. Other endpoint groups and
+broader execution features remain open.
 
 Decision record: `whm-api-client-8x0.1.2`. Runtime execution and authentication:
 `whm-api-client-8x0.1`. Concrete payload returns and response metadata:
@@ -18,12 +23,11 @@ do not need a separate public `bridge()` method.
 
 ```php
 // Client configured with WHM credentials, such as a root token.
-$serverDomains = $client->whm()->domains()->list();
+$version = $client->whm()->server()->version();
 $accountDomains = $client->uapi('npr')->domains()->list();
 
 // Client configured with the cPanel account npr and its cPanel token.
 $accountDomains = $client->uapi()->domains()->list();
-$versions = $client->uapi()->php()->listVersions();
 ```
 
 Use declared classes and methods with plural resource groups where appropriate
@@ -31,11 +35,15 @@ and camelCase operation names. These provide autocomplete and concrete parameter
 and return types for PHPStan. Keep an explicit mapping from each PHP operation
 to its documented upstream operation; friendly names do not change wire names.
 
-| Planned PHP call | Documented upstream operation |
-| --- | --- |
-| `whm()->domains()->list()` | WHM `get_domain_info` |
-| `uapi()->domains()->list()` | UAPI `DomainInfo/list_domains` |
-| `uapi()->php()->listVersions()` | UAPI `LangPHP/php_get_installed_versions` |
+| PHP call | Documented upstream operation | Status |
+| --- | --- | --- |
+| `whm()->server()->version()` | WHM `version` | Implemented; returns `string` |
+| `whm()->server()->hostname()` | WHM `gethostname` | Implemented; returns `string` |
+| `whm()->server()->loadAverage()` | WHM `systemloadavg` | Implemented; returns `ServerLoadAverage` |
+| `whm()->server()->diskUsage()` | WHM `getdiskusage` | Implemented; returns `ServerDiskUsage` containing `DiskPartition` records |
+| `uapi()->domains()->list()` | UAPI `DomainInfo/list_domains` | Implemented; returns `AccountDomains` |
+| `whm()->domains()->list()` | WHM `get_domain_info` | Implemented; returns `ServerDomains` containing `DomainInfo` records |
+| `uapi()->php()->listVersions()` | UAPI `LangPHP/php_get_installed_versions` | Implemented; returns `list<string>` |
 
 The same UAPI mappings apply when a username selects access through WHM.
 WHM domain information and UAPI account domains have different scopes and
@@ -45,6 +53,67 @@ API selectors and resource group accessors perform no I/O. The terminal operatio
 executes the request immediately and returns the documented payload as a DTO,
 collection, scalar, or `void`, as appropriate. There is no trailing `execute()`
 step and no queue of pending commands implied by chaining.
+
+The implemented domain signature is
+`list(?bool $hideTemporaryDomains = null): AccountDomains`. Null omits the query
+parameter, retaining the documented default `0`; false sends `0`, and true sends
+`1`. True hides temporary domains from the main domain and the addon, parked, and
+subdomain lists. `AccountDomains` retains optional `main_domain`, `addon_domains`,
+`parked_domains`, `sub_domains`, and `is_temporary` fields. Its corresponding
+camelCase properties use null for omitted fields, while `toArray()` preserves
+presence and distinguishes omitted main domain from explicit null. Domain lists
+are `list<string>`; temporary flags are `array<string, 0|1>`. Empty strings, lists,
+and flags remain unchanged; an empty temporary-domain object becomes an empty
+array map. Unknown extensions are outside this reviewed DTO contract.
+
+The domain operation can return blank values without an API error when its
+userdata file has incorrect permissions. Successful status alone does not
+establish completeness. WHM version returns the supplied version string without
+semantic-version conversion; a missing or invalid version raises
+`InvalidResponseException`.
+
+The server identity/health methods use the same explicit, immediate WHM execution
+path without parameters or a cPanel account target. `hostname()` requires a string
+and returns it unchanged. `ServerLoadAverage` preserves optional `one`, `five`,
+and `fifteen` windows as `int|float|numeric-string|null` properties. Both properties
+and `toArray()` retain the finite decimal strings observed live, including trailing
+zeros and precision; strings allow an optional sign and decimal fraction, without
+whitespace or exponents. No unit conversion is inferred from upstream prose.
+
+`ServerDiskUsage` is an immutable iterable/countable collection with
+`?list<DiskPartition> $partitions`. Its export retains the original `partition`
+key, distinguishing omitted from empty. All 12 partition fields are optional;
+disk sizes are integer kilobytes, and inode values are integer counts/percentage.
+Runtime compatibility accepts disk `percentage: 0` and explicit null for all
+four inode fields. Other pinned minima remain enforced. Properties use null for
+omitted fields and unavailable inodes, while exports retain explicit null presence.
+Endpoint and DTO offline tests cover these representations; the opted-in live
+suite verifies all three methods. Evidence is recorded separately in
+[source-audit.md](../../api/source-audit.md#runtime-observations-2026-10-13), without
+altering pinned schemas or declaring revision-bound live parity coverage.
+
+WHM `get_domain_info` returns immutable `ServerDomains`, an iterable/countable
+collection of immutable `DomainInfo` records. Its optional `domains` property is
+null when omitted; iteration/count treat omission as an empty collection, while
+`toArray()` retains omitted versus empty-list presence. The 14 reviewed record
+fields are optional; properties use null for omission and `toArray()` preserves
+explicit nullable `ipv6`, blank strings, port wire values and 0/1 flags. Domain types
+remain unrestricted upstream strings. The upstream inventory excludes service
+subdomains and automatically created domains. Unknown extensions are ignored.
+Ports are integers in the pinned schema; the test server returns decimal strings.
+Canonical nonnegative decimal strings within PHP integer range are also accepted.
+Properties expose integers while `toArray()` retains the integer or numeric-string
+wire representation. This runtime compatibility does not alter the pinned sources.
+
+UAPI `LangPHP/php_get_installed_versions` returns the `versions` list unchanged,
+including custom PHP package names and empty lists, in the selected account
+context. A missing or malformed list cannot satisfy `list<string>` and raises
+`InvalidResponseException` with the response snapshot. EasyApache 4 and the
+WebServer role are upstream prerequisites. Both direct and bridged routes share
+this public method, and each checks its documented success outcome. Offline contract
+tests and the separately opted-in PHPUnit `live` group cover the implemented routes.
+Actual server observations remain separate from pinned contracts and saved,
+revision-bound parity evidence.
 
 ## Credentials and account selection
 
@@ -71,11 +140,11 @@ capability when another username is passed to `uapi()`. Credential type is expli
 in client configuration; the library does not guess it from the token string.
 WHM operations require WHM credentials.
 
-The default account setting belongs to client configuration. The base scaffold
+The default account setting belongs to client configuration. The client
 accepts an RNIDS-style options array or immutable `ClientConfig` through
 `Client::__construct`, plus an optional PSR-backed `HttpTransport`. See the
 [base client configuration](../../../README.md#base-client) for the implemented
-options and validation behavior. API execution exceptions remain separate work.
+options and validation behavior.
 
 ## Shared UAPI implementation
 
@@ -96,8 +165,25 @@ WHM and inner UAPI outcomes; outer success alone does not establish UAPI success
 HTTP methods, parameter encoding, and payload schemas remain source-driven.
 Bridge coverage does not establish direct cPanel-token authentication coverage.
 
+Operation groups receive one synchronous request callback with an operation name
+and query parameters. Each group builds its endpoint-specific parameters and
+parses its payload; family handles own route construction. All UAPI groups use
+one account-bound route helper, with the module bound when selecting the group.
+Reserved bridge fields take precedence over endpoint parameters. Selecting or
+caching a group does not execute the callback or reset metadata.
+
+Request execution resets metadata before query validation and I/O, then records
+a usable envelope before API or payload errors. WHM feature `userSettings()` also
+uses an injected `beginRequest` lifecycle hook before locally validating and
+building indexed parameters, since invalid input never reaches request execution.
+Retain this ordering when adding group-level validation.
+
 The core remains framework-independent, using PSR-18 and PSR-17 injection or
 discovery. Laravel integration remains a separate Composer package.
+
+The injected or discovered PSR client must verify TLS and disable redirects for
+authenticated requests. The API layer rejects HTTP 3xx responses and does not
+retry requests. Query values use RFC 3986 encoding, preserving dotted names.
 
 ## Account isolation and response metadata
 
@@ -131,6 +217,19 @@ generic success or failure. Concrete payload returns do not require a universal
 response wrapper. Last-request metadata initially assumes synchronous use; future
 concurrent execution requires per-request snapshots.
 
+The implemented `ResponseMetadata::$whm` map contains the WHM envelope's raw
+`metadata`; `$uapi` contains the UAPI result envelope without `data`, preserving
+available status, errors, messages, warnings, and metadata. Nested JSON metadata
+objects become arrays. Either map may be null when unavailable.
+
+`ApiException` exposes public readonly `?ResponseMetadata $metadata`, matching
+the selected client's snapshot for that attempt. Its subclasses distinguish
+`ApiErrorException` (WHM or UAPI outcome failure), `HttpException` (HTTP outside
+200–299), `InvalidResponseException` (unusable envelope, outcome, or payload), and
+`TransportException` (PSR transport failure). Messages exclude raw bodies and
+credentials; transport failures omit the original exception chain because it can
+retain authenticated requests. Metadata preserves upstream diagnostic values.
+
 ## Implementation verification
 
 Runtime implementation must exercise both UAPI routes with offline fixtures,
@@ -144,6 +243,22 @@ HTTP errors with decodable envelopes, transport failures, malformed responses,
 consecutive requests, retained immutable snapshots, and per-client isolation.
 Record endpoint mappings and contract evidence in the existing coverage registry.
 Runtime implementation and endpoint coverage remain tracked in Beads.
+
+Direct UAPI supports the pinned `result` wrapper and a bare result object observed
+at runtime. A present `result` field takes precedence even if malformed; only its
+absence allows a top-level `status` field to identify the bare form. Outcome and
+payload validation still apply. The WHM bridge retains its `data.uapi` wrapper.
+
+An authorized direct `DomainInfo/list_domains` request on 2026-10-13 authenticated
+with the `npr` account's cPanel token on `test.oblak.host:2083` and returned HTTP
+200 with integer status `1` in the bare envelope. The library recheck with the
+updated parser returned the expected main domain and HTTP 200/UAPI status `1`
+metadata, with null WHM metadata and `isBridged() === false`. This verifies direct
+library execution for that operation, account, server, and date. See the separately
+recorded
+[runtime observation](../../api/source-audit.md#runtime-observations-2026-10-13).
+The internal bridge used for domain listing does not establish complete generic
+`uapi_cpanel` coverage, and runtime observations do not alter the pinned contracts.
 
 ## Contract sources
 

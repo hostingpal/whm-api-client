@@ -22,13 +22,13 @@
           "denominator": 695,
           "excluded": 0,
           "gross": 695,
-          "numerator": 0
+          "numerator": 10
         },
         "functions": {
           "denominator": 693,
           "excluded": 0,
           "gross": 693,
-          "numerator": 0
+          "numerator": 10
         },
         "live_verified": {
           "denominator": 695,
@@ -41,7 +41,7 @@
           "denominator": 1182,
           "excluded": 0,
           "gross": 1182,
-          "numerator": 0
+          "numerator": 9
         },
         "passing_tests": {
           "denominator": 695,
@@ -53,13 +53,13 @@
           "denominator": 695,
           "excluded": 0,
           "gross": 695,
-          "numerator": 0
+          "numerator": 10
         },
         "variants": {
           "denominator": 695,
           "excluded": 0,
           "gross": 695,
-          "numerator": 0
+          "numerator": 10
         }
       }
     },
@@ -1254,13 +1254,13 @@
           "denominator": 11,
           "excluded": 0,
           "gross": 11,
-          "numerator": 0
+          "numerator": 2
         },
         "functions": {
           "denominator": 11,
           "excluded": 0,
           "gross": 11,
-          "numerator": 0
+          "numerator": 2
         },
         "live_verified": {
           "denominator": 11,
@@ -1273,7 +1273,7 @@
           "denominator": 15,
           "excluded": 0,
           "gross": 15,
-          "numerator": 0
+          "numerator": 2
         },
         "passing_tests": {
           "denominator": 11,
@@ -1285,13 +1285,13 @@
           "denominator": 11,
           "excluded": 0,
           "gross": 11,
-          "numerator": 0
+          "numerator": 2
         },
         "variants": {
           "denominator": 11,
           "excluded": 0,
           "gross": 11,
-          "numerator": 0
+          "numerator": 2
         }
       }
     },
@@ -1590,13 +1590,13 @@
           "denominator": 5,
           "excluded": 0,
           "gross": 5,
-          "numerator": 0
+          "numerator": 3
         },
         "functions": {
           "denominator": 5,
           "excluded": 0,
           "gross": 5,
-          "numerator": 0
+          "numerator": 3
         },
         "live_verified": {
           "denominator": 5,
@@ -1609,7 +1609,7 @@
           "denominator": 9,
           "excluded": 0,
           "gross": 9,
-          "numerator": 0
+          "numerator": 3
         },
         "passing_tests": {
           "denominator": 5,
@@ -1621,13 +1621,13 @@
           "denominator": 5,
           "excluded": 0,
           "gross": 5,
-          "numerator": 0
+          "numerator": 3
         },
         "variants": {
           "denominator": 5,
           "excluded": 0,
           "gross": 5,
-          "numerator": 0
+          "numerator": 3
         }
       }
     },
@@ -2094,13 +2094,13 @@
           "denominator": 5,
           "excluded": 0,
           "gross": 5,
-          "numerator": 0
+          "numerator": 1
         },
         "functions": {
           "denominator": 5,
           "excluded": 0,
           "gross": 5,
-          "numerator": 0
+          "numerator": 1
         },
         "live_verified": {
           "denominator": 5,
@@ -2125,13 +2125,13 @@
           "denominator": 5,
           "excluded": 0,
           "gross": 5,
-          "numerator": 0
+          "numerator": 1
         },
         "variants": {
           "denominator": 5,
           "excluded": 0,
           "gross": 5,
-          "numerator": 0
+          "numerator": 1
         }
       }
     },
@@ -2542,13 +2542,13 @@
           "denominator": 11,
           "excluded": 0,
           "gross": 11,
-          "numerator": 0
+          "numerator": 4
         },
         "functions": {
           "denominator": 11,
           "excluded": 0,
           "gross": 11,
-          "numerator": 0
+          "numerator": 4
         },
         "live_verified": {
           "denominator": 11,
@@ -2561,7 +2561,7 @@
           "denominator": 17,
           "excluded": 0,
           "gross": 17,
-          "numerator": 0
+          "numerator": 4
         },
         "passing_tests": {
           "denominator": 11,
@@ -2573,13 +2573,13 @@
           "denominator": 11,
           "excluded": 0,
           "gross": 11,
-          "numerator": 0
+          "numerator": 4
         },
         "variants": {
           "denominator": 11,
           "excluded": 0,
           "gross": 11,
-          "numerator": 0
+          "numerator": 4
         }
       }
     },
@@ -5958,13 +5958,13 @@
           "denominator": 630,
           "excluded": 0,
           "gross": 630,
-          "numerator": 0
+          "numerator": 19
         },
         "functions": {
           "denominator": 630,
           "excluded": 0,
           "gross": 630,
-          "numerator": 0
+          "numerator": 19
         },
         "live_verified": {
           "denominator": 630,
@@ -5977,7 +5977,7 @@
           "denominator": 1426,
           "excluded": 0,
           "gross": 1426,
-          "numerator": 0
+          "numerator": 7
         },
         "passing_tests": {
           "denominator": 630,
@@ -5989,13 +5989,13 @@
           "denominator": 630,
           "excluded": 0,
           "gross": 630,
-          "numerator": 0
+          "numerator": 19
         },
         "variants": {
           "denominator": 630,
           "excluded": 0,
           "gross": 630,
-          "numerator": 0
+          "numerator": 19
         }
       }
     },
@@ -7974,13 +7974,13 @@
           "denominator": 9,
           "excluded": 0,
           "gross": 9,
-          "numerator": 0
+          "numerator": 1
         },
         "functions": {
           "denominator": 9,
           "excluded": 0,
           "gross": 9,
-          "numerator": 0
+          "numerator": 1
         },
         "live_verified": {
           "denominator": 9,
@@ -8005,13 +8005,13 @@
           "denominator": 9,
           "excluded": 0,
           "gross": 9,
-          "numerator": 0
+          "numerator": 1
         },
         "variants": {
           "denominator": 9,
           "excluded": 0,
           "gross": 9,
-          "numerator": 0
+          "numerator": 1
         }
       }
     },
@@ -8254,13 +8254,13 @@
           "denominator": 4,
           "excluded": 0,
           "gross": 4,
-          "numerator": 0
+          "numerator": 2
         },
         "functions": {
           "denominator": 4,
           "excluded": 0,
           "gross": 4,
-          "numerator": 0
+          "numerator": 2
         },
         "live_verified": {
           "denominator": 4,
@@ -8273,7 +8273,7 @@
           "denominator": 8,
           "excluded": 0,
           "gross": 8,
-          "numerator": 0
+          "numerator": 4
         },
         "passing_tests": {
           "denominator": 4,
@@ -8285,13 +8285,13 @@
           "denominator": 4,
           "excluded": 0,
           "gross": 4,
-          "numerator": 0
+          "numerator": 2
         },
         "variants": {
           "denominator": 4,
           "excluded": 0,
           "gross": 4,
-          "numerator": 0
+          "numerator": 2
         }
       }
     },
@@ -8310,13 +8310,13 @@
           "denominator": 11,
           "excluded": 0,
           "gross": 11,
-          "numerator": 0
+          "numerator": 5
         },
         "functions": {
           "denominator": 11,
           "excluded": 0,
           "gross": 11,
-          "numerator": 0
+          "numerator": 5
         },
         "live_verified": {
           "denominator": 11,
@@ -8329,7 +8329,7 @@
           "denominator": 10,
           "excluded": 0,
           "gross": 10,
-          "numerator": 0
+          "numerator": 1
         },
         "passing_tests": {
           "denominator": 11,
@@ -8341,13 +8341,13 @@
           "denominator": 11,
           "excluded": 0,
           "gross": 11,
-          "numerator": 0
+          "numerator": 5
         },
         "variants": {
           "denominator": 11,
           "excluded": 0,
           "gross": 11,
-          "numerator": 0
+          "numerator": 5
         }
       }
     },
@@ -9878,13 +9878,13 @@
           "denominator": 14,
           "excluded": 0,
           "gross": 14,
-          "numerator": 0
+          "numerator": 4
         },
         "functions": {
           "denominator": 14,
           "excluded": 0,
           "gross": 14,
-          "numerator": 0
+          "numerator": 4
         },
         "live_verified": {
           "denominator": 14,
@@ -9897,7 +9897,7 @@
           "denominator": 19,
           "excluded": 0,
           "gross": 19,
-          "numerator": 0
+          "numerator": 2
         },
         "passing_tests": {
           "denominator": 14,
@@ -9909,13 +9909,13 @@
           "denominator": 14,
           "excluded": 0,
           "gross": 14,
-          "numerator": 0
+          "numerator": 4
         },
         "variants": {
           "denominator": 14,
           "excluded": 0,
           "gross": 14,
-          "numerator": 0
+          "numerator": 4
         }
       }
     },
@@ -9934,13 +9934,13 @@
           "denominator": 9,
           "excluded": 0,
           "gross": 9,
-          "numerator": 0
+          "numerator": 3
         },
         "functions": {
           "denominator": 9,
           "excluded": 0,
           "gross": 9,
-          "numerator": 0
+          "numerator": 3
         },
         "live_verified": {
           "denominator": 9,
@@ -9965,13 +9965,13 @@
           "denominator": 9,
           "excluded": 0,
           "gross": 9,
-          "numerator": 0
+          "numerator": 3
         },
         "variants": {
           "denominator": 9,
           "excluded": 0,
           "gross": 9,
-          "numerator": 0
+          "numerator": 3
         }
       }
     },
@@ -10046,13 +10046,13 @@
           "denominator": 26,
           "excluded": 0,
           "gross": 26,
-          "numerator": 0
+          "numerator": 7
         },
         "functions": {
           "denominator": 26,
           "excluded": 0,
           "gross": 26,
-          "numerator": 0
+          "numerator": 7
         },
         "live_verified": {
           "denominator": 26,
@@ -10065,7 +10065,7 @@
           "denominator": 97,
           "excluded": 0,
           "gross": 97,
-          "numerator": 0
+          "numerator": 5
         },
         "passing_tests": {
           "denominator": 26,
@@ -10077,13 +10077,13 @@
           "denominator": 26,
           "excluded": 0,
           "gross": 26,
-          "numerator": 0
+          "numerator": 7
         },
         "variants": {
           "denominator": 26,
           "excluded": 0,
           "gross": 26,
-          "numerator": 0
+          "numerator": 7
         }
       }
     },
@@ -11334,13 +11334,13 @@
           "denominator": 66,
           "excluded": 0,
           "gross": 66,
-          "numerator": 0
+          "numerator": 3
         },
         "functions": {
           "denominator": 66,
           "excluded": 0,
           "gross": 66,
-          "numerator": 0
+          "numerator": 3
         },
         "live_verified": {
           "denominator": 66,
@@ -11365,13 +11365,13 @@
           "denominator": 66,
           "excluded": 0,
           "gross": 66,
-          "numerator": 0
+          "numerator": 3
         },
         "variants": {
           "denominator": 66,
           "excluded": 0,
           "gross": 66,
-          "numerator": 0
+          "numerator": 3
         }
       }
     },
@@ -12174,13 +12174,13 @@
           "denominator": 8,
           "excluded": 0,
           "gross": 8,
-          "numerator": 0
+          "numerator": 3
         },
         "functions": {
           "denominator": 8,
           "excluded": 0,
           "gross": 8,
-          "numerator": 0
+          "numerator": 3
         },
         "live_verified": {
           "denominator": 8,
@@ -12205,13 +12205,13 @@
           "denominator": 8,
           "excluded": 0,
           "gross": 8,
-          "numerator": 0
+          "numerator": 3
         },
         "variants": {
           "denominator": 8,
           "excluded": 0,
           "gross": 8,
-          "numerator": 0
+          "numerator": 3
         }
       }
     },
@@ -12510,13 +12510,13 @@
           "denominator": 12,
           "excluded": 0,
           "gross": 12,
-          "numerator": 0
+          "numerator": 1
         },
         "functions": {
           "denominator": 12,
           "excluded": 0,
           "gross": 12,
-          "numerator": 0
+          "numerator": 1
         },
         "live_verified": {
           "denominator": 12,
@@ -12541,13 +12541,13 @@
           "denominator": 12,
           "excluded": 0,
           "gross": 12,
-          "numerator": 0
+          "numerator": 1
         },
         "variants": {
           "denominator": 12,
           "excluded": 0,
           "gross": 12,
-          "numerator": 0
+          "numerator": 1
         }
       }
     },
@@ -13001,7 +13001,994 @@
     }
   ],
   "live_routes": [],
-  "mappings": [],
+  "mappings": [
+    {
+      "contract_units": [
+        {
+          "hash": "041c2f33d18fa68851b38d592328b40ca3904459d1f227f82c8f6a2769895e7f",
+          "id": "[\"whm1:get_featurelist_data#GET\",\"parameter\",\"featurelist\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests"
+          ]
+        },
+        {
+          "hash": "e21feb04d70627602288f74a0d002bc2374562efff51bcf5ff8a55bcdc60f6c8",
+          "id": "[\"whm1:get_featurelist_data#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testListDataPreservesObservedStringAndBooleanFlags",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "operation_id": "whm1:get_featurelist_data",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Features::listData",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testListDataPreservesObservedStringAndBooleanFlags",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "valid": true,
+      "variant_id": "whm1:get_featurelist_data#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "070de1dd734771a96b559cf43b9a57c899d8021d7ff0ca88affc3dfd4103c2d6",
+          "id": "[\"whm1:get_featurelists_by_package_types#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "operation_id": "whm1:get_featurelists_by_package_types",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Features::listsByPackageType",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "valid": true,
+      "variant_id": "whm1:get_featurelists_by_package_types#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "08fa81fbde144e0c8f5a0cfdff2cf2d607191e71e3000e25d6fddb1ce0ab23c5",
+          "id": "[\"whm1:is_conversion_in_progress#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "operation_id": "whm1:is_conversion_in_progress",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Php::isConversionInProgress",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "valid": true,
+      "variant_id": "whm1:is_conversion_in_progress#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "11ea3e7c95d82ad1b4c66935fe51d93d09ce743e5cde8977472d93fc60d1600e",
+          "id": "[\"uapi:LangPHP/php_get_impacted_domains#GET\",\"parameter\",\"domain\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInvalidImpactedDomainListClearsMetadataBeforeIo",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata"
+          ]
+        },
+        {
+          "hash": "6886282de43716063641c1a6146548b82d5828f2bae1d08d639b2f7eba09e52b",
+          "id": "[\"uapi:LangPHP/php_get_impacted_domains#GET\",\"parameter\",\"system_default\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata"
+          ]
+        },
+        {
+          "hash": "04d1d31be4aed56d28c05b171b4dcf2de66f70505a27e8f8f903c48c9d8e2b4f",
+          "id": "[\"uapi:LangPHP/php_get_impacted_domains#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ]
+        }
+      ],
+      "operation_id": "uapi:LangPHP/php_get_impacted_domains",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Php::impactedDomains",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInvalidImpactedDomainListClearsMetadataBeforeIo",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+      ],
+      "valid": true,
+      "variant_id": "uapi:LangPHP/php_get_impacted_domains#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "12cee50dfdb82c05d145358b69c49468d5c31be461d30ca86911c4d74161a2a8",
+          "id": "[\"whm1:php_get_system_default_version#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "operation_id": "whm1:php_get_system_default_version",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Php::systemDefaultVersion",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "valid": true,
+      "variant_id": "whm1:php_get_system_default_version#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "14f68b3e256d4efb00b432d630ed9a90ca02ab9cf6d895951ca1768007855af5",
+          "id": "[\"whm1:php_get_vhosts_by_version#GET\",\"parameter\",\"version\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata"
+          ]
+        },
+        {
+          "hash": "7ff945e525adbb8d1ad198414cf43ef90950310ca0f18dc76a0697fef8875912",
+          "id": "[\"whm1:php_get_vhosts_by_version#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "operation_id": "whm1:php_get_vhosts_by_version",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Php::vhostsByVersion",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "valid": true,
+      "variant_id": "whm1:php_get_vhosts_by_version#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "1cc55a51f4191b57553abbbe99cad15f5a03b7cff23076e096258ad364596afd",
+          "id": "[\"uapi:Features/list_features#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testBridgeGroupsKeepTargetsAndMetadataIsolated",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ]
+        }
+      ],
+      "operation_id": "uapi:Features/list_features",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Features::list",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testBridgeGroupsKeepTargetsAndMetadataIsolated",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+      ],
+      "valid": true,
+      "variant_id": "uapi:Features/list_features#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "2f6530734e8b43a17188152319ec74ef4fc6f8f7dbde5371652cf9382442fe9a",
+          "id": "[\"uapi:LangPHP/php_get_system_default_version#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ]
+        }
+      ],
+      "operation_id": "uapi:LangPHP/php_get_system_default_version",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Php::systemDefaultVersion",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+      ],
+      "valid": true,
+      "variant_id": "uapi:LangPHP/php_get_system_default_version#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "351b116024d58654d54476bffcd663aa4816651d7037628373b1df291fcad3ff",
+          "id": "[\"whm1:get_feature_names#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "operation_id": "whm1:get_feature_names",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Features::names",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "valid": true,
+      "variant_id": "whm1:get_feature_names#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "3d373e6d7b2856ae2a6de01cfa3960cd8594750db9c008fe25856f22999643a6",
+          "id": "[\"uapi:DomainInfo/primary_domain#GET\",\"parameter\",\"hide_temporary_domains\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount"
+          ]
+        },
+        {
+          "hash": "73f98691a71e356d3d3daf334e6dc28ba3879b2fb89ebca90b70d1db65b717fb",
+          "id": "[\"uapi:DomainInfo/primary_domain#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ]
+        }
+      ],
+      "operation_id": "uapi:DomainInfo/primary_domain",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Domains::primary",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+      ],
+      "valid": true,
+      "variant_id": "uapi:DomainInfo/primary_domain#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "3de33e23a9a295e0c389d5d380285f6748f1856acd57b2a3c75aeb59fdcc85bc",
+          "id": "[\"whm1:gethostname#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testFailuresReplaceStaleMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testHostnamePreservesTheUpstreamString",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testHostnameRequiresAStringAndRetainsFailureMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testServerHealthOperationsAuthenticateAndExecuteExactlyOnce",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testSuccessiveServerOperationsReplaceOnlyTheirOwningMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\WhmServerLiveTest::testHostnameMatchesTheApprovedServerAndRecordsWhmMetadata"
+          ]
+        }
+      ],
+      "operation_id": "whm1:gethostname",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Server::hostname",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testFailuresReplaceStaleMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testHostnamePreservesTheUpstreamString",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testHostnameRequiresAStringAndRetainsFailureMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testServerHealthOperationsAuthenticateAndExecuteExactlyOnce",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testSuccessiveServerOperationsReplaceOnlyTheirOwningMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testTransportFailureClearsMetadataWithoutRetryOrCredentialLeak",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\WhmServerLiveTest::testHostnameMatchesTheApprovedServerAndRecordsWhmMetadata"
+      ],
+      "valid": true,
+      "variant_id": "whm1:gethostname#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "404d8a441424ba14ef8fa4d6c3ba433f735cb86199b71cd2a6dfc7a31be42215",
+          "id": "[\"whm1:php_get_handlers#GET\",\"parameter\",\"version\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testHandlersPreserveOptionalFieldsAndVersionParameterPresence"
+          ]
+        },
+        {
+          "hash": "e98a2b618187d10b8241f472ae38feab11179e24c86aa261b65a14ef3c8a70ee",
+          "id": "[\"whm1:php_get_handlers#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testHandlersPreserveObservedLsapiCompatibility",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testHandlersPreserveOptionalFieldsAndVersionParameterPresence",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "operation_id": "whm1:php_get_handlers",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Php::handlers",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testHandlersPreserveObservedLsapiCompatibility",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testHandlersPreserveOptionalFieldsAndVersionParameterPresence",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "valid": true,
+      "variant_id": "whm1:php_get_handlers#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "4b48c5a9bedef448390b45eb25f359bc79f8195a3a15e8b25d364c4088278b09",
+          "id": "[\"uapi:LangPHP/php_get_installed_versions#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testBridgeListVersionsKeepsAccountTargetsAndMetadataIsolated",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testDirectListVersionsAuthenticatesAndPreservesPackageNames",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testEmptyVersionsRemainAnEmptyList",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testFailuresReplaceOldMetadataAndRetainExceptionSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testInvalidPayloadKeepsCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testBridgedPhpVersions",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testDirectPhpVersions"
+          ]
+        }
+      ],
+      "operation_id": "uapi:LangPHP/php_get_installed_versions",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Php::listVersions",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testBridgeListVersionsKeepsAccountTargetsAndMetadataIsolated",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testDirectListVersionsAuthenticatesAndPreservesPackageNames",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testEmptyVersionsRemainAnEmptyList",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testFailuresReplaceOldMetadataAndRetainExceptionSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testInvalidPayloadKeepsCurrentMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testBridgedPhpVersions",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testDirectPhpVersions"
+      ],
+      "valid": true,
+      "variant_id": "uapi:LangPHP/php_get_installed_versions#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "52d0fc4797f2a9a76c58e759902907913f6af35b3bcbd697835df920f3c9a807",
+          "id": "[\"whm1:php_get_default_accounts_to_fpm#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "operation_id": "whm1:php_get_default_accounts_to_fpm",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Php::defaultAccountsToFpm",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "valid": true,
+      "variant_id": "whm1:php_get_default_accounts_to_fpm#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "6b81bd1a62e9819a87e726fc389530c7b94f9dec2b13057c01cf92f82799a4f5",
+          "id": "[\"whm1:php_get_installed_versions#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "operation_id": "whm1:php_get_installed_versions",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Php::listVersions",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "valid": true,
+      "variant_id": "whm1:php_get_installed_versions#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "702bae07095e31ec405078c926e19b5c0f704894fcc63735b6602e4cb321d2a6",
+          "id": "[\"whm1:get_users_features_settings#GET\",\"parameter\",\"feature\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testEmptyFeatureParameterListIsNotSilentlyOmitted",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testFeatureQueriesEncodeUserSuppliedValues",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testInvalidParameterListsClearOnlyCurrentMetadataBeforeIo",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsSupportsDocumentedNumberedParameters"
+          ]
+        },
+        {
+          "hash": "bbbaeb7212b5a55ad851f6f526fbb463349ab0d896e13973482ffbcd4772d22a",
+          "id": "[\"whm1:get_users_features_settings#GET\",\"parameter\",\"user\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testFeatureQueriesEncodeUserSuppliedValues",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testInvalidParameterListsClearOnlyCurrentMetadataBeforeIo",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsRejectsEmptyParameterListsBeforeRequesting",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsSupportsDocumentedNumberedParameters"
+          ]
+        },
+        {
+          "hash": "1cda5650db3d103e42a0e1e6eb558d164ebfc99bb54afb8d723a4ad81e166595",
+          "id": "[\"whm1:get_users_features_settings#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsPreservesObservedStringDefaultFlags",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "operation_id": "whm1:get_users_features_settings",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Features::userSettings",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testEmptyFeatureParameterListIsNotSilentlyOmitted",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testFeatureQueriesEncodeUserSuppliedValues",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testInvalidParameterListsClearOnlyCurrentMetadataBeforeIo",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsPreservesObservedStringDefaultFlags",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsRejectsEmptyParameterListsBeforeRequesting",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsSupportsDocumentedNumberedParameters",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "valid": true,
+      "variant_id": "whm1:get_users_features_settings#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "7660d66ffd75a9cee033c6c1b0ec78ca37ffffd3f0247d92e1878e5e4aa26ed8",
+          "id": "[\"uapi:DNS/lookup#GET\",\"parameter\",\"domain\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount"
+          ]
+        },
+        {
+          "hash": "95c20a403cac69dbed3bb7c07a7072fb73cef3704da99421c646593808a94168",
+          "id": "[\"uapi:DNS/lookup#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testDnsLookupRejectsMissingDataInsteadOfReturningExplicitNull",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ]
+        }
+      ],
+      "operation_id": "uapi:DNS/lookup",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Dns::lookup",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testDnsLookupRejectsMissingDataInsteadOfReturningExplicitNull",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+      ],
+      "valid": true,
+      "variant_id": "uapi:DNS/lookup#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "82df5d4eec469288fd27ec7a1e2d07ccc05b7539f6def92a589930837e2ea3e2",
+          "id": "[\"whm1:verify_user_has_feature#GET\",\"parameter\",\"feature\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testAccessFlagsRemainStrictAndDoNotCheckFeatureExistence",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests"
+          ]
+        },
+        {
+          "hash": "55bf7e028bc0287b62ec4e953cf3c3c195da7bc734d438d11dd512fb4babfc89",
+          "id": "[\"whm1:verify_user_has_feature#GET\",\"parameter\",\"user\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests"
+          ]
+        },
+        {
+          "hash": "3ef9f359f6c75eb8f749667b8ce4b65d03973258522b858a7354f3ba14b4618b",
+          "id": "[\"whm1:verify_user_has_feature#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testAccessFlagsRemainStrictAndDoNotCheckFeatureExistence",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "operation_id": "whm1:verify_user_has_feature",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Features::userHasFeature",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testAccessFlagsRemainStrictAndDoNotCheckFeatureExistence",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "valid": true,
+      "variant_id": "whm1:verify_user_has_feature#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "90b54d53d4cbe4dafafe6dea1a4da835858960009285287a3d24a4c686a4f98f",
+          "id": "[\"whm1:getdiskusage#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testDiskUsagePreservesObservedZeroUsageAndUnavailableInodes",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testFailuresReplaceStaleMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testServerHealthOperationsAuthenticateAndExecuteExactlyOnce",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testSuccessiveServerOperationsReplaceOnlyTheirOwningMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\WhmServerLiveTest::testDiskUsageContainsACompletePartitionAndRecordsWhmMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testDetachesMutableInputReferencesAndExportedArrays",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testDoesNotInventPercentageUpperBoundsOrCrossFieldConstraints",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testMapsEveryReviewedFieldAndIgnoresUnknownExtensions",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testOmittedFieldsRemainNullAndAbsentFromTheExport",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testPreservesObservedExplicitNullInodeFieldsSeparatelyFromOmission",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testPreservesObservedZeroDiskPercentage",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testRejectsMalformedRecordsWithTheResponseSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testRetainsDocumentedMinimaAndBlankStringsWithoutCoercion",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testHydratesRecordsInOrderAndExposesCountableIterablePartitions",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testInputObjectsListReferencesAndExportsCannotAlterTheSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testOmittedAndEmptyPartitionListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testRejectsMalformedContainersAndRecordsWithTheResponseSnapshot"
+          ]
+        }
+      ],
+      "operation_id": "whm1:getdiskusage",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Server::diskUsage",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testDiskUsagePreservesObservedZeroUsageAndUnavailableInodes",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testFailuresReplaceStaleMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testServerHealthOperationsAuthenticateAndExecuteExactlyOnce",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testSuccessiveServerOperationsReplaceOnlyTheirOwningMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testTransportFailureClearsMetadataWithoutRetryOrCredentialLeak",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\WhmServerLiveTest::testDiskUsageContainsACompletePartitionAndRecordsWhmMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testDetachesMutableInputReferencesAndExportedArrays",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testDoesNotInventPercentageUpperBoundsOrCrossFieldConstraints",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testMapsEveryReviewedFieldAndIgnoresUnknownExtensions",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testOmittedFieldsRemainNullAndAbsentFromTheExport",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testPreservesObservedExplicitNullInodeFieldsSeparatelyFromOmission",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testPreservesObservedZeroDiskPercentage",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testRejectsMalformedRecordsWithTheResponseSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testRetainsDocumentedMinimaAndBlankStringsWithoutCoercion",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testHydratesRecordsInOrderAndExposesCountableIterablePartitions",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testInputObjectsListReferencesAndExportsCannotAlterTheSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testOmittedAndEmptyPartitionListsRemainDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testRejectsMalformedContainersAndRecordsWithTheResponseSnapshot"
+      ],
+      "valid": true,
+      "variant_id": "whm1:getdiskusage#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "920ac718a94abf34fa97241b7db03a79d374b2215a9a4ceb1af21e965b749734",
+          "id": "[\"whm1:get_featurelists#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "operation_id": "whm1:get_featurelists",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Features::lists",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "valid": true,
+      "variant_id": "whm1:get_featurelists#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "961c865fb35491f6d0ca14e8f93b4b0f4f70a417cc762ec9d7fb92aaa81b4413",
+          "id": "[\"uapi:DNS/fetch_cpanel_generated_domains#GET\",\"parameter\",\"domain\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount"
+          ]
+        },
+        {
+          "hash": "4d73cb9f4399759bd0cd164a3b92bb3b026be63b9d35cd112e42be123d0c86ff",
+          "id": "[\"uapi:DNS/fetch_cpanel_generated_domains#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testBridgeGroupsKeepTargetsAndMetadataIsolated",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ]
+        }
+      ],
+      "operation_id": "uapi:DNS/fetch_cpanel_generated_domains",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Dns::generatedDomains",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testBridgeGroupsKeepTargetsAndMetadataIsolated",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+      ],
+      "valid": true,
+      "variant_id": "uapi:DNS/fetch_cpanel_generated_domains#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "99011467681c722a51dbdc646f789293f6d9bb6a427de5ac04b618f3a046d036",
+          "id": "[\"uapi:LangPHP/php_get_domain_handler#GET\",\"parameter\",\"type\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata"
+          ]
+        },
+        {
+          "hash": "31299a1f74a38640f833eed6fe2018dc98f7cd5663c7d48d506a2778d9187236",
+          "id": "[\"uapi:LangPHP/php_get_domain_handler#GET\",\"parameter\",\"vhost\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata"
+          ]
+        },
+        {
+          "hash": "bd5eb9fcbec038d2d196f3b55eb107afb2366bf151a3d9458149d17d96423916",
+          "id": "[\"uapi:LangPHP/php_get_domain_handler#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ]
+        }
+      ],
+      "operation_id": "uapi:LangPHP/php_get_domain_handler",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Php::domainHandler",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+      ],
+      "valid": true,
+      "variant_id": "uapi:LangPHP/php_get_domain_handler#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "a28327b59438cf59bfdaf6f696c4abcf53aac556347eff04bff4fee90dcd985d",
+          "id": "[\"uapi:DomainInfo/main_domain_builtin_subdomain_aliases#GET\",\"parameter\",\"hide_temporary_domains\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount"
+          ]
+        },
+        {
+          "hash": "477b24c62647b7ad88122ba2205402276dfbd4c9500c77efa5234a27d95439b5",
+          "id": "[\"uapi:DomainInfo/main_domain_builtin_subdomain_aliases#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ]
+        }
+      ],
+      "operation_id": "uapi:DomainInfo/main_domain_builtin_subdomain_aliases",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Domains::builtinAliases",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+      ],
+      "valid": true,
+      "variant_id": "uapi:DomainInfo/main_domain_builtin_subdomain_aliases#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "a8ce3a7169e86f1c5999cfe74ae2aea0038edfe535043d007718e7c1adedaa4a",
+          "id": "[\"whm1:get_feature_metadata#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMetadataPreservesObservedStringPluginFlags",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testReturnedArraysAreDetachedFromSourceObjects",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "operation_id": "whm1:get_feature_metadata",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Features::metadata",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMetadataPreservesObservedStringPluginFlags",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testReturnedArraysAreDetachedFromSourceObjects",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "valid": true,
+      "variant_id": "whm1:get_feature_metadata#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "ae6d42c71aae938ee4a3bc8aaa32fd47d297495d3e9c2fdfa95d827a29939871",
+          "id": "[\"whm1:systemloadavg#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testFailuresReplaceStaleMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testLoadAveragePreservesObservedDecimalStringResponse",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testServerHealthOperationsAuthenticateAndExecuteExactlyOnce",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testSuccessiveServerOperationsReplaceOnlyTheirOwningMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\WhmServerLiveTest::testLoadAverageContainsThreeRealMeasurementsAndRecordsWhmMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testDetachesInputReferencesAndExportedArrays",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testMapsLoadWindowsWithoutCoercingNumbersOrAddingBounds",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testOmittedWindowsRemainAbsentInsteadOfBecomingZeros",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testPreservesObservedDecimalStringsWithoutLosingPrecisionOrTrailingZeros",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testRejectsInvalidWindowsWithTheMetadataSnapshot"
+          ]
+        }
+      ],
+      "operation_id": "whm1:systemloadavg",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Server::loadAverage",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testFailuresReplaceStaleMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testLoadAveragePreservesObservedDecimalStringResponse",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testServerHealthOperationsAuthenticateAndExecuteExactlyOnce",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testSuccessiveServerOperationsReplaceOnlyTheirOwningMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testTransportFailureClearsMetadataWithoutRetryOrCredentialLeak",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\WhmServerLiveTest::testLoadAverageContainsThreeRealMeasurementsAndRecordsWhmMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testDetachesInputReferencesAndExportedArrays",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testMapsLoadWindowsWithoutCoercingNumbersOrAddingBounds",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testOmittedWindowsRemainAbsentInsteadOfBecomingZeros",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testPreservesObservedDecimalStringsWithoutLosingPrecisionOrTrailingZeros",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testRejectsInvalidWindowsWithTheMetadataSnapshot"
+      ],
+      "valid": true,
+      "variant_id": "whm1:systemloadavg#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "c981e0c4925395218c8d08dec51d651184ab398027adc7e11109d8bcad515200",
+          "id": "[\"whm1:php_get_old_fpm_flag#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ]
+        }
+      ],
+      "operation_id": "whm1:php_get_old_fpm_flag",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Php::oldFpmFlag",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+      ],
+      "valid": true,
+      "variant_id": "whm1:php_get_old_fpm_flag#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "d2352ac9465f41703210e39ad7753e48c488db05909276ba68500feb0d9fa01e",
+          "id": "[\"whm1:get_domain_info#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testAcceptsObservedStringPortsWithoutChangingTheirExportedWireTypes",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testDomainAndServerGroupsShareOnlyTheirOwningWhmMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testFailuresReplaceStaleMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testListsServerDomainsImmediatelyWithWhmCredentialsAndAnInertStableSelector",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testWhmDomainInventory",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testDetachesMutableInputReferencesAndExportedArrays",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testMapsEveryReviewedFieldWithoutNarrowingTheDomainType",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testNormalizesPortPropertiesWhilePreservingWireValues",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testRejectsMalformedRecordsWithTheResponseSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testRetainsOmittedFieldsSeparatelyFromExplicitNullZeroAndBlankValues",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testHydratesRecordsInOrderAndExposesCountableIterableDomains",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testInputObjectsListReferencesAndExportsCannotAlterTheSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testOmittedAndEmptyDomainListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testRejectsMalformedContainersAndRecordsWithTheResponseSnapshot"
+          ]
+        }
+      ],
+      "operation_id": "whm1:get_domain_info",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Domains::list",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testAcceptsObservedStringPortsWithoutChangingTheirExportedWireTypes",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testDomainAndServerGroupsShareOnlyTheirOwningWhmMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testFailuresReplaceStaleMetadataWithoutRetries",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testListsServerDomainsImmediatelyWithWhmCredentialsAndAnInertStableSelector",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testTransportFailureClearsMetadataWithoutRetriesOrLeakingCredentials",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testWhmDomainInventory",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testDetachesMutableInputReferencesAndExportedArrays",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testMapsEveryReviewedFieldWithoutNarrowingTheDomainType",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testNormalizesPortPropertiesWhilePreservingWireValues",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testRejectsMalformedRecordsWithTheResponseSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testRetainsOmittedFieldsSeparatelyFromExplicitNullZeroAndBlankValues",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testHydratesRecordsInOrderAndExposesCountableIterableDomains",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testInputObjectsListReferencesAndExportsCannotAlterTheSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testOmittedAndEmptyDomainListsRemainDistinct",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testRejectsMalformedContainersAndRecordsWithTheResponseSnapshot"
+      ],
+      "valid": true,
+      "variant_id": "whm1:get_domain_info#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "d2b2a06b751ad48cc3b7b251fa1bd5b11a1a14bb34fc6798801e809bcacfbfab",
+          "id": "[\"whm1:version#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testFailuresReplaceOldMetadataAndKeepExceptionSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testWhmVersionAuthenticatesAndReturnsTheUnmodifiedVersion",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testWhmVersion"
+          ]
+        }
+      ],
+      "operation_id": "whm1:version",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Server::version",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testFailuresReplaceOldMetadataAndKeepExceptionSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testTransportFailureClearsMetadataAndDoesNotExposeTheOriginalException",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testWhmVersionAuthenticatesAndReturnsTheUnmodifiedVersion",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testWhmVersion"
+      ],
+      "valid": true,
+      "variant_id": "whm1:version#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "e0628eb60a6c42bfe8e0b0020423145742a7e180d51185928c6ee94d7d1141dc",
+          "id": "[\"uapi:DomainInfo/list_domains#GET\",\"parameter\",\"hide_temporary_domains\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testBridgeRetainsBothEnvelopesAndSelectedAccountIsolation",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testDirectDomainsUseCpanelCredentialsAndPreserveFilterOmission"
+          ]
+        },
+        {
+          "hash": "e1d4fa0d705e701f129692395f56107c1d1718e73d011a79bfb0da3ea2b2c670",
+          "id": "[\"uapi:DomainInfo/list_domains#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testBridgeRetainsBothEnvelopesAndSelectedAccountIsolation",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testDirectDomainsAcceptObservedHttpEnvelope",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testDirectDomainsUseCpanelCredentialsAndPreserveFilterOmission",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testFailuresReplaceOldMetadataAndKeepExceptionSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testBridgedAccountDomains",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testDirectAccountDomains",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testCopiesMutablePayloadsAndNestedReferencesIntoAnIndependentSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testKeepsOmittedFieldsDistinctFromExplicitNullAndEmptyValues",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testMapsTheReviewedDomainFieldsAndIgnoresUnknownExtensions",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testPreservesBlankDomainValuesFromSuccessfulButIncompleteResponses",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testRejectsMalformedKnownFieldsWithTheResponseSnapshot"
+          ]
+        }
+      ],
+      "operation_id": "uapi:DomainInfo/list_domains",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Domains::list",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testBridgeRetainsBothEnvelopesAndSelectedAccountIsolation",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testDirectDomainsAcceptObservedHttpEnvelope",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testDirectDomainsUseCpanelCredentialsAndPreserveFilterOmission",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testFailuresReplaceOldMetadataAndKeepExceptionSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testBridgedAccountDomains",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testDirectAccountDomains",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testCopiesMutablePayloadsAndNestedReferencesIntoAnIndependentSnapshot",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testKeepsOmittedFieldsDistinctFromExplicitNullAndEmptyValues",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testMapsTheReviewedDomainFieldsAndIgnoresUnknownExtensions",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testPreservesBlankDomainValuesFromSuccessfulButIncompleteResponses",
+        "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testRejectsMalformedKnownFieldsWithTheResponseSnapshot"
+      ],
+      "valid": true,
+      "variant_id": "uapi:DomainInfo/list_domains#GET"
+    }
+  ],
   "operations": [
     {
       "family": "uapi",
@@ -17892,20 +18879,28 @@
       "family": "uapi",
       "id": "uapi:DNS/fetch_cpanel_generated_domains",
       "module": "DNS",
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "DNS",
         "DNS Information"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"uapi:DNS/fetch_cpanel_generated_domains#GET\",\"parameter\",\"domain\",\"query\"]",
+            "[\"uapi:DNS/fetch_cpanel_generated_domains#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "uapi:DNS/fetch_cpanel_generated_domains#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testBridgeGroupsKeepTargetsAndMetadataIsolated",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ],
           "units": [
             {
               "hash": "961c865fb35491f6d0ca14e8f93b4b0f4f70a417cc762ec9d7fb92aaa81b4413",
@@ -18077,20 +19072,29 @@
       "family": "uapi",
       "id": "uapi:DNS/lookup",
       "module": "DNS",
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "DNS",
         "DNS Information"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"uapi:DNS/lookup#GET\",\"parameter\",\"domain\",\"query\"]",
+            "[\"uapi:DNS/lookup#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "uapi:DNS/lookup#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testDnsLookupRejectsMissingDataInsteadOfReturningExplicitNull",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testTransportFailureClearsMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ],
           "units": [
             {
               "hash": "7660d66ffd75a9cee033c6c1b0ec78ca37ffffd3f0247d92e1878e5e4aa26ed8",
@@ -19818,20 +20822,35 @@
       "family": "uapi",
       "id": "uapi:DomainInfo/list_domains",
       "module": "DomainInfo",
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Domain Information",
         "DomainInfo"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"uapi:DomainInfo/list_domains#GET\",\"parameter\",\"hide_temporary_domains\",\"query\"]",
+            "[\"uapi:DomainInfo/list_domains#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "uapi:DomainInfo/list_domains#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testBridgeRetainsBothEnvelopesAndSelectedAccountIsolation",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testDirectDomainsAcceptObservedHttpEnvelope",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testDirectDomainsUseCpanelCredentialsAndPreserveFilterOmission",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testFailuresReplaceOldMetadataAndKeepExceptionSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testBridgedAccountDomains",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testDirectAccountDomains",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testCopiesMutablePayloadsAndNestedReferencesIntoAnIndependentSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testKeepsOmittedFieldsDistinctFromExplicitNullAndEmptyValues",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testMapsTheReviewedDomainFieldsAndIgnoresUnknownExtensions",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testPreservesBlankDomainValuesFromSuccessfulButIncompleteResponses",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\AccountDomainsTest::testRejectsMalformedKnownFieldsWithTheResponseSnapshot"
+          ],
           "units": [
             {
               "hash": "e0628eb60a6c42bfe8e0b0020423145742a7e180d51185928c6ee94d7d1141dc",
@@ -19861,20 +20880,27 @@
       "family": "uapi",
       "id": "uapi:DomainInfo/main_domain_builtin_subdomain_aliases",
       "module": "DomainInfo",
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Domain Information",
         "DomainInfo"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"uapi:DomainInfo/main_domain_builtin_subdomain_aliases#GET\",\"parameter\",\"hide_temporary_domains\",\"query\"]",
+            "[\"uapi:DomainInfo/main_domain_builtin_subdomain_aliases#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "uapi:DomainInfo/main_domain_builtin_subdomain_aliases#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ],
           "units": [
             {
               "hash": "a28327b59438cf59bfdaf6f696c4abcf53aac556347eff04bff4fee90dcd985d",
@@ -19904,20 +20930,27 @@
       "family": "uapi",
       "id": "uapi:DomainInfo/primary_domain",
       "module": "DomainInfo",
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Domain Information",
         "DomainInfo"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"uapi:DomainInfo/primary_domain#GET\",\"parameter\",\"hide_temporary_domains\",\"query\"]",
+            "[\"uapi:DomainInfo/primary_domain#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "uapi:DomainInfo/primary_domain#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ],
           "units": [
             {
               "hash": "3d373e6d7b2856ae2a6de01cfa3960cd8594750db9c008fe25856f22999643a6",
@@ -26506,20 +27539,27 @@
       "family": "uapi",
       "id": "uapi:Features/list_features",
       "module": "Features",
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Features",
         "cPanel Features"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"uapi:Features/list_features#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "uapi:Features/list_features#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testBridgeGroupsKeepTargetsAndMetadataIsolated",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ],
           "units": [
             {
               "hash": "1cc55a51f4191b57553abbbe99cad15f5a03b7cff23076e096258ad364596afd",
@@ -29404,20 +30444,29 @@
       "family": "uapi",
       "id": "uapi:LangPHP/php_get_domain_handler",
       "module": "LangPHP",
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "LangPHP",
         "PHP Settings"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"uapi:LangPHP/php_get_domain_handler#GET\",\"parameter\",\"type\",\"query\"]",
+            "[\"uapi:LangPHP/php_get_domain_handler#GET\",\"parameter\",\"vhost\",\"query\"]",
+            "[\"uapi:LangPHP/php_get_domain_handler#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "uapi:LangPHP/php_get_domain_handler#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ],
           "units": [
             {
               "hash": "99011467681c722a51dbdc646f789293f6d9bb6a427de5ac04b618f3a046d036",
@@ -29457,20 +30506,30 @@
       "family": "uapi",
       "id": "uapi:LangPHP/php_get_impacted_domains",
       "module": "LangPHP",
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "LangPHP",
         "PHP Settings"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"uapi:LangPHP/php_get_impacted_domains#GET\",\"parameter\",\"domain\",\"query\"]",
+            "[\"uapi:LangPHP/php_get_impacted_domains#GET\",\"parameter\",\"system_default\",\"query\"]",
+            "[\"uapi:LangPHP/php_get_impacted_domains#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "uapi:LangPHP/php_get_impacted_domains#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInvalidImpactedDomainListClearsMetadataBeforeIo",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testSemanticArgumentFailuresAreReportedByApiWithNewMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ],
           "units": [
             {
               "hash": "11ea3e7c95d82ad1b4c66935fe51d93d09ce743e5cde8977472d93fc60d1600e",
@@ -29510,20 +30569,31 @@
       "family": "uapi",
       "id": "uapi:LangPHP/php_get_installed_versions",
       "module": "LangPHP",
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "LangPHP",
         "PHP Settings"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"uapi:LangPHP/php_get_installed_versions#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "uapi:LangPHP/php_get_installed_versions#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testBridgeListVersionsKeepsAccountTargetsAndMetadataIsolated",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testDirectListVersionsAuthenticatesAndPreservesPackageNames",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testEmptyVersionsRemainAnEmptyList",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testFailuresReplaceOldMetadataAndRetainExceptionSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testInvalidPayloadKeepsCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testBridgedPhpVersions",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testDirectPhpVersions"
+          ],
           "units": [
             {
               "hash": "4b48c5a9bedef448390b45eb25f359bc79f8195a3a15e8b25d364c4088278b09",
@@ -29543,20 +30613,26 @@
       "family": "uapi",
       "id": "uapi:LangPHP/php_get_system_default_version",
       "module": "LangPHP",
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "LangPHP",
         "PHP Settings"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"uapi:LangPHP/php_get_system_default_version#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "uapi:LangPHP/php_get_system_default_version#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testInventoryOperationsPreservePayloadAndRequestAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\UapiInventoryTest::testMalformedPayloadRetainsCurrentEnvelopeMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testUapiInventory"
+          ],
           "units": [
             {
               "hash": "2f6530734e8b43a17188152319ec74ef4fc6f8f7dbde5371652cf9382442fe9a",
@@ -59846,19 +60922,37 @@
       "family": "whm1",
       "id": "whm1:get_domain_info",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Domain Information"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:get_domain_info#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:get_domain_info#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testAcceptsObservedStringPortsWithoutChangingTheirExportedWireTypes",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testDomainAndServerGroupsShareOnlyTheirOwningWhmMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testFailuresReplaceStaleMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testListsServerDomainsImmediatelyWithWhmCredentialsAndAnInertStableSelector",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmDomainsTest::testTransportFailureClearsMetadataWithoutRetriesOrLeakingCredentials",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testWhmDomainInventory",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testDetachesMutableInputReferencesAndExportedArrays",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testMapsEveryReviewedFieldWithoutNarrowingTheDomainType",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testNormalizesPortPropertiesWhilePreservingWireValues",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testRejectsMalformedRecordsWithTheResponseSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DomainInfoTest::testRetainsOmittedFieldsSeparatelyFromExplicitNullZeroAndBlankValues",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testHydratesRecordsInOrderAndExposesCountableIterableDomains",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testInputObjectsListReferencesAndExportsCannotAlterTheSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testOmittedAndEmptyDomainListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDomainsTest::testRejectsMalformedContainersAndRecordsWithTheResponseSnapshot"
+          ],
           "units": [
             {
               "hash": "d2352ac9465f41703210e39ad7753e48c488db05909276ba68500feb0d9fa01e",
@@ -59910,20 +61004,30 @@
       "family": "whm1",
       "id": "whm1:get_feature_metadata",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Feature Lists",
         "Packages"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:get_feature_metadata#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:get_feature_metadata#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMetadataPreservesObservedStringPluginFlags",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testReturnedArraysAreDetachedFromSourceObjects",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ],
           "units": [
             {
               "hash": "a8ce3a7169e86f1c5999cfe74ae2aea0038edfe535043d007718e7c1adedaa4a",
@@ -59943,20 +61047,28 @@
       "family": "whm1",
       "id": "whm1:get_feature_names",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Feature Lists",
         "Packages"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:get_feature_names#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:get_feature_names#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ],
           "units": [
             {
               "hash": "351b116024d58654d54476bffcd663aa4816651d7037628373b1df291fcad3ff",
@@ -59976,20 +61088,30 @@
       "family": "whm1",
       "id": "whm1:get_featurelist_data",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Feature Lists",
         "Packages"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:get_featurelist_data#GET\",\"parameter\",\"featurelist\",\"query\"]",
+            "[\"whm1:get_featurelist_data#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:get_featurelist_data#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testListDataPreservesObservedStringAndBooleanFlags",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ],
           "units": [
             {
               "hash": "041c2f33d18fa68851b38d592328b40ca3904459d1f227f82c8f6a2769895e7f",
@@ -60019,20 +61141,28 @@
       "family": "whm1",
       "id": "whm1:get_featurelists",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Feature Lists",
         "Packages"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:get_featurelists#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:get_featurelists#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ],
           "units": [
             {
               "hash": "920ac718a94abf34fa97241b7db03a79d374b2215a9a4ceb1af21e965b749734",
@@ -60052,20 +61182,28 @@
       "family": "whm1",
       "id": "whm1:get_featurelists_by_package_types",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Feature Lists",
         "Packages"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:get_featurelists_by_package_types#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:get_featurelists_by_package_types#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ],
           "units": [
             {
               "hash": "070de1dd734771a96b559cf43b9a57c899d8021d7ff0ca88affc3dfd4103c2d6",
@@ -61915,20 +63053,36 @@
       "family": "whm1",
       "id": "whm1:get_users_features_settings",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Feature Access",
         "Packages"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:get_users_features_settings#GET\",\"parameter\",\"feature\",\"query\"]",
+            "[\"whm1:get_users_features_settings#GET\",\"parameter\",\"user\",\"query\"]",
+            "[\"whm1:get_users_features_settings#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:get_users_features_settings#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testEmptyFeatureParameterListIsNotSilentlyOmitted",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testFeatureQueriesEncodeUserSuppliedValues",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testInvalidParameterListsClearOnlyCurrentMetadataBeforeIo",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOptionalKeysAndEmptyListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsPreservesObservedStringDefaultFlags",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsRejectsEmptyParameterListsBeforeRequesting",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testUserSettingsSupportsDocumentedNumberedParameters",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ],
           "units": [
             {
               "hash": "702bae07095e31ec405078c926e19b5c0f704894fcc63735b6602e4cb321d2a6",
@@ -62053,20 +63207,41 @@
       "family": "whm1",
       "id": "whm1:getdiskusage",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Server Administration",
         "System Information"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:getdiskusage#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:getdiskusage#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testDiskUsagePreservesObservedZeroUsageAndUnavailableInodes",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testFailuresReplaceStaleMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testServerHealthOperationsAuthenticateAndExecuteExactlyOnce",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testSuccessiveServerOperationsReplaceOnlyTheirOwningMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testTransportFailureClearsMetadataWithoutRetryOrCredentialLeak",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\WhmServerLiveTest::testDiskUsageContainsACompletePartitionAndRecordsWhmMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testDetachesMutableInputReferencesAndExportedArrays",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testDoesNotInventPercentageUpperBoundsOrCrossFieldConstraints",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testMapsEveryReviewedFieldAndIgnoresUnknownExtensions",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testOmittedFieldsRemainNullAndAbsentFromTheExport",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testPreservesObservedExplicitNullInodeFieldsSeparatelyFromOmission",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testPreservesObservedZeroDiskPercentage",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testRejectsMalformedRecordsWithTheResponseSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\DiskPartitionTest::testRetainsDocumentedMinimaAndBlankStringsWithoutCoercion",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testHydratesRecordsInOrderAndExposesCountableIterablePartitions",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testInputObjectsListReferencesAndExportsCannotAlterTheSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testOmittedAndEmptyPartitionListsRemainDistinct",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerDiskUsageTest::testRejectsMalformedContainersAndRecordsWithTheResponseSnapshot"
+          ],
           "units": [
             {
               "hash": "90b54d53d4cbe4dafafe6dea1a4da835858960009285287a3d24a4c686a4f98f",
@@ -62128,20 +63303,30 @@
       "family": "whm1",
       "id": "whm1:gethostname",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Server Administration",
         "System Information"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:gethostname#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:gethostname#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testFailuresReplaceStaleMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testHostnamePreservesTheUpstreamString",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testHostnameRequiresAStringAndRetainsFailureMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testServerHealthOperationsAuthenticateAndExecuteExactlyOnce",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testSuccessiveServerOperationsReplaceOnlyTheirOwningMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testTransportFailureClearsMetadataWithoutRetryOrCredentialLeak",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\WhmServerLiveTest::testHostnameMatchesTheApprovedServerAndRecordsWhmMetadata"
+          ],
           "units": [
             {
               "hash": "3de33e23a9a295e0c389d5d380285f6748f1856acd57b2a3c75aeb59fdcc85bc",
@@ -63424,19 +64609,28 @@
       "family": "whm1",
       "id": "whm1:is_conversion_in_progress",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "PHP-FPM"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:is_conversion_in_progress#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:is_conversion_in_progress#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ],
           "units": [
             {
               "hash": "08fa81fbde144e0c8f5a0cfdff2cf2d607191e71e3000e25d6fddb1ce0ab23c5",
@@ -69911,19 +71105,28 @@
       "family": "whm1",
       "id": "whm1:php_get_default_accounts_to_fpm",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "PHP-FPM"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:php_get_default_accounts_to_fpm#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:php_get_default_accounts_to_fpm#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ],
           "units": [
             {
               "hash": "52d0fc4797f2a9a76c58e759902907913f6af35b3bcbd697835df920f3c9a807",
@@ -69943,19 +71146,31 @@
       "family": "whm1",
       "id": "whm1:php_get_handlers",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "PHP"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:php_get_handlers#GET\",\"parameter\",\"version\",\"query\"]",
+            "[\"whm1:php_get_handlers#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:php_get_handlers#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testHandlersPreserveObservedLsapiCompatibility",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testHandlersPreserveOptionalFieldsAndVersionParameterPresence",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ],
           "units": [
             {
               "hash": "404d8a441424ba14ef8fa4d6c3ba433f735cb86199b71cd2a6dfc7a31be42215",
@@ -70037,19 +71252,28 @@
       "family": "whm1",
       "id": "whm1:php_get_installed_versions",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "PHP"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:php_get_installed_versions#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:php_get_installed_versions#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ],
           "units": [
             {
               "hash": "6b81bd1a62e9819a87e726fc389530c7b94f9dec2b13057c01cf92f82799a4f5",
@@ -70069,19 +71293,28 @@
       "family": "whm1",
       "id": "whm1:php_get_old_fpm_flag",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "PHP-FPM"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:php_get_old_fpm_flag#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:php_get_old_fpm_flag#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ],
           "units": [
             {
               "hash": "c981e0c4925395218c8d08dec51d651184ab398027adc7e11109d8bcad515200",
@@ -70101,19 +71334,28 @@
       "family": "whm1",
       "id": "whm1:php_get_system_default_version",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "PHP"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:php_get_system_default_version#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:php_get_system_default_version#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ],
           "units": [
             {
               "hash": "12cee50dfdb82c05d145358b69c49468d5c31be461d30ca86911c4d74161a2a8",
@@ -70165,19 +71407,29 @@
       "family": "whm1",
       "id": "whm1:php_get_vhosts_by_version",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "PHP"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:php_get_vhosts_by_version#GET\",\"parameter\",\"version\",\"query\"]",
+            "[\"whm1:php_get_vhosts_by_version#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:php_get_vhosts_by_version#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testEmptyListsStringsAndAllPinnedFlagValuesAreRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testFailuresReplaceOldMetadataWithoutRetries",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testMalformedPayloadsRejectWithoutRetryAndRetainTheirMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testOperationsAuthenticateAndExecuteOnceWithCurrentMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmPhpTest::testTransportFailureClearsMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ],
           "units": [
             {
               "hash": "14f68b3e256d4efb00b432d630ed9a90ca02ab9cf6d895951ca1768007855af5",
@@ -79421,20 +80673,34 @@
       "family": "whm1",
       "id": "whm1:systemloadavg",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Server Administration",
         "System Information"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:systemloadavg#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:systemloadavg#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testFailuresReplaceStaleMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testLoadAveragePreservesObservedDecimalStringResponse",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testServerHealthOperationsAuthenticateAndExecuteExactlyOnce",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testSuccessiveServerOperationsReplaceOnlyTheirOwningMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmServerTest::testTransportFailureClearsMetadataWithoutRetryOrCredentialLeak",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\WhmServerLiveTest::testLoadAverageContainsThreeRealMeasurementsAndRecordsWhmMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testDetachesInputReferencesAndExportedArrays",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testMapsLoadWindowsWithoutCoercingNumbersOrAddingBounds",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testOmittedWindowsRemainAbsentInsteadOfBecomingZeros",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testPreservesObservedDecimalStringsWithoutLosingPrecisionOrTrailingZeros",
+            "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::testRejectsInvalidWindowsWithTheMetadataSnapshot"
+          ],
           "units": [
             {
               "hash": "ae6d42c71aae938ee4a3bc8aaa32fd47d297495d3e9c2fdfa95d827a29939871",
@@ -82661,20 +83927,30 @@
       "family": "whm1",
       "id": "whm1:verify_user_has_feature",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Feature Access",
         "Packages"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:verify_user_has_feature#GET\",\"parameter\",\"feature\",\"query\"]",
+            "[\"whm1:verify_user_has_feature#GET\",\"parameter\",\"user\",\"query\"]",
+            "[\"whm1:verify_user_has_feature#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:verify_user_has_feature#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testAccessFlagsRemainStrictAndDoNotCheckFeatureExistence",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testMalformedPayloadsRetainTheEnvelopeSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationFailuresReplaceMetadataWithoutRetry",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmFeaturesTest::testOperationsPreserveReviewedFieldsAndUseTheirDocumentedRequests",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\InventoryLiveTest::testWhmInventory"
+          ],
           "units": [
             {
               "hash": "82df5d4eec469288fd27ec7a1e2d07ccc05b7539f6def92a589930837e2ea3e2",
@@ -82714,19 +83990,26 @@
       "family": "whm1",
       "id": "whm1:version",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Updates"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:version#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:version#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testFailuresReplaceOldMetadataAndKeepExceptionSnapshot",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testTransportFailureClearsMetadataAndDoesNotExposeTheOriginalException",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\ReadOnlySliceTest::testWhmVersionAuthenticatesAndReturnsTheUnmodifiedVersion",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\ReadOnlyOperationsTest::testWhmVersion"
+          ],
           "units": [
             {
               "hash": "d2b2a06b751ad48cc3b7b251fa1bd5b11a1a14bb34fc6798801e809bcacfbfab",
@@ -83247,13 +84530,13 @@
       "denominator": 1325,
       "excluded": 0,
       "gross": 1325,
-      "numerator": 0
+      "numerator": 29
     },
     "functions": {
       "denominator": 1323,
       "excluded": 0,
       "gross": 1323,
-      "numerator": 0
+      "numerator": 29
     },
     "live_verified": {
       "denominator": 1325,
@@ -83266,7 +84549,7 @@
       "denominator": 2608,
       "excluded": 0,
       "gross": 2608,
-      "numerator": 0
+      "numerator": 16
     },
     "passing_tests": {
       "denominator": 1325,
@@ -83278,13 +84561,13 @@
       "denominator": 1325,
       "excluded": 0,
       "gross": 1325,
-      "numerator": 0
+      "numerator": 29
     },
     "variants": {
       "denominator": 1325,
       "excluded": 0,
       "gross": 1325,
-      "numerator": 0
+      "numerator": 29
     }
   },
   "valid": true

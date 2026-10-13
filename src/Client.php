@@ -15,7 +15,9 @@ use SensitiveParameter;
  * Select WHM and account-scoped UAPI clients from one credential configuration.
  *
  * Handles share an HTTP transport but retain separate account and metadata state.
- * Selection prepares context only; endpoint execution is implemented separately.
+ * Selection prepares context without I/O. Terminal operations expose server
+ * versions, WHM domain inventory, account domains, and installed PHP versions.
+ * Credentials select direct cPanel access or account-scoped execution through WHM.
  *
  * @phpstan-import-type ClientOptions from ClientConfigFactory
  */
@@ -35,6 +37,8 @@ final class Client
      *
      * An omitted transport discovers its PSR HTTP implementations. Construction
      * performs no network requests and never treats a WHM user as a UAPI target.
+     * The supplied or discovered PSR client must verify TLS and disable redirects
+     * for authenticated requests. Terminal API operations do not retry failures.
      *
      * @param ClientOptions|ClientConfig $config
      * @throws InvalidArgumentException If configuration values are invalid.
@@ -51,6 +55,8 @@ final class Client
      *
      * Repeated calls reuse the handle and its metadata state. cPanel credentials
      * cannot authorize WHM access; no request is made by this selector.
+     * The server()->version() terminal method returns the server's version string.
+     * The domains()->list() terminal method returns an immutable ServerDomains collection.
      *
      * @throws \LogicException If the configuration contains cPanel credentials.
      */
@@ -65,6 +71,9 @@ final class Client
      * Direct cPanel credentials default to their own account. WHM credentials use
      * the explicit target or configured default cPanel account. Each target has
      * a stable handle; selecting another account never changes an existing one.
+     * The domains()->list() terminal method returns an immutable AccountDomains
+     * payload; php()->listVersions() returns a list of installed PHP package names.
+     * Both update only the selected handle's response metadata.
      *
      * @param string|null $user Target account; null resolves the configured default.
      * @throws InvalidArgumentException If the target is missing, invalid, or mismatched.

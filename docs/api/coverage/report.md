@@ -4,12 +4,12 @@ Valid registry: **true**. Test revision: `unknown (no revision asserted)`.
 
 | Dimension | Covered | Net denominator | Gross | Excluded |
 | --- | ---: | ---: | ---: | ---: |
-| Functions | 0 | 1323 | 1323 | 0 |
-| Variants | 0 | 1325 | 1325 | 0 |
-| Parameters | 0 | 2608 | 2608 | 0 |
+| Functions | 29 | 1323 | 1323 | 0 |
+| Variants | 29 | 1325 | 1325 | 0 |
+| Parameters | 16 | 2608 | 2608 | 0 |
 | Bodies | 0 | 39 | 39 | 0 |
-| Response schemas | 0 | 1325 | 1325 | 0 |
-| Variants with declared tests | 0 | 1325 | 1325 | 0 |
+| Response schemas | 29 | 1325 | 1325 | 0 |
+| Variants with declared tests | 29 | 1325 | 1325 | 0 |
 | Variants with passing test outcomes | 0 | 1325 | 1325 | 0 |
 | Variants with verified live evidence | 0 | 1325 | 1325 | 0 |
 
@@ -23,7 +23,7 @@ WHM tag subtotals overlap and are non-additive. Global totals deduplicate canoni
 
 | Family | Module/tag | Functions | Variants |
 | --- | --- | ---: | ---: |
-| uapi | (all) | 0/693 | 0/695 |
+| uapi | (all) | 10/693 | 10/695 |
 | uapi | AccountEnhancements | 0/2 | 0/2 |
 | uapi | ActiveSessions | 0/1 | 0/1 |
 | uapi | AddonDomain | 0/3 | 0/3 |
@@ -45,13 +45,13 @@ WHM tag subtotals overlap and are non-additive. Global totals deduplicate canoni
 | uapi | Contactus | 0/1 | 0/1 |
 | uapi | DAV | 0/6 | 0/6 |
 | uapi | DCV | 0/3 | 0/3 |
-| uapi | DNS | 0/11 | 0/11 |
+| uapi | DNS | 2/11 | 2/11 |
 | uapi | DNSSEC | 0/12 | 0/12 |
 | uapi | DirectoryIndexes | 0/3 | 0/3 |
 | uapi | DirectoryPrivacy | 0/6 | 0/6 |
 | uapi | DirectoryProtection | 0/1 | 0/1 |
 | uapi | Domain | 0/4 | 0/4 |
-| uapi | DomainInfo | 0/5 | 0/5 |
+| uapi | DomainInfo | 3/5 | 3/5 |
 | uapi | DomainLookup | 0/4 | 0/4 |
 | uapi | DomainRecommendations | 0/6 | 0/6 |
 | uapi | DynamicDNS | 0/5 | 0/5 |
@@ -60,7 +60,7 @@ WHM tag subtotals overlap and are non-additive. Global totals deduplicate canoni
 | uapi | EmailAuth | 0/12 | 0/12 |
 | uapi | ExternalAuthentication | 0/4 | 0/4 |
 | uapi | ExtractInfo | 0/3 | 0/3 |
-| uapi | Features | 0/5 | 0/5 |
+| uapi | Features | 1/5 | 1/5 |
 | uapi | Fileman | 0/14 | 0/14 |
 | uapi | Ftp | 0/20 | 0/20 |
 | uapi | GPG | 0/7 | 0/7 |
@@ -68,7 +68,7 @@ WHM tag subtotals overlap and are non-additive. Global totals deduplicate canoni
 | uapi | InProductSurvey | 0/1 | 0/1 |
 | uapi | Integration | 0/1 | 0/1 |
 | uapi | KnownHosts | 0/4 | 0/4 |
-| uapi | LangPHP | 0/11 | 0/11 |
+| uapi | LangPHP | 4/11 | 4/11 |
 | uapi | LastLogin | 0/1 | 0/1 |
 | uapi | Locale | 0/3 | 0/3 |
 | uapi | LogManager | 0/6 | 0/6 |
@@ -129,7 +129,7 @@ WHM tag subtotals overlap and are non-additive. Global totals deduplicate canoni
 | uapi | WordPressSite | 0/2 | 0/2 |
 | uapi | ZoneEdit | 0/1 | 0/1 |
 | uapi | cPGreyList | 0/6 | 0/6 |
-| whm1 | (all) | 0/630 | 0/630 |
+| whm1 | (all) | 19/630 | 19/630 |
 | whm1 | 360 Monitoring (non-additive) | 0/7 | 0/7 |
 | whm1 | API Authentication (non-additive) | 0/1 | 0/1 |
 | whm1 | API Execution (non-additive) | 0/5 | 0/5 |
@@ -165,13 +165,13 @@ WHM tag subtotals overlap and are non-additive. Global totals deduplicate canoni
 | whm1 | DNS Security (non-additive) | 0/8 | 0/8 |
 | whm1 | DNS Zones (non-additive) | 0/13 | 0/13 |
 | whm1 | Databases (non-additive) | 0/27 | 0/27 |
-| whm1 | Domain Information (non-additive) | 0/9 | 0/9 |
+| whm1 | Domain Information (non-additive) | 1/9 | 1/9 |
 | whm1 | Domain Management (non-additive) | 0/16 | 0/16 |
 | whm1 | EasyApache (non-additive) | 0/7 | 0/7 |
 | whm1 | EasyApache Settings (non-additive) | 0/7 | 0/7 |
 | whm1 | External Authentication (non-additive) | 0/11 | 0/11 |
-| whm1 | Feature Access (non-additive) | 0/4 | 0/4 |
-| whm1 | Feature Lists (non-additive) | 0/11 | 0/11 |
+| whm1 | Feature Access (non-additive) | 2/4 | 2/4 |
+| whm1 | Feature Lists (non-additive) | 5/11 | 5/11 |
 | whm1 | Greylisting (non-additive) | 0/15 | 0/15 |
 | whm1 | Hosting Plan Extensions (non-additive) | 0/3 | 0/3 |
 | whm1 | Hosting Plans (non-additive) | 0/6 | 0/6 |
@@ -199,10 +199,10 @@ WHM tag subtotals overlap and are non-additive. Global totals deduplicate canoni
 | whm1 | NGINX Manager (non-additive) | 0/6 | 0/6 |
 | whm1 | Network Address Translation (non-additive) | 0/3 | 0/3 |
 | whm1 | Notifications (non-additive) | 0/11 | 0/11 |
-| whm1 | PHP (non-additive) | 0/14 | 0/14 |
-| whm1 | PHP-FPM (non-additive) | 0/9 | 0/9 |
+| whm1 | PHP (non-additive) | 4/14 | 4/14 |
+| whm1 | PHP-FPM (non-additive) | 3/9 | 3/9 |
 | whm1 | Package Manager Settings (non-additive) | 0/4 | 0/4 |
-| whm1 | Packages (non-additive) | 0/26 | 0/26 |
+| whm1 | Packages (non-additive) | 7/26 | 7/26 |
 | whm1 | Passwords (non-additive) | 0/3 | 0/3 |
 | whm1 | Plugin-Based Features (non-additive) | 0/3 | 0/3 |
 | whm1 | PostgreSQL Databases (non-additive) | 0/3 | 0/3 |
@@ -225,7 +225,7 @@ WHM tag subtotals overlap and are non-additive. Global totals deduplicate canoni
 | whm1 | Script Hooks (non-additive) | 0/4 | 0/4 |
 | whm1 | Scripts Hooks (non-additive) | 0/4 | 0/4 |
 | whm1 | Security (non-additive) | 0/3 | 0/3 |
-| whm1 | Server Administration (non-additive) | 0/66 | 0/66 |
+| whm1 | Server Administration (non-additive) | 3/66 | 3/66 |
 | whm1 | Server Nodes (non-additive) | 0/8 | 0/8 |
 | whm1 | Server Profiles (non-additive) | 0/4 | 0/4 |
 | whm1 | Server Settings (non-additive) | 0/14 | 0/14 |
@@ -240,13 +240,13 @@ WHM tag subtotals overlap and are non-additive. Global totals deduplicate canoni
 | whm1 | Support Access (non-additive) | 0/8 | 0/8 |
 | whm1 | Support Tickets (non-additive) | 0/14 | 0/14 |
 | whm1 | Suspensions (non-additive) | 0/4 | 0/4 |
-| whm1 | System Information (non-additive) | 0/8 | 0/8 |
+| whm1 | System Information (non-additive) | 3/8 | 3/8 |
 | whm1 | Ticket Management (non-additive) | 0/6 | 0/6 |
 | whm1 | Transfer Configuration (non-additive) | 0/4 | 0/4 |
 | whm1 | Transfer Monitoring (non-additive) | 0/5 | 0/5 |
 | whm1 | Transfers (non-additive) | 0/15 | 0/15 |
 | whm1 | Two-Factor Authentication (non-additive) | 0/11 | 0/11 |
-| whm1 | Updates (non-additive) | 0/12 | 0/12 |
+| whm1 | Updates (non-additive) | 1/12 | 1/12 |
 | whm1 | UserData (non-additive) | 0/2 | 0/2 |
 | whm1 | WHM Access (non-additive) | 0/2 | 0/2 |
 | whm1 | Web Log Retention (non-additive) | 0/1 | 0/1 |
@@ -359,12 +359,12 @@ Not verified: no matching live evidence supplied.
 | `uapi:DCV/ensure_domains_can_pass_dcv` | missing |
 | `uapi:DNS/ensure_domains_reside_only_locally` | missing |
 | `uapi:DNS/ensure_domains_use_recognized_nameservers` | missing |
-| `uapi:DNS/fetch_cpanel_generated_domains` | missing |
+| `uapi:DNS/fetch_cpanel_generated_domains` | implemented |
 | `uapi:DNS/has_local_authority` | missing |
 | `uapi:DNS/is_alias_available` | missing |
 | `uapi:DNS/is_https_available` | missing |
 | `uapi:DNS/is_svcb_available` | missing |
-| `uapi:DNS/lookup` | missing |
+| `uapi:DNS/lookup` | implemented |
 | `uapi:DNS/mass_edit_zone` | missing |
 | `uapi:DNS/parse_zone` | missing |
 | `uapi:DNS/swap_ip_in_zones` | missing |
@@ -395,9 +395,9 @@ Not verified: no matching live evidence supplied.
 | `uapi:Domain/rename_domain` | missing |
 | `uapi:Domain/temporary_domain_is_disabled` | missing |
 | `uapi:DomainInfo/domains_data` | missing |
-| `uapi:DomainInfo/list_domains` | missing |
-| `uapi:DomainInfo/main_domain_builtin_subdomain_aliases` | missing |
-| `uapi:DomainInfo/primary_domain` | missing |
+| `uapi:DomainInfo/list_domains` | implemented |
+| `uapi:DomainInfo/main_domain_builtin_subdomain_aliases` | implemented |
+| `uapi:DomainInfo/primary_domain` | implemented |
 | `uapi:DomainInfo/single_domain_data` | missing |
 | `uapi:DomainLookup/countbasedomains` | missing |
 | `uapi:DomainLookup/getbasedomains` | missing |
@@ -534,7 +534,7 @@ Not verified: no matching live evidence supplied.
 | `uapi:Features/get_feature_metadata` | missing |
 | `uapi:Features/has_feature` | missing |
 | `uapi:Features/has_features_like` | missing |
-| `uapi:Features/list_features` | missing |
+| `uapi:Features/list_features` | implemented |
 | `uapi:Features/list_features_like` | missing |
 | `uapi:Fileman/autocompletedir` | missing |
 | `uapi:Fileman/copy_file` | missing |
@@ -587,10 +587,10 @@ Not verified: no matching live evidence supplied.
 | `uapi:KnownHosts/delete` | missing |
 | `uapi:KnownHosts/update` | missing |
 | `uapi:KnownHosts/verify` | missing |
-| `uapi:LangPHP/php_get_domain_handler` | missing |
-| `uapi:LangPHP/php_get_impacted_domains` | missing |
-| `uapi:LangPHP/php_get_installed_versions` | missing |
-| `uapi:LangPHP/php_get_system_default_version` | missing |
+| `uapi:LangPHP/php_get_domain_handler` | implemented |
+| `uapi:LangPHP/php_get_impacted_domains` | implemented |
+| `uapi:LangPHP/php_get_installed_versions` | implemented |
+| `uapi:LangPHP/php_get_system_default_version` | implemented |
 | `uapi:LangPHP/php_get_vhost_versions` | missing |
 | `uapi:LangPHP/php_ini_get_user_basic_directives` | missing |
 | `uapi:LangPHP/php_ini_get_user_content` | missing |
@@ -1168,13 +1168,13 @@ Not verified: no matching live evidence supplied.
 | `whm1:get_database_optimizations` | missing |
 | `whm1:get_default_dmarc_record` | missing |
 | `whm1:get_disk_usage` | missing |
-| `whm1:get_domain_info` | missing |
+| `whm1:get_domain_info` | implemented |
 | `whm1:get_ecommerce` | missing |
-| `whm1:get_feature_metadata` | missing |
-| `whm1:get_feature_names` | missing |
-| `whm1:get_featurelist_data` | missing |
-| `whm1:get_featurelists` | missing |
-| `whm1:get_featurelists_by_package_types` | missing |
+| `whm1:get_feature_metadata` | implemented |
+| `whm1:get_feature_names` | implemented |
+| `whm1:get_featurelist_data` | implemented |
+| `whm1:get_featurelists` | implemented |
+| `whm1:get_featurelists_by_package_types` | implemented |
 | `whm1:get_fpm_count_and_utilization` | missing |
 | `whm1:get_homedir_roots` | missing |
 | `whm1:get_in_product_survey_url` | missing |
@@ -1218,12 +1218,12 @@ Not verified: no matching live evidence supplied.
 | `whm1:get_user_email_forward_destination` | missing |
 | `whm1:get_users_and_domains_with_backup_metadata` | missing |
 | `whm1:get_users_authn_linked_accounts` | missing |
-| `whm1:get_users_features_settings` | missing |
+| `whm1:get_users_features_settings` | implemented |
 | `whm1:get_users_links` | missing |
 | `whm1:get_users_with_backup_metadata` | missing |
-| `whm1:getdiskusage` | missing |
+| `whm1:getdiskusage` | implemented |
 | `whm1:getdomainowner` | missing |
-| `whm1:gethostname` | missing |
+| `whm1:gethostname` | implemented |
 | `whm1:getminimumpasswordstrengths` | missing |
 | `whm1:getpkginfo` | missing |
 | `whm1:getresellerips` | missing |
@@ -1249,7 +1249,7 @@ Not verified: no matching live evidence supplied.
 | `whm1:ipv6_range_remove` | missing |
 | `whm1:ipv6_range_usage` | missing |
 | `whm1:is_alias_available` | missing |
-| `whm1:is_conversion_in_progress` | missing |
+| `whm1:is_conversion_in_progress` | implemented |
 | `whm1:is_https_available` | missing |
 | `whm1:is_role_enabled` | missing |
 | `whm1:is_sni_supported` | missing |
@@ -1366,14 +1366,14 @@ Not verified: no matching live evidence supplied.
 | `whm1:personalization_set` | missing |
 | `whm1:php_fpm_config_get` | missing |
 | `whm1:php_fpm_config_set` | missing |
-| `whm1:php_get_default_accounts_to_fpm` | missing |
-| `whm1:php_get_handlers` | missing |
+| `whm1:php_get_default_accounts_to_fpm` | implemented |
+| `whm1:php_get_handlers` | implemented |
 | `whm1:php_get_impacted_domains` | missing |
-| `whm1:php_get_installed_versions` | missing |
-| `whm1:php_get_old_fpm_flag` | missing |
-| `whm1:php_get_system_default_version` | missing |
+| `whm1:php_get_installed_versions` | implemented |
+| `whm1:php_get_old_fpm_flag` | implemented |
+| `whm1:php_get_system_default_version` | implemented |
 | `whm1:php_get_vhost_versions` | missing |
-| `whm1:php_get_vhosts_by_version` | missing |
+| `whm1:php_get_vhosts_by_version` | implemented |
 | `whm1:php_ini_get_content` | missing |
 | `whm1:php_ini_get_directives` | missing |
 | `whm1:php_ini_set_content` | missing |
@@ -1513,7 +1513,7 @@ Not verified: no matching live evidence supplied.
 | `whm1:suspendacct` | missing |
 | `whm1:suspendreseller` | missing |
 | `whm1:system_needs_reboot` | missing |
-| `whm1:systemloadavg` | missing |
+| `whm1:systemloadavg` | implemented |
 | `whm1:terminate_cpuser_mailbox_sessions` | missing |
 | `whm1:terminatereseller` | missing |
 | `whm1:ticket_create_stub_ticket` | missing |
@@ -1582,8 +1582,8 @@ Not verified: no matching live evidence supplied.
 | `whm1:verify_posturl_access` | missing |
 | `whm1:verify_pushbullet_access` | missing |
 | `whm1:verify_slack_access` | missing |
-| `whm1:verify_user_has_feature` | missing |
-| `whm1:version` | missing |
+| `whm1:verify_user_has_feature` | implemented |
+| `whm1:version` | implemented |
 | `whm1:wp_dashboard_create_api_token` | missing |
 | `whm1:wp_dashboard_create_login_link` | missing |
 | `whm1:wp_dashboard_get_hostname` | missing |

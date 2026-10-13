@@ -3,14 +3,13 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-This repository provides client configuration, WHM/UAPI account selection,
-token credentials, metadata lifecycle foundations, and a PSR HTTP transport.
-Endpoint groups, authenticated request execution, request encoding, and API
-response parsing remain separate work. Selecting a client does not call a server;
-the facade cannot execute endpoint operations yet.
+The 29 read-only operations cover WHM server identity, load, disk usage, domain inventory,
+PHP configuration and feature inventory, plus cPanel domains, DNS, PHP and features. They provide token authentication, direct and WHM-routed UAPI,
+typed payloads, API exceptions, and per-client response metadata over a PSR HTTP
+transport. Other endpoints and broader execution features remain separate work.
 
 The [agreed PHP client interface](docs/superpowers/specs/2026-10-13-php-client-design.md)
-uses `whm()` and `uapi(?string $user = null)`, with typed resource groups planned
+uses `whm()` and `uapi(?string $user = null)`, with typed resource groups
 on those handles. The selected UAPI route follows the configured credentials:
 direct access with a cPanel token, or account impersonation through WHM with a
 WHM token. Source contracts remain pinned in the
@@ -51,7 +50,7 @@ $otherAccount = $client->uapi('otheruser');
 
 $npr->username();     // npr; selecting otheruser does not change this handle.
 $npr->isBridged();    // true
-$npr->responseMeta(); // null until an executor records response metadata.
+$npr->responseMeta(); // null before the first operation receives usable metadata.
 ```
 
 Direct cPanel access uses its own token and requires an explicit username:
@@ -76,10 +75,11 @@ $npr = $client->uapi(); // Direct route for npr.
 | `port` | Optional integer from 1 to 65535; defaults to 2087 for WHM or 2083 for cPanel. |
 | `defaultCpanelUser` | Optional target used by `uapi()` with WHM credentials. With cPanel credentials it must match the token owner. |
 
-Configuration builds HTTPS base addresses. Transport-level TLS verification and
-redirect behavior belong to the injected PSR client; the future authenticated
-executor must preserve the documented security contract. HTTP timeouts and other
-transport options are configured on that client, not in this options array.
+Configuration builds HTTPS base addresses. The injected or discovered PSR client
+must verify TLS certificates and disable redirects for authenticated requests.
+The API layer rejects HTTP 3xx responses and performs no retries. HTTP timeouts
+and other transport options are configured on that client, not in this options
+array; see the explicit [HTTP integration example](#http-integration).
 
 `uapi(null)` follows the same default rules as `uapi()`. An explicit empty username
 is invalid. WHM credentials without an explicit or default cPanel target raise
@@ -88,11 +88,269 @@ cannot select another account, and calling `whm()` with cPanel credentials raise
 `LogicException`. Repeated selection of the same account returns the same handle;
 different accounts and separately constructed facades retain separate handles.
 
-`AbstractApiClient` supplies protected transport/configuration and metadata
-lifecycle hooks for future family implementations. `ResponseMetadata` stores
-an immutable HTTP status plus separate nullable WHM and UAPI metadata arrays;
-it does not infer API success. Envelope readers and API exceptions are not
-implemented yet. Calls such as `domains()->list()` remain planned interfaces.
+## Available operations
+
+Selectors and resource groups perform no network I/O. Terminal methods execute
+one request immediately:
+
+```php
+// Use the WHM-configured $client from the first example.
+$version = $client->whm()->server()->version(); // string, unchanged from the server.
+$hostname = $client->whm()->server()->hostname(); // string, unchanged from the server.
+$load = $client->whm()->server()->loadAverage(); // Immutable ServerLoadAverage.
+$oneMinuteLoad = $load->one; // int|float|numeric-string|null; original representation.
+
+$diskUsage = $client->whm()->server()->diskUsage(); // Immutable ServerDiskUsage.
+foreach ($diskUsage as $partition) { // Immutable DiskPartition records.
+    $availableKilobytes = $partition->available;
+    $usedPercent = $partition->percentage;
+}
+
+$account = $client->uapi('npr');
+$domains = $account->domains()->list(); // Immutable AccountDomains.
+$mainDomain = $domains->mainDomain;
+$payload = $domains->toArray();
+
+// Optional filter: null omits it, false sends 0, true sends 1.
+$withoutTemporaryDomains = $account->domains()->list(hideTemporaryDomains: true);
+
+$serverDomains = $client->whm()->domains()->list(); // Immutable ServerDomains.
+foreach ($serverDomains as $domain) { // Immutable DomainInfo records.
+    $username = $domain->user;
+    $phpPackage = $domain->phpVersion;
+}
+
+$phpVersions = $account->php()->listVersions(); // list<string>, e.g. ['ea-php82'].
+```
+
+`whm()->server()->version(): string` maps to
+[WHM version](https://api.docs.cpanel.net/openapi/whm/operation/version).
+`whm()->server()->hostname(): string` maps to
+[WHM gethostname](https://api.docs.cpanel.net/openapi/whm/operation/gethostname).
+Both return the upstream string unchanged; missing or non-string values raise
+`InvalidResponseException` with the response metadata.
+
+`whm()->server()->loadAverage(): ServerLoadAverage` maps to
+[WHM systemloadavg](https://api.docs.cpanel.net/openapi/whm/operation/systemloadavg).
+Its `one`, `five`, and `fifteen` properties represent the corresponding minute
+windows. Values retain the upstream representation: integers, finite floats,
+or finite decimal strings such as `"1.20"`, as observed on the test server.
+Properties and `toArray()` retain string precision and trailing zeros. Missing
+fields become null properties and remain absent from `toArray()`; explicit null
+is invalid. Decimal strings allow an optional sign, digits, and optional fractional
+digits, but no whitespace or exponent notation. Values are never rescaled; the
+upstream documentation describes them as a percentage of CPU processor capacity.
+
+`whm()->server()->diskUsage(): ServerDiskUsage` maps to
+[WHM getdiskusage](https://api.docs.cpanel.net/openapi/whm/operation/getdiskusage).
+It supports `foreach` and `count()`, with a nullable `partitions` property and
+the original `partition` key in `toArray()`. An omitted list counts/iterates as
+empty but remains distinct from a present empty list in the export.
+
+| `DiskPartition` property | Field in `toArray()` | Present value type |
+| --- | --- | --- |
+| `available` | `available` | Positive integer kilobytes |
+| `device` | `device` | String |
+| `disk` | `disk` | String |
+| `filesystem` | `filesystem` | String |
+| `inodesAvailable` | `inodes_available` | Positive integer or null |
+| `inodesIpercentage` | `inodes_ipercentage` | Nonnegative integer or null |
+| `inodesTotal` | `inodes_total` | Positive integer or null |
+| `inodesUsed` | `inodes_used` | Positive integer or null |
+| `mount` | `mount` | String |
+| `percentage` | `percentage` | Nonnegative integer |
+| `total` | `total` | Positive integer kilobytes |
+| `used` | `used` | Positive integer kilobytes |
+
+All partition fields are optional. Null properties represent omission or explicit
+null for inode fields; `toArray()` preserves the distinction. Zero disk percentage
+and nullable inode fields reflect verified runtime deviations from the pinned
+schema; other minimum and type constraints remain enforced. Unknown extensions
+are ignored. These three server operations take no parameters or cPanel target
+account and perform one request each, retaining the owning WHM handle's metadata.
+
+`uapi()->domains()->list(?bool $hideTemporaryDomains = null): AccountDomains`
+maps to [UAPI DomainInfo/list_domains](https://api.docs.cpanel.net/openapi/cpanel/operation/list_domains).
+Both direct cPanel and WHM-routed domain calls return the same DTO. Omitting the
+filter leaves the documented default of `0`; `true` hides temporary domains from
+the main domain and addon, parked, and subdomain lists.
+
+| DTO property | Present field in `toArray()` | Field type |
+| --- | --- | --- |
+| `mainDomain` | `main_domain` | `string\|null` |
+| `addonDomains` | `addon_domains` | `list<string>` |
+| `parkedDomains` | `parked_domains` | `list<string>` |
+| `subDomains` | `sub_domains` | `list<string>` |
+| `isTemporary` | `is_temporary` | `array<array-key, 0\|1>` |
+
+Every field is optional upstream. DTO properties are null for omitted fields;
+`toArray()` preserves which fields were present, distinguishing an omitted main
+domain from explicit null. Empty strings, empty lists, and integer `0`/`1` flags
+remain unchanged. An empty temporary-domain object becomes an empty array map.
+Unknown payload extensions are outside this reviewed DTO contract.
+The upstream domain operation can return blank values without an API error when
+the account's userdata file has incorrect permissions; success alone does not
+establish a complete domain inventory.
+
+`whm()->domains()->list(): ServerDomains` maps to
+[WHM get_domain_info](https://api.docs.cpanel.net/openapi/whm/operation/get_domain_info).
+It returns the server's manually created domains visible to the WHM credentials;
+service/proxy subdomains and automatically created domains are excluded upstream.
+The collection supports `foreach` and `count()`. Its `domains` property holds
+`list<DomainInfo>`, or null when the upstream field is omitted. An omitted list
+iterates as empty, while `toArray()` distinguishes `[]` from `['domains' => []]`.
+Unknown extensions are ignored.
+
+Each immutable `DomainInfo` exposes the following reviewed fields:
+
+| DTO property | Present field in `toArray()` | Field type |
+| --- | --- | --- |
+| `docroot` | `docroot` | `string` |
+| `domain` | `domain` | `string` |
+| `domainType` | `domain_type` | `string` |
+| `ipv4` | `ipv4` | `string` |
+| `ipv4Ssl` | `ipv4_ssl` | `string` |
+| `ipv6` | `ipv6` | `string\|null` |
+| `ipv6IsDedicated` | `ipv6_is_dedicated` | `0\|1` |
+| `modsecurityEnabled` | `modsecurity_enabled` | `0\|1` |
+| `parentDomain` | `parent_domain` | `string` |
+| `phpVersion` | `php_version` | `string` |
+| `port` | `port` | `int\|numeric-string` |
+| `portSsl` | `port_ssl` | `int\|numeric-string` |
+| `user` | `user` | `string` |
+| `userOwner` | `user_owner` | `string` |
+
+All record fields are optional. Properties use null for omitted values;
+`toArray()` retains presence, including explicit `ipv6: null`, empty strings,
+and integer zeros. Domain types and PHP package names remain upstream strings.
+The public `port`/`portSsl` properties are integers (or null when omitted).
+The pinned schema declares integer ports, but the test server returns decimal
+strings. Canonical nonnegative decimal strings that fit a PHP integer are accepted
+and normalized in the properties; `toArray()` preserves their original wire type.
+
+`uapi()->php()->listVersions(): array` maps to
+[UAPI LangPHP/php_get_installed_versions](https://api.docs.cpanel.net/openapi/cpanel/operation/php_get_installed_versions).
+It returns `list<string>` on both direct and WHM-routed account handles, preserving
+custom package names and an empty list. A missing or malformed `versions` list
+raises `InvalidResponseException` with the response metadata. The operation lists
+the system's PHP versions in the selected account context; it requires EasyApache 4
+and is disabled when the WebServer role is disabled. See the live testing workflow
+below and the recorded [runtime observations](docs/api/source-audit.md#runtime-observations-2026-10-13).
+
+### PHP, feature and account inventory
+
+The following 22 operations extend the original seven. Each method executes one
+read-only GET immediately. WHM methods use the authenticated server user; UAPI
+methods retain the selected cPanel account on either credential route.
+
+| PHP method | Upstream operation | Return |
+| --- | --- | --- |
+| `whm()->php()->listVersions()` | `php_get_installed_versions` | `list<string>` |
+| `whm()->php()->systemDefaultVersion()` | `php_get_system_default_version` | `string` |
+| `whm()->php()->handlers(?string $version = null)` | `php_get_handlers` | List of handler records |
+| `whm()->php()->defaultAccountsToFpm()` | `php_get_default_accounts_to_fpm` | `bool` |
+| `whm()->php()->oldFpmFlag()` | `php_get_old_fpm_flag` | `0\|1\|2` |
+| `whm()->php()->isConversionInProgress()` | `is_conversion_in_progress` | `bool` |
+| `whm()->php()->vhostsByVersion(string $version)` | `php_get_vhosts_by_version` | `list<string>` |
+| `whm()->features()->metadata()` | `get_feature_metadata` | Feature metadata shape |
+| `whm()->features()->names()` | `get_feature_names` | Feature names shape |
+| `whm()->features()->listData(string $featureList)` | `get_featurelist_data` | Feature list configuration shape |
+| `whm()->features()->lists()` | `get_featurelists` | Feature list names shape |
+| `whm()->features()->listsByPackageType()` | `get_featurelists_by_package_types` | Feature lists by package type shape |
+| `whm()->features()->userSettings($user, $feature = null)` | `get_users_features_settings` | Account feature settings shape |
+| `whm()->features()->userHasFeature(string $user, string $feature)` | `verify_user_has_feature` | `bool` |
+| `uapi()->domains()->primary(?bool $hideTemporaryDomains = null)` | `DomainInfo/primary_domain` | `?string` |
+| `uapi()->domains()->builtinAliases(?bool $hideTemporaryDomains = null)` | `DomainInfo/main_domain_builtin_subdomain_aliases` | `list<string>` |
+| `uapi()->php()->systemDefaultVersion()` | `LangPHP/php_get_system_default_version` | `?string` |
+| `uapi()->php()->domainHandler(string $type, ?string $vhost = null)` | `LangPHP/php_get_domain_handler` | `string` |
+| `uapi()->php()->impactedDomains(string\|array\|null $domain = null, ?bool $systemDefault = null)` | `LangPHP/php_get_impacted_domains` | `list<string>` |
+| `uapi()->features()->list()` | `Features/list_features` | `array<array-key, 0\|1>` |
+| `uapi()->dns()->lookup(string $domain)` | `DNS/lookup` | `list<string>\|null` |
+| `uapi()->dns()->generatedDomains(string $domain)` | `DNS/fetch_cpanel_generated_domains` | `list<array{domain?: string}>` |
+
+Precise nested array shapes and exact official operation links are documented on
+these methods. Structured feature returns retain optional member presence, empty
+lists and flag wire types. The feature fields described in the runtime audit also
+accept exact string `0`/`1` or booleans where observed, preserving their wire type.
+Scalar/list convenience methods require their selected
+field; malformed payloads raise `InvalidResponseException` carrying the current
+metadata. Nullable UAPI scalar fields accept explicit null. DNS lookup preserves
+explicit null but rejects an omitted data member. Existing DTO methods retain
+their contracts.
+
+```php
+$whm = $client->whm();
+$versions = $whm->php()->listVersions();
+$handlers = $whm->php()->handlers();
+$settings = $whm->features()->userSettings(['npr'], ['autossl', 'sslmanager']);
+
+$account = $client->uapi('npr');
+$primary = $account->domains()->primary();
+$aliases = $account->domains()->builtinAliases(); // Labels such as www, not full names.
+$handler = $account->php()->domainHandler('vhost', 'npr.rs');
+$affected = $account->php()->impactedDomains('npr.rs');
+$dnsLines = $account->dns()->lookup('npr.rs'); // Textual lines, not DNS record objects.
+```
+
+`userSettings()` accepts a username or a nonempty list of usernames and an optional
+feature name or nonempty list. Omitting the feature filter asks for all features.
+`userHasFeature()` is an access check: upstream also returns true for unknown
+features. The `disabled` feature list reverses the interpretation of `value`;
+its flag values are returned unchanged. A null `cpuser_setting` means there
+is no account override.
+
+UAPI feature-map names follow PHP array-key conversion, including integer keys
+for canonical numeric JSON names. PHP package strings are open, including custom packages.
+WHM handler inventory accepts the observed `lsapi` handler alongside the pinned enum. The old FPM flag preserves
+all three states (absent preconfiguration, existing preconfiguration, dismissed
+dialogue). PHP configuration operations may require EasyApache 4 and the WebServer
+role, as documented per method. For UAPI handlers, `type` is `home` or `vhost`, with
+`vhost` required for the latter. Impacted-domain lookup needs a domain or
+`systemDefault: true` and excludes parked domains. A nonempty list of domain strings
+is sent as repeated `domain` parameters; order and duplicates are preserved. Empty
+or malformed lists fail locally and clear prior metadata before network I/O. Semantic request errors are
+reported by the API. Optional booleans distinguish omission, false and true.
+Generated DNS domains require cPanel 120 and preserve trailing dots.
+
+## Response metadata and failures
+
+`responseMeta(): ?ResponseMetadata` belongs to the selected WHM or UAPI client.
+It is initially null and clears at the start of every attempt. A usable envelope
+records an immutable snapshot before payload validation or an API exception;
+transport failures and responses without usable metadata leave it null. Later
+requests cannot change retained snapshots or another account's metadata.
+
+`ResponseMetadata::$httpStatus` records the HTTP status. Its nullable `$whm` map
+contains the WHM envelope's raw `metadata`; `$uapi` contains the UAPI result
+envelope without `data`, including any supplied status, errors, messages,
+warnings, and metadata. Nested JSON metadata objects are represented as arrays. Bridged calls
+retain both maps and check both outcomes; outer WHM success alone is insufficient.
+These outcome rules apply to the implemented operations.
+
+API failures extend `HostingPal\WhmApiClient\Exception\ApiException`. Its public
+readonly `$metadata` property contains the same snapshot as `responseMeta()`,
+or null when no usable API metadata was received:
+
+| Exception | Meaning |
+| --- | --- |
+| `ApiErrorException` | WHM or UAPI reports an operation failure, including over HTTP 200. |
+| `HttpException` | HTTP status is outside 200–299, including redirects. |
+| `InvalidResponseException` | The envelope, outcome, or endpoint payload cannot satisfy the reviewed contract. |
+| `TransportException` | The PSR HTTP transport reports a request failure. |
+
+Exception messages exclude raw bodies and credentials. Transport exceptions do
+not retain the original exception chain, which may contain an authenticated
+request. Metadata preserves upstream diagnostics and may include account data.
+
+Direct UAPI supports the pinned `result` wrapper and the bare result object
+observed during an authorized live request on 2026-10-13. A present `result`
+field takes precedence, even when malformed; the bare form requires a top-level
+`status` field. WHM bridge parsing continues to use `data.uapi`.
+The library was verified directly as `npr` with its cPanel account token on
+`test.oblak.host:2083` on 2026-10-13: domain listing returned the expected main
+domain, HTTP 200/UAPI status `1`, and no WHM metadata. This observation is specific
+to `DomainInfo/list_domains` on that server and account; see the
+[runtime evidence](docs/api/source-audit.md#runtime-observations-2026-10-13).
 
 ## Development
 
@@ -116,6 +374,35 @@ composer test
 `.editorconfig`; tool settings are in `phpcs.xml.dist`, `phpstan.neon.dist`,
 and `phpunit.xml.dist`. Tests use a mock client and real PSR-7 messages without
 contacting a server.
+
+Live verification is a separate PHPUnit `live` group for the implemented read-only
+operations on `test.oblak.host`. With `OBLAK_TEST_WHM_KEY` and `OBLAK_TEST_NPR_KEY`
+already exported in the environment, run:
+
+```bash
+WHM_API_LIVE=1 composer test:live
+```
+
+This requires PHP's cURL extension and exercises WHM version, hostname, load average,
+disk usage, domain inventory, PHP configuration and feature inventory, plus
+account domain/DNS/PHP/feature discovery through direct cPanel and WHM-routed UAPI
+for `npr`. The 22-operation expansion adds 30 live cases (14 WHM and 16 UAPI route cases).
+It validates the known `npr.rs` account, typed payloads and API metadata, with
+verified TLS, disabled redirects and no retries. The test transport accepts only
+the reviewed GET routes. Missing opt-in or prerequisites fail the live command
+before requests; failure messages exclude raw credentials and account payloads.
+
+Run just the server identity and health slice with
+`WHM_API_LIVE=1 composer test:live -- --filter WhmServerLiveTest`.
+Run the expanded inventory slice with
+`WHM_API_LIVE=1 composer test:live -- --filter InventoryLiveTest`.
+
+The default PHPUnit suite, `composer test`, `composer check`, and CI remain offline,
+even when live-test environment variables are set. Pair new read-only slices with
+an explicit live run on the approved test server; add reviewed routes to the live
+group as implementation grows. Mutating/destructive tests require approval for
+the specific operations and targets. Live runs do not update pinned documentation
+or the offline coverage baseline.
 
 The PHPCS ruleset adds sorted and unused-import checks (including PHPDoc uses),
 short arrays, multiline trailing commas, consistent member and type spacing,
@@ -156,13 +443,17 @@ composer require guzzlehttp/guzzle:^7.9 guzzlehttp/psr7:^2.7
 It can also inject its configured client and factories explicitly:
 
 ```php
-use GuzzleHttp\Client;
+use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Psr7\HttpFactory;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 
 $factory = new HttpFactory();
 $transport = new HttpTransport(
-    httpClient: new Client(['timeout' => 30]),
+    httpClient: new GuzzleClient([
+        'timeout' => 30,
+        'verify' => true,
+        'allow_redirects' => false,
+    ]),
     requestFactory: $factory,
     streamFactory: $factory,
 );
@@ -174,8 +465,9 @@ header values can be strings or lists of strings; the optional body is a raw
 string. HTTP 4xx/5xx responses pass through normally, and transport exceptions
 propagate according to [PSR-18](https://www.php-fig.org/psr/psr-18/).
 
-Configure timeouts, TLS, proxies, and other transport options on the injected
-client. Fully explicit injection works without discovery or Composer plugins.
+Configure timeouts, verified TLS, disabled redirects, proxies, and other transport
+options on the injected client. Fully explicit injection works without discovery
+or Composer plugins.
 Missing implementations produce discovery's `NotFoundException`.
 
 The discovery Composer plugin is disabled for development in this repository;

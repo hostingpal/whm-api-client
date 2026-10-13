@@ -1,0 +1,194 @@
+<?php
+
+declare(strict_types=1);
+
+namespace HostingPal\WhmApiClient\Tests\Support;
+
+use LogicException;
+use Nyholm\Psr7\Request;
+use Nyholm\Psr7\Response;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use RuntimeException;
+
+final class LiveCurlClientTest extends TestCase
+{
+    #[DataProvider('outsideApprovedScope')]
+    public function testRejectsOutOfScopeRequestsBeforeExecutingCurl(string $method, string $uri): void
+    {
+        $executed = false;
+        $client = new LiveCurlClient(static function (RequestInterface $request) use (&$executed): ResponseInterface {
+            $executed = true;
+
+            return new Response(200);
+        });
+
+        try {
+            $client->sendRequest(new Request($method, $uri, ['Authorization' => 'whm root:synthetic-token']));
+            self::fail('The live transport accepted a request outside its approved scope.');
+        } catch (LogicException) {
+            self::assertFalse($executed, 'Rejected requests must not reach the cURL execution boundary.');
+        }
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function outsideApprovedScope(): iterable
+    {
+        yield 'write method' => ['POST', 'https://test.oblak.host:2087/json-api/version?api.version=1'];
+        yield 'unencrypted' => ['GET', 'http://test.oblak.host:2087/json-api/version?api.version=1'];
+        yield 'another host' => ['GET', 'https://elsewhere.example:2087/json-api/version?api.version=1'];
+        yield 'wrong port' => ['GET', 'https://test.oblak.host:2083/json-api/version?api.version=1'];
+        yield 'another operation' => ['GET', 'https://test.oblak.host:2087/json-api/createacct?api.version=1'];
+        yield 'missing version' => ['GET', 'https://test.oblak.host:2087/json-api/version'];
+        yield 'extra query' => ['GET', 'https://test.oblak.host:2087/json-api/version?api.version=1&extra=1'];
+        yield 'query in direct call' => [
+            'GET',
+            'https://test.oblak.host:2083/execute/DomainInfo/list_domains?hide_temporary_domains=1',
+        ];
+        yield 'another account' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1'
+                . '&cpanel.user=root&cpanel.module=DomainInfo&cpanel.function=list_domains',
+        ];
+        yield 'another bridge operation' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1'
+                . '&cpanel.user=npr&cpanel.module=Email&cpanel.function=list_pops',
+        ];
+        yield 'userinfo' => ['GET', 'https://root@test.oblak.host:2087/json-api/version?api.version=1'];
+        yield 'fragment' => ['GET', 'https://test.oblak.host:2087/json-api/version?api.version=1#unexpected'];
+    }
+
+    #[DataProvider('approvedUris')]
+    public function testAllowsExactlyTheApprovedReadOnlyRequests(string $uri): void
+    {
+        $client = new LiveCurlClient(static fn (RequestInterface $request): ResponseInterface => new Response(204));
+
+        self::assertSame(204, $client->sendRequest(new Request('GET', $uri))->getStatusCode());
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function approvedUris(): iterable
+    {
+        yield 'inventory 0' => ['https://test.oblak.host:2087/json-api/get_feature_metadata?api.version=1'];
+        yield 'inventory 1' => ['https://test.oblak.host:2087/json-api/get_feature_names?api.version=1'];
+        yield 'inventory 2' => [
+            'https://test.oblak.host:2087/json-api/get_featurelist_data?api.version=1'
+                . '&featurelist=default',
+        ];
+        yield 'inventory 3' => ['https://test.oblak.host:2087/json-api/get_featurelists?api.version=1'];
+        yield 'inventory 4' => [
+            'https://test.oblak.host:2087/json-api/get_featurelists_by_package_types?api.version=1',
+        ];
+        yield 'inventory 5' => [
+            'https://test.oblak.host:2087/json-api/get_users_features_settings?api.version=1'
+                . '&user=npr&feature=autossl',
+        ];
+        yield 'inventory 6' => [
+            'https://test.oblak.host:2087/json-api/verify_user_has_feature?api.version=1&user=npr'
+                . '&feature=autossl',
+        ];
+        yield 'inventory 7' => ['https://test.oblak.host:2087/json-api/php_get_installed_versions?api.version=1'];
+        yield 'inventory 8' => ['https://test.oblak.host:2087/json-api/php_get_system_default_version?api.version=1'];
+        yield 'inventory 9' => ['https://test.oblak.host:2087/json-api/php_get_handlers?api.version=1'];
+        yield 'inventory 10' => ['https://test.oblak.host:2087/json-api/php_get_default_accounts_to_fpm?api.version=1'];
+        yield 'inventory 11' => ['https://test.oblak.host:2087/json-api/php_get_old_fpm_flag?api.version=1'];
+        yield 'inventory 12' => ['https://test.oblak.host:2087/json-api/is_conversion_in_progress?api.version=1'];
+        yield 'inventory 13' => [
+            'https://test.oblak.host:2087/json-api/php_get_vhosts_by_version?api.version=1'
+                . '&version=ea-php82',
+        ];
+        yield 'inventory 14' => ['https://test.oblak.host:2083/execute/DomainInfo/primary_domain'];
+        yield 'inventory 15' => [
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=DomainInfo&cpanel.function=primary_domain',
+        ];
+        yield 'inventory 16' => [
+            'https://test.oblak.host:2083/execute/DomainInfo/main_domain_builtin_subdomain_aliases',
+        ];
+        yield 'inventory 17' => [
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=DomainInfo&cpanel.function=main_domain_builtin_subdomain_aliases',
+        ];
+        yield 'inventory 18' => ['https://test.oblak.host:2083/execute/LangPHP/php_get_system_default_version'];
+        yield 'inventory 19' => [
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=LangPHP&cpanel.function=php_get_system_default_version',
+        ];
+        yield 'inventory 20' => ['https://test.oblak.host:2083/execute/LangPHP/php_get_domain_handler?type=home'];
+        yield 'inventory 21' => [
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=LangPHP&cpanel.function=php_get_domain_handler&type=home',
+        ];
+        yield 'inventory 22' => ['https://test.oblak.host:2083/execute/LangPHP/php_get_impacted_domains?domain=npr.rs'];
+        yield 'inventory 23' => [
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=LangPHP&cpanel.function=php_get_impacted_domains&domain=npr.rs',
+        ];
+        yield 'inventory 24' => ['https://test.oblak.host:2083/execute/Features/list_features'];
+        yield 'inventory 25' => [
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=Features&cpanel.function=list_features',
+        ];
+        yield 'inventory 26' => ['https://test.oblak.host:2083/execute/DNS/lookup?domain=npr.rs'];
+        yield 'inventory 27' => [
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=DNS&cpanel.function=lookup&domain=npr.rs',
+        ];
+        yield 'inventory 28' => [
+            'https://test.oblak.host:2083/execute/DNS/fetch_cpanel_generated_domains?domain=npr.rs',
+        ];
+        yield 'inventory 29' => [
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=DNS&cpanel.function=fetch_cpanel_generated_domains&domain=npr.rs',
+        ];
+        yield 'WHM version' => ['https://test.oblak.host:2087/json-api/version?api.version=1'];
+        yield 'WHM hostname' => ['https://test.oblak.host:2087/json-api/gethostname?api.version=1'];
+        yield 'WHM load average' => ['https://test.oblak.host:2087/json-api/systemloadavg?api.version=1'];
+        yield 'WHM disk usage' => ['https://test.oblak.host:2087/json-api/getdiskusage?api.version=1'];
+        yield 'WHM domains' => ['https://test.oblak.host:2087/json-api/get_domain_info?api.version=1'];
+        yield 'bridged domains' => [
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1'
+                . '&cpanel.user=npr&cpanel.module=DomainInfo&cpanel.function=list_domains',
+        ];
+        yield 'bridged PHP' => [
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1'
+                . '&cpanel.user=npr&cpanel.module=LangPHP&cpanel.function=php_get_installed_versions',
+        ];
+        yield 'direct domains' => ['https://test.oblak.host:2083/execute/DomainInfo/list_domains'];
+        yield 'direct PHP' => ['https://test.oblak.host:2083/execute/LangPHP/php_get_installed_versions'];
+    }
+
+    #[DataProvider('missingPrerequisites')]
+    public function testRequiresExplicitOptInBothTokensAndCurl(
+        string|false $optIn,
+        string|false $whmToken,
+        string|false $cpanelToken,
+        bool $curlAvailable,
+    ): void {
+        $this->expectException(RuntimeException::class);
+
+        LiveTestEnvironment::requireReady($optIn, $whmToken, $cpanelToken, $curlAvailable);
+    }
+
+    /** @return iterable<string, array{string|false, string|false, string|false, bool}> */
+    public static function missingPrerequisites(): iterable
+    {
+        yield 'no opt in' => [false, 'synthetic-whm', 'synthetic-cpanel', true];
+        yield 'wrong opt in' => ['true', 'synthetic-whm', 'synthetic-cpanel', true];
+        yield 'no WHM key' => ['1', false, 'synthetic-cpanel', true];
+        yield 'empty WHM key' => ['1', '', 'synthetic-cpanel', true];
+        yield 'no cPanel key' => ['1', 'synthetic-whm', false, true];
+        yield 'empty cPanel key' => ['1', 'synthetic-whm', '', true];
+        yield 'no curl' => ['1', 'synthetic-whm', 'synthetic-cpanel', false];
+    }
+
+    public function testAcceptsCompleteExplicitLivePrerequisites(): void
+    {
+        $tokens = LiveTestEnvironment::requireReady('1', 'synthetic-whm', 'synthetic-cpanel', true);
+
+        self::assertSame(['whm' => 'synthetic-whm', 'cpanel' => 'synthetic-cpanel'], $tokens);
+    }
+}

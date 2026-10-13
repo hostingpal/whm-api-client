@@ -259,3 +259,136 @@ Use the [refresh policy](README.md#refresh-policy) to add new immutable source
 sets. The next design must retain original evidence alongside normalized
 fields and diagnostics. Source audit completion does not close the canonical
 map, ingestion CLI, parity, server capability, or drift-reporting tasks.
+
+## Runtime observations: 2026-10-13
+
+This evidence was collected after the pinned-source audit above. It supplements
+that historical record without changing the OpenAPI snapshots, source manifests,
+canonical map, or contract hashes.
+
+An explicitly authorized direct request to
+`https://test.oblak.host:2083/execute/DomainInfo/list_domains`, authenticated as
+`npr` with its cPanel account token, returned HTTP 200. Its JSON root contained
+`status`, `data`, `errors`, `messages`, `warnings`, and `metadata`, without the
+`result` wrapper declared by the pinned operation schema. The observed status
+was integer `1`; `data.main_domain` matched the expected account domain;
+errors, messages, and warnings were null; metadata decoded as a JSON object.
+No credential or full response payload is recorded here.
+
+The initial library request rejected the bare envelope because its reader expected
+the pinned wrapper. The direct parser now supports both forms, preferring a
+present `result` field even if malformed and recognizing the bare form only when
+a top-level `status` field exists. Outcome and payload validation remain required;
+the WHM bridge's `data.uapi` contract is unchanged.
+
+The subsequent live library call, `Client` configured for direct cPanel access
+followed by `uapi()->domains()->list()`, returned the expected main domain.
+`responseMeta()` contained HTTP 200, UAPI status `1`, and null WHM metadata;
+`isBridged()` was false. The returned domain payload included `main_domain`,
+`addon_domains`, `parked_domains`, and `sub_domains`; `is_temporary` was absent.
+This verifies direct library execution for this operation, account, server, and
+date. It does not establish a universal envelope for other UAPI operations or
+servers, and this prose observation is not a revision-bound saved live-evidence
+artifact.
+
+The domain/PHP inventory slice was then exercised through the actual PHP client
+with verified TLS, redirects disabled and no retries. UAPI
+`LangPHP/php_get_installed_versions` returned HTTP 200/status `1` and four package
+names both directly as `npr` on port 2083 and through WHM on port 2087. The bridged
+result also retained outer WHM result `1`; direct access had no WHM metadata.
+
+WHM `get_domain_info` returned HTTP 200, but the initial typed payload reader
+rejected it: the pinned schema declares integer `port` and `port_ssl`, while the
+server returned strings `"80"` and `"443"`. Sanitized diagnostics showed the other
+reviewed fields had their expected types, including nullable IPv6 and integer
+flags. Compatibility accepts canonical nonnegative decimal strings within PHP
+integer range in addition to pinned integers. Public port properties normalize
+these values to integers, while `toArray()` preserves their original wire type.
+Whitespace, signs, leading zeros, fractions, exponents and overflowing strings
+are rejected. Synthetic offline regression cases record the representation
+without copying server account data or changing pinned schemas/contract hashes.
+
+The corrected library recheck returned a typed domain inventory containing the
+known `npr.rs` account, HTTP 200 and WHM result `1`. The separately invoked PHPUnit
+live group then passed all six checks for WHM `version`/`get_domain_info` and direct
+plus WHM-routed UAPI `DomainInfo/list_domains`/`LangPHP/php_get_installed_versions`
+(45 assertions). This verifies these operations and routes on this server at the
+time of the run; it is not saved revision-bound evidence for the parity report.
+
+The server identity/health slice subsequently exercised WHM `gethostname`,
+`systemloadavg`, and `getdiskusage` as `root` on `test.oblak.host:2087`, through
+the actual PHP client with verified TLS, redirects disabled, and no retries.
+`gethostname` returned the configured hostname with HTTP 200 and WHM result `1`.
+The other two operations also reported HTTP 200/result `1`, but initially failed
+typed payload validation. Restricted diagnostics confirmed these differences:
+
+- `systemloadavg` supplied `one`, `five`, and `fifteen` as decimal strings such
+  as `"1.20"`, although the pinned schema declares numbers. `ServerLoadAverage`
+  accepts finite decimal strings in addition to native integers/floats and preserves
+  their exact representation in properties and exports. The accepted string syntax
+  is an optional sign, digits, and an optional decimal fraction; whitespace,
+  exponent notation, nonnumeric values, and overflow to infinity are rejected.
+- `getdiskusage` supplied integer `percentage: 0`, contrary to its pinned minimum
+  of 1. The parser accepts nonnegative integers for that field. All four inode
+  fields (`inodes_available`, `inodes_ipercentage`, `inodes_total`, `inodes_used`)
+  were explicitly present with null values on one partition, although the pinned
+  schema does not declare them nullable. The parser preserves these nulls and
+  their presence, retaining the pinned integer minima for nonnull inode values.
+  Other numeric fields remain strict integers with their reviewed minima.
+
+Sanitized synthetic fixtures cover these differences without retaining device
+labels or full server responses. Partition order varied across calls, so live
+assertions inspect every record and require at least one complete inode sample
+without depending on the first record. After correction, the full opted-in live
+suite passed nine tests and 147 assertions, including all three new WHM methods
+and the six prior checks. The default offline suite remains independent of live
+credentials and networking. This observation is scoped to the server/date and
+working-tree implementation tested; it is not revision-bound saved evidence and
+does not change pinned snapshots, canonical map hashes, or their source contracts.
+
+
+### PHP and feature inventory observations (22-operation slice)
+
+The expanded read-only slice was compared with the immutable 2026-10-13 sources.
+Two pinned feature-schema discrepancies are handled explicitly: `cpuser_setting`
+is nullable according to both `nullable: true` and prose, despite an enum that
+only lists integers 0 and 1; `is_disabled` is required by the list-data schema,
+although the `disabled` list prose says that return is not used. The parser permits
+null for `cpuser_setting` and retains the required `is_disabled` check. Disabled-list
+`value` polarity is preserved rather than normalized.
+
+Authorized actual PHP requests to `test.oblak.host` returned successful HTTP 200 /
+WHM result 1 envelopes but exposed these additional wire representations:
+
+- `php_get_handlers`: `lsapi` occurs in available/selected handlers, beyond the
+  pinned `suphp`, `cgi`, `dso`, and `none` enum. Only `lsapi` is added.
+- `get_feature_metadata`: `is_plugin` uses exact strings `"0"` and `"1"`.
+- `get_featurelist_data`: `is_disabled` and `value` use exact strings `"0"` and
+  `"1"`; `is_standalone_experience` and `is_meridian_only` were booleans (`false`),
+  and `suppress_plugin_label` was boolean (`true`).
+- `get_users_features_settings`: `feature_list_setting` was string `"1"`, and
+  `cpuser_setting` was explicitly null.
+
+Compatibility is restricted to those fields: the four observed string-flag fields
+accept exact `"0"`/`"1"` as well as pinned integers; the three observed boolean-flag
+fields accept booleans as well as their pinned types. Structured array returns
+preserve the original wire type, with precise PHPStan unions. Other flags, including
+`has_feature` and nonnull `cpuser_setting`, remain pinned integers. Synthetic
+regressions cover accepted and rejected representations without retaining raw
+server responses. Pinned snapshots, map hashes and source contracts are unchanged.
+
+UAPI `Features/list_features` permits arbitrary feature names. Canonical numeric
+JSON object names become integer keys in PHP arrays; its return type is therefore
+`array<array-key, 0|1>` without rejecting valid upstream names. DNS lookup explicitly
+permits null data; an internal presence marker now distinguishes that from an
+omitted data member. UAPI impacted-domain inputs support the documented repeated
+`domain` parameter using literal repeated keys, including on the WHM route.
+
+After these corrections, the full explicitly opted-in live suite passed **39 tests
+and 277 assertions**, including 14 new WHM operations and each of the eight new
+UAPI operations through both direct cPanel-token and WHM-token routes. All requests
+used verified TLS, redirects disabled, and no retries. The final offline suite
+passed **1,087 tests and 4,757 assertions**, with formatting, maximum-level static
+analysis, Composer validation and offline API-map checks also passing. Coverage
+now declares 29 implemented operations; these live observations remain scoped to
+the tested server/date and working tree, without saved revision-bound evidence.

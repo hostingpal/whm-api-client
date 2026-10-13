@@ -60,9 +60,11 @@ This protocol applies when ending a Beads implementation workflow. It is subordi
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The initial scaffold provides HTTP infrastructure and
-development tooling. Official API inputs and contract discrepancies are pinned
-under `docs/api/`; endpoint implementation remains separate work. Do not invent
+and cPanel UAPI surface. The read-only slices implement WHM `version`, `gethostname`, `systemloadavg`,
+`getdiskusage`, and `get_domain_info`, plus UAPI `DomainInfo/list_domains` and
+`LangPHP/php_get_installed_versions`, with authenticated PSR HTTP execution and
+typed payloads. Other endpoints and broader execution features remain separate work.
+Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.
 
@@ -82,10 +84,77 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   credentials. There is no separate public `bridge()` selector. WHM credentials
   require an explicit or configured default cPanel target; never assume `root`
   is that target. Preserve account isolation and per-client `responseMeta()`.
-  `src/Client.php` now provides configuration and account selection using the
-  existing PSR transport. Endpoint groups, authenticated request execution, and
-  envelope parsing remain separate work; do not claim endpoint coverage from
-  scaffold classes or tests.
+  `whm()->server()->version(): string` and
+  `uapi()->domains()->list(?bool $hideTemporaryDomains = null): AccountDomains`
+  execute immediately. Selectors and groups perform no I/O. The optional domain
+  filter preserves omission (`null`), false (`0`), and true (`1`). DTO properties
+  use null for omitted fields; `toArray()` retains optional field presence,
+  explicit main-domain null, empty lists, and integer temporary flags.
+- `whm()->domains()->list(): ServerDomains` returns an immutable iterable/countable
+  collection of `DomainInfo` records. Preserve all 14 optional record fields,
+  nullable IPv6, integer 0/1 flags, integer port properties, and open string
+  domain types. Omitted `domains` remains null and distinct from an empty list in
+  `toArray()`; iteration/count treat either as empty. Upstream excludes service
+  and automatically created domains.
+  `uapi()->php()->listVersions(): array` has a `list<string>` contract on both
+  routes; retain custom PHP package names and empty lists, and reject missing or
+  malformed lists with metadata. Requires EasyApache 4 and the WebServer role.
+  WHM port fields accept pinned integers and observed canonical nonnegative decimal
+  strings within PHP integer range; `toArray()` preserves the original wire type.
+  Runtime observations remain separate from pinned contracts and saved parity evidence.
+- `whm()->server()->hostname(): string`, `loadAverage(): ServerLoadAverage`, and
+  `diskUsage(): ServerDiskUsage` map to WHM `gethostname`, `systemloadavg`, and
+  `getdiskusage`. All are parameterless read-only server operations. Load windows
+  `one`/`five`/`fifteen` preserve finite numbers or observed decimal numeric strings,
+  including precision/trailing zeros, without rescaling. Null properties mean
+  omission, retained by `toArray()`; explicit load null is invalid. Disk usage is
+  iterable/countable with nullable `partitions`, exporting the original `partition`
+  key and all 12 optional record fields. Runtime compatibility permits disk
+  percentage 0 and explicit null for four inode fields; other pinned minima stay
+  enforced. Preserve omission versus null versus empty lists. Three methods have
+  offline regressions and passed opted-in live checks on `test.oblak.host`; record
+  schema discrepancies separately from pinned sources and revision-bound evidence.
+- The additional 22 read-only inventory methods cover WHM PHP versions/default/handlers,
+  default FPM/old FPM/conversion/vhosts-by-version; WHM feature metadata/names/list
+  configuration/list names/package types/account settings/access; and UAPI primary
+  domain/builtin aliases/PHP default/handler/impacted domains/features/DNS lookup/
+  generated domains. New `whm()->php()`, `whm()->features()`, `uapi()->features()`
+  and `uapi()->dns()` selectors remain inert and account-bound. See README for the
+  complete mapping. New structured arrays have precise PHPStan shapes; preserve
+  optional fields, null, empty lists and flag wire types. Observed WHM feature
+  compatibility is field-specific (exact string 0/1 or booleans); PHP handlers also
+  accept observed lsapi. UAPI impactedDomains accepts one domain or a nonempty list
+  encoded as repeated domain keys, with invalid lists clearing metadata before I/O.
+  Scalar/list convenience
+  methods require their selected fields. DNS lookup returns textual lines or
+  explicit null; internal payload presence rejects an omitted data member.
+  Feature access returns true for unknown feature IDs by upstream design, and
+  disabled-list values have inverted meaning. No generic endpoint/status coverage
+  is implied. Pinned contracts and observed compatibility remain separate.
+- Operation groups receive one synchronous request callback accepting an
+  operation name and query parameters. Groups own endpoint parameter construction;
+  WHM and UAPI handles own route construction, with one account-bound UAPI helper
+  for direct and bridged execution. Reserved bridge fields take precedence over
+  endpoint parameters. Keep the separate WHM Features lifecycle hook: userSettings
+  clears metadata before local indexed-parameter validation, even when validation
+  prevents the request callback from running. Selectors only bind callbacks and
+  cache groups; they perform no I/O or metadata reset.
+- Each attempt clears old response metadata. A usable envelope records an
+  immutable snapshot before API or payload errors. `ResponseMetadata::$whm`
+  retains raw WHM metadata; `$uapi` retains the UAPI result envelope without `data`.
+  `ApiException::$metadata` exposes the same snapshot, with distinct
+  `ApiErrorException`, `HttpException`, `InvalidResponseException`, and
+  `TransportException` failures. Both bridge outcomes are checked. Do not apply
+  these operations' status semantics universally or claim generic bridge coverage.
+- Authenticated operations perform no retries. Injected or discovered PSR clients
+  must verify TLS and disable redirects; the API layer rejects HTTP 3xx responses.
+  Direct UAPI supports the pinned `result` wrapper and the observed bare result
+  object. A present `result` takes precedence even if malformed; the bare form
+  requires top-level `status`. Authorized direct library verification on
+  2026-10-13 for `DomainInfo/list_domains` as `npr` on `test.oblak.host:2083`
+  passed with a cPanel token, the expected main domain, and HTTP 200/status 1.
+  Keep this runtime evidence separate from pinned source contracts. Infrastructure
+  tests and WHM bridge evidence do not establish other endpoint or route coverage.
 - Production code lives in `src/`; tests live in `tests/` with a matching
   directory structure.
 - `src/Http/HttpTransport.php` is the HTTP infrastructure entry point. Use a
@@ -100,6 +169,13 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   PHPStan's maximum level.
 - Test HTTP behavior with local doubles; routine tests must not require live
   WHM or cPanel services or credentials.
+- User-authorized read-only slices should also be verified on `test.oblak.host`
+  using the separate PHPUnit `live` group. Existing WHM root and cPanel `npr`
+  tokens are supplied through `OBLAK_TEST_WHM_KEY` and `OBLAK_TEST_NPR_KEY`;
+  never print or store them. No repeated permission is needed for implemented,
+  reviewed read-only operations on this test server. Mutating/destructive tests
+  still require explicit approval for specific operations and targets; snapshot
+  readiness is not confirmed. Do not automatically restore the server.
 
 ## Documentation Requirements
 
@@ -153,6 +229,18 @@ composer test
 PHPCS resolves Slevomat through the ruleset's explicit `installed_paths` setting.
 The Composer standards-installer plugin remains disabled; do not require a
 global PHPCS configuration or introduce WordPress runtime dependencies.
+
+Explicit live verification (PHP cURL extension and both test tokens exported):
+
+```bash
+WHM_API_LIVE=1 composer test:live
+```
+
+The live suite/group exercises only the reviewed GET routes for
+implemented operations on `test.oblak.host`, with verified TLS, redirects disabled,
+and no retries. Missing opt-in or credentials fail before network I/O. Default
+PHPUnit, Composer checks and CI remain offline even when credentials are present.
+Keep raw live payloads, credentials and profiles outside committed fixtures.
 
 Go documentation tooling (Go 1.24+) uses a separate module and cache:
 
