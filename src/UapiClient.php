@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient;
 
 use HostingPal\WhmApiClient\Api\AbstractApiClient;
+use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
+use HostingPal\WhmApiClient\Api\Engine\OperationSpec;
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Api\RequestMethod;
-use HostingPal\WhmApiClient\Api\Uapi\Dns;
-use HostingPal\WhmApiClient\Api\Uapi\Domains;
-use HostingPal\WhmApiClient\Api\Uapi\Features;
-use HostingPal\WhmApiClient\Api\Uapi\Php;
+use HostingPal\WhmApiClient\Api\Uapi\UapiGroups;
 use HostingPal\WhmApiClient\Authentication\TokenCredentials;
 use HostingPal\WhmApiClient\Authentication\TokenType;
 use HostingPal\WhmApiClient\Config\ClientConfig;
@@ -20,25 +19,22 @@ use HostingPal\WhmApiClient\Response\ApiResponse;
 use HostingPal\WhmApiClient\Response\CallResult;
 use HostingPal\WhmApiClient\Response\ResponseRoute;
 use InvalidArgumentException;
+use SensitiveParameter;
 
 /**
  * Hold UAPI context for one immutable cPanel target account.
  *
  * The credential type selects direct cPanel access or execution through WHM.
- * Both routes share this handle type and expose the same endpoint groups, and
- * call() reaches every documented UAPI function through the same routing.
+ * Both routes share this handle type and expose the same endpoint groups.
+ * Typed groups are generated from the pinned API map and overlay (see docs/api/coverage.md);
+ * call() reaches every documented UAPI function through the same routing,
+ * authentication, and envelope handling.
  *
  * @phpstan-import-type Parameters from AbstractApiClient
  */
 final class UapiClient extends AbstractApiClient
 {
-    private ?Domains $domains = null;
-
-    private ?Php $php = null;
-
-    private ?Dns $dns = null;
-
-    private ?Features $features = null;
+    use UapiGroups;
 
     /**
      * Bind an explicit cPanel target to a configuration and transport.
@@ -83,50 +79,6 @@ final class UapiClient extends AbstractApiClient
     }
 
     /**
-     * Select domain operations for this account without making a request.
-     *
-     * The stable group retains this account and updates only this handle's metadata.
-     */
-    public function domains(): Domains
-    {
-        return $this->domains ??= new Domains(fn (string $operation, array $query): ApiResponse =>
-            $this->request('DomainInfo', $operation, $query));
-    }
-
-    /**
-     * Select PHP operations for this account without making a request.
-     *
-     * The stable group retains this account and updates only this handle's metadata.
-     */
-    public function php(): Php
-    {
-        return $this->php ??= new Php(fn (string $operation, array $query): ApiResponse =>
-            $this->request('LangPHP', $operation, $query));
-    }
-
-    /**
-     * Select DNS discovery for this cPanel account without making a request.
-     *
-     * The stable group retains the account and updates only this handle's metadata.
-     */
-    public function dns(): Dns
-    {
-        return $this->dns ??= new Dns(fn (string $operation, array $query): ApiResponse =>
-            $this->request('DNS', $operation, $query));
-    }
-
-    /**
-     * Select this cPanel account's feature inventory without making a request.
-     *
-     * Both credential routes retain the same account and per-handle metadata.
-     */
-    public function features(): Features
-    {
-        return $this->features ??= new Features(fn (string $operation, array $query): ApiResponse =>
-            $this->request('Features', $operation, $query));
-    }
-
-    /**
      * Execute any documented UAPI function for this account without a typed group.
      *
      * The module and function are the documented names (such as Email and
@@ -163,6 +115,37 @@ final class UapiClient extends AbstractApiClient
         }
 
         return CallResult::fromApiResponse($this->request($module, $function, $parameters, $method, $outcome));
+    }
+
+    /**
+     * Run a generated operation spec through this handle.
+     *
+     * Generated groups receive this method as their run callback; selecting a
+     * group performs no I/O.
+     *
+     * @param array<mixed> $spec
+     * @param array<string, mixed> $arguments
+     */
+    private function run(array $spec, #[SensitiveParameter] array $arguments): mixed
+    {
+        return OperationRunner::run($spec, $arguments, $this->dispatch(...));
+    }
+
+    /**
+     * Route a generated operation for this account through direct cPanel or WHM.
+     *
+     * @param array<mixed> $spec
+     * @param Parameters $parameters
+     */
+    private function dispatch(array $spec, #[SensitiveParameter] array $parameters): ApiResponse
+    {
+        return $this->request(
+            OperationSpec::text($spec, 'module'),
+            OperationSpec::text($spec, 'function'),
+            $parameters,
+            OperationSpec::method($spec),
+            OperationSpec::outcome($spec),
+        );
     }
 
     /**
