@@ -182,13 +182,14 @@ func isArrayLike(spec effective.TypeSpec) bool {
 	return false
 }
 
-func listLiteral(values []string, indent string) string {
+// listLiteral renders a string list; prefix is the column the literal starts at.
+func listLiteral(values []string, indent string, prefix int) string {
 	quoted := make([]string, len(values))
 	for i, value := range values {
 		quoted[i] = phpString(value)
 	}
 	inline := "[" + strings.Join(quoted, ", ") + "]"
-	if len(indent)+len(inline) <= 100 {
+	if prefix+len(inline)+1 <= lineWidth {
 		return inline
 	}
 	lines := []string{"["}
@@ -202,43 +203,52 @@ func listLiteral(values []string, indent string) string {
 // specLiteral renders a type spec as a PHP array literal. Scalars stay inline;
 // containers break across lines with trailing commas (PHPCS TrailingArrayComma).
 func specLiteral(spec effective.TypeSpec, indent string) string {
+	return specLiteralAt(spec, indent, len(indent))
+}
+
+// specLiteralAt is specLiteral for a literal that starts at column prefix of
+// its line (after indentation and any "'key' => " text), so the inline form is
+// chosen only when the finished line, including a trailing comma, fits.
+func specLiteralAt(spec effective.TypeSpec, indent string, prefix int) string {
 	type pair struct{ key, value string }
 	inner := indent + "    "
+	at := func(key string) int { return len(inner) + len(phpString(key)) + len(" => ") }
 	pairs := []pair{{"type", phpString(spec.Type)}}
 	if spec.Nullable {
 		pairs = append(pairs, pair{"nullable", "true"})
 	}
 	if len(spec.Accept) > 0 {
-		pairs = append(pairs, pair{"accept", listLiteral(spec.Accept, inner)})
+		pairs = append(pairs, pair{"accept", listLiteral(spec.Accept, inner, at("accept"))})
 	}
 	if spec.Preserve {
 		pairs = append(pairs, pair{"preserve", "true"})
 	}
 	if spec.Items != nil {
-		pairs = append(pairs, pair{"items", specLiteral(*spec.Items, inner)})
+		pairs = append(pairs, pair{"items", specLiteralAt(*spec.Items, inner, at("items"))})
 	}
 	if spec.Values != nil {
-		pairs = append(pairs, pair{"values", specLiteral(*spec.Values, inner)})
+		pairs = append(pairs, pair{"values", specLiteralAt(*spec.Values, inner, at("values"))})
 	}
 	if spec.Type == "object" {
 		fields := "[]"
 		if len(spec.Fields) > 0 {
 			lines := []string{"["}
 			for _, field := range spec.Fields {
-				lines = append(lines, inner+"    "+phpString(field.Name)+" => "+specLiteral(field.Spec, inner+"    ")+",")
+				key := phpString(field.Name) + " => "
+				lines = append(lines, inner+"    "+key+specLiteralAt(field.Spec, inner+"    ", len(inner)+4+len(key))+",")
 			}
 			lines = append(lines, inner+"]")
 			fields = strings.Join(lines, "\n")
 		}
 		pairs = append(pairs, pair{"fields", fields})
 		if len(spec.Required) > 0 {
-			pairs = append(pairs, pair{"required", listLiteral(spec.Required, inner)})
+			pairs = append(pairs, pair{"required", listLiteral(spec.Required, inner, at("required"))})
 		}
 	}
 	if len(spec.AnyOf) > 0 {
 		lines := []string{"["}
 		for _, option := range spec.AnyOf {
-			lines = append(lines, inner+"    "+specLiteral(option, inner+"    ")+",")
+			lines = append(lines, inner+"    "+specLiteralAt(option, inner+"    ", len(inner)+4)+",")
 		}
 		lines = append(lines, inner+"]")
 		pairs = append(pairs, pair{"anyOf", strings.Join(lines, "\n")})
@@ -248,7 +258,7 @@ func specLiteral(spec effective.TypeSpec, indent string) string {
 		parts[i] = phpString(p.key) + " => " + p.value
 	}
 	inline := "[" + strings.Join(parts, ", ") + "]"
-	if !strings.Contains(inline, "\n") && spec.Type != "object" && len(spec.AnyOf) == 0 && len(indent)+len(inline) <= 100 {
+	if !strings.Contains(inline, "\n") && spec.Type != "object" && len(spec.AnyOf) == 0 && prefix+len(inline)+1 <= lineWidth {
 		return inline
 	}
 	lines := []string{"["}

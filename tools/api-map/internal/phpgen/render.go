@@ -26,6 +26,32 @@ func (w *writer) doc(indent, text string) {
 	}
 }
 
+// paramDoc writes one "@param <type> $name" tag. The tag head always stays on a
+// single line: when it would exceed lineWidth the literal doc type is replaced
+// by the parameter's plain PHP type. Only the description wraps, with
+// continuation lines indented four spaces after the asterisk.
+func (w *writer) paramDoc(indent string, p effective.Param, description string) {
+	docType := paramDocType(p)
+	head := func(t string) string { return indent + " * @param " + t + " $" + p.PHP }
+	if len(head(docType)) > lineWidth {
+		docType = p.PHPType
+		if !p.Required {
+			docType += "|null"
+		}
+	}
+	current := head(docType)
+	continuation := indent + " *     "
+	for _, word := range strings.Fields(escapeDoc(description)) {
+		if len(current)+1+len(word) > lineWidth {
+			w.line(current)
+			current = continuation + word
+			continue
+		}
+		current += " " + word
+	}
+	w.line(current)
+}
+
 // docTag writes a tag line whose type may span lines (multi-line shapes).
 func (w *writer) docTag(indent, text string) {
 	for _, l := range strings.Split(text, "\n") {
@@ -200,7 +226,7 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		if !p.Required {
 			description = strings.TrimSpace(description + " Null omits it.")
 		}
-		w.doc(indent, "@param "+paramDocType(p)+" $"+p.PHP+" "+description)
+		w.paramDoc(indent, p, description)
 		multi = multi || p.Encoding == "repeat" || p.Encoding == "numbered"
 	}
 	if ret != nil {
@@ -257,7 +283,15 @@ func body(w *writer, g effective.Group, op effective.Operation, ret *effective.T
 	prefix := "        "
 	if ret != nil {
 		prefix = "        $result = "
-		w.line("        /** @var " + docReturn(op, *ret) + " $result Validated against " + constant + ". */")
+		varLine := "        /** @var " + docReturn(op, *ret) + " $result Validated against " + constant + ". */"
+		if len(varLine) <= lineWidth {
+			w.line(varLine)
+		} else {
+			w.line("        /**")
+			w.line("         * @var " + docReturn(op, *ret) + " $result")
+			w.line("         * Validated against " + constant + ".")
+			w.line("         */")
+		}
 	}
 	if len(prefix+call)+1 <= lineWidth {
 		w.line(prefix + call + ";")
@@ -303,14 +337,23 @@ func specClass(g effective.Group) string {
 		} else {
 			w.line("        'params' => [")
 			for _, p := range op.Params {
-				w.line("            " + phpString(p.PHP) + " => ['name' => " + phpString(p.Wire) + ", 'encoding' => " + phpString(p.Encoding) + "],")
+				entry := "            " + phpString(p.PHP) + " => ['name' => " + phpString(p.Wire) +
+					", 'encoding' => " + phpString(p.Encoding) + "],"
+				if len(entry) <= lineWidth {
+					w.line(entry)
+					continue
+				}
+				w.line("            " + phpString(p.PHP) + " => [")
+				w.line("                'name' => " + phpString(p.Wire) + ",")
+				w.line("                'encoding' => " + phpString(p.Encoding) + ",")
+				w.line("            ],")
 			}
 			w.line("        ],")
 		}
 		if op.Returns == nil {
 			w.line("        'returns' => null,")
 		} else {
-			w.line("        'returns' => " + specLiteral(*op.Returns, "        ") + ",")
+			w.line("        'returns' => " + specLiteralAt(*op.Returns, "        ", len("        'returns' => ")) + ",")
 		}
 		if op.Unwrap != "" {
 			w.line("        'unwrap' => " + phpString(op.Unwrap) + ",")
