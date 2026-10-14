@@ -31,12 +31,16 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		return capabilitiesCompare(ctx, args[2:], stdout, stderr)
 	case "capabilities capture":
 		return captureCapabilities(ctx, args[2:], stdout, stderr)
+	case "overlay validate":
+		return overlayValidate(ctx, args[2:], stdout, stderr)
+	case "generate php":
+		return generatePHP(ctx, args[2:], stdout, stderr)
 	default:
 		return usage(stderr)
 	}
 }
 func usage(stderr io.Writer) int {
-	fmt.Fprintln(stderr, "usage: api-map check --root PATH | drift report --before PATH --after PATH --output PATH --markdown PATH | sources verify --manifest PATH | sources refresh --manifest PATH --output-dir NEW_DIR | map build --manifest PATH --annotations PATH --output PATH | parity report --map PATH --registry PATH --symbols PATH --output PATH --markdown PATH [--test-evidence PATH --live-evidence PATH --revision REVISION] | capabilities compare --map PATH --profile PATH --output PATH --markdown PATH [--explanations PATH] | capabilities capture --opt-in [--host ORIGIN --user USER --token-env NAME --output PATH --cpanel-context NAME]")
+	fmt.Fprintln(stderr, "usage: api-map check --root PATH | drift report --before PATH --after PATH --output PATH --markdown PATH | sources verify --manifest PATH | sources refresh --manifest PATH --output-dir NEW_DIR | map build --manifest PATH --annotations PATH --output PATH | parity report --map PATH --registry PATH --symbols PATH --output PATH --markdown PATH [--test-evidence PATH --live-evidence PATH --revision REVISION] | capabilities compare --map PATH --profile PATH --output PATH --markdown PATH [--explanations PATH] | capabilities capture --opt-in [--host ORIGIN --user USER --token-env NAME --output PATH --cpanel-context NAME] | overlay validate --map PATH --overlay DIR | generate php --map PATH --overlay DIR --root DIR [--check]")
 	return 2
 }
 func flags(name string) *flag.FlagSet {

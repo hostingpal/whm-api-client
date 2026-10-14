@@ -84,6 +84,27 @@ without automatically causing an implementation regression. Missing live
 evidence never changes offline protection. Invalid/orphaned registry mappings
 still fail with an empty baseline.
 
+## Overlay and PHP generation
+
+The generated client (see `docs/superpowers/specs/2026-10-14-generated-client-design.md`)
+is rendered from the canonical map plus `docs/api/overlay/`:
+
+- `config.json` sets `scope` to `listed` (only operations named in group files) or
+  `all` (every operation in the map except exclusions).
+- `uapi/<Module>.json` and `whm/<group>.json` hold naming, request facts, response
+  corrections with evidence, exclusions and probe recipes; they are validated
+  against `docs/api/schema/overlay-v1.schema.json`.
+
+```bash
+go -C tools/api-map run ./cmd/api-map overlay validate --map ../../.cache/api-map/map.json --overlay ../../docs/api/overlay
+composer api-map:generate        # build the map, then write generated PHP and docs/api/coverage.md
+composer api-map:generate:check  # fail when committed generated files are stale
+```
+
+`generate php` writes files atomically, removes previously generated files that
+are no longer produced (files carrying the generated marker only), and never
+touches hand-written files. Generated files must not be edited by hand.
+
 ## Saved capability comparison and source drift
 
 Reproduce the synthetic saved capability comparison without contacting a server:

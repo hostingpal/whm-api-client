@@ -41,7 +41,15 @@
     "phpstan": "phpstan analyse --memory-limit=512M",
     "test": "phpunit",
     "test:live": "phpunit --testsuite live --group live",
-    "api-map:check": "go -C tools/api-map run ./cmd/api-map check --root ../.."
+    "api-map:check": "go -C tools/api-map run ./cmd/api-map check --root ../..",
+    "api-map:generate": [
+      "go -C tools/api-map run ./cmd/api-map map build --manifest ../../docs/api/sources/2026-10-13/manifest.json --annotations ../../docs/api/annotations.json --output ../../.cache/api-map/map.json",
+      "go -C tools/api-map run ./cmd/api-map generate php --map ../../.cache/api-map/map.json --overlay ../../docs/api/overlay --root ../.."
+    ],
+    "api-map:generate:check": [
+      "go -C tools/api-map run ./cmd/api-map map build --manifest ../../docs/api/sources/2026-10-13/manifest.json --annotations ../../docs/api/annotations.json --output ../../.cache/api-map/map.json",
+      "go -C tools/api-map run ./cmd/api-map generate php --map ../../.cache/api-map/map.json --overlay ../../docs/api/overlay --root ../.. --check"
+    ]
   },
   "config": {
     "allow-plugins": {
