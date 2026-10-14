@@ -15,6 +15,8 @@ var (
 	whitespace    = regexp.MustCompile(`\s+`)
 	blankLine     = regexp.MustCompile(`\n\s*\n`)
 	reservedNames = map[string]bool{"call": true, "responseMeta": true, "username": true, "isBridged": true, "run": true, "dispatch": true, "request": true}
+	// reservedArguments are PHP variables a generated method body already uses.
+	reservedArguments = map[string]bool{"this": true, "result": true}
 )
 
 type overlayEntry struct {
@@ -85,8 +87,28 @@ func Build(m model.Map, set overlay.Set) (Result, error) {
 			b.problem(id + ": not in the API map")
 		}
 	}
+	b.checkGroupFiles(m)
 	b.finish(groups)
 	return b.result, nil
+}
+
+// checkGroupFiles reports overlay files whose (family, group) is not the group
+// of any operation in the map. Groups are collected from every operation,
+// regardless of scope and exclusions, so exclusion-only files stay valid.
+func (b *builder) checkGroupFiles(m model.Map) {
+	documented := map[string]bool{}
+	for _, op := range m.Operations {
+		for _, v := range op.Variants {
+			if name := b.groupOf(op, v, b.schemas.operationNode(v)); name != "" {
+				documented[op.Family+"|"+name] = true
+			}
+		}
+	}
+	for _, file := range b.set.Files {
+		if !documented[file.Family+"|"+file.Group] {
+			b.problem(fmt.Sprintf("%s: group %q is not a documented %s group", file.DisplayName(), file.Group, file.Family))
+		}
+	}
 }
 
 var reservedLower = func() map[string]bool {
@@ -104,6 +126,15 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	if err != nil {
 		b.problem(err.Error())
 		return Operation{}, "", false
+	}
+	// Only query parameters are generated; a documented body (multipart, JSON
+	// or form, possibly carrying secrets) must never be dropped silently.
+	if _, hasBody := node["requestBody"]; hasBody {
+		b.problem(op.ID + ": documents a request body; exclude it until body parameters are supported")
+		return Operation{}, "", false
+	}
+	if deprecated, _ := node["deprecated"].(bool); deprecated {
+		b.problem(op.ID + ": flagged deprecated upstream; exclude it")
 	}
 	result := Operation{
 		ID:          op.ID,
@@ -212,7 +243,7 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 				param.Sensitive = *o.Sensitive
 			}
 		}
-		if !IsMethodName(param.PHP) {
+		if !IsMethodName(param.PHP) || reservedArguments[param.PHP] {
 			b.problem(op.ID + ": parameter " + p.Name + " needs an overlay php name")
 		}
 		if used[param.PHP] {

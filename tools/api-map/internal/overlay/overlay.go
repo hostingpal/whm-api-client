@@ -48,6 +48,9 @@ type Operation struct {
 	Notes    []string              `json:"notes,omitempty"`
 	Exclude  *Exclusion            `json:"exclude,omitempty"`
 	Probe    json.RawMessage       `json:"probe,omitempty"`
+	// Evidence backs behaviour-changing settings: method, outcome, void and
+	// "sensitive": false on a parameter.
+	Evidence []Evidence `json:"evidence,omitempty"`
 }
 
 // Param renames, re-encodes or omits one documented parameter, keyed by wire
@@ -68,6 +71,7 @@ type Correction struct {
 	Preserve bool       `json:"preserve,omitempty"`
 	Required *bool      `json:"required,omitempty"`
 	Add      *Spec      `json:"add,omitempty"`
+	Replace  *Spec      `json:"replace,omitempty"`
 	Evidence []Evidence `json:"evidence"`
 }
 

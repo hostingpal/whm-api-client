@@ -4,7 +4,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hostingpal/whm-api-client/tools/api-map/internal/model"
 	"github.com/hostingpal/whm-api-client/tools/api-map/internal/overlay"
+	"github.com/hostingpal/whm-api-client/tools/api-map/internal/source"
 )
 
 func evidence() []overlay.Evidence {
@@ -276,5 +278,272 @@ func TestFinishReportsCaseInsensitiveCollisions(t *testing.T) {
 	run := finishProblems(map[string]*Group{"a": {Family: "uapi", Name: "Run", Accessor: "run", Class: "Run"}})
 	if !strings.Contains(run, "reserved or invalid") {
 		t.Fatal(run)
+	}
+}
+
+// fixtureNode returns the fixture map's operation object for id, so a test can
+// add upstream members such as requestBody or deprecated.
+func fixtureNode(t *testing.T, m model.Map, id string) map[string]any {
+	t.Helper()
+	loc := operationByID(t, m, id).Variants[0].OperationLocator
+	node, err := source.Pointer(m.Documents[loc.SourceID], *loc.Pointer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	object, ok := asObject(node)
+	if !ok {
+		t.Fatalf("%s is not an object", id)
+	}
+	return object
+}
+
+func generatedIDs(result Result) map[string]bool {
+	ids := map[string]bool{}
+	for _, group := range result.Groups {
+		for _, op := range group.Operations {
+			ids[op.ID] = true
+		}
+	}
+	return ids
+}
+
+func buildProblems(t *testing.T, m model.Map, set overlay.Set) (Result, string) {
+	t.Helper()
+	result, err := Build(m, set)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return result, strings.Join(result.Problems, "\n")
+}
+
+func TestBuildRejectsDocumentedRequestBodies(t *testing.T) {
+	m := fixtureMap(t)
+	body := map[string]any{"content": map[string]any{"multipart/form-data": map[string]any{"schema": map[string]any{"type": "object"}}}}
+	fixtureNode(t, m, "whm1:createacct")["requestBody"] = body
+	fixtureNode(t, m, "whm1:suspendacct")["requestBody"] = body
+	result, joined := buildProblems(t, m, fixtureOverlay("listed"))
+	want := "whm1:createacct: documents a request body; exclude it until body parameters are supported"
+	if !strings.Contains(joined, want) {
+		t.Fatalf("missing %q in %s", want, joined)
+	}
+	if generatedIDs(result)["whm1:createacct"] {
+		t.Fatal("operation with a request body was generated")
+	}
+	if strings.Contains(joined, "whm1:suspendacct") {
+		t.Fatalf("excluded operation reported: %s", joined)
+	}
+}
+
+func TestBuildReportsDeprecatedOperations(t *testing.T) {
+	m := fixtureMap(t)
+	fixtureNode(t, m, "whm1:listaccts")["deprecated"] = true
+	fixtureNode(t, m, "whm1:suspendacct")["deprecated"] = true
+	_, joined := buildProblems(t, m, fixtureOverlay("listed"))
+	if want := "whm1:listaccts: flagged deprecated upstream; exclude it"; !strings.Contains(joined, want) {
+		t.Fatalf("missing %q in %s", want, joined)
+	}
+	if strings.Contains(joined, "whm1:suspendacct") {
+		t.Fatalf("excluded operation reported: %s", joined)
+	}
+}
+
+func TestBuildRejectsReservedArgumentNames(t *testing.T) {
+	set := fixtureOverlay("listed")
+	op := set.Files[1].Operations["whm1:createacct"]
+	op.Params = map[string]overlay.Param{"username": {PHP: "result"}, "plan": {PHP: "this"}}
+	set.Files[1].Operations["whm1:createacct"] = op
+	_, joined := buildProblems(t, fixtureMap(t), set)
+	for _, want := range []string{
+		"whm1:createacct: parameter username needs an overlay php name",
+		"whm1:createacct: parameter plan needs an overlay php name",
+	} {
+		if !strings.Contains(joined, want) {
+			t.Fatalf("missing %q in %s", want, joined)
+		}
+	}
+}
+
+func TestBuildReportsUndocumentedGroupFiles(t *testing.T) {
+	set := fixtureOverlay("listed")
+	set.Files = append(set.Files,
+		overlay.File{Family: "uapi", Group: "Nonexistent", Path: "uapi/Nonexistent.json", Operations: map[string]overlay.Operation{}},
+		overlay.File{Family: "uapi", Group: "Accounts", Path: "uapi/Accounts.json", Operations: map[string]overlay.Operation{}},
+		overlay.File{Family: "whm1", Group: "Imaginary", Accessor: "imaginary", Path: "whm/Imaginary.json", Operations: map[string]overlay.Operation{}},
+	)
+	_, joined := buildProblems(t, fixtureMap(t), set)
+	for _, want := range []string{
+		`uapi/Nonexistent.json: group "Nonexistent" is not a documented uapi group`,
+		`uapi/Accounts.json: group "Accounts" is not a documented uapi group`,
+		`whm/Imaginary.json: group "Imaginary" is not a documented whm1 group`,
+	} {
+		if !strings.Contains(joined, want) {
+			t.Fatalf("missing %q in %s", want, joined)
+		}
+	}
+	if strings.Contains(joined, "DomainInfo.json") || strings.Contains(joined, "whm/Accounts.json") {
+		t.Fatalf("documented groups reported: %s", joined)
+	}
+
+	// An exclusion-only file for a documented group stays valid.
+	exclusionOnly := fixtureOverlay("listed")
+	exclusionOnly.Files[0].Operations = map[string]overlay.Operation{
+		"uapi:DomainInfo/list_domains": {Exclude: &overlay.Exclusion{Reason: "Later.", Evidence: evidence()}},
+	}
+	if _, joined := buildProblems(t, fixtureMap(t), exclusionOnly); joined != "" {
+		t.Fatalf("exclusion-only group file rejected: %s", joined)
+	}
+}
+
+// addSecretParameter documents a password parameter on the read-only
+// uapi:DomainInfo/list_domains fixture operation.
+func addSecretParameter(t *testing.T, m model.Map) {
+	t.Helper()
+	for i := range m.Operations {
+		if m.Operations[i].ID != "uapi:DomainInfo/list_domains" {
+			continue
+		}
+		v := &m.Operations[i].Variants[0]
+		v.Parameters = append(v.Parameters, model.Parameter{
+			Name: "password", In: "query",
+			Definition: model.Object{"name": "password", "in": "query", "required": false, "schema": map[string]any{"type": "string"}},
+			Locator:    v.Parameters[0].Locator,
+		})
+		return
+	}
+	t.Fatal("fixture operation missing")
+}
+
+func TestBuildSendsSecretBearingReadOnlyOperationsByPost(t *testing.T) {
+	m := fixtureMap(t)
+	addSecretParameter(t, m)
+	result, joined := buildProblems(t, m, fixtureOverlay("listed"))
+	if joined != "" {
+		t.Fatal(joined)
+	}
+	list := groupByClass(t, result, "DomainInfo").Operations[0]
+	if list.ID != "uapi:DomainInfo/list_domains" || list.Method != "POST" || !list.Params[1].Sensitive {
+		t.Fatalf("read-only operation with a secret %+v", list)
+	}
+
+	set := fixtureOverlay("listed")
+	op := set.Files[0].Operations["uapi:DomainInfo/list_domains"]
+	op.Method, op.Evidence = "GET", evidence()
+	set.Files[0].Operations["uapi:DomainInfo/list_domains"] = op
+	if problems := overlay.Validate(set); len(problems) != 0 {
+		t.Fatalf("evidence rule should be satisfied: %v", problems)
+	}
+	if _, joined := buildProblems(t, m, set); !strings.Contains(joined, "uapi:DomainInfo/list_domains: secret-bearing parameters require POST") {
+		t.Fatalf("GET override accepted: %s", joined)
+	}
+}
+
+func TestApplyCorrectionRejectsEmptyPath(t *testing.T) {
+	root := &TypeSpec{Type: "object", Fields: []Field{{Name: "a", Spec: TypeSpec{Type: "string"}}}}
+	yes := true
+	err := applyCorrection(root, "", overlay.Correction{Nullable: &yes, Evidence: evidence()})
+	if err == nil || err.Error() != `path "" is not a field path` {
+		t.Fatalf("err %v", err)
+	}
+	if root.Nullable {
+		t.Fatal("empty path changed the payload root")
+	}
+}
+
+func TestApplyCorrectionChecksAcceptAndPreserveAgainstType(t *testing.T) {
+	documented := func() *TypeSpec {
+		return &TypeSpec{Type: "object", Fields: []Field{
+			{Name: "b", Spec: TypeSpec{Type: "bool"}},
+			{Name: "f", Spec: TypeSpec{Type: "flag"}},
+			{Name: "i", Spec: TypeSpec{Type: "int"}},
+			{Name: "m", Spec: TypeSpec{Type: "mixed"}},
+			{Name: "n", Spec: TypeSpec{Type: "number"}},
+			{Name: "s", Spec: TypeSpec{Type: "string"}},
+		}}
+	}
+	for _, c := range []struct {
+		path       string
+		correction overlay.Correction
+	}{
+		{"i", overlay.Correction{Accept: []string{"numeric-string"}}},
+		{"n", overlay.Correction{Accept: []string{"numeric-string"}, Preserve: true}},
+		{"b", overlay.Correction{Accept: []string{"int-flag", "string-flag"}}},
+		{"f", overlay.Correction{Accept: []string{"string-flag", "bool"}}},
+		{"s", overlay.Correction{Type: "number", Accept: []string{"numeric-string"}, Preserve: true}},
+		{"x", overlay.Correction{Add: &overlay.Spec{Type: "int", Accept: []string{"numeric-string"}}}},
+	} {
+		c.correction.Evidence = evidence()
+		if err := applyCorrection(documented(), c.path, c.correction); err != nil {
+			t.Errorf("%s %+v: %v", c.path, c.correction, err)
+		}
+	}
+	for _, c := range []struct {
+		path       string
+		correction overlay.Correction
+		want       string
+	}{
+		{"s", overlay.Correction{Accept: []string{"numeric-string"}}, `path "s": accept "numeric-string" does not apply to type "string"`},
+		{"i", overlay.Correction{Accept: []string{"int-flag"}}, `path "i": accept "int-flag" does not apply to type "int"`},
+		{"f", overlay.Correction{Accept: []string{"numeric-string"}}, `path "f": accept "numeric-string" does not apply to type "flag"`},
+		{"b", overlay.Correction{Accept: []string{"bool"}}, `path "b": accept "bool" does not apply to type "bool"`},
+		{"m", overlay.Correction{Accept: []string{"string-flag"}}, `path "m": accept "string-flag" does not apply to type "mixed"`},
+		{"i", overlay.Correction{Type: "string", Accept: []string{"numeric-string"}}, `path "i": accept "numeric-string" does not apply to type "string"`},
+		{"i", overlay.Correction{Preserve: true}, `path "i": preserve does not apply to type "int"`},
+		{"x", overlay.Correction{Add: &overlay.Spec{Type: "object", Fields: map[string]overlay.Spec{
+			"y": {Type: "string", Accept: []string{"int-flag"}}}}}, `path "x.y": accept "int-flag" does not apply to type "string"`},
+	} {
+		c.correction.Evidence = evidence()
+		err := applyCorrection(documented(), c.path, c.correction)
+		if err == nil || err.Error() != c.want {
+			t.Errorf("%s %+v: got %v, want %s", c.path, c.correction, err, c.want)
+		}
+	}
+}
+
+func TestApplyCorrectionReplaceRefinesDocumentedNodes(t *testing.T) {
+	documented := func() *TypeSpec {
+		return &TypeSpec{Type: "object", Fields: []Field{
+			{Name: "data", Spec: TypeSpec{Type: "map", Nullable: true, Values: &TypeSpec{Type: "mixed"}}},
+			{Name: "rows", Spec: TypeSpec{Type: "list", Items: &TypeSpec{Type: "mixed"}}},
+		}}
+	}
+	root := documented()
+	replacement := overlay.Spec{Type: "object", Fields: map[string]overlay.Spec{
+		"count": {Type: "int", Accept: []string{"numeric-string"}},
+		"names": {Type: "list", Items: &overlay.Spec{Type: "string"}},
+	}, Required: []string{"count"}}
+	if err := applyCorrection(root, "data", overlay.Correction{Replace: &replacement, Evidence: evidence()}); err != nil {
+		t.Fatal(err)
+	}
+	data := root.Fields[0].Spec
+	if data.Type != "object" || data.Nullable || data.Values != nil || len(data.Fields) != 2 || data.Fields[0].Name != "count" ||
+		data.Fields[0].Spec.Accept[0] != "numeric-string" || data.Fields[1].Spec.Items.Type != "string" || data.Required[0] != "count" {
+		t.Fatalf("replace kept documented details or lost overlay ones: %+v", data)
+	}
+	err := applyCorrection(root, "rows[]", overlay.Correction{Replace: &overlay.Spec{Type: "string"}, Evidence: evidence()})
+	if err != nil || root.Fields[1].Spec.Items.Type != "string" {
+		t.Fatalf("replace on list items: %v %+v", err, root.Fields[1].Spec)
+	}
+	for _, c := range []struct {
+		path       string
+		correction overlay.Correction
+		want       string
+	}{
+		{"data", overlay.Correction{Replace: &overlay.Spec{Type: "string"}, Type: "int"}, `path "data": replace cannot be combined with type or add`},
+		{"extra", overlay.Correction{Replace: &overlay.Spec{Type: "string"}, Add: &overlay.Spec{Type: "string"}}, `path "extra": replace cannot be combined with type or add`},
+		{"missing", overlay.Correction{Replace: &overlay.Spec{Type: "string"}}, `path "missing": field "missing" is not documented`},
+		{"data", overlay.Correction{Replace: &overlay.Spec{Type: "list"}}, `path "data": list needs items`},
+		{"data", overlay.Correction{Replace: &overlay.Spec{Type: "map"}}, `path "data": map needs values`},
+		{"data", overlay.Correction{Replace: &overlay.Spec{Type: "union"}}, `path "data": union needs anyOf`},
+		{"data", overlay.Correction{Replace: &overlay.Spec{Type: "object"}}, `path "data": object needs fields`},
+		{"data", overlay.Correction{Replace: &overlay.Spec{Type: "date"}}, `path "data": unknown type "date"`},
+		{"extra", overlay.Correction{Add: &overlay.Spec{Type: "list"}}, `path "extra": list needs items`},
+		{"extra", overlay.Correction{Add: &overlay.Spec{Type: "map", Values: &overlay.Spec{Type: "map"}}}, `path "extra{}": map needs values`},
+		{"data", overlay.Correction{Type: "list"}, `path "data": type "list" is not a scalar type; use replace`},
+	} {
+		c.correction.Evidence = evidence()
+		err := applyCorrection(documented(), c.path, c.correction)
+		if err == nil || err.Error() != c.want {
+			t.Errorf("%s %+v: got %v, want %s", c.path, c.correction, err, c.want)
+		}
 	}
 }

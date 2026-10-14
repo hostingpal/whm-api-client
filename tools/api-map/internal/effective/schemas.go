@@ -150,6 +150,21 @@ func (s schemas) allOf(sourceID string, parts []any, depth int, seen map[string]
 	return merged
 }
 
+// operationNode returns the operation object a variant points to, or nil when
+// the locator does not resolve to an object.
+func (s schemas) operationNode(v model.Variant) map[string]any {
+	loc := v.OperationLocator
+	if loc.Pointer == nil {
+		return nil
+	}
+	node, err := source.Pointer(s.m.Documents[loc.SourceID], *loc.Pointer)
+	if err != nil {
+		return nil
+	}
+	operation, _ := asObject(node)
+	return operation
+}
+
 // payload returns the documented success payload (WHM data, UAPI result.data),
 // nil when the envelope documents none, and the operation object.
 func (s schemas) payload(op model.Operation, v model.Variant) (*TypeSpec, map[string]any, error) {

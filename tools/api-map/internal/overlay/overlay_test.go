@@ -132,3 +132,89 @@ func TestLoadRejectsNonExactConfigKeys(t *testing.T) {
 		})
 	}
 }
+
+const evidenceJSON = `[{"kind": "doc", "version": "11.138.0.15", "date": "2026-10-14", "note": "documented behaviour"}]`
+
+func loadWHM(t *testing.T, content string) Set {
+	t.Helper()
+	set, err := Load(writeOverlay(t, "listed", map[string]string{"whm/Accounts.json": content}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return set
+}
+
+func TestValidateRequiresEvidenceForBehaviourOverrides(t *testing.T) {
+	for name, c := range map[string]struct{ setting, want string }{
+		"method":          {`"method": "POST"`, "whm1:listaccts: method needs evidence"},
+		"outcome":         {`"outcome": "unchecked"`, "whm1:listaccts: outcome needs evidence"},
+		"void":            {`"void": true`, "whm1:listaccts: void needs evidence"},
+		"sensitive false": {`"params": {"search": {"sensitive": false}}`, "whm1:listaccts: sensitive false on parameter search needs evidence"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			without := strings.Replace(validWHM, `"name": "listAccounts",`, `"name": "listAccounts", `+c.setting+`,`, 1)
+			joined := strings.Join(Validate(loadWHM(t, without)), "\n")
+			if !strings.Contains(joined, c.want) {
+				t.Fatalf("missing %q in %s", c.want, joined)
+			}
+			with := strings.Replace(without, `"name": "listAccounts",`, `"name": "listAccounts", "evidence": `+evidenceJSON+`,`, 1)
+			if problems := Validate(loadWHM(t, with)); len(problems) != 0 {
+				t.Fatalf("evidence not honoured: %v", problems)
+			}
+		})
+	}
+	sensitive := strings.Replace(validWHM, `"name": "listAccounts",`, `"name": "listAccounts", "params": {"search": {"sensitive": true}},`, 1)
+	if problems := Validate(loadWHM(t, sensitive)); len(problems) != 0 {
+		t.Fatalf("sensitive true needs no evidence: %v", problems)
+	}
+}
+
+func TestValidateReportsDuplicateGroupFiles(t *testing.T) {
+	second := strings.Replace(validWHM, `"whm1:listaccts"`, `"whm1:createacct"`, 1)
+	set, err := Load(writeOverlay(t, "listed", map[string]string{"whm/Accounts.json": validWHM, "whm/MoreAccounts.json": second}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	joined := strings.Join(Validate(set), "\n")
+	if want := `group "Accounts" appears in whm/Accounts.json and whm/MoreAccounts.json`; !strings.Contains(joined, want) {
+		t.Fatalf("missing %q in %s", want, joined)
+	}
+}
+
+func TestLoadRequiresTypeSpecCompanionKeys(t *testing.T) {
+	correction := func(key, spec string) string {
+		return strings.Replace(validWHM, `"accept": ["numeric-string"],`, `"`+key+`": `+spec+`,`, 1)
+	}
+	for name, content := range map[string]string{
+		"list without items":         correction("add", `{"type": "list"}`),
+		"map without values":         correction("add", `{"type": "map"}`),
+		"union without anyOf":        correction("add", `{"type": "union"}`),
+		"object without fields":      correction("add", `{"type": "object"}`),
+		"nested list without items":  correction("add", `{"type": "object", "fields": {"a": {"type": "list"}}}`),
+		"replace map without values": correction("replace", `{"type": "map"}`),
+	} {
+		t.Run(name, func(t *testing.T) {
+			if _, err := Load(writeOverlay(t, "listed", map[string]string{"whm/Accounts.json": content})); err == nil {
+				t.Fatal("accepted a type spec without its companion key")
+			}
+		})
+	}
+	for name, content := range map[string]string{
+		"list with items":  correction("add", `{"type": "list", "items": {"type": "string"}}`),
+		"empty object":     correction("add", `{"type": "object", "fields": {}}`),
+		"replace with map": correction("replace", `{"type": "map", "values": {"type": "int", "accept": ["numeric-string"]}}`),
+		"union with anyOf": correction("add", `{"type": "union", "anyOf": [{"type": "string"}, {"type": "int"}]}`),
+		"replace scalar":   correction("replace", `{"type": "int"}`),
+	} {
+		t.Run(name, func(t *testing.T) {
+			set, err := Load(writeOverlay(t, "listed", map[string]string{"whm/Accounts.json": content}))
+			if err != nil {
+				t.Fatal(err)
+			}
+			c := set.Files[0].Operations["whm1:listaccts"].Response["acct[].uid"]
+			if c.Add == nil && c.Replace == nil {
+				t.Fatalf("spec not decoded: %+v", c)
+			}
+		})
+	}
+}

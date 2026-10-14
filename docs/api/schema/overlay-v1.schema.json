@@ -56,7 +56,13 @@
         "anyOf": {"type": "array", "items": {"$ref": "#/$defs/typeSpec"}, "minItems": 1}
       },
       "required": ["type"],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {"if": {"properties": {"type": {"const": "list"}}}, "then": {"required": ["items"]}},
+        {"if": {"properties": {"type": {"const": "map"}}}, "then": {"required": ["values"]}},
+        {"if": {"properties": {"type": {"const": "union"}}}, "then": {"required": ["anyOf"]}},
+        {"if": {"properties": {"type": {"const": "object"}}}, "then": {"required": ["fields"]}}
+      ]
     },
     "correction": {
       "type": "object",
@@ -67,6 +73,7 @@
         "preserve": {"type": "boolean"},
         "required": {"type": "boolean"},
         "add": {"$ref": "#/$defs/typeSpec"},
+        "replace": {"$ref": "#/$defs/typeSpec"},
         "evidence": {"$ref": "#/$defs/evidenceList"}
       },
       "required": ["evidence"],
@@ -93,7 +100,8 @@
           "required": ["reason", "evidence"],
           "additionalProperties": false
         },
-        "probe": {"type": "object"}
+        "probe": {"type": "object"},
+        "evidence": {"$ref": "#/$defs/evidenceList"}
       },
       "additionalProperties": false
     }
