@@ -1,0 +1,129 @@
+<?php
+
+declare(strict_types=1);
+
+namespace HostingPal\WhmApiClient\Tests\Api\Engine;
+
+use HostingPal\WhmApiClient\Api\AbstractApiClient;
+use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
+use HostingPal\WhmApiClient\Api\Engine\OperationSpec;
+use HostingPal\WhmApiClient\Api\OutcomePolicy;
+use HostingPal\WhmApiClient\Api\RequestMethod;
+use HostingPal\WhmApiClient\Exception\InvalidResponseException;
+use HostingPal\WhmApiClient\Response\ApiResponse;
+use HostingPal\WhmApiClient\Response\ResponseMetadata;
+use LogicException;
+use PHPUnit\Framework\TestCase;
+use stdClass;
+
+/**
+ * @phpstan-import-type Parameters from AbstractApiClient
+ */
+final class OperationRunnerTest extends TestCase
+{
+    private const SPEC = [
+        'function' => 'primary_domain',
+        'module' => 'DomainInfo',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => ['hideTemporaryDomains' => ['name' => 'hide_temporary_domains', 'encoding' => 'bool']],
+        'returns' => [
+            'type' => 'object',
+            'fields' => ['primary_domain' => ['type' => 'string', 'nullable' => true]],
+            'required' => ['primary_domain'],
+        ],
+    ];
+
+    public function testRunEncodesDispatchesAndValidates(): void
+    {
+        $seen = [];
+        $result = OperationRunner::run(
+            self::SPEC,
+            ['hideTemporaryDomains' => true],
+            /**
+             * @param array<mixed> $spec
+             * @param Parameters $parameters
+             */
+            static function (array $spec, array $parameters) use (&$seen): ApiResponse {
+                $seen = [$spec['function'], $parameters];
+
+                return self::response((object) ['primary_domain' => 'example.test', 'extra' => 1]);
+            },
+        );
+
+        self::assertSame(['primary_domain', ['hide_temporary_domains' => 1]], $seen);
+        self::assertSame(['primary_domain' => 'example.test'], $result);
+    }
+
+    public function testUnwrapReturnsTheSelectedField(): void
+    {
+        $spec = self::SPEC + ['unwrap' => 'primary_domain'];
+
+        self::assertSame(
+            'example.test',
+            OperationRunner::result($spec, self::response((object) ['primary_domain' => 'example.test'])),
+        );
+        self::assertNull(OperationRunner::result($spec, self::response((object) ['primary_domain' => null])));
+    }
+
+    public function testUnwrapRequiresTheSelectedField(): void
+    {
+        $spec = ['returns' => ['type' => 'object', 'fields' => ['a' => ['type' => 'string']]], 'unwrap' => 'a']
+            + self::SPEC;
+        $metadata = new ResponseMetadata(200, ['result' => 1]);
+
+        try {
+            OperationRunner::result($spec, new ApiResponse(new stdClass(), $metadata));
+            self::fail('Expected an invalid payload.');
+        } catch (InvalidResponseException $exception) {
+            self::assertSame($metadata, $exception->metadata);
+            self::assertSame('Invalid primary_domain payload.', $exception->getMessage());
+        }
+    }
+
+    public function testVoidOperationsIgnoreThePayload(): void
+    {
+        $spec = ['returns' => null] + self::SPEC;
+
+        self::assertNull(OperationRunner::result($spec, self::response((object) ['anything' => true])));
+        self::assertNull(OperationRunner::result($spec, new ApiResponse(null, new ResponseMetadata(200), false)));
+    }
+
+    public function testOmittedPayloadIsInvalidEvenWhenNullable(): void
+    {
+        $nullable = ['returns' => ['type' => 'list', 'items' => ['type' => 'string'], 'nullable' => true]]
+            + self::SPEC;
+        self::assertNull(OperationRunner::result($nullable, new ApiResponse(null, new ResponseMetadata(200), true)));
+
+        $this->expectException(InvalidResponseException::class);
+        OperationRunner::result($nullable, new ApiResponse(null, new ResponseMetadata(200), false));
+    }
+
+    public function testMissingReturnsIsAGeneratorDefect(): void
+    {
+        $this->expectException(LogicException::class);
+
+        OperationRunner::result(array_diff_key(self::SPEC, ['returns' => true]), self::response(new stdClass()));
+    }
+
+    public function testSpecHelpersMapWireValues(): void
+    {
+        self::assertSame(RequestMethod::Get, OperationSpec::method(self::SPEC));
+        self::assertSame(RequestMethod::Post, OperationSpec::method(['method' => 'POST'] + self::SPEC));
+        self::assertSame(OutcomePolicy::Flag, OperationSpec::outcome(self::SPEC));
+        self::assertSame(OutcomePolicy::Unchecked, OperationSpec::outcome(['outcome' => 'unchecked'] + self::SPEC));
+        self::assertSame('DomainInfo', OperationSpec::text(self::SPEC, 'module'));
+    }
+
+    public function testMalformedSpecsAreGeneratorDefects(): void
+    {
+        $this->expectException(LogicException::class);
+
+        OperationSpec::method(['method' => 'PATCH'] + self::SPEC);
+    }
+
+    private static function response(stdClass $data): ApiResponse
+    {
+        return new ApiResponse($data, new ResponseMetadata(200, ['result' => 1]));
+    }
+}
