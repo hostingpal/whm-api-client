@@ -313,7 +313,7 @@ known `npr.rs` account, HTTP 200 and WHM result `1`. The separately invoked PHPU
 live group then passed all six checks for WHM `version`/`get_domain_info` and direct
 plus WHM-routed UAPI `DomainInfo/list_domains`/`LangPHP/php_get_installed_versions`
 (45 assertions). This verifies these operations and routes on this server at the
-time of the run; it is not saved revision-bound evidence for the parity report.
+time of the run; it is not saved revision-bound evidence.
 
 The server identity/health slice subsequently exercised WHM `gethostname`,
 `systemloadavg`, and `getdiskusage` as `root` on `test.oblak.host:2087`, through

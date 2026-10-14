@@ -4,7 +4,6 @@
 
     <file>src</file>
     <file>tests</file>
-    <file>tools/php-symbols</file>
 
     <arg name="extensions" value="php"/>
     <arg value="sp"/>

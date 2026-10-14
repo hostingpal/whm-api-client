@@ -4,5 +4,4 @@ parameters:
     paths:
         - src
         - tests
-        - tools/php-symbols
     tmpDir: .cache/phpstan

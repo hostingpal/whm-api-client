@@ -529,7 +529,7 @@ even when live-test environment variables are set. Pair new read-only slices wit
 an explicit live run on the approved test server; add reviewed routes to the live
 group as implementation grows. Mutating/destructive tests require approval for
 the specific operations and targets. Live runs do not update pinned documentation
-or the offline coverage baseline.
+or the generated coverage.
 
 The PHPCS ruleset adds sorted and unused-import checks (including PHPDoc uses),
 short arrays, multiline trailing commas, consistent member and type spacing,
@@ -617,8 +617,8 @@ dependency. The [source audit, approved design, and implementation plan](docs/ap
 documentation provenance and distinguish implementation from live coverage.
 
 Run `composer api-map:check` with Go 1.24+ for the read-only offline toolchain
-gate. It validates deterministic output, PHP mappings, checked reports, and the
-reviewed coverage baseline. `composer check` remains PHP-only. See the
+gate. It validates deterministic output, the overlay, and that committed generated
+code is current. `composer check` remains PHP-only. See the
 [tool commands and artifact review workflow](tools/api-map/README.md).
 
 ## License
