@@ -27,7 +27,7 @@ use Psr\Http\Client\RequestExceptionInterface;
  * query string; POST keeps routing fields there and form-encodes the operation
  * parameters in the body. The outcome policy is declared per request.
  *
- * @phpstan-type Parameters array<string, string|int|list<string>|NumberedList>
+ * @phpstan-type Parameters array<string, string|int|list<string>|NumberedList|RepeatedList>
  */
 abstract class AbstractApiClient
 {
@@ -208,8 +208,8 @@ abstract class AbstractApiClient
     /**
      * Encode scalar, repeated, or numbered values without changing key names.
      *
-     * A list<string> repeats its literal name; a NumberedList uses name, name-1,
-     * name-2, ... in order. The mixed boundary validates PHP array contents
+     * List values and RepeatedList values repeat their literal name; NumberedList
+     * values use WHM's name, name-1, name-2, ... convention. The mixed boundary validates PHP array contents
      * supplied to typed methods.
      *
      * @return non-empty-list<string>
@@ -218,7 +218,9 @@ abstract class AbstractApiClient
     private static function queryValues(string $name, mixed $value): array
     {
         $numbered = $value instanceof NumberedList;
-        $value = $numbered ? $value->values : $value;
+        if ($numbered || $value instanceof RepeatedList) {
+            $value = $value->values;
+        }
         if (is_string($value) || is_int($value)) {
             return [rawurlencode($name) . '=' . rawurlencode((string) $value)];
         }

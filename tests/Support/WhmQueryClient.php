@@ -6,6 +6,7 @@ namespace HostingPal\WhmApiClient\Tests\Support;
 
 use HostingPal\WhmApiClient\Api\AbstractApiClient;
 use HostingPal\WhmApiClient\Api\NumberedList;
+use HostingPal\WhmApiClient\Api\RepeatedList;
 use HostingPal\WhmApiClient\Config\ClientConfigFactory;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\Response\ApiResponse;
@@ -23,7 +24,7 @@ final class WhmQueryClient extends AbstractApiClient
         ]), $transport);
     }
 
-    /** @param array<string, NumberedList> $query */
+    /** @param array<string, NumberedList|RepeatedList> $query */
     public function get(array $query): ApiResponse
     {
         return $this->executeGet(
@@ -33,7 +34,7 @@ final class WhmQueryClient extends AbstractApiClient
         );
     }
 
-    /** @param array<string, string|int|list<string>|NumberedList> $body */
+    /** @param array<string, string|int|list<string>|NumberedList|RepeatedList> $body */
     public function post(array $body): ApiResponse
     {
         return $this->executePost(
