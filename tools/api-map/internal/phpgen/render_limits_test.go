@@ -74,3 +74,20 @@ func TestRenderKeepsLongInputsValidAndBounded(t *testing.T) {
 		t.Errorf("long enum type was not replaced by the plain type:\n%s", class)
 	}
 }
+
+func TestParamDocFallbackKeepsListElementTypes(t *testing.T) {
+	long := strings.Repeat("'option_value'|", 10) + "'last'"
+	for _, c := range []struct {
+		param effective.Param
+		want  string
+	}{
+		{effective.Param{PHP: "names", Encoding: "repeat", PHPType: "string|array", DocType: long}, "     * @param string|list<string>|null $names Names."},
+		{effective.Param{PHP: "users", Encoding: "numbered", PHPType: "string|array", DocType: long, Required: true}, "     * @param string|list<string> $users Names."},
+	} {
+		w := &writer{}
+		w.paramDoc("    ", c.param, "Names.")
+		if got := strings.TrimSuffix(w.b.String(), "\n"); got != c.want {
+			t.Errorf("got %q, want %q", got, c.want)
+		}
+	}
+}

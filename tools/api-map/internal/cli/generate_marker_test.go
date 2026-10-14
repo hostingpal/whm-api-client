@@ -91,4 +91,18 @@ func TestEveryRenderedFileIsRecognisedAsGenerated(t *testing.T) {
 			t.Fatalf("rendered file not recognised: %s", path)
 		}
 	}
+
+	// A long group description must not push the marker out of the window
+	// isGenerated scans.
+	for i := range result.Groups {
+		result.Groups[i].Description = strings.TrimSpace(strings.Repeat("description ", 250))
+	}
+	if length := len(result.Groups[0].Description); length < 2900 {
+		t.Fatalf("description too short: %d", length)
+	}
+	for path, content := range phpgen.Render(result) {
+		if strings.HasSuffix(path, ".php") && !isGenerated(content) {
+			t.Fatalf("rendered file with a long description not recognised: %s", path)
+		}
+	}
 }

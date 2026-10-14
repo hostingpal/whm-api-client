@@ -28,13 +28,17 @@ func (w *writer) doc(indent, text string) {
 
 // paramDoc writes one "@param <type> $name" tag. The tag head always stays on a
 // single line: when it would exceed lineWidth the literal doc type is replaced
-// by the parameter's plain PHP type. Only the description wraps, with
-// continuation lines indented four spaces after the asterisk.
+// by the parameter's plain type (string|list<string> for list encodings). Only
+// the description wraps, with continuation lines indented four spaces after
+// the asterisk.
 func (w *writer) paramDoc(indent string, p effective.Param, description string) {
 	docType := paramDocType(p)
 	head := func(t string) string { return indent + " * @param " + t + " $" + p.PHP }
 	if len(head(docType)) > lineWidth {
 		docType = p.PHPType
+		if p.Encoding == "repeat" || p.Encoding == "numbered" {
+			docType = "string|list<string>"
+		}
 		if !p.Required {
 			docType += "|null"
 		}
@@ -146,11 +150,13 @@ func groupClass(g effective.Group) string {
 	}
 	w.line("")
 	w.line("/**")
+	// The marker leads every docblock so an unbounded description can never
+	// push it past the lines the generator scans to recognise its own files.
+	w.doc("", Marker)
+	w.line(" *")
 	w.doc("", g.Description)
 	w.line(" *")
 	w.doc("", lifecycle(g.Family))
-	w.line(" *")
-	w.doc("", Marker)
 	aliases := false
 	for _, op := range g.Operations {
 		spec := resultSpec(op)
@@ -313,9 +319,9 @@ func specClass(g effective.Group) string {
 	w := &writer{}
 	header(w, namespace)
 	w.line("/**")
-	w.doc("", "Operation specs for the "+g.Class+" group, consumed by Api\\Engine\\OperationRunner.")
-	w.line(" *")
 	w.doc("", Marker)
+	w.line(" *")
+	w.doc("", "Operation specs for the "+g.Class+" group, consumed by Api\\Engine\\OperationRunner.")
 	w.line(" *")
 	w.line(" * @internal")
 	w.line(" */")
@@ -370,9 +376,9 @@ func groupsTrait(family string, groups []effective.Group) string {
 	header(w, rootNamespace+`\Api\`+dir)
 	handle := map[string]string{"uapi": "UapiClient", "whm1": "WhmClient"}[family]
 	w.line("/**")
-	w.doc("", "Lazy, cached group accessors used by "+handle+"; selecting a group performs no I/O.")
-	w.line(" *")
 	w.doc("", Marker)
+	w.line(" *")
+	w.doc("", "Lazy, cached group accessors used by "+handle+"; selecting a group performs no I/O.")
 	w.line(" *")
 	w.line(" * @internal")
 	w.line(" */")

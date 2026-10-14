@@ -82,8 +82,9 @@ func baseShape(spec effective.TypeSpec, indent string) string {
 		}
 		return strings.Join(parts, "|")
 	case "object":
+		// The engine returns [] for an object without declared fields.
 		if len(spec.Fields) == 0 {
-			return "array<string, mixed>"
+			return "array{}"
 		}
 		inner := indent + "    "
 		lines := []string{"array{"}

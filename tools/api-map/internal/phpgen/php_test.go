@@ -50,7 +50,7 @@ func TestShapeCoversEveryType(t *testing.T) {
 		"array<array-key, 0|1>":    {Type: "map", Values: &effective.TypeSpec{Type: "flag"}},
 		"int|float|numeric-string": {Type: "number", Preserve: true},
 		"string|int":               {Type: "union", AnyOf: []effective.TypeSpec{{Type: "string"}, {Type: "int"}}},
-		"array<string, mixed>":     {Type: "object"},
+		"array{}":                  {Type: "object"},
 		"mixed":                    {Type: "mixed", Nullable: true},
 		"bool|null":                {Type: "bool", Nullable: true},
 	}
