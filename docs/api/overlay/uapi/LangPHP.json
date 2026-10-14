@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "LangPHP",
+  "operations": {
+    "uapi:LangPHP/php_get_domain_handler": {"unwrap": "php_handler"},
+    "uapi:LangPHP/php_get_impacted_domains": {
+      "params": {"domain": {"php": "domains", "encoding": "repeat"}},
+      "unwrap": "domains"
+    },
+    "uapi:LangPHP/php_get_installed_versions": {"unwrap": "versions"},
+    "uapi:LangPHP/php_get_system_default_version": {"unwrap": "version"}
+  }
+}

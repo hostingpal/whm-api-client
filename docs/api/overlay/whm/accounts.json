@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "Accounts",
+  "accessor": "accounts",
+  "operations": {
+    "whm1:accountsummary": {
+      "name": "accountSummary",
+      "response": {"acct[].uid": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "listaccts and accountsummary returned uid as a decimal string; docs/api/source-audit.md"}]}}
+    },
+    "whm1:changepackage": {
+      "name": "changePackage",
+      "order": ["user", "pkg"],
+      "params": {"pkg": {"php": "package"}}
+    },
+    "whm1:createacct": {"name": "createAccount"},
+    "whm1:get_domain_info": {
+      "response": {
+        "domains[].port": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "get_domain_info returned port and port_ssl as decimal strings (80, 443); docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
+        "domains[].port_ssl": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "get_domain_info returned port and port_ssl as decimal strings (80, 443); docs/api/source-audit.md#runtime-observations-2026-10-13"}]}
+      }
+    },
+    "whm1:listaccts": {
+      "name": "listAccounts",
+      "response": {"acct[].uid": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "listaccts and accountsummary returned uid as a decimal string; docs/api/source-audit.md"}]}}
+    },
+    "whm1:modifyacct": {
+      "name": "modifyAccount",
+      "params": {
+        "MXCHECK-*": {"omit": true},
+        "PUSHBULLET_ACCESS_TOKEN": {"sensitive": true}
+      }
+    },
+    "whm1:passwd": {
+      "name": "changePassword",
+      "order": ["user", "password"],
+      "params": {"enabledigest": {"omit": true}}
+    },
+    "whm1:removeacct": {"name": "removeAccount", "params": {"user": {"omit": true}}},
+    "whm1:suspendacct": {"name": "suspendAccount"},
+    "whm1:unsuspendacct": {"name": "unsuspendAccount"}
+  }
+}

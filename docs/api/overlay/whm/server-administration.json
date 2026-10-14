@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "Server Administration",
+  "accessor": "server",
+  "operations": {
+    "whm1:getdiskusage": {
+      "name": "getDiskUsage",
+      "response": {
+        "partition[].inodes_available": {"nullable": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "getdiskusage returned explicit null for the four inode fields; docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
+        "partition[].inodes_ipercentage": {"nullable": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "getdiskusage returned explicit null for the four inode fields; docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
+        "partition[].inodes_total": {"nullable": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "getdiskusage returned explicit null for the four inode fields; docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
+        "partition[].inodes_used": {"nullable": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "getdiskusage returned explicit null for the four inode fields; docs/api/source-audit.md#runtime-observations-2026-10-13"}]}
+      }
+    },
+    "whm1:gethostname": {"name": "getHostname", "unwrap": "hostname"},
+    "whm1:systemloadavg": {
+      "name": "getLoadAverage",
+      "response": {
+        "fifteen": {"accept": ["numeric-string"], "preserve": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "systemloadavg returned load averages as decimal strings (for example \"0.50\"); docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
+        "five": {"accept": ["numeric-string"], "preserve": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "systemloadavg returned load averages as decimal strings (for example \"0.50\"); docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
+        "one": {"accept": ["numeric-string"], "preserve": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "systemloadavg returned load averages as decimal strings (for example \"0.50\"); docs/api/source-audit.md#runtime-observations-2026-10-13"}]}
+      }
+    },
+    "whm1:version": {"name": "version", "unwrap": "version"}
+  }
+}

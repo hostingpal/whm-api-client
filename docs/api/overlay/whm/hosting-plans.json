@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "Hosting Plans",
+  "accessor": "hostingPlans",
+  "operations": {
+    "whm1:get_available_featurelists": {"exclude": {"reason": "Deprecated; use getFeaturelists() (get_featurelists), which does not treat an empty list as an error for resellers.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; DEPRECATED: Use get_featurelists instead."}]}},
+    "whm1:get_feature_metadata": {
+      "response": {"features[].is_plugin": {"accept": ["string-flag"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "feature endpoints returned exact string flags \"0\"/\"1\"; docs/api/source-audit.md#runtime-observations-2026-10-13"}]}}
+    },
+    "whm1:get_feature_names": {},
+    "whm1:get_featurelist_data": {
+      "response": {
+        "features[].is_disabled": {"accept": ["string-flag"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "feature endpoints returned exact string flags \"0\"/\"1\"; docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
+        "features[].is_meridian_only": {"accept": ["bool"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "get_featurelist_data returned booleans for presentation flags; docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
+        "features[].is_standalone_experience": {"accept": ["bool"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "get_featurelist_data returned booleans for presentation flags; docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
+        "features[].suppress_plugin_label": {"accept": ["bool"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "get_featurelist_data returned booleans for presentation flags; docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
+        "features[].value": {"accept": ["string-flag"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "feature endpoints returned exact string flags \"0\"/\"1\"; docs/api/source-audit.md#runtime-observations-2026-10-13"}]}
+      }
+    },
+    "whm1:get_featurelists": {},
+    "whm1:get_featurelists_by_package_types": {},
+    "whm1:get_users_features_settings": {
+      "params": {
+        "feature": {"php": "features", "encoding": "numbered"},
+        "user": {"php": "users", "encoding": "numbered"}
+      },
+      "response": {"users_features_settings[].feature_list_setting": {"accept": ["string-flag"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "feature endpoints returned exact string flags \"0\"/\"1\"; docs/api/source-audit.md#runtime-observations-2026-10-13"}]}}
+    },
+    "whm1:listpkgs": {"name": "listPackages"},
+    "whm1:read_featurelist": {"exclude": {"reason": "Deprecated; use getFeaturelistData() (get_featurelist_data).", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; DEPRECATED: Use get_featurelist_data instead."}]}},
+    "whm1:verify_user_has_feature": {"order": ["user", "feature"], "unwrap": "has_feature"}
+  }
+}

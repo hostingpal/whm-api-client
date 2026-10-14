@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "DomainInfo",
+  "operations": {
+    "uapi:DomainInfo/list_domains": {},
+    "uapi:DomainInfo/main_domain_builtin_subdomain_aliases": {},
+    "uapi:DomainInfo/primary_domain": {"unwrap": "primary_domain"}
+  }
+}

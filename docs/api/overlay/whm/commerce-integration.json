@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "Commerce Integration",
+  "accessor": "commerce",
+  "operations": {
+    "whm1:get_ecommerce": {"exclude": {"reason": "Deprecated without a successor.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true."}]}},
+    "whm1:set_ecommerce": {"exclude": {"reason": "Deprecated without a successor.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true."}]}}
+  }
+}

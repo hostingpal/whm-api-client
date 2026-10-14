@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Themes",
+  "operations": {
+    "uapi:Themes/get_theme_base": {"exclude": {"reason": "Deprecated; does not return useful output.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; This function is deprecated and does not return useful output."}]}}
+  }
+}
