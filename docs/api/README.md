@@ -3,8 +3,9 @@
 The source audit for Beads `whm-api-client-gwi.1` covers **WHM API 1** and
 **cPanel UAPI**. The PHP package implements typed groups for 39 reviewed operations
 plus generic calls; these documents pin the contracts and do not by themselves
-establish endpoint implementation or live-test coverage (see the
-[coverage report](coverage/report.md)).
+establish endpoint implementation or live-test coverage. Coverage is generated:
+[coverage.md](coverage.md) lists generated groups and exclusions, and live
+verification is separate.
 
 - [Audit and contract discrepancies](source-audit.md)
 - [Measured source structure](source-inventory.json)
@@ -115,8 +116,9 @@ map builds. No command shown here calls a WHM or cPanel endpoint.
 
 [Toolchain commands](../../tools/api-map/README.md) cover saved capability
 comparison, drift, explicit regeneration, and the overlay and PHP generation
-rules. Coverage is the generated [coverage.md](coverage.md). The [toolchain configuration](toolchain.json) selects local
-inputs, checked reports, schemas, and synthetic examples.
+rules. Coverage is the generated [coverage.md](coverage.md). The
+[toolchain configuration](toolchain.json) selects local inputs, checked
+reports, schemas, and synthetic examples.
 
 ```bash
 composer api-map:check

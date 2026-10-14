@@ -611,7 +611,8 @@ A separate Composer package will provide Laravel integration and supply its
 configured Guzzle client. Laravel dependencies belong in that package.
 
 The Go tool parses pinned official API documentation, generates a canonical
-API map, and compares documented operations with declared PHP implementation coverage.
+API map, validates the overlay, generates the typed client and
+`docs/api/coverage.md`, and checks that generated code is current.
 Go was selected for the separate development tool; it is not a PHP runtime
 dependency. The [source audit, approved design, and implementation plan](docs/api/README.md) preserve
 documentation provenance and distinguish implementation from live coverage.
