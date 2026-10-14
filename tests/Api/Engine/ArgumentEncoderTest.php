@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tests\Api\Engine;
 
 use HostingPal\WhmApiClient\Api\Engine\ArgumentEncoder;
+use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
 use HostingPal\WhmApiClient\Api\NumberedList;
 use HostingPal\WhmApiClient\Api\RepeatedList;
 use LogicException;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
+use SensitiveParameter;
 
 final class ArgumentEncoderTest extends TestCase
 {
@@ -68,5 +71,29 @@ final class ArgumentEncoderTest extends TestCase
         $this->expectException(LogicException::class);
 
         ArgumentEncoder::encode(self::PARAMS, ['hideTemporary' => 1]);
+    }
+
+    public function testFloatsEncodeIndependentlyOfThePrecisionSetting(): void
+    {
+        $encoded = ArgumentEncoder::encode(self::PARAMS, ['ratio' => 1234567890.123456]);
+        self::assertSame('1234567890.123456', $encoded['ratio']);
+
+        $previous = ini_set('precision', '6');
+        try {
+            $encoded = ArgumentEncoder::encode(self::PARAMS, ['ratio' => 1234567.5]);
+            self::assertSame('1234567.5', $encoded['ratio']);
+        } finally {
+            ini_set('precision', $previous === false ? '14' : $previous);
+        }
+    }
+
+    public function testArgumentsAreMarkedSensitiveOnEngineFrames(): void
+    {
+        foreach ([[ArgumentEncoder::class, 'encode'], [OperationRunner::class, 'run']] as [$class, $method]) {
+            $parameter = (new ReflectionMethod($class, $method))->getParameters()[1];
+
+            self::assertSame('arguments', $parameter->getName());
+            self::assertCount(1, $parameter->getAttributes(SensitiveParameter::class));
+        }
     }
 }

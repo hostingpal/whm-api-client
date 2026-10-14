@@ -12,12 +12,21 @@ use LogicException;
  * Describe and read the generated per-operation spec format.
  *
  * tools/api-map generates one spec constant per operation in the group's Spec
- * class. Keys: function (wire name), module (UAPI only), method ('GET' or
- * 'POST'), outcome ('flag' or 'unchecked'), params (PHP argument name =>
- * array{name: wire name, encoding: 'scalar'|'bool'|'repeat'|'numbered'}),
- * returns (a type spec, or null for void), and optional unwrap (a field of the
- * validated object to return). Type specs are documented on ShapeValidator's
- * callers in the generated-client design. A malformed spec is a generator defect.
+ * class. Keys:
+ *
+ * - function: the wire operation name (required string).
+ * - module: the UAPI module (UAPI operations only).
+ * - method: 'GET' or 'POST'.
+ * - outcome: 'flag' or 'unchecked'.
+ * - params: PHP argument name => array{name: wire name, encoding: 'scalar'|
+ *   'bool'|'repeat'|'numbered'}, in signature order.
+ * - returns: required key; a type spec (see ShapeValidator for the grammar), or
+ *   an explicit null for a void operation.
+ * - unwrap: optional string naming a field declared in an object "returns";
+ *   that field of the validated object is returned.
+ *
+ * A malformed spec is a generator defect: it raises LogicException before the
+ * request is dispatched, never an API or payload failure.
  *
  * @internal
  */

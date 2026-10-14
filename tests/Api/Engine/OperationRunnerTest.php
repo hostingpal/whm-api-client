@@ -13,6 +13,7 @@ use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Response\ApiResponse;
 use HostingPal\WhmApiClient\Response\ResponseMetadata;
 use LogicException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -104,6 +105,46 @@ final class OperationRunnerTest extends TestCase
         $this->expectException(LogicException::class);
 
         OperationRunner::result(array_diff_key(self::SPEC, ['returns' => true]), self::response(new stdClass()));
+    }
+
+    /** @param array<mixed> $spec */
+    #[DataProvider('defectiveSpecs')]
+    public function testDefectiveSpecsFailBeforeDispatch(array $spec): void
+    {
+        $calls = 0;
+
+        try {
+            OperationRunner::run(
+                $spec,
+                [],
+                /**
+                 * @param array<mixed> $spec
+                 * @param Parameters $parameters
+                 */
+                static function (array $spec, array $parameters) use (&$calls): ApiResponse {
+                    $calls++;
+
+                    return self::response(new stdClass());
+                },
+            );
+            self::fail('Expected a generator defect.');
+        } catch (LogicException) {
+            self::assertSame(0, $calls);
+        }
+    }
+
+    /** @return iterable<string, array{array<mixed>}> */
+    public static function defectiveSpecs(): iterable
+    {
+        yield 'missing returns' => [array_diff_key(self::SPEC, ['returns' => true])];
+        yield 'scalar returns' => [['returns' => 'string'] + self::SPEC];
+        yield 'non-string function' => [['function' => 5] + self::SPEC];
+        yield 'non-string unwrap' => [['unwrap' => 5] + self::SPEC];
+        yield 'unwrap with non-object returns' => [
+            ['returns' => ['type' => 'list', 'items' => ['type' => 'string']], 'unwrap' => 'a'] + self::SPEC,
+        ];
+        yield 'unwrap with void returns' => [['returns' => null, 'unwrap' => 'a'] + self::SPEC];
+        yield 'unwrap of undeclared field' => [['unwrap' => 'missing'] + self::SPEC];
     }
 
     public function testSpecHelpersMapWireValues(): void

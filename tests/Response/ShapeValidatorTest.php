@@ -51,6 +51,22 @@ final class ShapeValidatorTest extends TestCase
         yield 'flag from bool' => ['false', ['type' => 'flag', 'accept' => ['bool']], 0];
         yield 'mixed' => ['{"a":[1,{"b":2}]}', ['type' => 'mixed'], ['a' => [1, ['b' => 2]]]];
         yield 'nullable null' => ['null', ['type' => 'string', 'nullable' => true], null];
+        yield 'mixed null' => ['null', ['type' => 'mixed'], null];
+        yield 'map of mixed with null' => [
+            '{"a":null}',
+            ['type' => 'map', 'values' => ['type' => 'mixed']],
+            ['a' => null],
+        ];
+        yield 'union with nullable branch accepts null' => [
+            'null',
+            ['type' => 'union', 'anyOf' => [['type' => 'string', 'nullable' => true], ['type' => 'int']]],
+            null,
+        ];
+        yield 'nullable union accepts null' => [
+            'null',
+            ['type' => 'union', 'nullable' => true, 'anyOf' => [['type' => 'string'], ['type' => 'int']]],
+            null,
+        ];
     }
 
     /** @param array<mixed> $type */
@@ -73,6 +89,10 @@ final class ShapeValidatorTest extends TestCase
     {
         yield 'int as string' => ['1', ['type' => 'string']];
         yield 'null without nullable' => ['null', ['type' => 'string']];
+        yield 'null against union without nullable branch' => [
+            'null',
+            ['type' => 'union', 'anyOf' => [['type' => 'string'], ['type' => 'int']]],
+        ];
         yield 'numeric string without accept' => ['"42"', ['type' => 'int']];
         yield 'leading zero string' => ['"042"', ['type' => 'int', 'accept' => ['numeric-string']]];
         yield 'exponent string' => ['"1e3"', ['type' => 'int', 'accept' => ['numeric-string']]];

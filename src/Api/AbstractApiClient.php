@@ -209,8 +209,8 @@ abstract class AbstractApiClient
      * Encode scalar, repeated, or numbered values without changing key names.
      *
      * List values and RepeatedList values repeat their literal name; NumberedList
-     * values use WHM's name, name-1, name-2, ... convention. The mixed boundary validates PHP array contents
-     * supplied to typed methods.
+     * values use WHM's name, name-1, name-2, ... convention. The mixed boundary
+     * validates PHP array contents supplied to typed methods.
      *
      * @return non-empty-list<string>
      * @throws InvalidArgumentException If a list is empty, keyed, or contains non-strings.

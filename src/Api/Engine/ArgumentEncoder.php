@@ -8,13 +8,15 @@ use HostingPal\WhmApiClient\Api\AbstractApiClient;
 use HostingPal\WhmApiClient\Api\NumberedList;
 use HostingPal\WhmApiClient\Api\RepeatedList;
 use LogicException;
+use SensitiveParameter;
 
 /**
  * Encode a generated method's named arguments into wire parameters.
  *
  * Null arguments are omitted, so an explicit null and an omitted argument send
  * the same request. Flags become 0/1, repeated and numbered lists become their
- * marker objects, and float scalars are sent as strings. List contents are not
+ * marker objects, and float scalars are sent as strings (shortest round-trip form,
+ * independent of the precision setting). List contents are not
  * validated here: AbstractApiClient validates them after clearing metadata. An
  * argument or encoding the spec does not declare is a generator defect.
  *
@@ -34,7 +36,7 @@ final class ArgumentEncoder
      * @return Parameters
      * @throws LogicException If arguments and specs disagree.
      */
-    public static function encode(array $params, array $arguments): array
+    public static function encode(array $params, #[SensitiveParameter] array $arguments): array
     {
         foreach (array_keys($arguments) as $name) {
             if (!array_key_exists($name, $params)) {
@@ -72,7 +74,7 @@ final class ArgumentEncoder
     {
         return match (true) {
             is_string($value), is_int($value) => $value,
-            is_float($value) => (string) $value,
+            is_float($value) => var_export($value, true),
             default => throw new LogicException('Scalar arguments must be strings or numbers.'),
         };
     }
