@@ -96,6 +96,7 @@ func baseShape(spec effective.TypeSpec, indent string) string {
 			if !shapeKey.MatchString(key) {
 				key = phpString(key)
 			}
+			key = escapeDoc(key)
 			optional := "?"
 			if required[field.Name] {
 				optional = ""
@@ -108,41 +109,15 @@ func baseShape(spec effective.TypeSpec, indent string) string {
 	return "mixed"
 }
 
-// nativeType renders the PHP return or property type for a spec.
+// nativeType renders the PHP return or property type for a spec. Null is
+// accepted when the spec or any nested union branch accepts it; the ?T
+// shorthand applies only to a single non-null type at the top level.
 func nativeType(spec effective.TypeSpec) string {
-	var types []string
-	switch spec.Type {
-	case "string":
-		types = []string{"string"}
-	case "int", "flag":
-		types = []string{"int"}
-	case "number":
-		types = []string{"int", "float"}
-		if spec.Preserve {
-			types = append(types, "string")
-		}
-	case "bool":
-		types = []string{"bool"}
-	case "list", "map", "object":
-		types = []string{"array"}
-	case "union":
-		seen := map[string]bool{}
-		for _, option := range spec.AnyOf {
-			native := nativeType(effective.TypeSpec{Type: option.Type, Preserve: option.Preserve, AnyOf: option.AnyOf})
-			if native == "mixed" {
-				return "mixed"
-			}
-			for _, part := range strings.Split(native, "|") {
-				if !seen[part] {
-					seen[part] = true
-					types = append(types, part)
-				}
-			}
-		}
-	default:
+	types, nullable, mixed := nativeParts(spec)
+	if mixed {
 		return "mixed"
 	}
-	if spec.Nullable || (spec.Type == "union" && unionNullable(spec)) {
+	if nullable {
 		if len(types) == 1 {
 			return "?" + types[0]
 		}
@@ -151,13 +126,45 @@ func nativeType(spec effective.TypeSpec) string {
 	return strings.Join(types, "|")
 }
 
-func unionNullable(spec effective.TypeSpec) bool {
-	for _, option := range spec.AnyOf {
-		if option.Nullable {
-			return true
+// nativeParts returns the distinct non-null PHP types for spec, whether null is
+// accepted, and whether the spec collapses to mixed. Nested unions contribute
+// their parts and nullability recursively, so ?T never appears inside a union.
+func nativeParts(spec effective.TypeSpec) ([]string, bool, bool) {
+	switch spec.Type {
+	case "string":
+		return []string{"string"}, spec.Nullable, false
+	case "int", "flag":
+		return []string{"int"}, spec.Nullable, false
+	case "number":
+		types := []string{"int", "float"}
+		if spec.Preserve {
+			types = append(types, "string")
 		}
+		return types, spec.Nullable, false
+	case "bool":
+		return []string{"bool"}, spec.Nullable, false
+	case "list", "map", "object":
+		return []string{"array"}, spec.Nullable, false
+	case "union":
+		var types []string
+		seen := map[string]bool{}
+		nullable := spec.Nullable
+		for _, option := range spec.AnyOf {
+			optionTypes, optionNullable, optionMixed := nativeParts(option)
+			if optionMixed {
+				return nil, false, true
+			}
+			nullable = nullable || optionNullable
+			for _, part := range optionTypes {
+				if !seen[part] {
+					seen[part] = true
+					types = append(types, part)
+				}
+			}
+		}
+		return types, nullable, false
 	}
-	return false
+	return nil, false, true
 }
 
 // isArrayLike reports whether the spec's PHPStan type is an array shape worth an alias.

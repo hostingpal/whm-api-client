@@ -89,3 +89,28 @@ func TestSpecLiteralInlinesScalarsAndBreaksContainers(t *testing.T) {
 		t.Fatalf("got\n%s\nwant\n%s", got, want)
 	}
 }
+
+func TestNativeTypeFlattensNestedUnions(t *testing.T) {
+	cases := map[string]effective.TypeSpec{
+		"string|int|null": {Type: "union", AnyOf: []effective.TypeSpec{
+			{Type: "union", AnyOf: []effective.TypeSpec{{Type: "string", Nullable: true}}},
+			{Type: "int"},
+		}},
+		"string|int|bool|null": {Type: "union", AnyOf: []effective.TypeSpec{
+			{Type: "union", AnyOf: []effective.TypeSpec{{Type: "string"}, {Type: "int", Nullable: true}}},
+			{Type: "bool"},
+		}},
+	}
+	for want, spec := range cases {
+		if got := nativeType(spec); got != want {
+			t.Errorf("nativeType(%+v) = %q, want %q", spec, got, want)
+		}
+	}
+}
+
+func TestShapeEscapesDocTerminatorInKeys(t *testing.T) {
+	spec := object(effective.Field{Name: "a*/b", Spec: effective.TypeSpec{Type: "string"}})
+	if got := shape(spec, ""); strings.Contains(got, "*/") {
+		t.Fatal(got)
+	}
+}
