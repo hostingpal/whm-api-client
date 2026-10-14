@@ -115,6 +115,11 @@ func Load(dir string) (Set, error) {
 	if err := rejectDuplicateKeys(raw); err != nil {
 		return Set{}, fmt.Errorf("overlay config: %w", err)
 	}
+	// Exact-case key check: Go's struct decoding matches keys case-insensitively,
+	// so a mixed-case key such as "Scope" could otherwise override "scope".
+	if err := requireConfigKeys(raw); err != nil {
+		return Set{}, fmt.Errorf("overlay config: %w", err)
+	}
 	if err := strictDecode(raw, &set.Config); err != nil {
 		return Set{}, fmt.Errorf("overlay config: %w", err)
 	}
@@ -136,6 +141,35 @@ func Load(dir string) (Set, error) {
 		}
 	}
 	return set, nil
+}
+
+// requireConfigKeys accepts only the exact keys schema_version and scope, both
+// with JSON string values.
+func requireConfigKeys(raw []byte) error {
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.UseNumber()
+	var object map[string]any
+	if err := decoder.Decode(&object); err != nil {
+		return err
+	}
+	if object == nil {
+		return fmt.Errorf("config must be a JSON object")
+	}
+	for _, key := range []string{"schema_version", "scope"} {
+		value, ok := object[key]
+		if !ok {
+			return fmt.Errorf("missing %s", key)
+		}
+		if _, isString := value.(string); !isString {
+			return fmt.Errorf("%s must be a string", key)
+		}
+	}
+	for key := range object {
+		if key != "schema_version" && key != "scope" {
+			return fmt.Errorf("unknown config key %q", key)
+		}
+	}
+	return nil
 }
 
 func loadFile(path string) (File, error) {

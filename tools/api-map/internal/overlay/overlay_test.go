@@ -101,3 +101,34 @@ func TestValidateReportsStructuralProblems(t *testing.T) {
 		}
 	}
 }
+
+func writeRawConfig(t *testing.T, config string) string {
+	t.Helper()
+	dir := t.TempDir()
+	for _, family := range []string{"uapi", "whm"} {
+		if err := os.MkdirAll(filepath.Join(dir, family), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.WriteFile(filepath.Join(dir, "config.json"), []byte(config), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	return dir
+}
+
+func TestLoadRejectsNonExactConfigKeys(t *testing.T) {
+	for name, config := range map[string]string{
+		"case variant key":       `{"schema_version":"1.0","SCOPE":"all"}`,
+		"mixed case duplicate":   `{"schema_version":"1.0","scope":"listed","Scope":"all"}`,
+		"extra key":              `{"schema_version":"1.0","scope":"listed","extra":true}`,
+		"trailing data":          `{"schema_version":"1.0","scope":"listed"} {}`,
+		"non-string scope value": `{"schema_version":"1.0","scope":1}`,
+		"missing scope":          `{"schema_version":"1.0"}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			if _, err := Load(writeRawConfig(t, config)); err == nil {
+				t.Fatalf("accepted config %s", config)
+			}
+		})
+	}
+}
