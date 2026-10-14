@@ -38,8 +38,21 @@ func TestParityPinnedReport(t *testing.T) {
 	if err := json.Unmarshal(first, &report); err != nil {
 		t.Fatal(err)
 	}
-	if report.Summary.Functions.Numerator != 0 || report.Summary.Functions.Denominator != 1323 || report.Summary.Variants.Numerator != 0 || report.Summary.Variants.Denominator != 1325 || report.Summary.PassingTests.Numerator != 0 {
+	// Denominators are facts of the pinned sources; no passing-test evidence is
+	// supplied. Implemented coverage must match the checked report artifact.
+	if !report.Valid || report.Summary.Functions.Denominator != 1323 || report.Summary.Variants.Denominator != 1325 || report.Summary.PassingTests.Numerator != 0 {
 		t.Fatalf("unexpected totals %+v", report.Summary)
+	}
+	checkedRaw, err := os.ReadFile(filepath.Join(root, "docs/api/coverage/report.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var checked parity.Report
+	if err := json.Unmarshal(checkedRaw, &checked); err != nil {
+		t.Fatal(err)
+	}
+	if report.Summary.Functions != checked.Summary.Functions || report.Summary.Variants != checked.Summary.Variants {
+		t.Fatalf("coverage %+v differs from checked report %+v", report.Summary, checked.Summary)
 	}
 }
 

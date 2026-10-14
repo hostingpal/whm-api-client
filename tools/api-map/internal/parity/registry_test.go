@@ -130,11 +130,32 @@ func TestSymbolsAndRegistryStrictLoading(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(r.Entries) != 0 {
-		t.Fatal("transport inflated endpoint coverage")
+	// Transport is infrastructure: it must never be mapped as endpoint coverage,
+	// and each of its public symbols must be classified as infrastructure.
+	// Full validation of the real registry against the pinned map lives in the
+	// cli package (TestParityPinnedReport).
+	const transportClass = `HostingPal\WhmApiClient\Http\HttpTransport`
+	for _, entry := range r.Entries {
+		if strings.HasPrefix(entry.Symbol, transportClass+"::") {
+			t.Fatalf("transport inflated endpoint coverage: %s", entry.Symbol)
+		}
 	}
-	if ds := ValidateRegistry(fixtureMap(), r, s); len(ds) != 0 {
-		t.Fatalf("initial registry: %+v", ds)
+	infrastructure := map[string]bool{}
+	for _, item := range r.Infrastructure {
+		infrastructure[item.Symbol] = true
+	}
+	transportSymbols := 0
+	for _, symbol := range s.Symbols {
+		if symbol.DeclaringClass != transportClass {
+			continue
+		}
+		transportSymbols++
+		if !infrastructure[symbol.ID] {
+			t.Fatalf("transport symbol not classified as infrastructure: %s", symbol.ID)
+		}
+	}
+	if transportSymbols == 0 {
+		t.Fatal("transport symbols missing from the inventory")
 	}
 	for _, bad := range []string{`{"schema_version":"1.0","entries":[],"infrastructure":[],"exclusions":[],"extra":true}`, string(registry) + `{}`, strings.Replace(string(registry), `"1.0"`, `"2.0"`, 1)} {
 		if _, err := LoadRegistry([]byte(bad)); err == nil {

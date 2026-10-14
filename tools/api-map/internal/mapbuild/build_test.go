@@ -359,14 +359,18 @@ func TestLoadAnnotationsRejectsCaseVariantKeys(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, raw := range []string{
-		`{"schema_version":"1.0","annotations":[],"aliases":[],"ALIASES":[]}`,
-		`{"schema_version":"1.0","annotations":[],"aliases":[` + string(aliasRaw) + `],"ALIASES":[]}`,
-		`{"schema_version":"1.0","annotations":[` + string(annotationRaw) + `],"ANNOTATIONS":[],"aliases":[]}`,
-		`{"schema_version":"1.0","annotations":[],"aliases":[` + strings.Replace(string(aliasRaw), `"target_id":`, `"TARGET_ID":`, 1) + `]}`,
-		`{"schema_version":"1.0","annotations":[` + strings.Replace(string(annotationRaw), `"conclusion":`, `"CONCLUSION":`, 1) + `],"aliases":[]}`,
+	// Short subtest names: t.TempDir derives a directory from the test name, and
+	// whole JSON documents exceed the filename limit on Go versions that do not
+	// truncate it (CI uses Go 1.24).
+	for _, tc := range []struct{ name, raw string }{
+		{"empty top-level ALIASES", `{"schema_version":"1.0","annotations":[],"aliases":[],"ALIASES":[]}`},
+		{"top-level ALIASES beside aliases", `{"schema_version":"1.0","annotations":[],"aliases":[` + string(aliasRaw) + `],"ALIASES":[]}`},
+		{"top-level ANNOTATIONS", `{"schema_version":"1.0","annotations":[` + string(annotationRaw) + `],"ANNOTATIONS":[],"aliases":[]}`},
+		{"alias TARGET_ID", `{"schema_version":"1.0","annotations":[],"aliases":[` + strings.Replace(string(aliasRaw), `"target_id":`, `"TARGET_ID":`, 1) + `]}`},
+		{"annotation CONCLUSION", `{"schema_version":"1.0","annotations":[` + strings.Replace(string(annotationRaw), `"conclusion":`, `"CONCLUSION":`, 1) + `],"aliases":[]}`},
 	} {
-		t.Run(raw, func(t *testing.T) {
+		raw := tc.raw
+		t.Run(tc.name, func(t *testing.T) {
 			path := t.TempDir() + "/annotations.json"
 			if err := os.WriteFile(path, []byte(raw), 0600); err != nil {
 				t.Fatal(err)
