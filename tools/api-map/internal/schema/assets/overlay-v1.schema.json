@@ -87,6 +87,7 @@
         "outcome": {"enum": ["flag", "unchecked"]},
         "unwrap": {"type": "string", "minLength": 1},
         "void": {"type": "boolean"},
+        "optional_payload": {"type": "boolean"},
         "order": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
         "params": {"type": "object", "additionalProperties": {"$ref": "#/$defs/param"}},
         "response": {"type": "object", "additionalProperties": {"$ref": "#/$defs/correction"}},

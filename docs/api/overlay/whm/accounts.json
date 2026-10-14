@@ -6,14 +6,27 @@
   "operations": {
     "whm1:accountsummary": {
       "name": "accountSummary",
-      "response": {"acct[].uid": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "listaccts and accountsummary returned uid as a decimal string; docs/api/source-audit.md"}]}}
+      "order": ["user", "domain"],
+      "unwrap": "acct",
+      "response": {
+        "acct[].has_backup": {"add": {"type": "flag"}, "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Not in the pinned accountsummary record; the pinned listaccts record documents has_backup as 0|1 and the deleted hand-written accountSummary() (4d5088a) validated and returned it as part of the shared account record."}]},
+        "acct[].standalone_feature": {"add": {"type": "string"}, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "accountsummary returned standalone_feature as an empty string (undocumented for accountsummary, documented as a string for listaccts); docs/api/source-audit.md#runtime-observations-2026-10-14"}]},
+        "acct[].standalone_feature_name": {"add": {"type": "string"}, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "accountsummary returned standalone_feature_name as an empty string (undocumented for accountsummary, documented as a string for listaccts); docs/api/source-audit.md#runtime-observations-2026-10-14"}]},
+        "acct[].suspendtime": {"replace": {"type": "union", "nullable": true, "anyOf": [{"type": "string"}, {"type": "int"}]}, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "accountsummary returned suspendtime as integer 0 for an unsuspended account, although the pinned schema declares a nullable string; docs/api/source-audit.md#runtime-observations-2026-10-14"}]},
+        "acct[].uid": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "listaccts and accountsummary returned uid as a decimal string; docs/api/source-audit.md"}]}
+      }
     },
     "whm1:changepackage": {
       "name": "changePackage",
       "order": ["user", "pkg"],
       "params": {"pkg": {"php": "package"}}
     },
-    "whm1:createacct": {"name": "createAccount"},
+    "whm1:createacct": {
+      "name": "createAccount",
+      "optional_payload": true,
+      "params": {"account_enhancements": {"php": "accountEnhancements", "encoding": "repeat"}},
+      "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "The pinned createacct response does not require data, and the deleted hand-written create() (4d5088a) returned an empty result when WHM sent no data or null data; the pinned account_enhancements schema is oneOf a string or a list of strings (single and multiple examples), which create() sent as repeated keys."}]
+    },
     "whm1:get_domain_info": {
       "response": {
         "domains[].port": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "get_domain_info returned port and port_ssl as decimal strings (80, 443); docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
@@ -22,22 +35,28 @@
     },
     "whm1:listaccts": {
       "name": "listAccounts",
+      "order": ["search", "searchtype", "searchmethod", "want"],
+      "unwrap": "acct",
       "response": {"acct[].uid": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "listaccts and accountsummary returned uid as a decimal string; docs/api/source-audit.md"}]}}
     },
     "whm1:modifyacct": {
       "name": "modifyAccount",
+      "optional_payload": true,
       "params": {
         "MXCHECK-*": {"omit": true},
         "PUSHBULLET_ACCESS_TOKEN": {"sensitive": true}
-      }
+      },
+      "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "The pinned modifyacct response does not require data, and the deleted hand-written modify() (4d5088a) returned an empty result when WHM sent no data or null data."}]
     },
     "whm1:passwd": {
       "name": "changePassword",
+      "optional_payload": true,
       "order": ["user", "password"],
-      "params": {"enabledigest": {"omit": true}}
+      "params": {"enabledigest": {"omit": true}},
+      "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "The pinned passwd response does not require data, and the deleted hand-written changePassword() (4d5088a) returned an empty result when WHM sent no data or null data."}]
     },
     "whm1:removeacct": {"name": "removeAccount", "params": {"user": {"omit": true}}},
-    "whm1:suspendacct": {"name": "suspendAccount"},
+    "whm1:suspendacct": {"name": "suspendAccount", "order": ["user", "reason", "disallowun", "leave-ftp-accts-enabled"]},
     "whm1:unsuspendacct": {"name": "unsuspendAccount"}
   }
 }

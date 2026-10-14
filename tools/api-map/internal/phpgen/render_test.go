@@ -46,7 +46,7 @@ func goldenResult() effective.Result {
 						{Wire: "password", PHP: "password", Encoding: "scalar", PHPType: "string", DocType: "string", Description: "The password.", Sensitive: true},
 						{Wire: "plan", PHP: "plan", Encoding: "scalar", PHPType: "string", DocType: "'default'|'custom'"},
 					},
-					Returns: &created},
+					Returns: &created, OptionalPayload: true},
 				{ID: "whm1:suspendacct", VariantID: "whm1:suspendacct#GET", Family: "whm1", Function: "suspendacct", Method: "POST", Outcome: "flag",
 					PHPName: "suspendAccount", Constant: "SUSPENDACCT", Alias: "SuspendAccountResult", Summary: "Suspend account.", Subcategory: "Account Management",
 					SeeURL: "https://api.docs.cpanel.net/openapi/whm/operation/suspendacct",

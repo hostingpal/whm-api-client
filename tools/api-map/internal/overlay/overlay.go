@@ -37,19 +37,22 @@ type File struct {
 
 // Operation holds per-operation decisions; zero values keep generator defaults.
 type Operation struct {
-	Name     string                `json:"name,omitempty"`
-	Method   string                `json:"method,omitempty"`
-	Outcome  string                `json:"outcome,omitempty"`
-	Unwrap   string                `json:"unwrap,omitempty"`
-	Void     bool                  `json:"void,omitempty"`
-	Order    []string              `json:"order,omitempty"`
-	Params   map[string]Param      `json:"params,omitempty"`
-	Response map[string]Correction `json:"response,omitempty"`
-	Notes    []string              `json:"notes,omitempty"`
-	Exclude  *Exclusion            `json:"exclude,omitempty"`
-	Probe    json.RawMessage       `json:"probe,omitempty"`
-	// Evidence backs behaviour-changing settings: method, outcome, void and
-	// "sensitive": false on a parameter.
+	Name    string `json:"name,omitempty"`
+	Method  string `json:"method,omitempty"`
+	Outcome string `json:"outcome,omitempty"`
+	Unwrap  string `json:"unwrap,omitempty"`
+	Void    bool   `json:"void,omitempty"`
+	// OptionalPayload makes an omitted or null data member a valid response
+	// that the generated method returns as null.
+	OptionalPayload bool                  `json:"optional_payload,omitempty"`
+	Order           []string              `json:"order,omitempty"`
+	Params          map[string]Param      `json:"params,omitempty"`
+	Response        map[string]Correction `json:"response,omitempty"`
+	Notes           []string              `json:"notes,omitempty"`
+	Exclude         *Exclusion            `json:"exclude,omitempty"`
+	Probe           json.RawMessage       `json:"probe,omitempty"`
+	// Evidence backs behaviour-changing settings: method, outcome, void,
+	// optional_payload and "sensitive": false on a parameter.
 	Evidence []Evidence `json:"evidence,omitempty"`
 }
 

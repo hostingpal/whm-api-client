@@ -146,10 +146,11 @@ func loadWHM(t *testing.T, content string) Set {
 
 func TestValidateRequiresEvidenceForBehaviourOverrides(t *testing.T) {
 	for name, c := range map[string]struct{ setting, want string }{
-		"method":          {`"method": "POST"`, "whm1:listaccts: method needs evidence"},
-		"outcome":         {`"outcome": "unchecked"`, "whm1:listaccts: outcome needs evidence"},
-		"void":            {`"void": true`, "whm1:listaccts: void needs evidence"},
-		"sensitive false": {`"params": {"search": {"sensitive": false}}`, "whm1:listaccts: sensitive false on parameter search needs evidence"},
+		"method":           {`"method": "POST"`, "whm1:listaccts: method needs evidence"},
+		"outcome":          {`"outcome": "unchecked"`, "whm1:listaccts: outcome needs evidence"},
+		"void":             {`"void": true`, "whm1:listaccts: void needs evidence"},
+		"optional payload": {`"optional_payload": true`, "whm1:listaccts: optional_payload needs evidence"},
+		"sensitive false":  {`"params": {"search": {"sensitive": false}}`, "whm1:listaccts: sensitive false on parameter search needs evidence"},
 	} {
 		t.Run(name, func(t *testing.T) {
 			without := strings.Replace(validWHM, `"name": "listAccounts",`, `"name": "listAccounts", `+c.setting+`,`, 1)
@@ -166,6 +167,19 @@ func TestValidateRequiresEvidenceForBehaviourOverrides(t *testing.T) {
 	sensitive := strings.Replace(validWHM, `"name": "listAccounts",`, `"name": "listAccounts", "params": {"search": {"sensitive": true}},`, 1)
 	if problems := Validate(loadWHM(t, sensitive)); len(problems) != 0 {
 		t.Fatalf("sensitive true needs no evidence: %v", problems)
+	}
+}
+
+func TestValidateKeepsOptionalPayloadOffVoidAndExcludedOperations(t *testing.T) {
+	void := strings.Replace(validWHM, `"name": "listAccounts",`,
+		`"name": "listAccounts", "void": true, "optional_payload": true, "evidence": `+evidenceJSON+`,`, 1)
+	if joined := strings.Join(Validate(loadWHM(t, void)), "\n"); !strings.Contains(joined, "whm1:listaccts: void and optional_payload are exclusive") {
+		t.Fatalf("void with optional_payload accepted: %s", joined)
+	}
+	excluded := strings.Replace(validWHM, `"whm1:listaccts": {`,
+		`"whm1:createacct": {"optional_payload": true, "evidence": `+evidenceJSON+`, "exclude": {"reason": "r", "evidence": `+evidenceJSON+`}}, "whm1:listaccts": {`, 1)
+	if joined := strings.Join(Validate(loadWHM(t, excluded)), "\n"); !strings.Contains(joined, "whm1:createacct: excluded operations take no other settings") {
+		t.Fatalf("excluded operation with optional_payload accepted: %s", joined)
 	}
 }
 

@@ -28,6 +28,7 @@ final class AccountsSpec
                 'uid' => ['type' => 'int', 'accept' => ['numeric-string']],
             ],
         ],
+        'optional' => true,
     ];
 
     public const SUSPENDACCT = [

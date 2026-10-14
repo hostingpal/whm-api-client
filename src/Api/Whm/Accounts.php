@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient\Api\Whm;
 use Closure;
 use HostingPal\WhmApiClient\Api\Whm\Spec\AccountsSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -17,53 +18,54 @@ use SensitiveParameter;
  * Each method executes one WHM API 1 request immediately with a single attempt and no retries. The handle clears
  * responseMeta() before every attempt and records the envelope snapshot before API or payload errors.
  *
- * @phpstan-type AccountSummaryResult array{
- *     acct?: list<array{
- *         backup?: 0|1,
- *         child_nodes?: list<array{
- *             alias?: string,
- *             workload?: string,
- *         }>,
- *         disklimit?: string|int,
- *         diskused?: string,
- *         domain?: string,
- *         email?: string,
- *         inodeslimit?: string|int,
- *         inodesused?: int,
- *         ip?: string,
- *         ipv6?: list<string>,
- *         is_locked?: 0|1,
- *         is_temporary_domain?: 0|1,
- *         legacy_backup?: 0|1,
- *         mailbox_format?: string,
- *         max_defer_fail_percentage?: string|int,
- *         max_email_per_hour?: string|int,
- *         max_emailacct_quota?: string|int,
- *         maxaddons?: string|int,
- *         maxftp?: string|int,
- *         maxlst?: string|int,
- *         maxparked?: string|int,
- *         maxpop?: string|int,
- *         maxsql?: string|int,
- *         maxsub?: string|int,
- *         min_defer_fail_to_trigger_protection?: string|int,
- *         outgoing_mail_hold?: 0|1,
- *         outgoing_mail_suspended?: 0|1,
- *         owner?: string,
- *         partition?: string,
- *         plan?: string,
- *         shell?: string,
- *         startdate?: string,
- *         suspended?: 0|1,
- *         suspendreason?: string|null,
- *         suspendtime?: string|null,
- *         temporary?: 0|1,
- *         theme?: string,
- *         uid?: int,
- *         unix_startdate?: int,
- *         user?: string,
+ * @phpstan-type AccountSummaryResult list<array{
+ *     backup?: 0|1,
+ *     child_nodes?: list<array{
+ *         alias?: string,
+ *         workload?: string,
  *     }>,
- * }
+ *     disklimit?: string|int,
+ *     diskused?: string,
+ *     domain?: string,
+ *     email?: string,
+ *     has_backup?: 0|1,
+ *     inodeslimit?: string|int,
+ *     inodesused?: int,
+ *     ip?: string,
+ *     ipv6?: list<string>,
+ *     is_locked?: 0|1,
+ *     is_temporary_domain?: 0|1,
+ *     legacy_backup?: 0|1,
+ *     mailbox_format?: string,
+ *     max_defer_fail_percentage?: string|int,
+ *     max_email_per_hour?: string|int,
+ *     max_emailacct_quota?: string|int,
+ *     maxaddons?: string|int,
+ *     maxftp?: string|int,
+ *     maxlst?: string|int,
+ *     maxparked?: string|int,
+ *     maxpop?: string|int,
+ *     maxsql?: string|int,
+ *     maxsub?: string|int,
+ *     min_defer_fail_to_trigger_protection?: string|int,
+ *     outgoing_mail_hold?: 0|1,
+ *     outgoing_mail_suspended?: 0|1,
+ *     owner?: string,
+ *     partition?: string,
+ *     plan?: string,
+ *     shell?: string,
+ *     standalone_feature?: string,
+ *     standalone_feature_name?: string,
+ *     startdate?: string,
+ *     suspended?: 0|1,
+ *     suspendreason?: string|null,
+ *     suspendtime?: string|int|null,
+ *     temporary?: 0|1,
+ *     theme?: string,
+ *     uid?: int,
+ *     unix_startdate?: int,
+ *     user?: string,
+ * }>
  * @phpstan-type ChangePasswordResult array{
  *     app?: list<string>,
  * }
@@ -101,56 +103,54 @@ use SensitiveParameter;
  *         user_owner?: string,
  *     }>,
  * }
- * @phpstan-type ListAccountsResult array{
- *     acct?: list<array{
- *         backup?: 0|1,
- *         child_nodes?: list<array{
- *             alias?: string,
- *             workload?: string,
- *         }>,
- *         disklimit?: string|int,
- *         diskused?: string,
- *         domain?: string,
- *         email?: string,
- *         has_backup?: 0|1,
- *         inodeslimit?: string|int,
- *         inodesused?: int,
- *         ip?: string,
- *         ipv6?: list<string>,
- *         is_locked?: 0|1,
- *         is_temporary_domain?: 0|1,
- *         legacy_backup?: 0|1,
- *         mailbox_format?: string,
- *         max_defer_fail_percentage?: string|int,
- *         max_email_per_hour?: string|int,
- *         max_emailacct_quota?: string|int,
- *         maxaddons?: string|int,
- *         maxftp?: string|int,
- *         maxlst?: string|int,
- *         maxparked?: string|int,
- *         maxpop?: string|int,
- *         maxsql?: string|int,
- *         maxsub?: string|int,
- *         min_defer_fail_to_trigger_protection?: string|int,
- *         outgoing_mail_hold?: 0|1,
- *         outgoing_mail_suspended?: 0|1,
- *         owner?: string,
- *         partition?: string,
- *         plan?: string,
- *         shell?: string,
- *         standalone_feature?: string,
- *         standalone_feature_name?: string,
- *         startdate?: string,
- *         suspended?: 0|1,
- *         suspendreason?: string|string|null,
- *         suspendtime?: int|null,
- *         temporary?: 0|1,
- *         theme?: string,
- *         uid?: int,
- *         unix_startdate?: int,
- *         user?: string,
+ * @phpstan-type ListAccountsResult list<array{
+ *     backup?: 0|1,
+ *     child_nodes?: list<array{
+ *         alias?: string,
+ *         workload?: string,
  *     }>,
- * }
+ *     disklimit?: string|int,
+ *     diskused?: string,
+ *     domain?: string,
+ *     email?: string,
+ *     has_backup?: 0|1,
+ *     inodeslimit?: string|int,
+ *     inodesused?: int,
+ *     ip?: string,
+ *     ipv6?: list<string>,
+ *     is_locked?: 0|1,
+ *     is_temporary_domain?: 0|1,
+ *     legacy_backup?: 0|1,
+ *     mailbox_format?: string,
+ *     max_defer_fail_percentage?: string|int,
+ *     max_email_per_hour?: string|int,
+ *     max_emailacct_quota?: string|int,
+ *     maxaddons?: string|int,
+ *     maxftp?: string|int,
+ *     maxlst?: string|int,
+ *     maxparked?: string|int,
+ *     maxpop?: string|int,
+ *     maxsql?: string|int,
+ *     maxsub?: string|int,
+ *     min_defer_fail_to_trigger_protection?: string|int,
+ *     outgoing_mail_hold?: 0|1,
+ *     outgoing_mail_suspended?: 0|1,
+ *     owner?: string,
+ *     partition?: string,
+ *     plan?: string,
+ *     shell?: string,
+ *     standalone_feature?: string,
+ *     standalone_feature_name?: string,
+ *     startdate?: string,
+ *     suspended?: 0|1,
+ *     suspendreason?: string|string|null,
+ *     suspendtime?: int|null,
+ *     temporary?: 0|1,
+ *     theme?: string,
+ *     uid?: int,
+ *     unix_startdate?: int,
+ *     user?: string,
+ * }>
  * @phpstan-type ModifyAccountResult array{
  *     cpuser?: array<array-key, mixed>,
  *     domain?: string,
@@ -177,29 +177,29 @@ final readonly class Accounts
      *
      * API-map identity: whm1:accountsummary#GET (wire name accountsummary; Account Management).
      *
+     * @param string|null $user The account's username. Null omits it.
      * @param string|null $domain The account's main domain. Null omits it.
      * @param string|null $search The search term. Null omits it.
      * @param string|null $searchmethod The search method to use. Null omits it.
      * @param string|null $searchtype The type of search to perform. Null omits it.
-     * @param string|null $user The account's username. Null omits it.
      * @return AccountSummaryResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/accountsummary
      */
     public function accountSummary(
+        ?string $user = null,
         ?string $domain = null,
         ?string $search = null,
         ?string $searchmethod = null,
         ?string $searchtype = null,
-        ?string $user = null,
     ): array {
         /** @var AccountSummaryResult $result Validated against AccountsSpec::ACCOUNTSUMMARY. */
         $result = ($this->run)(AccountsSpec::ACCOUNTSUMMARY, [
+            'user' => $user,
             'domain' => $domain,
             'search' => $search,
             'searchmethod' => $searchmethod,
             'searchtype' => $searchtype,
-            'user' => $user,
         ]);
 
         return $result;
@@ -227,13 +227,15 @@ final readonly class Accounts
      *
      * This function modifies a cPanel or reseller account's password.
      *
+     * Returns null when the server sends no data.
+     *
      * API-map identity: whm1:passwd#GET (wire name passwd; Passwords).
      *
      * @param string $user The account's username.
      * @param string $password The account's new password.
      * @param bool|null $dbPassUpdate Whether to also change the account's MySQL® password. Null omits it.
      * @param bool|null $digestauth Whether to enable Digest Authentication for the account. Null omits it.
-     * @return ChangePasswordResult
+     * @return ChangePasswordResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/passwd
      */
@@ -243,8 +245,8 @@ final readonly class Accounts
         string $password,
         ?bool $dbPassUpdate = null,
         ?bool $digestauth = null,
-    ): array {
-        /** @var ChangePasswordResult $result Validated against AccountsSpec::PASSWD. */
+    ): ?array {
+        /** @var ChangePasswordResult|null $result Validated against AccountsSpec::PASSWD. */
         $result = ($this->run)(AccountsSpec::PASSWD, [
             'user' => $user,
             'password' => $password,
@@ -260,10 +262,13 @@ final readonly class Accounts
      *
      * This function creates a cPanel account and sets up its domain information.
      *
+     * Returns null when the server sends no data.
+     *
      * API-map identity: whm1:createacct#GET (wire name createacct; Account Creation).
      *
      * @param string $username The new account's username.
-     * @param string|int|null $accountEnhancements Assign Account Enhancements to the cPanel account. Null omits it.
+     * @param string|list<string>|null $accountEnhancements Assign Account Enhancements to the cPanel account. Null
+     *     omits it.
      * @param string|int|null $bwlimit The account's maximum bandwidth. Null omits it.
      * @param bool|null $cgi Whether the account has Common Gateway Interface (CGI) access enabled. Null omits it.
      * @param string|null $contactemail The account's contact email address. Null omits it.
@@ -321,13 +326,14 @@ final readonly class Accounts
      * @param bool|null $spf Whether Sender Policy Framework (SPF) is enabled for the account. Null omits it.
      * @param int|null $uid The account's user ID. Null omits it.
      * @param bool|null $useregns Whether to use registered nameservers for the domain. Null omits it.
-     * @return CreateAccountResult
+     * @return CreateAccountResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/createacct
      */
     public function createAccount(
         string $username,
-        string|int|null $accountEnhancements = null,
+        string|array|null $accountEnhancements = null,
         string|int|null $bwlimit = null,
         ?bool $cgi = null,
         ?string $contactemail = null,
@@ -379,8 +385,8 @@ final readonly class Accounts
         ?bool $spf = null,
         ?int $uid = null,
         ?bool $useregns = null,
-    ): array {
-        /** @var CreateAccountResult $result Validated against AccountsSpec::CREATEACCT. */
+    ): ?array {
+        /** @var CreateAccountResult|null $result Validated against AccountsSpec::CREATEACCT. */
         $result = ($this->run)(AccountsSpec::CREATEACCT, [
             'username' => $username,
             'accountEnhancements' => $accountEnhancements,
@@ -465,8 +471,8 @@ final readonly class Accounts
      * API-map identity: whm1:listaccts#GET (wire name listaccts; Account Management).
      *
      * @param string|null $search A Perl Compatible Regular Expression (PCRE) that filters the results. Null omits it.
-     * @param 'exact'|'regex'|null $searchmethod The function's search method. Null omits it.
      * @param 'domain'|'owner'|'user'|'ip'|'package'|null $searchtype The account information to query. Null omits it.
+     * @param 'exact'|'regex'|null $searchmethod The function's search method. Null omits it.
      * @param string|null $want The returns to include in the output for each account. Null omits it.
      * @return ListAccountsResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
@@ -474,15 +480,15 @@ final readonly class Accounts
      */
     public function listAccounts(
         ?string $search = null,
-        ?string $searchmethod = null,
         ?string $searchtype = null,
+        ?string $searchmethod = null,
         ?string $want = null,
     ): array {
         /** @var ListAccountsResult $result Validated against AccountsSpec::LISTACCTS. */
         $result = ($this->run)(AccountsSpec::LISTACCTS, [
             'search' => $search,
-            'searchmethod' => $searchmethod,
             'searchtype' => $searchtype,
+            'searchmethod' => $searchmethod,
             'want' => $want,
         ]);
 
@@ -493,6 +499,8 @@ final readonly class Accounts
      * Update cPanel account.
      *
      * This function modifies a cPanel account.
+     *
+     * Returns null when the server sends no data.
      *
      * API-map identity: whm1:modifyacct#GET (wire name modifyacct; Account Management).
      *
@@ -579,7 +587,7 @@ final readonly class Accounts
      * @param bool|null $spamassassin Whether Apache SpamAssassin™ is enabled for the cPanel account. Null omits it.
      * @param bool|null $updateExistingEmailAccountQuotas Whether to update the quota for existing email accounts to
      *     match the value of `MAX_EMAILACCT_QUOTA` setting. Null omits it.
-     * @return ModifyAccountResult
+     * @return ModifyAccountResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/modifyacct
      */
@@ -642,8 +650,8 @@ final readonly class Accounts
         ?string $shell = null,
         ?bool $spamassassin = null,
         ?bool $updateExistingEmailAccountQuotas = null,
-    ): array {
-        /** @var ModifyAccountResult $result Validated against AccountsSpec::MODIFYACCT. */
+    ): ?array {
+        /** @var ModifyAccountResult|null $result Validated against AccountsSpec::MODIFYACCT. */
         $result = ($this->run)(AccountsSpec::MODIFYACCT, [
             'user' => $user,
             'backup' => $backup,
@@ -732,23 +740,23 @@ final readonly class Accounts
      * API-map identity: whm1:suspendacct#GET (wire name suspendacct; Suspensions).
      *
      * @param string $user The account to suspend.
+     * @param string|null $reason The reason for suspension. Null omits it.
      * @param bool|null $disallowun Whether to allow only the `root` user to unsuspend the account. Null omits it.
      * @param bool|null $leaveFtpAcctsEnabled Whether to skip suspension of the account's FTP accounts. Null omits it.
-     * @param string|null $reason The reason for suspension. Null omits it.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/suspendacct
      */
     public function suspendAccount(
         string $user,
+        ?string $reason = null,
         ?bool $disallowun = null,
         ?bool $leaveFtpAcctsEnabled = null,
-        ?string $reason = null,
     ): void {
         ($this->run)(AccountsSpec::SUSPENDACCT, [
             'user' => $user,
+            'reason' => $reason,
             'disallowun' => $disallowun,
             'leaveFtpAcctsEnabled' => $leaveFtpAcctsEnabled,
-            'reason' => $reason,
         ]);
     }
 

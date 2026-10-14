@@ -18,11 +18,11 @@ final class AccountsSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
             'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
             'search' => ['name' => 'search', 'encoding' => 'scalar'],
             'searchmethod' => ['name' => 'searchmethod', 'encoding' => 'scalar'],
             'searchtype' => ['name' => 'searchtype', 'encoding' => 'scalar'],
-            'user' => ['name' => 'user', 'encoding' => 'scalar'],
         ],
         'returns' => [
             'type' => 'object',
@@ -53,6 +53,7 @@ final class AccountsSpec
                             'diskused' => ['type' => 'string'],
                             'domain' => ['type' => 'string'],
                             'email' => ['type' => 'string'],
+                            'has_backup' => ['type' => 'flag'],
                             'inodeslimit' => [
                                 'type' => 'union',
                                 'anyOf' => [
@@ -150,10 +151,19 @@ final class AccountsSpec
                             'partition' => ['type' => 'string'],
                             'plan' => ['type' => 'string'],
                             'shell' => ['type' => 'string'],
+                            'standalone_feature' => ['type' => 'string'],
+                            'standalone_feature_name' => ['type' => 'string'],
                             'startdate' => ['type' => 'string'],
                             'suspended' => ['type' => 'flag'],
                             'suspendreason' => ['type' => 'string', 'nullable' => true],
-                            'suspendtime' => ['type' => 'string', 'nullable' => true],
+                            'suspendtime' => [
+                                'type' => 'union',
+                                'nullable' => true,
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'int'],
+                                ],
+                            ],
                             'temporary' => ['type' => 'flag'],
                             'theme' => ['type' => 'string'],
                             'uid' => ['type' => 'int', 'accept' => ['numeric-string']],
@@ -164,6 +174,7 @@ final class AccountsSpec
                 ],
             ],
         ],
+        'unwrap' => 'acct',
     ];
 
     public const CHANGEPACKAGE = [
@@ -193,6 +204,7 @@ final class AccountsSpec
                 'app' => ['type' => 'list', 'items' => ['type' => 'string']],
             ],
         ],
+        'optional' => true,
     ];
 
     public const CREATEACCT = [
@@ -201,7 +213,7 @@ final class AccountsSpec
         'outcome' => 'flag',
         'params' => [
             'username' => ['name' => 'username', 'encoding' => 'scalar'],
-            'accountEnhancements' => ['name' => 'account_enhancements', 'encoding' => 'scalar'],
+            'accountEnhancements' => ['name' => 'account_enhancements', 'encoding' => 'repeat'],
             'bwlimit' => ['name' => 'bwlimit', 'encoding' => 'scalar'],
             'cgi' => ['name' => 'cgi', 'encoding' => 'bool'],
             'contactemail' => ['name' => 'contactemail', 'encoding' => 'scalar'],
@@ -271,6 +283,7 @@ final class AccountsSpec
                 'package' => ['type' => 'string'],
             ],
         ],
+        'optional' => true,
     ];
 
     public const GET_DOMAIN_INFO = [
@@ -313,8 +326,8 @@ final class AccountsSpec
         'outcome' => 'flag',
         'params' => [
             'search' => ['name' => 'search', 'encoding' => 'scalar'],
-            'searchmethod' => ['name' => 'searchmethod', 'encoding' => 'scalar'],
             'searchtype' => ['name' => 'searchtype', 'encoding' => 'scalar'],
+            'searchmethod' => ['name' => 'searchmethod', 'encoding' => 'scalar'],
             'want' => ['name' => 'want', 'encoding' => 'scalar'],
         ],
         'returns' => [
@@ -466,6 +479,7 @@ final class AccountsSpec
                 ],
             ],
         ],
+        'unwrap' => 'acct',
     ];
 
     public const MODIFYACCT = [
@@ -552,6 +566,7 @@ final class AccountsSpec
                 'user' => ['type' => 'string'],
             ],
         ],
+        'optional' => true,
     ];
 
     public const REMOVEACCT = [
@@ -571,9 +586,9 @@ final class AccountsSpec
         'outcome' => 'flag',
         'params' => [
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'reason' => ['name' => 'reason', 'encoding' => 'scalar'],
             'disallowun' => ['name' => 'disallowun', 'encoding' => 'bool'],
             'leaveFtpAcctsEnabled' => ['name' => 'leave-ftp-accts-enabled', 'encoding' => 'bool'],
-            'reason' => ['name' => 'reason', 'encoding' => 'scalar'],
         ],
         'returns' => null,
     ];

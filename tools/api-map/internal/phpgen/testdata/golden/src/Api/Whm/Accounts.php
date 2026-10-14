@@ -37,12 +37,14 @@ final readonly class Accounts
     /**
      * Create cPanel account.
      *
+     * Returns null when the server sends no data.
+     *
      * API-map identity: whm1:createacct#GET (wire name createacct; Account Creation).
      *
      * @param string $username The account's username.
      * @param string|null $password The password. Null omits it.
      * @param 'default'|'custom'|null $plan Null omits it.
-     * @return CreateAccountResult
+     * @return CreateAccountResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/createacct
      */
@@ -51,8 +53,8 @@ final readonly class Accounts
         #[SensitiveParameter]
         ?string $password = null,
         ?string $plan = null,
-    ): array {
-        /** @var CreateAccountResult $result Validated against AccountsSpec::CREATEACCT. */
+    ): ?array {
+        /** @var CreateAccountResult|null $result Validated against AccountsSpec::CREATEACCT. */
         $result = ($this->run)(AccountsSpec::CREATEACCT, [
             'username' => $username,
             'password' => $password,

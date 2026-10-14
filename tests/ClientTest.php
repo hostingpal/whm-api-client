@@ -62,7 +62,7 @@ final class ClientTest extends TestCase
 
         $http->addResponse(new Response(200, [], '{"metadata":{"result":1},'
             . '"data":{"uapi":{"status":1,"data":["www"]}}}'));
-        $client->uapi()->domains()->builtinAliases();
+        $client->uapi()->domainInfo()->mainDomainBuiltinSubdomainAliases();
         $request = $http->getLastRequest();
         self::assertInstanceOf(RequestInterface::class, $request);
         self::assertSame('whm reseller:fixture-token', $request->getHeaderLine('Authorization'));

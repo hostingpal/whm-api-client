@@ -27,7 +27,7 @@
       },
       "response": {"users_features_settings[].feature_list_setting": {"accept": ["string-flag"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "feature endpoints returned exact string flags \"0\"/\"1\"; docs/api/source-audit.md#runtime-observations-2026-10-13"}]}}
     },
-    "whm1:listpkgs": {"name": "listPackages"},
+    "whm1:listpkgs": {"name": "listPackages", "unwrap": "pkg"},
     "whm1:read_featurelist": {"exclude": {"reason": "Deprecated; use getFeaturelistData() (get_featurelist_data).", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; DEPRECATED: Use get_featurelist_data instead."}]}},
     "whm1:verify_user_has_feature": {"order": ["user", "feature"], "unwrap": "has_feature"}
   }

@@ -270,6 +270,7 @@ final class HostingPlansSpec
                 ],
             ],
         ],
+        'unwrap' => 'pkg',
     ];
 
     public const VERIFY_USER_HAS_FEATURE = [
