@@ -2,14 +2,10 @@
   "schema_version": "1.0",
   "manifest": "docs/api/sources/2026-10-13/manifest.json",
   "annotations": "docs/api/annotations.json",
-  "registry": "docs/api/coverage/registry.json",
-  "symbols": "docs/api/coverage/symbols.json",
-  "baseline": "docs/api/coverage/baseline.json",
+  "overlay": "docs/api/overlay",
   "schema_dir": "docs/api/schema",
   "map": ".cache/api-map/map.json",
   "map_checksum": "docs/api/map.sha256",
-  "report_json": "docs/api/coverage/report.json",
-  "report_markdown": "docs/api/coverage/report.md",
   "examples": [
     {
       "path": "docs/api/examples/api-map-v1.json",
