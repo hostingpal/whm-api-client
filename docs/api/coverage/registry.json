@@ -2237,8 +2237,36 @@
       "reason": "Reads the client-local latest response metadata; no endpoint operation."
     },
     {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Engine\\ArgumentEncoder::encode",
+      "reason": "Encodes generated-method arguments into wire parameters; generic engine, no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Engine\\OperationRunner::result",
+      "reason": "Validates a payload against a generated spec and applies void/unwrap rules; generic engine, no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Engine\\OperationRunner::run",
+      "reason": "Runs a generated operation spec through a handle dispatch closure; generic engine, no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Engine\\OperationSpec::method",
+      "reason": "Reads the HTTP method of a generated spec; generic engine, no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Engine\\OperationSpec::outcome",
+      "reason": "Reads the outcome policy of a generated spec; generic engine, no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Engine\\OperationSpec::text",
+      "reason": "Reads a required string field of a generated spec; generic engine, no endpoint operation."
+    },
+    {
       "symbol": "HostingPal\\WhmApiClient\\Api\\NumberedList::__construct",
       "reason": "Marks WHM numbered multi-value query input for the shared encoder, which validates it after the metadata reset; no endpoint operation."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Api\\RepeatedList::__construct",
+      "reason": "Marks repeated-key multi-value input for the shared encoder, which validates it after the metadata reset; no endpoint operation."
     },
     {
       "symbol": "HostingPal\\WhmApiClient\\Api\\Uapi\\Dns::__construct",
@@ -2577,6 +2605,10 @@
       "reason": "Exports reviewed load windows with optional presence and native or observed decimal-string numeric values preserved; no endpoint operation."
     },
     {
+      "symbol": "HostingPal\\WhmApiClient\\Response\\ShapeValidator::value",
+      "reason": "Validates and normalizes decoded payloads against generated type specs; generic engine, no endpoint operation."
+    },
+    {
       "symbol": "HostingPal\\WhmApiClient\\Response\\UserFeatureSetting::fromPayload",
       "reason": "Validates and snapshots reviewed feature records after execution; hydration is not an endpoint."
     },
@@ -2807,6 +2839,22 @@
     {
       "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\ServerLoadAverageTest::invalidPayloads",
       "reason": "Supplies offline PHPUnit server-contract cases; a data provider is not an endpoint or a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\ShapeValidatorTest::invalidContainers",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\ShapeValidatorTest::invalidScalars",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\ShapeValidatorTest::validContainers",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
+    },
+    {
+      "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\ShapeValidatorTest::validScalars",
+      "reason": "Supplies offline PHPUnit cases; a data provider does not implement an endpoint or establish a passing test outcome."
     },
     {
       "symbol": "HostingPal\\WhmApiClient\\Tests\\Response\\UserFeatureSettingTest::invalidRecords",
