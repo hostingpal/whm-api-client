@@ -7,8 +7,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
+	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -208,6 +210,96 @@ func TestCheckStopsWhenCancelled(t *testing.T) {
 	cancel()
 	if code, _, stderr := runCheck(t, ctx, root); code == 0 || !strings.Contains(stderr, "operation cancelled") {
 		t.Fatalf("cancelled check returned %d: %s", code, stderr)
+	}
+}
+
+func TestCheckStaysOffline(t *testing.T) {
+	requests := 0
+	original := http.DefaultTransport
+	http.DefaultTransport = roundTripFunc(func(*http.Request) (*http.Response, error) {
+		requests++
+		return nil, fmt.Errorf("network prohibited")
+	})
+	t.Cleanup(func() { http.DefaultTransport = original })
+	root := checkFixture(t)
+	if code, _, stderr := runCheck(t, context.Background(), root); code != 0 {
+		t.Fatalf("check %d: %s", code, stderr)
+	}
+	if requests != 0 {
+		t.Fatalf("made %d HTTP requests", requests)
+	}
+}
+
+func TestCheckRejectsBrokenInputsWithoutModifyingTheTree(t *testing.T) {
+	for name, mutate := range map[string]func(*testing.T, string){
+		"checksum": func(t *testing.T, root string) { checkWrite(t, root, "map.sha256", []byte("bad")) },
+		"schema drift": func(t *testing.T, root string) {
+			checkWrite(t, root, "schema/api-map-v1.schema.json", []byte("{}"))
+		},
+		"invalid source": func(t *testing.T, root string) { checkWrite(t, root, "sources/source.json", []byte(`{}`)) },
+	} {
+		t.Run(name, func(t *testing.T) {
+			root := checkFixture(t)
+			mutate(t, root)
+			before := checkSnapshot(t, root)
+			if code, _, stderr := runCheck(t, context.Background(), root); code != 1 {
+				t.Fatalf("exit %d: %s", code, stderr)
+			}
+			after := checkSnapshot(t, root)
+			if !reflect.DeepEqual(before, after) {
+				t.Fatal("failing check modified the repository")
+			}
+		})
+	}
+}
+
+func TestCheckRejectsAmbiguousOrEscapingToolchain(t *testing.T) {
+	for _, mode := range []string{"absolute", "symlink", "duplicate", "trailing"} {
+		t.Run(mode, func(t *testing.T) {
+			root := checkFixture(t)
+			config := checkToolchain()
+			switch mode {
+			case "absolute":
+				config["overlay"] = "/tmp/overlay"
+			case "symlink":
+				outside := t.TempDir()
+				if e := os.Symlink(outside, filepath.Join(root, "outside")); e != nil {
+					t.Fatal(e)
+				}
+				config["overlay"] = "outside"
+			}
+			raw, e := model.Encode(config)
+			if e != nil {
+				t.Fatal(e)
+			}
+			if mode == "duplicate" {
+				raw = append([]byte(`{"schema_version":"1.0",`), raw[1:]...)
+			}
+			if mode == "trailing" {
+				raw = append(raw, []byte(" {}")...)
+			}
+			checkWrite(t, root, "docs/api/toolchain.json", raw)
+			if code, _, stderr := runCheck(t, context.Background(), root); code != 1 || !strings.Contains(stderr, "toolchain configuration validation failed") {
+				t.Fatalf("accepted %s: %d %s", mode, code, stderr)
+			}
+		})
+	}
+}
+
+func TestCheckCleansTemporaryOutputs(t *testing.T) {
+	temporary := t.TempDir()
+	t.Setenv("TMPDIR", temporary)
+	root := checkFixture(t)
+	if code, _, stderr := runCheck(t, context.Background(), root); code != 0 {
+		t.Fatalf("check %d: %s", code, stderr)
+	}
+	checkWrite(t, root, "map.sha256", []byte("bad"))
+	if code, _, _ := runCheck(t, context.Background(), root); code != 1 {
+		t.Fatal("broken checksum accepted")
+	}
+	leftovers, e := os.ReadDir(temporary)
+	if e != nil || len(leftovers) != 0 {
+		t.Fatal("temporary outputs not cleaned", e, leftovers)
 	}
 }
 
