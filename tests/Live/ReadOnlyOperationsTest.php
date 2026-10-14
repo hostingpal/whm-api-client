@@ -8,9 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
-use HostingPal\WhmApiClient\Response\AccountDomains;
 use HostingPal\WhmApiClient\Response\ResponseMetadata;
-use HostingPal\WhmApiClient\Response\ServerDomains;
 use HostingPal\WhmApiClient\Tests\Support\LiveCurlClient;
 use HostingPal\WhmApiClient\Tests\Support\LiveTestEnvironment;
 use HostingPal\WhmApiClient\UapiClient;
@@ -72,12 +70,14 @@ final class ReadOnlyOperationsTest extends TestCase
     public function testWhmDomainInventory(): void
     {
         $whm = $this->whm->whm();
-        $domains = self::safeOperation(static fn (): ServerDomains => $whm->domains()->list());
+        $inventory = self::safeOperation(static fn (): array => $whm->accounts()->getDomainInfo());
+        $domains = $inventory['domains'] ?? [];
 
-        self::assertTrue($domains->count() > 0, 'WHM must return a usable domain inventory.');
+        self::assertTrue(count($domains) > 0, 'WHM must return a usable domain inventory.');
         $knownAccountFound = false;
         foreach ($domains as $domain) {
-            $knownAccountFound = $knownAccountFound || ($domain->domain === 'npr.rs' && $domain->user === 'npr');
+            $knownAccountFound = $knownAccountFound
+                || (($domain['domain'] ?? null) === 'npr.rs' && ($domain['user'] ?? null) === 'npr');
         }
 
         self::assertTrue($knownAccountFound, 'WHM inventory must include the known test account domain.');
@@ -88,9 +88,12 @@ final class ReadOnlyOperationsTest extends TestCase
     public function testBridgedAccountDomains(): void
     {
         $account = $this->whm->uapi('npr');
-        $domains = self::safeOperation(static fn (): AccountDomains => $account->domains()->list());
+        $domains = self::safeOperation(static fn (): array => $account->domainInfo()->listDomains());
 
-        self::assertTrue($domains->mainDomain === 'npr.rs', 'Bridged domains must match the known test account.');
+        self::assertTrue(
+            ($domains['main_domain'] ?? null) === 'npr.rs',
+            'Bridged domains must match the known test account.',
+        );
         self::assertUapiMetadata($account, true);
         self::assertTrue($this->whm->whm()->responseMeta() === null, 'Bridge metadata must stay on its UAPI handle.');
     }
@@ -98,16 +101,19 @@ final class ReadOnlyOperationsTest extends TestCase
     public function testDirectAccountDomains(): void
     {
         $account = $this->cpanel->uapi();
-        $domains = self::safeOperation(static fn (): AccountDomains => $account->domains()->list());
+        $domains = self::safeOperation(static fn (): array => $account->domainInfo()->listDomains());
 
-        self::assertTrue($domains->mainDomain === 'npr.rs', 'Direct domains must match the known test account.');
+        self::assertTrue(
+            ($domains['main_domain'] ?? null) === 'npr.rs',
+            'Direct domains must match the known test account.',
+        );
         self::assertUapiMetadata($account, false);
     }
 
     public function testBridgedPhpVersions(): void
     {
         $account = $this->whm->uapi('npr');
-        $versions = self::safeOperation(static fn (): array => $account->php()->listVersions());
+        $versions = self::safeOperation(static fn (): array => $account->langPhp()->phpGetInstalledVersions());
 
         self::assertVersions($versions);
         self::assertUapiMetadata($account, true);
@@ -117,7 +123,7 @@ final class ReadOnlyOperationsTest extends TestCase
     public function testDirectPhpVersions(): void
     {
         $account = $this->cpanel->uapi();
-        $versions = self::safeOperation(static fn (): array => $account->php()->listVersions());
+        $versions = self::safeOperation(static fn (): array => $account->langPhp()->phpGetInstalledVersions());
 
         self::assertVersions($versions);
         self::assertUapiMetadata($account, false);

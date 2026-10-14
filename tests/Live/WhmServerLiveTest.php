@@ -8,7 +8,6 @@ use Closure;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
-use HostingPal\WhmApiClient\Response\DiskPartition;
 use HostingPal\WhmApiClient\Tests\Support\LiveCurlClient;
 use HostingPal\WhmApiClient\Tests\Support\LiveTestEnvironment;
 use HostingPal\WhmApiClient\WhmClient;
@@ -45,7 +44,7 @@ final class WhmServerLiveTest extends TestCase
 
     public function testHostnameMatchesTheApprovedServerAndRecordsWhmMetadata(): void
     {
-        $hostname = self::executeSafely(fn (): string => $this->whm->server()->hostname());
+        $hostname = self::executeSafely(fn (): string => $this->whm->server()->getHostname());
 
         self::assertTrue($hostname === 'test.oblak.host', 'The server hostname must match the approved target.');
         $this->assertWhmMetadata('gethostname');
@@ -53,22 +52,23 @@ final class WhmServerLiveTest extends TestCase
 
     public function testLoadAverageContainsThreeRealMeasurementsAndRecordsWhmMetadata(): void
     {
-        $load = self::executeSafely(fn () => $this->whm->server()->loadAverage());
+        $load = self::executeSafely(fn (): array => $this->whm->server()->getLoadAverage());
 
-        self::assertLoadMeasurement($load->one, 'one');
-        self::assertLoadMeasurement($load->five, 'five');
-        self::assertLoadMeasurement($load->fifteen, 'fifteen');
+        self::assertLoadMeasurement($load['one'] ?? null, 'one');
+        self::assertLoadMeasurement($load['five'] ?? null, 'five');
+        self::assertLoadMeasurement($load['fifteen'] ?? null, 'fifteen');
         $this->assertWhmMetadata('systemloadavg');
     }
 
     public function testDiskUsageContainsACompletePartitionAndRecordsWhmMetadata(): void
     {
-        $usage = self::executeSafely(fn () => $this->whm->server()->diskUsage());
+        $usage = self::executeSafely(fn (): array => $this->whm->server()->getDiskUsage());
 
-        self::assertTrue($usage->partitions !== null, 'The server must supply its partition list.');
-        self::assertGreaterThan(0, count($usage), 'The approved server must report at least one partition.');
+        $partitions = $usage['partition'] ?? null;
+        self::assertTrue($partitions !== null, 'The server must supply its partition list.');
+        self::assertGreaterThan(0, count($partitions), 'The approved server must report at least one partition.');
         $completeInodeSampleFound = false;
-        foreach ($usage as $partition) {
+        foreach ($partitions as $partition) {
             $hasCompleteInodes = self::assertPartitionSample($partition);
             $completeInodeSampleFound = $completeInodeSampleFound || $hasCompleteInodes;
         }
@@ -80,47 +80,42 @@ final class WhmServerLiveTest extends TestCase
         $this->assertWhmMetadata('getdiskusage');
     }
 
-    /** Check all observed fields and report whether this record has usable inode counters. */
-    private static function assertPartitionSample(DiskPartition $sample): bool
+    /**
+     * Check all observed fields and report whether this record has usable inode counters.
+     *
+     * @param array<string, int|string|null> $sample
+     */
+    private static function assertPartitionSample(array $sample): bool
     {
-        $payload = $sample->toArray();
         $fields = [
             'device', 'disk', 'filesystem', 'mount', 'available', 'total', 'used', 'percentage',
             'inodes_available', 'inodes_total', 'inodes_used', 'inodes_ipercentage',
         ];
         foreach ($fields as $field) {
             self::assertTrue(
-                array_key_exists($field, $payload),
+                array_key_exists($field, $sample),
                 'Each partition must retain the supplied ' . $field . ' field, including explicit null.',
             );
         }
 
-        $labels = [
-            'device' => $sample->device,
-            'disk' => $sample->disk,
-            'filesystem' => $sample->filesystem,
-            'mount' => $sample->mount,
-        ];
-        foreach ($labels as $field => $value) {
-            self::assertTrue($value !== null && $value !== '', 'The partition sample must supply ' . $field . '.');
-        }
-        $measurements = [
-            'available' => $sample->available,
-            'total' => $sample->total,
-            'used' => $sample->used,
-            'percentage' => $sample->percentage,
-        ];
-        foreach ($measurements as $field => $value) {
+        foreach (['device', 'disk', 'filesystem', 'mount'] as $field) {
+            $value = $sample[$field] ?? null;
             self::assertTrue(
-                $value !== null,
+                is_string($value) && $value !== '',
+                'The partition sample must supply ' . $field . '.',
+            );
+        }
+        foreach (['available', 'total', 'used', 'percentage'] as $field) {
+            self::assertTrue(
+                is_int($sample[$field] ?? null),
                 'The partition sample must supply numeric ' . $field . '.',
             );
         }
 
-        return $sample->inodesAvailable !== null
-            && $sample->inodesTotal !== null
-            && $sample->inodesUsed !== null
-            && $sample->inodesIpercentage !== null;
+        return is_int($sample['inodes_available'] ?? null)
+            && is_int($sample['inodes_total'] ?? null)
+            && is_int($sample['inodes_used'] ?? null)
+            && is_int($sample['inodes_ipercentage'] ?? null);
     }
 
     /** Assert only predicates so unexpected response values never appear in failure output. */

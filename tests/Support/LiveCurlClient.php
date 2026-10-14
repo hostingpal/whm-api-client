@@ -70,7 +70,7 @@ final readonly class LiveCurlClient implements ClientInterface
         self::CPANEL . 'DomainInfo/list_domains',
         self::CPANEL . 'LangPHP/php_get_installed_versions',
         self::WHM . 'listaccts?api.version=1',
-        self::WHM . 'listaccts?api.version=1&search=npr&searchmethod=exact&searchtype=user',
+        self::WHM . 'listaccts?api.version=1&search=npr&searchtype=user&searchmethod=exact',
         self::WHM . 'accountsummary?api.version=1&user=npr',
         self::WHM . 'listpkgs?api.version=1',
         self::WHM . 'listpkgs?api.version=1&want=creatable',

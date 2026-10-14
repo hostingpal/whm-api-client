@@ -219,7 +219,7 @@ final class LiveCurlClientTest extends TestCase
         yield 'WHM accounts' => ['https://test.oblak.host:2087/json-api/listaccts?api.version=1'];
         yield 'WHM filtered accounts' => [
             'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
-                . '&search=npr&searchmethod=exact&searchtype=user',
+                . '&search=npr&searchtype=user&searchmethod=exact',
         ];
         yield 'WHM account summary' => ['https://test.oblak.host:2087/json-api/accountsummary?api.version=1&user=npr'];
         yield 'WHM packages' => ['https://test.oblak.host:2087/json-api/listpkgs?api.version=1'];
