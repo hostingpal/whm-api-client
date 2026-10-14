@@ -1,0 +1,240 @@
+// Package overlay loads the evidence-bound naming decisions and response
+// corrections that turn the canonical API map into the generated client's
+// effective contract. Group files live in docs/api/overlay/{uapi,whm}/*.json.
+package overlay
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"sort"
+	"unicode/utf8"
+
+	"github.com/hostingpal/whm-api-client/tools/api-map/internal/schema"
+)
+
+// Config selects which operations are generated.
+type Config struct {
+	SchemaVersion string `json:"schema_version"`
+	// Scope is "listed" (only operations named in group files) or "all".
+	Scope string `json:"scope"`
+}
+
+// File is one group's overlay.
+type File struct {
+	SchemaVersion string               `json:"schema_version"`
+	Family        string               `json:"family"`
+	Group         string               `json:"group"`
+	Accessor      string               `json:"accessor,omitempty"`
+	Class         string               `json:"class,omitempty"`
+	Description   string               `json:"description,omitempty"`
+	Operations    map[string]Operation `json:"operations"`
+	Path          string               `json:"-"`
+}
+
+// Operation holds per-operation decisions; zero values keep generator defaults.
+type Operation struct {
+	Name     string                `json:"name,omitempty"`
+	Method   string                `json:"method,omitempty"`
+	Outcome  string                `json:"outcome,omitempty"`
+	Unwrap   string                `json:"unwrap,omitempty"`
+	Void     bool                  `json:"void,omitempty"`
+	Order    []string              `json:"order,omitempty"`
+	Params   map[string]Param      `json:"params,omitempty"`
+	Response map[string]Correction `json:"response,omitempty"`
+	Notes    []string              `json:"notes,omitempty"`
+	Exclude  *Exclusion            `json:"exclude,omitempty"`
+	Probe    json.RawMessage       `json:"probe,omitempty"`
+}
+
+// Param renames, re-encodes or omits one documented parameter, keyed by wire
+// name. Omitted parameters (aliases, wildcard patterns such as MXCHECK-*) stay
+// reachable through call() and are left out of the generated signature.
+type Param struct {
+	PHP       string `json:"php,omitempty"`
+	Encoding  string `json:"encoding,omitempty"`
+	Sensitive *bool  `json:"sensitive,omitempty"`
+	Omit      bool   `json:"omit,omitempty"`
+}
+
+// Correction changes the documented response type at one payload path.
+type Correction struct {
+	Type     string     `json:"type,omitempty"`
+	Accept   []string   `json:"accept,omitempty"`
+	Nullable *bool      `json:"nullable,omitempty"`
+	Preserve bool       `json:"preserve,omitempty"`
+	Required *bool      `json:"required,omitempty"`
+	Add      *Spec      `json:"add,omitempty"`
+	Evidence []Evidence `json:"evidence"`
+}
+
+// Spec is the JSON form of a type spec, used to declare undocumented fields.
+type Spec struct {
+	Type     string          `json:"type"`
+	Nullable bool            `json:"nullable,omitempty"`
+	Accept   []string        `json:"accept,omitempty"`
+	Preserve bool            `json:"preserve,omitempty"`
+	Items    *Spec           `json:"items,omitempty"`
+	Values   *Spec           `json:"values,omitempty"`
+	Fields   map[string]Spec `json:"fields,omitempty"`
+	Required []string        `json:"required,omitempty"`
+	AnyOf    []Spec          `json:"anyOf,omitempty"`
+}
+
+// Exclusion removes an operation from generation for a documented reason.
+type Exclusion struct {
+	Reason   string     `json:"reason"`
+	Evidence []Evidence `json:"evidence"`
+}
+
+// Evidence binds a decision to documentation or a live observation.
+type Evidence struct {
+	Kind        string `json:"kind"`
+	Version     string `json:"version"`
+	Date        string `json:"date"`
+	Note        string `json:"note"`
+	Fingerprint string `json:"fingerprint,omitempty"`
+}
+
+// Set is a loaded overlay directory.
+type Set struct {
+	Config Config
+	Files  []File
+}
+
+// Load reads config.json and every group file in deterministic order.
+func Load(dir string) (Set, error) {
+	var set Set
+	raw, err := readLimited(filepath.Join(dir, "config.json"))
+	if err != nil {
+		return Set{}, fmt.Errorf("overlay config: %w", err)
+	}
+	if err := rejectDuplicateKeys(raw); err != nil {
+		return Set{}, fmt.Errorf("overlay config: %w", err)
+	}
+	if err := strictDecode(raw, &set.Config); err != nil {
+		return Set{}, fmt.Errorf("overlay config: %w", err)
+	}
+	if set.Config.SchemaVersion != "1.0" || (set.Config.Scope != "listed" && set.Config.Scope != "all") {
+		return Set{}, fmt.Errorf("overlay config: schema_version must be 1.0 and scope listed or all")
+	}
+	for _, family := range []string{"uapi", "whm"} {
+		paths, err := filepath.Glob(filepath.Join(dir, family, "*.json"))
+		if err != nil {
+			return Set{}, err
+		}
+		sort.Strings(paths)
+		for _, path := range paths {
+			file, err := loadFile(path)
+			if err != nil {
+				return Set{}, fmt.Errorf("%s/%s: %w", family, filepath.Base(path), err)
+			}
+			set.Files = append(set.Files, file)
+		}
+	}
+	return set, nil
+}
+
+func loadFile(path string) (File, error) {
+	raw, err := readLimited(path)
+	if err != nil {
+		return File{}, err
+	}
+	if err := rejectDuplicateKeys(raw); err != nil {
+		return File{}, err
+	}
+	// Validate the original object before Go's case-insensitive struct
+	// matching can accept schema-forbidden property names.
+	var original any
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.UseNumber()
+	if err := decoder.Decode(&original); err != nil {
+		return File{}, err
+	}
+	if err := schema.Validate("overlay-v1.schema.json", original); err != nil {
+		return File{}, err
+	}
+	var file File
+	if err := strictDecode(raw, &file); err != nil {
+		return File{}, err
+	}
+	file.Path = path
+	return file, nil
+}
+
+func readLimited(path string) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	raw, err := io.ReadAll(io.LimitReader(f, (8<<20)+1))
+	if err != nil || len(raw) > 8<<20 || !utf8.Valid(raw) {
+		return nil, fmt.Errorf("invalid overlay input")
+	}
+	return raw, nil
+}
+
+func strictDecode(raw []byte, target any) error {
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(target); err != nil {
+		return err
+	}
+	if decoder.More() {
+		return fmt.Errorf("trailing overlay data")
+	}
+	return nil
+}
+
+func rejectDuplicateKeys(raw []byte) error {
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.UseNumber()
+	if err := walkTokens(decoder); err != nil {
+		return err
+	}
+	if _, err := decoder.Token(); err != io.EOF {
+		return fmt.Errorf("trailing overlay data")
+	}
+	return nil
+}
+
+func walkTokens(decoder *json.Decoder) error {
+	token, err := decoder.Token()
+	if err != nil {
+		return err
+	}
+	delimiter, ok := token.(json.Delim)
+	if !ok {
+		return nil
+	}
+	switch delimiter {
+	case '{':
+		seen := map[string]bool{}
+		for decoder.More() {
+			key, err := decoder.Token()
+			if err != nil {
+				return err
+			}
+			name, _ := key.(string)
+			if seen[name] {
+				return fmt.Errorf("duplicate key %q", name)
+			}
+			seen[name] = true
+			if err := walkTokens(decoder); err != nil {
+				return err
+			}
+		}
+	case '[':
+		for decoder.More() {
+			if err := walkTokens(decoder); err != nil {
+				return err
+			}
+		}
+	}
+	_, err = decoder.Token()
+	return err
+}
