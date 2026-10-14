@@ -199,3 +199,82 @@ func TestApplyCorrectionAddsUndocumentedFieldsAndRequiredness(t *testing.T) {
 		t.Fatal("accepted a list suffix on a string")
 	}
 }
+
+func TestSensitiveNameDecisions(t *testing.T) {
+	cases := []struct {
+		name string
+		spec string
+		want bool
+	}{
+		{"passphrase", "string", true},
+		{"oldpass", "string", true},
+		{"client_secret", "string", true},
+		{"access_token", "string", true},
+		{"PUSHBULLET_ACCESS_TOKEN", "string", true},
+		{"pass_hash", "string", true},
+		{"private_key", "string", true},
+		{"token_name", "string", false},
+		{"passwd", "int", false},
+		{"notify_password_change", "flag", false},
+		{"username", "string", false},
+	}
+	for _, c := range cases {
+		if got := sensitiveName(c.name, TypeSpec{Type: c.spec}); got != c.want {
+			t.Errorf("%s (%s): got %v", c.name, c.spec, got)
+		}
+	}
+}
+
+func TestApplyCorrectionRejectsAddOnDocumentedField(t *testing.T) {
+	root := &TypeSpec{Type: "object", Fields: []Field{{Name: "a", Spec: TypeSpec{Type: "string"}}}}
+	err := applyCorrection(root, "a", overlay.Correction{Add: &overlay.Spec{Type: "int"}, Evidence: evidence()})
+	if err == nil || !strings.Contains(err.Error(), `field "a" is documented; use type, accept or nullable instead of add`) {
+		t.Fatalf("err %v", err)
+	}
+}
+
+func TestBuildConstantFallsBackToPHPName(t *testing.T) {
+	m := fixtureMap(t)
+	b := &builder{problems: map[string]bool{}}
+	op := m.Operations[0]
+	op.ID, op.Function = "whm1:360Monitoring/register", "360Monitoring/register"
+	if got := b.constant(op, "registerServer"); got != "REGISTER_SERVER" || len(b.problems) != 0 {
+		t.Fatalf("%s %v", got, b.problems)
+	}
+	op.Function = "createacct"
+	if got := b.constant(op, "createAccount"); got != "CREATEACCT" {
+		t.Fatal(got)
+	}
+	op.Function = "360x"
+	b.constant(op, "360x")
+	if len(b.problems) != 1 {
+		t.Fatalf("problems %v", b.problems)
+	}
+}
+
+func finishProblems(groups map[string]*Group) string {
+	b := &builder{problems: map[string]bool{}}
+	b.finish(groups)
+	return strings.Join(b.result.Problems, "\n")
+}
+
+func TestFinishReportsCaseInsensitiveCollisions(t *testing.T) {
+	dup := finishProblems(map[string]*Group{
+		"a": {Family: "uapi", Name: "DNSSEC", Accessor: "dnssec", Class: "Dns"},
+		"b": {Family: "uapi", Name: "DNS", Accessor: "dns", Class: "DNS"},
+	})
+	if !strings.Contains(dup, "share class") {
+		t.Fatal(dup)
+	}
+	methods := finishProblems(map[string]*Group{
+		"a": {Family: "uapi", Name: "X", Accessor: "x", Class: "X", Operations: []Operation{
+			{ID: "1", PHPName: "listIPs", Constant: "A"}, {ID: "2", PHPName: "listIps", Constant: "B"}}},
+	})
+	if !strings.Contains(methods, "duplicate method") {
+		t.Fatal(methods)
+	}
+	run := finishProblems(map[string]*Group{"a": {Family: "uapi", Name: "Run", Accessor: "run", Class: "Run"}})
+	if !strings.Contains(run, "reserved or invalid") {
+		t.Fatal(run)
+	}
+}

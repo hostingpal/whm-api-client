@@ -14,8 +14,7 @@ var (
 	markdownLink  = regexp.MustCompile(`\[([^\]]+)\]\([^)]*\)`)
 	whitespace    = regexp.MustCompile(`\s+`)
 	blankLine     = regexp.MustCompile(`\n\s*\n`)
-	reservedNames = map[string]bool{"call": true, "responseMeta": true, "username": true, "isBridged": true}
-	secretNames   = map[string]bool{"pass": true, "passwd": true, "newpass": true, "token": true, "secret": true, "api_token": true, "private_key": true}
+	reservedNames = map[string]bool{"call": true, "responseMeta": true, "username": true, "isBridged": true, "run": true, "dispatch": true, "request": true}
 )
 
 type overlayEntry struct {
@@ -90,6 +89,14 @@ func Build(m model.Map, set overlay.Set) (Result, error) {
 	return b.result, nil
 }
 
+var reservedLower = func() map[string]bool {
+	m := map[string]bool{}
+	for name := range reservedNames {
+		m[strings.ToLower(name)] = true
+	}
+	return m
+}()
+
 func (b *builder) problem(message string) { b.problems[message] = true }
 
 func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Operation) (Operation, string, bool) {
@@ -110,7 +117,6 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		SeeURL:      seeURL(op),
 		Notes:       ov.Notes,
 		Unwrap:      ov.Unwrap,
-		Constant:    Constant(op.Function),
 	}
 	if strings.TrimSuffix(result.Description, ".") == strings.TrimSuffix(result.Summary, ".") {
 		result.Description = ""
@@ -119,6 +125,7 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		result.Module = *op.Module
 	}
 	result.PHPName = b.methodName(op, ov)
+	result.Constant = b.constant(op, result.PHPName)
 	result.Alias = Pascal(result.PHPName) + "Result"
 	result.Params = b.params(op, v, ov)
 	result.Method = b.method(op, v, ov, result.Params)
@@ -139,6 +146,22 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	}
 	result.Returns = returns
 	return result, b.groupOf(op, v, node), true
+}
+
+var constantName = regexp.MustCompile(`^[A-Z_][A-Z0-9_]*$`)
+
+// constant picks the spec constant: the function name when it is a valid PHP
+// constant, otherwise one derived from the PHP method name.
+func (b *builder) constant(op model.Operation, phpName string) string {
+	name := Constant(op.Function)
+	if constantName.MatchString(name) && name != "CLASS" {
+		return name
+	}
+	name = Constant(phpName)
+	if !constantName.MatchString(name) || name == "CLASS" {
+		b.problem(fmt.Sprintf("%s: spec constant %s is not a valid PHP constant", op.ID, name))
+	}
+	return name
 }
 
 func (b *builder) methodName(op model.Operation, ov overlay.Operation) string {
@@ -175,9 +198,9 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 			PHP:         Camel(p.Name),
 			Required:    decl["required"] == true,
 			Description: firstSentence(text(decl["description"])),
-			Sensitive:   sensitiveName(p.Name),
 		}
 		param.PHPType, param.DocType, param.Encoding = paramTypes(spec, b.schemas.enumDoc(p.Locator.SourceID, decl["schema"]))
+		param.Sensitive = sensitiveName(p.Name, spec)
 		if o, ok := ov.Params[p.Name]; ok {
 			if o.PHP != "" {
 				param.PHP = o.PHP
@@ -308,16 +331,22 @@ func (b *builder) group(family, name string, v model.Variant) *Group {
 
 func (b *builder) finish(groups map[string]*Group) {
 	accessors := map[string]string{}
+	classes := map[string]string{}
 	for _, key := range sortedKeys(groups) {
 		group := groups[key]
 		sort.Slice(group.Operations, func(i, j int) bool { return group.Operations[i].PHPName < group.Operations[j].PHPName })
-		if reservedNames[group.Accessor] || !IsMethodName(group.Accessor) {
+		if reservedLower[strings.ToLower(group.Accessor)] || !IsMethodName(group.Accessor) {
 			b.problem(fmt.Sprintf("group %q: accessor %q is reserved or invalid", group.Name, group.Accessor))
 		}
 		if !IsClassName(group.Class) {
 			b.problem(fmt.Sprintf("group %q: class %q is invalid", group.Name, group.Class))
 		}
-		accessorKey := group.Family + "|" + group.Accessor
+		classKey := group.Family + "|" + strings.ToLower(group.Class)
+		if other, taken := classes[classKey]; taken {
+			b.problem(fmt.Sprintf("groups %q and %q share class %q", other, group.Name, group.Class))
+		}
+		classes[classKey] = group.Name
+		accessorKey := group.Family + "|" + strings.ToLower(group.Accessor)
 		if other, taken := accessors[accessorKey]; taken {
 			b.problem(fmt.Sprintf("groups %q and %q share accessor %q", other, group.Name, group.Accessor))
 		}
@@ -325,7 +354,8 @@ func (b *builder) finish(groups map[string]*Group) {
 		names := map[string]bool{}
 		constants := map[string]bool{}
 		for _, op := range group.Operations {
-			if names[op.PHPName] {
+			lower := strings.ToLower(op.PHPName)
+			if names[lower] {
 				b.problem(fmt.Sprintf("group %q: duplicate method %s", group.Name, op.PHPName))
 			}
 			if constants[op.Constant] {
@@ -334,7 +364,7 @@ func (b *builder) finish(groups map[string]*Group) {
 			if !IsMethodName(op.PHPName) {
 				b.problem(op.ID + ": method name " + op.PHPName + " is invalid")
 			}
-			names[op.PHPName] = true
+			names[lower] = true
 			constants[op.Constant] = true
 		}
 		b.result.Groups = append(b.result.Groups, *group)
@@ -380,9 +410,28 @@ func encodingTypes(encoding string, current Param) (string, string, string) {
 	return "string|int", "string|int", "scalar"
 }
 
-func sensitiveName(name string) bool {
-	lower := strings.ToLower(name)
-	return strings.Contains(lower, "password") || secretNames[lower]
+var secretWords = map[string]bool{
+	"pass": true, "passwd": true, "password": true, "passphrase": true, "secret": true,
+	"newpass": true, "oldpass": true, "privatekey": true, "passhash": true,
+}
+
+// sensitiveName decides from the lower-cased words of the name; flag, bool and
+// int parameters are never secrets.
+func sensitiveName(name string, spec TypeSpec) bool {
+	switch spec.Type {
+	case "flag", "bool", "int":
+		return false
+	}
+	words := Words(strings.ToLower(name))
+	for _, word := range words {
+		if secretWords[word] {
+			return true
+		}
+	}
+	if len(words) == 0 {
+		return false
+	}
+	return words[len(words)-1] == "token" || secretWords[strings.Join(words, "")]
 }
 
 func tagGroups(doc model.Object) map[string]string {

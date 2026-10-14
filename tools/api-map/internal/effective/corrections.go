@@ -58,6 +58,9 @@ func applyCorrection(root *TypeSpec, path string, c overlay.Correction) error {
 				return fmt.Errorf("path %q: %q is not an object field", path, seg.name)
 			}
 			index := fieldIndex(current, seg.name)
+			if index >= 0 && i == len(segments)-1 && len(seg.suffixes) == 0 && c.Add != nil {
+				return fmt.Errorf("path %q: field %q is documented; use type, accept or nullable instead of add", path, seg.name)
+			}
 			if index < 0 {
 				if i != len(segments)-1 || c.Add == nil {
 					return fmt.Errorf("path %q: field %q is not documented", path, seg.name)
