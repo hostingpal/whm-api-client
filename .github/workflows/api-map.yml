@@ -44,3 +44,4 @@ jobs:
           composer validate
           composer check
           composer api-map:check
+          composer api-map:generate:check
