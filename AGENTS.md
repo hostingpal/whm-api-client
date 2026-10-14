@@ -439,7 +439,7 @@ every session that changes files.
 - Commit in logical units with conventional messages (`feat:`, `fix:`,
   `refactor:`, `docs:`, `test:`, `chore:`).
 - Before pushing, run `composer validate` and `composer check`, plus
-  `composer api-map:check` when `tools/api-map`, `docs/api/overlay` or generated
+  `composer api-map:check` when `tools/api-map`, anything under `docs/api/`, or generated
   code change. Do not push failing gates; if a gate cannot pass, open
   a draft pull request that says why.
 - Push the branch (`git push -u origin HEAD`) and open a pull request against

@@ -374,8 +374,8 @@ go through `call()`. The server's `uid` is accepted as the observed canonical de
 string and normalized to the pinned integer; see the
 [runtime observations](docs/api/source-audit.md#runtime-observations-2026-10-14).
 The alias parameters `removeacct` `user` and `passwd` `enabledigest`, and the
-`accountsummary` lookups other than `user`, are not sent, so the coverage report
-lists those variants as partial.
+`accountsummary` lookups other than `user`, are not sent; those parameters stay
+reachable through `call()`.
 
 #### Generic calls
 

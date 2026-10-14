@@ -117,8 +117,8 @@ map builds. No command shown here calls a WHM or cPanel endpoint.
 [Toolchain commands](../../tools/api-map/README.md) cover saved capability
 comparison, drift, explicit regeneration, and the overlay and PHP generation
 rules. Coverage is the generated [coverage.md](coverage.md). The
-[toolchain configuration](toolchain.json) selects local inputs, checked
-reports, schemas, and synthetic examples.
+[toolchain configuration](toolchain.json) selects local inputs, the overlay,
+schemas, and synthetic examples.
 
 ```bash
 composer api-map:check

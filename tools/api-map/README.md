@@ -146,7 +146,7 @@ go -C tools/api-map run ./cmd/api-map drift report --before ../../.cache/api-map
 
 Create `before.json` from the previously reviewed snapshot before rebuilding the
 new map. Drift separates identity, contract, metadata, auth, availability, and
-risk changes; it does not silently revise implementation claims or baselines.
+risk changes; it does not silently revise generated code.
 Report/build `--output -` emits JSON to stdout; Markdown remains a file and
 safe diagnostics use stderr.
 
