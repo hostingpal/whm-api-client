@@ -3,13 +3,14 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The typed groups cover 39 reviewed operations: WHM server identity, load, disk
+The generated typed groups cover 39 reviewed operations (see
+[`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory and the cPanel
 account lifecycle, plus cPanel domains, DNS, PHP and features. Generic `call()`
 methods reach every other documented WHM API 1 and UAPI function. The library
 provides token authentication, direct and WHM-routed UAPI, GET and form-encoded
-POST execution, typed payloads, API exceptions, and per-client response metadata
-over a PSR HTTP transport.
+POST execution, typed array payloads, API exceptions, and per-client response
+metadata over a PSR HTTP transport.
 
 The [agreed PHP client interface](docs/superpowers/specs/2026-10-13-php-client-design.md)
 uses `whm()` and `uapi(?string $user = null)`, with typed resource groups
@@ -98,286 +99,162 @@ different accounts and separately constructed facades retain separate handles.
 
 ## Available operations
 
-Selectors and resource groups perform no network I/O. Terminal methods execute
-one request immediately:
+Typed groups are generated from the pinned API map plus the reviewed overlay in
+`docs/api/overlay/`; the classes under `src/Api/Whm/` and `src/Api/Uapi/` are never
+edited by hand. [`docs/api/coverage.md`](docs/api/coverage.md) lists the generated
+groups, their accessors, operation counts and the excluded (deprecated) operations.
+Every method has PHPDoc with the official operation link and a precise PHPStan array
+shape for its result.
+
+Selectors and groups perform no network I/O. A group method executes one request
+immediately, takes named arguments (optional parameters are `null` to omit; booleans
+distinguish omission, `false` as `0` and `true` as `1`), and returns the documented
+payload as a plain array, scalar or `null`:
 
 ```php
 // Use the WHM-configured $client from the first example.
-$version = $client->whm()->server()->version(); // string, unchanged from the server.
-$hostname = $client->whm()->server()->hostname(); // string, unchanged from the server.
-$load = $client->whm()->server()->loadAverage(); // Immutable ServerLoadAverage.
-$oneMinuteLoad = $load->one; // int|float|numeric-string|null; original representation.
+$version = $client->whm()->server()->version();       // string
+$hostname = $client->whm()->server()->getHostname();  // string
+$load = $client->whm()->server()->getLoadAverage();   // array{one?: ..., five?: ..., fifteen?: ...}
+$oneMinuteLoad = $load['one'];                        // int|float|numeric-string, original form.
 
-$diskUsage = $client->whm()->server()->diskUsage(); // Immutable ServerDiskUsage.
-foreach ($diskUsage as $partition) { // Immutable DiskPartition records.
-    $availableKilobytes = $partition->available;
-    $usedPercent = $partition->percentage;
+foreach ($client->whm()->server()->getDiskUsage()['partition'] ?? [] as $partition) {
+    $usedPercent = $partition['percentage'] ?? null;
 }
 
 $account = $client->uapi('npr');
-$domains = $account->domains()->list(); // Immutable AccountDomains.
-$mainDomain = $domains->mainDomain;
-$payload = $domains->toArray();
+$domains = $account->domainInfo()->listDomains();
+$mainDomain = $domains['main_domain'];
 
 // Optional filter: null omits it, false sends 0, true sends 1.
-$withoutTemporaryDomains = $account->domains()->list(hideTemporaryDomains: true);
+$withoutTemporary = $account->domainInfo()->listDomains(hideTemporaryDomains: true);
 
-$serverDomains = $client->whm()->domains()->list(); // Immutable ServerDomains.
-foreach ($serverDomains as $domain) { // Immutable DomainInfo records.
-    $username = $domain->user;
-    $phpPackage = $domain->phpVersion;
+foreach ($client->whm()->accounts()->getDomainInfo()['domains'] ?? [] as $domain) {
+    $username = $domain['user'] ?? null;
+    $port = $domain['port'] ?? null; // int, even when the server sends a decimal string.
 }
 
-$phpVersions = $account->php()->listVersions(); // list<string>, e.g. ['ea-php82'].
+$phpVersions = $account->langPhp()->phpGetInstalledVersions(); // list<string>
 ```
 
-`whm()->server()->version(): string` maps to
-[WHM version](https://api.docs.cpanel.net/openapi/whm/operation/version).
-`whm()->server()->hostname(): string` maps to
-[WHM gethostname](https://api.docs.cpanel.net/openapi/whm/operation/gethostname).
-Both return the upstream string unchanged; missing or non-string values raise
-`InvalidResponseException` with the response metadata.
+Results are arrays keyed by the upstream wire names (`$domains['main_domain']`).
+Omitted fields are absent keys (use `array_key_exists()` or `??`) and an explicit
+upstream `null` stays `null`. Values that vary on real servers are normalized to the
+documented type: for example ports and `uid` become `int`, feature flags become
+`0|1`, and each correction is recorded in the overlay with its evidence. Load
+averages are the deliberate exception and keep `int|float|numeric-string` so
+precision and trailing zeros survive.
 
-`whm()->server()->loadAverage(): ServerLoadAverage` maps to
-[WHM systemloadavg](https://api.docs.cpanel.net/openapi/whm/operation/systemloadavg).
-Its `one`, `five`, and `fifteen` properties represent the corresponding minute
-windows. Values retain the upstream representation: integers, finite floats,
-or finite decimal strings such as `"1.20"`, as observed on the test server.
-Properties and `toArray()` retain string precision and trailing zeros. Missing
-fields become null properties and remain absent from `toArray()`; explicit null
-is invalid. Decimal strings allow an optional sign, digits, and optional fractional
-digits, but no whitespace or exponent notation. Values are never rescaled; the
-upstream documentation describes them as a percentage of CPU processor capacity.
+Response validation enforces the pinned types, required fields and the observed
+wire variants. Documented minimum, range and enumeration constraints are not yet
+enforced (tracked as `whm-api-client-8x0.18`). A malformed payload raises
+`InvalidResponseException` carrying the response metadata. The generated PHPDoc
+states the account scope, requirements (for example EasyApache 4 for PHP
+operations) and upstream caveats of each operation.
 
-`whm()->server()->diskUsage(): ServerDiskUsage` maps to
-[WHM getdiskusage](https://api.docs.cpanel.net/openapi/whm/operation/getdiskusage).
-It supports `foreach` and `count()`, with a nullable `partitions` property and
-the original `partition` key in `toArray()`. An omitted list counts/iterates as
-empty but remains distinct from a present empty list in the export.
+### WHM API 1
 
-| `DiskPartition` property | Field in `toArray()` | Present value type |
-| --- | --- | --- |
-| `available` | `available` | Positive integer kilobytes |
-| `device` | `device` | String |
-| `disk` | `disk` | String |
-| `filesystem` | `filesystem` | String |
-| `inodesAvailable` | `inodes_available` | Positive integer or null |
-| `inodesIpercentage` | `inodes_ipercentage` | Nonnegative integer or null |
-| `inodesTotal` | `inodes_total` | Positive integer or null |
-| `inodesUsed` | `inodes_used` | Positive integer or null |
-| `mount` | `mount` | String |
-| `percentage` | `percentage` | Nonnegative integer |
-| `total` | `total` | Positive integer kilobytes |
-| `used` | `used` | Positive integer kilobytes |
+| Handle and accessor | Methods |
+| --- | --- |
+| `whm()->server()` | `version()`, `getHostname()`, `getLoadAverage()`, `getDiskUsage()` |
+| `whm()->accounts()` | `listAccounts()`, `accountSummary()`, `getDomainInfo()`, `createAccount()`, `suspendAccount()`, `unsuspendAccount()`, `removeAccount()`, `changePassword()`, `changePackage()`, `modifyAccount()` |
+| `whm()->webServer()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetHandlers()`, `phpGetDefaultAccountsToFpm()`, `phpGetOldFpmFlag()`, `isConversionInProgress()`, `phpGetVhostsByVersion()` |
+| `whm()->hostingPlans()` | `listPackages()`, `getFeatureMetadata()`, `getFeatureNames()`, `getFeaturelistData()`, `getFeaturelists()`, `getFeaturelistsByPackageTypes()`, `getUsersFeaturesSettings()`, `verifyUserHasFeature()` |
 
-All partition fields are optional. Null properties represent omission or explicit
-null for inode fields; `toArray()` preserves the distinction. Zero disk percentage
-and nullable inode fields reflect verified runtime deviations from the pinned
-schema; other minimum and type constraints remain enforced. Unknown extensions
-are ignored. These three server operations take no parameters or cPanel target
-account and perform one request each, retaining the owning WHM handle's metadata.
+### cPanel UAPI
 
-`uapi()->domains()->list(?bool $hideTemporaryDomains = null): AccountDomains`
-maps to [UAPI DomainInfo/list_domains](https://api.docs.cpanel.net/openapi/cpanel/operation/list_domains).
-Both direct cPanel and WHM-routed domain calls return the same DTO. Omitting the
-filter leaves the documented default of `0`; `true` hides temporary domains from
-the main domain and addon, parked, and subdomain lists.
+| Handle and accessor | Methods |
+| --- | --- |
+| `uapi()->domainInfo()` | `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
+| `uapi()->langPhp()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetDomainHandler()`, `phpGetImpactedDomains()` |
+| `uapi()->features()` | `listFeatures()` |
+| `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()` |
 
-| DTO property | Present field in `toArray()` | Field type |
-| --- | --- | --- |
-| `mainDomain` | `main_domain` | `string\|null` |
-| `addonDomains` | `addon_domains` | `list<string>` |
-| `parkedDomains` | `parked_domains` | `list<string>` |
-| `subDomains` | `sub_domains` | `list<string>` |
-| `isTemporary` | `is_temporary` | `array<array-key, 0\|1>` |
+UAPI groups operate on the selected cPanel account through either credential route.
+`uapi()->dns()->fetchCpanelGeneratedDomains()` requires cPanel 120 and preserves
+trailing dots; `lookup()` returns textual lines or explicit `null`.
 
-Every field is optional upstream. DTO properties are null for omitted fields;
-`toArray()` preserves which fields were present, distinguishing an omitted main
-domain from explicit null. Empty strings, empty lists, and integer `0`/`1` flags
-remain unchanged. An empty temporary-domain object becomes an empty array map.
-Unknown payload extensions are outside this reviewed DTO contract.
-The upstream domain operation can return blank values without an API error when
-the account's userdata file has incorrect permissions; success alone does not
-establish a complete domain inventory.
+Selected behaviors worth knowing:
 
-`whm()->domains()->list(): ServerDomains` maps to
-[WHM get_domain_info](https://api.docs.cpanel.net/openapi/whm/operation/get_domain_info).
-It returns the server's manually created domains visible to the WHM credentials;
-service/proxy subdomains and automatically created domains are excluded upstream.
-The collection supports `foreach` and `count()`. Its `domains` property holds
-`list<DomainInfo>`, or null when the upstream field is omitted. An omitted list
-iterates as empty, while `toArray()` distinguishes `[]` from `['domains' => []]`.
-Unknown extensions are ignored.
+- `getUsersFeaturesSettings($users, $features)` accepts a username or a nonempty list of
+  usernames and an optional feature name or list; omitting the feature filter asks for
+  all features. Empty or malformed lists fail locally and clear prior metadata before
+  network I/O.
+- `verifyUserHasFeature(user, feature)` returns `0|1` and is an access check: upstream
+  also returns true for unknown features. The `disabled` feature list reverses the
+  interpretation of a feature's value.
+- `phpGetImpactedDomains()` needs a domain (or a nonempty list, sent as repeated
+  `domain` parameters) or `systemDefault: true`, and excludes parked domains.
+  `phpGetDomainHandler()` takes `type` `home` or `vhost`, with `vhost` required for the
+  latter. PHP handler inventory accepts the observed `lsapi` handler.
+- `listDomains()` can return blank values without an API error when the account's
+  userdata file has incorrect permissions; success alone does not establish a complete
+  domain inventory. `getDomainInfo()` returns manually created domains visible to the
+  WHM credentials; service and automatically created domains are excluded upstream.
+- PHP configuration operations may require EasyApache 4 and the WebServer role, as
+  documented per method.
 
-Each immutable `DomainInfo` exposes the following reviewed fields:
+### Account lifecycle and mutations
 
-| DTO property | Present field in `toArray()` | Field type |
-| --- | --- | --- |
-| `docroot` | `docroot` | `string` |
-| `domain` | `domain` | `string` |
-| `domainType` | `domain_type` | `string` |
-| `ipv4` | `ipv4` | `string` |
-| `ipv4Ssl` | `ipv4_ssl` | `string` |
-| `ipv6` | `ipv6` | `string\|null` |
-| `ipv6IsDedicated` | `ipv6_is_dedicated` | `0\|1` |
-| `modsecurityEnabled` | `modsecurity_enabled` | `0\|1` |
-| `parentDomain` | `parent_domain` | `string` |
-| `phpVersion` | `php_version` | `string` |
-| `port` | `port` | `int\|numeric-string` |
-| `portSsl` | `port_ssl` | `int\|numeric-string` |
-| `user` | `user` | `string` |
-| `userOwner` | `user_owner` | `string` |
+Inventory methods use GET. Mutations use POST so passwords and other parameters stay
+out of the URL, which the pinned WHM documentation says the server records in its
+access log.
 
-All record fields are optional. Properties use null for omitted values;
-`toArray()` retains presence, including explicit `ipv6: null`, empty strings,
-and integer zeros. Domain types and PHP package names remain upstream strings.
-The public `port`/`portSsl` properties are integers (or null when omitted).
-The pinned schema declares integer ports, but the test server returns decimal
-strings. Canonical nonnegative decimal strings that fit a PHP integer are accepted
-and normalized in the properties; `toArray()` preserves their original wire type.
-
-`uapi()->php()->listVersions(): array` maps to
-[UAPI LangPHP/php_get_installed_versions](https://api.docs.cpanel.net/openapi/cpanel/operation/php_get_installed_versions).
-It returns `list<string>` on both direct and WHM-routed account handles, preserving
-custom package names and an empty list. A missing or malformed `versions` list
-raises `InvalidResponseException` with the response metadata. The operation lists
-the system's PHP versions in the selected account context; it requires EasyApache 4
-and is disabled when the WebServer role is disabled. See the live testing workflow
-below and the recorded [runtime observations](docs/api/source-audit.md#runtime-observations-2026-10-13).
-
-### PHP, feature and account inventory
-
-The following 22 operations extend the original seven. Each method executes one
-read-only GET immediately. WHM methods use the authenticated server user; UAPI
-methods retain the selected cPanel account on either credential route.
-
-| PHP method | Upstream operation | Return |
-| --- | --- | --- |
-| `whm()->php()->listVersions()` | `php_get_installed_versions` | `list<string>` |
-| `whm()->php()->systemDefaultVersion()` | `php_get_system_default_version` | `string` |
-| `whm()->php()->handlers(?string $version = null)` | `php_get_handlers` | List of handler records |
-| `whm()->php()->defaultAccountsToFpm()` | `php_get_default_accounts_to_fpm` | `bool` |
-| `whm()->php()->oldFpmFlag()` | `php_get_old_fpm_flag` | `0\|1\|2` |
-| `whm()->php()->isConversionInProgress()` | `is_conversion_in_progress` | `bool` |
-| `whm()->php()->vhostsByVersion(string $version)` | `php_get_vhosts_by_version` | `list<string>` |
-| `whm()->features()->metadata()` | `get_feature_metadata` | `FeatureCatalog` of `FeatureMetadata` |
-| `whm()->features()->names()` | `get_feature_names` | Feature names shape |
-| `whm()->features()->listData(string $featureList)` | `get_featurelist_data` | `FeatureListData` of `FeatureSetting` |
-| `whm()->features()->lists()` | `get_featurelists` | Feature list names shape |
-| `whm()->features()->listsByPackageType()` | `get_featurelists_by_package_types` | Feature lists by package type shape |
-| `whm()->features()->userSettings($user, $feature = null)` | `get_users_features_settings` | `UserFeatureSettings` of `UserFeatureSetting` |
-| `whm()->features()->userHasFeature(string $user, string $feature)` | `verify_user_has_feature` | `bool` |
-| `uapi()->domains()->primary(?bool $hideTemporaryDomains = null)` | `DomainInfo/primary_domain` | `?string` |
-| `uapi()->domains()->builtinAliases(?bool $hideTemporaryDomains = null)` | `DomainInfo/main_domain_builtin_subdomain_aliases` | `list<string>` |
-| `uapi()->php()->systemDefaultVersion()` | `LangPHP/php_get_system_default_version` | `?string` |
-| `uapi()->php()->domainHandler(string $type, ?string $vhost = null)` | `LangPHP/php_get_domain_handler` | `string` |
-| `uapi()->php()->impactedDomains(string\|array\|null $domain = null, ?bool $systemDefault = null)` | `LangPHP/php_get_impacted_domains` | `list<string>` |
-| `uapi()->features()->list()` | `Features/list_features` | `array<array-key, 0\|1>` |
-| `uapi()->dns()->lookup(string $domain)` | `DNS/lookup` | `list<string>\|null` |
-| `uapi()->dns()->generatedDomains(string $domain)` | `DNS/fetch_cpanel_generated_domains` | `list<array{domain?: string}>` |
-
-Precise nested array shapes and exact official operation links are documented on
-these methods. Return conventions: a public value never exposes wire-type variants.
-Records whose flags vary on the wire are immutable DTOs (iterable/countable
-containers where they hold lists) whose camelCase properties normalize flags to
-`0|1` and use null for omission, while `toArray()` returns the reviewed wire shape
-with original keys, presence and values, including the exact string `'0'`/`'1'` or
-boolean forms observed in the runtime audit. Array returns are kept for payloads
-whose fields each have a single type. Load averages are the one deliberate exception: `ServerLoadAverage` keeps `int|float|numeric-string` because no lossless normalization preserves their precision and trailing zeros.
-Scalar/list convenience methods require their selected
-field; malformed payloads raise `InvalidResponseException` carrying the current
-metadata. Nullable UAPI scalar fields accept explicit null. DNS lookup preserves
-explicit null but rejects an omitted data member. Existing DTO methods retain
-their contracts.
-
-```php
-$whm = $client->whm();
-$versions = $whm->php()->listVersions();
-$handlers = $whm->php()->handlers();
-$settings = $whm->features()->userSettings(['npr'], ['autossl', 'sslmanager']);
-foreach ($settings as $setting) {
-    $effective = $setting->cpuserSetting ?? $setting->featureListSetting; // 0|1|null
-}
-$wire = $settings->toArray(); // Original keys and wire values.
-
-$account = $client->uapi('npr');
-$primary = $account->domains()->primary();
-$aliases = $account->domains()->builtinAliases(); // Labels such as www, not full names.
-$handler = $account->php()->domainHandler('vhost', 'npr.rs');
-$affected = $account->php()->impactedDomains('npr.rs');
-$dnsLines = $account->dns()->lookup('npr.rs'); // Textual lines, not DNS record objects.
-```
-
-`userSettings()` accepts a username or a nonempty list of usernames and an optional
-feature name or nonempty list. Omitting the feature filter asks for all features.
-`userHasFeature()` is an access check: upstream also returns true for unknown
-features. The `disabled` feature list reverses the interpretation of `value`;
-flag properties are normalized to `0|1` and `toArray()` keeps the wire values.
-A null `cpuserSetting` means there is no account override (or the field was
-omitted; `toArray()` distinguishes the two).
-
-UAPI feature-map names follow PHP array-key conversion, including integer keys
-for canonical numeric JSON names. PHP package strings are open, including custom packages.
-WHM handler inventory accepts the observed `lsapi` handler alongside the pinned enum. The old FPM flag preserves
-all three states (absent preconfiguration, existing preconfiguration, dismissed
-dialogue). PHP configuration operations may require EasyApache 4 and the WebServer
-role, as documented per method. For UAPI handlers, `type` is `home` or `vhost`, with
-`vhost` required for the latter. Impacted-domain lookup needs a domain or
-`systemDefault: true` and excludes parked domains. A nonempty list of domain strings
-is sent as repeated `domain` parameters; order and duplicates are preserved. Empty
-or malformed lists fail locally and clear prior metadata before network I/O. Semantic request errors are
-reported by the API. Optional booleans distinguish omission, false and true.
-Generated DNS domains require cPanel 120 and preserve trailing dots.
-
-### Account lifecycle, POST execution and generic calls
-
-`whm()->accounts()` covers the cPanel account lifecycle. Inventory methods use
-GET; mutations use POST so passwords and other parameters stay out of the URL,
-which the pinned WHM documentation says the server records in its access log.
-Records are precise array shapes (`AccountRecord`, `PackageRecord`, `CreatedAccount`,
-`ModifiedAccount`) whose present fields are validated against their pinned types;
-unknown fields are ignored and documented enumerations are not enforced.
-
-| PHP method | Upstream operation | Method | Return |
-| --- | --- | --- | --- |
-| `accounts()->list($search, $searchType, $searchMethod, $want)` | `listaccts` | GET | `list<AccountRecord>` |
-| `accounts()->summary(string $user)` | `accountsummary` | GET | `AccountRecord` |
-| `accounts()->packages(?string $want = null)` | `listpkgs` | GET | `list<PackageRecord>` |
-| `accounts()->create(string $username, array $options = [])` | `createacct` | POST | `CreatedAccount` |
-| `accounts()->suspend($user, $reason, $onlyRootMayUnsuspend, $leaveFtpAccountsEnabled)` | `suspendacct` | POST | `void` |
-| `accounts()->unsuspend($user, $retainServiceProxies)` | `unsuspendacct` | POST | `void` |
-| `accounts()->remove($username, $keepDns)` | `removeacct` | POST | `void` |
-| `accounts()->changePassword($user, $password, $updateDatabasePassword, $digestAuthentication)` | `passwd` | POST | `array{app?: list<string>}` |
-| `accounts()->changePackage($user, $package)` | `changepackage` | POST | `void` |
-| `accounts()->modify(string $user, array $changes)` | `modifyacct` | POST | `ModifiedAccount` |
+- `listAccounts(search, searchtype, searchmethod, want)` and `accountSummary()` return
+  the `acct` record list; `accountSummary()` does not require exactly one record.
+  `hostingPlans()->listPackages()` returns the `pkg` list.
+- `createAccount()`, `changePassword()` and `modifyAccount()` return `null` when the
+  server sends no data, and the documented array otherwise.
+- `suspendAccount()`, `unsuspendAccount()`, `removeAccount()` and `changePackage()`
+  return `void`.
+- Positional order is preserved for `listAccounts(search, searchtype, searchmethod,
+  want)`, `suspendAccount(user, reason, ...)`, `changePackage(user, package)`,
+  `changePassword(user, password, ...)` and `verifyUserHasFeature(user, feature)`.
+  Prefer named arguments everywhere.
 
 ```php
 $accounts = $client->whm()->accounts();
-$created = $accounts->create('newuser', [
-    'domain' => 'new.example',
-    'password' => $password, // Sent in the form body, never in the URL.
-    'plan' => 'default',
-]);
-$summary = $accounts->summary('newuser'); // AccountRecord: user, domain, plan, suspended, ...
-$accounts->suspend('newuser', 'Unpaid invoice');
-$accounts->unsuspend('newuser');
-$accounts->changePackage('newuser', 'gold');
-$accounts->modify('newuser', ['contactemail' => 'owner@new.example']);
-$accounts->remove('newuser', keepDns: false);
+$created = $accounts->createAccount(
+    username: 'newuser',
+    domain: 'new.example',
+    password: $password, // Sent in the form body, never in the URL.
+    plan: 'default',
+);
+$summary = $accounts->accountSummary(user: 'newuser')[0] ?? null; // acct record: user, domain, plan, ...
+$accounts->suspendAccount(user: 'newuser', reason: 'Unpaid invoice');
+$accounts->unsuspendAccount(user: 'newuser');
+$accounts->changePackage(user: 'newuser', package: 'gold');
+$accounts->modifyAccount(user: 'newuser', contactemail: 'owner@new.example');
+$accounts->removeAccount(username: 'newuser', keepdns: false);
 ```
 
-Optional booleans distinguish omission (upstream default), `false` (`0`) and `true`
-(`1`). `summary()` requires exactly one record. `create()` and `modify()` forward
-every documented option key unchanged (`username`/`user` come from the argument);
-per-domain `MXCHECK-<domain>` keys for `modifyacct` are outside the typed shape and
-go through `call()`. The server's `uid` is accepted as the observed canonical decimal
-string and normalized to the pinned integer; see the
+Parameters outside a generated method's signature (for example per-domain
+`MXCHECK-<domain>` keys for `modifyacct`) stay reachable through `call()`. The
+server's `uid` is accepted as the observed canonical decimal string and normalized
+to the pinned integer; see the
 [runtime observations](docs/api/source-audit.md#runtime-observations-2026-10-14).
-The alias parameters `removeacct` `user` and `passwd` `enabledigest`, and the
-`accountsummary` lookups other than `user`, are not sent; those parameters stay
-reachable through `call()`.
 
-#### Generic calls
+### Migrating from the earlier hand-written groups
+
+DTOs and `toArray()` are gone: read arrays with wire keys. Renamed calls:
+
+| Earlier call | Generated call |
+| --- | --- |
+| `whm()->server()->hostname()` / `loadAverage()` / `diskUsage()` | `whm()->server()->getHostname()` / `getLoadAverage()` / `getDiskUsage()` |
+| `whm()->domains()->list()` | `whm()->accounts()->getDomainInfo()` |
+| `whm()->php()->...` | `whm()->webServer()->phpGet...` (see the table above) |
+| `whm()->features()->metadata()` / `names()` / `listData()` / `lists()` / `listsByPackageType()` | `whm()->hostingPlans()->getFeatureMetadata()` / `getFeatureNames()` / `getFeaturelistData()` / `getFeaturelists()` / `getFeaturelistsByPackageTypes()` |
+| `whm()->features()->userSettings()` / `userHasFeature()` | `whm()->hostingPlans()->getUsersFeaturesSettings()` / `verifyUserHasFeature()` |
+| `whm()->accounts()->list()` / `summary()` / `packages()` | `listAccounts()` / `accountSummary()` / `whm()->hostingPlans()->listPackages()` |
+| `accounts()->create()` / `suspend()` / `unsuspend()` / `remove()` / `modify()` | `createAccount()` / `suspendAccount()` / `unsuspendAccount()` / `removeAccount()` / `modifyAccount()` |
+| `uapi()->domains()->list()` / `primary()` / `builtinAliases()` | `uapi()->domainInfo()->listDomains()` / `primaryDomain()` / `mainDomainBuiltinSubdomainAliases()` |
+| `uapi()->php()->...` | `uapi()->langPhp()->phpGet...` |
+| `uapi()->dns()->generatedDomains()` | `uapi()->dns()->fetchCpanelGeneratedDomains()` |
+
+Boolean results (`defaultAccountsToFpm`, `isConversionInProgress`, `verifyUserHasFeature`)
+are now `0|1`, and `create`/`modify` options are named arguments instead of an options array.
+
+### Generic calls
 
 Every documented WHM API 1 and UAPI function is reachable without a typed group,
 through the same authentication, routing, encoding, envelope handling, metadata
@@ -513,8 +390,8 @@ WHM_API_LIVE=1 composer test:live
 This requires PHP's cURL extension and exercises WHM version, hostname, load average,
 disk usage, domain inventory, PHP configuration and feature inventory, plus
 account domain/DNS/PHP/feature discovery through direct cPanel and WHM-routed UAPI
-for `npr`. The 22-operation expansion adds 30 live cases (14 WHM and 16 UAPI route cases).
-It validates the known `npr.rs` account, typed payloads and API metadata, with
+for `npr`, all through the generated groups (see
+[runtime observations](docs/api/source-audit.md)). It validates the known `npr.rs` account, typed payloads and API metadata, with
 verified TLS, disabled redirects and no retries. The test transport accepts only
 the reviewed GET routes. Missing opt-in or prerequisites fail the live command
 before requests; failure messages exclude raw credentials and account payloads.
@@ -542,8 +419,7 @@ stays disabled, so no machine-wide PHPCS configuration is required.
 
 Production APIs require useful PHPDoc. Endpoint methods must include a short
 summary, detailed behavior, an exact official cPanel operation link, and precise
-array shapes when they return arrays. DTO and collection return types remain
-concrete. The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
+array shapes when they return arrays. The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
 
 The development lockfile resolves dependencies against PHP 8.3. Runtime
 requirements for consumers come from `composer.json`, not this lockfile.

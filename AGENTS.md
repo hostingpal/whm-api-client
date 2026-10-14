@@ -138,8 +138,7 @@ server, domain, PHP and feature inventory plus the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`).
 `whm()->call()` and `uapi()->call()` reach every other documented function
-generically. The scaling decision and the lean pattern for new typed groups are
-recorded in the
+generically. The scaling decision behind generated typed groups is recorded in the
 [client design spec](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls).
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
@@ -161,68 +160,42 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   credentials. There is no separate public `bridge()` selector. WHM credentials
   require an explicit or configured default cPanel target; never assume `root`
   is that target. Preserve account isolation and per-client `responseMeta()`.
-  `whm()->server()->version(): string` and
-  `uapi()->domains()->list(?bool $hideTemporaryDomains = null): AccountDomains`
-  execute immediately. Selectors and groups perform no I/O. The optional domain
-  filter preserves omission (`null`), false (`0`), and true (`1`). DTO properties
-  use null for omitted fields; `toArray()` retains optional field presence,
-  explicit main-domain null, empty lists, and integer temporary flags.
-- `whm()->domains()->list(): ServerDomains` returns an immutable iterable/countable
-  collection of `DomainInfo` records. Preserve all 14 optional record fields,
-  nullable IPv6, integer 0/1 flags, integer port properties, and open string
-  domain types. Omitted `domains` remains null and distinct from an empty list in
-  `toArray()`; iteration/count treat either as empty. Upstream excludes service
-  and automatically created domains.
-  `uapi()->php()->listVersions(): array` has a `list<string>` contract on both
-  routes; retain custom PHP package names and empty lists, and reject missing or
-  malformed lists with metadata. Requires EasyApache 4 and the WebServer role.
-  WHM port fields accept pinned integers and observed canonical nonnegative decimal
-  strings within PHP integer range; `toArray()` preserves the original wire type.
-  Runtime observations remain separate from pinned contracts and saved evidence.
-- `whm()->server()->hostname(): string`, `loadAverage(): ServerLoadAverage`, and
-  `diskUsage(): ServerDiskUsage` map to WHM `gethostname`, `systemloadavg`, and
-  `getdiskusage`. All are parameterless read-only server operations. Load windows
-  `one`/`five`/`fifteen` preserve finite numbers or observed decimal numeric strings,
-  including precision/trailing zeros, without rescaling. Null properties mean
-  omission, retained by `toArray()`; explicit load null is invalid. Disk usage is
-  iterable/countable with nullable `partitions`, exporting the original `partition`
-  key and all 12 optional record fields. Runtime compatibility permits disk
-  percentage 0 and explicit null for four inode fields; other pinned minima stay
-  enforced. Preserve omission versus null versus empty lists. Three methods have
-  offline regressions and passed opted-in live checks on `test.oblak.host`; record
-  schema discrepancies separately from pinned sources and revision-bound evidence.
-- The additional 22 read-only inventory methods cover WHM PHP versions/default/handlers,
-  default FPM/old FPM/conversion/vhosts-by-version; WHM feature metadata/names/list
-  configuration/list names/package types/account settings/access; and UAPI primary
-  domain/builtin aliases/PHP default/handler/impacted domains/features/DNS lookup/
-  generated domains. New `whm()->php()`, `whm()->features()`, `uapi()->features()`
-  and `uapi()->dns()` selectors remain inert and account-bound. See README for the
-  complete mapping. Follow the spec's return conventions: public values never
-  expose wire-type variants. Records whose flags vary on the wire are DTOs with
-  normalized `0|1` camelCase properties and wire-preserving `toArray()` (WHM feature
-  metadata/list data/user settings return `FeatureCatalog`, `FeatureListData` and
-  `UserFeatureSettings`); single-typed payloads keep precise PHPStan array shapes.
-  Load averages are the deliberate exception (`int|float|numeric-string` keeps
-  precision). Preserve optional fields, null and empty lists. Observed WHM feature
-  compatibility is field-specific (exact string 0/1 or booleans); PHP handlers also
-  accept observed lsapi. UAPI impactedDomains accepts one domain or a nonempty list
-  encoded as repeated domain keys, with invalid lists clearing metadata before I/O.
-  Scalar/list convenience
-  methods require their selected fields. DNS lookup returns textual lines or
-  explicit null; internal payload presence rejects an omitted data member.
-  Feature access returns true for unknown feature IDs by upstream design, and
-  disabled-list values have inverted meaning. No generic endpoint/status coverage
-  is implied. Pinned contracts and observed compatibility remain separate.
-- Operation groups receive one synchronous request callback accepting an
-  operation name and query parameters. Groups own endpoint parameter construction;
-  WHM and UAPI handles own route construction, with one account-bound UAPI helper
-  for direct and bridged execution. Reserved bridge fields take precedence over
-  endpoint parameters. Groups never validate request parameters before the
-  callback: multi-value input passes through as `list<string>` (repeated keys) or
-  `NumberedList` (WHM `name`, `name-1`, ...), and the shared encoder validates it
-  after the metadata reset. Validate payloads with the internal `PayloadReader`,
-  which attaches the response snapshot to every failure. Selectors only bind
-  callbacks and cache groups; they perform no I/O or metadata reset.
+  Selectors and groups perform no I/O; every group method executes one request
+  immediately and returns the documented payload as a plain array, scalar or `null`.
+- Typed groups are generated (`src/Api/{Whm,Uapi}/**`, never edited by hand) from the
+  pinned map plus `docs/api/overlay/`: UAPI groups per module, WHM groups per documented
+  `x-tagGroups` entry; named arguments, plain arrays with generated PHPStan shapes, values
+  normalized from observed wire variants recorded as overlay corrections with evidence.
+  `docs/api/coverage.md` lists generated groups and exclusions. Handles route generated
+  specs through `run()`/`dispatch()` and the shared request lifecycle.
+- Generated surface details: results are arrays read with wire keys
+  (`$client->uapi('npr')->domainInfo()->listDomains()['main_domain']`); omitted fields
+  are absent keys and explicit nulls stay `null`. `whm()->accounts()->listAccounts()` and
+  `accountSummary()` return the `acct` record list (`accountSummary()` no longer requires
+  exactly one record); `hostingPlans()->listPackages()` returns the `pkg` list.
+  `createAccount()`, `changePassword()` and `modifyAccount()` return `null` when the
+  server sends no data (overlay `optional_payload`, engine `optional` spec key) and the
+  documented array otherwise. Positional order is preserved for
+  `listAccounts(search, searchtype, searchmethod, want)`, `suspendAccount(user, reason, ...)`,
+  `changePackage(user, package)`, `changePassword(user, password, ...)` and
+  `verifyUserHasFeature(user, feature)`; prefer named arguments. Response validation
+  enforces pinned types, required fields and observed wire variants; documented
+  minimum/range/enum constraints are not yet enforced (bead `whm-api-client-8x0.18`).
+  Load averages keep `int|float|numeric-string` to preserve precision. Feature access
+  returns true for unknown feature IDs by upstream design, and disabled-list values have
+  inverted meaning. Pinned contracts, observed compatibility and runtime evidence stay
+  separate; the read-only live suite passes through the generated groups on
+  `test.oblak.host`.
+- Generated groups receive one synchronous `run(spec, arguments)` callback from their
+  handle. The internal `OperationRunner` encodes the named arguments from the spec,
+  dispatches through the handle (WHM and UAPI handles own route construction, with one
+  account-bound UAPI helper for direct and bridged execution), validates the payload
+  with `ShapeValidator` and the internal `PayloadReader`, which attaches the response
+  snapshot to every failure, and unwraps the result. Reserved bridge fields take
+  precedence over endpoint parameters. Multi-value input passes through as
+  `list<string>` (repeated keys) or `NumberedList` (WHM `name`, `name-1`, ...) and the
+  shared encoder validates it after the metadata reset. Selectors only bind callbacks
+  and cache groups; they perform no I/O or metadata reset.
 - Requests declare their method and outcome policy. `RequestMethod::Get` places
   parameters in the query string; `RequestMethod::Post` keeps the routing fields
   (`api.version`, bridge `cpanel.*`) in the query string and form-encodes the
@@ -236,12 +209,6 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   reserved fields removed from caller parameters, `CallResult` with the payload
   converted to arrays and no schema. They are an escape hatch, not coverage;
   typed coverage comes from generation.
-- `whm()->accounts()` follows the lean pattern: precise array shapes
-  (`AccountRecord`, `PackageRecord`, `CreateAccountOptions`, `AccountChanges`, ...),
-  present fields validated against pinned types with the shared `PayloadReader`,
-  unknown fields ignored, enumerations not enforced, decimal-string `uid`
-  normalized to `int` (observed 2026-10-14), optional booleans encoded as omitted,
-  `0` or `1`, and `summary()` requiring exactly one record.
 - Each attempt clears old response metadata. A usable envelope records an
   immutable snapshot before API or payload errors. `ResponseMetadata::$whm`
   retains raw WHM metadata; `$uapi` retains the UAPI result envelope without `data`.
@@ -307,9 +274,8 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   types. Use reusable `@phpstan-type` and `@phpstan-import-type` aliases where
   helpful. Apply the same precision to structured array inputs. Do not use bare
   `array` or `array<string, mixed>` as a substitute for a known endpoint schema.
-- Keep concrete DTO and collection return types when those are the public
-  contract; document their fields and mapping shapes rather than weakening
-  their return types to arrays. For genuinely opaque upstream metadata, explain
+- Generated methods return plain arrays; their PHPStan shapes are the contract
+  and are never weakened to bare arrays. For genuinely opaque upstream metadata, explain
   the boundary instead of guessing a shape. Document applicable `@throws`
   contracts and preserve omitted, null, empty, and zero semantics.
 

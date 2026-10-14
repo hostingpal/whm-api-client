@@ -26,6 +26,12 @@ Expose WHM operations through `whm()` and cPanel UAPI operations through
 UAPI calls go directly to cPanel or through WHM. The bridge is internal; callers
 do not need a separate public `bridge()` method.
 
+> **Superseded:** the operation table below describes the original hand-written
+> slice. The typed groups are now generated from the pinned map plus
+> `docs/api/overlay/`; the current operation surface is listed in
+> [`docs/api/coverage.md`](../../api/coverage.md) and designed in the generated-client
+> design. Method names and plain-array results there replace the names and DTOs here.
+
 ```php
 // Client configured with WHM credentials, such as a root token.
 $version = $client->whm()->server()->version();
