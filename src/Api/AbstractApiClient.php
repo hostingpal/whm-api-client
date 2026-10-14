@@ -19,10 +19,15 @@ use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Client\RequestExceptionInterface;
 
 /**
- * Share configuration and metadata lifecycle across API family implementations.
+ * Share configuration and the request lifecycle across API family implementations.
  *
- * GET execution uses the protected transport and lifecycle hooks. Metadata is
- * instance-local; the envelope reader interprets the implemented operations' outcomes.
+ * Every attempt clears this handle's metadata first, encodes parameters, sends one
+ * request without retries, and records a usable envelope before returning a payload
+ * or raising an API error. Metadata is instance-local. GET places parameters in the
+ * query string; POST keeps routing fields there and form-encodes the operation
+ * parameters in the body. The outcome policy is declared per request.
+ *
+ * @phpstan-type Parameters array<string, string|int|list<string>|NumberedList>
  */
 abstract class AbstractApiClient
 {
@@ -56,9 +61,9 @@ abstract class AbstractApiClient
     /**
      * Clear response metadata before a request attempt.
      *
-     * Executors must call this before work that can fail, so transport or decoding
+     * Executors call this before work that can fail, so transport or decoding
      * failures cannot expose a previous request's metadata as the current result.
-     * executeGet resets state before query encoding, validation, and I/O.
+     * Both executors reset state before parameter encoding, validation, and I/O.
      */
     final protected function beginRequest(): void
     {
@@ -77,39 +82,87 @@ abstract class AbstractApiClient
     }
 
     /**
-     * Execute one authenticated GET for a reviewed read-only operation.
+     * Execute one authenticated GET with every parameter in the query string.
      *
-     * Paths and query fields are supplied by declared operation groups. Literal
-     * dotted names are preserved; no retries or redirect requests are issued.
-     * Injected PSR clients must verify TLS and disable redirects themselves.
-     * Metadata is cleared even if request creation, transport, or decoding fails.
+     * Paths are supplied by family handles and parameters by operation groups or
+     * generic callers. Literal dotted names are preserved; no retries or redirect
+     * requests are issued, and the injected PSR client must verify TLS and disable
+     * redirects itself. List values encode repeated parameters in order, without
+     * bracketed names; NumberedList values use WHM's name, name-1, ... convention.
+     * Empty or malformed lists fail locally after clearing prior metadata, so
+     * operation groups pass caller input through unvalidated.
      *
-     * List values encode repeated parameters in order, without bracketed names;
-     * NumberedList values use WHM's name, name-1, ... convention. Empty or
-     * malformed lists fail locally after clearing prior metadata, so operation
-     * groups pass caller input through unvalidated instead of checking it first.
-     *
-     * @param array<string, string|int|list<string>|NumberedList> $query
+     * @param Parameters $query
      * @throws InvalidArgumentException If a multi-value parameter is invalid.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      */
-    final protected function executeGet(string $path, array $query, ResponseRoute $route): ApiResponse
-    {
+    final protected function executeGet(
+        string $path,
+        array $query,
+        ResponseRoute $route,
+        OutcomePolicy $outcome = OutcomePolicy::Flag,
+    ): ApiResponse {
+        return $this->execute(RequestMethod::Get, $path, $query, [], $route, $outcome);
+    }
+
+    /**
+     * Execute one authenticated POST with form-encoded operation parameters.
+     *
+     * Routing fields stay in the query string while the operation parameters travel
+     * as an application/x-www-form-urlencoded body, so they never reach the URL that
+     * the pinned WHM documentation says the server records in its access log.
+     * Secret-bearing operations must use this executor. Encoding rules, lifecycle,
+     * and failure handling match executeGet; an empty body is sent as empty content.
+     *
+     * @param Parameters $query Routing fields that remain in the URL.
+     * @param Parameters $body Operation parameters sent in the form-encoded body.
+     * @throws InvalidArgumentException If a multi-value parameter is invalid.
+     * @throws ApiException If transport, HTTP, or the API envelope fails.
+     */
+    final protected function executePost(
+        string $path,
+        array $query,
+        array $body,
+        ResponseRoute $route,
+        OutcomePolicy $outcome = OutcomePolicy::Flag,
+    ): ApiResponse {
+        return $this->execute(RequestMethod::Post, $path, $query, $body, $route, $outcome);
+    }
+
+    /**
+     * Run the shared lifecycle: reset, encode, send once, read the envelope, record.
+     *
+     * @param Parameters $query
+     * @param Parameters $body
+     * @throws InvalidArgumentException If a multi-value parameter is invalid.
+     * @throws ApiException If transport, HTTP, or the API envelope fails.
+     */
+    private function execute(
+        RequestMethod $method,
+        string $path,
+        array $query,
+        array $body,
+        ResponseRoute $route,
+        OutcomePolicy $outcome,
+    ): ApiResponse {
         $this->beginRequest();
         $uri = $this->config->baseUri() . $path;
-        if ($query !== []) {
-            $parts = [];
-            foreach ($query as $name => $value) {
-                array_push($parts, ...self::queryValues($name, $value));
-            }
-            $uri .= '?' . implode('&', $parts);
+        $encodedQuery = self::encode($query);
+        if ($encodedQuery !== '') {
+            $uri .= '?' . $encodedQuery;
+        }
+        $headers = [
+            'Authorization' => $this->config->credentials->authorizationHeader(),
+            'Accept' => 'application/json',
+        ];
+        $content = null;
+        if ($method === RequestMethod::Post) {
+            $headers['Content-Type'] = 'application/x-www-form-urlencoded';
+            $content = self::encode($body);
         }
 
         try {
-            $response = $this->transport->send('GET', $uri, [
-                'Authorization' => $this->config->credentials->authorizationHeader(),
-                'Accept' => 'application/json',
-            ]);
+            $response = $this->transport->send($method->value, $uri, $headers, $content);
         } catch (ClientExceptionInterface $exception) {
             throw new TransportException(
                 match (true) {
@@ -123,7 +176,7 @@ abstract class AbstractApiClient
         }
 
         try {
-            $result = EnvelopeReader::read($response, $route);
+            $result = EnvelopeReader::read($response, $route, $outcome);
         } catch (ApiException $exception) {
             if ($exception->metadata !== null) {
                 $this->recordResponseMeta($exception->metadata);
@@ -137,7 +190,23 @@ abstract class AbstractApiClient
     }
 
     /**
-     * Encode scalar, repeated, or numbered query values without changing key names.
+     * Encode parameters as RFC 3986 key=value pairs joined by "&", in order.
+     *
+     * @param Parameters $parameters
+     * @throws InvalidArgumentException If a multi-value parameter is invalid.
+     */
+    private static function encode(array $parameters): string
+    {
+        $parts = [];
+        foreach ($parameters as $name => $value) {
+            array_push($parts, ...self::queryValues((string) $name, $value));
+        }
+
+        return implode('&', $parts);
+    }
+
+    /**
+     * Encode scalar, repeated, or numbered values without changing key names.
      *
      * A list<string> repeats its literal name; a NumberedList uses name, name-1,
      * name-2, ... in order. The mixed boundary validates PHP array contents
@@ -154,12 +223,12 @@ abstract class AbstractApiClient
             return [rawurlencode($name) . '=' . rawurlencode((string) $value)];
         }
         if (!is_array($value) || !array_is_list($value) || $value === []) {
-            throw new InvalidArgumentException('Multi-value query parameters require a nonempty list of strings.');
+            throw new InvalidArgumentException('Multi-value parameters require a nonempty list of strings.');
         }
         $parts = [];
         foreach ($value as $index => $entry) {
             if (!is_string($entry)) {
-                throw new InvalidArgumentException('Multi-value query parameters require string values.');
+                throw new InvalidArgumentException('Multi-value parameters require string values.');
             }
             $key = $numbered && $index > 0 ? $name . '-' . $index : $name;
             $parts[] = rawurlencode($key) . '=' . rawurlencode($entry);

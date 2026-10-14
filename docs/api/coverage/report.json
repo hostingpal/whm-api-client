@@ -5958,13 +5958,13 @@
           "denominator": 630,
           "excluded": 0,
           "gross": 630,
-          "numerator": 19
+          "numerator": 29
         },
         "functions": {
           "denominator": 630,
           "excluded": 0,
           "gross": 630,
-          "numerator": 19
+          "numerator": 25
         },
         "live_verified": {
           "denominator": 630,
@@ -5977,7 +5977,7 @@
           "denominator": 1426,
           "excluded": 0,
           "gross": 1426,
-          "numerator": 7
+          "numerator": 135
         },
         "passing_tests": {
           "denominator": 630,
@@ -5989,13 +5989,13 @@
           "denominator": 630,
           "excluded": 0,
           "gross": 630,
-          "numerator": 19
+          "numerator": 29
         },
         "variants": {
           "denominator": 630,
           "excluded": 0,
           "gross": 630,
-          "numerator": 19
+          "numerator": 25
         }
       }
     },
@@ -6294,13 +6294,13 @@
           "denominator": 4,
           "excluded": 0,
           "gross": 4,
-          "numerator": 0
+          "numerator": 1
         },
         "functions": {
           "denominator": 4,
           "excluded": 0,
           "gross": 4,
-          "numerator": 0
+          "numerator": 1
         },
         "live_verified": {
           "denominator": 4,
@@ -6313,7 +6313,7 @@
           "denominator": 52,
           "excluded": 0,
           "gross": 52,
-          "numerator": 0
+          "numerator": 51
         },
         "passing_tests": {
           "denominator": 4,
@@ -6325,13 +6325,13 @@
           "denominator": 4,
           "excluded": 0,
           "gross": 4,
-          "numerator": 0
+          "numerator": 1
         },
         "variants": {
           "denominator": 4,
           "excluded": 0,
           "gross": 4,
-          "numerator": 0
+          "numerator": 1
         }
       }
     },
@@ -6630,13 +6630,13 @@
           "denominator": 17,
           "excluded": 0,
           "gross": 17,
-          "numerator": 0
+          "numerator": 5
         },
         "functions": {
           "denominator": 17,
           "excluded": 0,
           "gross": 17,
-          "numerator": 0
+          "numerator": 2
         },
         "live_verified": {
           "denominator": 17,
@@ -6649,7 +6649,7 @@
           "denominator": 138,
           "excluded": 0,
           "gross": 138,
-          "numerator": 0
+          "numerator": 66
         },
         "passing_tests": {
           "denominator": 17,
@@ -6661,13 +6661,13 @@
           "denominator": 17,
           "excluded": 0,
           "gross": 17,
-          "numerator": 0
+          "numerator": 5
         },
         "variants": {
           "denominator": 17,
           "excluded": 0,
           "gross": 17,
-          "numerator": 0
+          "numerator": 2
         }
       }
     },
@@ -6854,13 +6854,13 @@
           "denominator": 10,
           "excluded": 0,
           "gross": 10,
-          "numerator": 0
+          "numerator": 3
         },
         "functions": {
           "denominator": 10,
           "excluded": 0,
           "gross": 10,
-          "numerator": 0
+          "numerator": 1
         },
         "live_verified": {
           "denominator": 10,
@@ -6873,7 +6873,7 @@
           "denominator": 131,
           "excluded": 0,
           "gross": 131,
-          "numerator": 0
+          "numerator": 62
         },
         "passing_tests": {
           "denominator": 10,
@@ -6885,13 +6885,13 @@
           "denominator": 10,
           "excluded": 0,
           "gross": 10,
-          "numerator": 0
+          "numerator": 3
         },
         "variants": {
           "denominator": 10,
           "excluded": 0,
           "gross": 10,
-          "numerator": 0
+          "numerator": 1
         }
       }
     },
@@ -8478,13 +8478,13 @@
           "denominator": 6,
           "excluded": 0,
           "gross": 6,
-          "numerator": 0
+          "numerator": 1
         },
         "functions": {
           "denominator": 6,
           "excluded": 0,
           "gross": 6,
-          "numerator": 0
+          "numerator": 1
         },
         "live_verified": {
           "denominator": 6,
@@ -8497,7 +8497,7 @@
           "denominator": 70,
           "excluded": 0,
           "gross": 70,
-          "numerator": 0
+          "numerator": 1
         },
         "passing_tests": {
           "denominator": 6,
@@ -8509,13 +8509,13 @@
           "denominator": 6,
           "excluded": 0,
           "gross": 6,
-          "numerator": 0
+          "numerator": 1
         },
         "variants": {
           "denominator": 6,
           "excluded": 0,
           "gross": 6,
-          "numerator": 0
+          "numerator": 1
         }
       }
     },
@@ -10046,13 +10046,13 @@
           "denominator": 26,
           "excluded": 0,
           "gross": 26,
-          "numerator": 7
+          "numerator": 9
         },
         "functions": {
           "denominator": 26,
           "excluded": 0,
           "gross": 26,
-          "numerator": 7
+          "numerator": 9
         },
         "live_verified": {
           "denominator": 26,
@@ -10065,7 +10065,7 @@
           "denominator": 97,
           "excluded": 0,
           "gross": 97,
-          "numerator": 5
+          "numerator": 8
         },
         "passing_tests": {
           "denominator": 26,
@@ -10077,13 +10077,13 @@
           "denominator": 26,
           "excluded": 0,
           "gross": 26,
-          "numerator": 7
+          "numerator": 9
         },
         "variants": {
           "denominator": 26,
           "excluded": 0,
           "gross": 26,
-          "numerator": 7
+          "numerator": 9
         }
       }
     },
@@ -10102,7 +10102,7 @@
           "denominator": 3,
           "excluded": 0,
           "gross": 3,
-          "numerator": 0
+          "numerator": 1
         },
         "functions": {
           "denominator": 3,
@@ -10121,7 +10121,7 @@
           "denominator": 8,
           "excluded": 0,
           "gross": 8,
-          "numerator": 0
+          "numerator": 4
         },
         "passing_tests": {
           "denominator": 3,
@@ -10133,7 +10133,7 @@
           "denominator": 3,
           "excluded": 0,
           "gross": 3,
-          "numerator": 0
+          "numerator": 1
         },
         "variants": {
           "denominator": 3,
@@ -12118,13 +12118,13 @@
           "denominator": 4,
           "excluded": 0,
           "gross": 4,
-          "numerator": 0
+          "numerator": 2
         },
         "functions": {
           "denominator": 4,
           "excluded": 0,
           "gross": 4,
-          "numerator": 0
+          "numerator": 2
         },
         "live_verified": {
           "denominator": 4,
@@ -12137,7 +12137,7 @@
           "denominator": 6,
           "excluded": 0,
           "gross": 6,
-          "numerator": 0
+          "numerator": 6
         },
         "passing_tests": {
           "denominator": 4,
@@ -12149,13 +12149,13 @@
           "denominator": 4,
           "excluded": 0,
           "gross": 4,
-          "numerator": 0
+          "numerator": 2
         },
         "variants": {
           "denominator": 4,
           "excluded": 0,
           "gross": 4,
-          "numerator": 0
+          "numerator": 2
         }
       }
     },
@@ -13207,6 +13207,462 @@
     {
       "contract_units": [
         {
+          "hash": "1709139349388aa403ebd79e4d7812aadf69ceb6398d31704f150bfff9abe879",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"account_enhancements\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery"
+          ]
+        },
+        {
+          "hash": "9c2739bb639c92fe08dfd3d360a2bb19a0e08487e96c9698466bb7896094211b",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"bwlimit\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "eca44703221ae0425ea3d163fdc0fbfd7698f5749daefaaa4bbc014a1c90511d",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"cgi\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery"
+          ]
+        },
+        {
+          "hash": "8567953e26d1116283d2286b8a4fe58c65a8806f266028cf65457d428ed3bcc7",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"contactemail\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "0621cae4c1c0df9db1a2f76465dfb8eed79ed995797d8da4e00553aca3f3158f",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"cpmod\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "724f9015536472ae521d83950df3e2a64c787f20952700ba88d23a40ec1ab52a",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"customip\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "1a12857364db6a8ede51e56936fb6540f242f57035ff3bff1df68c0f3a57f54a",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"digestauth\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "61e1f643897de3fbf9fc76b52223108ee3c51c85e94b05cf3da83049c6a022bb",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"dkim\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "64df52988877096b6190bde934ec5c7f16588d4f1344d66c209ef148696baec5",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"dmarc\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "68adf747999beea44efe7fd59612753420ca2fe9b3a6204c3ede666eb7d71ca8",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"domain\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery"
+          ]
+        },
+        {
+          "hash": "9b4b9f3925982633eecec59638ad33768be242a9f4b83529c0715e452c2b6776",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"enabledigest\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "961baa245e21f89b1a095d011c43c5da4660f330c49e946b893ae9d2bdc2b99f",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"featurelist\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "14b0afd9dc9022e6306c033f19a8fc2764e85da374972eec4e31217192373255",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"forcedns\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "8651b8fe659d8112f8417bb6aebb87b1452af0f628fa90eb0b9571024b7cc9a3",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"frontpage\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "cc1623e18b6ee0c3ede94b325b840574cfd9ce19e03dc67a4edccc64b7d7cf2f",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"gid\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "e2f544802377b259425f7bd56ffb0cb0acd6fdf64215f0e5112eeaf350062253",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"hasshell\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "263ecee612687205e29e6c742937c22cf0f9abf808a32974373fb80e554f814a",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"hasuseregns\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "6cbc80b54e2483f82c3ec01e8499c2d44fa73604f4a81d1326e2b4d83a0f4c59",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"homedir\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "9d2ba339511ff3e839d3d42dc843b8d4bb7c41cf0c6ff73e7e3faaeec763dcce",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"ip\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "97d40dd40d5dbc45fa4156585195666953fa25b22d6e310c64c0dd7a92cc1365",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"language\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "7add985ab7f370327046d9f558e72b1070d1aa0fd593c3ab984b1f32cf8828c9",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"mail_node_alias\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "01c462a9fa105c7521eb43e367dc7b6645de2e3ff024274e66be4e259db6c021",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"mailbox_format\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "56837ef4a4c794744830b5ad72339b47e4ec0a2fbf04e33710345b4e23b7e72f",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"max_defer_fail_percentage\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "da40bead4adeb3fddb7710d7878de137b096a7cb102927a1fb657cee1bfafa6a",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"max_email_per_hour\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "ed6684d2db664f84ec23f5f1d919df2ab59e4a4a9188266bcc09c6523e79f3bf",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"max_emailacct_quota\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "5895526ed80ea948f740d6b6843c3f01c979ae778e29fc47b4459f8c2a935d0d",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"max_team_users\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "23ab1b6f9a970272aac7428b6310390b1b5f94294891431b1d26b56452eee2eb",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"maxaddon\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "7f06194d535b939d0607d60ac4254fea2c5844cbf0028e7aea12fc61e1eb74ca",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"maxftp\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "dba1fd207047b7839d7a4e67bdefba57e9d9a5fd1c9e3842c18140ea53c2ce5d",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"maxlst\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "5e0d361b6356b1287b0f2ce4c95da1cc3407d6bae5bb15ca195799836df9dffe",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"maxpark\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "8e96d828c28a0e34be7ff3706f20fa9d5c780fb4d4940ca0ca512494a9c6e6cd",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"maxpop\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "c0162d05868d0944f2a96224b3236dc21a39db52122094dc2eb44f31c5230ac0",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"maxsql\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "0eba4b1f17bb494af3a3b4a480a5bdfff9c9fe011d8ee16b1d38fdf00ff3016a",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"maxsub\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "11eb42f705876552a2d5769bd1a1b9a90a66d29fae2a2e8d89b0c048e9dbb5d8",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"mxcheck\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "615f5e8b6bab554a1ba909636d20b521847de5ebe81fa0193e78b4e8a2e0c59b",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"owner\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "cb4e58b312a7b7f8ac3a60eb3d041f3783e7fd995b545e2662644c281f55031f",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"ownerself\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "29f5e7a6f89097ecb9d3944f4723d579eb3e40414da84413c391f5573a4c29f6",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"pass\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "9681cdd362a620c0479271ab7dad800e6cc3733c48eda87d317793a2373f77a8",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"password\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery"
+          ]
+        },
+        {
+          "hash": "a41ae3680dd11ac577198b862782b434886a8e85853144092919a6048474a9a9",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"pkgname\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "c1ee4db919dd2c3098ad0e498ecc4938709254f16a2380c817d2c1eaa845de58",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"plan\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery"
+          ]
+        },
+        {
+          "hash": "eda8bf8ff8f8c288d8e6726c5d96dcb62473535f0820dd3da93d481d8b82d99d",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"quota\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "ab45332c1f49f7a74f46cc6afee5dc5a546027e43c29921455c26048e95f5d70",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"reseller\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "9eebf65dd588a86aba2e6ebdbc57af0a5a18d45b9bf57c89efe94190afd349bd",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"reseller_without_domain\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "dba0185d0d644ae6dba001f30ed2fbdc0b7930c9b76605c4fe86c4a39e776599",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"savepkg\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "362275bf6a885f78e32e8ccfb434de179e90ea8d2470466572c278c2539cacbb",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"showpass\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "a7f14b8ea4e97d40955011e4ec79f77856807140d30ffb8b4e38aa762fd70b8b",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"spamassassin\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "797cb10a810423494d64999aed6a846e8983cfdd973666eb7cc55530f62c6c06",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"spambox\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "d14d9a91002311d4e3f4fd2905a846076e466e35217d112db6bcf5565787e787",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"spf\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "f6d4036f2bf4b05d7304614e2e425f6a4244fb44120331e5ff5e9f9971e35c78",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"uid\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "b8a175d0a4c984506f3f3c5b994e683dcb1f01af73ec70039188c8579f47225e",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"useregns\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "8f67278a5a3e5fca0a10978f95041cb033135cc35209f1efd3fd8c279bd179c1",
+          "id": "[\"whm1:createacct#GET\",\"parameter\",\"username\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        },
+        {
+          "hash": "27740676b9a23aaa290e48ac2a19e1462fce5c0ebc731d784c0d67c774553bbd",
+          "id": "[\"whm1:createacct#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        }
+      ],
+      "operation_id": "whm1:createacct",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Accounts::create",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+      ],
+      "valid": true,
+      "variant_id": "whm1:createacct#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "1abcdff7b9ac3dfcdc60486e8a2ff3bf247c5603487ba3222c6fee1b90718745",
+          "id": "[\"whm1:changepackage#GET\",\"parameter\",\"pkg\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        },
+        {
+          "hash": "00ce9cf776f98b0229423f1005c51293c3ccc995bd92b7e1660a007f083f164c",
+          "id": "[\"whm1:changepackage#GET\",\"parameter\",\"user\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        },
+        {
+          "hash": "c6573c1d4cee09e0ddbc1ce9ac8f9b3f2ccd64acd43da3bd6fc39e541d49bd0a",
+          "id": "[\"whm1:changepackage#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        }
+      ],
+      "operation_id": "whm1:changepackage",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Accounts::changePackage",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+      ],
+      "valid": true,
+      "variant_id": "whm1:changepackage#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "1cbee474cd90e131c0ce22c8d2c700ec47e3e184d096f0b3d7272152c6400a70",
+          "id": "[\"whm1:accountsummary#GET\",\"parameter\",\"user\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testInventoryOperationsExecuteGetAndReturnValidatedRecords",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testAccountSummaryDescribesTheKnownAccount"
+          ]
+        },
+        {
+          "hash": "d08a506fbbb8e930876cdddc12eac22647bbc12ffe4cdcd6597847fb4de76488",
+          "id": "[\"whm1:accountsummary#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testInventoryOperationsExecuteGetAndReturnValidatedRecords",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testAccountSummaryDescribesTheKnownAccount"
+          ]
+        }
+      ],
+      "operation_id": "whm1:accountsummary",
+      "status": "partial",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Accounts::summary",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testInventoryOperationsExecuteGetAndReturnValidatedRecords",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testAccountSummaryDescribesTheKnownAccount"
+      ],
+      "valid": true,
+      "variant_id": "whm1:accountsummary#GET"
+    },
+    {
+      "contract_units": [
+        {
           "hash": "1cc55a51f4191b57553abbbe99cad15f5a03b7cff23076e096258ad364596afd",
           "id": "[\"uapi:Features/list_features#GET\",\"response\",\"200\",\"application/json\"]",
           "tests": [
@@ -13441,6 +13897,117 @@
     {
       "contract_units": [
         {
+          "hash": "52db260cd3847d6fc97d6dc2caaf7f9e713f6fb3b81894298e831395d7657c4a",
+          "id": "[\"whm1:suspendacct#GET\",\"parameter\",\"disallowun\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        },
+        {
+          "hash": "e01cd2b89319bfcec63c442c001c12b8f4b8945b142450607917c69580061eea",
+          "id": "[\"whm1:suspendacct#GET\",\"parameter\",\"leave-ftp-accts-enabled\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery"
+          ]
+        },
+        {
+          "hash": "bf34026cb7434d5297ddd1139666de065677b796f31287d01dff8f65146efb3b",
+          "id": "[\"whm1:suspendacct#GET\",\"parameter\",\"reason\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        },
+        {
+          "hash": "8125c69db3fa25ea18828ba82a722a88fd38f1f19ec20496c9498ac5bf865732",
+          "id": "[\"whm1:suspendacct#GET\",\"parameter\",\"user\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        },
+        {
+          "hash": "9ad4e607e352913ed7267f8e957a4dc97d5357f2d241432c1e5190164ec66d7c",
+          "id": "[\"whm1:suspendacct#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testFailedOutcomeRaisesApiErrorWithTheEnvelopeRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        }
+      ],
+      "operation_id": "whm1:suspendacct",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Accounts::suspend",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testFailedOutcomeRaisesApiErrorWithTheEnvelopeRetained",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+      ],
+      "valid": true,
+      "variant_id": "whm1:suspendacct#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "5c86eeec2b77a0773bcd1ac9421ff3caed85767ec25846a032ad1e9b6d026040",
+          "id": "[\"whm1:listaccts#GET\",\"parameter\",\"search\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testInventoryOperationsExecuteGetAndReturnValidatedRecords",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testFilteredAccountListReturnsOnlyTheKnownAccount"
+          ]
+        },
+        {
+          "hash": "ff802d528917b89c6127095f2a43206fe2d7992a1332c3258774f1433cb2bff9",
+          "id": "[\"whm1:listaccts#GET\",\"parameter\",\"searchmethod\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testInventoryOperationsExecuteGetAndReturnValidatedRecords",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testFilteredAccountListReturnsOnlyTheKnownAccount"
+          ]
+        },
+        {
+          "hash": "52846705813de61127e3b72f568b04d2ccd7c1bd382358b39e216066c22fa497",
+          "id": "[\"whm1:listaccts#GET\",\"parameter\",\"searchtype\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testInventoryOperationsExecuteGetAndReturnValidatedRecords",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testFilteredAccountListReturnsOnlyTheKnownAccount"
+          ]
+        },
+        {
+          "hash": "fa5ac70b2a43ea5804ae0cf99695f1b9b8579f39a7a586c1e71c254661d9b407",
+          "id": "[\"whm1:listaccts#GET\",\"parameter\",\"want\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testInventoryOperationsExecuteGetAndReturnValidatedRecords",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testFilteredAccountListReturnsOnlyTheKnownAccount"
+          ]
+        },
+        {
+          "hash": "c644f1cc759115432efcf978f9a4c2ea8fb530a971bbcff0077ea2af9ff02c59",
+          "id": "[\"whm1:listaccts#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testInventoryOperationsExecuteGetAndReturnValidatedRecords",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testAccountListContainsTheKnownAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testFilteredAccountListReturnsOnlyTheKnownAccount"
+          ]
+        }
+      ],
+      "operation_id": "whm1:listaccts",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Accounts::list",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testInventoryOperationsExecuteGetAndReturnValidatedRecords",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testAccountListContainsTheKnownAccount",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testFilteredAccountListReturnsOnlyTheKnownAccount"
+      ],
+      "valid": true,
+      "variant_id": "whm1:listaccts#GET"
+    },
+    {
+      "contract_units": [
+        {
           "hash": "6b81bd1a62e9819a87e726fc389530c7b94f9dec2b13057c01cf92f82799a4f5",
           "id": "[\"whm1:php_get_installed_versions#GET\",\"response\",\"200\",\"application/json\"]",
           "tests": [
@@ -13605,6 +14172,43 @@
     {
       "contract_units": [
         {
+          "hash": "84c7689a2289e75bcc71314748ea9f79bfbe8c044aeb9338b7f3131d97d95e1c",
+          "id": "[\"whm1:removeacct#GET\",\"parameter\",\"keepdns\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        },
+        {
+          "hash": "f09bb645292e52f810ce0ff278f287b630d5dac2e996758e104401dc4225e773",
+          "id": "[\"whm1:removeacct#GET\",\"parameter\",\"username\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        },
+        {
+          "hash": "2e64781ff910d6958efbc86382dfa6f4b2423efe510dfeb0e21ec8adb39815c1",
+          "id": "[\"whm1:removeacct#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        }
+      ],
+      "operation_id": "whm1:removeacct",
+      "status": "partial",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Accounts::remove",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+      ],
+      "valid": true,
+      "variant_id": "whm1:removeacct#GET"
+    },
+    {
+      "contract_units": [
+        {
           "hash": "90b54d53d4cbe4dafafe6dea1a4da835858960009285287a3d24a4c686a4f98f",
           "id": "[\"whm1:getdiskusage#GET\",\"response\",\"200\",\"application/json\"]",
           "tests": [
@@ -13680,6 +14284,433 @@
       ],
       "valid": true,
       "variant_id": "whm1:get_featurelists#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "94f0ac75f6443d33a17bedfae61aad33b309441c81df47f4ea9dc9cd5d33e113",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"BACKUP\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "f66371b3c9b02398c59fe628d77d31541adeb485e78bf282d082009bbcab5ae5",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"BWLIMIT\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "2bc1ee525a579ed32f1bd1b366358dd7caa15b7fec919c313f6a3b79c44e949b",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"DBOWNER\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "b61e08b2046061649e493518960e60b36e048c8cd4b3dde75cc14183014e6d28",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"DISK_BLOCK_LIMIT\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "c8356f599ff9e44e1b380c41ac31cc01f421bf1c35abfc952fc9ed358663da40",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"DNS\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "ffd328619450ad347ed32669483200078047bdce666045ffb372c5703c370f30",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"HASCGI\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "bdd5f5d6e7e41008f894f224e6e8a4753fc84418ee0b3dd4b96df53776c08779",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"HASDKIM\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "923936e4d332fe969d40df50098d42417076f37269117a9cb71cb34b8ca10f2a",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"HASDMARC\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "8828a4ecd47e2f3de320a1335094fe637d3306b053e070cbef87d6604a9f54f5",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"HASSHELL\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery"
+          ]
+        },
+        {
+          "hash": "bcd2dd1885fe9ecd8419d43d55279c1bb26f2a65aa179b854763189773905a04",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"HASSPF\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "a8f2fe2b43492336f5b9c84a8be311e50fc5571b2a5747acfb7adf1e54c56966",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"LANG\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "49f440a2a02244d0b0e1b21eeb56c490a1c74fe508d1e3cdcd7e6085788a625f",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"LOCALE\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "996fb1153db2255fb28611ad7e7b50b031bd8e0011ca6e398ee349125a7e5fc2",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"MAILBOX_FORMAT\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "78a1c1fba62ad199db509f987a6f17a7107aff4454dfbef0f3d5c36f3c2814d3",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"MAXADDON\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "880aed349533d8377c4fb334cf0de15eeaaee0f611a49ea5bef0c21b37094545",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"MAXFTP\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "07382b13c72b1ea97f104f13bcf992462da428295be86cd93cd4fa88fb9b38f8",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"MAXLST\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "4919ee27bb6a76a4d486162246c1b420d5861e59ceb02b1e435fba347c3950ee",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"MAXPARK\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "11f6ca71e920ee3eb489813fde662d0d1ba6d6770bed1a0b28025651f50ad8f6",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"MAXPASSENGERAPPS\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "0ca1ab3e77dab5086ec7b7ff6e210ae1cc5509b648759b2562818ba2e29ea0aa",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"MAXPOP\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "c5d20e011b7a7de613f3c59ebdb7983a6d65c91b48d974d52c1eca2265ebfa31",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"MAXSQL\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "a89df712a24bf9e43935d7b04b5ef0fdc61f817d0b65927eb99582875014e9be",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"MAXSUB\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "f5255101e86098f4e59018692beab5bf478b5a1f258b1431a00433a64a90aedb",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"MAX_DEFER_FAIL_PERCENTAGE\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "f7545e7cb57bfc9a31e84d8b4a5f6fa7ecdc7aa6731eb7188d245e80c830c27d",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"MAX_EMAILACCT_QUOTA\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "a179ea739a23bf0d55babfacf92c787d7a0eb5b96c408250a80814c0b1362a1e",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"MAX_EMAIL_PER_HOUR\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "608682ac01c8095bae703062e920f4e189f0aeee55503dee9eeb14029d519083",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"OUTGOING_EMAIL_SUSPENDED\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "41af2d983caf2d6d2166e4c38844b7ad4c15654aac60ca6db63812468f7a4f6a",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"PUSHBULLET_ACCESS_TOKEN\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "b0644d5d2b78595ccedf6d0f059612620a20cb54caadd484fddf2e68313aeb16",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"QUOTA\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "17ddc2ce43fcb8d6e2f631d90b70d7061938ead52f251f91b0a661251516fb31",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"RS\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "7faf4f410faf72fdb622c5756267e77e8258e7ddd55243db111724bb67066713",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"STARTDATE\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "26fa683573098a7469cb8b453bab95a3f2e16225cbb185b75cd9310632fb25c0",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"STYLE\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "bebd670bb6a3c1238b6405a1f14e30797a79310e9923e3691603caca527138d9",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"account_enhancements\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "e2c419142fa15a802aa102d15b4800020cfa00b7da42a6f73c1388051b2e738b",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"contactemail\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery"
+          ]
+        },
+        {
+          "hash": "36c639dbf9ff05ac65fba25586d657b5f5f95c825e8c1929583cf4bee2642b7b",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"domain\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "1890cf2222d202a90a86ca6c31aaa8c3345cbe932929e419d623d1085bfd4263",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"mail_node_alias\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "328821fd6cc80c058901d32c89124a9bdb1e1e411bd5cd2ab1897f93c6518159",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"max_team_users\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "6772f55b3afe796049966cf4bb1fa1113dfe2ce472fdca7081c4fd367f2a78a2",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"modify_firewall\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "515fa93a55523183a6a386221d21fb8f73912b3fddc29cf61322210e30775c21",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"newuser\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "3b72d3caa72fc75ada825df8f01d9e97a333fd51a8081633f55bb36551d872b1",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_account_authn_link\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "ca128f181cbd582898b7675514f961ccde29ff83f6241878fbdf9ed8b161548b",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_account_authn_link_notification_disabled\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "e8442994b306216b9b44014c1715e3e3e1a90abeea91a8a9f50eb1696998b99e",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_autossl_expiry\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "4410f64122c01c2d2fa951da7c6eb2e39c99d90c62810e45e97e051949cd0d47",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_autossl_expiry_coverage\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "dd9e5da84763fa4ace0a37237a93adcd0f3d9abc3002c548dfee3fbb1bf5b60b",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_autossl_renewal\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "71b210b556be071a354320a0e159fd0093c715e7b181400c8856f4780fa639f4",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_autossl_renewal_coverage\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "c0df6d774c9d8905c201dc831f977bd8cdf33933f6bd9559db8f315090fa1d0c",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_contact_address_change\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "9baf6f5041d658a25347b27dcec1868017ba230b2a02d4d82063f6d54582e25b",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_contact_address_change_notification_disabled\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "2a3d6fc0f71ad3b0fb0825a6e09d09273345124ba815cad6466c93657f5f2191",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_disk_limit\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "a0bbb0d05801122bf82ee35c98ee9b57a56fa59e7aa3cd6a35889938579668bf",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_password_change\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "e22de51d62fb2e744d53a22dfe7adfa160b4ed441d3a1ae7e9e3dea0721eaf57",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_password_change_notification_disabled\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "dce3d5fe2dcb0073d660dc16e2d2bfbed2303083d1da867e29114e66b740ea35",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_ssl_expiry\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "ae9a0459581d9fadcab6826b4bfae504b94adb9a90acd1cdc449c2cdfae2a4b2",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"owner\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "b1024b43df9b5c6460c3817700b360f67a65922ec445535915b5c2a3b503006e",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"remove_missing_extensions\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "0d6c020493bc2f600b302a75a80293efd6f55e3e5a028e8ae44c28cc6a5721f3",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"rename_database_objects\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "ba109004890485c827e805b282ddf57f2f7d46bb6d80642c979ee00f2b1e279a",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"reseller\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "5541d7c3f8a74bd09f0052cd620548119ab2a86b3e0a8210901cb7e1ba1ca2e5",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"shell\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "5a26fd1fab62339a4aba6bb08124399f6d879ac3c381497b03adeff51ec52d5c",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"spamassassin\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "8e2da5d5a06c605d3e6154059870118f8a491ec2ab467d5b0f9b11a7c7516964",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"update_existing_email_account_quotas\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody"
+          ]
+        },
+        {
+          "hash": "c2a6311e215715a14d2e74e10451f1b462b482241b6ccd11d28892fcab4e7ed2",
+          "id": "[\"whm1:modifyacct#GET\",\"parameter\",\"user\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        },
+        {
+          "hash": "d61dd3037e1060e3e8bf8de14be729825d5312382c97fe707575a374a8f9b2c4",
+          "id": "[\"whm1:modifyacct#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        }
+      ],
+      "operation_id": "whm1:modifyacct",
+      "status": "partial",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Accounts::modify",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+      ],
+      "valid": true,
+      "variant_id": "whm1:modifyacct#GET"
     },
     {
       "contract_units": [
@@ -13861,6 +14892,59 @@
     {
       "contract_units": [
         {
+          "hash": "b45c1e14b6e5e932ef06aee1e901fd2dcc1288f79bc3f29eb96ced1bb7abbc5f",
+          "id": "[\"whm1:passwd#GET\",\"parameter\",\"db_pass_update\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery"
+          ]
+        },
+        {
+          "hash": "040c00e165fa90b6a84fbf6d877ee7502495166453efa39c949bec2ace320795",
+          "id": "[\"whm1:passwd#GET\",\"parameter\",\"digestauth\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery"
+          ]
+        },
+        {
+          "hash": "61e315097ccf681df494c72f2db51b54f6936244aa49dd7eab225083ea219270",
+          "id": "[\"whm1:passwd#GET\",\"parameter\",\"password\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        },
+        {
+          "hash": "49c78a0e383fd9dc0ca813dd2e69d93d42c6574ceb9eb7e9728ea21775edf888",
+          "id": "[\"whm1:passwd#GET\",\"parameter\",\"user\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        },
+        {
+          "hash": "97a438a380d42cd62ee889b584759a5b5218c8c96f7a24b86ee25b745f1d3b65",
+          "id": "[\"whm1:passwd#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        }
+      ],
+      "operation_id": "whm1:passwd",
+      "status": "partial",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Accounts::changePassword",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+      ],
+      "valid": true,
+      "variant_id": "whm1:passwd#GET"
+    },
+    {
+      "contract_units": [
+        {
           "hash": "c981e0c4925395218c8d08dec51d651184ab398027adc7e11109d8bcad515200",
           "id": "[\"whm1:php_get_old_fpm_flag#GET\",\"response\",\"200\",\"application/json\"]",
           "tests": [
@@ -13959,6 +15043,36 @@
     {
       "contract_units": [
         {
+          "hash": "d2c4eed2052c561224a9c8a8f8fdc88d12233ad6e42f434a96c59f31c61b5236",
+          "id": "[\"whm1:listpkgs#GET\",\"parameter\",\"want\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testInventoryOperationsExecuteGetAndReturnValidatedRecords"
+          ]
+        },
+        {
+          "hash": "a113510283489e955801f868c7f0e676395e5a387bb462e28de2e72a0f05b9fd",
+          "id": "[\"whm1:listpkgs#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testInventoryOperationsExecuteGetAndReturnValidatedRecords",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testPackageListIncludesTheKnownAccountPlan"
+          ]
+        }
+      ],
+      "operation_id": "whm1:listpkgs",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Accounts::packages",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testInventoryOperationsExecuteGetAndReturnValidatedRecords",
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testPackageListIncludesTheKnownAccountPlan"
+      ],
+      "valid": true,
+      "variant_id": "whm1:listpkgs#GET"
+    },
+    {
+      "contract_units": [
+        {
           "hash": "e0628eb60a6c42bfe8e0b0020423145742a7e180d51185928c6ee94d7d1141dc",
           "id": "[\"uapi:DomainInfo/list_domains#GET\",\"parameter\",\"hide_temporary_domains\",\"query\"]",
           "tests": [
@@ -14002,6 +15116,42 @@
       ],
       "valid": true,
       "variant_id": "uapi:DomainInfo/list_domains#GET"
+    },
+    {
+      "contract_units": [
+        {
+          "hash": "e8c2a8af3c6e568c1dbf444b8d0f722e32e40c106cbe9e107799da5da90e2f05",
+          "id": "[\"whm1:unsuspendacct#GET\",\"parameter\",\"retain-service-proxies\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery"
+          ]
+        },
+        {
+          "hash": "24237d1b2924f42a0befeb0b0d9433a377b4258b5196f222873698b8c9a182a7",
+          "id": "[\"whm1:unsuspendacct#GET\",\"parameter\",\"user\",\"query\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        },
+        {
+          "hash": "6140fd67f85944d402d386cd090980a145816c800259b50cae7af6b334f22a4e",
+          "id": "[\"whm1:unsuspendacct#GET\",\"response\",\"200\",\"application/json\"]",
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ]
+        }
+      ],
+      "operation_id": "whm1:unsuspendacct",
+      "status": "implemented",
+      "symbol": "HostingPal\\WhmApiClient\\Api\\Whm\\Accounts::unsuspend",
+      "tests": [
+        "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+        "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+      ],
+      "valid": true,
+      "variant_id": "whm1:unsuspendacct#GET"
     }
   ],
   "operations": [
@@ -49528,20 +50678,27 @@
       "family": "whm1",
       "id": "whm1:accountsummary",
       "module": null,
-      "state": "missing",
+      "state": "partial",
       "tags": [
         "Account Management",
         "Accounts"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:accountsummary#GET\",\"parameter\",\"user\",\"query\"]",
+            "[\"whm1:accountsummary#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:accountsummary#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "partial",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testInventoryOperationsExecuteGetAndReturnValidatedRecords",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testAccountSummaryDescribesTheKnownAccount"
+          ],
           "units": [
             {
               "hash": "ba4d45037f61a6b07d64ada5e8737b426243af07dc8d23a93d38b1108c629bd2",
@@ -52697,20 +53854,27 @@
       "family": "whm1",
       "id": "whm1:changepackage",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Account Management",
         "Packages"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:changepackage#GET\",\"parameter\",\"pkg\",\"query\"]",
+            "[\"whm1:changepackage#GET\",\"parameter\",\"user\",\"query\"]",
+            "[\"whm1:changepackage#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:changepackage#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ],
           "units": [
             {
               "hash": "1abcdff7b9ac3dfcdc60486e8a2ff3bf247c5603487ba3222c6fee1b90718745",
@@ -54810,19 +55974,77 @@
       "family": "whm1",
       "id": "whm1:createacct",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Account Creation"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:createacct#GET\",\"parameter\",\"account_enhancements\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"bwlimit\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"cgi\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"contactemail\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"cpmod\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"customip\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"digestauth\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"dkim\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"dmarc\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"domain\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"enabledigest\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"featurelist\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"forcedns\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"frontpage\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"gid\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"hasshell\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"hasuseregns\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"homedir\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"ip\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"language\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"mail_node_alias\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"mailbox_format\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"max_defer_fail_percentage\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"max_email_per_hour\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"max_emailacct_quota\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"max_team_users\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"maxaddon\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"maxftp\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"maxlst\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"maxpark\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"maxpop\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"maxsql\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"maxsub\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"mxcheck\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"owner\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"ownerself\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"pass\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"password\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"pkgname\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"plan\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"quota\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"reseller\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"reseller_without_domain\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"savepkg\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"showpass\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"spamassassin\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"spambox\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"spf\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"uid\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"useregns\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"parameter\",\"username\",\"query\"]",
+            "[\"whm1:createacct#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:createacct#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ],
           "units": [
             {
               "hash": "1709139349388aa403ebd79e4d7812aadf69ceb6398d31704f150bfff9abe879",
@@ -65838,20 +67060,31 @@
       "family": "whm1",
       "id": "whm1:listaccts",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Account Management",
         "Accounts"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:listaccts#GET\",\"parameter\",\"search\",\"query\"]",
+            "[\"whm1:listaccts#GET\",\"parameter\",\"searchmethod\",\"query\"]",
+            "[\"whm1:listaccts#GET\",\"parameter\",\"searchtype\",\"query\"]",
+            "[\"whm1:listaccts#GET\",\"parameter\",\"want\",\"query\"]",
+            "[\"whm1:listaccts#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:listaccts#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testInventoryOperationsExecuteGetAndReturnValidatedRecords",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testAccountListContainsTheKnownAccount",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testFilteredAccountListReturnsOnlyTheKnownAccount"
+          ],
           "units": [
             {
               "hash": "5c86eeec2b77a0773bcd1ac9421ff3caed85767ec25846a032ad1e9b6d026040",
@@ -66138,20 +67371,27 @@
       "family": "whm1",
       "id": "whm1:listpkgs",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Hosting Plans",
         "Packages"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:listpkgs#GET\",\"parameter\",\"want\",\"query\"]",
+            "[\"whm1:listpkgs#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:listpkgs#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testInventoryOperationsExecuteGetAndReturnValidatedRecords",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountsLiveTest::testPackageListIncludesTheKnownAccountPlan"
+          ],
           "units": [
             {
               "hash": "d2c4eed2052c561224a9c8a8f8fdc88d12233ad6e42f434a96c59f31c61b5236",
@@ -67540,20 +68780,84 @@
       "family": "whm1",
       "id": "whm1:modifyacct",
       "module": null,
-      "state": "missing",
+      "state": "partial",
       "tags": [
         "Account Management",
         "Accounts"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"BACKUP\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"BWLIMIT\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"DBOWNER\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"DISK_BLOCK_LIMIT\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"DNS\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"HASCGI\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"HASDKIM\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"HASDMARC\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"HASSHELL\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"HASSPF\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"LANG\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"LOCALE\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"MAILBOX_FORMAT\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"MAXADDON\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"MAXFTP\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"MAXLST\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"MAXPARK\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"MAXPASSENGERAPPS\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"MAXPOP\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"MAXSQL\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"MAXSUB\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"MAX_DEFER_FAIL_PERCENTAGE\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"MAX_EMAILACCT_QUOTA\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"MAX_EMAIL_PER_HOUR\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"OUTGOING_EMAIL_SUSPENDED\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"PUSHBULLET_ACCESS_TOKEN\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"QUOTA\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"RS\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"STARTDATE\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"STYLE\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"account_enhancements\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"contactemail\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"domain\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"mail_node_alias\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"max_team_users\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"modify_firewall\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"newuser\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_account_authn_link\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_account_authn_link_notification_disabled\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_autossl_expiry\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_autossl_expiry_coverage\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_autossl_renewal\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_autossl_renewal_coverage\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_contact_address_change\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_contact_address_change_notification_disabled\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_disk_limit\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_password_change\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_password_change_notification_disabled\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"notify_ssl_expiry\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"owner\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"remove_missing_extensions\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"rename_database_objects\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"reseller\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"shell\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"spamassassin\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"update_existing_email_account_quotas\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"parameter\",\"user\",\"query\"]",
+            "[\"whm1:modifyacct#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:modifyacct#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "partial",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testDocumentedInputsAreForwardedUnchangedInTheBody",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ],
           "units": [
             {
               "hash": "94f0ac75f6443d33a17bedfae61aad33b309441c81df47f4ea9dc9cd5d33e113",
@@ -70840,19 +72144,29 @@
       "family": "whm1",
       "id": "whm1:passwd",
       "module": null,
-      "state": "missing",
+      "state": "partial",
       "tags": [
         "Passwords"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:passwd#GET\",\"parameter\",\"db_pass_update\",\"query\"]",
+            "[\"whm1:passwd#GET\",\"parameter\",\"digestauth\",\"query\"]",
+            "[\"whm1:passwd#GET\",\"parameter\",\"password\",\"query\"]",
+            "[\"whm1:passwd#GET\",\"parameter\",\"user\",\"query\"]",
+            "[\"whm1:passwd#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:passwd#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "partial",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ],
           "units": [
             {
               "hash": "b45c1e14b6e5e932ef06aee1e901fd2dcc1288f79bc3f29eb96ced1bb7abbc5f",
@@ -73495,19 +74809,26 @@
       "family": "whm1",
       "id": "whm1:removeacct",
       "module": null,
-      "state": "missing",
+      "state": "partial",
       "tags": [
         "Account Management"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:removeacct#GET\",\"parameter\",\"keepdns\",\"query\"]",
+            "[\"whm1:removeacct#GET\",\"parameter\",\"username\",\"query\"]",
+            "[\"whm1:removeacct#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:removeacct#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "partial",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ],
           "units": [
             {
               "hash": "84c7689a2289e75bcc71314748ea9f79bfbe8c044aeb9338b7f3131d97d95e1c",
@@ -80525,19 +81846,29 @@
       "family": "whm1",
       "id": "whm1:suspendacct",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Suspensions"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:suspendacct#GET\",\"parameter\",\"disallowun\",\"query\"]",
+            "[\"whm1:suspendacct#GET\",\"parameter\",\"leave-ftp-accts-enabled\",\"query\"]",
+            "[\"whm1:suspendacct#GET\",\"parameter\",\"reason\",\"query\"]",
+            "[\"whm1:suspendacct#GET\",\"parameter\",\"user\",\"query\"]",
+            "[\"whm1:suspendacct#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:suspendacct#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testFailedOutcomeRaisesApiErrorWithTheEnvelopeRetained",
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ],
           "units": [
             {
               "hash": "52db260cd3847d6fc97d6dc2caaf7f9e713f6fb3b81894298e831395d7657c4a",
@@ -82580,19 +83911,26 @@
       "family": "whm1",
       "id": "whm1:unsuspendacct",
       "module": null,
-      "state": "missing",
+      "state": "implemented",
       "tags": [
         "Suspensions"
       ],
       "variants": [
         {
-          "claimed_units": [],
+          "claimed_units": [
+            "[\"whm1:unsuspendacct#GET\",\"parameter\",\"retain-service-proxies\",\"query\"]",
+            "[\"whm1:unsuspendacct#GET\",\"parameter\",\"user\",\"query\"]",
+            "[\"whm1:unsuspendacct#GET\",\"response\",\"200\",\"application/json\"]"
+          ],
           "id": "whm1:unsuspendacct#GET",
           "live_evidence_ids": [],
           "missing_response_schemas": 0,
-          "state": "missing",
+          "state": "implemented",
           "test_status": "not-run",
-          "tests": [],
+          "tests": [
+            "HostingPal\\WhmApiClient\\Tests\\Api\\WhmAccountsTest::testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery",
+            "HostingPal\\WhmApiClient\\Tests\\Live\\AccountLifecycleLiveTest::testAccountLifecycle"
+          ],
           "units": [
             {
               "hash": "e8c2a8af3c6e568c1dbf444b8d0f722e32e40c106cbe9e107799da5da90e2f05",
@@ -84560,13 +85898,13 @@
       "denominator": 1325,
       "excluded": 0,
       "gross": 1325,
-      "numerator": 29
+      "numerator": 39
     },
     "functions": {
       "denominator": 1323,
       "excluded": 0,
       "gross": 1323,
-      "numerator": 29
+      "numerator": 35
     },
     "live_verified": {
       "denominator": 1325,
@@ -84579,7 +85917,7 @@
       "denominator": 2608,
       "excluded": 0,
       "gross": 2608,
-      "numerator": 16
+      "numerator": 144
     },
     "passing_tests": {
       "denominator": 1325,
@@ -84591,13 +85929,13 @@
       "denominator": 1325,
       "excluded": 0,
       "gross": 1325,
-      "numerator": 29
+      "numerator": 39
     },
     "variants": {
       "denominator": 1325,
       "excluded": 0,
       "gross": 1325,
-      "numerator": 29
+      "numerator": 35
     }
   },
   "valid": true

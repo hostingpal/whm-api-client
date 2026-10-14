@@ -133,10 +133,14 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The read-only slices implement WHM `version`, `gethostname`, `systemloadavg`,
-`getdiskusage`, and `get_domain_info`, plus UAPI `DomainInfo/list_domains` and
-`LangPHP/php_get_installed_versions`, with authenticated PSR HTTP execution and
-typed payloads. Other endpoints and broader execution features remain separate work.
+and cPanel UAPI surface. Typed groups cover 39 reviewed operations: the read-only
+server, domain, PHP and feature inventory plus the WHM account lifecycle
+(`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
+`unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`).
+`whm()->call()` and `uapi()->call()` reach every other documented function
+generically. The scaling decision and the lean pattern for new typed groups are
+recorded in the
+[client design spec](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls).
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.
@@ -219,6 +223,28 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   after the metadata reset. Validate payloads with the internal `PayloadReader`,
   which attaches the response snapshot to every failure. Selectors only bind
   callbacks and cache groups; they perform no I/O or metadata reset.
+- Requests declare their method and outcome policy. `RequestMethod::Get` places
+  parameters in the query string; `RequestMethod::Post` keeps the routing fields
+  (`api.version`, bridge `cpanel.*`) in the query string and form-encodes the
+  operation parameters in the body, because the pinned WHM documentation says the
+  server records query strings in its access log. Mutations and any operation with
+  a secret-bearing parameter must use POST. `OutcomePolicy::Flag` (the documented
+  `metadata.result`/`status` 1/0 rule) is what every typed group declares;
+  `OutcomePolicy::Unchecked` records the envelope for operations whose status
+  carries payload semantics. Both require a usable envelope.
+- `whm()->call()` and `uapi()->call()` are generic escape hatches: validated names,
+  reserved fields removed from caller parameters, `CallResult` with the payload
+  converted to arrays and no schema. They are registry infrastructure, never
+  endpoint coverage; add a typed group when a consumer relies on an operation.
+- `whm()->accounts()` follows the lean pattern: precise array shapes
+  (`AccountRecord`, `PackageRecord`, `CreateAccountOptions`, `AccountChanges`, ...),
+  present fields validated against pinned types with the shared `PayloadReader`,
+  unknown fields ignored, enumerations not enforced, decimal-string `uid`
+  normalized to `int` (observed 2026-10-14), optional booleans encoded as omitted,
+  `0` or `1`, and `summary()` requiring exactly one record. Alias parameters the
+  methods do not send (`removeacct` `user`, `passwd` `enabledigest`,
+  `accountsummary` lookups other than `user`, `modifyacct` `MXCHECK-*`) keep those
+  variants `partial` in the registry.
 - Each attempt clears old response metadata. A usable envelope records an
   immutable snapshot before API or payload errors. `ResponseMetadata::$whm`
   retains raw WHM metadata; `$uapi` retains the UAPI result envelope without `data`.
@@ -262,7 +288,8 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   never print or store them. No repeated permission is needed for implemented,
   reviewed read-only operations on this test server. Mutating/destructive tests
   still require explicit approval for specific operations and targets; snapshot
-  readiness is not confirmed. Do not automatically restore the server.
+  readiness is not confirmed. Do not automatically restore the server. The
+  approval-gated `live-mutating` lifecycle test exists but stays unexecuted until then.
 
 ## Documentation Requirements
 
@@ -323,11 +350,19 @@ Explicit live verification (PHP cURL extension and both test tokens exported):
 WHM_API_LIVE=1 composer test:live
 ```
 
-The live suite/group exercises only the reviewed GET routes for
-implemented operations on `test.oblak.host`, with verified TLS, redirects disabled,
-and no retries. Missing opt-in or credentials fail before network I/O. Default
-PHPUnit, Composer checks and CI remain offline even when credentials are present.
-Keep raw live payloads, credentials and profiles outside committed fixtures.
+The live suite/group exercises only the reviewed read-only GET and POST requests
+for implemented operations on `test.oblak.host`, with verified TLS, redirects
+disabled, and no retries. Missing opt-in or credentials fail before network I/O.
+Default PHPUnit, Composer checks and CI remain offline even when credentials are
+present. Keep raw live payloads, credentials and profiles outside committed fixtures.
+
+The approval-gated account lifecycle (`tests/Live/AccountLifecycleLiveTest.php`,
+group `live-mutating`) is excluded from `composer test:live`. It creates and
+removes exactly the throwaway account named by `WHM_API_LIVE_ACCOUNT` and runs only
+with `WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_ACCOUNT=<user>
+WHM_API_LIVE_DOMAIN=<domain>` after the owner approves the target and a server
+snapshot; the transport double refuses every other mutation. It has not been
+executed yet.
 
 Go documentation tooling (Go 1.24+) uses a separate module and cache:
 
