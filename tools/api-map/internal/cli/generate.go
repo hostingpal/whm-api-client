@@ -61,6 +61,12 @@ func generatePHP(_ context.Context, args []string, stdout, stderr io.Writer) int
 		paths = append(paths, path)
 	}
 	sort.Strings(paths)
+	if conflicts := handWrittenConflicts(*root, paths); len(conflicts) > 0 {
+		for _, path := range conflicts {
+			fmt.Fprintln(stderr, "api-map: refusing to overwrite hand-written file:", path)
+		}
+		return 1
+	}
 	if *check {
 		var outdated []string
 		for _, path := range paths {
@@ -151,7 +157,7 @@ func staleGenerated(root string, files map[string][]byte) ([]string, error) {
 			if err != nil {
 				return err
 			}
-			if bytes.Contains(content, []byte(phpgen.Marker)) {
+			if isGenerated(content) {
 				stale = append(stale, relative)
 			}
 			return nil
@@ -162,4 +168,39 @@ func staleGenerated(root string, files map[string][]byte) ([]string, error) {
 	}
 	sort.Strings(stale)
 	return stale, nil
+}
+
+// isGenerated reports whether one of the first 40 lines is exactly the
+// generated marker, after trimming whitespace, one comment prefix and an
+// optional closing "*/".
+func isGenerated(content []byte) bool {
+	for i, line := range strings.Split(string(content), "\n") {
+		if i >= 40 {
+			return false
+		}
+		line = strings.TrimSpace(line)
+		for _, prefix := range []string{"/**", "*", "//", "#"} {
+			if strings.HasPrefix(line, prefix) {
+				line = strings.TrimSpace(strings.TrimPrefix(line, prefix))
+				break
+			}
+		}
+		line = strings.TrimSpace(strings.TrimSuffix(line, "*/"))
+		if line == phpgen.Marker {
+			return true
+		}
+	}
+	return false
+}
+
+// handWrittenConflicts lists rendered paths whose existing content is not generated.
+func handWrittenConflicts(root string, paths []string) []string {
+	var conflicts []string
+	for _, path := range paths {
+		current, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(path)))
+		if err == nil && !isGenerated(current) {
+			conflicts = append(conflicts, path)
+		}
+	}
+	return conflicts
 }
