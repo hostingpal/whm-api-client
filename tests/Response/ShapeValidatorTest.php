@@ -97,6 +97,113 @@ final class ShapeValidatorTest extends TestCase
         ShapeValidator::value('a', ['type' => 'unknown'], self::reader());
     }
 
+    /** @param array<mixed> $type */
+    #[DataProvider('validContainers')]
+    public function testValidatesContainers(string $json, array $type, mixed $expected): void
+    {
+        self::assertSame($expected, ShapeValidator::value(self::decode($json), $type, self::reader()));
+    }
+
+    /** @return iterable<string, array{string, array<mixed>, mixed}> */
+    public static function validContainers(): iterable
+    {
+        $object = [
+            'type' => 'object',
+            'fields' => ['a' => ['type' => 'string'], 'b' => ['type' => 'int']],
+            'required' => ['a'],
+        ];
+        yield 'list' => ['[1,2]', ['type' => 'list', 'items' => ['type' => 'int']], [1, 2]];
+        yield 'empty list' => ['[]', ['type' => 'list', 'items' => ['type' => 'int']], []];
+        yield 'map' => ['{"x.test":0}', ['type' => 'map', 'values' => ['type' => 'flag']], ['x.test' => 0]];
+        yield 'object drops unknown and keeps omission' => ['{"extra":true,"a":"x"}', $object, ['a' => 'x']];
+        yield 'object keeps declared order' => ['{"b":2,"a":"x"}', $object, ['a' => 'x', 'b' => 2]];
+        yield 'nested normalization' => [
+            '{"domains":[{"port":"80"}]}',
+            [
+                'type' => 'object',
+                'fields' => ['domains' => ['type' => 'list', 'items' => [
+                    'type' => 'object',
+                    'fields' => ['port' => ['type' => 'int', 'accept' => ['numeric-string']]],
+                ]]],
+            ],
+            ['domains' => [['port' => 80]]],
+        ];
+        yield 'union first branch' => [
+            '5',
+            ['type' => 'union', 'anyOf' => [['type' => 'int'], ['type' => 'string']]],
+            5,
+        ];
+        yield 'union second branch' => [
+            '"a"',
+            ['type' => 'union', 'anyOf' => [['type' => 'int'], ['type' => 'string']]],
+            'a',
+        ];
+    }
+
+    /** @param array<mixed> $type */
+    #[DataProvider('invalidContainers')]
+    public function testRejectsInvalidContainers(string $json, array $type): void
+    {
+        $this->expectException(InvalidResponseException::class);
+
+        ShapeValidator::value(self::decode($json), $type, self::reader());
+    }
+
+    /** @return iterable<string, array{string, array<mixed>}> */
+    public static function invalidContainers(): iterable
+    {
+        yield 'object as list' => ['{"a":1}', ['type' => 'list', 'items' => ['type' => 'int']]];
+        yield 'list item mismatch' => ['[1,"x"]', ['type' => 'list', 'items' => ['type' => 'int']]];
+        yield 'scalar as map' => ['5', ['type' => 'map', 'values' => ['type' => 'int']]];
+        yield 'missing required field' => [
+            '{"b":1}',
+            ['type' => 'object', 'fields' => ['a' => ['type' => 'string']], 'required' => ['a']],
+        ];
+        yield 'empty array for object with required fields' => [
+            '[]',
+            ['type' => 'object', 'fields' => ['a' => ['type' => 'string']], 'required' => ['a']],
+        ];
+        yield 'union without match' => [
+            'true',
+            ['type' => 'union', 'anyOf' => [['type' => 'int'], ['type' => 'string']]],
+        ];
+    }
+
+    public function testEmptyJsonArrayIsAnEmptyObjectOrMap(): void
+    {
+        $object = ['type' => 'object', 'fields' => ['a' => ['type' => 'string']]];
+        $map = ['type' => 'map', 'values' => ['type' => 'int']];
+
+        self::assertSame([], ShapeValidator::value([], $object, self::reader()));
+        self::assertSame([], ShapeValidator::value([], $map, self::reader()));
+    }
+
+    public function testMapKeepsNumericKeys(): void
+    {
+        $result = ShapeValidator::value(
+            self::decode('{"0":1,"10":0}'),
+            ['type' => 'map', 'values' => ['type' => 'flag']],
+            self::reader(),
+        );
+
+        self::assertSame([0 => 1, 10 => 0], $result);
+    }
+
+    public function testUnionFallsThroughDeepFailures(): void
+    {
+        $type = ['type' => 'union', 'anyOf' => [
+            ['type' => 'object', 'fields' => ['a' => ['type' => 'object', 'fields' => [
+                'b' => ['type' => 'int'],
+            ], 'required' => ['b']]], 'required' => ['a']],
+            ['type' => 'mixed'],
+        ]];
+
+        self::assertSame(
+            ['a' => ['b' => 'x']],
+            ShapeValidator::value(self::decode('{"a":{"b":"x"}}'), $type, self::reader()),
+        );
+    }
+
     private static function reader(): PayloadReader
     {
         return new PayloadReader(new ResponseMetadata(200), 'example payload');

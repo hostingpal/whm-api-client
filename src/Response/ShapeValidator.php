@@ -47,8 +47,114 @@ final class ShapeValidator
             'bool' => self::bool($value, $accept, $read),
             'flag' => self::flag($value, $accept, $read),
             'mixed' => $read->json($value),
+            'list' => $read->listOf(
+                $value,
+                static fn (mixed $item): mixed => self::value($item, self::child($type, 'items'), $read),
+            ),
+            'map' => self::map($value, self::child($type, 'values'), $read),
+            'object' => self::object($value, $type, $read),
+            'union' => self::union($value, $type, $read),
             default => throw new LogicException('Unsupported type spec.'),
         };
+    }
+
+    /**
+     * Read a nested spec, failing loudly when the generator omitted it.
+     *
+     * @param array<mixed> $type
+     * @return array<mixed>
+     */
+    private static function child(array $type, string $key): array
+    {
+        $child = $type[$key] ?? null;
+        if (!is_array($child)) {
+            throw new LogicException('Type spec is missing "' . $key . '".');
+        }
+
+        return $child;
+    }
+
+    /**
+     * Validate a JSON object map; an empty JSON array is an empty map.
+     *
+     * @param array<mixed> $valueType
+     * @return array<array-key, mixed>
+     */
+    private static function map(mixed $value, array $valueType, PayloadReader $read): array
+    {
+        if ($value === []) {
+            return [];
+        }
+
+        $result = [];
+        foreach (get_object_vars($read->object($value)) as $key => $item) {
+            $result[$key] = self::value($item, $valueType, $read);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Validate declared fields in declared order and drop unknown fields.
+     *
+     * @param array<mixed> $type
+     * @return array<string, mixed>
+     */
+    private static function object(mixed $value, array $type, PayloadReader $read): array
+    {
+        $fields = $type['fields'] ?? [];
+        $required = $type['required'] ?? [];
+        if (!is_array($fields) || !is_array($required)) {
+            throw new LogicException('Invalid object type spec.');
+        }
+
+        if ($value === [] && $required === []) {
+            return [];
+        }
+
+        $object = $read->object($value);
+        $result = [];
+        foreach ($fields as $name => $fieldType) {
+            if (!is_array($fieldType)) {
+                throw new LogicException('Invalid field type spec.');
+            }
+
+            $name = (string) $name;
+            if (property_exists($object, $name)) {
+                $result[$name] = self::value($object->{$name}, $fieldType, $read);
+            } elseif (in_array($name, $required, true)) {
+                $read->fail();
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Return the first branch that validates; partial branch results are discarded.
+     *
+     * @param array<mixed> $type
+     */
+    private static function union(mixed $value, array $type, PayloadReader $read): mixed
+    {
+        $options = $type['anyOf'] ?? null;
+        if (!is_array($options) || $options === []) {
+            throw new LogicException('Invalid union type spec.');
+        }
+
+        foreach ($options as $option) {
+            if (!is_array($option)) {
+                throw new LogicException('Invalid union type spec.');
+            }
+
+            try {
+                return self::value($value, $option, $read);
+            } catch (InvalidResponseException) {
+                continue;
+            }
+        }
+
+        return $read->fail();
     }
 
     /**
