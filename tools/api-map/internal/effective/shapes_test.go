@@ -118,6 +118,16 @@ func TestSpecForExpandsDiscriminatorMappings(t *testing.T) {
 	if line := fieldSpec(t, spec, "line"); line.Type != "int" || !line.Nullable {
 		t.Fatalf("line: %+v", line)
 	}
+	// A mapped subtype extends the base through allOf; the base is read flat
+	// there instead of re-expanding its mapping (which would cycle to mixed).
+	spec = specOf(t, `{"$ref": "#/components/schemas/RecordA"}`)
+	if spec.Type != "object" || fieldNames(spec) != "address,line,type" || strings.Join(spec.Required, ",") != "address,type" {
+		t.Fatalf("subtype referenced directly: %+v", spec)
+	}
+	spec = specOf(t, `{"oneOf": [{"$ref": "#/components/schemas/RecordA"}, {"$ref": "#/components/schemas/RecordTXT"}]}`)
+	if spec.Type != "object" || fieldNames(spec) != "address,line,text_b64,type" || strings.Join(spec.Required, ",") != "type" {
+		t.Fatalf("subtypes listed in a union: %+v", spec)
+	}
 }
 
 func TestSpecForMarksDynamicKeysBesideProperties(t *testing.T) {

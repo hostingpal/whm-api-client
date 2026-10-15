@@ -189,12 +189,21 @@ func (s schemas) allOf(sourceID string, obj map[string]any, parts []any, depth i
 	if len(contributing) == 0 {
 		return TypeSpec{Type: "mixed"}
 	}
+	// A referenced part is extended here, so its discriminator mapping (a list
+	// of its own subtypes, possibly including this schema) is not expanded:
+	// the part contributes its own properties only.
+	partSeen := func(part any) map[string]bool {
+		if _, _, key, ok := s.follow(sourceID, part); ok && key != "" {
+			return withSeen(seen, flatMarker+key, "")
+		}
+		return seen
+	}
 	if len(contributing) == 1 && len(required) == 0 {
-		return s.specFor(sourceID, contributing[0], depth+1, seen)
+		return s.specFor(sourceID, contributing[0], depth+1, partSeen(contributing[0]))
 	}
 	merged := TypeSpec{Type: "object"}
 	for _, part := range contributing {
-		spec := s.specFor(sourceID, part, depth+1, seen)
+		spec := s.specFor(sourceID, part, depth+1, partSeen(part))
 		if spec.Type != "object" {
 			if len(contributing) == 1 {
 				return spec
