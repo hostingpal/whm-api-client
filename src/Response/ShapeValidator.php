@@ -23,9 +23,12 @@ use LogicException;
  *   decimal string (optional minus, no leading zeros, within PHP int range).
  * - number: an int or finite float. "accept" 'numeric-string' also admits a
  *   string of the form [+-]?digits(.digits)?; with "preserve" => true (number
- *   only) the matched string is returned unchanged, otherwise a decimal string
- *   becomes a float (precision may be lost) and an integer-form string becomes
- *   an int, failing when it is outside the int range.
+ *   only) the matched string is returned unchanged. Otherwise it is normalized as
+ *   json_decode() normalizes the same digits written as a JSON number: an integer
+ *   form within the PHP int range becomes an int (leading zeros and a plus sign
+ *   dropped, "-0" as 0), and every other form becomes a float, so precision may be
+ *   lost exactly as for a JSON number outside the int range, which decodes as a
+ *   float and is accepted as one.
  * - bool: a JSON boolean. "accept" 'int-flag' admits 0/1 and 'string-flag'
  *   admits "0"/"1"; both normalize to bool.
  * - flag: the integer 0 or 1. "accept" 'string-flag' admits "0"/"1" and 'bool'
@@ -260,7 +263,8 @@ final class ShapeValidator
             $digits = ltrim(ltrim($value, '+-'), '0');
             $canonical = $digits === '' ? '0' : $sign . $digits;
 
-            return (string) (int) $canonical === $canonical ? (int) $canonical : $read->fail();
+            // Outside the int range json_decode() yields a float for the same digits.
+            return (string) (int) $canonical === $canonical ? (int) $canonical : (float) $canonical;
         }
 
         return $read->fail();
