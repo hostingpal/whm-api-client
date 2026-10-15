@@ -8,6 +8,10 @@
     <arg name="extensions" value="php"/>
     <arg value="sp"/>
 
+    <!-- A serial run over the full generated surface (about 300 files) needs
+    about 180 MB, above PHP's 128M default; 512M leaves headroom. -->
+    <ini name="memory_limit" value="512M"/>
+
     <!-- Relative to PHPCS's package directory; no Composer installer plugin is required. -->
     <config name="installed_paths" value="../../slevomat/coding-standard"/>
 

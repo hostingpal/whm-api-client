@@ -11,10 +11,19 @@ import (
 )
 
 var (
-	markdownLink  = regexp.MustCompile(`\[([^\]]+)\]\([^)]*\)`)
-	whitespace    = regexp.MustCompile(`\s+`)
-	blankLine     = regexp.MustCompile(`\n\s*\n`)
-	reservedNames = map[string]bool{"call": true, "responseMeta": true, "username": true, "isBridged": true, "run": true, "dispatch": true, "request": true}
+	markdownLink = regexp.MustCompile(`\[([^\]]+)\]\([^)]*\)`)
+	whitespace   = regexp.MustCompile(`\s+`)
+	blankLine    = regexp.MustCompile(`\n\s*\n`)
+	// reservedNames are the methods WhmClient and UapiClient declare or inherit
+	// from AbstractApiClient (including its final protected and private
+	// methods); a group accessor is a trait method of those handles and must
+	// not collide with them. reserved_test.go keeps the list in step with the
+	// PHP sources.
+	reservedNames = map[string]bool{
+		"call": true, "responseMeta": true, "username": true, "isBridged": true, "run": true, "dispatch": true,
+		"request": true, "beginRequest": true, "recordResponseMeta": true, "executeGet": true, "executePost": true,
+		"execute": true, "encode": true, "queryValues": true,
+	}
 	// reservedArguments are PHP variables a generated method body already uses.
 	reservedArguments = map[string]bool{"this": true, "result": true}
 )
@@ -61,11 +70,11 @@ func Build(m model.Map, set overlay.Set) (Result, error) {
 		if set.Config.Scope == "listed" && !listed {
 			continue
 		}
-		if len(op.Variants) != 1 {
-			b.problem(op.ID + ": operations with several variants need an overlay decision")
+		variant, ok := b.variant(op, entry.op)
+		if !ok {
 			continue
 		}
-		operation, groupName, ok := b.operation(op, op.Variants[0], entry.op)
+		operation, groupName, ok := b.operation(op, variant, entry.op)
 		if !ok {
 			continue
 		}
@@ -78,7 +87,7 @@ func Build(m model.Map, set overlay.Set) (Result, error) {
 		}
 		key := op.Family + "|" + groupName
 		if groups[key] == nil {
-			groups[key] = b.group(op.Family, groupName, op.Variants[0])
+			groups[key] = b.group(op.Family, groupName, variant)
 		}
 		groups[key].Operations = append(groups[key].Operations, operation)
 	}
@@ -121,16 +130,43 @@ var reservedLower = func() map[string]bool {
 
 func (b *builder) problem(message string) { b.problems[message] = true }
 
+// variant picks the variant to generate: the only one, or the one the overlay
+// selects by HTTP method. An operation with several variants needs that
+// decision, and the selected method must be documented.
+func (b *builder) variant(op model.Operation, ov overlay.Operation) (model.Variant, bool) {
+	methods := make([]string, len(op.Variants))
+	for i, v := range op.Variants {
+		methods[i] = v.Method
+	}
+	documented := strings.Join(methods, ", ")
+	if ov.Variant == "" {
+		if len(op.Variants) == 1 {
+			return op.Variants[0], true
+		}
+		b.problem(op.ID + ": operations with several variants need an overlay variant decision (" + documented + ")")
+		return model.Variant{}, false
+	}
+	for _, v := range op.Variants {
+		if v.Method == ov.Variant {
+			return v, true
+		}
+	}
+	b.problem(op.ID + ": variant " + ov.Variant + " is not documented (" + documented + ")")
+	return model.Variant{}, false
+}
+
 func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Operation) (Operation, string, bool) {
-	returns, node, err := b.schemas.payload(op, v)
+	payload, node, err := b.schemas.payload(op, v)
 	if err != nil {
 		b.problem(err.Error())
 		return Operation{}, "", false
 	}
-	// Only query parameters are generated; a documented body (multipart, JSON
-	// or form, possibly carrying secrets) must never be dropped silently.
-	if _, hasBody := node["requestBody"]; hasBody {
-		b.problem(op.ID + ": documents a request body; exclude it until body parameters are supported")
+	returns := payload.spec
+	// Query parameters and form-encoded body fields are generated; any other
+	// documented body (multipart or JSON, possibly carrying secrets) must
+	// never be dropped silently.
+	body, ok := b.formBody(op, v, node)
+	if !ok {
 		return Operation{}, "", false
 	}
 	if deprecated, _ := node["deprecated"].(bool); deprecated {
@@ -145,8 +181,8 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		Summary:     sentence(text(node["summary"])),
 		Description: firstParagraph(text(node["description"])),
 		Subcategory: subcategory(op.Family, node),
-		SeeURL:      seeURL(op),
-		Notes:       ov.Notes,
+		SeeURL:      b.seeURL(op, v, node),
+		Notes:       notes(ov.Notes),
 		Unwrap:      ov.Unwrap,
 
 		OptionalPayload: ov.OptionalPayload,
@@ -160,8 +196,14 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	result.PHPName = b.methodName(op, ov)
 	result.Constant = b.constant(op, result.PHPName)
 	result.Alias = Pascal(result.PHPName) + "Result"
-	result.Params = b.params(op, v, ov)
-	result.Method = b.method(op, v, ov, result.Params)
+	result.Params = b.params(op, v, ov, body)
+	result.Method = b.method(op, v, ov, result.Params, len(body) > 0)
+	if payload.issue != "" && !ov.Void {
+		b.problem(op.ID + ": " + payload.issue + "; declare void with evidence or exclude the operation")
+	}
+	if payload.partial && !ov.OptionalPayload && !ov.Void {
+		b.problem(op.ID + ": data is documented in only some 200 envelope alternatives; set optional_payload")
+	}
 	if ov.Void {
 		returns = nil
 	}
@@ -171,11 +213,21 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 				b.problem(op.ID + ": " + err.Error())
 			}
 		}
+		for _, issue := range specIssues(*returns, "") {
+			b.problem(op.ID + ": " + issue + "; replace it in the overlay")
+		}
+		for _, defect := range specDefects(*returns, "") {
+			b.problem(op.ID + ": " + defect)
+		}
 	} else if len(ov.Response) > 0 {
 		b.problem(op.ID + ": response corrections need a documented payload")
 	}
 	if ov.Unwrap != "" && (returns == nil || returns.Type != "object" || fieldIndex(returns, ov.Unwrap) < 0) {
 		b.problem(op.ID + ": unwrap field " + ov.Unwrap + " is not a documented object field")
+	} else if ov.Unwrap != "" && returns.Nullable {
+		// A null payload could never be unwrapped (OptionalPayload is the way
+		// to accept a missing or null data member).
+		b.problem(op.ID + ": unwrap needs a non-nullable object payload")
 	}
 	if ov.OptionalPayload && returns == nil {
 		b.problem(op.ID + ": optional_payload needs a documented payload")
@@ -211,16 +263,79 @@ func (b *builder) methodName(op model.Operation, ov overlay.Operation) string {
 	return Camel(op.Function)
 }
 
-func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operation) []Param {
+// formBody returns the fields of a documented application/x-www-form-urlencoded
+// request body as parameters (in "body"), in name order. A field is required
+// only when the body is required and its schema requires the field. It reports
+// false, with a problem, for any other body, which is never dropped silently.
+func (b *builder) formBody(op model.Operation, v model.Variant, node map[string]any) ([]model.Parameter, bool) {
+	raw, documented := node["requestBody"]
+	if !documented {
+		return nil, true
+	}
+	body, bodySource, _, ok := b.schemas.follow(v.OperationLocator.SourceID, raw)
+	content, _ := asObject(body["content"])
+	media, isForm := asObject(content["application/x-www-form-urlencoded"])
+	if !ok || !isForm {
+		b.problem(op.ID + ": documents a request body that is not form-encoded; exclude it until such bodies are supported")
+		return nil, false
+	}
+	schema, schemaSource, _, ok := b.schemas.follow(bodySource, media["schema"])
+	props, hasProps := asObject(schema["properties"])
+	if !ok || !hasProps || len(props) == 0 {
+		b.problem(op.ID + ": documents a form request body without plain properties; exclude it until such bodies are supported")
+		return nil, false
+	}
+	bodyRequired := body["required"] == true
+	required := map[string]bool{}
+	for _, name := range stringList(schema["required"]) {
+		required[name] = bodyRequired
+	}
+	query := map[string]bool{}
+	for _, p := range v.Parameters {
+		query[p.Name] = true
+	}
+	params := make([]model.Parameter, 0, len(props))
+	for _, name := range sortedKeys(props) {
+		if query[name] {
+			b.problem(op.ID + ": parameter " + name + " is documented in both the query and the request body")
+			return nil, false
+		}
+		field, _, _, _ := b.schemas.follow(schemaSource, props[name])
+		params = append(params, model.Parameter{
+			Name: name,
+			In:   "body",
+			Definition: model.Object{
+				"name": name, "in": "body", "required": required[name],
+				"description": field["description"], "schema": props[name],
+			},
+			Locator: model.Locator{SourceID: schemaSource},
+		})
+	}
+	return params, true
+}
+
+// params builds the generated arguments from the variant's query parameters
+// followed by the form body fields; required arguments come first.
+func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operation, body []model.Parameter) []Param {
 	var required, optional []Param
 	used := map[string]bool{}
 	documented := map[string]bool{}
-	for _, p := range v.Parameters {
-		if p.In != "query" {
+	omitted := map[string]bool{}
+	for _, p := range append(append([]model.Parameter{}, v.Parameters...), body...) {
+		if p.In != "query" && p.In != "body" {
+			continue
+		}
+		if documented[p.Name] {
+			// The second value would overwrite the first in the request.
+			b.problem(op.ID + ": parameter " + p.Name + " is documented more than once")
 			continue
 		}
 		documented[p.Name] = true
 		if o, ok := ov.Params[p.Name]; ok && o.Omit {
+			omitted[p.Name] = true
+			if p.Definition["required"] == true {
+				b.problem(op.ID + ": required parameter " + p.Name + " cannot be omitted; exclude the operation and use call()")
+			}
 			continue
 		}
 		if strings.ContainsAny(p.Name, "*") {
@@ -235,18 +350,24 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 			Required:    decl["required"] == true,
 			Description: firstSentence(text(decl["description"])),
 		}
-		param.PHPType, param.DocType, param.Encoding = paramTypes(spec, b.schemas.enumDoc(p.Locator.SourceID, decl["schema"]))
+		var composite bool
+		param.PHPType, param.DocType, param.Encoding, composite = paramTypes(spec, b.schemas.enumDoc(p.Locator.SourceID, decl["schema"]))
 		param.Sensitive = sensitiveName(p.Name, spec)
-		if o, ok := ov.Params[p.Name]; ok {
-			if o.PHP != "" {
-				param.PHP = o.PHP
-			}
-			if o.Encoding != "" {
-				param.PHPType, param.DocType, param.Encoding = encodingTypes(o.Encoding, param)
-			}
-			if o.Sensitive != nil {
-				param.Sensitive = *o.Sensitive
-			}
+		o := ov.Params[p.Name]
+		if reason := secretDecision(p.Name, text(decl["description"]), spec, param.Sensitive); reason != "" && o.Sensitive == nil {
+			b.problem(op.ID + ": parameter " + p.Name + " may carry a secret (" + reason + `); declare "sensitive" true or false`)
+		}
+		if composite && o.Encoding == "" {
+			b.problem(op.ID + ": parameter " + p.Name + " has an object or list schema; declare its encoding or omit it")
+		}
+		if o.PHP != "" {
+			param.PHP = o.PHP
+		}
+		if o.Encoding != "" {
+			param.PHPType, param.DocType, param.Encoding = encodingTypes(o.Encoding, param)
+		}
+		if o.Sensitive != nil {
+			param.Sensitive = *o.Sensitive
 		}
 		if !IsMethodName(param.PHP) || reservedArguments[param.PHP] {
 			b.problem(op.ID + ": parameter " + p.Name + " needs an overlay php name")
@@ -266,9 +387,23 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 			b.problem(op.ID + ": overlay parameter " + wire + " is not documented")
 		}
 	}
+	isRequired := map[string]bool{}
+	for _, p := range required {
+		isRequired[p.Wire] = true
+	}
+	firstOptional := ""
 	for _, wire := range ov.Order {
-		if !documented[wire] {
+		switch {
+		case !documented[wire]:
 			b.problem(op.ID + ": order lists undocumented parameter " + wire)
+		case omitted[wire]:
+			b.problem(op.ID + ": order lists omitted parameter " + wire)
+		case isRequired[wire] && firstOptional != "":
+			// Required arguments always precede optional ones, so this order
+			// cannot be honoured.
+			b.problem(op.ID + ": order lists optional parameter " + firstOptional + " before required parameter " + wire)
+		case !isRequired[wire] && firstOptional == "":
+			firstOptional = wire
 		}
 	}
 	return append(orderParams(required, ov.Order), orderParams(optional, ov.Order)...)
@@ -296,7 +431,10 @@ func orderParams(params []Param, order []string) []Param {
 	return params
 }
 
-func (b *builder) method(op model.Operation, v model.Variant, ov overlay.Operation, params []Param) string {
+// method picks GET for read-only operations and POST otherwise. Secret-bearing
+// parameters and form body fields always need POST, which form-encodes the
+// operation parameters in the body.
+func (b *builder) method(op model.Operation, v model.Variant, ov overlay.Operation, params []Param, body bool) string {
 	sensitive := false
 	for _, p := range params {
 		sensitive = sensitive || p.Sensitive
@@ -305,9 +443,12 @@ func (b *builder) method(op model.Operation, v model.Variant, ov overlay.Operati
 		if ov.Method == "GET" && sensitive {
 			b.problem(op.ID + ": secret-bearing parameters require POST")
 		}
+		if ov.Method == "GET" && body {
+			b.problem(op.ID + ": request body parameters require POST")
+		}
 		return ov.Method
 	}
-	if v.Risk.Classification == "read-only" && !sensitive {
+	if v.Risk.Classification == "read-only" && !sensitive && !body {
 		return "GET"
 	}
 	return "POST"
@@ -415,20 +556,72 @@ func (b *builder) finish(groups map[string]*Group) {
 	b.result.Problems = sortedKeys(b.problems)
 }
 
-func paramTypes(spec TypeSpec, enumDoc string) (string, string, string) {
+// paramTypes returns the native type, the PHPStan type and the encoding of a
+// query parameter, and whether its schema is composite (an object, a map, or
+// a union with a list, map or object branch), which no scalar encoding can
+// represent without an overlay decision. A union of scalar branches becomes
+// the union of their PHP types; an untyped schema or branch stays string|int.
+func paramTypes(spec TypeSpec, enumDoc string) (string, string, string, bool) {
 	switch spec.Type {
 	case "flag", "bool":
-		return "bool", "bool", "bool"
+		return "bool", "bool", "bool", false
 	case "int":
-		return "int", firstNonEmpty(enumDoc, "int"), "scalar"
+		return "int", firstNonEmpty(enumDoc, "int"), "scalar", false
 	case "number":
-		return "int|float", "int|float", "scalar"
+		return "int|float", "int|float", "scalar", false
 	case "string":
-		return "string", firstNonEmpty(enumDoc, "string"), "scalar"
+		return "string", firstNonEmpty(enumDoc, "string"), "scalar", false
 	case "list":
-		return "string|array", "string|list<string>", "repeat"
+		return "string|array", "string|list<string>", "repeat", false
+	case "union":
+		kinds := map[string]bool{}
+		if scalarKinds(spec, kinds) {
+			native := scalarUnion(kinds)
+			return native, native, "scalar", false
+		}
+	case "mixed":
+		return "string|int", "string|int", "scalar", false
 	}
-	return "string|int", "string|int", "scalar"
+	return "string|int", "string|int", "scalar", true
+}
+
+// scalarKinds collects the scalar kinds (string, int, number, unknown) of a
+// union's branches and reports false when a branch is a list, map or object.
+// Flags and booleans travel as 0/1 integers.
+func scalarKinds(spec TypeSpec, kinds map[string]bool) bool {
+	switch spec.Type {
+	case "string":
+		kinds["string"] = true
+	case "int", "flag", "bool":
+		kinds["int"] = true
+	case "number":
+		kinds["number"] = true
+	case "mixed":
+		kinds["unknown"] = true
+	case "union":
+		for _, option := range spec.AnyOf {
+			if !scalarKinds(option, kinds) {
+				return false
+			}
+		}
+	default:
+		return false
+	}
+	return true
+}
+
+func scalarUnion(kinds map[string]bool) string {
+	var types []string
+	if kinds["string"] || kinds["unknown"] {
+		types = append(types, "string")
+	}
+	if kinds["int"] || kinds["number"] || kinds["unknown"] {
+		types = append(types, "int")
+	}
+	if kinds["number"] {
+		types = append(types, "float")
+	}
+	return strings.Join(types, "|")
 }
 
 func encodingTypes(encoding string, current Param) (string, string, string) {
@@ -448,17 +641,32 @@ func encodingTypes(encoding string, current Param) (string, string, string) {
 
 var secretWords = map[string]bool{
 	"pass": true, "passwd": true, "password": true, "passphrase": true, "secret": true,
-	"newpass": true, "oldpass": true, "privatekey": true, "passhash": true,
+	"newpass": true, "oldpass": true, "privatekey": true, "passhash": true, "keypass": true, "sshkeypass": true,
+	"privkey": true, "apikey": true, "authcode": true,
 }
 
-// sensitiveName decides from the lower-cased words of the name; flag, bool and
-// int parameters are never secrets.
-func sensitiveName(name string, spec TypeSpec) bool {
-	switch spec.Type {
-	case "flag", "bool", "int":
-		return false
+// lowerWords splits a name at separators and case boundaries (so promptToken
+// is "prompt token") and lower-cases the words.
+func lowerWords(name string) []string {
+	words := Words(name)
+	for i, word := range words {
+		words[i] = strings.ToLower(word)
 	}
-	words := Words(strings.ToLower(name))
+	return words
+}
+
+// sensitiveName decides from the lower-cased words of the name. Flag and bool
+// parameters are never secrets; an integer is a secret only as a one-time code
+// whose last word is "token" (such as tfa_token), because integer "passwd"
+// parameters are password-strength settings.
+func sensitiveName(name string, spec TypeSpec) bool {
+	words := lowerWords(name)
+	switch spec.Type {
+	case "flag", "bool":
+		return false
+	case "int":
+		return len(words) > 0 && words[len(words)-1] == "token"
+	}
 	for _, word := range words {
 		if secretWords[word] {
 			return true
@@ -468,6 +676,38 @@ func sensitiveName(name string, spec TypeSpec) bool {
 		return false
 	}
 	return words[len(words)-1] == "token" || secretWords[strings.Join(words, "")]
+}
+
+// decisionWords are name words that mark secrets and harmless values alike:
+// private, DNSSEC and remote access keys share "key" with setting and lookup
+// keys, and a signature may be a credential or a public checksum.
+var decisionWords = map[string]string{"key": "a key", "signature": "a signature"}
+
+// secretDescription matches pinned descriptions of OAuth secrets carried in a
+// field whose name says nothing (WHM 360Monitoring/webpros_auth_callback json).
+var secretDescription = regexp.MustCompile(`(?i)authorization code|code verifier|\bPKCE\b`)
+
+// secretDecision returns why a parameter that the name heuristic leaves
+// non-sensitive may still carry a secret, or "" when it needs no decision:
+// any decision word in its name, or a description of an authorization code
+// or verifier. The overlay must then declare "sensitive" true or false.
+func secretDecision(name, description string, spec TypeSpec, sensitive bool) string {
+	switch spec.Type {
+	case "flag", "bool", "int", "number":
+		return ""
+	}
+	if sensitive {
+		return ""
+	}
+	for _, word := range lowerWords(name) {
+		if reason, ok := decisionWords[word]; ok {
+			return reason
+		}
+	}
+	if secretDescription.MatchString(description) {
+		return "an authorization code or verifier"
+	}
+	return ""
 }
 
 func tagGroups(doc model.Object) map[string]string {
@@ -506,12 +746,62 @@ func subcategory(family string, node map[string]any) string {
 	return fmt.Sprint(tags[len(tags)-1])
 }
 
-func seeURL(op model.Operation) string {
+// docSlugAlphabet is the tag alphabet whose documentation slug rule was
+// verified against https://api.docs.cpanel.net/ (letters, digits, spaces,
+// hyphens and parentheses; spaces become hyphens, everything is lower-cased).
+var docSlugAlphabet = regexp.MustCompile(`^[A-Za-z0-9 ()-]+$`)
+
+// docSlug returns the documentation portal's path segment for a tag, and false
+// for a tag outside the verified alphabet.
+func docSlug(tag string) (string, bool) {
+	if !docSlugAlphabet.MatchString(tag) {
+		return "", false
+	}
+	return strings.ToLower(strings.ReplaceAll(tag, " ", "-")), true
+}
+
+// seeURL links the variant's canonical operation page:
+// /specifications/{cpanel|whm}.openapi/<slug of the operation's first tag that
+// appears in x-tagGroups>/<lower-cased upstream operation id>. The legacy
+// /openapi/<site>/operation/<function> links redirect by function name only,
+// which is ambiguous for UAPI function names shared across modules and does
+// not resolve names containing "/".
+func (b *builder) seeURL(op model.Operation, v model.Variant, node map[string]any) string {
 	site := "whm"
 	if op.Family == "uapi" {
 		site = "cpanel"
 	}
-	return "https://api.docs.cpanel.net/openapi/" + site + "/operation/" + op.Function
+	if v.UpstreamOperationID == nil || *v.UpstreamOperationID == "" {
+		b.problem(op.ID + ": no upstream operation id to derive the documentation link from")
+		return ""
+	}
+	groups := tagGroups(b.schemas.m.Documents[v.OperationLocator.SourceID])
+	tags, _ := node["tags"].([]any)
+	for _, tag := range tags {
+		name := fmt.Sprint(tag)
+		if _, grouped := groups[name]; !grouped {
+			continue
+		}
+		slug, ok := docSlug(name)
+		if !ok {
+			b.problem(fmt.Sprintf("%s: tag %q has no verified documentation slug", op.ID, name))
+			return ""
+		}
+		return "https://api.docs.cpanel.net/specifications/" + site + ".openapi/" + slug + "/" +
+			strings.ToLower(*v.UpstreamOperationID)
+	}
+	b.problem(op.ID + ": no tag in x-tagGroups to derive the documentation link from")
+	return ""
+}
+
+// notes labels overlay notes by kind; the overlay schema admits only the kinds
+// overlay.NoteKinds lists.
+func notes(source []overlay.Note) []Note {
+	var result []Note
+	for _, note := range source {
+		result = append(result, Note{Label: overlay.NoteKinds[note.Kind], Text: note.Text})
+	}
+	return result
 }
 
 func text(v any) string {

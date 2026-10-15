@@ -14,12 +14,23 @@ type TypeSpec struct {
 	Fields   []Field
 	Required []string
 	AnyOf    []TypeSpec
+	// Issue names a documented construct the engine cannot represent at this
+	// node. The builder reports it as a problem unless an overlay replace
+	// covers the node; it is never rendered.
+	Issue string
 }
 
 // Field is one declared object field, kept in name order for determinism.
 type Field struct {
 	Name string
 	Spec TypeSpec
+}
+
+// Note is one overlay note line: Label ("Documented" or "Observed") says
+// whether the text restates the pinned documentation or a live observation.
+type Note struct {
+	Label string
+	Text  string
 }
 
 // Param is one generated method argument.
@@ -50,7 +61,7 @@ type Operation struct {
 	Description string
 	Subcategory string
 	SeeURL      string
-	Notes       []string
+	Notes       []Note
 	Params      []Param
 	Returns     *TypeSpec
 	Unwrap      string

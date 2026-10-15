@@ -38,6 +38,8 @@ final readonly class Accounts
     /**
      * Create cPanel account.
      *
+     * Documented: You must use either the username or the domain parameter.
+     *
      * Returns null when the server sends no data.
      *
      * API-map identity: whm1:createacct#GET (wire name createacct; Account Creation).
@@ -49,7 +51,7 @@ final readonly class Accounts
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/createacct
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-creation/accounts-createacct
      */
     public function createAccount(
         string $username,
@@ -75,7 +77,7 @@ final readonly class Accounts
      * @param string|list<string> $users
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/suspendacct
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-suspendacct
      */
     public function suspendAccount(string|array $users): void
     {

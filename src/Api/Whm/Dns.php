@@ -201,7 +201,7 @@ final readonly class Dns
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/export_zone_files
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/dns-export_zone_files
      */
     public function exportZoneFiles(string|array $zones): array
     {
@@ -225,7 +225,7 @@ final readonly class Dns
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/fetch_ds_records_for_domains
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-fetch_ds_records_for_domains
      */
     public function fetchDsRecordsForDomains(string|array $domains): array
     {
@@ -246,7 +246,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/get_nameserver_config
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/resolvers/nameserver-get_nameserver_config
      */
     public function getNameserverConfig(): array
     {
@@ -269,7 +269,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/getzonerecord
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/dns-getzonerecord
      */
     public function getZoneRecord(string $domain, int $line): array
     {
@@ -293,7 +293,7 @@ final readonly class Dns
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/has_local_authority
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-has_local_authority
      */
     public function hasLocalAuthority(string|array $domains): array
     {
@@ -315,7 +315,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/is_alias_available
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-is_alias_available
      */
     public function isAliasAvailable(): array
     {
@@ -337,7 +337,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/is_https_available
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-is_https_available
      */
     public function isHttpsAvailable(): array
     {
@@ -360,7 +360,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/is_svcb_available
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-is_svcb_available
      */
     public function isSvcbAvailable(): array
     {
@@ -382,7 +382,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/listmxs
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-listmxs
      */
     public function listMxRecords(string $domain): array
     {
@@ -403,7 +403,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/listzones
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/dns-listzones
      */
     public function listZones(): array
     {
@@ -425,7 +425,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/lookupnsip
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/resolvers/nameserver-lookupnsip
      */
     public function lookupNameserverIp(string $host): array
     {
@@ -449,7 +449,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/lookupnsips
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/resolvers/nameserver-lookupnsips
      */
     public function lookupNameserverIps(string $host): array
     {
@@ -471,7 +471,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/parse_dns_zone
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/dns-parse_dns_zone
      */
     public function parseDnsZone(string $zone): array
     {
@@ -493,7 +493,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/resolvedomainname
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/nameserver-resolvedomainname
      */
     public function resolveDomainName(string $domain): array
     {

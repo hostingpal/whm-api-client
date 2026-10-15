@@ -50,7 +50,7 @@ func Validate(set Set) []string {
 			seen[id] = name
 			op := file.Operations[id]
 			if op.Exclude != nil && (op.Name != "" || len(op.Params) > 0 || len(op.Response) > 0 || op.Unwrap != "" ||
-				op.OptionalPayload) {
+				op.OptionalPayload || op.Variant != "") {
 				problems = append(problems, id+": excluded operations take no other settings")
 			}
 			if op.Void && op.Unwrap != "" {
@@ -60,20 +60,45 @@ func Validate(set Set) []string {
 				problems = append(problems, id+": void and optional_payload are exclusive")
 			}
 			problems = append(problems, missingEvidence(id, op)...)
+			if observedWithoutLive(op) {
+				problems = append(problems, id+": an observed note needs live evidence")
+			}
 		}
 	}
 	sort.Strings(problems)
 	return problems
 }
 
-// missingEvidence reports behaviour-changing settings (request method, outcome
-// check, void result, optional payload, a parameter declared not sensitive)
-// made without operation-level evidence.
+// observedWithoutLive reports an "observed" note on an operation whose
+// evidence holds no live observation.
+func observedWithoutLive(op Operation) bool {
+	observed := false
+	for _, note := range op.Notes {
+		observed = observed || note.Kind == "observed"
+	}
+	if !observed {
+		return false
+	}
+	for _, evidence := range op.Evidence {
+		if evidence.Kind == "live" {
+			return false
+		}
+	}
+	return true
+}
+
+// missingEvidence reports behaviour-changing settings (variant, request method, outcome
+// check, void result, optional payload, a parameter encoding, which changes
+// the wire request, or a parameter declared not sensitive) made without
+// operation-level evidence.
 func missingEvidence(id string, op Operation) []string {
 	if len(op.Evidence) > 0 {
 		return nil
 	}
 	var settings []string
+	if op.Variant != "" {
+		settings = append(settings, "variant")
+	}
 	if op.Method != "" {
 		settings = append(settings, "method")
 	}
@@ -92,6 +117,9 @@ func missingEvidence(id string, op Operation) []string {
 	}
 	sort.Strings(wires)
 	for _, wire := range wires {
+		if op.Params[wire].Encoding != "" {
+			settings = append(settings, "encoding on parameter "+wire)
+		}
 		if sensitive := op.Params[wire].Sensitive; sensitive != nil && !*sensitive {
 			settings = append(settings, "sensitive false on parameter "+wire)
 		}

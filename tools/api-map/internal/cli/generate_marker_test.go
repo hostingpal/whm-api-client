@@ -60,11 +60,20 @@ func TestGenerateRefusesToOverwriteHandWrittenFile(t *testing.T) {
 	if err := os.WriteFile(target, []byte(original), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	for _, extra := range [][]string{{}, {"--check"}} {
-		args := append([]string{"generate", "php", "--map", mapPath, "--overlay", overlay, "--root", root}, extra...)
+	for extra, want := range map[string]string{
+		"":        "refusing to overwrite hand-written file: src/Api/Uapi/DomainInfo.php",
+		"--check": "hand-written file at generated path: src/Api/Uapi/DomainInfo.php",
+	} {
+		args := []string{"generate", "php", "--map", mapPath, "--overlay", overlay, "--root", root}
+		if extra != "" {
+			args = append(args, extra)
+		}
 		code, out := runCLI(t, args...)
-		if code != 1 || !strings.Contains(out, "refusing to overwrite hand-written file: src/Api/Uapi/DomainInfo.php") {
-			t.Fatalf("%v: %d: %s", extra, code, out)
+		if code != 1 || !strings.Contains(out, want) {
+			t.Fatalf("%q: %d: %s", extra, code, out)
+		}
+		if extra == "--check" && strings.Contains(out, "refusing to overwrite") {
+			t.Fatalf("read-only check claims to refuse a write: %s", out)
 		}
 		if got, _ := os.ReadFile(target); string(got) != original {
 			t.Fatal("hand-written file changed")

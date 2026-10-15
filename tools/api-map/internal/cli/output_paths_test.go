@@ -19,10 +19,6 @@ func outputFixture(t *testing.T) string {
 		"source.json":      []byte(`{"openapi":"3.0.2","info":{"title":"synthetic","version":"1"},"paths":{"/valid":{"get":{"responses":{"200":{"description":"ok"}}}}}}`),
 		"guide.html":       []byte("<p>Reviewed guide.</p>"),
 		"annotations.json": []byte(`{"schema_version":"1.0","annotations":[],"aliases":[]}`),
-		"registry.json":    []byte(`{"schema_version":"1.0","entries":[],"infrastructure":[],"exclusions":[]}`),
-		"symbols.json":     []byte(`{"schema_version":"1.0","symbols":[],"diagnostics":[]}`),
-		"tests.json":       []byte(`{"schema_version":"1.0","runs":[]}`),
-		"live.json":        []byte(`{"schema_version":"1.0","records":[]}`),
 	}
 	records := []any{}
 	for _, name := range []string{"source.json", "guide.html"} {

@@ -42,9 +42,10 @@ func TestPayloadExtractsUAPIResultData(t *testing.T) {
 		t.Fatal(err)
 	}
 	op := operationByID(t, m, "uapi:DomainInfo/list_domains")
-	spec, _, err := s.payload(op, op.Variants[0])
-	if err != nil || spec == nil {
-		t.Fatalf("payload %v %v", spec, err)
+	info, _, err := s.payload(op, op.Variants[0])
+	spec := info.spec
+	if err != nil || spec == nil || info.issue != "" || info.partial {
+		t.Fatalf("payload %+v %v", info, err)
 	}
 	if spec.Type != "object" || len(spec.Fields) != 3 || spec.Required[0] != "main_domain" {
 		t.Fatalf("unexpected spec %+v", spec)
@@ -62,9 +63,9 @@ func TestPayloadIsNilWithoutDataMember(t *testing.T) {
 	m := fixtureMap(t)
 	s, _ := newSchemas(m)
 	op := operationByID(t, m, "whm1:suspendacct")
-	spec, _, err := s.payload(op, op.Variants[0])
-	if err != nil || spec != nil {
-		t.Fatalf("expected void payload, got %+v %v", spec, err)
+	info, _, err := s.payload(op, op.Variants[0])
+	if err != nil || info.spec != nil || info.issue != "" {
+		t.Fatalf("expected void payload, got %+v %v", info, err)
 	}
 }
 

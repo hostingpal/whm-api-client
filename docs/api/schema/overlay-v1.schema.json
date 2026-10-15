@@ -32,6 +32,15 @@
       "additionalProperties": false
     },
     "evidenceList": {"type": "array", "items": {"$ref": "#/$defs/evidence"}, "minItems": 1},
+    "note": {
+      "type": "object",
+      "properties": {
+        "kind": {"enum": ["documented", "observed"]},
+        "text": {"type": "string", "minLength": 1}
+      },
+      "required": ["kind", "text"],
+      "additionalProperties": false
+    },
     "param": {
       "type": "object",
       "properties": {
@@ -83,6 +92,7 @@
       "type": "object",
       "properties": {
         "name": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
+        "variant": {"enum": ["GET", "POST"]},
         "method": {"enum": ["GET", "POST"]},
         "outcome": {"enum": ["flag", "unchecked"]},
         "unwrap": {"type": "string", "minLength": 1},
@@ -91,7 +101,7 @@
         "order": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
         "params": {"type": "object", "additionalProperties": {"$ref": "#/$defs/param"}},
         "response": {"type": "object", "additionalProperties": {"$ref": "#/$defs/correction"}},
-        "notes": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "notes": {"type": "array", "items": {"$ref": "#/$defs/note"}},
         "exclude": {
           "type": "object",
           "properties": {

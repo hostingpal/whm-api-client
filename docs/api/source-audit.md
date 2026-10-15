@@ -505,7 +505,7 @@ the behavior is recorded as an overlay note that appears in the method's PHPDoc.
 
 Every other field present matched its pinned type: `listzones`; `parse_dns_zone`
 and `parse_zone` (record, control and comment lines, all base64 fields decodable,
-with the merged-branch correction from the generation task);
+with the union branches merged by the generator);
 `resolvedomainname` (an IPv4 string); `get_nameserver_config`; `lookupnsip`;
 `is_https_available` and `is_svcb_available` on all routes; `export_zone_files`
 (one item for the one requested zone, base64 text); `fetch_ds_records_for_domains`
@@ -525,14 +525,14 @@ In the pinned WHM schema each `getzonerecord` `record[]` item is
 discriminator mapping on `type` to 19 per-type schemas (`A`, `A6`, `AAAA`, `AFSDB`,
 `ALIAS`, `CAA`, `CNAME`, `DNAME`, `DS`, `HINFO`, `LOC`, `MX`, `NS`, `PTR`, `RP`, `SOA`,
 `SRV`, `SSHFP`, `TXT`) that carry the record data (addresses, `exchange`/`preference`,
-`txtdata`, the SOA timers, and so on). The generator reads only the base schema and
-the validator drops undeclared fields, so without a correction the record data would
-be silently removed. Live verification therefore compares the observed fields against
-the rendered effective contract (the generated spec), not only against the pinned
-schema or the validated result.
+`txtdata`, the SOA timers, and so on). The validator drops undeclared fields, so a
+contract built from the base schema alone would silently remove the record data. Live
+verification therefore compares the observed fields against the rendered effective
+contract (the generated spec), not only against the pinned schema or the validated
+result.
 
-A `replace` correction (doc evidence) merges the base and every per-type field
-into one object whose 50 fields are all optional, as no field is required upstream:
+The generator expands the discriminator mapping and merges the base and every
+per-type field into one object whose 50 fields are all optional, as no field is required upstream:
 integers stay `int`, the 0/1 enums (`CAA` `flag`, `CNAME` `flatten`, `TXT`
 `unencoded`) become flags, and every other field, including `class` and
 `flatten_to`, is a string. A temporary types-only probe then requested every
@@ -564,3 +564,8 @@ account tests) plus 28 DNS tests. The offline suite passed **1,540 tests and 8,0
 assertions**, with `composer api-map:check` and `composer api-map:generate:check`
 current. These observations remain scoped to the tested server and date without
 saved revision-bound evidence.
+
+The generic merges of union branches and discriminator mappings produce the same
+specs for `getzonerecord`, `parse_dns_zone` and `parse_zone` that earlier doc-evidence
+`replace` corrections produced, so the overlay carries no `replace` for them; the
+`live` corrections above remain.

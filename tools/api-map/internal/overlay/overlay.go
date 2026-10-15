@@ -37,7 +37,10 @@ type File struct {
 
 // Operation holds per-operation decisions; zero values keep generator defaults.
 type Operation struct {
-	Name    string `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
+	// Variant selects the documented variant (by HTTP method) of an operation
+	// the map documents with several variants.
+	Variant string `json:"variant,omitempty"`
 	Method  string `json:"method,omitempty"`
 	Outcome string `json:"outcome,omitempty"`
 	Unwrap  string `json:"unwrap,omitempty"`
@@ -48,13 +51,27 @@ type Operation struct {
 	Order           []string              `json:"order,omitempty"`
 	Params          map[string]Param      `json:"params,omitempty"`
 	Response        map[string]Correction `json:"response,omitempty"`
-	Notes           []string              `json:"notes,omitempty"`
+	Notes           []Note                `json:"notes,omitempty"`
 	Exclude         *Exclusion            `json:"exclude,omitempty"`
 	Probe           json.RawMessage       `json:"probe,omitempty"`
-	// Evidence backs behaviour-changing settings: method, outcome, void,
-	// optional_payload and "sensitive": false on a parameter.
+	// Evidence backs behaviour-changing settings: variant, method, outcome,
+	// void, optional_payload, a parameter encoding and "sensitive": false on a
+	// parameter.
 	Evidence []Evidence `json:"evidence,omitempty"`
 }
+
+// Note is one line appended to the generated docblock. Kind separates facts
+// stated in the pinned documentation ("documented") from runtime behaviour
+// seen on a server ("observed", which needs live evidence), so generated PHPDoc
+// never presents a documented fact as an observation. Further kinds (such as a
+// caution channel) extend NoteKinds.
+type Note struct {
+	Kind string `json:"kind"`
+	Text string `json:"text"`
+}
+
+// NoteKinds maps each note kind to the label that starts its docblock line.
+var NoteKinds = map[string]string{"documented": "Documented", "observed": "Observed"}
 
 // Param renames, re-encodes or omits one documented parameter, keyed by wire
 // name. Omitted parameters (aliases, wildcard patterns such as MXCHECK-*) stay
@@ -112,9 +129,17 @@ type Set struct {
 	Files  []File
 }
 
-// Load reads config.json and every group file in deterministic order.
+// Load reads config.json and every group file in deterministic order. Entries
+// inside dir (config.json, the family folders and the group files) must be
+// regular files and folders, never symbolic links, so an overlay cannot pull
+// in files from outside its directory.
 func Load(dir string) (Set, error) {
 	var set Set
+	for _, name := range []string{"config.json", "uapi", "whm"} {
+		if err := rejectLink(filepath.Join(dir, name), name); err != nil {
+			return Set{}, err
+		}
+	}
 	raw, err := readLimited(filepath.Join(dir, "config.json"))
 	if err != nil {
 		return Set{}, fmt.Errorf("overlay config: %w", err)
@@ -140,6 +165,9 @@ func Load(dir string) (Set, error) {
 		}
 		sort.Strings(paths)
 		for _, path := range paths {
+			if err := rejectLink(path, family+"/"+filepath.Base(path)); err != nil {
+				return Set{}, err
+			}
 			file, err := loadFile(path)
 			if err != nil {
 				return Set{}, fmt.Errorf("%s/%s: %w", family, filepath.Base(path), err)
@@ -148,6 +176,22 @@ func Load(dir string) (Set, error) {
 		}
 	}
 	return set, nil
+}
+
+// rejectLink fails when path is a symbolic link; a missing path is left to the
+// caller (a missing family folder simply has no group files).
+func rejectLink(path, name string) error {
+	info, err := os.Lstat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("overlay entry %s is a symbolic link", name)
+	}
+	return nil
 }
 
 // requireConfigKeys accepts only the exact keys schema_version and scope, both

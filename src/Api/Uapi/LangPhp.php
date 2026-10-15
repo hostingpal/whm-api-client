@@ -39,7 +39,7 @@ final readonly class LangPhp
      *
      * This function returns a PHP version's assigned PHP handler.
      *
-     * Observed: Requires EasyApache 4 and the WebServer role.
+     * Documented: Requires EasyApache 4 and the WebServer role.
      *
      * API-map identity: uapi:LangPHP/php_get_domain_handler#GET (wire name php_get_domain_handler).
      *
@@ -49,7 +49,7 @@ final readonly class LangPhp
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/php_get_domain_handler
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_domain_handler
      */
     public function phpGetDomainHandler(string $type, ?string $vhost = null): string
     {
@@ -64,7 +64,7 @@ final readonly class LangPhp
      *
      * This function lists domains that obtain their PHP version from a specified PHP configuration.
      *
-     * Observed: Requires EasyApache 4 and the WebServer role.
+     * Documented: Requires EasyApache 4 and the WebServer role.
      *
      * API-map identity: uapi:LangPHP/php_get_impacted_domains#GET (wire name php_get_impacted_domains).
      *
@@ -76,7 +76,7 @@ final readonly class LangPhp
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/php_get_impacted_domains
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_impacted_domains
      */
     public function phpGetImpactedDomains(string|array|null $domains = null, ?bool $systemDefault = null): array
     {
@@ -94,7 +94,7 @@ final readonly class LangPhp
      *
      * This function lists the system's PHP versions.
      *
-     * Observed: Applies to EasyApache 4 systems and is disabled when the WebServer role is disabled.
+     * Documented: Applies to EasyApache 4 systems and is disabled when the WebServer role is disabled.
      *
      * API-map identity: uapi:LangPHP/php_get_installed_versions#GET (wire name php_get_installed_versions).
      *
@@ -102,7 +102,7 @@ final readonly class LangPhp
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/php_get_installed_versions
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_installed_versions
      */
     public function phpGetInstalledVersions(): array
     {
@@ -117,7 +117,7 @@ final readonly class LangPhp
      *
      * This function lists the system’s default PHP version.
      *
-     * Observed: Disabling the WebServer role disables this operation.
+     * Documented: Disabling the WebServer role disables this operation.
      *
      * API-map identity: uapi:LangPHP/php_get_system_default_version#GET (wire name php_get_system_default_version).
      *
@@ -125,7 +125,7 @@ final readonly class LangPhp
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/php_get_system_default_version
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_system_default_version
      */
     public function phpGetSystemDefaultVersion(): ?string
     {

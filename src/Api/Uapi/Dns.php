@@ -83,7 +83,7 @@ final readonly class Dns
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/ensure_domains_reside_only_locally
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-ensure_domains_reside_only_locally
      */
     public function ensureDomainsResideOnlyLocally(string|array $domains): ?array
     {
@@ -112,7 +112,7 @@ final readonly class Dns
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/ensure_domains_use_recognized_nameservers
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-ensure_domains_use_recognized_nameservers
      */
     public function ensureDomainsUseRecognizedNameservers(string|array $domains): ?array
     {
@@ -138,7 +138,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/fetch_cpanel_generated_domains
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-fetch_cpanel_generated_domains
      */
     public function fetchCpanelGeneratedDomains(string $domain): array
     {
@@ -162,7 +162,7 @@ final readonly class Dns
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/has_local_authority
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-has_local_authority
      */
     public function hasLocalAuthority(string|array $domains): array
     {
@@ -184,7 +184,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/is_alias_available
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-is_alias_available
      */
     public function isAliasAvailable(): array
     {
@@ -206,7 +206,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/is_https_available
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-is_https_available
      */
     public function isHttpsAvailable(): array
     {
@@ -229,7 +229,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/is_svcb_available
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-is_svcb_available
      */
     public function isSvcbAvailable(): array
     {
@@ -251,7 +251,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/lookup
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-lookup
      */
     public function lookup(string $domain): ?array
     {
@@ -273,7 +273,7 @@ final readonly class Dns
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/parse_zone
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-parse_zone
      */
     public function parseZone(string $zone): array
     {

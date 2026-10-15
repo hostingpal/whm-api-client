@@ -41,11 +41,51 @@ func wrap(text string, width int) []string {
 
 // shape renders a PHPStan type; objects with fields span lines indented by indent.
 func shape(spec effective.TypeSpec, indent string) string {
+	if spec.Type == "union" {
+		return unionShape(spec, indent)
+	}
 	base := baseShape(spec, indent)
 	if spec.Nullable && base != "mixed" {
 		base += "|null"
 	}
 	return base
+}
+
+// unionShape renders a union from its flattened members, each once: nested
+// unions contribute their members, nullability of any member or of the union
+// becomes a single trailing null, and a mixed member makes the union mixed.
+func unionShape(spec effective.TypeSpec, indent string) string {
+	nullable := false
+	var parts []string
+	seen := map[string]bool{}
+	mixed := false
+	var add func(option effective.TypeSpec)
+	add = func(option effective.TypeSpec) {
+		nullable = nullable || option.Nullable
+		if option.Type == "union" {
+			for _, nested := range option.AnyOf {
+				add(nested)
+			}
+			return
+		}
+		option.Nullable = false
+		part := shape(option, indent)
+		if part == "mixed" {
+			mixed = true
+		}
+		if !seen[part] {
+			seen[part] = true
+			parts = append(parts, part)
+		}
+	}
+	add(spec)
+	if mixed {
+		return "mixed"
+	}
+	if nullable {
+		parts = append(parts, "null")
+	}
+	return strings.Join(parts, "|")
 }
 
 func baseShape(spec effective.TypeSpec, indent string) string {
@@ -68,19 +108,7 @@ func baseShape(spec effective.TypeSpec, indent string) string {
 	case "map":
 		return "array<array-key, " + shape(*spec.Values, indent) + ">"
 	case "union":
-		var parts []string
-		seen := map[string]bool{}
-		for _, option := range spec.AnyOf {
-			part := shape(option, indent)
-			if part == "mixed" {
-				return "mixed"
-			}
-			if !seen[part] {
-				seen[part] = true
-				parts = append(parts, part)
-			}
-		}
-		return strings.Join(parts, "|")
+		return unionShape(spec, indent)
 	case "object":
 		// The engine returns [] for an object without declared fields.
 		if len(spec.Fields) == 0 {

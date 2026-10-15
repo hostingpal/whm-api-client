@@ -2,6 +2,7 @@ package effective
 
 import (
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 
@@ -35,6 +36,90 @@ func parsePath(path string) ([]segment, error) {
 	return segments, nil
 }
 
+// specDefects lists, with payload paths, the parts of a final spec that the
+// runtime SpecChecker rejects before every call: required names that are not
+// declared fields (possible after an overlay replace or add), and containers
+// without their element spec or branches.
+func specDefects(spec TypeSpec, path string) []string {
+	var defects []string
+	label := fmt.Sprintf("payload path %q", path)
+	if path == "" {
+		label = "the payload root"
+	}
+	switch spec.Type {
+	case "object":
+		for _, name := range spec.Required {
+			if fieldIndex(&spec, name) < 0 {
+				defects = append(defects, label+" requires undeclared field "+name)
+			}
+		}
+	case "list":
+		if spec.Items == nil {
+			defects = append(defects, label+" is a list without items")
+		}
+	case "map":
+		if spec.Values == nil {
+			defects = append(defects, label+" is a map without values")
+		}
+	case "union":
+		if len(spec.AnyOf) == 0 {
+			defects = append(defects, label+" is a union without branches")
+		}
+	}
+	for _, field := range spec.Fields {
+		child := field.Name
+		if path != "" {
+			child = path + "." + field.Name
+		}
+		defects = append(defects, specDefects(field.Spec, child)...)
+	}
+	if spec.Items != nil {
+		defects = append(defects, specDefects(*spec.Items, path+"[]")...)
+	}
+	if spec.Values != nil {
+		defects = append(defects, specDefects(*spec.Values, path+"{}")...)
+	}
+	for i, option := range spec.AnyOf {
+		for _, defect := range specDefects(option, path) {
+			defects = append(defects, fmt.Sprintf("%s (union branch %d)", defect, i+1))
+		}
+	}
+	return defects
+}
+
+// specIssues lists the unresolved issues in a spec with their payload paths,
+// in the correction path syntax; a union branch has no path of its own and is
+// named after the union's path.
+func specIssues(spec TypeSpec, path string) []string {
+	var issues []string
+	if spec.Issue != "" {
+		label := fmt.Sprintf("payload path %q", path)
+		if path == "" {
+			label = "the payload root"
+		}
+		issues = append(issues, label+" "+spec.Issue)
+	}
+	for _, field := range spec.Fields {
+		child := field.Name
+		if path != "" {
+			child = path + "." + field.Name
+		}
+		issues = append(issues, specIssues(field.Spec, child)...)
+	}
+	if spec.Items != nil {
+		issues = append(issues, specIssues(*spec.Items, path+"[]")...)
+	}
+	if spec.Values != nil {
+		issues = append(issues, specIssues(*spec.Values, path+"{}")...)
+	}
+	for i, option := range spec.AnyOf {
+		for _, issue := range specIssues(option, path) {
+			issues = append(issues, fmt.Sprintf("%s (union branch %d)", issue, i+1))
+		}
+	}
+	return issues
+}
+
 func fieldIndex(spec *TypeSpec, name string) int {
 	for i := range spec.Fields {
 		if spec.Fields[i].Name == name {
@@ -54,6 +139,16 @@ func applyCorrection(root *TypeSpec, path string, c overlay.Correction) error {
 	}
 	if c.Type != "" && !scalarTypes[c.Type] {
 		return fmt.Errorf("path %q: type %q is not a scalar type; use replace", path, c.Type)
+	}
+	if path == "" && c.Replace != nil && len(c.Accept) == 0 && c.Nullable == nil && !c.Preserve && c.Required == nil {
+		// Only a replace may address the payload root, for a documented root
+		// the engine cannot represent.
+		replacement, err := fromOverlay(path, *c.Replace)
+		if err != nil {
+			return err
+		}
+		*root = replacement
+		return nil
 	}
 	segments, err := parsePath(path)
 	if err != nil {
@@ -111,8 +206,12 @@ func applyCorrection(root *TypeSpec, path string, c overlay.Correction) error {
 	if c.Type != "" {
 		*current = TypeSpec{Type: c.Type, Nullable: current.Nullable}
 	}
-	if len(c.Accept) > 0 {
-		current.Accept = append([]string(nil), c.Accept...)
+	// accept adds wire variants; tokens the schema already implies (such as
+	// string-flag for a 0/1 enum documented as strings) are kept.
+	for _, token := range c.Accept {
+		if !slices.Contains(current.Accept, token) {
+			current.Accept = append(append([]string(nil), current.Accept...), token)
+		}
 	}
 	if c.Nullable != nil {
 		current.Nullable = *c.Nullable

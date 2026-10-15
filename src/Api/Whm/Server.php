@@ -62,7 +62,7 @@ final readonly class Server
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/getdiskusage
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/system-information/sys-getdiskusage
      */
     public function getDiskUsage(): array
     {
@@ -83,7 +83,7 @@ final readonly class Server
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/gethostname
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/system-information/sys-gethostname
      */
     public function getHostname(): string
     {
@@ -104,7 +104,7 @@ final readonly class Server
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/systemloadavg
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/system-information/cpanel-systemloadavg
      */
     public function getLoadAverage(): array
     {
@@ -125,7 +125,7 @@ final readonly class Server
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/version
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/updates/cpanel-version
      */
     public function version(): string
     {

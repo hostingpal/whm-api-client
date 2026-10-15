@@ -43,7 +43,7 @@ final readonly class Features
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/list_features
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/cpanel-features/features-list_features
      */
     public function listFeatures(): array
     {

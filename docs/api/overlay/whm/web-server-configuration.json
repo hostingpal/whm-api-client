@@ -4,12 +4,12 @@
   "group": "Web Server Configuration",
   "accessor": "webServer",
   "operations": {
-    "whm1:is_conversion_in_progress": {"unwrap": "inProgress", "notes": ["Requires the WebServer role."]},
-    "whm1:php_get_default_accounts_to_fpm": {"unwrap": "default_accounts_to_fpm", "notes": ["Requires the WebServer role."]},
-    "whm1:php_get_handlers": {"unwrap": "version_handlers", "notes": ["Requires the WebServer role."]},
-    "whm1:php_get_installed_versions": {"unwrap": "versions", "notes": ["Requires EasyApache 4 and the WebServer role."]},
-    "whm1:php_get_old_fpm_flag": {"unwrap": "old_fpm_flag", "notes": ["Requires the WebServer role."]},
-    "whm1:php_get_system_default_version": {"unwrap": "version", "notes": ["Requires EasyApache 4 and the WebServer role."]},
-    "whm1:php_get_vhosts_by_version": {"unwrap": "vhosts", "notes": ["Requires EasyApache 4 and the WebServer role."]}
+    "whm1:is_conversion_in_progress": {"unwrap": "inProgress", "notes": [{"kind": "documented", "text": "Requires the WebServer role."}]},
+    "whm1:php_get_default_accounts_to_fpm": {"unwrap": "default_accounts_to_fpm", "notes": [{"kind": "documented", "text": "Requires the WebServer role."}]},
+    "whm1:php_get_handlers": {"unwrap": "version_handlers", "notes": [{"kind": "documented", "text": "Requires the WebServer role."}]},
+    "whm1:php_get_installed_versions": {"unwrap": "versions", "notes": [{"kind": "documented", "text": "Requires EasyApache 4 and the WebServer role."}]},
+    "whm1:php_get_old_fpm_flag": {"unwrap": "old_fpm_flag", "notes": [{"kind": "documented", "text": "Requires the WebServer role."}]},
+    "whm1:php_get_system_default_version": {"unwrap": "version", "notes": [{"kind": "documented", "text": "Requires EasyApache 4 and the WebServer role."}]},
+    "whm1:php_get_vhosts_by_version": {"unwrap": "vhosts", "notes": [{"kind": "documented", "text": "Requires EasyApache 4 and the WebServer role."}]}
   }
 }

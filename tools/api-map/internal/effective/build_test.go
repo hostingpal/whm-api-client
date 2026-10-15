@@ -61,7 +61,7 @@ func TestBuildAssemblesGroupsOperationsAndParams(t *testing.T) {
 	if list.Params[0].PHP != "hideTemporaryDomains" || list.Params[0].Encoding != "bool" || list.Params[0].PHPType != "bool" {
 		t.Fatalf("params %+v", list.Params)
 	}
-	if list.SeeURL != "https://api.docs.cpanel.net/openapi/cpanel/operation/list_domains" {
+	if list.SeeURL != "https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-information/domaininfo-list_domains" {
 		t.Fatal(list.SeeURL)
 	}
 	if list.Description != "This function lists the account's domains." || list.Summary != "Return domains." {
@@ -239,10 +239,96 @@ func TestSensitiveNameDecisions(t *testing.T) {
 		{"passwd", "int", false},
 		{"notify_password_change", "flag", false},
 		{"username", "string", false},
+		// camelCase names split at case boundaries.
+		{"promptToken", "string", true},
+		{"newPassword", "string", true},
+		{"tokenName", "string", false},
+		// One-time codes documented as integers are secrets; other integers are not.
+		{"tfa_token", "int", true},
+		{"acl-passwd", "int", false},
+		{"tfa_token", "flag", false},
+		// Concatenated passphrase names (UAPI WebApp/stage and redeploy).
+		{"sshkeypass", "string", true},
+		{"showpass", "string", false},
+		// Concatenated key and code names.
+		{"privkey", "string", true},
+		{"apikey", "string", true},
+		{"api_key", "string", true},
+		{"auth_code", "string", true},
+		{"authCode", "string", true},
 	}
 	for _, c := range cases {
 		if got := sensitiveName(c.name, TypeSpec{Type: c.spec}); got != c.want {
 			t.Errorf("%s (%s): got %v", c.name, c.spec, got)
+		}
+	}
+}
+
+// addQueryParameter documents an optional query parameter on a fixture operation.
+func addQueryParameter(t *testing.T, m model.Map, id, name string, schema map[string]any) {
+	t.Helper()
+	for i := range m.Operations {
+		if m.Operations[i].ID != id {
+			continue
+		}
+		v := &m.Operations[i].Variants[0]
+		definition := model.Object{"name": name, "in": "query", "required": false, "schema": schema}
+		// A description given with the schema documents the parameter itself.
+		if description, ok := schema["description"]; ok {
+			definition["description"] = description
+		}
+		v.Parameters = append(v.Parameters, model.Parameter{
+			Name: name, In: "query", Definition: definition,
+			Locator: model.Locator{SourceID: v.OperationLocator.SourceID},
+		})
+		return
+	}
+	t.Fatalf("fixture operation %s missing", id)
+}
+
+func TestBuildRequiresSensitiveDecisionsForKeyParameters(t *testing.T) {
+	m := fixtureMap(t)
+	addQueryParameter(t, m, "whm1:createacct", "key", map[string]any{"type": "string"})
+	addQueryParameter(t, m, "whm1:createacct", "remote_access_key", map[string]any{"type": "string"})
+	addQueryParameter(t, m, "whm1:createacct", "abort_on_existing_key", map[string]any{"type": "integer", "enum": []any{0, 1}})
+	addQueryParameter(t, m, "whm1:createacct", "private_key", map[string]any{"type": "string"})
+	addQueryParameter(t, m, "whm1:createacct", "key_data", map[string]any{"type": "string"})
+	addQueryParameter(t, m, "whm1:createacct", "signature", map[string]any{"type": "string"})
+	addQueryParameter(t, m, "whm1:createacct", "json", map[string]any{"type": "string",
+		"description": "A JSON object with the code (the authorization code that the server returned) and state."})
+	_, joined := buildProblems(t, m, fixtureOverlay("listed"))
+	for _, want := range []string{
+		`whm1:createacct: parameter key may carry a secret (a key); declare "sensitive" true or false`,
+		`whm1:createacct: parameter remote_access_key may carry a secret (a key); declare "sensitive" true or false`,
+		`whm1:createacct: parameter key_data may carry a secret (a key); declare "sensitive" true or false`,
+		`whm1:createacct: parameter signature may carry a secret (a signature); declare "sensitive" true or false`,
+		`whm1:createacct: parameter json may carry a secret (an authorization code or verifier); declare "sensitive" true or false`,
+	} {
+		if !strings.Contains(joined, want) {
+			t.Errorf("missing %q in %s", want, joined)
+		}
+	}
+	for _, unwanted := range []string{"parameter abort_on_existing_key", "parameter private_key"} {
+		if strings.Contains(joined, unwanted) {
+			t.Errorf("unexpected decision request %q in %s", unwanted, joined)
+		}
+	}
+
+	yes, no := true, false
+	set := fixtureOverlay("listed")
+	op := set.Files[1].Operations["whm1:createacct"]
+	op.Params = map[string]overlay.Param{"key": {Sensitive: &no}, "remote_access_key": {Sensitive: &yes},
+		"key_data": {Sensitive: &yes}, "signature": {Sensitive: &no}, "json": {Sensitive: &yes}}
+	op.Evidence = evidence()
+	set.Files[1].Operations["whm1:createacct"] = op
+	result, joined := buildProblems(t, m, set)
+	if joined != "" {
+		t.Fatal(joined)
+	}
+	secrets := map[string]bool{"remote_access_key": true, "private_key": true, "password": true, "key_data": true, "json": true}
+	for _, p := range groupByClass(t, result, "Accounts").Operations[0].Params {
+		if want := secrets[p.Wire]; p.Sensitive != want {
+			t.Errorf("%s: sensitive %v", p.Wire, p.Sensitive)
 		}
 	}
 }
@@ -342,7 +428,7 @@ func TestBuildRejectsDocumentedRequestBodies(t *testing.T) {
 	fixtureNode(t, m, "whm1:createacct")["requestBody"] = body
 	fixtureNode(t, m, "whm1:suspendacct")["requestBody"] = body
 	result, joined := buildProblems(t, m, fixtureOverlay("listed"))
-	want := "whm1:createacct: documents a request body; exclude it until body parameters are supported"
+	want := "whm1:createacct: documents a request body that is not form-encoded; exclude it until such bodies are supported"
 	if !strings.Contains(joined, want) {
 		t.Fatalf("missing %q in %s", want, joined)
 	}
@@ -564,6 +650,60 @@ func TestApplyCorrectionReplaceRefinesDocumentedNodes(t *testing.T) {
 		err := applyCorrection(documented(), c.path, c.correction)
 		if err == nil || err.Error() != c.want {
 			t.Errorf("%s %+v: got %v, want %s", c.path, c.correction, err, c.want)
+		}
+	}
+}
+
+func TestBuildLinksCanonicalDocumentationPages(t *testing.T) {
+	result, joined := buildProblems(t, fixtureMap(t), fixtureOverlay("listed"))
+	if joined != "" {
+		t.Fatal(joined)
+	}
+	want := map[string]string{
+		"uapi:DomainInfo/primary_domain": "https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-information/domaininfo-primary_domain",
+		"whm1:createacct":                "https://api.docs.cpanel.net/specifications/whm.openapi/account-creation/accounts-createacct",
+		"whm1:listaccts":                 "https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-listaccts",
+	}
+	for _, group := range result.Groups {
+		for _, op := range group.Operations {
+			if url, ok := want[op.ID]; ok && op.SeeURL != url {
+				t.Errorf("%s: got %s, want %s", op.ID, op.SeeURL, url)
+			}
+		}
+	}
+}
+
+func TestDocumentationSlugKeepsParentheses(t *testing.T) {
+	for tag, want := range map[string]string{
+		"Spam Prevention (BoxTrapper)": "spam-prevention-(boxtrapper)",
+		"Plugin-Based Features":        "plugin-based-features",
+		"360 Monitoring":               "360-monitoring",
+		"PHP":                          "php",
+	} {
+		if got, ok := docSlug(tag); !ok || got != want {
+			t.Errorf("docSlug(%q) = %q %v, want %q", tag, got, ok, want)
+		}
+	}
+	if _, ok := docSlug("Mail & Spam"); ok {
+		t.Error("accepted a tag outside the verified slug alphabet")
+	}
+}
+
+func TestBuildReportsUnlinkableOperations(t *testing.T) {
+	m := fixtureMap(t)
+	fixtureNode(t, m, "whm1:listaccts")["tags"] = []any{"Accounts"}
+	for i := range m.Operations {
+		if m.Operations[i].ID == "whm1:createacct" {
+			m.Operations[i].Variants[0].UpstreamOperationID = nil
+		}
+	}
+	_, joined := buildProblems(t, m, fixtureOverlay("listed"))
+	for _, want := range []string{
+		"whm1:listaccts: no tag in x-tagGroups to derive the documentation link from",
+		"whm1:createacct: no upstream operation id to derive the documentation link from",
+	} {
+		if !strings.Contains(joined, want) {
+			t.Errorf("missing %q in %s", want, joined)
 		}
 	}
 }

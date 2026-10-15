@@ -76,14 +76,25 @@ Operation entries (all keys optional):
 
 - `name`: the PHP method name. Required when the function has no `_` separator,
   starts with `_`, or contains `/`; otherwise the camelCase function name is used.
+- `variant` (`GET`/`POST`): the documented variant to generate, required for an
+  operation the map documents with several variants (UAPI `WebApp/stage` and
+  `WebApp/redeploy`); it selects that variant's parameters, request body and
+  documentation link.
 - `params`, keyed by wire name: `php` renames the argument (required when the
   derived name is invalid or `this`/`result`), `encoding` is `scalar`, `bool`,
   `repeat` (repeated keys) or `numbered` (`name`, `name-1`, ...), `sensitive`
-  overrides secret detection, and `omit` drops the parameter from the signature
-  (it stays reachable through `call()`); name patterns such as `MXCHECK-*` must
-  be omitted.
+  overrides secret detection (names split at separators and case boundaries;
+  a parameter the heuristic leaves non-sensitive needs an explicit `sensitive`
+  decision when any word of its name is `key` or `signature`, or its pinned
+  description mentions an authorization code or verifier), and `omit` drops the
+  parameter from the signature (it stays reachable through `call()`); name
+  patterns such as `MXCHECK-*` must be omitted, and a required parameter cannot
+  be omitted (exclude the operation instead). A union of scalar schemas becomes
+  the union of their PHP types; an object, map or a union with a list, map or
+  object branch needs an `encoding` (or `omit`).
 - `order`: wire names moved to the front of the signature in that order;
-  required arguments always precede optional ones.
+  required arguments always precede optional ones, so an order that lists an
+  optional parameter before a required one, or an omitted parameter, is a problem.
 - `method` (`GET`/`POST`), `outcome` (`flag`, the default, or `unchecked`),
   `void` (no payload) and `unwrap` (return one documented object field; exclusive
   with `void`). Read-only operations default to GET; mutating, unknown-risk and
@@ -92,30 +103,60 @@ Operation entries (all keys optional):
   spec gains `'optional' => true`, the method's return type becomes nullable and
   it returns null in that case (other payloads are validated as usual). Needs a
   documented payload and is exclusive with `void`.
-- `evidence`: operation-level evidence, required when the entry sets `method`,
-  `outcome`, `void` or `optional_payload`, or marks a parameter
-  `"sensitive": false`.
-- `notes` (rendered as "Observed:" lines) and `probe` (stored, not read by the
-  generator).
+- `evidence`: operation-level evidence, required when the entry sets `variant`, `method`,
+  `outcome`, `void` or `optional_payload`, sets a parameter `encoding` (it
+  changes the wire request), or marks a parameter `"sensitive": false`.
+- `notes`: docblock lines, each `{"kind", "text"}`. Kind `documented` restates
+  the pinned documentation and renders as "Documented:"; kind `observed` records
+  runtime behaviour, renders as "Observed:" and needs live operation-level
+  evidence. `probe` is stored, not read by the generator.
 - `response`: corrections keyed by payload path. A path is dot-separated field
   names; `[]` steps into list items and `{}` into map values, as in `acct`,
   `acct[]`, `data{}` or `acct[].uid`; the empty path is invalid. Keys: `type`
-  (a scalar type; keeps nullability), `accept` (`numeric-string` for int and
+  (a scalar type; keeps nullability), `accept` (added to the variants the
+  schema already implies: `numeric-string` for int and
   number, `int-flag`/`string-flag` for bool, `string-flag`/`bool` for flag),
   `nullable`, `preserve` (number only), `required` (object fields only), `add`
   (a full type spec declaring an undocumented field) and `replace` (a full type
   spec replacing a documented node entirely, not combined with `type` or `add`).
   Every correction needs evidence. Type specs need their companion keys: list
-  `items`, map `values`, union `anyOf`, object `fields`.
+  `items`, map `values`, union `anyOf`, object `fields`. Only `replace` may
+  address the payload root, with the empty path.
 
-Operations that document a request body or are flagged deprecated upstream must
-be excluded. Evidence is `kind` (`doc` or `live`), `version`, `date`
+The generator reads the pinned schemas as follows. `allOf` merges its parts and
+its sibling `properties`/`required`, skipping parts that carry only annotations.
+A `oneOf`/`anyOf` branch that admits only null makes the union nullable; two or
+more object branches, and the schemas of a base schema's discriminator mapping,
+merge into one object holding every branch's fields (required only when every
+branch requires them), so the engine's first-match union rule cannot drop
+fields that only later branches declare; list and map branches likewise merge
+their elements. Inside an `allOf` a referenced base is read without expanding
+its mapping. A 0/1 enum becomes a flag (documented
+as strings, it also accepts `"0"`/`"1"`), and an enum with a null member is
+nullable. A node the engine cannot represent (`properties` beside
+`additionalProperties`) is a problem until a `replace` covers it. A 200 envelope
+that cannot be resolved is a problem until the entry declares `void`, and data
+documented in only some `oneOf`/`anyOf` envelope alternatives needs
+`optional_payload`. The rules the runtime `SpecChecker` enforces before every
+call are problems here too: every `required` name must be a declared field (also
+after `replace` or `add`), `unwrap` needs a non-nullable object payload, and a
+wire name may appear only once.
+
+The fields of a documented `application/x-www-form-urlencoded` request body
+become parameters after the query parameters (required only when the body and
+its schema require them) and force POST, which form-encodes every operation
+parameter in the body. Operations whose request body is not form-encoded
+(multipart, JSON), or whose form schema has no plain properties, and operations
+flagged deprecated upstream must be excluded. Evidence is `kind` (`doc` or `live`), `version`, `date`
 (`YYYY-MM-DD`), `note` and an optional `fingerprint`.
 
 ```bash
 go -C tools/api-map run ./cmd/api-map overlay validate --map ../../.cache/api-map/map.json --overlay ../../docs/api/overlay
 composer api-map:generate        # build the map, then write generated PHP and docs/api/coverage.md
 composer api-map:generate:check  # fail when committed generated files are stale
+# Opt-in full-surface stress render (scope "all") into a scratch directory, for
+# php -l, PHPCS and PHPStan runs over every operation; never part of the checks.
+API_MAP_STRESS_DIR="$PWD/.cache/stress" go -C tools/api-map test ./internal/cli -run TestStressRenderFullSurface
 ```
 
 `overlay validate` and `generate php` exit 0 on success, 1 on overlay problems,
@@ -129,8 +170,10 @@ and `docs/api/coverage.md` carries it after its heading; the generator recognise
 its own files by that exact line within their first 40 lines. `generate php`
 writes each file atomically (a run is atomic per file, not across files), removes
 previously generated files that are no longer produced, and never overwrites or
-removes a file without the marker. Generated files must not be edited by hand:
-change the overlay or the generator and regenerate.
+removes a file without the marker. Symbolic links are refused inside the overlay
+directory and at every generated path (folders and files beneath `--root`), so
+neither reading nor writing can leave the repository. Generated files must not
+be edited by hand: change the overlay or the generator and regenerate.
 
 ## Saved capability comparison and source drift
 
