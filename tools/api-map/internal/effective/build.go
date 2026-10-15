@@ -11,10 +11,19 @@ import (
 )
 
 var (
-	markdownLink  = regexp.MustCompile(`\[([^\]]+)\]\([^)]*\)`)
-	whitespace    = regexp.MustCompile(`\s+`)
-	blankLine     = regexp.MustCompile(`\n\s*\n`)
-	reservedNames = map[string]bool{"call": true, "responseMeta": true, "username": true, "isBridged": true, "run": true, "dispatch": true, "request": true}
+	markdownLink = regexp.MustCompile(`\[([^\]]+)\]\([^)]*\)`)
+	whitespace   = regexp.MustCompile(`\s+`)
+	blankLine    = regexp.MustCompile(`\n\s*\n`)
+	// reservedNames are the methods WhmClient and UapiClient declare or inherit
+	// from AbstractApiClient (including its final protected and private
+	// methods); a group accessor is a trait method of those handles and must
+	// not collide with them. reserved_test.go keeps the list in step with the
+	// PHP sources.
+	reservedNames = map[string]bool{
+		"call": true, "responseMeta": true, "username": true, "isBridged": true, "run": true, "dispatch": true,
+		"request": true, "beginRequest": true, "recordResponseMeta": true, "executeGet": true, "executePost": true,
+		"execute": true, "encode": true, "queryValues": true,
+	}
 	// reservedArguments are PHP variables a generated method body already uses.
 	reservedArguments = map[string]bool{"this": true, "result": true}
 )
