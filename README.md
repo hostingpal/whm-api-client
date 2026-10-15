@@ -187,7 +187,7 @@ foreach ($zone['payload'] ?? [] as $line) {
     }
 }
 
-// line_index starts at 0; getZoneRecord() takes the 1-based zone file line number.
+// line_index is 0-based; getZoneRecord() takes the 1-based line number (line_index + 1, observed below).
 $record = $client->whm()->dns()->getZoneRecord('example.com', 3);
 
 // One domain or a nonempty list, sent as repeated domain parameters; null items mean "only local".
@@ -196,14 +196,23 @@ $remote = $client->uapi('npr')->dns()->ensureDomainsResideOnlyLocally(['example.
 
 - `parseDnsZone()`/`parseZone()` and `exportZoneFiles()` return the zone's owner names,
   record data and text base64-encoded, as documented; decode with a binary-safe decoder.
-- `exportZoneFiles()`, `fetchDsRecordsForDomains()` and the two UAPI `ensure*()` checks
-  accept one name or a nonempty list (repeated parameters). DS records may include
-  DNSSEC private key material (`privatekey`); treat that result as secret.
-- `hasLocalAuthority()` records carry `error` only when the check fails and an explicit
-  `null` otherwise; `isAliasAvailable()` reports `resolver` as `null` when PowerDNS has
-  no resolver setting; `listMxRecords()` normalizes `preference` to `int` even when the
-  server sends a decimal string; `lookupNameserverIps()` returns `ipv6` as an empty
-  string when the nameserver has no IPv6 address.
+- `exportZoneFiles()`, `fetchDsRecordsForDomains()`, `hasLocalAuthority()` (WHM and
+  UAPI) and the two UAPI `ensure*()` checks accept one name or a nonempty list
+  (repeated parameters). DS records may include DNSSEC private key material
+  (`privatekey`); treat that result as secret.
+- `getZoneRecord()` returns the base fields (`Line`, `class`, `name`, `ttl`, `type`)
+  plus the documented fields of the record's type (for example `address`,
+  `exchange`/`preference`, `txtdata`, or the SOA `serial` and timers), all optional.
+- Observed on cPanel 11.138.0.15 on the test server on 2026-10-15
+  ([runtime observations](docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice)):
+  `hasLocalAuthority()` records carried `error` as an explicit `null` after a successful
+  check, although it is documented only for failures; `isAliasAvailable()` reported
+  `resolver` as `null` without a PowerDNS resolver setting; `listMxRecords()` and
+  `getZoneRecord()` received `preference` (and the SOA `serial`, `refresh`, `retry`
+  and `expire`) as decimal strings, which are normalized to `int`;
+  `lookupNameserverIps()` returned `ipv6` as an empty string for a nameserver without
+  an IPv6 address; and a `parseDnsZone()` `line_index` plus one addressed the same line
+  in `getZoneRecord()`, consistent with a 0-based index and a 1-based line number.
 - `ensureDomainsUseRecognizedNameservers()` fails as a whole when the check cannot be
   determined; treat that failure as "unknown" rather than as every domain failing.
 
