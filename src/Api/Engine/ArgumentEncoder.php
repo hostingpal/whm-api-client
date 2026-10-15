@@ -16,9 +16,9 @@ use SensitiveParameter;
  *
  * Null arguments are omitted, so an explicit null and an omitted argument send
  * the same request. Flags become 0/1, repeated and numbered lists become their
- * marker objects, and finite float scalars are sent as strings in their shortest
- * round-trip form (see float()), independent of the precision, serialize_precision
- * and locale settings. List contents are not validated here: AbstractApiClient
+ * marker objects, and finite float scalars are sent as strings that round-trip
+ * exactly (see float()), independent of the precision, serialize_precision and
+ * locale settings. List contents are not validated here: AbstractApiClient
  * validates them after clearing metadata. A non-finite float is caller input that
  * no wire form represents and is rejected here; the handles clear metadata before
  * the runner encodes arguments. An argument or encoding the spec does not declare
@@ -85,14 +85,17 @@ final class ArgumentEncoder
     }
 
     /**
-     * Encode a finite float in its shortest round-trip decimal form.
+     * Encode a finite float as a decimal string that parses back to the same float.
      *
-     * The result is what var_export() produces with the default serialize_precision
-     * of -1, computed without reading any ini or locale setting: the fewest
-     * significant digits (at most 17) that parse back to the same float, fixed
-     * notation for decimal exponents from -4 to 16 and E notation otherwise, and
-     * ".0" on an integral value. An integral float therefore stays visibly a float
-     * ("1.0", "-0.0", "1.0E+20") rather than becoming an integer string.
+     * The string uses the first precision from 1 to 16 significant digits whose
+     * correctly rounded form round-trips, and 17 digits otherwise, which always
+     * round-trips; it is computed without reading the precision, serialize_precision
+     * or locale settings. Fixed notation is used for decimal exponents from -4 to 16
+     * and E notation otherwise, and an integral value gets ".0", so an integral
+     * float stays visibly a float ("1.0", "-0.0", "1.0E+20") rather than becoming
+     * an integer string. The digit count is not always the minimum (2 ** -1017,
+     * for example, uses 17 digits where 16 would do), so the output can differ from
+     * var_export() in its last digits while denoting the same float.
      *
      * @throws InvalidArgumentException If the float is NAN or infinite.
      */

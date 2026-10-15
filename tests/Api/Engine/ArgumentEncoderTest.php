@@ -130,6 +130,21 @@ final class ArgumentEncoderTest extends TestCase
         }
     }
 
+    public function testEveryPowerOfTwoRoundTripsExactly(): void
+    {
+        $mismatches = [];
+        for ($exponent = -1074; $exponent <= 1023; $exponent++) {
+            foreach ([2.0 ** $exponent, -(2.0 ** $exponent)] as $value) {
+                $encoded = ArgumentEncoder::encode(self::PARAMS, ['ratio' => $value])['ratio'];
+                if (!is_string($encoded) || (float) $encoded !== $value) {
+                    $mismatches[] = ($value < 0 ? '-' : '') . '2 ** ' . $exponent;
+                }
+            }
+        }
+
+        self::assertSame([], $mismatches);
+    }
+
     /** @return iterable<string, array{float}> */
     public static function nonFiniteFloats(): iterable
     {
