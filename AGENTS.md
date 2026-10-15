@@ -175,11 +175,11 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
 - Generated surface details: results are arrays read with wire keys
   (`$client->uapi('npr')->domainInfo()->listDomains()['main_domain']`); omitted fields
   are absent keys and explicit nulls stay `null`. `whm()->accounts()->listAccounts()` and
-  `accountSummary()` return the `acct` record list (`accountSummary()` no longer requires
+  `accountSummary()` return the `acct` record list (`accountSummary()` does not require
   exactly one record); `hostingPlans()->listPackages()` returns the `pkg` list.
   `createAccount()`, `changePassword()` and `modifyAccount()` return `null` when the
   server sends no data (overlay `optional_payload`, engine `optional` spec key) and the
-  documented array otherwise. Positional order is preserved for
+  documented array otherwise. Overlay `order` puts the key arguments first in
   `listAccounts(search, searchtype, searchmethod, want)`, `suspendAccount(user, reason, ...)`,
   `changePackage(user, package)`, `changePassword(user, password, ...)` and
   `verifyUserHasFeature(user, feature)`; prefer named arguments. Response validation

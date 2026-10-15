@@ -249,8 +249,8 @@ access log.
   server sends no data, and the documented array otherwise.
 - `suspendAccount()`, `unsuspendAccount()`, `removeAccount()` and `changePackage()`
   return `void`.
-- Positional order is preserved for `listAccounts(search, searchtype, searchmethod,
-  want)`, `suspendAccount(user, reason, ...)`, `changePackage(user, package)`,
+- Leading arguments: `listAccounts(search, searchtype, searchmethod, want)`,
+  `suspendAccount(user, reason, ...)`, `changePackage(user, package)`,
   `changePassword(user, password, ...)` and `verifyUserHasFeature(user, feature)`.
   Prefer named arguments everywhere.
 
@@ -275,43 +275,6 @@ Parameters outside a generated method's signature (for example per-domain
 server's `uid` is accepted as the observed canonical decimal string and normalized
 to the pinned integer; see the
 [runtime observations](docs/api/source-audit.md#runtime-observations-2026-10-14).
-
-### Migrating from the earlier hand-written groups
-
-DTOs and `toArray()` are gone: read arrays with wire keys. Renamed calls:
-
-| Earlier call | Generated call |
-| --- | --- |
-| `whm()->server()->hostname()` / `loadAverage()` / `diskUsage()` | `whm()->server()->getHostname()` / `getLoadAverage()` / `getDiskUsage()` |
-| `whm()->domains()->list()` | `whm()->accounts()->getDomainInfo()` |
-| `whm()->php()->...` | `whm()->webServer()->phpGet...` (see the table above) |
-| `whm()->features()->metadata()` / `names()` / `listData()` / `lists()` / `listsByPackageType()` | `whm()->hostingPlans()->getFeatureMetadata()` / `getFeatureNames()` / `getFeaturelistData()` / `getFeaturelists()` / `getFeaturelistsByPackageTypes()` |
-| `whm()->features()->userSettings()` / `userHasFeature()` | `whm()->hostingPlans()->getUsersFeaturesSettings()` / `verifyUserHasFeature()` |
-| `whm()->accounts()->list()` / `summary()` / `packages()` | `listAccounts()` / `accountSummary()` / `whm()->hostingPlans()->listPackages()` |
-| `accounts()->create()` / `suspend()` / `unsuspend()` / `remove()` / `modify()` | `createAccount()` / `suspendAccount()` / `unsuspendAccount()` / `removeAccount()` / `modifyAccount()` |
-| `uapi()->domains()->list()` / `primary()` / `builtinAliases()` | `uapi()->domainInfo()->listDomains()` / `primaryDomain()` / `mainDomainBuiltinSubdomainAliases()` |
-| `uapi()->php()->...` | `uapi()->langPhp()->phpGet...` |
-| `uapi()->dns()->generatedDomains()` | `uapi()->dns()->fetchCpanelGeneratedDomains()` |
-| `uapi()->features()->list()` | `uapi()->features()->listFeatures()` |
-
-Boolean results (`defaultAccountsToFpm`, `isConversionInProgress`, `verifyUserHasFeature`)
-are now `0|1`, and `create`/`modify` options are named arguments instead of an options array.
-`createAccount()`, `changePassword()` and `modifyAccount()` return `null` when the server
-sends no data (and the documented array otherwise), and `accountSummary()` returns the
-`acct` record list rather than a single record.
-
-Named-argument names now follow the upstream wire names. Renames from the earlier
-signatures:
-
-| Earlier name | Generated name |
-| --- | --- |
-| `searchType`, `searchMethod` (`listAccounts`) | `searchtype`, `searchmethod` |
-| `keepDns` (`removeAccount`) | `keepdns` |
-| `onlyRootMayUnsuspend`, `leaveFtpAccountsEnabled` (`suspendAccount`) | `disallowun`, `leaveFtpAcctsEnabled` |
-| `updateDatabasePassword`, `digestAuthentication` (`changePassword`) | `dbPassUpdate`, `digestauth` |
-| `domain` (`phpGetImpactedDomains`) | `domains` |
-| `user`, `feature` (`getUsersFeaturesSettings`) | `users`, `features` |
-| `featureList` (`getFeaturelistData`) | `featurelist` |
 
 ### Generic calls
 
