@@ -2,6 +2,7 @@ package effective
 
 import (
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 
@@ -154,8 +155,12 @@ func applyCorrection(root *TypeSpec, path string, c overlay.Correction) error {
 	if c.Type != "" {
 		*current = TypeSpec{Type: c.Type, Nullable: current.Nullable}
 	}
-	if len(c.Accept) > 0 {
-		current.Accept = append([]string(nil), c.Accept...)
+	// accept adds wire variants; tokens the schema already implies (such as
+	// string-flag for a 0/1 enum documented as strings) are kept.
+	for _, token := range c.Accept {
+		if !slices.Contains(current.Accept, token) {
+			current.Accept = append(append([]string(nil), current.Accept...), token)
+		}
 	}
 	if c.Nullable != nil {
 		current.Nullable = *c.Nullable

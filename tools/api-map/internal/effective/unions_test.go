@@ -3,6 +3,8 @@ package effective
 import (
 	"strings"
 	"testing"
+
+	"github.com/hostingpal/whm-api-client/tools/api-map/internal/overlay"
 )
 
 func TestMergeObjectsCountsEachRequiredNameOncePerObject(t *testing.T) {
@@ -10,6 +12,16 @@ func TestMergeObjectsCountsEachRequiredNameOncePerObject(t *testing.T) {
 	b := TypeSpec{Type: "object", Fields: []Field{{Name: "a", Spec: TypeSpec{Type: "string"}}}}
 	if merged := mergeObjects([]TypeSpec{a, b}); len(merged.Required) != 0 {
 		t.Fatalf("a field one object requires twice became required: %+v", merged)
+	}
+}
+
+func TestApplyCorrectionMergesAcceptWithSchemaDerivedTokens(t *testing.T) {
+	root := &TypeSpec{Type: "object", Fields: []Field{{Name: "f", Spec: TypeSpec{Type: "flag", Accept: []string{"string-flag"}}}}}
+	if err := applyCorrection(root, "f", overlay.Correction{Accept: []string{"bool", "string-flag"}, Evidence: evidence()}); err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Join(root.Fields[0].Spec.Accept, ","); got != "string-flag,bool" {
+		t.Fatalf("accept %s", got)
 	}
 }
 

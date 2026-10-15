@@ -113,7 +113,8 @@ Operation entries (all keys optional):
 - `response`: corrections keyed by payload path. A path is dot-separated field
   names; `[]` steps into list items and `{}` into map values, as in `acct`,
   `acct[]`, `data{}` or `acct[].uid`; the empty path is invalid. Keys: `type`
-  (a scalar type; keeps nullability), `accept` (`numeric-string` for int and
+  (a scalar type; keeps nullability), `accept` (added to the variants the
+  schema already implies: `numeric-string` for int and
   number, `int-flag`/`string-flag` for bool, `string-flag`/`bool` for flag),
   `nullable`, `preserve` (number only), `required` (object fields only), `add`
   (a full type spec declaring an undocumented field) and `replace` (a full type
