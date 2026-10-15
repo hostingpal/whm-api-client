@@ -27,9 +27,10 @@ use Throwable;
  * exactly the account named by WHM_API_LIVE_ACCOUNT, and runs only with
  * WHM_API_LIVE=1, WHM_API_LIVE_MUTATIONS=1, WHM_API_LIVE_ACCOUNT, and
  * WHM_API_LIVE_DOMAIN set. The transport double refuses every other mutation.
- * The account must be absent before creation. If creation raises (the server may
- * have created the account before a payload or transport failure), the test checks
- * again and removes the account when it now exists, so no account is left behind.
+ * The account's absence must be confirmed before creation; any unconfirmed answer
+ * aborts the test without creating or removing anything. If creation raises (the
+ * server may have created the account before a payload or transport failure), the
+ * test checks again and removes the account only when its existence is confirmed.
  * Run it only after the owner approves the target account and server snapshot:
  * `WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_ACCOUNT=... WHM_API_LIVE_DOMAIN=...
  * vendor/bin/phpunit --testsuite live --group live-mutating`.
@@ -74,10 +75,9 @@ final class AccountLifecycleLiveTest extends TestCase
         $plan = $packages[0]['name'] ?? null;
         self::assertTrue(is_string($plan), 'A creatable package is required for the lifecycle.');
 
-        self::assertFalse(
-            self::safeOperation(fn (): bool => $this->accountExists()),
-            'The lifecycle account must not exist before the test.',
-        );
+        // accountExists() returns only on a confirmed answer, so creation starts only
+        // after the account's absence was positively confirmed.
+        self::assertFalse($this->accountExists(), 'The lifecycle account must not exist before the test.');
 
         $created = false;
         try {
@@ -91,8 +91,9 @@ final class AccountLifecycleLiveTest extends TestCase
                 );
             } catch (Throwable $error) {
                 // The server can create the account and still fail the response (payload or
-                // transport); the account was absent before, so an existing one is ours.
-                // The creation failure is reported even if this check fails as well.
+                // transport). Absence was confirmed before, so a confirmed existing account
+                // is ours; an unconfirmed check leaves $created false and removes nothing.
+                // The creation failure is reported even if this check aborts as well.
                 try {
                     $created = $this->accountExists();
                 } finally {
@@ -142,24 +143,48 @@ final class AccountLifecycleLiveTest extends TestCase
     }
 
     /**
-     * Report whether the lifecycle account exists, without failing the test.
+     * Report whether the lifecycle account exists, failing closed.
      *
-     * Only a successful summary with a record for the account counts as existing. A
-     * failed outcome or a list without a matching record counts as absent: how WHM
-     * reports an unknown account is neither pinned nor observed, so both forms are
-     * accepted. Cleanup after a failed creation therefore removes an account only on
-     * positive evidence that it now exists; other failures still fail the test.
+     * Only two answers count: a successful summary with a record for the account
+     * (exists) and a failed WHM outcome whose reason says the account does not exist
+     * (absent). Anything else (a transport, HTTP or payload failure, another API
+     * error, or a summary without the account's record) aborts the test, so it
+     * neither creates nor removes an account on an unconfirmed answer. The reason
+     * wording for an unknown account is neither pinned nor observed; a different
+     * wording aborts the test before creation instead of being read as absence.
      */
     private function accountExists(): bool
     {
         try {
             $summaries = $this->whm->accounts()->accountSummary(user: $this->account);
-        } catch (ApiErrorException) {
-            return false;
+        } catch (ApiErrorException $error) {
+            if ($error->metadata?->whmResult() === 0 && self::reportsUnknownAccount($error->errors())) {
+                return false;
+            }
+
+            self::failSafely($error);
+        } catch (Throwable $error) {
+            self::failSafely($error);
         }
 
         foreach ($summaries as $summary) {
             if (($summary['user'] ?? null) === $this->account) {
+                return true;
+            }
+        }
+
+        self::fail('The account summary neither described the lifecycle account nor reported it unknown.');
+    }
+
+    /**
+     * Recognize the upstream reason for an unknown account.
+     *
+     * @param list<string> $reasons
+     */
+    private static function reportsUnknownAccount(array $reasons): bool
+    {
+        foreach ($reasons as $reason) {
+            if (preg_match('/\bdoes not exist\b/i', $reason) === 1) {
                 return true;
             }
         }
