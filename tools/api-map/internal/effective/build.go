@@ -342,8 +342,8 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		param.PHPType, param.DocType, param.Encoding, composite = paramTypes(spec, b.schemas.enumDoc(p.Locator.SourceID, decl["schema"]))
 		param.Sensitive = sensitiveName(p.Name, spec)
 		o := ov.Params[p.Name]
-		if keyDecision(p.Name, spec, param.Sensitive) && o.Sensitive == nil {
-			b.problem(op.ID + ": parameter " + p.Name + ` may carry a key; declare "sensitive" true or false`)
+		if reason := secretDecision(p.Name, text(decl["description"]), spec, param.Sensitive); reason != "" && o.Sensitive == nil {
+			b.problem(op.ID + ": parameter " + p.Name + " may carry a secret (" + reason + `); declare "sensitive" true or false`)
 		}
 		if composite && o.Encoding == "" {
 			b.problem(op.ID + ": parameter " + p.Name + " has an object or list schema; declare its encoding or omit it")
@@ -630,6 +630,7 @@ func encodingTypes(encoding string, current Param) (string, string, string) {
 var secretWords = map[string]bool{
 	"pass": true, "passwd": true, "password": true, "passphrase": true, "secret": true,
 	"newpass": true, "oldpass": true, "privatekey": true, "passhash": true, "keypass": true, "sshkeypass": true,
+	"privkey": true, "apikey": true, "authcode": true,
 }
 
 // lowerWords splits a name at separators and case boundaries (so promptToken
@@ -665,16 +666,36 @@ func sensitiveName(name string, spec TypeSpec) bool {
 	return words[len(words)-1] == "token" || secretWords[strings.Join(words, "")]
 }
 
-// keyDecision reports whether a parameter the name heuristic leaves
-// non-sensitive ends in the word "key": private keys and remote access keys
-// share that word with setting and lookup keys, so the overlay must decide.
-func keyDecision(name string, spec TypeSpec, sensitive bool) bool {
+// decisionWords are name words that mark secrets and harmless values alike:
+// private, DNSSEC and remote access keys share "key" with setting and lookup
+// keys, and a signature may be a credential or a public checksum.
+var decisionWords = map[string]string{"key": "a key", "signature": "a signature"}
+
+// secretDescription matches pinned descriptions of OAuth secrets carried in a
+// field whose name says nothing (WHM 360Monitoring/webpros_auth_callback json).
+var secretDescription = regexp.MustCompile(`(?i)authorization code|code verifier|\bPKCE\b`)
+
+// secretDecision returns why a parameter that the name heuristic leaves
+// non-sensitive may still carry a secret, or "" when it needs no decision:
+// any decision word in its name, or a description of an authorization code
+// or verifier. The overlay must then declare "sensitive" true or false.
+func secretDecision(name, description string, spec TypeSpec, sensitive bool) string {
 	switch spec.Type {
 	case "flag", "bool", "int", "number":
-		return false
+		return ""
 	}
-	words := lowerWords(name)
-	return !sensitive && len(words) > 0 && words[len(words)-1] == "key"
+	if sensitive {
+		return ""
+	}
+	for _, word := range lowerWords(name) {
+		if reason, ok := decisionWords[word]; ok {
+			return reason
+		}
+	}
+	if secretDescription.MatchString(description) {
+		return "an authorization code or verifier"
+	}
+	return ""
 }
 
 func tagGroups(doc model.Object) map[string]string {

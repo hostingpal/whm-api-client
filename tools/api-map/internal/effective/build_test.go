@@ -250,6 +250,12 @@ func TestSensitiveNameDecisions(t *testing.T) {
 		// Concatenated passphrase names (UAPI WebApp/stage and redeploy).
 		{"sshkeypass", "string", true},
 		{"showpass", "string", false},
+		// Concatenated key and code names.
+		{"privkey", "string", true},
+		{"apikey", "string", true},
+		{"api_key", "string", true},
+		{"auth_code", "string", true},
+		{"authCode", "string", true},
 	}
 	for _, c := range cases {
 		if got := sensitiveName(c.name, TypeSpec{Type: c.spec}); got != c.want {
@@ -266,10 +272,14 @@ func addQueryParameter(t *testing.T, m model.Map, id, name string, schema map[st
 			continue
 		}
 		v := &m.Operations[i].Variants[0]
+		definition := model.Object{"name": name, "in": "query", "required": false, "schema": schema}
+		// A description given with the schema documents the parameter itself.
+		if description, ok := schema["description"]; ok {
+			definition["description"] = description
+		}
 		v.Parameters = append(v.Parameters, model.Parameter{
-			Name: name, In: "query",
-			Definition: model.Object{"name": name, "in": "query", "required": false, "schema": schema},
-			Locator:    model.Locator{SourceID: v.OperationLocator.SourceID},
+			Name: name, In: "query", Definition: definition,
+			Locator: model.Locator{SourceID: v.OperationLocator.SourceID},
 		})
 		return
 	}
@@ -282,10 +292,17 @@ func TestBuildRequiresSensitiveDecisionsForKeyParameters(t *testing.T) {
 	addQueryParameter(t, m, "whm1:createacct", "remote_access_key", map[string]any{"type": "string"})
 	addQueryParameter(t, m, "whm1:createacct", "abort_on_existing_key", map[string]any{"type": "integer", "enum": []any{0, 1}})
 	addQueryParameter(t, m, "whm1:createacct", "private_key", map[string]any{"type": "string"})
+	addQueryParameter(t, m, "whm1:createacct", "key_data", map[string]any{"type": "string"})
+	addQueryParameter(t, m, "whm1:createacct", "signature", map[string]any{"type": "string"})
+	addQueryParameter(t, m, "whm1:createacct", "json", map[string]any{"type": "string",
+		"description": "A JSON object with the code (the authorization code that the server returned) and state."})
 	_, joined := buildProblems(t, m, fixtureOverlay("listed"))
 	for _, want := range []string{
-		`whm1:createacct: parameter key may carry a key; declare "sensitive" true or false`,
-		`whm1:createacct: parameter remote_access_key may carry a key; declare "sensitive" true or false`,
+		`whm1:createacct: parameter key may carry a secret (a key); declare "sensitive" true or false`,
+		`whm1:createacct: parameter remote_access_key may carry a secret (a key); declare "sensitive" true or false`,
+		`whm1:createacct: parameter key_data may carry a secret (a key); declare "sensitive" true or false`,
+		`whm1:createacct: parameter signature may carry a secret (a signature); declare "sensitive" true or false`,
+		`whm1:createacct: parameter json may carry a secret (an authorization code or verifier); declare "sensitive" true or false`,
 	} {
 		if !strings.Contains(joined, want) {
 			t.Errorf("missing %q in %s", want, joined)
@@ -300,15 +317,17 @@ func TestBuildRequiresSensitiveDecisionsForKeyParameters(t *testing.T) {
 	yes, no := true, false
 	set := fixtureOverlay("listed")
 	op := set.Files[1].Operations["whm1:createacct"]
-	op.Params = map[string]overlay.Param{"key": {Sensitive: &no}, "remote_access_key": {Sensitive: &yes}}
+	op.Params = map[string]overlay.Param{"key": {Sensitive: &no}, "remote_access_key": {Sensitive: &yes},
+		"key_data": {Sensitive: &yes}, "signature": {Sensitive: &no}, "json": {Sensitive: &yes}}
 	op.Evidence = evidence()
 	set.Files[1].Operations["whm1:createacct"] = op
 	result, joined := buildProblems(t, m, set)
 	if joined != "" {
 		t.Fatal(joined)
 	}
+	secrets := map[string]bool{"remote_access_key": true, "private_key": true, "password": true, "key_data": true, "json": true}
 	for _, p := range groupByClass(t, result, "Accounts").Operations[0].Params {
-		if want := p.Wire == "remote_access_key" || p.Wire == "private_key" || p.Wire == "password"; p.Sensitive != want {
+		if want := secrets[p.Wire]; p.Sensitive != want {
 			t.Errorf("%s: sensitive %v", p.Wire, p.Sensitive)
 		}
 	}

@@ -84,8 +84,9 @@ Operation entries (all keys optional):
   derived name is invalid or `this`/`result`), `encoding` is `scalar`, `bool`,
   `repeat` (repeated keys) or `numbered` (`name`, `name-1`, ...), `sensitive`
   overrides secret detection (names split at separators and case boundaries;
-  a parameter whose last word is `key` and that the heuristic leaves
-  non-sensitive needs an explicit `sensitive` decision), and `omit` drops the
+  a parameter the heuristic leaves non-sensitive needs an explicit `sensitive`
+  decision when any word of its name is `key` or `signature`, or its pinned
+  description mentions an authorization code or verifier), and `omit` drops the
   parameter from the signature (it stays reachable through `call()`); name
   patterns such as `MXCHECK-*` must be omitted, and a required parameter cannot
   be omitted (exclude the operation instead). A union of scalar schemas becomes
