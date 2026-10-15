@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. Typed groups cover 61 reviewed operations: the read-only
+and cPanel UAPI surface. Typed groups cover 64 reviewed operations: the read-only
 server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -142,8 +142,8 @@ functions in `uapi()->dns()`).
 `uapi()->email()` adds read-only mailbox, mail-domain, domain-forwarder and mailbox-count
 inventory (`listPops()`, `listMailDomains()`, `listDomainForwarders()`, `countPops()`).
 Optional booleans preserve omission and explicit false; array results keep documented
-wire keys. The typed surface contains 64 operations. All four Email operations require
-the Receive Mail role; `countPops()` does not establish whether the main account is included.
+wire keys. All four Email operations require the Receive Mail role. The pinned
+`countPops()` documentation does not specify whether the main account is included.
 `whm()->call()` and `uapi()->call()` reach every other documented function
 generically. The 2026-10-13 spec's
 [scaling decision (typed core plus generic calls)](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls)
