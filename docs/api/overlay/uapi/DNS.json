@@ -11,6 +11,6 @@
     "uapi:DNS/is_https_available": {},
     "uapi:DNS/is_svcb_available": {},
     "uapi:DNS/lookup": {"name": "lookup"},
-    "uapi:DNS/parse_zone": {"response": {"[]": {"replace": {"type": "object", "fields": {"data_b64": {"type": "list", "items": {"type": "string"}}, "dname_b64": {"type": "string"}, "line_index": {"type": "int"}, "record_type": {"type": "string"}, "text_b64": {"type": "string"}, "ttl": {"type": "int"}, "type": {"type": "string"}}}, "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-15", "note": "The documented list item is a oneOf of record, control and comment objects whose fields are all optional; the generated union keeps the first matching branch and would drop text_b64 from control and comment lines, so the branches are merged into one object with every documented field optional."}]}}}
+    "uapi:DNS/parse_zone": {}
   }
 }

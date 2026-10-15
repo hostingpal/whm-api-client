@@ -556,3 +556,9 @@ the five base fields. The full explicitly opted-in read-only live suite then pas
 **74 tests and 707 assertions with no skips**, and the offline suite **1,540 tests
 and 8,001 assertions**. These observations remain scoped to the tested server and
 date without saved revision-bound evidence.
+
+Generator follow-up (2026-10-15): the generator now merges the object branches of a
+union and the schemas of a discriminator mapping generically. For `getzonerecord`,
+`parse_dns_zone` and `parse_zone` the generated spec without the doc-evidence
+`replace` corrections is identical to the spec with them, so those three corrections
+were removed; the `live` corrections above remain.
