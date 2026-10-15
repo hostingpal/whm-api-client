@@ -183,8 +183,12 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   `listAccounts(search, searchtype, searchmethod, want)`, `suspendAccount(user, reason, ...)`,
   `changePackage(user, package)`, `changePassword(user, password, ...)` and
   `verifyUserHasFeature(user, feature)`; prefer named arguments. Response validation
-  enforces pinned types, required fields and observed wire variants; documented
-  minimum/range/enum constraints are not yet enforced (bead `whm-api-client-8x0.18`).
+  enforces the effective PHP shape, required-field presence, null/omission rules
+  and evidenced wire conversions. General minimum/range/enum constraints are not
+  currently enforced; additions need explicit compatibility decisions per field
+  or reviewed family (bead `whm-api-client-8x0.18`). Preserve existing integer
+  bounds and flag rules. Combined alternatives do not establish exact JSON Schema
+  validation; one server's observed values do not define a universal closed enum.
   Load averages keep `int|float|numeric-string` to preserve precision. Feature access
   returns true for unknown feature IDs by upstream design, and disabled-list values have
   inverted meaning. Pinned contracts, observed compatibility and runtime evidence stay
@@ -271,12 +275,38 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   using the separate PHPUnit `live` group. Existing WHM root and cPanel `npr`
   tokens are supplied through `OBLAK_TEST_WHM_KEY` and `OBLAK_TEST_NPR_KEY`;
   never print or store them. No repeated permission is needed for implemented,
-  reviewed read-only operations on this test server. Mutating/destructive tests
-  still require explicit approval for specific operations and targets; snapshot
-  readiness is not confirmed. Do not automatically restore the server. The
-  approval-gated `live-mutating` lifecycle test ran with the owner's approval on
-  2026-10-15 (see `docs/api/source-audit.md`); each further run still needs explicit
-  approval for the target account and snapshot.
+  reviewed read-only operations on this test server.
+- **Standing test-account authorization (user confirmed 2026-10-15):** live tests
+  may perform any operation on explicitly designated test accounts on
+  `test.oblak.host`, including destructive operations and deletion. This covers
+  existing test accounts as well as accounts created by a run. Do not ask again
+  for each operation, target or rerun within that scope, and do not add a new
+  snapshot-confirmation gate for those account-scoped tests. Bind each recipe to
+  explicit test-account identifiers; this does not designate unrelated accounts
+  as test accounts. Keep live opt-in, target guards and cleanup checks. Server-wide
+  and lockout tests retain their separate phases; never restore the server
+  automatically. The `live-mutating` lifecycle test ran successfully on 2026-10-15
+  (see `docs/api/source-audit.md`).
+
+## Generated-client delivery
+
+- Follow the [current delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
+  The next runner slice is `8x0.10.1`, followed by the read-only Email inventory
+  slice `8x0.10.2`; the HostingPal consumer exercise `8x0.10.3` can proceed
+  independently. Runner/fingerprint artifacts are planned, not implemented.
+- Capture evidence from the same raw HTTP response before normalization and
+  unknown-field removal. Preserve the response delivered to the client; never
+  replay an operation to recover evidence. Persist only sanitized structural
+  paths/types. Dynamic and unreviewed keys are data too and must be wildcarded;
+  never log raw bodies, request secrets or arbitrary upstream error messages.
+- Keep independently authored fixture expectations and regression oracles.
+  Generation and static analysis alone do not prove upstream correctness.
+  Report generated, offline-tested and live-observed claims separately, scoped
+  by operation, actual method, route, version, revision and contract hashes.
+  Empty live lists provide no evidence about unobserved item fields.
+- Grow evidence tooling alongside useful module slices. Record batch effort and
+  discrepancies in Beads. Consumer feedback needs neither full parity, a release
+  tag nor the separate Laravel package; publication remains a separate decision.
 
 ## Documentation Requirements
 
@@ -350,14 +380,15 @@ disabled, and no retries. Missing opt-in or credentials fail before network I/O.
 Default PHPUnit, Composer checks and CI remain offline even when credentials are
 present. Keep raw live payloads, credentials and profiles outside committed fixtures.
 
-The approval-gated account lifecycle (`tests/Live/AccountLifecycleLiveTest.php`,
-group `live-mutating`) is excluded from `composer test:live`. It creates and
-removes exactly the throwaway account named by `WHM_API_LIVE_ACCOUNT` and runs only
-with `WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_ACCOUNT=<user>
-WHM_API_LIVE_DOMAIN=<domain>` after the owner approves the target and a server
-snapshot; the transport double refuses every other mutation. It ran green once with
-the owner's approval on 2026-10-15 (throwaway account on an RFC 2606 domain); every
-further run needs the same explicit approval.
+The opted-in account lifecycle (`tests/Live/AccountLifecycleLiveTest.php`, group
+`live-mutating`) is excluded from `composer test:live`. The current harness creates
+and removes exactly the throwaway account named by `WHM_API_LIVE_ACCOUNT` and runs
+only with `WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_ACCOUNT=<user>
+WHM_API_LIVE_DOMAIN=<domain>`; its transport guard refuses other mutations. Its
+creation flow requires the account to be absent first. That is a harness invariant,
+not a restriction on the standing authorization for other tests to use existing
+explicitly designated test accounts. The lifecycle ran green on 2026-10-15; runs
+within the standing test-account scope need no repeated approval.
 
 Go documentation tooling (Go 1.24+) uses a separate module and cache:
 
