@@ -461,3 +461,98 @@ order, while the generated encoder emits the restored signature order
 three parameters in the generated order; the request scope is unchanged. The full
 live suite then passed **46 tests and 329 assertions**. These observations remain
 scoped to the tested server and date without saved revision-bound evidence.
+
+## Runtime observations 2026-10-15 (DNS slice)
+
+The 21 read-only DNS operations generated from the overlay (14 WHM API 1 `DNS`
+functions and 7 UAPI `DNS` functions) were verified against `test.oblak.host`
+(server version `11.138.0.15`) through the actual PHP client and the opt-in `live`
+group, with verified TLS, redirects disabled and no retries, against the test
+account's zone `npr.rs`. The UAPI functions ran on both the direct cPanel route
+(`npr` token) and the WHM bridge. Every request was a GET approved by exact URI;
+the `getzonerecord` line and the `lookupnsip`/`lookupnsips` host were derived during
+the run from `parse_dns_zone` and `get_nameserver_config` responses and approved only
+for those values. No mutating function was called. Field types were established
+from type-only skeletons of the same approved requests made through generic
+`call()`; no payload values were recorded.
+
+Live corrections added (overlay `live` evidence, version `11.138.0.15`):
+
+| Operation | Path | Observed | Pinned | Correction |
+| --- | --- | --- | --- | --- |
+| WHM `has_local_authority` | `records[].error` | explicit `null` on a successful check | string, returned only on failure | nullable |
+| UAPI `DNS/has_local_authority` (both routes) | `[].error` | explicit `null` on a successful check | string, returned only on failure | nullable |
+| WHM `is_alias_available` | `resolver` | explicit `null` | string | nullable |
+| UAPI `DNS/is_alias_available` (both routes) | `resolver` | explicit `null` | string | nullable |
+| WHM `listmxs` | `record[].preference` | decimal string | integer | accept canonical decimal strings, normalized to `int` |
+| UAPI `DNS/ensure_domains_reside_only_locally` (both routes) | `[]` | one-item list whose item is `null` | non-nullable string items, although the data description documents `null` for a domain that only resolves locally | nullable items (doc and live evidence) |
+| WHM `getzonerecord` (added in the final review fix) | `record[].preference` (MX) | decimal string | integer | accept canonical decimal strings, normalized to `int` |
+| WHM `getzonerecord` (added in the final review fix) | `record[].serial`, `record[].refresh`, `record[].retry`, `record[].expire` (SOA) | decimal strings | integers | accept canonical decimal strings, normalized to `int` |
+
+WHM `lookupnsips` returned `ipv6` as an empty string for a nameserver without an
+IPv6 address, while the pinned description says the field is returned only when an
+IPv6 address exists. The type matches the pinned string, so no correction was made;
+the behavior is recorded as an overlay note that appears in the method's PHPDoc.
+
+Every other field present matched its pinned type: `listzones`; `parse_dns_zone`
+and `parse_zone` (record, control and comment lines, all base64 fields decodable,
+with the merged-branch correction from the generation task);
+`resolvedomainname` (an IPv4 string); `get_nameserver_config`; `lookupnsip`;
+`is_https_available` and `is_svcb_available` on all routes; `export_zone_files`
+(one item for the one requested zone, base64 text); `fetch_ds_records_for_domains`
+(one item whose `ds_records` was an empty object, as documented for a domain without
+DS records); and `ensure_domains_use_recognized_nameservers` (a one-item list with a
+`null` item, as documented). Requesting the `parse_dns_zone` `line_index` plus one
+from `getzonerecord` returned the same line (`Line` equal to the requested number,
+same record type), confirming the 0-based index and the 1-based line number.
+`listmxs` records and resource records from `parse_dns_zone`/`parse_zone` also carried
+an undocumented string field `dname_raw`, which the generated validator drops; this
+run does not establish its contract.
+
+After the corrections the full explicitly opted-in read-only live suite passed
+**74 tests and 706 assertions with no skips** (46 previous plus 28 DNS tests). The
+offline suite passed **1,512 tests and 7,757 assertions**, with `composer
+api-map:check` and `composer api-map:generate:check` current. These observations
+remain scoped to the tested server and date without saved revision-bound evidence.
+
+### `getzonerecord` record data (final review fix, 2026-10-15)
+
+The run above reported `getzonerecord` as matching its pinned type. That was wrong:
+the comparison covered only the five base fields, which were all the effective
+contract then rendered in the generated `DnsSpec` declared. In the pinned
+WHM schema each `record[]` item is `getzonerecordResponseBase` (`Line`, `class`,
+`name`, `ttl`, `type`) with a discriminator mapping on `type` to 19 per-type schemas
+(`A`, `A6`, `AAAA`, `AFSDB`, `ALIAS`, `CAA`, `CNAME`, `DNAME`, `DS`, `HINFO`, `LOC`,
+`MX`, `NS`, `PTR`, `RP`, `SOA`, `SRV`, `SSHFP`, `TXT`) that carry the record data
+(addresses, `exchange`/`preference`, `txtdata`, the SOA timers, and so on). The
+generator reads only the base schema and the validator drops undeclared fields, so
+the record data was silently removed. Live verification must therefore compare the
+observed fields against the rendered effective contract (the generated spec), not
+only against the pinned schema or the validated result.
+
+A `replace` correction (doc evidence) now merges the base and every per-type field
+into one object whose 50 fields are all optional, as no field is required upstream:
+integers stay `int`, the 0/1 enums (`CAA` `flag`, `CNAME` `flatten`, `TXT`
+`unencoded`) become flags, and every other field, including `class` and
+`flatten_to`, is a string. A temporary types-only probe then requested every
+resource-record line of the test zone through generic `call()` and through the typed
+method, recording field names and wire types only; it was deleted afterwards. The
+zone held `A`, `CNAME`, `MX`, `NS`, `SOA` and `TXT` records; other record types were
+not observed. Observed against the merged contract:
+
+- `MX` `preference` and `SOA` `serial`, `refresh`, `retry` and `expire` arrived as
+  decimal strings although pinned as integers; they gained `live` corrections that
+  accept canonical decimal strings and normalize them to `int` (table above).
+- Every other declared field present matched its merged type: the base fields,
+  `A` `address`, `CNAME` `cname`, `MX` `exchange`, `NS` `nsdname`, `SOA` `Lines`,
+  `mname` and `rname`, and `TXT` `txtdata` and the integer flag `unencoded`.
+- Undocumented fields, dropped by the validator and not established here: a string
+  `dname_raw` on every record, a decimal-string `minimum` on the `SOA` record and a
+  list `char_str_list` on `TXT` records.
+
+With the corrections the typed method validated every record line of the test zone,
+and the live test now requires the derived record to carry at least one field beyond
+the five base fields. The full explicitly opted-in read-only live suite then passed
+**74 tests and 707 assertions with no skips**, and the offline suite **1,540 tests
+and 8,001 assertions**. These observations remain scoped to the tested server and
+date without saved revision-bound evidence.

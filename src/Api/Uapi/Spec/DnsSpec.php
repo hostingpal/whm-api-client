@@ -13,6 +13,39 @@ namespace HostingPal\WhmApiClient\Api\Uapi\Spec;
  */
 final class DnsSpec
 {
+    public const ENSURE_DOMAINS_RESIDE_ONLY_LOCALLY = [
+        'function' => 'ensure_domains_reside_only_locally',
+        'module' => 'DNS',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+        ],
+        'returns' => ['type' => 'list', 'nullable' => true, 'items' => ['type' => 'string', 'nullable' => true]],
+    ];
+
+    public const ENSURE_DOMAINS_USE_RECOGNIZED_NAMESERVERS = [
+        'function' => 'ensure_domains_use_recognized_nameservers',
+        'module' => 'DNS',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'nullable' => true,
+            'items' => [
+                'type' => 'object',
+                'nullable' => true,
+                'fields' => [
+                    'message' => ['type' => 'string'],
+                    'type' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
     public const FETCH_CPANEL_GENERATED_DOMAINS = [
         'function' => 'fetch_cpanel_generated_domains',
         'module' => 'DNS',
@@ -32,6 +65,75 @@ final class DnsSpec
         ],
     ];
 
+    public const HAS_LOCAL_AUTHORITY = [
+        'function' => 'has_local_authority',
+        'module' => 'DNS',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'domain' => ['type' => 'string'],
+                    'error' => ['type' => 'string', 'nullable' => true],
+                    'local_authority' => ['type' => 'flag'],
+                    'nameservers' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    'zone' => ['type' => 'string', 'nullable' => true],
+                ],
+            ],
+        ],
+    ];
+
+    public const IS_ALIAS_AVAILABLE = [
+        'function' => 'is_alias_available',
+        'module' => 'DNS',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'alias' => ['type' => 'flag'],
+                'aname' => ['type' => 'flag'],
+                'resolver' => ['type' => 'string', 'nullable' => true],
+            ],
+        ],
+    ];
+
+    public const IS_HTTPS_AVAILABLE = [
+        'function' => 'is_https_available',
+        'module' => 'DNS',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'dns_server' => ['type' => 'string'],
+                'https' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const IS_SVCB_AVAILABLE = [
+        'function' => 'is_svcb_available',
+        'module' => 'DNS',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'dns_server' => ['type' => 'string'],
+                'svcb' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
     public const LOOKUP = [
         'function' => 'lookup',
         'module' => 'DNS',
@@ -41,5 +143,30 @@ final class DnsSpec
             'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'list', 'nullable' => true, 'items' => ['type' => 'string']],
+    ];
+
+    public const PARSE_ZONE = [
+        'function' => 'parse_zone',
+        'module' => 'DNS',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'zone' => ['name' => 'zone', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'data_b64' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    'dname_b64' => ['type' => 'string'],
+                    'line_index' => ['type' => 'int'],
+                    'record_type' => ['type' => 'string'],
+                    'text_b64' => ['type' => 'string'],
+                    'ttl' => ['type' => 'int'],
+                    'type' => ['type' => 'string'],
+                ],
+            ],
+        ],
     ];
 }
