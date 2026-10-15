@@ -147,14 +147,21 @@ documented type: for example ports and `uid` become `int`, feature flags become
 averages are the deliberate exception and keep `int|float|numeric-string` so
 precision and trailing zeros survive.
 
-Response validation enforces the pinned types, required fields and the observed
-wire variants. Documented minimum, range and enumeration constraints are not yet
-enforced (tracked as `whm-api-client-8x0.18`). Writes are validated as strictly as
-reads. A payload that differs from its contract after the envelope was accepted raises
+Response validation enforces the declared PHP types, required fields, null and
+omission rules, and explicitly accepted wire conversions. General documented
+minimum, range and enumeration constraints are not currently enforced; adding
+them requires a reviewed compatibility decision for the affected fields
+(`whm-api-client-8x0.18`). Existing integer bounds and 0/1 flag rules remain
+enforced. Some alternative response shapes are combined to preserve documented
+fields, so the client does not promise exact JSON Schema validation. Writes use
+the same payload rules as reads. A payload that differs from its contract after
+the envelope was accepted raises
 `PayloadMismatchException` (an `InvalidResponseException`) carrying the response
-metadata and the unvalidated payload; see [Errors](#errors) for retry guidance. Caveats recorded as
-observed notes (for example the EasyApache 4 and WebServer role requirement of the
-PHP operations) appear in the affected methods' PHPDoc.
+metadata and the unvalidated payload; see [Errors](#errors) for retry guidance.
+Method PHPDoc distinguishes documented requirements from observed compatibility.
+Generated coverage is separate from offline test results and live observations;
+an observation establishes only the route, server version and cases exercised.
+An empty live list does not verify the types of records it never returned.
 
 ### WHM API 1
 
@@ -463,9 +470,12 @@ with `WHM_API_LIVE=1 composer test:live -- --filter DnsLiveTest`.
 The default PHPUnit suite, `composer test`, `composer check`, and CI remain offline,
 even when live-test environment variables are set. Pair new read-only slices with
 an explicit live run on the approved test server; add reviewed routes to the live
-group as implementation grows. Mutating/destructive tests require approval for
-the specific operations and targets. Live runs do not update pinned documentation
-or the generated coverage.
+group as implementation grows. The owner has given standing authorization for
+all live-test operations on explicitly designated test accounts on
+`test.oblak.host`, including destructive operations on existing or newly created
+test accounts. Runs within that scope need no repeated permission. Explicit live
+opt-in, target guards and cleanup checks still apply; ordinary tests remain
+offline. Live runs do not update pinned documentation or the generated coverage.
 
 The PHPCS ruleset adds sorted and unused-import checks (including PHPDoc uses),
 short arrays, multiline trailing commas, consistent member and type spacing,
@@ -481,6 +491,16 @@ short summary, detailed behavior, an exact official cPanel operation link, and
 precise array shapes when they return arrays. Generated methods take their PHPDoc
 from the pinned documentation, and caveats it lacks are recorded as overlay notes.
 The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
+
+The next development milestone is a small evidence runner over existing
+read-only operations and an Email inventory slice. It will capture the same raw
+response before normalization and field filtering, persist sanitized structural
+evidence, and retain independent regression expectations. This runner and its
+fingerprint artifacts are planned, not currently available; see the
+[delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
+Real HostingPal consumer feedback can proceed against the current client before
+full API coverage or a release. Any public prerelease is a separate decision with
+an explicit coverage and compatibility statement.
 
 The development lockfile resolves dependencies against PHP 8.3. Runtime
 requirements for consumers come from `composer.json`, not this lockfile.

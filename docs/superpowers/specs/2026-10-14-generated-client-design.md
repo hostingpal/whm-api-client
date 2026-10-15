@@ -2,6 +2,9 @@
 
 Status: implemented through phase 1 (plans 1-4); design agreed with the user on
 2026-10-14.
+Delivery and validation policy refined on 2026-10-15 under
+`whm-api-client-8x0.26`. The phase-2 runner, fingerprints and consumer exercise
+below are planned work; this refinement does not claim they are implemented.
 Decision record: `whm-api-client-8x0.10`. This design supersedes the
 "typed core plus generic calls / lean pattern" scaling decision
 (`whm-api-client-8x0.7`, recorded in the
@@ -30,8 +33,12 @@ metadata and exception contracts of the PHP client design remain in force.
   deferred.
 - **Live verification of everything.** `test.oblak.host` and its live domain may
   be used for all operations, including destructive ones, because a server
-  snapshot exists. Snapshot restores are performed by the user, never
-  automatically.
+  snapshot exists. The user explicitly reaffirmed on 2026-10-15 that live tests
+  may perform any operation, including deletion, on designated test accounts,
+  whether existing or created by a run. This is standing authorization with no
+  repeated operation/target/rerun approval or account-test snapshot gate. Keep
+  server-wide and lockout phases separate. Snapshot restores are performed by the
+  user, never automatically.
 - **Unchanged constraints.** Framework-independent PHP 8.3 library, PSR-18/17
   transport, PHPStan maximum level, PSR-12 plus the selected Slevomat rules, a
   public repository (no credentials or live payload values committed), offline CI.
@@ -150,12 +157,17 @@ exception and `errors()` contracts. `call()` remains.
   the pinned type when the conversion is lossless (`"80"` → `80`, `"1"` → `1`).
   When no lossless normalization exists, the overlay widens the declared type
   instead (load averages keep `int|float|numeric-string` to preserve precision).
-- Unions become PHPStan unions of shapes; maps become `array<string, T>`; untyped
+- Scalar alternatives remain unions. Object, list and map alternatives are
+  combined to preserve their documented fields; required fields are intersected
+  across alternatives. This widens branch combinations and does not enforce
+  discriminator exclusivity. Maps become `array<array-key, T>`; untyped
   objects become `array<string, mixed>` with a docblock note until live evidence
   refines them. Recursive schemas are expanded to a depth of 8, below which the
   node is typed `array<array-key, mixed>`.
-- Unknown response fields are dropped from the result. Live fingerprints detect
-  them, and the overlay then declares them.
+- Unknown response fields are dropped from the typed result. The planned live
+  runner observes the same response before this filtering and normalization, so
+  its fingerprints can reveal extensions for review. A successful empty list
+  supplies no evidence about the types of its unobserved record fields.
 - There are no DTO classes. The existing DTOs (`AccountDomains`, `DomainInfo`,
   `ServerDomains`, `DiskPartition`, `ServerDiskUsage`, `ServerLoadAverage` and the
   WHM feature records) are retired along with `toArray()`.
@@ -168,6 +180,30 @@ documented reason:
 | Successor with the same purpose | WHM `get_available_featurelists` (→ `get_featurelists`), `read_featurelist` (→ `get_featurelist_data`), `dumpzone` (→ `parse_dns_zone`); UAPI `DCV/ensure_domains_can_pass_dcv` (→ `DCV/check_domains_via_http`) |
 | Retired mechanism | WHM `accesshash`, `get_remote_access_hash` (replaced by API tokens, not drop-in) |
 | No successor | WHM `disable_mail_sni` (always fails), `get_ecommerce`, `set_ecommerce`; UAPI `Themes/get_theme_base` (no useful output), `Sitejet/get_templates`, `Sitejet/set_template`, `SSL/check_shared_cert` |
+
+## Validation and compatibility policy
+
+The runtime guarantees the declared PHP result shape: types, required-field
+presence, omission versus explicit null, and the lossless conversions explicitly
+admitted by the effective contract. Reads and writes use the same rules. A
+successful API outcome and a valid typed payload remain separate facts.
+
+General OpenAPI minima, maxima and enums are not currently enforced. Extending
+validation is a field-level or reviewed-family decision (`whm-api-client-8x0.18`),
+not an automatic consequence of finding a keyword in the source. Each decision
+records the pinned constraint, observed representations, the consumer invariant
+it protects, and either enforcement or a documented compatibility exception.
+Existing type rules, including integer bounds and 0/1 flag validation, remain in
+force. An open string domain must not become a closed enum merely because one
+server has returned only known values.
+
+The effective contract is a typed compatibility model. Combined alternatives,
+depth limits and opaque metadata have explicit limits; do not advertise exact
+JSON Schema validation. Observations are scoped to their server version, route
+and tested cases. Keep documentation facts and runtime corrections separately
+attributed, and retain independent regression fixtures for every new constraint
+or relaxation. A generated fixture agreeing with its own generated validator is
+not sufficient evidence of upstream correctness.
 
 ## Overlay
 
@@ -190,8 +226,10 @@ Per operation it can declare:
 - **Probe recipe:** see [Live verification](#live-verification).
 
 Every correction carries evidence: its kind (`doc` or `live`), the cPanel version,
-the date and, for live evidence, the fingerprint it was derived from. An entry
-without evidence fails validation. Per-group overlay files also hold the group's
+date and rationale. Phase-1 live entries cite scoped prose observations. Phase-2
+corrections additionally cite the fingerprint they were derived from; older
+observations acquire that stronger evidence only when recaptured. An entry
+without the currently required evidence fails validation. Per-group overlay files also hold the group's
 curated accessor name (WHM) and any group-level docblock text.
 
 ## Effective contract and generator
@@ -203,10 +241,18 @@ files. Generated files carry a "generated by tools/api-map; do not edit" header.
 The generated PHP is committed so consumers never need Go; CI regenerates it and
 fails on any difference.
 
-Coverage becomes a fact of construction: every non-excluded operation in the map
-is generated. A generated coverage summary (generated, excluded with reason,
-live-verified with version and date, unverifiable with reason) replaces the
-symbol inventory, coverage registry, parity report and baseline.
+Generation is checked against the selected overlay scope. The current `listed`
+scope contains 60 operations; only a complete `all` scope establishes that every
+non-excluded operation in the map is generated. The generated coverage summary
+currently reports generated groups and exclusions. Phase 2 adds evidence-backed
+offline-test and live-observation reporting; neither is implied by generation.
+
+Report the fixed documented target alongside generated operations, tested cases,
+and live observations. A live record identifies the route, version, code revision,
+contract hashes and outcome; skipped, unsupported and failed probes carry explicit
+reasons and never count as verified success. One route, version or empty payload
+does not prove another. The summary replaces duplicate implementation registries,
+while the evidence retains these separate claims.
 
 ## Generated PHP and the runtime engine
 
@@ -283,9 +329,18 @@ linear walk of the payload. HTTP latency dominates by orders of magnitude.
 
 ## Live verification
 
-**Runner.** A development-only PHP runner in `tools/live-verify/` drives the
-generated client itself, so every probe also exercises the real code path. It
-runs only with explicit opt-in and never in CI.
+**Runner (planned).** A development-only PHP runner in `tools/live-verify/` drives
+the generated client itself. It runs only with explicit opt-in and never in CI.
+Start with the bounded slice below, then extend its recipes alongside useful
+generated modules.
+
+Observe the raw response from that same HTTP exchange before shape validation,
+normalization, field removal or unwrapping. A development transport decorator can
+provide this boundary without adding a public observation API. Capture must
+preserve the status, headers and body supplied to the client, including stream
+semantics, and must not change outcomes, exceptions or retry behavior. Never
+repeat a request through `call()` merely to obtain its raw payload. Raw bytes and
+decoded values remain in memory; only sanitized evidence leaves the process.
 
 **Probe recipes** live in the overlay, per operation: arguments (which may
 reference fixtures such as `{account}`, `{domain}`, `{mailbox}`, `{database}`),
@@ -293,16 +348,20 @@ required fixtures, phase, expected outcome (success or a known error such as a
 missing plugin), and rollback (from `x-rollback` where documented, otherwise
 explicit). Recipes are seeded from `x-codeSamples` and refined in batches.
 
-**Fixtures.** Each run creates a disposable world through the client's own
-mutating operations: a reseller and `apitest*` cPanel accounts, subdomains of the
-live test domain, mailboxes, forwarders, databases, FTP users, DNS records, cron
-jobs and API tokens. It tears them down in reverse dependency order.
+**Fixtures.** Initial read-only recipes use the already approved test account
+and resources, without creating anything. Later mutation recipes may use existing
+explicitly designated test accounts or create the disposable fixtures their batch
+requires. Record test-account designation, fixture dependencies and cleanup
+results; tear down run-created resources in reverse dependency order. A broad
+fixture world is not a prerequisite for the first evidence slice.
 
 **Phases**, classified from `x-readonly`, `x-rollback`, the risk annotations and
 an overlay override:
 
 1. **Read-only:** safe at any time.
-2. **Account-scoped mutations:** only against the run's fixtures, rolled back.
+2. **Account-scoped mutations:** any operation on explicitly designated test
+   accounts, including existing accounts and deletion, under standing user
+   authorization. Recipes declare expected final state and verify cleanup.
 3. **Server-wide settings** (tweak settings, service configuration, packages,
    feature lists): read the current value through the matching getter, change it,
    restore it.
@@ -311,25 +370,66 @@ an overlay override:
    transfers): run last and one at a time behind an explicit `--phase=lockout`
    flag. The runner then stops for the user to restore the snapshot.
 
-Hard guards in every phase: never touch accounts the run did not create, never
-revoke the runner's own token, never block the runner's own IP address.
+Bind account mutations to explicitly designated test accounts; account ownership
+by the current run is not an authorization requirement. Keep control credentials
+separate from credentials under test; never revoke the control token or block the
+controller's IP. Keep server-wide/lockout execution in its dedicated phase.
+Live opt-in and exact target checks enforce the selected
+recipe; they are not requests for renewed user permission.
 
-**Fingerprints.** Each probe records a type fingerprint: JSON paths and observed
-types (including numeric-string, empty-string, null and boolean distinctions),
-outcome, cPanel version and date. Values are never stored. Map keys collapse to
-`*` where the schema declares a map or the keys look like data (domains, email
-addresses, IP addresses, usernames). Fingerprints are committed under
-`docs/api/evidence/` and cited by overlay entries.
+**Fingerprints (planned).** Each probe records structural paths and observed
+types before conversion, preserving numeric-string, empty-string, null, boolean,
+omission and empty-container distinctions. Empty containers never imply an item
+schema. Bind evidence to the canonical operation/variant, actual request method,
+route (WHM, direct UAPI or bridge), cPanel version, timestamp, code revision and
+source/effective-contract hashes. API outcome, payload-validation result and probe
+outcome are separate fields. Changed revisions or contracts make evidence
+historical until its applicability is explicitly reassessed or the probe reruns.
 
-**Discrepancy loop.** A tool command diffs fingerprints against the effective
-contract and writes a discrepancy report with suggested overlay entries; an agent
-reviews them and commits the overlay changes with their evidence. Re-running the
-read-only sweep after a cPanel upgrade produces a drift report.
+Values, credentials, request URLs/bodies and arbitrary upstream error messages
+are never persisted. Keys can themselves contain private data: dynamic and
+unreviewed keys collapse to `*`; only schema-defined or explicitly reviewed static
+field names survive. Key-name heuristics alone are insufficient. Sanitization
+applies to reports and failure diagnostics as well as saved fingerprints.
+Fingerprints are committed under `docs/api/evidence/` and cited by overlay entries.
+No live response is copied into a fixture; synthetic fixtures use reserved data.
+
+**Discrepancy loop (planned).** Compare raw observations against the effective
+contract's accepted wire representations, including documented normalizations,
+so an admitted numeric-string does not produce a false discrepancy against an
+integer return type. Report unknown fields, missing required fields and type
+differences without silently widening the contract. Reports are deterministic;
+an agent reviews corrections and their evidence before committing an overlay
+change. Never apply corrections automatically. Re-running reviewed read-only
+recipes after a cPanel upgrade supplies version-scoped drift evidence.
 
 **Unverifiable operations** (missing plugins per `x-cpanel-plugin`, external
 services such as Market, Sitejet and 360 Monitoring, operations that need a second
 server such as transfers and clusters) are marked with a reason, generated from
 documentation alone, and flagged in the coverage summary.
+
+### First evidence slice and next batch
+
+`whm-api-client-8x0.10.1` implements the loop for WHM `version` and `systemloadavg`,
+plus UAPI `DomainInfo/list_domains` through direct and WHM-bridged routes. These
+four route-specific probes exercise existing code and require no mutations.
+Independent offline cases prove raw numeric-string and unknown-field discovery,
+response preservation, secret values and dynamic keys remaining private, and
+missing/null/empty distinctions. Retain the existing regression oracles.
+
+`whm-api-client-8x0.10.2` then adds UAPI `Email/list_pops` through that loop. The
+pinned source declares it read-only, with optional `regex`, `no_validate` and
+`skip_main` parameters. The batch includes its overlay, generated method,
+independent nonempty/empty/failure fixtures, and probes on both routes. An empty
+live result is recorded as such; unobserved record fields remain unverified.
+This is a slice of Email, not a claim of complete module coverage.
+
+Finish each batch with reviewed discrepancies or explicit unresolved cases,
+scoped coverage and a short effort record in Beads: operations added, corrections,
+reusable tooling changes and operation-specific work. Compare this effort across
+batches to test whether generation is reducing maintenance work. Broader runners,
+fixture orchestration and request-body support are added when a reviewed batch
+needs them; JSON/multipart support is still required for eventual full parity.
 
 ## Testing and quality gates
 
@@ -339,12 +439,18 @@ documentation alone, and flagged in the coverage summary.
    nullable, unions, maps, nested lists, normalization, dropped unknown fields).
 2. **Generator** (Go): golden-file tests from a fixture map and overlay, overlay
    schema and evidence validation, determinism.
-3. **Generated surface:** a few data-driven PHPUnit classes iterate one generated
-   fixture row per operation: request encoding from the probe recipe's sample
-   arguments; response validation and normalization of the documented example and
-   a synthetic payload built from the committed fingerprint; and an API failure
-   raising `ApiErrorException`.
-4. **Static:** PHPStan at maximum level and PHPCS over generated code; templates
+3. **Generated surface (phase 2):** data-driven PHPUnit classes exercise request
+   encoding, payload validation/normalization and API failures per operation.
+   Generated examples provide breadth; independently authored expectations from
+   reviewed documentation and observations remain the correctness oracle. Keep
+   existing regression tests until equivalent independent assertions are retained
+   in the data-driven suite. Do not derive every expected result from the same
+   effective contract used to generate the method and validator.
+4. **Evidence boundary (phase 2):** synthetic responses prove capture before
+   normalization/filtering, unchanged client-visible responses, safe diagnostics
+   and key sanitization, route/revision attribution and deterministic reports.
+   These checks stay offline even when credentials are present.
+5. **Static:** PHPStan at maximum level and PHPCS over generated code; templates
    must emit compliant code.
 
 CI gates: `gofmt`, `go test`, `go vet`, overlay and evidence validation,
@@ -365,21 +471,31 @@ validate`, `composer check`. No live calls.
    Phase 1 note: the hand-written endpoint tests were adapted to the generated
    groups and serve as the equivalence oracle; the per-operation fixture rows of the
    generated-surface tests come in phase 2, with the runner and fingerprints.
-2. **Runner, fingerprints and discrepancy loop.** Sweep all read-only operations
-   and correct the overlay. Retire the per-endpoint live test classes once the
-   runner covers their operations.
-3. **Generate the full surface (1,310).** Curate the separator-less names and the
-   29 WHM group names; write probe recipes in batches of one bead per UAPI module
-   or WHM group. Per-group overlay and generated files let many agent sessions
-   work in parallel worktrees without conflicts.
-4. **Mutation phases** 2 and 3 with fixtures and rollbacks; then the lockout phase
-   with the user, followed by a snapshot restore.
+2. **First evidence loop and consumer feedback.** Deliver the bounded existing-
+   operation slice, then the Email inventory slice described above. In parallel,
+   exercise a real HostingPal read-only account/domain inventory workflow with the
+   current generated client (`whm-api-client-8x0.10.3`). Identify the consumer
+   integration point and record argument, result, error-handling and testing
+   friction as focused follow-ups. This does not require a tag, full parity or
+   the separate Laravel package.
+3. **Expand toward the full surface (1,310).** Grow read-only recipes, evidence
+   and generated coverage together in reviewed batches per UAPI module or WHM
+   group. Curate names and resolve contract/request-body gaps as each batch
+   requires. Per-group files permit parallel work; the first runner is not a
+   prerequisite for unrelated consumer feedback or offline contract decisions.
+   Retire per-endpoint live classes only after their independent assertions and
+   route coverage are preserved.
+4. **Mutation phases** 2 and 3 with declared account final states, fixture cleanup
+   and server-wide rollbacks; then the lockout phase with the user, followed by a
+   snapshot restore.
 5. **Documentation.** Generate a per-group API reference to replace the README's
    per-endpoint tables, and reduce `AGENTS.md` to rules and conventions.
 
-Each phase has its own beads; phase 3 batches are created per group when the
-phase starts. The first implementation plan covers phases 0 and 1 only; later
-phases are planned when they start, using what phase 1 measures.
+Beads tracks delivery and dependencies; this document records design and
+acceptance boundaries. Plans 1-4 cover the implemented foundation. Plan only the
+next bounded runner or module slice when starting it, using the previous batch's
+evidence and effort. Keep generated, independently tested and live-observed
+progress separate throughout expansion.
 
 ## Open questions (with proposed defaults)
 
@@ -389,7 +505,11 @@ phases are planned when they start, using what phase 1 measures.
   functions against 630 documented): out of scope for generation from
   documentation; reachable through `call()`; revisit after phase 3 with
   overlay-authored contracts backed by live evidence.
-- **Releases:** no tagged release until phase 3 completes; then 0.x releases.
+- **Consumer feedback and releases:** exercise the current client in HostingPal
+  before full coverage. Full parity remains the target, but is not a prerequisite
+  for a deliberately scoped 0.x prerelease. Publishing/tagging is a separate
+  explicit decision, backed by an honest coverage statement and supported
+  route/version scope; this design change does not authorize publication.
 
 ## Risks
 
