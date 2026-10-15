@@ -24,6 +24,9 @@ use LogicException;
  *   an explicit null for a void operation.
  * - unwrap: optional string naming a field declared in an object "returns";
  *   that field of the validated object is returned.
+ * - optional: optional boolean (only with a non-null "returns"). When true, an
+ *   omitted or null data member is a valid response and the operation returns
+ *   null; any other payload is validated as usual.
  *
  * A malformed spec is a generator defect: it raises LogicException before the
  * request is dispatched, never an API or payload failure.

@@ -63,7 +63,7 @@ final class AccountsLiveTest extends TestCase
     public function testAccountListContainsTheKnownAccount(): void
     {
         $whm = $this->whm->whm();
-        $accounts = self::safeOperation(static fn (): array => $whm->accounts()->list());
+        $accounts = self::safeOperation(static fn (): array => $whm->accounts()->listAccounts());
 
         self::assertTrue(count($accounts) > 0, 'The server must list at least one account.');
         $known = false;
@@ -78,7 +78,11 @@ final class AccountsLiveTest extends TestCase
     public function testFilteredAccountListReturnsOnlyTheKnownAccount(): void
     {
         $whm = $this->whm->whm();
-        $accounts = self::safeOperation(static fn (): array => $whm->accounts()->list('npr', 'user', 'exact'));
+        $accounts = self::safeOperation(static fn (): array => $whm->accounts()->listAccounts(
+            search: 'npr',
+            searchtype: 'user',
+            searchmethod: 'exact',
+        ));
 
         self::assertTrue(count($accounts) === 1, 'An exact user search must return exactly one record.');
         self::assertTrue(($accounts[0]['user'] ?? null) === 'npr', 'The filtered record must be the known account.');
@@ -88,8 +92,10 @@ final class AccountsLiveTest extends TestCase
     public function testAccountSummaryDescribesTheKnownAccount(): void
     {
         $whm = $this->whm->whm();
-        $summary = self::safeOperation(static fn (): array => $whm->accounts()->summary('npr'));
+        $summaries = self::safeOperation(static fn (): array => $whm->accounts()->accountSummary(user: 'npr'));
 
+        self::assertTrue(count($summaries) === 1, 'A summary by user must return exactly one record.');
+        $summary = $summaries[0];
         self::assertTrue(($summary['user'] ?? null) === 'npr', 'The summary must describe the known account.');
         self::assertTrue(($summary['domain'] ?? null) === 'npr.rs', 'The summary must report the known domain.');
         self::assertTrue(is_string($summary['plan'] ?? null), 'The summary must report the account plan.');
@@ -99,8 +105,10 @@ final class AccountsLiveTest extends TestCase
     public function testPackageListIncludesTheKnownAccountPlan(): void
     {
         $whm = $this->whm->whm();
-        $plan = self::safeOperation(static fn (): mixed => $whm->accounts()->summary('npr')['plan'] ?? null);
-        $packages = self::safeOperation(static fn (): array => $whm->accounts()->packages());
+        $plan = self::safeOperation(
+            static fn (): ?string => $whm->accounts()->accountSummary(user: 'npr')[0]['plan'] ?? null,
+        );
+        $packages = self::safeOperation(static fn (): array => $whm->hostingPlans()->listPackages());
 
         self::assertTrue(count($packages) > 0, 'The server must list at least one package.');
         $names = [];

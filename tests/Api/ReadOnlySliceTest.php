@@ -60,16 +60,20 @@ final class ReadOnlySliceTest extends TestCase
     {
         [$client, $http] = $this->client(true);
         $uapi = $client->uapi();
-        self::assertSame($uapi->domains(), $uapi->domains());
+        self::assertSame($uapi->domainInfo(), $uapi->domainInfo());
         self::assertSame([], $http->getRequests());
         $http->addResponse(new Response(200, [], '{"apiversion":3,"module":"DomainInfo","func":"list_domains",'
             . '"result":{"data":' . self::DOMAINS
             . ',"status":1,"errors":null,"messages":[],"warnings":null,"metadata":{}}}'));
 
-        $domains = $uapi->domains()->list($filter);
-        self::assertSame('example.test', $domains->mainDomain);
-        self::assertSame(['www.example.test'], $domains->subDomains);
-        self::assertSame(['example.test' => 0], $domains->isTemporary);
+        $domains = $uapi->domainInfo()->listDomains($filter);
+        self::assertSame([
+            'addon_domains' => [],
+            'is_temporary' => ['example.test' => 0],
+            'main_domain' => 'example.test',
+            'parked_domains' => [],
+            'sub_domains' => ['www.example.test'],
+        ], $domains);
         $request = $http->getLastRequest();
         self::assertInstanceOf(RequestInterface::class, $request);
         self::assertSame('GET', $request->getMethod());
@@ -102,9 +106,9 @@ final class ReadOnlySliceTest extends TestCase
             . ',"errors":null,"messages":null,"warnings":null,"metadata":{}}'));
         $uapi = $client->uapi();
 
-        $domains = $uapi->domains()->list();
+        $domains = $uapi->domainInfo()->listDomains();
 
-        self::assertSame('example.test', $domains->mainDomain);
+        self::assertSame('example.test', $domains['main_domain'] ?? null);
         self::assertFalse($uapi->isBridged());
         $metadata = $uapi->responseMeta();
         self::assertNotNull($metadata);
@@ -124,6 +128,81 @@ final class ReadOnlySliceTest extends TestCase
         self::assertCount(1, $http->getRequests());
     }
 
+    public function testDomainListKeepsReviewedFieldsAndOmittedNullEmptyAndBlankValuesDistinct(): void
+    {
+        self::assertSame([
+            'addon_domains' => ['addon.example.test'],
+            'is_temporary' => ['example.test' => 0, 'temporary.example.test' => 1],
+            'main_domain' => 'example.test',
+            'parked_domains' => ['parked.example.test'],
+            'sub_domains' => ['sub.example.test'],
+        ], $this->listDomains('{"main_domain":"example.test","addon_domains":["addon.example.test"],'
+            . '"parked_domains":["parked.example.test"],"sub_domains":["sub.example.test"],'
+            . '"is_temporary":{"example.test":0,"temporary.example.test":1},"extension":{"future":true}}'));
+        self::assertSame([], $this->listDomains('{}'));
+        self::assertSame([
+            'addon_domains' => [],
+            'is_temporary' => [],
+            'main_domain' => null,
+            'parked_domains' => [],
+            'sub_domains' => [],
+        ], $this->listDomains('{"main_domain":null,"addon_domains":[],"parked_domains":[],"sub_domains":[],'
+            . '"is_temporary":{}}'));
+        self::assertSame(
+            ['addon_domains' => [''], 'main_domain' => ''],
+            $this->listDomains('{"main_domain":"","addon_domains":[""]}'),
+        );
+    }
+
+    public function testDomainListFollowsTheEngineRulesForEmptyArraysAndNumericNames(): void
+    {
+        // The engine reads an empty JSON array as an empty map and keeps numeric map names as integer keys.
+        self::assertSame(['is_temporary' => []], $this->listDomains('{"is_temporary":[]}'));
+        self::assertSame(['is_temporary' => [123 => 0]], $this->listDomains('{"is_temporary":{"123":0}}'));
+    }
+
+    #[DataProvider('invalidDomainLists')]
+    public function testDomainListRejectsMalformedKnownFieldsWithTheResponseSnapshot(string $data): void
+    {
+        [$client, $http] = $this->client(true);
+        $uapi = $client->uapi();
+        $http->addResponse(new Response(200, [], '{"result":{"status":1,"data":' . $data . '}}'));
+
+        try {
+            $uapi->domainInfo()->listDomains();
+            self::fail('Malformed domain data must not produce a result.');
+        } catch (InvalidResponseException $exception) {
+            self::assertSame($uapi->responseMeta(), $exception->metadata);
+            self::assertSame(1, $exception->metadata?->uapi['status'] ?? null);
+            self::assertStringNotContainsString('sensitive-response-value', $exception->getMessage());
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function invalidDomainLists(): iterable
+    {
+        yield 'scalar payload' => ['"sensitive-response-value"'];
+        yield 'list payload' => ['["example.test"]'];
+        yield 'integer main domain' => ['{"main_domain":1}'];
+        yield 'object main domain' => ['{"main_domain":{}}'];
+        foreach (['addon_domains', 'parked_domains', 'sub_domains'] as $field) {
+            yield 'null ' . $field => ['{"' . $field . '":null}'];
+            yield 'scalar ' . $field => ['{"' . $field . '":"sensitive-response-value"}'];
+            yield 'object ' . $field => ['{"' . $field . '":{}}'];
+            yield 'keyed ' . $field => ['{"' . $field . '":{"domain":"example.test"}}'];
+            yield 'null item in ' . $field => ['{"' . $field . '":[null]}'];
+            yield 'integer item in ' . $field => ['{"' . $field . '":[1]}'];
+            yield 'nested item in ' . $field => ['{"' . $field . '":[["example.test"]]}'];
+        }
+        yield 'null temporary map' => ['{"is_temporary":null}'];
+        yield 'scalar temporary map' => ['{"is_temporary":"example.test"}'];
+        yield 'list temporary map' => ['{"is_temporary":[0]}'];
+        foreach (['false', '"0"', '1.0', '2', '-1', 'null', '[]'] as $flag) {
+            yield 'temporary flag ' . $flag => ['{"is_temporary":{"example.test":' . $flag . '}}'];
+        }
+    }
+
     public function testBridgeRetainsBothEnvelopesAndSelectedAccountIsolation(): void
     {
         [$client, $http] = $this->client();
@@ -137,7 +216,7 @@ final class ReadOnlySliceTest extends TestCase
             . ',"status":1,"warnings":["notice"],"errors":null,"messages":null,"metadata":{"transformed":0}}}}',
         ));
 
-        self::assertSame('example.test', $npr->domains()->list(false)->mainDomain);
+        self::assertSame('example.test', $npr->domainInfo()->listDomains(false)['main_domain'] ?? null);
         $request = $http->getLastRequest();
         self::assertInstanceOf(RequestInterface::class, $request);
         self::assertSame(
@@ -173,13 +252,13 @@ final class ReadOnlySliceTest extends TestCase
             ? ($direct ? '{"result":{"status":1,"data":{}}}'
                 : '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":{}}}}')
             : self::VERSION));
-        $uapi ? $client->uapi('npr')->domains()->list() : $client->whm()->server()->version();
+        $uapi ? $client->uapi('npr')->domainInfo()->listDomains() : $client->whm()->server()->version();
         $retained = $handle->responseMeta();
         self::assertNotNull($retained);
         $http->addResponse(new Response($httpStatus, [], $body));
 
         try {
-            $uapi ? $client->uapi('npr')->domains()->list() : $client->whm()->server()->version();
+            $uapi ? $client->uapi('npr')->domainInfo()->listDomains() : $client->whm()->server()->version();
             self::fail('Expected an API client exception.');
         } catch (ApiException $exception) {
             self::assertInstanceOf($exceptionClass, $exception);
@@ -384,6 +463,19 @@ final class ReadOnlySliceTest extends TestCase
             self::assertSame(1, $retained?->whm['result'] ?? null);
         }
         self::assertCount(2, $http->getRequests());
+    }
+
+    /**
+     * Execute direct DomainInfo/list_domains against one successful envelope carrying the payload.
+     *
+     * @return array<string, mixed>
+     */
+    private function listDomains(string $data): array
+    {
+        [$client, $http] = $this->client(true);
+        $http->addResponse(new Response(200, [], '{"result":{"status":1,"data":' . $data . '}}'));
+
+        return $client->uapi()->domainInfo()->listDomains();
     }
 
     /** @return array{Client, MockClient} */

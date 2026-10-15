@@ -148,6 +148,8 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		SeeURL:      seeURL(op),
 		Notes:       ov.Notes,
 		Unwrap:      ov.Unwrap,
+
+		OptionalPayload: ov.OptionalPayload,
 	}
 	if strings.TrimSuffix(result.Description, ".") == strings.TrimSuffix(result.Summary, ".") {
 		result.Description = ""
@@ -174,6 +176,9 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	}
 	if ov.Unwrap != "" && (returns == nil || returns.Type != "object" || fieldIndex(returns, ov.Unwrap) < 0) {
 		b.problem(op.ID + ": unwrap field " + ov.Unwrap + " is not a documented object field")
+	}
+	if ov.OptionalPayload && returns == nil {
+		b.problem(op.ID + ": optional_payload needs a documented payload")
 	}
 	result.Returns = returns
 	return result, b.groupOf(op, v, node), true

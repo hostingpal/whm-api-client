@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "SSL",
+  "operations": {
+    "uapi:SSL/check_shared_cert": {"exclude": {"reason": "Deprecated without a successor.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true."}]}}
+  }
+}

@@ -88,8 +88,13 @@ Operation entries (all keys optional):
   `void` (no payload) and `unwrap` (return one documented object field; exclusive
   with `void`). Read-only operations default to GET; mutating, unknown-risk and
   secret-bearing ones default to POST, and GET is refused for secret-bearing ones.
+- `optional_payload`: an omitted or null `data` member is a valid response; the
+  spec gains `'optional' => true`, the method's return type becomes nullable and
+  it returns null in that case (other payloads are validated as usual). Needs a
+  documented payload and is exclusive with `void`.
 - `evidence`: operation-level evidence, required when the entry sets `method`,
-  `outcome` or `void`, or marks a parameter `"sensitive": false`.
+  `outcome`, `void` or `optional_payload`, or marks a parameter
+  `"sensitive": false`.
 - `notes` (rendered as "Observed:" lines) and `probe` (stored, not read by the
   generator).
 - `response`: corrections keyed by payload path. A path is dot-separated field

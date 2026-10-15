@@ -25,22 +25,22 @@ final class WhmPhpTest extends TestCase
     /** @return iterable<string, array{string, string, string, mixed, string}> */
     public static function operations(): iterable
     {
-        yield 'versions' => ['listVersions', 'php_get_installed_versions',
+        yield 'versions' => ['phpGetInstalledVersions', 'php_get_installed_versions',
             '{"versions":["ea-php82","custom-php-8.4+vendor","ea-php82"]}',
             ['ea-php82', 'custom-php-8.4+vendor', 'ea-php82'], ''];
-        yield 'system default' => ['systemDefaultVersion', 'php_get_system_default_version',
+        yield 'system default' => ['phpGetSystemDefaultVersion', 'php_get_system_default_version',
             '{"version":"custom-php-8.4+vendor"}', 'custom-php-8.4+vendor', ''];
-        yield 'handlers' => ['handlers', 'php_get_handlers',
+        yield 'handlers' => ['phpGetHandlers', 'php_get_handlers',
             '{"version_handlers":[{"available_handlers":["cgi","none","suphp","dso"],'
                 . '"current_handler":"suphp","version":"ea-php82"}]}',
             [['available_handlers' => ['cgi', 'none', 'suphp', 'dso'],
                 'current_handler' => 'suphp', 'version' => 'ea-php82']], ''];
-        yield 'new account FPM' => ['defaultAccountsToFpm', 'php_get_default_accounts_to_fpm',
-            '{"default_accounts_to_fpm":0}', false, ''];
-        yield 'old FPM flag' => ['oldFpmFlag', 'php_get_old_fpm_flag', '{"old_fpm_flag":2}', 2, ''];
+        yield 'new account FPM' => ['phpGetDefaultAccountsToFpm', 'php_get_default_accounts_to_fpm',
+            '{"default_accounts_to_fpm":0}', 0, ''];
+        yield 'old FPM flag' => ['phpGetOldFpmFlag', 'php_get_old_fpm_flag', '{"old_fpm_flag":2}', 2, ''];
         yield 'conversion progress' => ['isConversionInProgress', 'is_conversion_in_progress',
-            '{"inProgress":0}', false, ''];
-        yield 'virtual hosts' => ['vhostsByVersion', 'php_get_vhosts_by_version',
+            '{"inProgress":0}', 0, ''];
+        yield 'virtual hosts' => ['phpGetVhostsByVersion', 'php_get_vhosts_by_version',
             '{"vhosts":["example.test","sub.example.test"]}',
             ['example.test', 'sub.example.test'], '&version=custom-php%2Bvendor'];
     }
@@ -55,8 +55,8 @@ final class WhmPhpTest extends TestCase
     ): void {
         [$client, $http] = self::client();
         $whm = $client->whm();
-        $php = $whm->php();
-        self::assertSame($php, $whm->php());
+        $webServer = $whm->webServer();
+        self::assertSame($webServer, $whm->webServer());
         self::assertSame([], $http->getRequests());
         $http->addResponse(new Response(200, [], self::response($operation, $data)));
 
@@ -94,7 +94,7 @@ final class WhmPhpTest extends TestCase
 
             self::assertSame(
                 [[], ['available_handlers' => []], ['current_handler' => 'none'], ['version' => 'custom-php+vendor']],
-                $client->whm()->php()->handlers($version),
+                $client->whm()->webServer()->phpGetHandlers($version),
             );
             $request = $http->getLastRequest();
             self::assertInstanceOf(RequestInterface::class, $request);
@@ -119,7 +119,7 @@ final class WhmPhpTest extends TestCase
             'available_handlers' => ['cgi', 'lsapi', 'none', 'suphp'],
             'current_handler' => 'lsapi',
             'version' => 'ea-php84',
-        ]], $client->whm()->php()->handlers());
+        ]], $client->whm()->webServer()->phpGetHandlers());
         self::assertSame(200, $client->whm()->responseMeta()?->httpStatus);
         self::assertSame(1, $client->whm()->responseMeta()->whm['result'] ?? null);
         self::assertCount(1, $http->getRequests());
@@ -128,20 +128,20 @@ final class WhmPhpTest extends TestCase
     /** @return iterable<string, array{string, string, string, mixed}> */
     public static function boundaryPayloads(): iterable
     {
-        yield 'empty versions' => ['listVersions', 'php_get_installed_versions', '{"versions":[]}', []];
-        yield 'empty default version' => ['systemDefaultVersion', 'php_get_system_default_version',
+        yield 'empty versions' => ['phpGetInstalledVersions', 'php_get_installed_versions', '{"versions":[]}', []];
+        yield 'empty default version' => ['phpGetSystemDefaultVersion', 'php_get_system_default_version',
             '{"version":""}', ''];
-        yield 'empty handlers' => ['handlers', 'php_get_handlers', '{"version_handlers":[]}', []];
-        yield 'empty vhosts' => ['vhostsByVersion', 'php_get_vhosts_by_version', '{"vhosts":[]}', []];
+        yield 'empty handlers' => ['phpGetHandlers', 'php_get_handlers', '{"version_handlers":[]}', []];
+        yield 'empty vhosts' => ['phpGetVhostsByVersion', 'php_get_vhosts_by_version', '{"vhosts":[]}', []];
         foreach ([0, 1] as $flag) {
-            yield 'new account flag ' . $flag => ['defaultAccountsToFpm', 'php_get_default_accounts_to_fpm',
-                '{"default_accounts_to_fpm":' . $flag . '}', $flag === 1];
+            yield 'new account flag ' . $flag => ['phpGetDefaultAccountsToFpm', 'php_get_default_accounts_to_fpm',
+                '{"default_accounts_to_fpm":' . $flag . '}', $flag];
             yield 'conversion flag ' . $flag => ['isConversionInProgress', 'is_conversion_in_progress',
-                '{"inProgress":' . $flag . '}', $flag === 1];
+                '{"inProgress":' . $flag . '}', $flag];
         }
         foreach ([0, 1, 2] as $flag) {
             yield 'old flag ' . $flag => [
-                'oldFpmFlag', 'php_get_old_fpm_flag', '{"old_fpm_flag":' . $flag . '}', $flag,
+                'phpGetOldFpmFlag', 'php_get_old_fpm_flag', '{"old_fpm_flag":' . $flag . '}', $flag,
             ];
         }
     }
@@ -162,33 +162,80 @@ final class WhmPhpTest extends TestCase
     public static function invalidPayloads(): iterable
     {
         $fields = [
-            ['listVersions', 'php_get_installed_versions', 'versions'],
-            ['systemDefaultVersion', 'php_get_system_default_version', 'version'],
-            ['handlers', 'php_get_handlers', 'version_handlers'],
-            ['defaultAccountsToFpm', 'php_get_default_accounts_to_fpm', 'default_accounts_to_fpm'],
-            ['oldFpmFlag', 'php_get_old_fpm_flag', 'old_fpm_flag'],
+            ['phpGetInstalledVersions', 'php_get_installed_versions', 'versions'],
+            ['phpGetSystemDefaultVersion', 'php_get_system_default_version', 'version'],
+            ['phpGetHandlers', 'php_get_handlers', 'version_handlers'],
+            ['phpGetDefaultAccountsToFpm', 'php_get_default_accounts_to_fpm', 'default_accounts_to_fpm'],
+            ['phpGetOldFpmFlag', 'php_get_old_fpm_flag', 'old_fpm_flag'],
             ['isConversionInProgress', 'is_conversion_in_progress', 'inProgress'],
-            ['vhostsByVersion', 'php_get_vhosts_by_version', 'vhosts'],
+            ['phpGetVhostsByVersion', 'php_get_vhosts_by_version', 'vhosts'],
         ];
         foreach ($fields as [$method, $operation, $field]) {
             foreach (['null', '[]', '"payload"', '{}', '{"' . $field . '":null}'] as $data) {
                 yield $method . ' data ' . $data => [$method, $operation, $data];
             }
             $invalid = match ($method) {
-                'listVersions', 'vhostsByVersion' => ['{}', '"value"', '[1]', '[null]', '[false]', '[[]]'],
-                'systemDefaultVersion' => ['1', 'true', '[]', '{}'],
-                'handlers' => ['{}', '"value"', '[false]', '[[]]', '[null]',
+                'phpGetInstalledVersions', 'phpGetVhostsByVersion' => [
+                    '{}', '"value"', '[1]', '[null]', '[false]', '[[]]',
+                ],
+                'phpGetSystemDefaultVersion' => ['1', 'true', '[]', '{}'],
+                'phpGetHandlers' => ['{}', '"value"', '[false]', '[null]', '["suphp"]',
                     '[{"available_handlers":null}]', '[{"available_handlers":{}}]',
-                    '[{"available_handlers":["fpm"]}]', '[{"available_handlers":[1]}]',
-                    '[{"current_handler":"fpm"}]', '[{"current_handler":null}]',
+                    '[{"available_handlers":[1]}]', '[{"available_handlers":[null]}]',
+                    '[{"current_handler":1}]', '[{"current_handler":null}]',
                     '[{"version":42}]', '[{"version":null}]'],
-                'oldFpmFlag' => ['-1', '3', '"1"', '1.0', 'true', '[]', '{}'],
+                'phpGetOldFpmFlag' => ['"1"', '1.0', 'true', 'null', '[]', '{}'],
                 default => ['-1', '2', '"1"', '1.0', 'true', '[]', '{}'],
             };
             foreach ($invalid as $value) {
                 yield $method . ' field ' . $value => [$method, $operation, '{"' . $field . '":' . $value . '}'];
             }
         }
+    }
+
+    public function testEmptyJsonArrayHandlerRecordIsAnEmptyObject(): void
+    {
+        // The engine reads an empty JSON array as an empty object when no field is required.
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::response('php_get_handlers', '{"version_handlers":[[]]}')));
+
+        self::assertSame([[]], $client->whm()->webServer()->phpGetHandlers());
+    }
+
+    /** @return iterable<string, array{string, string, string, mixed}> */
+    public static function deferredRangeChecks(): iterable
+    {
+        yield 'old FPM flag below the pinned enum' => [
+            'phpGetOldFpmFlag', 'php_get_old_fpm_flag', '{"old_fpm_flag":-1}', -1,
+        ];
+        yield 'old FPM flag above the pinned enum' => [
+            'phpGetOldFpmFlag', 'php_get_old_fpm_flag', '{"old_fpm_flag":3}', 3,
+        ];
+        yield 'available handler outside the pinned enum' => [
+            'phpGetHandlers', 'php_get_handlers', '{"version_handlers":[{"available_handlers":["fpm"]}]}',
+            [['available_handlers' => ['fpm']]],
+        ];
+        yield 'current handler outside the pinned enum' => [
+            'phpGetHandlers', 'php_get_handlers', '{"version_handlers":[{"current_handler":"fpm"}]}',
+            [['current_handler' => 'fpm']],
+        ];
+    }
+
+    /**
+     * The deleted hand-written group rejected these values. Minimum/range enforcement is deferred to bead
+     * whm-api-client-8x0.18, so the generated engine validates only their types.
+     */
+    #[DataProvider('deferredRangeChecks')]
+    public function testRangeAndEnumChecksAreDeferredToTypeValidation(
+        string $method,
+        string $operation,
+        string $data,
+        mixed $expected,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::response($operation, $data)));
+
+        self::assertSame($expected, self::invoke($client, $method));
     }
 
     #[DataProvider('invalidPayloads')]
@@ -236,7 +283,7 @@ final class WhmPhpTest extends TestCase
     ): void {
         [$client, $http] = self::client();
         $http->addResponse(new Response(200, [], self::response('php_get_installed_versions', '{"versions":[]}')));
-        $client->whm()->php()->listVersions();
+        $client->whm()->webServer()->phpGetInstalledVersions();
         $retained = $client->whm()->responseMeta();
         $http->addResponse(new Response($status, [], $body));
         try {
@@ -285,9 +332,9 @@ final class WhmPhpTest extends TestCase
 
     private static function invoke(Client $client, string $method): mixed
     {
-        return $method === 'vhostsByVersion'
-            ? $client->whm()->php()->vhostsByVersion('custom-php+vendor')
-            : $client->whm()->php()->{$method}();
+        return $method === 'phpGetVhostsByVersion'
+            ? $client->whm()->webServer()->phpGetVhostsByVersion('custom-php+vendor')
+            : $client->whm()->webServer()->{$method}();
     }
 
     private static function response(string $operation, string $data): string

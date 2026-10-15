@@ -8,9 +8,6 @@ use Closure;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
-use HostingPal\WhmApiClient\Response\FeatureCatalog;
-use HostingPal\WhmApiClient\Response\FeatureListData;
-use HostingPal\WhmApiClient\Response\UserFeatureSettings;
 use HostingPal\WhmApiClient\Tests\Support\LiveCurlClient;
 use HostingPal\WhmApiClient\Tests\Support\LiveTestEnvironment;
 use HostingPal\WhmApiClient\UapiClient;
@@ -40,26 +37,32 @@ final class InventoryLiveTest extends TestCase
     /** @return iterable<string, array{Closure(WhmClient): mixed}> */
     public static function whmOperations(): iterable
     {
-        yield 'feature metadata' => [static fn (WhmClient $whm): FeatureCatalog => $whm->features()->metadata()];
-        yield 'feature names' => [static fn (WhmClient $whm): array => $whm->features()->names()];
+        yield 'feature metadata' => [static fn (WhmClient $whm): array => $whm->hostingPlans()->getFeatureMetadata()];
+        yield 'feature names' => [static fn (WhmClient $whm): array => $whm->hostingPlans()->getFeatureNames()];
         yield 'feature list data' => [
-            static fn (WhmClient $whm): FeatureListData => $whm->features()->listData('default'),
+            static fn (WhmClient $whm): array => $whm->hostingPlans()->getFeaturelistData('default'),
         ];
-        yield 'feature lists' => [static fn (WhmClient $whm): array => $whm->features()->lists()];
-        yield 'feature package types' => [static fn (WhmClient $whm): array => $whm->features()->listsByPackageType()];
+        yield 'feature lists' => [static fn (WhmClient $whm): array => $whm->hostingPlans()->getFeaturelists()];
+        yield 'feature package types' => [
+            static fn (WhmClient $whm): array => $whm->hostingPlans()->getFeaturelistsByPackageTypes(),
+        ];
         yield 'user feature settings' => [
-            static fn (WhmClient $whm): UserFeatureSettings => $whm->features()->userSettings('npr', 'autossl'),
+            static fn (WhmClient $whm): array => $whm->hostingPlans()->getUsersFeaturesSettings('npr', 'autossl'),
         ];
         yield 'user feature access' => [
-            static fn (WhmClient $whm): bool => $whm->features()->userHasFeature('npr', 'autossl'),
+            static fn (WhmClient $whm): int => $whm->hostingPlans()->verifyUserHasFeature('npr', 'autossl'),
         ];
-        yield 'PHP versions' => [static fn (WhmClient $whm): array => $whm->php()->listVersions()];
-        yield 'default PHP version' => [static fn (WhmClient $whm): string => $whm->php()->systemDefaultVersion()];
-        yield 'PHP handlers' => [static fn (WhmClient $whm): array => $whm->php()->handlers()];
-        yield 'default FPM' => [static fn (WhmClient $whm): bool => $whm->php()->defaultAccountsToFpm()];
-        yield 'old FPM flag' => [static fn (WhmClient $whm): int => $whm->php()->oldFpmFlag()];
-        yield 'FPM conversion' => [static fn (WhmClient $whm): bool => $whm->php()->isConversionInProgress()];
-        yield 'PHP vhosts' => [static fn (WhmClient $whm): array => $whm->php()->vhostsByVersion('ea-php82')];
+        yield 'PHP versions' => [static fn (WhmClient $whm): array => $whm->webServer()->phpGetInstalledVersions()];
+        yield 'default PHP version' => [
+            static fn (WhmClient $whm): string => $whm->webServer()->phpGetSystemDefaultVersion(),
+        ];
+        yield 'PHP handlers' => [static fn (WhmClient $whm): array => $whm->webServer()->phpGetHandlers()];
+        yield 'default FPM' => [static fn (WhmClient $whm): int => $whm->webServer()->phpGetDefaultAccountsToFpm()];
+        yield 'old FPM flag' => [static fn (WhmClient $whm): int => $whm->webServer()->phpGetOldFpmFlag()];
+        yield 'FPM conversion' => [static fn (WhmClient $whm): int => $whm->webServer()->isConversionInProgress()];
+        yield 'PHP vhosts' => [
+            static fn (WhmClient $whm): array => $whm->webServer()->phpGetVhostsByVersion('ea-php82'),
+        ];
     }
 
     /** @param Closure(UapiClient): mixed $operation */
@@ -86,14 +89,17 @@ final class InventoryLiveTest extends TestCase
     public static function uapiOperations(): iterable
     {
         $operations = [
-            'primary domain' => static fn (UapiClient $api): ?string => $api->domains()->primary(),
-            'builtin aliases' => static fn (UapiClient $api): array => $api->domains()->builtinAliases(),
-            'default PHP' => static fn (UapiClient $api): ?string => $api->php()->systemDefaultVersion(),
-            'PHP handler' => static fn (UapiClient $api): string => $api->php()->domainHandler('home'),
-            'impacted domains' => static fn (UapiClient $api): array => $api->php()->impactedDomains('npr.rs'),
-            'features' => static fn (UapiClient $api): array => $api->features()->list(),
+            'primary domain' => static fn (UapiClient $api): ?string => $api->domainInfo()->primaryDomain(),
+            'builtin aliases' => static fn (UapiClient $api): array
+                => $api->domainInfo()->mainDomainBuiltinSubdomainAliases(),
+            'default PHP' => static fn (UapiClient $api): ?string => $api->langPhp()->phpGetSystemDefaultVersion(),
+            'PHP handler' => static fn (UapiClient $api): string => $api->langPhp()->phpGetDomainHandler('home'),
+            'impacted domains' => static fn (UapiClient $api): array
+                => $api->langPhp()->phpGetImpactedDomains('npr.rs'),
+            'features' => static fn (UapiClient $api): array => $api->features()->listFeatures(),
             'DNS lookup' => static fn (UapiClient $api): ?array => $api->dns()->lookup('npr.rs'),
-            'generated domains' => static fn (UapiClient $api): array => $api->dns()->generatedDomains('npr.rs'),
+            'generated domains' => static fn (UapiClient $api): array
+                => $api->dns()->fetchCpanelGeneratedDomains('npr.rs'),
         ];
         foreach ([true, false] as $direct) {
             foreach ($operations as $name => $operation) {

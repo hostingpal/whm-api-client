@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tests\Api;
 
 use HostingPal\WhmApiClient\Api\Whm\Accounts;
+use HostingPal\WhmApiClient\Api\Whm\Spec\AccountsSpec;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
@@ -15,6 +16,8 @@ use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
+use ReflectionMethod;
+use SensitiveParameter;
 
 final class WhmAccountsTest extends TestCase
 {
@@ -37,30 +40,40 @@ final class WhmAccountsTest extends TestCase
         . '"MAX_EMAIL_PER_HOUR":"unlimited","MAX_TEAM_USERS":null,"QUOTA":"unlimited",'
         . '"_PACKAGE_EXTENSIONS":"","name":"default","extra":true}';
 
-    /** @return iterable<string, array{string, list<mixed>, string, string}> */
+    /** @return iterable<string, array{string, string, list<mixed>, string, string}> */
     public static function inventoryOperations(): iterable
     {
         yield 'list without filters' => [
-            'list',
+            'accounts',
+            'listAccounts',
             [],
             'listaccts?api.version=1',
             '{"acct":[' . self::ACCOUNT . ']}',
         ];
         yield 'list with filters' => [
-            'list',
+            'accounts',
+            'listAccounts',
             ['npr', 'user', 'exact', 'user,domain'],
-            'listaccts?api.version=1&search=npr&searchmethod=exact&searchtype=user&want=user%2Cdomain',
+            'listaccts?api.version=1&search=npr&searchtype=user&searchmethod=exact&want=user%2Cdomain',
             '{"acct":[' . self::ACCOUNT . ']}',
         ];
         yield 'summary' => [
-            'summary',
+            'accounts',
+            'accountSummary',
             ['npr'],
             'accountsummary?api.version=1&user=npr',
             '{"acct":[' . self::ACCOUNT . ']}',
         ];
-        yield 'packages' => ['packages', [], 'listpkgs?api.version=1', '{"pkg":[' . self::PACKAGE . ']}'];
+        yield 'packages' => [
+            'hostingPlans',
+            'listPackages',
+            [],
+            'listpkgs?api.version=1',
+            '{"pkg":[' . self::PACKAGE . ']}',
+        ];
         yield 'creatable packages' => [
-            'packages',
+            'hostingPlans',
+            'listPackages',
             ['creatable'],
             'listpkgs?api.version=1&want=creatable',
             '{"pkg":[' . self::PACKAGE . ']}',
@@ -70,6 +83,7 @@ final class WhmAccountsTest extends TestCase
     /** @param list<mixed> $arguments */
     #[DataProvider('inventoryOperations')]
     public function testInventoryOperationsExecuteGetAndReturnValidatedRecords(
+        string $group,
         string $method,
         array $arguments,
         string $uri,
@@ -77,20 +91,15 @@ final class WhmAccountsTest extends TestCase
     ): void {
         [$client, $http] = $this->client();
         $whm = $client->whm();
-        $accounts = $whm->accounts();
-        self::assertSame($accounts, $whm->accounts());
+        $selected = $whm->{$group}();
+        self::assertSame($selected, $whm->{$group}());
         self::assertSame([], $http->getRequests());
         $operation = explode('?', $uri)[0];
         $http->addResponse(new Response(200, [], self::response($operation, $data)));
 
-        $result = $accounts->{$method}(...$arguments);
+        $result = $selected->{$method}(...$arguments);
 
-        $expectedAccount = self::expectedAccount();
-        self::assertSame(match ($method) {
-            'list' => [$expectedAccount],
-            'summary' => $expectedAccount,
-            default => [self::expectedPackage()],
-        }, $result);
+        self::assertSame($method === 'listPackages' ? [self::expectedPackage()] : [self::expectedAccount()], $result);
         $request = $http->getLastRequest();
         self::assertInstanceOf(RequestInterface::class, $request);
         self::assertSame('GET', $request->getMethod());
@@ -103,44 +112,48 @@ final class WhmAccountsTest extends TestCase
         self::assertCount(1, $http->getRequests());
     }
 
-    /** @return iterable<string, array{string, list<mixed>, string, string, ?string, mixed}> */
+    /** @return iterable<string, array{string, array<array-key, mixed>, string, string, ?string, mixed}> */
     public static function mutations(): iterable
     {
         yield 'create with options' => [
-            'create',
-            ['newacct', ['domain' => 'new.example', 'password' => 'p a&ss=1', 'plan' => 'default', 'cgi' => 0]],
+            'createAccount',
+            ['username' => 'newacct', 'domain' => 'new.example', 'password' => 'p a&ss=1', 'plan' => 'default',
+                'cgi' => false],
             'createacct',
-            'username=newacct&domain=new.example&password=p%20a%26ss%3D1&plan=default&cgi=0',
+            'username=newacct&cgi=0&domain=new.example&password=p%20a%26ss%3D1&plan=default',
             '{"ip":"116.202.98.212","nameserver":"ns1.example","package":"default","extra":1}',
             ['ip' => '116.202.98.212', 'nameserver' => 'ns1.example', 'package' => 'default'],
         ];
-        yield 'create argument wins over username option' => [
-            'create',
-            ['real', ['username' => 'spoofed', 'account_enhancements' => ['one', 'two']]],
+        yield 'create with repeated account enhancements and null data' => [
+            'createAccount',
+            ['username' => 'real', 'accountEnhancements' => ['one', 'two']],
             'createacct',
             'username=real&account_enhancements=one&account_enhancements=two',
             'null',
-            [],
+            null,
         ];
+        yield 'create without data' => ['createAccount', ['newacct'], 'createacct', 'username=newacct', null, null];
         yield 'suspend with reason and flags' => [
-            'suspend',
+            'suspendAccount',
             ['npr', 'Unpaid invoice', true, false],
             'suspendacct',
             'user=npr&reason=Unpaid%20invoice&disallowun=1&leave-ftp-accts-enabled=0',
             null,
             null,
         ];
-        yield 'suspend omits null flags' => ['suspend', ['npr'], 'suspendacct', 'user=npr', null, null];
+        yield 'suspend omits null flags' => ['suspendAccount', ['npr'], 'suspendacct', 'user=npr', null, null];
         yield 'unsuspend' => [
-            'unsuspend',
+            'unsuspendAccount',
             ['npr', true],
             'unsuspendacct',
             'user=npr&retain-service-proxies=1',
             null,
             null,
         ];
-        yield 'remove keeping dns' => ['remove', ['npr', true], 'removeacct', 'username=npr&keepdns=1', null, null];
-        yield 'remove omits null flag' => ['remove', ['npr'], 'removeacct', 'username=npr', null, null];
+        yield 'remove keeping dns' => [
+            'removeAccount', ['npr', true], 'removeacct', 'username=npr&keepdns=1', null, null,
+        ];
+        yield 'remove omits null flag' => ['removeAccount', ['npr'], 'removeacct', 'username=npr', null, null];
         yield 'change password' => [
             'changePassword',
             ['npr', 'S3cret!', false, null],
@@ -155,7 +168,15 @@ final class WhmAccountsTest extends TestCase
             'passwd',
             'user=npr&password=S3cret%21',
             null,
-            [],
+            null,
+        ];
+        yield 'change password with null data' => [
+            'changePassword',
+            ['npr', 'S3cret!'],
+            'passwd',
+            'user=npr&password=S3cret%21',
+            'null',
+            null,
         ];
         yield 'change password with digest authentication' => [
             'changePassword',
@@ -174,10 +195,10 @@ final class WhmAccountsTest extends TestCase
             null,
         ];
         yield 'modify' => [
-            'modify',
-            ['npr', ['user' => 'spoofed', 'contactemail' => 'new@npr.rs', 'HASSHELL' => 1]],
+            'modifyAccount',
+            ['user' => 'npr', 'contactemail' => 'new@npr.rs', 'hasshell' => true],
             'modifyacct',
-            'user=npr&contactemail=new%40npr.rs&HASSHELL=1',
+            'user=npr&HASSHELL=1&contactemail=new%40npr.rs',
             '{"cpuser":{"CONTACTEMAIL":"new@npr.rs","nested":{"k":[1,2]}},"domain":"npr.rs",'
                 . '"setshell":"/bin/bash","user":"npr"}',
             [
@@ -187,9 +208,10 @@ final class WhmAccountsTest extends TestCase
                 'user' => 'npr',
             ],
         ];
+        yield 'modify without data' => ['modifyAccount', ['npr'], 'modifyacct', 'user=npr', null, null];
     }
 
-    /** @param list<mixed> $arguments */
+    /** @param array<array-key, mixed> $arguments */
     #[DataProvider('mutations')]
     public function testMutationsPostFormEncodedParametersAndKeepThemOutOfTheQuery(
         string $method,
@@ -225,10 +247,10 @@ final class WhmAccountsTest extends TestCase
         self::assertCount(1, $http->getRequests());
     }
 
-    /** @return iterable<string, array{string, string, list<string>}> */
+    /** @return iterable<string, array{string, string, array<mixed>, list<string>}> */
     public static function documentedInputs(): iterable
     {
-        yield 'create options' => ['create', 'createacct', [
+        yield 'create options' => ['createAccount', 'createacct', AccountsSpec::CREATEACCT, [
             'account_enhancements', 'bwlimit', 'cgi', 'contactemail', 'cpmod', 'customip', 'digestauth', 'dkim',
             'dmarc', 'domain', 'enabledigest', 'featurelist', 'forcedns', 'frontpage', 'gid', 'hasshell',
             'hasuseregns', 'homedir', 'ip', 'language', 'mail_node_alias', 'mailbox_format',
@@ -237,7 +259,7 @@ final class WhmAccountsTest extends TestCase
             'password', 'pkgname', 'plan', 'quota', 'reseller', 'reseller_without_domain', 'savepkg', 'showpass',
             'spamassassin', 'spambox', 'spf', 'uid', 'useregns',
         ]];
-        yield 'modify changes' => ['modify', 'modifyacct', [
+        yield 'modify changes' => ['modifyAccount', 'modifyacct', AccountsSpec::MODIFYACCT, [
             'account_enhancements', 'BACKUP', 'BWLIMIT', 'contactemail', 'DBOWNER', 'DISK_BLOCK_LIMIT', 'DNS',
             'domain', 'HASCGI', 'HASDKIM', 'HASDMARC', 'HASSHELL', 'HASSPF', 'LANG', 'LOCALE', 'mail_node_alias',
             'MAILBOX_FORMAT', 'MAX_DEFER_FAIL_PERCENTAGE', 'MAX_EMAIL_PER_HOUR', 'MAX_EMAILACCT_QUOTA',
@@ -254,28 +276,49 @@ final class WhmAccountsTest extends TestCase
     }
 
     /**
-     * Every documented input key is forwarded unchanged, in order, in the form body.
+     * Every documented input key is a named argument forwarded under its wire name, in signature order.
      *
+     * @param array<mixed> $spec
      * @param list<string> $keys
      */
     #[DataProvider('documentedInputs')]
     public function testDocumentedInputsAreForwardedUnchangedInTheBody(
         string $method,
         string $operation,
+        array $spec,
         array $keys,
     ): void {
         [$client, $http] = $this->client();
         $http->addResponse(new Response(200, [], self::response($operation, 'null')));
-        $input = [];
-        $expected = [$method === 'create' ? 'username=npr' : 'user=npr'];
-        foreach ($keys as $index => $key) {
-            $input[$key] = 'v' . $index;
-            $expected[] = rawurlencode($key) . '=v' . $index;
+        $wires = [];
+        $arguments = [];
+        $expected = [];
+        $params = (new ReflectionMethod(Accounts::class, $method))->getParameters();
+        $declared = is_array($spec['params'] ?? null) ? $spec['params'] : [];
+        foreach ($params as $index => $parameter) {
+            $param = $declared[$parameter->getName()] ?? null;
+            self::assertIsArray($param);
+            $wire = $param['name'] ?? null;
+            self::assertIsString($wire);
+            $value = match (true) {
+                $index === 0 => 'npr',
+                ($param['encoding'] ?? null) === 'bool' => true,
+                str_contains((string) $parameter->getType(), 'string') => 'v' . $index,
+                default => $index,
+            };
+            $arguments[$parameter->getName()] = $value;
+            $expected[] = rawurlencode($wire) . '=' . rawurlencode($value === true ? '1' : (string) $value);
+            if ($index > 0) {
+                $wires[] = $wire;
+            }
         }
+        sort($wires);
+        sort($keys);
+        self::assertSame($keys, $wires);
 
-        $result = $client->whm()->accounts()->{$method}('npr', $input);
+        $result = $client->whm()->accounts()->{$method}(...$arguments);
 
-        self::assertSame([], $result);
+        self::assertNull($result);
         $request = $http->getLastRequest();
         self::assertInstanceOf(RequestInterface::class, $request);
         self::assertSame(implode('&', $expected), (string) $request->getBody());
@@ -283,6 +326,25 @@ final class WhmAccountsTest extends TestCase
             'https://api.example.test:2087/json-api/' . $operation . '?api.version=1',
             (string) $request->getUri(),
         );
+    }
+
+    public function testSecretBearingArgumentsAreRedactedFromTraces(): void
+    {
+        $sensitive = [];
+        foreach (['createAccount', 'changePassword', 'modifyAccount'] as $method) {
+            foreach ((new ReflectionMethod(Accounts::class, $method))->getParameters() as $parameter) {
+                if ($parameter->getAttributes(SensitiveParameter::class) !== []) {
+                    $sensitive[] = $method . '.' . $parameter->getName();
+                }
+            }
+        }
+
+        self::assertSame([
+            'createAccount.pass',
+            'createAccount.password',
+            'changePassword.password',
+            'modifyAccount.pushbulletAccessToken',
+        ], $sensitive);
     }
 
     public function testFailedOutcomeRaisesApiErrorWithTheEnvelopeRetained(): void
@@ -293,7 +355,7 @@ final class WhmAccountsTest extends TestCase
             . '"Account npr is already suspended.","result":0,"version":1}}'));
 
         try {
-            $whm->accounts()->suspend('npr', 'twice');
+            $whm->accounts()->suspendAccount('npr', 'twice');
             self::fail('A failed outcome must raise ApiErrorException.');
         } catch (ApiErrorException $exception) {
             self::assertSame(['Account npr is already suspended.'], $exception->errors());
@@ -302,34 +364,44 @@ final class WhmAccountsTest extends TestCase
         }
     }
 
-    /** @return iterable<string, array{string, list<mixed>, string, string}> */
+    /** @return iterable<string, array{string, string, list<mixed>, string, string}> */
     public static function invalidPayloads(): iterable
     {
-        yield 'list without acct' => ['list', [], 'listaccts', '{}'];
-        yield 'list acct not a list' => ['list', [], 'listaccts', '{"acct":{"user":"npr"}}'];
-        yield 'list record not an object' => ['list', [], 'listaccts', '{"acct":["npr"]}'];
-        yield 'list string flag' => ['list', [], 'listaccts', '{"acct":[{"suspended":"0"}]}'];
-        yield 'list float limit' => ['list', [], 'listaccts', '{"acct":[{"disklimit":1.5}]}'];
-        yield 'list signed uid' => ['list', [], 'listaccts', '{"acct":[{"uid":"-1"}]}'];
-        yield 'list zero-padded uid' => ['list', [], 'listaccts', '{"uid":"01","acct":[{"uid":"01"}]}'];
-        yield 'list fractional uid' => ['list', [], 'listaccts', '{"acct":[{"uid":"1.0"}]}'];
-        yield 'list overflowing uid' => ['list', [], 'listaccts', '{"acct":[{"uid":"99999999999999999999"}]}'];
-        yield 'list boolean uid' => ['list', [], 'listaccts', '{"acct":[{"uid":true}]}'];
-        yield 'list ipv6 not strings' => ['list', [], 'listaccts', '{"acct":[{"ipv6":[1]}]}'];
-        yield 'list suspendtime boolean' => ['list', [], 'listaccts', '{"acct":[{"suspendtime":false}]}'];
-        yield 'summary empty' => ['summary', ['npr'], 'accountsummary', '{"acct":[]}'];
-        yield 'summary ambiguous' => ['summary', ['npr'], 'accountsummary', '{"acct":[{},{}]}'];
-        yield 'packages without pkg' => ['packages', [], 'listpkgs', '{"pkgs":[]}'];
-        yield 'packages string team users' => ['packages', [], 'listpkgs', '{"pkg":[{"MAX_TEAM_USERS":"5"}]}'];
-        yield 'create data not an object' => ['create', ['x'], 'createacct', '["ns1"]'];
-        yield 'create integer nameserver' => ['create', ['x'], 'createacct', '{"nameserver":1}'];
-        yield 'password app not strings' => ['changePassword', ['x', 'y'], 'passwd', '{"app":[1]}'];
-        yield 'modify cpuser not an object' => ['modify', ['x', []], 'modifyacct', '{"cpuser":"text"}'];
+        yield 'list without acct' => ['accounts', 'listAccounts', [], 'listaccts', '{}'];
+        yield 'list acct not a list' => ['accounts', 'listAccounts', [], 'listaccts', '{"acct":{"user":"npr"}}'];
+        yield 'list record not an object' => ['accounts', 'listAccounts', [], 'listaccts', '{"acct":["npr"]}'];
+        yield 'list string flag' => ['accounts', 'listAccounts', [], 'listaccts', '{"acct":[{"suspended":"0"}]}'];
+        yield 'list float limit' => ['accounts', 'listAccounts', [], 'listaccts', '{"acct":[{"disklimit":1.5}]}'];
+        yield 'list zero-padded uid' => [
+            'accounts', 'listAccounts', [], 'listaccts', '{"uid":"01","acct":[{"uid":"01"}]}',
+        ];
+        yield 'list fractional uid' => ['accounts', 'listAccounts', [], 'listaccts', '{"acct":[{"uid":"1.0"}]}'];
+        yield 'list overflowing uid' => [
+            'accounts', 'listAccounts', [], 'listaccts', '{"acct":[{"uid":"99999999999999999999"}]}',
+        ];
+        yield 'list boolean uid' => ['accounts', 'listAccounts', [], 'listaccts', '{"acct":[{"uid":true}]}'];
+        yield 'list ipv6 not strings' => ['accounts', 'listAccounts', [], 'listaccts', '{"acct":[{"ipv6":[1]}]}'];
+        yield 'list suspendtime boolean' => [
+            'accounts', 'listAccounts', [], 'listaccts', '{"acct":[{"suspendtime":false}]}',
+        ];
+        yield 'summary without acct' => ['accounts', 'accountSummary', ['npr'], 'accountsummary', '{}'];
+        yield 'summary suspendtime boolean' => [
+            'accounts', 'accountSummary', ['npr'], 'accountsummary', '{"acct":[{"suspendtime":false}]}',
+        ];
+        yield 'packages without pkg' => ['hostingPlans', 'listPackages', [], 'listpkgs', '{"pkgs":[]}'];
+        yield 'packages string team users' => [
+            'hostingPlans', 'listPackages', [], 'listpkgs', '{"pkg":[{"MAX_TEAM_USERS":"5"}]}',
+        ];
+        yield 'create data not an object' => ['accounts', 'createAccount', ['x'], 'createacct', '["ns1"]'];
+        yield 'create integer nameserver' => ['accounts', 'createAccount', ['x'], 'createacct', '{"nameserver":1}'];
+        yield 'password app not strings' => ['accounts', 'changePassword', ['x', 'y'], 'passwd', '{"app":[1]}'];
+        yield 'modify cpuser not an object' => ['accounts', 'modifyAccount', ['x'], 'modifyacct', '{"cpuser":"text"}'];
     }
 
     /** @param list<mixed> $arguments */
     #[DataProvider('invalidPayloads')]
     public function testMalformedPayloadsRaiseInvalidResponseAndRetainMetadata(
+        string $group,
         string $method,
         array $arguments,
         string $operation,
@@ -340,13 +412,23 @@ final class WhmAccountsTest extends TestCase
         $http->addResponse(new Response(200, [], self::response($operation, $data)));
 
         try {
-            $whm->accounts()->{$method}(...$arguments);
+            $whm->{$group}()->{$method}(...$arguments);
             self::fail('Malformed payloads must raise InvalidResponseException.');
         } catch (InvalidResponseException $exception) {
-            self::assertSame('Invalid account payload.', $exception->getMessage());
+            self::assertSame('Invalid ' . $operation . ' payload.', $exception->getMessage());
             self::assertSame($exception->metadata, $whm->responseMeta());
             self::assertSame($operation, $whm->responseMeta()?->whm['command'] ?? null);
         }
+    }
+
+    public function testSummaryReturnsEveryRecordWithoutRequiringExactlyOne(): void
+    {
+        [$client, $http] = $this->client();
+        $http->addResponse(new Response(200, [], self::response('accountsummary', '{"acct":[]}')));
+        $http->addResponse(new Response(200, [], self::response('accountsummary', '{"acct":[{},{"user":"npr"}]}')));
+
+        self::assertSame([], $client->whm()->accounts()->accountSummary('npr'));
+        self::assertSame([[], ['user' => 'npr']], $client->whm()->accounts()->accountSummary('npr'));
     }
 
     public function testObservedDecimalStringUidIsNormalizedToThePinnedInteger(): void
@@ -357,12 +439,22 @@ final class WhmAccountsTest extends TestCase
             '{"acct":[{"user":"npr","uid":"1001","suspendtime":0,"maxaddons":"0","standalone_feature":""}]}',
         )));
 
-        $summary = $client->whm()->accounts()->summary('npr');
+        $summary = $client->whm()->accounts()->accountSummary('npr');
 
         self::assertSame(
-            ['user' => 'npr', 'uid' => 1001, 'suspendtime' => 0, 'maxaddons' => '0', 'standalone_feature' => ''],
+            [['maxaddons' => '0', 'standalone_feature' => '', 'suspendtime' => 0, 'uid' => 1001, 'user' => 'npr']],
             $summary,
         );
+    }
+
+    public function testSignedDecimalUidIsAcceptedPendingRangeEnforcement(): void
+    {
+        // The deleted hand-written validator rejected signed decimal strings; minimum/range enforcement is
+        // deferred to bead whm-api-client-8x0.18, so the generated engine normalizes "-1" to -1.
+        [$client, $http] = $this->client();
+        $http->addResponse(new Response(200, [], self::response('listaccts', '{"acct":[{"uid":"-1"}]}')));
+
+        self::assertSame([['uid' => -1]], $client->whm()->accounts()->listAccounts());
     }
 
     public function testGroupIsBoundToItsOwningClientOnly(): void
@@ -371,7 +463,7 @@ final class WhmAccountsTest extends TestCase
         [$other] = $this->client();
         $http->addResponse(new Response(200, [], self::response('listpkgs', '{"pkg":[]}')));
 
-        self::assertSame([], $client->whm()->accounts()->packages());
+        self::assertSame([], $client->whm()->hostingPlans()->listPackages());
         self::assertInstanceOf(Accounts::class, $other->whm()->accounts());
         self::assertNull($other->whm()->responseMeta());
         self::assertNotNull($client->whm()->responseMeta());

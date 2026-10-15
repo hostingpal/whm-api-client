@@ -433,3 +433,31 @@ operations, 35 of them implemented and 4 partial (`accountsummary`, `removeacct`
 `passwd`, `modifyacct`) because alias or alternative parameters are left to `call()`.
 The approval-gated mutating lifecycle test has not been executed; these observations
 remain scoped to the tested server/date without saved revision-bound evidence.
+
+## Runtime observations 2026-10-15 (generated client cutover)
+
+After the hand-written groups were replaced by the groups generated from the
+pinned map and `docs/api/overlay`, the explicitly opted-in read-only live suite
+was re-run against `test.oblak.host` (server version `11.138.0.15`) through the
+actual PHP client with verified TLS, redirects disabled and no retries. Every
+request was read-only; the approval-gated mutating lifecycle test was not run.
+
+Live corrections added: **none**. Every declared field present in the responses of
+the 32 read-only generated operations (22 WHM; 10 UAPI, each on both the direct and
+bridged routes) validated against the generated specs, which already carry the
+2026-10-13/14 corrections (load-window numeric strings, nullable inode counters,
+decimal-string ports and `uid`, string/boolean feature flags, and the
+`accountsummary` `acct[].suspendtime` string/integer/null union). The two
+candidates flagged in review passed unchanged: `listaccts` `acct[].suspendtime`
+matched its pinned nullable integer type, and `acct[].child_nodes` items in
+`listaccts` and `accountsummary` matched their pinned object shape (or were not
+supplied). Undeclared fields are dropped by the generated validator rather than
+rejected, so this run does not establish their types.
+
+The only live failure was outside the payload layer: the test-only request scope
+guard approved the filtered `listaccts` GET by exact URI with the old parameter
+order, while the generated encoder emits the restored signature order
+(`search`, `searchtype`, `searchmethod`). The approved URI was updated to the same
+three parameters in the generated order; the request scope is unchanged. The full
+live suite then passed **46 tests and 329 assertions**. These observations remain
+scoped to the tested server and date without saved revision-bound evidence.

@@ -100,6 +100,39 @@ final class OperationRunnerTest extends TestCase
         OperationRunner::result($nullable, new ApiResponse(null, new ResponseMetadata(200), false));
     }
 
+    public function testOptionalPayloadReturnsNullForOmittedOrNullDataAndValidatesTheRest(): void
+    {
+        $spec = ['optional' => true] + self::SPEC;
+        $metadata = new ResponseMetadata(200, ['result' => 1]);
+
+        self::assertNull(OperationRunner::result($spec, new ApiResponse(null, $metadata, false)));
+        self::assertNull(OperationRunner::result($spec, new ApiResponse(null, $metadata, true)));
+        self::assertSame(
+            ['primary_domain' => 'example.test'],
+            OperationRunner::result($spec, self::response((object) ['primary_domain' => 'example.test'])),
+        );
+        self::assertNull(OperationRunner::result(
+            ['unwrap' => 'primary_domain'] + $spec,
+            new ApiResponse(null, $metadata, false),
+        ));
+
+        foreach ([[], new stdClass(), (object) ['primary_domain' => 1], 'text'] as $data) {
+            try {
+                OperationRunner::result($spec, new ApiResponse($data, $metadata));
+                self::fail('Expected an invalid payload.');
+            } catch (InvalidResponseException $exception) {
+                self::assertSame($metadata, $exception->metadata);
+            }
+        }
+    }
+
+    public function testOptionalFalseKeepsTheRequiredPayload(): void
+    {
+        $this->expectException(InvalidResponseException::class);
+
+        OperationRunner::result(['optional' => false] + self::SPEC, new ApiResponse(null, new ResponseMetadata(200)));
+    }
+
     public function testMissingReturnsIsAGeneratorDefect(): void
     {
         $this->expectException(LogicException::class);
@@ -145,6 +178,8 @@ final class OperationRunnerTest extends TestCase
         ];
         yield 'unwrap with void returns' => [['returns' => null, 'unwrap' => 'a'] + self::SPEC];
         yield 'unwrap of undeclared field' => [['unwrap' => 'missing'] + self::SPEC];
+        yield 'non-boolean optional' => [['optional' => 1] + self::SPEC];
+        yield 'optional void returns' => [['returns' => null, 'optional' => true] + self::SPEC];
     }
 
     public function testSpecHelpersMapWireValues(): void

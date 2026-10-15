@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "DCV",
+  "operations": {
+    "uapi:DCV/ensure_domains_can_pass_dcv": {"exclude": {"reason": "Deprecated; use DCV/check_domains_via_http.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; We deprecated this function."}]}}
+  }
+}

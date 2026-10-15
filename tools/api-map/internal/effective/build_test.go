@@ -173,6 +173,26 @@ func TestBuildHonoursParameterOrder(t *testing.T) {
 	}
 }
 
+func TestBuildCarriesOptionalPayloadOnlyForDocumentedPayloads(t *testing.T) {
+	set := fixtureOverlay("listed")
+	op := set.Files[1].Operations["whm1:createacct"]
+	op.OptionalPayload, op.Evidence = true, evidence()
+	set.Files[1].Operations["whm1:createacct"] = op
+	result, joined := buildProblems(t, fixtureMap(t), set)
+	if joined != "" {
+		t.Fatal(joined)
+	}
+	if create := groupByClass(t, result, "Accounts").Operations[0]; create.ID != "whm1:createacct" || !create.OptionalPayload || create.Returns == nil {
+		t.Fatalf("optional payload not carried: %+v", create)
+	}
+
+	op.Void = true
+	set.Files[1].Operations["whm1:createacct"] = op
+	if _, joined := buildProblems(t, fixtureMap(t), set); !strings.Contains(joined, "whm1:createacct: optional_payload needs a documented payload") {
+		t.Fatalf("optional payload on a void operation accepted: %s", joined)
+	}
+}
+
 func TestBuildAllScopeNeedsWHMGroupAccessors(t *testing.T) {
 	set := fixtureOverlay("all")
 	set.Files = set.Files[:1]

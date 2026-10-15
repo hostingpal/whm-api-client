@@ -27,15 +27,15 @@ final class UapiPhpTest extends TestCase
     {
         [$client, $http] = $this->client(true);
         $uapi = $client->uapi();
-        $php = $uapi->php();
-        self::assertSame($php, $uapi->php());
+        $php = $uapi->langPhp();
+        self::assertSame($php, $uapi->langPhp());
         $initialRequests = $http->getRequests();
         $initialMetadata = $uapi->responseMeta();
         self::assertSame([], $initialRequests);
         self::assertNull($initialMetadata);
         $http->addResponse(new Response(200, [], $body));
 
-        self::assertSame(['ea-php72', 'custom-php-8.4+vendor', 'ea-php72'], $php->listVersions());
+        self::assertSame(['ea-php72', 'custom-php-8.4+vendor', 'ea-php72'], $php->phpGetInstalledVersions());
 
         $request = $http->getLastRequest();
         self::assertInstanceOf(RequestInterface::class, $request);
@@ -79,7 +79,7 @@ final class UapiPhpTest extends TestCase
         [$client, $http] = $this->client($direct);
         $http->addResponse(new Response(200, [], self::success($direct, ',"data":{"versions":[]}')));
 
-        self::assertSame([], $client->uapi('npr')->php()->listVersions());
+        self::assertSame([], $client->uapi('npr')->langPhp()->phpGetInstalledVersions());
         self::assertCount(1, $http->getRequests());
     }
 
@@ -88,14 +88,14 @@ final class UapiPhpTest extends TestCase
         [$client, $http] = $this->client();
         $npr = $client->uapi('npr');
         $other = $client->uapi('other');
-        self::assertSame($npr->php(), $npr->php());
-        self::assertNotSame($npr->php(), $other->php());
+        self::assertSame($npr->langPhp(), $npr->langPhp());
+        self::assertNotSame($npr->langPhp(), $other->langPhp());
         $initialRequests = $http->getRequests();
         self::assertSame([], $initialRequests);
         $http->addResponse(new Response(200, [], self::success(false, ',"data":{"versions":["ea-php72"]}')));
         $http->addResponse(new Response(200, [], self::success(false, ',"data":{"versions":["custom-php"]}')));
 
-        self::assertSame(['ea-php72'], $npr->php()->listVersions());
+        self::assertSame(['ea-php72'], $npr->langPhp()->phpGetInstalledVersions());
         $retained = $npr->responseMeta();
         self::assertNotNull($retained);
         self::assertSame([
@@ -112,7 +112,7 @@ final class UapiPhpTest extends TestCase
             'metadata' => [],
         ], $retained->uapi);
         self::assertNull($other->responseMeta());
-        self::assertSame(['custom-php'], $other->php()->listVersions());
+        self::assertSame(['custom-php'], $other->langPhp()->phpGetInstalledVersions());
         self::assertSame($retained, $npr->responseMeta());
         self::assertNotSame($retained, $other->responseMeta());
         self::assertNull($client->whm()->responseMeta());
@@ -140,7 +140,7 @@ final class UapiPhpTest extends TestCase
         $http->addResponse(new Response(200, [], self::success($direct, $payload)));
 
         try {
-            $uapi->php()->listVersions();
+            $uapi->langPhp()->phpGetInstalledVersions();
             self::fail('Expected invalid PHP versions payload.');
         } catch (InvalidResponseException $exception) {
             $metadata = $uapi->responseMeta();
@@ -189,13 +189,13 @@ final class UapiPhpTest extends TestCase
         [$client, $http] = $this->client($direct);
         $uapi = $client->uapi('npr');
         $http->addResponse(new Response(200, [], self::success($direct, ',"data":{"versions":["ea-php72"]}')));
-        $uapi->php()->listVersions();
+        $uapi->langPhp()->phpGetInstalledVersions();
         $retained = $uapi->responseMeta();
         self::assertNotNull($retained);
         $http->addResponse(new Response($httpStatus, [], $body));
 
         try {
-            $uapi->php()->listVersions();
+            $uapi->langPhp()->phpGetInstalledVersions();
             self::fail('Expected an API client exception.');
         } catch (ApiException $exception) {
             self::assertInstanceOf($exceptionClass, $exception);
@@ -256,13 +256,13 @@ final class UapiPhpTest extends TestCase
         [$client, $http] = $this->client($direct);
         $uapi = $client->uapi('npr');
         $http->addResponse(new Response(200, [], self::success($direct, ',"data":{"versions":["ea-php72"]}')));
-        $uapi->php()->listVersions();
+        $uapi->langPhp()->phpGetInstalledVersions();
         $retained = $uapi->responseMeta();
         $http->addException(new class ('fixture-token') extends RuntimeException implements ClientExceptionInterface {
         });
 
         try {
-            $uapi->php()->listVersions();
+            $uapi->langPhp()->phpGetInstalledVersions();
             self::fail('Expected transport failure.');
         } catch (TransportException $exception) {
             self::assertNull($uapi->responseMeta());

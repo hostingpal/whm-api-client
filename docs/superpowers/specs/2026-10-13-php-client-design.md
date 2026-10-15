@@ -26,6 +26,12 @@ Expose WHM operations through `whm()` and cPanel UAPI operations through
 UAPI calls go directly to cPanel or through WHM. The bridge is internal; callers
 do not need a separate public `bridge()` method.
 
+> **Superseded:** the operation table below describes the original hand-written
+> slice. The typed groups are now generated from the pinned map plus
+> `docs/api/overlay/`; the current operation surface is listed in
+> [`docs/api/coverage.md`](../../api/coverage.md) and designed in the generated-client
+> design. Method names and plain-array results there replace the names and DTOs here.
+
 ```php
 // Client configured with WHM credentials, such as a root token.
 $version = $client->whm()->server()->version();
@@ -272,6 +278,10 @@ configured token redacted, outside `getMessage()`. Metadata preserves upstream
 diagnostic values.
 
 ## Scaling decision: typed core plus generic calls
+
+> **Superseded:** the hand-written lean-pattern group decision below is replaced by
+> the generated-client design (bead `whm-api-client-8x0.10`). The foundation and
+> generic-call tiers remain in force.
 
 Decided 2026-10-14 (`whm-api-client-8x0.7`). The pinned map holds 1,323 functions
 and 1,325 variants. The first 29 hand-written operations cost about 90 source and

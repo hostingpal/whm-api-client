@@ -54,6 +54,8 @@ type Operation struct {
 	Params      []Param
 	Returns     *TypeSpec
 	Unwrap      string
+	// OptionalPayload makes an omitted or null data member a null result.
+	OptionalPayload bool
 }
 
 // Group is one generated group class.

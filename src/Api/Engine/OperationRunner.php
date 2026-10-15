@@ -60,13 +60,14 @@ final class OperationRunner
     }
 
     /**
-     * Validate the payload against the spec, then apply void or unwrap rules.
+     * Validate the payload against the spec, then apply void, optional or unwrap rules.
      *
      * A spec must declare "returns": an explicit null means a void operation,
      * which returns null and ignores any payload. A missing key is a generator
      * defect. When a payload is declared, an omitted data member is invalid; a
-     * nullable spec accepts only an explicit null. An unwrapped field must be
-     * present in the validated object.
+     * nullable spec accepts only an explicit null. An "optional" spec instead
+     * returns null for an omitted or null data member without validating it. An
+     * unwrapped field must be present in the validated object.
      *
      * @param array<mixed> $spec
      * @throws InvalidResponseException If the payload does not satisfy the spec.
@@ -76,6 +77,10 @@ final class OperationRunner
     {
         $returns = self::returns($spec);
         if ($returns === null) {
+            return null;
+        }
+
+        if (($spec['optional'] ?? false) === true && (!$response->hasData || $response->data === null)) {
             return null;
         }
 
@@ -102,7 +107,7 @@ final class OperationRunner
      *
      * @param array<mixed> $spec
      * @return array<mixed>|null The return type spec, or null for a void operation.
-     * @throws LogicException If "function", "returns" or "unwrap" is defective.
+     * @throws LogicException If "function", "returns", "optional" or "unwrap" is defective.
      */
     private static function returns(array $spec): ?array
     {
@@ -114,6 +119,11 @@ final class OperationRunner
         $returns = $spec['returns'];
         if ($returns !== null && !is_array($returns)) {
             throw new LogicException('Invalid return spec.');
+        }
+
+        $optional = $spec['optional'] ?? false;
+        if (!is_bool($optional) || ($optional && $returns === null)) {
+            throw new LogicException('Invalid optional spec.');
         }
 
         $unwrap = $spec['unwrap'] ?? null;

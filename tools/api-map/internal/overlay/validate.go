@@ -49,11 +49,15 @@ func Validate(set Set) []string {
 			}
 			seen[id] = name
 			op := file.Operations[id]
-			if op.Exclude != nil && (op.Name != "" || len(op.Params) > 0 || len(op.Response) > 0 || op.Unwrap != "") {
+			if op.Exclude != nil && (op.Name != "" || len(op.Params) > 0 || len(op.Response) > 0 || op.Unwrap != "" ||
+				op.OptionalPayload) {
 				problems = append(problems, id+": excluded operations take no other settings")
 			}
 			if op.Void && op.Unwrap != "" {
 				problems = append(problems, id+": void and unwrap are exclusive")
+			}
+			if op.Void && op.OptionalPayload {
+				problems = append(problems, id+": void and optional_payload are exclusive")
 			}
 			problems = append(problems, missingEvidence(id, op)...)
 		}
@@ -63,8 +67,8 @@ func Validate(set Set) []string {
 }
 
 // missingEvidence reports behaviour-changing settings (request method, outcome
-// check, void result, a parameter declared not sensitive) made without
-// operation-level evidence.
+// check, void result, optional payload, a parameter declared not sensitive)
+// made without operation-level evidence.
 func missingEvidence(id string, op Operation) []string {
 	if len(op.Evidence) > 0 {
 		return nil
@@ -78,6 +82,9 @@ func missingEvidence(id string, op Operation) []string {
 	}
 	if op.Void {
 		settings = append(settings, "void")
+	}
+	if op.OptionalPayload {
+		settings = append(settings, "optional_payload")
 	}
 	wires := make([]string, 0, len(op.Params))
 	for wire := range op.Params {

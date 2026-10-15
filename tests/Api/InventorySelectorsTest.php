@@ -19,12 +19,18 @@ final class InventorySelectorsTest extends TestCase
         $whm = $client->whm();
         $npr = $client->uapi('npr');
         $other = $client->uapi('other');
-        self::assertSame($whm->php(), $whm->php());
-        self::assertSame($whm->features(), $whm->features());
+        self::assertSame($whm->accounts(), $whm->accounts());
+        self::assertSame($whm->hostingPlans(), $whm->hostingPlans());
+        self::assertSame($whm->server(), $whm->server());
+        self::assertSame($whm->webServer(), $whm->webServer());
         self::assertSame($npr->dns(), $npr->dns());
+        self::assertSame($npr->domainInfo(), $npr->domainInfo());
         self::assertSame($npr->features(), $npr->features());
+        self::assertSame($npr->langPhp(), $npr->langPhp());
         self::assertNotSame($npr->dns(), $other->dns());
+        self::assertNotSame($npr->domainInfo(), $other->domainInfo());
         self::assertNotSame($npr->features(), $other->features());
+        self::assertNotSame($npr->langPhp(), $other->langPhp());
         self::assertSame([], $http->getRequests());
         self::assertNull($whm->responseMeta());
         self::assertNull($npr->responseMeta());
@@ -43,8 +49,8 @@ final class InventorySelectorsTest extends TestCase
         $http->addResponse(new Response(200, [], '{"metadata":{"result":1},'
             . '"data":{"uapi":{"status":1,"data":{"versions":["ea-php84"]}}}}'));
         $whm->server()->version();
-        $npr->domains()->list();
-        $other->php()->listVersions();
+        $npr->domainInfo()->listDomains();
+        $other->langPhp()->phpGetInstalledVersions();
         $whmMetadata = $whm->responseMeta();
         $nprMetadata = $npr->responseMeta();
         $otherMetadata = $other->responseMeta();
@@ -52,11 +58,11 @@ final class InventorySelectorsTest extends TestCase
         self::assertNotNull($nprMetadata);
         self::assertNotNull($otherMetadata);
 
-        $whmGroups = [$whm->server(), $whm->domains(), $whm->features(), $whm->php()];
-        self::assertSame($whmGroups, [$whm->server(), $whm->domains(), $whm->features(), $whm->php()]);
+        $whmGroups = [$whm->server(), $whm->accounts(), $whm->hostingPlans(), $whm->webServer()];
+        self::assertSame($whmGroups, [$whm->server(), $whm->accounts(), $whm->hostingPlans(), $whm->webServer()]);
         foreach ([$npr, $other] as $uapi) {
-            $groups = [$uapi->domains(), $uapi->php(), $uapi->dns(), $uapi->features()];
-            self::assertSame($groups, [$uapi->domains(), $uapi->php(), $uapi->dns(), $uapi->features()]);
+            $groups = [$uapi->domainInfo(), $uapi->langPhp(), $uapi->dns(), $uapi->features()];
+            self::assertSame($groups, [$uapi->domainInfo(), $uapi->langPhp(), $uapi->dns(), $uapi->features()]);
         }
 
         self::assertSame($whmMetadata, $whm->responseMeta());

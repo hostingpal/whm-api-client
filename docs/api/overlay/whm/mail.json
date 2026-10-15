@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "Mail",
+  "accessor": "mail",
+  "operations": {
+    "whm1:disable_mail_sni": {"exclude": {"reason": "Deprecated and always fails.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; This function is deprecated and always fails."}]}}
+  }
+}

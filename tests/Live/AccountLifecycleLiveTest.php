@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tests\Live;
 
 use Closure;
+use HostingPal\WhmApiClient\Api\Whm\Accounts;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
@@ -28,6 +29,8 @@ use Throwable;
  * Run it only after the owner approves the target account and server snapshot:
  * `WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_ACCOUNT=... WHM_API_LIVE_DOMAIN=...
  * vendor/bin/phpunit --testsuite live --group live-mutating`.
+ *
+ * @phpstan-import-type AccountSummaryResult from Accounts
  */
 #[Group('live-mutating')]
 final class AccountLifecycleLiveTest extends TestCase
@@ -62,59 +65,81 @@ final class AccountLifecycleLiveTest extends TestCase
     public function testAccountLifecycle(): void
     {
         $accounts = $this->whm->accounts();
-        $packages = self::safeOperation(static fn (): array => $accounts->packages('creatable'));
+        $plans = $this->whm->hostingPlans();
+        $packages = self::safeOperation(static fn (): array => $plans->listPackages('creatable'));
         $plan = $packages[0]['name'] ?? null;
         self::assertTrue(is_string($plan), 'A creatable package is required for the lifecycle.');
 
         $created = false;
         try {
-            $result = self::safeOperation(fn (): array => $accounts->create($this->account, [
-                'domain' => $this->domain,
-                'password' => self::password(),
-                'plan' => $plan,
-                'contactemail' => 'lifecycle@' . $this->domain,
-            ]));
+            $result = self::safeOperation(fn (): ?array => $accounts->createAccount(
+                $this->account,
+                contactemail: 'lifecycle@' . $this->domain,
+                domain: $this->domain,
+                password: self::password(),
+                plan: $plan,
+            ));
             $created = true;
-            foreach ($result as $value) {
+            foreach ($result ?? [] as $value) {
                 self::assertTrue($value !== '', 'Creation fields must be nonempty strings.');
             }
             $this->assertSummary(0);
 
-            self::safeOperation(fn () => $accounts->suspend($this->account, 'whm-api-client lifecycle test', false));
+            self::safeOperation(fn () => $accounts->suspendAccount(
+                $this->account,
+                reason: 'whm-api-client lifecycle test',
+                disallowun: false,
+            ));
             $this->assertSummary(1);
 
-            self::safeOperation(fn () => $accounts->unsuspend($this->account));
+            self::safeOperation(fn () => $accounts->unsuspendAccount($this->account));
             $this->assertSummary(0);
 
-            $updated = self::safeOperation(fn (): array => $accounts->changePassword($this->account, self::password()));
+            $updated = self::safeOperation(
+                fn (): ?array => $accounts->changePassword($this->account, self::password()),
+            );
             foreach ($updated['app'] ?? [] as $application) {
                 self::assertTrue($application !== '', 'Updated applications must be named.');
             }
 
             self::safeOperation(fn () => $accounts->changePackage($this->account, $plan));
 
-            $modified = self::safeOperation(fn (): array => $accounts->modify($this->account, [
-                'contactemail' => 'modified@' . $this->domain,
-            ]));
+            $modified = self::safeOperation(fn (): ?array => $accounts->modifyAccount(
+                $this->account,
+                contactemail: 'modified@' . $this->domain,
+            ));
             self::assertTrue(
                 ($modified['user'] ?? $this->account) === $this->account,
                 'Modification must echo the account.',
             );
-            $summary = self::safeOperation(fn (): array => $accounts->summary($this->account));
+            $summary = $this->summary();
             self::assertTrue(($summary['email'] ?? null) === 'modified@' . $this->domain, 'Contact email must update.');
         } finally {
             if ($created) {
-                self::safeOperation(fn () => $accounts->remove($this->account, false));
+                self::safeOperation(fn () => $accounts->removeAccount($this->account, false));
             }
         }
     }
 
     private function assertSummary(int $suspended): void
     {
-        $summary = self::safeOperation(fn (): array => $this->whm->accounts()->summary($this->account));
+        $summary = $this->summary();
 
         self::assertTrue(($summary['user'] ?? null) === $this->account, 'The summary must describe the account.');
         self::assertTrue(($summary['suspended'] ?? null) === $suspended, 'The suspension state must match.');
+    }
+
+    /**
+     * Return the single summary record of the lifecycle account.
+     *
+     * @return value-of<AccountSummaryResult>
+     */
+    private function summary(): array
+    {
+        $summaries = self::safeOperation(fn (): array => $this->whm->accounts()->accountSummary(user: $this->account));
+        self::assertTrue(count($summaries) === 1, 'A summary by user must return exactly one record.');
+
+        return $summaries[0];
     }
 
     /** Generate a throwaway password that is never logged. */

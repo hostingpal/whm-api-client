@@ -123,11 +123,24 @@ func resultSpec(op effective.Operation) *effective.TypeSpec {
 	return &effective.TypeSpec{Type: "mixed"}
 }
 
+// docReturn renders the PHPStan return type; an optional payload adds null.
 func docReturn(op effective.Operation, spec effective.TypeSpec) string {
 	if isArrayLike(spec) {
+		if op.OptionalPayload && !spec.Nullable {
+			return op.Alias + "|null"
+		}
 		return op.Alias
 	}
-	return shape(spec, "")
+	return shape(returnSpec(op, spec), "")
+}
+
+// returnSpec is the result spec as the method returns it: an optional payload
+// makes it nullable, because no data yields null.
+func returnSpec(op effective.Operation, spec effective.TypeSpec) effective.TypeSpec {
+	if op.OptionalPayload {
+		spec.Nullable = true
+	}
+	return spec
 }
 
 func groupClass(g effective.Group) string {
@@ -219,6 +232,10 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		w.line(indent + " *")
 		w.doc(indent, "Observed: "+note)
 	}
+	if op.OptionalPayload && ret != nil {
+		w.line(indent + " *")
+		w.doc(indent, "Returns null when the server sends no data.")
+	}
 	w.line(indent + " *")
 	identity := "API-map identity: " + op.VariantID + " (wire name " + op.Function
 	if op.Subcategory != "" {
@@ -252,7 +269,7 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 func signature(w *writer, op effective.Operation, ret *effective.TypeSpec) {
 	native := "void"
 	if ret != nil {
-		native = nativeType(*ret)
+		native = nativeType(returnSpec(op, *ret))
 	}
 	parts := make([]string, len(op.Params))
 	sensitive := false
@@ -363,6 +380,9 @@ func specClass(g effective.Group) string {
 		}
 		if op.Unwrap != "" {
 			w.line("        'unwrap' => " + phpString(op.Unwrap) + ",")
+		}
+		if op.OptionalPayload && op.Returns != nil {
+			w.line("        'optional' => true,")
 		}
 		w.line("    ];")
 	}

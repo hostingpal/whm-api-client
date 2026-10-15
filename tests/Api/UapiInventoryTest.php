@@ -35,8 +35,8 @@ final class UapiInventoryTest extends TestCase
     ): void {
         [$client, $http] = self::client($route);
         $uapi = $client->uapi('npr');
-        $uapi->domains();
-        $uapi->php();
+        $uapi->domainInfo();
+        $uapi->langPhp();
         $uapi->features();
         $uapi->dns();
         self::assertSame([], $http->getRequests());
@@ -185,9 +185,9 @@ final class UapiInventoryTest extends TestCase
             'impacted domain' => [
                 '{}', 'null', '[]', '{"domains":null}', '{"domains":{}}', '{"domains":[false]}',
             ],
-            'features' => ['null', '[]', '{"php":true}', '{"php":"1"}', '{"php":2}', '{"php":null}'],
+            'features' => ['null', '[1]', '"php"', '{"php":true}', '{"php":"1"}', '{"php":2}', '{"php":null}'],
             'lookup' => ['{}', 'false', '"example.test"', '[null]', '[1]', '{"0":"record"}'],
-            'generated' => ['null', '{}', '[[]]', '[null]', '[{"domain":null}]', '[{"domain":1}]'],
+            'generated' => ['null', '{}', '[1]', '[null]', '[{"domain":null}]', '[{"domain":1}]'],
         ];
         foreach (['direct', 'bridge'] as $route) {
             foreach ($cases as $operation => $payloads) {
@@ -198,6 +198,20 @@ final class UapiInventoryTest extends TestCase
         }
     }
 
+    #[DataProvider('routes')]
+    public function testEmptyJsonArraysAreEmptyObjectsAndMaps(string $route): void
+    {
+        // The engine reads an empty JSON array as an empty object or map when no field is required.
+        [$client, $http] = self::client($route);
+        $uapi = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::success($route, '[]')));
+        $http->addResponse(new Response(200, [], self::success($route, '[[]]')));
+
+        self::assertSame([], $uapi->features()->listFeatures());
+        self::assertSame([[]], $uapi->dns()->fetchCpanelGeneratedDomains('example.test'));
+        self::assertCount(2, $http->getRequests());
+    }
+
     public function testBridgeGroupsKeepTargetsAndMetadataIsolated(): void
     {
         [$client, $http] = self::client('bridge');
@@ -206,10 +220,10 @@ final class UapiInventoryTest extends TestCase
         $http->addResponse(new Response(200, [], self::success('bridge', '{"php":1}')));
         $http->addResponse(new Response(200, [], self::success('bridge', '[{"domain":"other.test."}]')));
 
-        self::assertSame(['php' => 1], $npr->features()->list());
+        self::assertSame(['php' => 1], $npr->features()->listFeatures());
         $retained = $npr->responseMeta();
         self::assertNull($other->responseMeta());
-        self::assertSame([['domain' => 'other.test.']], $other->dns()->generatedDomains('other.test'));
+        self::assertSame([['domain' => 'other.test.']], $other->dns()->fetchCpanelGeneratedDomains('other.test'));
         self::assertSame($retained, $npr->responseMeta());
         self::assertNotSame($retained, $other->responseMeta());
         self::assertNull($client->whm()->responseMeta());
@@ -227,7 +241,7 @@ final class UapiInventoryTest extends TestCase
         [$client, $http] = self::client('direct');
         $uapi = $client->uapi('npr');
         $http->addResponse(new Response(200, [], self::success('direct', '{"version":"ea-php84"}')));
-        $uapi->php()->systemDefaultVersion();
+        $uapi->langPhp()->phpGetSystemDefaultVersion();
         $retained = $uapi->responseMeta();
         $http->addResponse(new Response(200, [], '{"result":{"status":0,"errors":["Invalid parameters"]}}'));
 
@@ -261,11 +275,11 @@ final class UapiInventoryTest extends TestCase
         [$client, $http] = self::client($route);
         $uapi = $client->uapi('npr');
         $http->addResponse(new Response(200, [], self::success($route, '{"version":"ea-php84"}')));
-        $uapi->php()->systemDefaultVersion();
+        $uapi->langPhp()->phpGetSystemDefaultVersion();
         $retained = $uapi->responseMeta();
 
         try {
-            (new ReflectionMethod($uapi->php(), 'impactedDomains'))->invoke($uapi->php(), $domains);
+            (new ReflectionMethod($uapi->langPhp(), 'phpGetImpactedDomains'))->invoke($uapi->langPhp(), $domains);
             self::fail('Expected an invalid repeated domain list to be rejected before I/O.');
         } catch (InvalidArgumentException) {
             self::assertNull($uapi->responseMeta());
@@ -302,8 +316,8 @@ final class UapiInventoryTest extends TestCase
         $http->addResponse(new Response(200, [], self::success('bridge', '{"php":1}')));
         $http->addResponse(new Response(200, [], self::success('bridge', '{"version":"ea-php84"}')));
         $whm->server()->version();
-        $other->features()->list();
-        $npr->php()->systemDefaultVersion();
+        $other->features()->listFeatures();
+        $npr->langPhp()->phpGetSystemDefaultVersion();
         $whmMetadata = $whm->responseMeta();
         $otherMetadata = $other->responseMeta();
         $retained = $npr->responseMeta();
@@ -312,7 +326,7 @@ final class UapiInventoryTest extends TestCase
         self::assertNotNull($retained);
 
         try {
-            $npr->php()->impactedDomains([]);
+            $npr->langPhp()->phpGetImpactedDomains([]);
             self::fail('Expected an invalid repeated domain list to be rejected before I/O.');
         } catch (InvalidArgumentException) {
             self::assertNull($npr->responseMeta());
@@ -330,7 +344,7 @@ final class UapiInventoryTest extends TestCase
         [$client, $http] = self::client($route);
         $uapi = $client->uapi('npr');
         $http->addResponse(new Response(200, [], self::success($route, '{"php":1}')));
-        $uapi->features()->list();
+        $uapi->features()->listFeatures();
         $retained = $uapi->responseMeta();
         $http->addException(new class ('private-token') extends RuntimeException implements ClientExceptionInterface {
         });
@@ -381,32 +395,37 @@ final class UapiInventoryTest extends TestCase
     private static function invoke(UapiClient $uapi, string $operation): mixed
     {
         return match ($operation) {
-            'primary' => $uapi->domains()->primary(),
-            'primary false' => $uapi->domains()->primary(false),
-            'primary true' => $uapi->domains()->primary(true),
-            'aliases' => $uapi->domains()->builtinAliases(),
-            'aliases false' => $uapi->domains()->builtinAliases(false),
-            'aliases true' => $uapi->domains()->builtinAliases(true),
-            'default', 'default null' => $uapi->php()->systemDefaultVersion(),
-            'handler home' => $uapi->php()->domainHandler('home'),
-            'handler vhost' => $uapi->php()->domainHandler('vhost', 'example.test'),
-            'handler missing vhost' => $uapi->php()->domainHandler('vhost'),
-            'handler unknown type' => $uapi->php()->domainHandler('unknown'),
-            'impacted domain' => $uapi->php()->impactedDomains('example.test'),
-            'impacted default' => $uapi->php()->impactedDomains(null, true),
-            'impacted both' => $uapi->php()->impactedDomains('example.test', false),
-            'impacted list' => $uapi->php()->impactedDomains(['example.test', 'sub.example.test']),
-            'impacted list false' => $uapi->php()->impactedDomains(['example.test', 'sub.example.test'], false),
-            'impacted list true' => $uapi->php()->impactedDomains(['example.test', 'sub.example.test'], true),
-            'impacted encoded list' => $uapi->php()->impactedDomains(
+            'primary' => $uapi->domainInfo()->primaryDomain(),
+            'primary false' => $uapi->domainInfo()->primaryDomain(false),
+            'primary true' => $uapi->domainInfo()->primaryDomain(true),
+            'aliases' => $uapi->domainInfo()->mainDomainBuiltinSubdomainAliases(),
+            'aliases false' => $uapi->domainInfo()->mainDomainBuiltinSubdomainAliases(false),
+            'aliases true' => $uapi->domainInfo()->mainDomainBuiltinSubdomainAliases(true),
+            'default', 'default null' => $uapi->langPhp()->phpGetSystemDefaultVersion(),
+            'handler home' => $uapi->langPhp()->phpGetDomainHandler('home'),
+            'handler vhost' => $uapi->langPhp()->phpGetDomainHandler('vhost', 'example.test'),
+            'handler missing vhost' => $uapi->langPhp()->phpGetDomainHandler('vhost'),
+            // Deliberately outside the documented 'home'|'vhost' values to reach the upstream error.
+            'handler unknown type' => (new ReflectionMethod($uapi->langPhp(), 'phpGetDomainHandler'))
+                ->invoke($uapi->langPhp(), 'unknown'),
+            'impacted domain' => $uapi->langPhp()->phpGetImpactedDomains('example.test'),
+            'impacted default' => $uapi->langPhp()->phpGetImpactedDomains(null, true),
+            'impacted both' => $uapi->langPhp()->phpGetImpactedDomains('example.test', false),
+            'impacted list' => $uapi->langPhp()->phpGetImpactedDomains(['example.test', 'sub.example.test']),
+            'impacted list false' => $uapi->langPhp()->phpGetImpactedDomains(
+                ['example.test', 'sub.example.test'],
+                false,
+            ),
+            'impacted list true' => $uapi->langPhp()->phpGetImpactedDomains(['example.test', 'sub.example.test'], true),
+            'impacted encoded list' => $uapi->langPhp()->phpGetImpactedDomains(
                 ['example.test', 'other&system_default=1.test'],
                 false,
             ),
-            'impacted no selection' => $uapi->php()->impactedDomains(),
-            'impacted false only' => $uapi->php()->impactedDomains(null, false),
-            'features', 'features empty', 'features numeric name' => $uapi->features()->list(),
+            'impacted no selection' => $uapi->langPhp()->phpGetImpactedDomains(),
+            'impacted false only' => $uapi->langPhp()->phpGetImpactedDomains(null, false),
+            'features', 'features empty', 'features numeric name' => $uapi->features()->listFeatures(),
             'lookup', 'lookup null', 'lookup empty' => $uapi->dns()->lookup('example.test'),
-            'generated', 'generated empty' => $uapi->dns()->generatedDomains('example.test'),
+            'generated', 'generated empty' => $uapi->dns()->fetchCpanelGeneratedDomains('example.test'),
             default => throw new RuntimeException('Unknown inventory test operation.'),
         };
     }

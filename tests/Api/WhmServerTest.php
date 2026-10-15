@@ -25,9 +25,9 @@ final class WhmServerTest extends TestCase
     /** @return iterable<string, array{string, string, string}> */
     public static function operations(): iterable
     {
-        yield 'hostname' => ['hostname', 'gethostname', '{"hostname":"hostname.example.test"}'];
-        yield 'load average' => ['loadAverage', 'systemloadavg', '{"one":0,"five":0.18,"fifteen":0.19}'];
-        yield 'disk usage' => ['diskUsage', 'getdiskusage', '{"partition":[{"device":"/dev/vda1",'
+        yield 'hostname' => ['getHostname', 'gethostname', '{"hostname":"hostname.example.test"}'];
+        yield 'load average' => ['getLoadAverage', 'systemloadavg', '{"one":0,"five":0.18,"fifteen":0.19}'];
+        yield 'disk usage' => ['getDiskUsage', 'getdiskusage', '{"partition":[{"device":"/dev/vda1",'
             . '"disk":"vda1","filesystem":"/","mount":"/","available":377856,"total":495844,'
             . '"used":92388,"percentage":20,"inodes_available":20575847,"inodes_total":20970944,'
             . '"inodes_used":395097,"inodes_ipercentage":2}]}'];
@@ -47,14 +47,14 @@ final class WhmServerTest extends TestCase
         $http->addResponse(new Response(200, [], self::response($operation, $data)));
 
         $payload = match ($method) {
-            'hostname' => $group->hostname(),
-            'loadAverage' => $group->loadAverage()->toArray(),
-            default => $group->diskUsage()->toArray(),
+            'getHostname' => $group->getHostname(),
+            'getLoadAverage' => $group->getLoadAverage(),
+            default => $group->getDiskUsage(),
         };
 
         self::assertSame(match ($method) {
-            'hostname' => 'hostname.example.test',
-            'loadAverage' => ['one' => 0, 'five' => 0.18, 'fifteen' => 0.19],
+            'getHostname' => 'hostname.example.test',
+            'getLoadAverage' => ['fifteen' => 0.19, 'five' => 0.18, 'one' => 0],
             default => ['partition' => [[
                 'available' => 377856,
                 'device' => '/dev/vda1',
@@ -121,9 +121,9 @@ final class WhmServerTest extends TestCase
             '{"one":"1.20","five":"1.19","fifteen":"1.23"}',
         )));
 
-        $load = $client->whm()->server()->loadAverage();
+        $load = $client->whm()->server()->getLoadAverage();
 
-        self::assertSame(['one' => '1.20', 'five' => '1.19', 'fifteen' => '1.23'], $load->toArray());
+        self::assertSame(['fifteen' => '1.23', 'five' => '1.19', 'one' => '1.20'], $load);
         self::assertSame(200, $client->whm()->responseMeta()?->httpStatus);
         self::assertSame(1, $client->whm()->responseMeta()?->whm['result'] ?? null);
     }
@@ -137,12 +137,12 @@ final class WhmServerTest extends TestCase
                 . '"inodes_total":null,"inodes_used":null}]}',
         )));
 
-        $usage = $client->whm()->server()->diskUsage();
+        $usage = $client->whm()->server()->getDiskUsage();
 
         self::assertSame(['partition' => [
             ['percentage' => 0],
             ['inodes_available' => null, 'inodes_ipercentage' => null, 'inodes_total' => null, 'inodes_used' => null],
-        ]], $usage->toArray());
+        ]], $usage);
         self::assertSame(200, $client->whm()->responseMeta()?->httpStatus);
         self::assertSame(1, $client->whm()->responseMeta()?->whm['result'] ?? null);
     }
@@ -154,7 +154,7 @@ final class WhmServerTest extends TestCase
         $http->addResponse(new Response(200, [], self::response('gethostname', $data)));
 
         try {
-            $client->whm()->server()->hostname();
+            $client->whm()->server()->getHostname();
             self::fail('Expected an invalid hostname payload.');
         } catch (InvalidResponseException $exception) {
             self::assertSame($client->whm()->responseMeta(), $exception->metadata);
@@ -181,7 +181,165 @@ final class WhmServerTest extends TestCase
                 'gethostname',
                 json_encode(['hostname' => $hostname], JSON_THROW_ON_ERROR),
             )));
-            self::assertSame($hostname, $client->whm()->server()->hostname());
+            self::assertSame($hostname, $client->whm()->server()->getHostname());
+        }
+    }
+
+    public function testLoadAverageKeepsNumbersAndOmissionWithoutCoercionOrBounds(): void
+    {
+        self::assertSame(
+            ['fifteen' => 125.5, 'five' => 0.18, 'one' => 0],
+            $this->execute('getLoadAverage', '{"one":0,"five":0.18,"fifteen":125.5,"extension":"ignored"}'),
+        );
+        self::assertSame(['one' => -1], $this->execute('getLoadAverage', '{"one":-1}'));
+        self::assertSame([], $this->execute('getLoadAverage', '{}'));
+        self::assertSame(
+            ['fifteen' => '1.230000000000000001', 'five' => '0.00', 'one' => '1.20'],
+            $this->execute('getLoadAverage', '{"one":"1.20","five":"0.00","fifteen":"1.230000000000000001"}'),
+        );
+        self::assertSame(
+            ['fifteen' => '00.25', 'five' => '+1', 'one' => '-0.25'],
+            $this->execute('getLoadAverage', '{"one":"-0.25","five":"+1","fifteen":"00.25"}'),
+        );
+    }
+
+    public function testDiskUsageMapsEveryReviewedFieldAndKeepsOmittedEmptyAndBlankValuesDistinct(): void
+    {
+        self::assertSame(['partition' => [[
+            'available' => 377856,
+            'device' => '/dev/vda1',
+            'disk' => 'vda1',
+            'filesystem' => '/',
+            'inodes_available' => 20575847,
+            'inodes_ipercentage' => 2,
+            'inodes_total' => 20970944,
+            'inodes_used' => 395097,
+            'mount' => '/boot',
+            'percentage' => 20,
+            'total' => 495844,
+            'used' => 92388,
+        ]]], $this->execute('getDiskUsage', '{"partition":[{"available":377856,"device":"/dev/vda1",'
+            . '"disk":"vda1","filesystem":"/","inodes_available":20575847,"inodes_ipercentage":2,'
+            . '"inodes_total":20970944,"inodes_used":395097,"mount":"/boot","percentage":20,"total":495844,'
+            . '"used":92388,"extension":{}}],"extension":true}'));
+        self::assertSame([], $this->execute('getDiskUsage', '{}'));
+        self::assertSame(['partition' => []], $this->execute('getDiskUsage', '{"partition":[]}'));
+        self::assertSame(['partition' => [[]]], $this->execute('getDiskUsage', '{"partition":[{}]}'));
+        self::assertSame(
+            ['partition' => [['device' => '/dev/vda1'], ['device' => '/dev/vdb1']]],
+            $this->execute('getDiskUsage', '{"partition":[{"device":"/dev/vda1"},{"device":"/dev/vdb1"}]}'),
+        );
+        $minima = ['available' => 1, 'device' => '', 'disk' => '', 'filesystem' => '', 'inodes_available' => 1,
+            'inodes_ipercentage' => 0, 'inodes_total' => 1, 'inodes_used' => 1, 'mount' => '', 'percentage' => 1,
+            'total' => 1, 'used' => 1];
+        self::assertSame(['partition' => [$minima]], $this->execute(
+            'getDiskUsage',
+            json_encode(['partition' => [$minima]], JSON_THROW_ON_ERROR),
+        ));
+        $unbounded = ['available' => 10, 'inodes_available' => 20, 'inodes_ipercentage' => 101,
+            'inodes_total' => 1, 'inodes_used' => 30, 'percentage' => 102, 'total' => 1, 'used' => 40];
+        self::assertSame(['partition' => [$unbounded]], $this->execute(
+            'getDiskUsage',
+            json_encode(['partition' => [$unbounded]], JSON_THROW_ON_ERROR),
+        ));
+    }
+
+    public function testEmptyJsonArraysAreEmptyObjects(): void
+    {
+        // The engine reads an empty JSON array as an empty object when no field is required.
+        self::assertSame([], $this->execute('getLoadAverage', '[]'));
+        self::assertSame([], $this->execute('getDiskUsage', '[]'));
+        self::assertSame(['partition' => [[]]], $this->execute('getDiskUsage', '{"partition":[[]]}'));
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function deferredDiskMinima(): iterable
+    {
+        foreach (
+            ['available', 'inodes_available', 'inodes_ipercentage', 'inodes_total', 'inodes_used', 'percentage',
+                'total', 'used'] as $field
+        ) {
+            yield $field . ' negative' => [$field, -1];
+            if ($field !== 'inodes_ipercentage' && $field !== 'percentage') {
+                yield $field . ' below minimum' => [$field, 0];
+            }
+        }
+    }
+
+    /**
+     * The deleted DiskPartition DTO rejected these values. Minimum/range enforcement is deferred to bead
+     * whm-api-client-8x0.18, so the generated engine validates only their integer type.
+     */
+    #[DataProvider('deferredDiskMinima')]
+    public function testDiskMinimaAreDeferredToTypeValidation(string $field, int $value): void
+    {
+        self::assertSame(['partition' => [[$field => $value]]], $this->execute(
+            'getDiskUsage',
+            json_encode(['partition' => [[$field => $value]]], JSON_THROW_ON_ERROR),
+        ));
+    }
+
+    #[DataProvider('invalidPayloads')]
+    public function testMalformedPayloadsRejectWithTheResponseSnapshot(string $method, string $data): void
+    {
+        [$client, $http] = $this->client();
+        $operation = $method === 'getLoadAverage' ? 'systemloadavg' : 'getdiskusage';
+        $http->addResponse(new Response(200, [], self::response($operation, $data)));
+
+        try {
+            $client->whm()->server()->{$method}();
+            self::fail('Expected an invalid server payload.');
+        } catch (InvalidResponseException $exception) {
+            self::assertSame($client->whm()->responseMeta(), $exception->metadata);
+            self::assertSame($operation, $exception->metadata?->whm['command'] ?? null);
+            self::assertStringNotContainsString('sensitive-response-value', $exception->getMessage());
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function invalidPayloads(): iterable
+    {
+        $partition = static fn (array $record): string => json_encode(['partition' => [$record]], JSON_THROW_ON_ERROR);
+        foreach (['null', '"sensitive-response-value"', '1', 'true'] as $data) {
+            yield 'load average payload ' . $data => ['getLoadAverage', $data];
+            yield 'disk usage payload ' . $data => ['getDiskUsage', $data];
+        }
+        foreach (['one', 'five', 'fifteen'] as $field) {
+            foreach (
+                [null, 'invalid', true, [], (object) [], '', ' 1.20', "1.20\n", '1e2', 'NaN', 'INF', '.', '1.2x',
+                    str_repeat('9', 400)] as $index => $value
+            ) {
+                yield 'load ' . $field . ' ' . $index => [
+                    'getLoadAverage',
+                    json_encode([$field => $value], JSON_THROW_ON_ERROR),
+                ];
+            }
+        }
+        yield 'null partition' => ['getDiskUsage', '{"partition":null}'];
+        yield 'scalar partition' => ['getDiskUsage', '{"partition":"/dev/vda1"}'];
+        yield 'object partition' => ['getDiskUsage', '{"partition":{}}'];
+        yield 'keyed partition' => ['getDiskUsage', '{"partition":{"1":{}}}'];
+        yield 'null record' => ['getDiskUsage', '{"partition":[null]}'];
+        yield 'scalar record' => ['getDiskUsage', '{"partition":["/dev/vda1"]}'];
+        yield 'invalid second record' => ['getDiskUsage', '{"partition":[{},{"available":"1"}]}'];
+        foreach (['device', 'disk', 'filesystem', 'mount'] as $field) {
+            foreach ([null, false, 1, (object) [], [1]] as $index => $value) {
+                yield $field . ' invalid string ' . $index => ['getDiskUsage', $partition([$field => $value])];
+            }
+            yield $field . ' float' => ['getDiskUsage', '{"partition":[{"' . $field . '":1.0}]}'];
+        }
+        foreach (
+            ['available', 'inodes_available', 'inodes_ipercentage', 'inodes_total', 'inodes_used', 'percentage',
+                'total', 'used'] as $field
+        ) {
+            foreach ([false, 'sensitive-response-value', '1', (object) [], [1]] as $index => $value) {
+                yield $field . ' invalid integer ' . $index => ['getDiskUsage', $partition([$field => $value])];
+            }
+            yield $field . ' float' => ['getDiskUsage', '{"partition":[{"' . $field . '":1.0}]}'];
+            if (!str_starts_with($field, 'inodes_')) {
+                yield $field . ' null' => ['getDiskUsage', $partition([$field => null])];
+            }
         }
     }
 
@@ -197,7 +355,7 @@ final class WhmServerTest extends TestCase
         [$client, $http] = $this->client();
         $whm = $client->whm();
         $http->addResponse(new Response(200, [], self::response('gethostname', '{"hostname":"example.test"}')));
-        $whm->server()->hostname();
+        $whm->server()->getHostname();
         $retained = $whm->responseMeta();
         $http->addResponse(new Response($status, [], $body));
 
@@ -221,7 +379,7 @@ final class WhmServerTest extends TestCase
     /** @return iterable<string, array{string, int, string, class-string<ApiException>, int|string|null}> */
     public static function failedResponses(): iterable
     {
-        foreach (['hostname', 'loadAverage', 'diskUsage'] as $method) {
+        foreach (['getHostname', 'getLoadAverage', 'getDiskUsage'] as $method) {
             yield $method . ' API error' => [$method, 200, '{"metadata":{"result":0,"reason":"fixture-token"}}',
                 ApiErrorException::class, 0];
             yield $method . ' missing data' => [$method, 200, '{"metadata":{"result":1}}',
@@ -232,9 +390,9 @@ final class WhmServerTest extends TestCase
             yield $method . ' redirect' => [$method, 302, '', HttpException::class, null];
             yield $method . ' malformed JSON' => [$method, 200, '{invalid', InvalidResponseException::class, null];
         }
-        yield 'bad load window' => ['loadAverage', 200, '{"metadata":{"result":1},"data":{"five":"0.18oops"}}',
+        yield 'bad load window' => ['getLoadAverage', 200, '{"metadata":{"result":1},"data":{"five":"0.18oops"}}',
             InvalidResponseException::class, 1];
-        yield 'bad disk record' => ['diskUsage', 200, '{"metadata":{"result":1},"data":{"partition":[false]}}',
+        yield 'bad disk record' => ['getDiskUsage', 200, '{"metadata":{"result":1},"data":{"partition":[false]}}',
             InvalidResponseException::class, 1];
     }
 
@@ -265,6 +423,22 @@ final class WhmServerTest extends TestCase
             self::assertSame($operation, $retained?->whm['command'] ?? null);
         }
         self::assertCount(2, $http->getRequests());
+    }
+
+    /**
+     * Execute one parameterless server operation against a successful envelope carrying the payload.
+     *
+     * @return array<string, mixed>
+     */
+    private function execute(string $method, string $data): array
+    {
+        [$client, $http] = $this->client();
+        $operation = $method === 'getLoadAverage' ? 'systemloadavg' : 'getdiskusage';
+        $http->addResponse(new Response(200, [], self::response($operation, $data)));
+
+        return $method === 'getLoadAverage'
+            ? $client->whm()->server()->getLoadAverage()
+            : $client->whm()->server()->getDiskUsage();
     }
 
     private static function response(string $operation, string $data): string
