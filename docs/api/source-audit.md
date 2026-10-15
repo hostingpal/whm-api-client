@@ -655,3 +655,42 @@ records and explicit mail-domain options remain offline-tested only. Saved data
 contains sanitized structural paths and types, not live domains, account values,
 request arguments, raw responses or credentials. The evidence/audit commit changes
 no executable code or contracts from the recorded revision.
+
+## SSL and AutoSSL inventory evidence — 2026-10-16
+
+The SSL slice adds six generated UAPI operations: `installed_hosts`,
+`get_autossl_excluded_domains`, `get_autossl_problems`,
+`get_autossl_renewal_status`, `is_autossl_check_in_progress` and
+`can_ssl_redirect`. Each has a reviewed GET recipe through both direct cPanel and
+WHM-bridged UAPI for account `npr`; renewal status explicitly targets `npr.rs`.
+The renewal operation requires cPanel 134 or later. Independent endpoint fixtures
+cover optional and nullable certificate fields, literal dotted keys, integer
+flags, domain encoding, empty lists, failures, metadata and account isolation.
+The generated surface now contains 70 operations in 11 groups.
+
+[SSL inventory evidence](evidence/2026-10-16-ssl-inventory.json) records revision
+`a5aacbf8e342c443a210792f22b76698be93ca40`, actual methods/routes and source, map,
+generator, overlay and effective-contract hashes. The run occurred on October 16
+in Europe/Belgrade; the artifact timestamps are October 15 in UTC. All 35 probes
+across 21 operations, including the 12 new SSL probes, passed API, payload and
+probe checks on `test.oblak.host`, cPanel `11.138.0.15`, with HTTP 200 and zero
+structural discrepancies. No response correction was needed. Each probe captured
+its original response before normalization and field filtering, without replay.
+
+Both `installed_hosts` routes returned nonempty lists. Certificate issuer and
+subject fields retained the documented literal dotted keys. `modulus` and
+`modulus_length` were explicitly null; `ecdsa_curve_name`, `ecdsa_public` and
+`key_algorithm` were absent. The observed timestamps and flags were integers,
+while certificate text, paths and names were strings. Both renewal responses
+included all four integer flags. Check-progress and redirect-capability payloads
+were integers; saved evidence does not retain their values or establish that a
+check was running, a renewal will happen or redirects are enabled.
+
+Exclusion and problem lists were empty on both routes, so their item fields remain
+offline-tested only. Non-null modulus values and the absent certificate fields
+also remain unobserved in this run. These observations are scoped to this server,
+version, account and recipe; they do not establish all certificate variants or
+complete SSL coverage. Saved evidence contains structural paths and types only,
+with no certificate bodies, account/domain values, paths, arbitrary diagnostics,
+request arguments or credentials. The evidence/audit commit changes no executable
+code or contracts from the recorded revision.
