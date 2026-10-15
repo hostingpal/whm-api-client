@@ -17,7 +17,7 @@ final class EvidenceRunnerTest extends TestCase
 {
     private const ROOT = __DIR__ . '/../../..';
 
-    public function testFourProbesUseGeneratedClientAndRawSameResponse(): void
+    public function testReviewedProbesUseGeneratedClientAndRawSameResponse(): void
     {
         $http = new Client();
         foreach (
@@ -26,6 +26,8 @@ final class EvidenceRunnerTest extends TestCase
             '{"metadata":{"result":1},"data":{"one":"0.50","private@example.test":"secret"}}',
             '{"status":1,"data":{"main_domain":"example.test","sub_domains":[]}}',
             '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":{"main_domain":"example.test"}}}}',
+                '{"status":1,"data":[{"email":"mailbox@example.test","suspended_login":0}]}',
+                '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":[]}}}',
             ] as $body
         ) {
             $http->addResponse(new Response(200, [], $body));
@@ -35,9 +37,15 @@ final class EvidenceRunnerTest extends TestCase
             '1',
             ['whm' => 'synthetic-whm', 'cpanel' => 'synthetic-cpanel'],
         );
-        self::assertCount(4, $http->getRequests());
-        self::assertSame(['whm', 'whm', 'direct-uapi', 'bridged-uapi'], array_column($records, 'route'));
-        self::assertSame(['passed', 'passed', 'passed', 'passed'], array_column($records, 'probe_outcome'));
+        self::assertCount(6, $http->getRequests());
+        self::assertSame(
+            ['whm', 'whm', 'direct-uapi', 'bridged-uapi', 'direct-uapi', 'bridged-uapi'],
+            array_column($records, 'route'),
+        );
+        self::assertSame(array_fill(0, 6, 'passed'), array_column($records, 'probe_outcome'));
+        self::assertSame(['string'], $records[4]['payload_paths']['$[].email']);
+        self::assertSame(['empty-list'], $records[5]['payload_paths']['$']);
+        self::assertArrayNotHasKey('$[].email', $records[5]['payload_paths']);
         self::assertSame(['numeric-string'], $records[1]['payload_paths']['$.one']);
         self::assertSame([['path' => '$.*', 'kind' => 'unknown_field']], $records[1]['discrepancies']);
         self::assertSame(['empty-list'], $records[2]['payload_paths']['$.sub_domains']);

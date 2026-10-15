@@ -83,6 +83,8 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
             'whm1:systemloadavg|whm' => 'whm1:systemloadavg whm',
             'uapi:DomainInfo/list_domains|direct-uapi' => 'uapi:DomainInfo/list_domains direct-uapi',
             'uapi:DomainInfo/list_domains|bridged-uapi' => 'uapi:DomainInfo/list_domains bridged-uapi',
+            'uapi:Email/list_pops|direct-uapi' => 'uapi:Email/list_pops direct-uapi',
+            'uapi:Email/list_pops|bridged-uapi' => 'uapi:Email/list_pops bridged-uapi',
         ];
         $outcomes = [
             'passed' => 'passed', 'failed' => 'failed', 'skipped' => 'skipped', 'unsupported' => 'unsupported',

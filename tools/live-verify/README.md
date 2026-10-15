@@ -1,14 +1,14 @@
 # Live contract evidence
 
 This development-only PHP command exercises the generated client on the approved
-test server. The first slice covers WHM `version`, WHM `systemloadavg`, and UAPI
-`DomainInfo/list_domains` through direct cPanel and WHM-bridged routes. It performs
-four GET requests, with exact route and argument guards, verified TLS, redirects
+test server. It covers WHM `version`, WHM `systemloadavg`, and UAPI
+`DomainInfo/list_domains` and `Email/list_pops` through direct cPanel and WHM-bridged
+routes. It performs six GET requests, with exact route and argument guards, verified TLS, redirects
 disabled, and no retries. The core package has no dependency on this tool.
 
 ```sh
 # Export both OBLAK_TEST_WHM_KEY and OBLAK_TEST_NPR_KEY without printing them.
-WHM_API_LIVE=1 composer live:verify -- --output=docs/api/evidence/core.json
+WHM_API_LIVE=1 composer live:verify -- --output=docs/api/evidence/read-only.json
 ```
 
 Run from a committed checkout after `composer check` and `composer api-map:check`.

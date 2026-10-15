@@ -594,3 +594,15 @@ IP and the first nameserver to be set; the full lifecycle then passed **1 test a
 assertions**. Read-only checks after both runs confirmed that the server reports the
 account as nonexistent and that its zone is gone. These observations remain scoped to
 the tested server and date without saved revision-bound evidence.
+
+## Sanitized evidence runner — 2026-10-15
+
+The first runner slice exercised WHM `version` and `systemloadavg`, plus UAPI
+`DomainInfo/list_domains` through direct and WHM-bridged routes on `test.oblak.host`.
+All four generated calls returned successful API outcomes and passed payload
+validation, with no structural discrepancies on cPanel `11.138.0.15`.
+[Core evidence](evidence/2026-10-15-core.json) records revision
+`788cdbd34b470c77af10a95374fcf70c2434eab6`, actual routes/methods and source,
+generator, overlay and effective-contract hashes. No overlay correction was needed.
+The observer captured the same response bytes before normalization; only sanitized
+paths/types were persisted. Empty lists do not establish their item types.

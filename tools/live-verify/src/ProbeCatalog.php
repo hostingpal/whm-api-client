@@ -6,6 +6,7 @@ namespace HostingPal\WhmApiClient\Tools\LiveVerify;
 
 use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\DomainInfoSpec;
+use HostingPal\WhmApiClient\Api\Uapi\Spec\EmailSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
 use HostingPal\WhmApiClient\Client;
 use JsonException;
@@ -19,6 +20,7 @@ final class ProbeCatalog
     {
         $server = self::read($root . '/docs/api/overlay/whm/server-administration.json');
         $domains = self::read($root . '/docs/api/overlay/uapi/DomainInfo.json');
+        $email = self::read($root . '/docs/api/overlay/uapi/Email.json');
 
         return [
             self::probe(
@@ -53,6 +55,23 @@ final class ProbeCatalog
                 'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
                 . '&cpanel.module=DomainInfo&cpanel.function=list_domains',
                 static fn (Client $client): mixed => $client->uapi('npr')->domainInfo()->listDomains(),
+            ),
+            self::probe(
+                $email,
+                'uapi:Email/list_pops',
+                'direct-uapi',
+                EmailSpec::LIST_POPS,
+                'https://test.oblak.host:2083/execute/Email/list_pops',
+                static fn (Client $client): mixed => $client->uapi()->email()->listPops(),
+            ),
+            self::probe(
+                $email,
+                'uapi:Email/list_pops',
+                'bridged-uapi',
+                EmailSpec::LIST_POPS,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=Email&cpanel.function=list_pops',
+                static fn (Client $client): mixed => $client->uapi('npr')->email()->listPops(),
             ),
         ];
     }

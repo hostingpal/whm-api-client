@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Email",
+  "operations": {
+    "uapi:Email/list_pops": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting noValidate runs the email database validation check; true skips it. Omitting skipMain includes the cPanel account's main account; true excludes it. The regex parameter filters results with a Perl Compatible Regular Expression."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    }
+  }
+}

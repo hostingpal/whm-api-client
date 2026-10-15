@@ -21,10 +21,12 @@ final class ProbeCatalogTest extends TestCase
         mkdir($root . '/docs/api/overlay/uapi', 0700, true);
         $server = $root . '/docs/api/overlay/whm/server-administration.json';
         $domains = $root . '/docs/api/overlay/uapi/DomainInfo.json';
+        $email = $root . '/docs/api/overlay/uapi/Email.json';
         file_put_contents($server, json_encode(['operations' => [
             'whm1:version' => $recipe === null ? [] : ['probe' => $recipe],
         ]], JSON_THROW_ON_ERROR));
         file_put_contents($domains, '{"operations":{}}');
+        file_put_contents($email, '{"operations":{}}');
         try {
             $probes = ProbeCatalog::load($root);
             self::assertSame($outcome, $probes[0]->unavailable);
@@ -42,6 +44,7 @@ final class ProbeCatalogTest extends TestCase
         } finally {
             unlink($server);
             unlink($domains);
+            unlink($email);
             rmdir(dirname($server));
             rmdir(dirname($domains));
             rmdir($root . '/docs/api/overlay');

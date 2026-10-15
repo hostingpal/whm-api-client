@@ -4,7 +4,8 @@ Status: implemented through phase 1 (plans 1-4); design agreed with the user on
 2026-10-14.
 Delivery and validation policy refined on 2026-10-15 under
 `whm-api-client-8x0.26`. The first phase-2 evidence runner and fingerprints are
-implemented under `8x0.10.1`; broader probe coverage and the consumer exercise
+implemented under `8x0.10.1`, with Email inventory added under `8x0.10.2`;
+broader probe coverage and the consumer exercise
 remain planned work.
 Decision record: `whm-api-client-8x0.10`. This design supersedes the
 "typed core plus generic calls / lean pattern" scaling decision
@@ -243,7 +244,7 @@ The generated PHP is committed so consumers never need Go; CI regenerates it and
 fails on any difference.
 
 Generation is checked against the selected overlay scope. The current `listed`
-scope contains 60 operations; only a complete `all` scope establishes that every
+scope contains 61 operations; only a complete `all` scope establishes that every
 non-excluded operation in the map is generated. The generated coverage summary
 currently reports generated groups and exclusions. Phase 2 adds evidence-backed
 offline-test and live-observation reporting; neither is implied by generation.
