@@ -229,6 +229,9 @@ final readonly class Accounts
      *
      * This function modifies a cPanel or reseller account's password.
      *
+     * Observed: Omitting dbPassUpdate applies the documented default 1, so the account's MySQL password changes as
+     * well; pass false to keep it.
+     *
      * Returns null when the server sends no data.
      *
      * API-map identity: whm1:passwd#GET (wire name passwd; Passwords).
@@ -722,6 +725,8 @@ final readonly class Accounts
      *
      * This function deletes a cPanel or WHM account.
      *
+     * Observed: Deletes the account and its data; the API cannot reverse the removal.
+     *
      * API-map identity: whm1:removeacct#GET (wire name removeacct; Account Management).
      *
      * @param string $username The account's username.
@@ -738,6 +743,8 @@ final readonly class Accounts
      * Suspend cPanel account.
      *
      * This function suspends an account.
+     *
+     * Observed: Omitting reason records the documented default reason Unknown; pass a reason.
      *
      * API-map identity: whm1:suspendacct#GET (wire name suspendacct; Suspensions).
      *

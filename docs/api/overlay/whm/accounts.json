@@ -54,13 +54,14 @@
     },
     "whm1:passwd": {
       "name": "changePassword",
+      "notes": ["Omitting dbPassUpdate applies the documented default 1, so the account's MySQL password changes as well; pass false to keep it."],
       "optional_payload": true,
       "order": ["user", "password"],
       "params": {"enabledigest": {"omit": true}},
       "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "The pinned passwd response does not require data, and the deleted hand-written changePassword() (4d5088a) returned an empty result when WHM sent no data or null data."}]
     },
-    "whm1:removeacct": {"name": "removeAccount", "params": {"user": {"omit": true}}},
-    "whm1:suspendacct": {"name": "suspendAccount", "order": ["user", "reason", "disallowun", "leave-ftp-accts-enabled"]},
+    "whm1:removeacct": {"name": "removeAccount", "notes": ["Deletes the account and its data; the API cannot reverse the removal."], "params": {"user": {"omit": true}}},
+    "whm1:suspendacct": {"name": "suspendAccount", "notes": ["Omitting reason records the documented default reason Unknown; pass a reason."], "order": ["user", "reason", "disallowun", "leave-ftp-accts-enabled"]},
     "whm1:unsuspendacct": {"name": "unsuspendAccount"}
   }
 }
