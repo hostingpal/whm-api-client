@@ -82,6 +82,11 @@ final class DnsLiveTest extends TestCase
             ($records[0]['type'] ?? null) === $recordType,
             'getzonerecord must return the record type parse_dns_zone reported for that line.',
         );
+        // The record data lives in the per-type fields of the pinned discriminator mapping, beyond the base fields.
+        self::assertTrue(
+            array_diff_key($records[0], array_flip(['Line', 'class', 'name', 'ttl', 'type'])) !== [],
+            'getzonerecord must return the record type fields beyond the five base fields.',
+        );
         self::assertWhmSuccess($whm);
     }
 

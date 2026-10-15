@@ -65,8 +65,107 @@ final class DnsSliceTest extends TestCase
     /** @return iterable<string, array{string, list<mixed>, string, string, string, mixed}> */
     public static function whmOperations(): iterable
     {
-        $zoneRecord = '{"Line":5,"class":"IN","name":"example.test.","ttl":14400,"type":"A"}';
-        $zoneRecordExpected = ['Line' => 5, 'class' => 'IN', 'name' => 'example.test.', 'ttl' => 14400, 'type' => 'A'];
+        // getzonerecord returns the base fields plus the fields of the record's type (the pinned discriminator
+        // mapping); each fixture is [line, wire record, expected record in spec field order].
+        $zoneRecords = [
+            'A' => [5, '{"Line":5,"address":"192.0.2.1","class":"IN","name":"www.example.test.","ttl":14400,'
+                . '"type":"A"}', [
+                'Line' => 5,
+                'address' => '192.0.2.1',
+                'class' => 'IN',
+                'name' => 'www.example.test.',
+                'ttl' => 14400,
+                'type' => 'A',
+            ]],
+            'AAAA' => [6, '{"Line":6,"address":"2001:db8::1","class":"IN","name":"www.example.test.","ttl":14400,'
+                . '"type":"AAAA"}', [
+                'Line' => 6,
+                'address' => '2001:db8::1',
+                'class' => 'IN',
+                'name' => 'www.example.test.',
+                'ttl' => 14400,
+                'type' => 'AAAA',
+            ]],
+            'MX' => [9, '{"Line":9,"class":"IN","exchange":"mail.example.test.","name":"example.test.","preference":10,'
+                . '"ttl":14400,"type":"MX"}', [
+                'Line' => 9,
+                'class' => 'IN',
+                'exchange' => 'mail.example.test.',
+                'name' => 'example.test.',
+                'preference' => 10,
+                'ttl' => 14400,
+                'type' => 'MX',
+            ]],
+            'TXT' => [11, '{"Line":11,"class":"IN","name":"example.test.","ttl":14400,"txtdata":"v=spf1 -all",'
+                . '"type":"TXT","unencoded":1}', [
+                'Line' => 11,
+                'class' => 'IN',
+                'name' => 'example.test.',
+                'ttl' => 14400,
+                'txtdata' => 'v=spf1 -all',
+                'type' => 'TXT',
+                'unencoded' => 1,
+            ]],
+            'SOA' => [1, '{"Line":1,"Lines":10,"class":"IN","expire":604800,"mname":"ns1.example.test.",'
+                . '"name":"example.test.","refresh":3600,"retry":1800,"rname":"hostmaster.example.test.",'
+                . '"serial":2026101501,"ttl":86400,"type":"SOA"}', [
+                'Line' => 1,
+                'Lines' => 10,
+                'class' => 'IN',
+                'expire' => 604800,
+                'mname' => 'ns1.example.test.',
+                'name' => 'example.test.',
+                'refresh' => 3600,
+                'retry' => 1800,
+                'rname' => 'hostmaster.example.test.',
+                'serial' => 2026101501,
+                'ttl' => 86400,
+                'type' => 'SOA',
+            ]],
+            'NS' => [3, '{"Line":3,"class":"IN","name":"example.test.","nsdname":"ns1.example.test.","ttl":86400,'
+                . '"type":"NS"}', [
+                'Line' => 3,
+                'class' => 'IN',
+                'name' => 'example.test.',
+                'nsdname' => 'ns1.example.test.',
+                'ttl' => 86400,
+                'type' => 'NS',
+            ]],
+            'CNAME' => [12, '{"Line":12,"class":"IN","cname":"example.test.","flatten":1,"flatten_to":"192.0.2.1",'
+                . '"name":"ftp.example.test.","ttl":14400,"type":"CNAME"}', [
+                'Line' => 12,
+                'class' => 'IN',
+                'cname' => 'example.test.',
+                'flatten' => 1,
+                'flatten_to' => '192.0.2.1',
+                'name' => 'ftp.example.test.',
+                'ttl' => 14400,
+                'type' => 'CNAME',
+            ]],
+            'SRV' => [14, '{"Line":14,"class":"IN","name":"_sip._tcp.example.test.","port":5060,"priority":10,'
+                . '"target":"sip.example.test.","ttl":14400,"type":"SRV","weight":5}', [
+                'Line' => 14,
+                'class' => 'IN',
+                'name' => '_sip._tcp.example.test.',
+                'port' => 5060,
+                'priority' => 10,
+                'target' => 'sip.example.test.',
+                'ttl' => 14400,
+                'type' => 'SRV',
+                'weight' => 5,
+            ]],
+            'CAA' => [15, '{"Line":15,"class":"IN","flag":0,"name":"example.test.","tag":"issue","ttl":14400,'
+                . '"type":"CAA","value":"ca.example.test"}', [
+                'Line' => 15,
+                'class' => 'IN',
+                'flag' => 0,
+                'name' => 'example.test.',
+                'tag' => 'issue',
+                'ttl' => 14400,
+                'type' => 'CAA',
+                'value' => 'ca.example.test',
+            ]],
+        ];
         $key = '{"active":1,"algo_desc":"ECDSA","algo_num":13,"algo_tag":"ECDSAP256SHA256","bits":256,'
             . '"created":1760000000,"digests":[{"algo_desc":"SHA-256","algo_num":2,"digest":"ABCDEF"}],'
             . '"flags":257,"key_id":1,"key_tag":12345,"key_type":"ksk","privatekey":"hidden"}';
@@ -136,9 +235,31 @@ final class DnsSliceTest extends TestCase
             ['nameservers' => ['ns1.example.test', 'ns2.example.test']],
         ];
         yield 'get_nameserver_config omitted' => ['getNameserverConfig', [], 'get_nameserver_config', '', '{}', []];
-        yield 'getzonerecord' => [
-            'getZoneRecord', ['example.test', 5], 'getzonerecord', 'domain=example.test&line=5',
-            '{"record":[' . $zoneRecord . ']}', ['record' => [$zoneRecordExpected]],
+        foreach ($zoneRecords as $type => [$line, $wire, $record]) {
+            yield 'getzonerecord ' . $type => [
+                'getZoneRecord', ['example.test', $line], 'getzonerecord', 'domain=example.test&line=' . $line,
+                '{"record":[' . $wire . ']}', ['record' => [$record]],
+            ];
+        }
+        yield 'getzonerecord SOA decimal-string timers (observed 2026-10-15)' => [
+            'getZoneRecord', ['example.test', 1], 'getzonerecord', 'domain=example.test&line=1',
+            '{"record":[{"Line":1,"Lines":10,"expire":"604800","refresh":"3600","retry":"1800",'
+                . '"serial":"2026101501","ttl":86400,"type":"SOA"}]}',
+            ['record' => [[
+                'Line' => 1,
+                'Lines' => 10,
+                'expire' => 604800,
+                'refresh' => 3600,
+                'retry' => 1800,
+                'serial' => 2026101501,
+                'ttl' => 86400,
+                'type' => 'SOA',
+            ]]],
+        ];
+        yield 'getzonerecord MX decimal-string preference (observed 2026-10-15)' => [
+            'getZoneRecord', ['example.test', 9], 'getzonerecord', 'domain=example.test&line=9',
+            '{"record":[{"Line":9,"exchange":"mail.example.test.","preference":"10","type":"MX"}]}',
+            ['record' => [['Line' => 9, 'exchange' => 'mail.example.test.', 'preference' => 10, 'type' => 'MX']]],
         ];
         yield 'getzonerecord omitted fields' => [
             'getZoneRecord', ['example.test', 0], 'getzonerecord', 'domain=example.test&line=0',
@@ -294,7 +415,11 @@ final class DnsSliceTest extends TestCase
             ['getNameserverConfig', [], 'get_nameserver_config', ['null', '"x"', '{"nameservers":"ns1.example.test"}',
                 '{"nameservers":[1]}', '{"nameservers":[null]}']],
             ['getZoneRecord', ['example.test', 1], 'getzonerecord', ['null', '{"record":[{"Line":"5"}]}',
-                '{"record":[{"ttl":"14400"}]}', '{"record":{"Line":5}}']],
+                '{"record":[{"ttl":"14400"}]}', '{"record":{"Line":5}}', '{"record":[{"address":1,"type":"A"}]}',
+                '{"record":[{"preference":"ten","type":"MX"}]}', '{"record":[{"txtdata":[],"type":"TXT"}]}',
+                '{"record":[{"type":"TXT","unencoded":2}]}', '{"record":[{"serial":1.5,"type":"SOA"}]}',
+                '{"record":[{"serial":"2026.1","type":"SOA"}]}', '{"record":[{"refresh":"036","type":"SOA"}]}',
+                '{"record":[{"preference":"010","type":"MX"}]}', '{"record":[{"flatten":true,"type":"CNAME"}]}']],
             ['hasLocalAuthority', ['example.test'], 'has_local_authority', ['null', '{"records":[{"domain":1}]}',
                 '{"records":[{"local_authority":2}]}', '{"records":[{"nameservers":"ns1"}]}',
                 '{"records":[{"error":5}]}']],
