@@ -291,9 +291,11 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
 ## Generated-client delivery
 
 - Follow the [current delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
-  The next runner slice is `8x0.10.1`, followed by the read-only Email inventory
-  slice `8x0.10.2`; the HostingPal consumer exercise `8x0.10.3` can proceed
-  independently. Runner/fingerprint artifacts are planned, not implemented.
+  The development-only runner in `tools/live-verify/` captures four reviewed
+  read-only route-specific probes through the generated client; run it explicitly
+  with `WHM_API_LIVE=1 composer live:verify -- --output=docs/api/evidence/core.json`.
+  It requires committed code and persists sanitized structure only. Email inventory
+  is the next slice (`8x0.10.2`); consumer feedback (`8x0.10.3`) is independent.
 - Capture evidence from the same raw HTTP response before normalization and
   unknown-field removal. Preserve the response delivered to the client; never
   replay an operation to recover evidence. Persist only sanitized structural

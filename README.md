@@ -492,11 +492,11 @@ precise array shapes when they return arrays. Generated methods take their PHPDo
 from the pinned documentation, and caveats it lacks are recorded as overlay notes.
 The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
 
-The next development milestone is a small evidence runner over existing
-read-only operations and an Email inventory slice. It will capture the same raw
-response before normalization and field filtering, persist sanitized structural
-evidence, and retain independent regression expectations. This runner and its
-fingerprint artifacts are planned, not currently available; see the
+The [live evidence runner](tools/live-verify/README.md) captures the same raw
+response before normalization and field filtering for four reviewed route-specific
+probes. It saves sanitized structural evidence with revision and contract hashes,
+while independent regression expectations remain in the offline suite. The next
+batch adds Email inventory through this loop; see the
 [delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
 Real HostingPal consumer feedback can proceed against the current client before
 full API coverage or a release. Any public prerelease is a separate decision with

@@ -27,7 +27,8 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "HostingPal\\WhmApiClient\\Tests\\": "tests/"
+      "HostingPal\\WhmApiClient\\Tests\\": "tests/",
+      "HostingPal\\WhmApiClient\\Tools\\LiveVerify\\": "tools/live-verify/src/"
     }
   },
   "scripts": {
@@ -49,7 +50,8 @@
     "api-map:generate:check": [
       "go -C tools/api-map run ./cmd/api-map map build --manifest ../../docs/api/sources/2026-10-13/manifest.json --annotations ../../docs/api/annotations.json --output ../../.cache/api-map/map.json",
       "go -C tools/api-map run ./cmd/api-map generate php --map ../../.cache/api-map/map.json --overlay ../../docs/api/overlay --root ../.. --check"
-    ]
+    ],
+    "live:verify": "php tools/live-verify/verify.php"
   },
   "config": {
     "allow-plugins": {

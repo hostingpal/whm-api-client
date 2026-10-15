@@ -3,8 +3,9 @@
 Status: implemented through phase 1 (plans 1-4); design agreed with the user on
 2026-10-14.
 Delivery and validation policy refined on 2026-10-15 under
-`whm-api-client-8x0.26`. The phase-2 runner, fingerprints and consumer exercise
-below are planned work; this refinement does not claim they are implemented.
+`whm-api-client-8x0.26`. The first phase-2 evidence runner and fingerprints are
+implemented under `8x0.10.1`; broader probe coverage and the consumer exercise
+remain planned work.
 Decision record: `whm-api-client-8x0.10`. This design supersedes the
 "typed core plus generic calls / lean pattern" scaling decision
 (`whm-api-client-8x0.7`, recorded in the
@@ -329,7 +330,7 @@ linear walk of the payload. HTTP latency dominates by orders of magnitude.
 
 ## Live verification
 
-**Runner (planned).** A development-only PHP runner in `tools/live-verify/` drives
+**Runner.** A development-only PHP runner in `tools/live-verify/` drives
 the generated client itself. It runs only with explicit opt-in and never in CI.
 Start with the bounded slice below, then extend its recipes alongside useful
 generated modules.
@@ -377,7 +378,7 @@ controller's IP. Keep server-wide/lockout execution in its dedicated phase.
 Live opt-in and exact target checks enforce the selected
 recipe; they are not requests for renewed user permission.
 
-**Fingerprints (planned).** Each probe records structural paths and observed
+**Fingerprints.** Each probe records structural paths and observed
 types before conversion, preserving numeric-string, empty-string, null, boolean,
 omission and empty-container distinctions. Empty containers never imply an item
 schema. Bind evidence to the canonical operation/variant, actual request method,
@@ -394,7 +395,7 @@ applies to reports and failure diagnostics as well as saved fingerprints.
 Fingerprints are committed under `docs/api/evidence/` and cited by overlay entries.
 No live response is copied into a fixture; synthetic fixtures use reserved data.
 
-**Discrepancy loop (planned).** Compare raw observations against the effective
+**Discrepancy loop.** Compare raw observations against the effective
 contract's accepted wire representations, including documented normalizations,
 so an admitted numeric-string does not produce a false discrepancy against an
 integer return type. Report unknown fields, missing required fields and type
