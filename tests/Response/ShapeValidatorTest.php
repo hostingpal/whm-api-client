@@ -208,9 +208,46 @@ final class ShapeValidatorTest extends TestCase
             '[]',
             ['type' => 'object', 'fields' => ['a' => ['type' => 'string']], 'required' => ['a']],
         ];
+        yield 'explicit null in a non-nullable field' => [
+            '{"a":null}',
+            ['type' => 'object', 'fields' => ['a' => ['type' => 'string']]],
+        ];
+        yield 'explicit null in a non-nullable required field' => [
+            '{"a":null}',
+            ['type' => 'object', 'fields' => ['a' => ['type' => 'string']], 'required' => ['a']],
+        ];
         yield 'union without match' => [
             'true',
             ['type' => 'union', 'anyOf' => [['type' => 'int'], ['type' => 'string']]],
+        ];
+    }
+
+    /** @param array<mixed> $type */
+    #[DataProvider('unionsWithMalformedBranches')]
+    public function testMalformedUnionBranchesPassThroughInsteadOfBeingSwallowed(string $json, array $type): void
+    {
+        $this->expectException(LogicException::class);
+
+        ShapeValidator::value(self::decode($json), $type, self::reader());
+    }
+
+    /** @return iterable<string, array{string, array<mixed>}> */
+    public static function unionsWithMalformedBranches(): iterable
+    {
+        yield 'unknown first branch' => [
+            '"a"',
+            ['type' => 'union', 'anyOf' => [['type' => 'bogus'], ['type' => 'string']]],
+        ];
+        yield 'nested unknown type in the first branch' => [
+            '{"a":1}',
+            ['type' => 'union', 'anyOf' => [
+                ['type' => 'object', 'fields' => ['a' => ['type' => 'bogus']]],
+                ['type' => 'mixed'],
+            ]],
+        ];
+        yield 'malformed branch after a failing one' => [
+            '1',
+            ['type' => 'union', 'anyOf' => [['type' => 'string'], ['type' => 'union', 'anyOf' => []]]],
         ];
     }
 
