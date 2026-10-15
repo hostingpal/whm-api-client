@@ -569,3 +569,28 @@ The generic merges of union branches and discriminator mappings produce the same
 specs for `getzonerecord`, `parse_dns_zone` and `parse_zone` that earlier doc-evidence
 `replace` corrections produced, so the overlay carries no `replace` for them; the
 `live` corrections above remain.
+
+## Runtime observations 2026-10-15 (account lifecycle)
+
+With the owner's explicit approval, the approval-gated mutating lifecycle test
+(`AccountLifecycleLiveTest`, group `live-mutating`) ran against `test.oblak.host`
+(server version `11.138.0.15`) through the actual PHP client with verified TLS,
+redirects disabled, no retries and the request guard bound to one throwaway account,
+`wacltest`, on `wacltest.example.com` (an RFC 2606 domain). A read-only probe first
+confirmed that neither `example.com` nor `wacltest.example.com` had a zone on the
+server. The test created the account with the first creatable package, then ran
+`accountsummary`, `suspendacct`, `unsuspendacct`, `passwd`, `changepackage`,
+`modifyacct` and `removeacct`, all mutations over POST.
+
+Live corrections added: **none**. Every response validated against its generated
+contract, so no `PayloadMismatchException` was raised; the `accountsummary` checks saw
+the suspension flag change from 0 to 1 and back, and the modified contact email.
+The first run failed one test assertion after a successful creation: the test
+required every `createacct` field to be a nonempty string, and at least one was an
+empty string (valid for the pinned string fields). The server configures two
+nameservers, consistent with the unused `nameserver3`/`nameserver4` fields being
+empty. The test's cleanup removed the account. The test now requires only the account
+IP and the first nameserver to be set; the full lifecycle then passed **1 test and 20
+assertions**. Read-only checks after both runs confirmed that the server reports the
+account as nonexistent and that its zone is gone. These observations remain scoped to
+the tested server and date without saved revision-bound evidence.

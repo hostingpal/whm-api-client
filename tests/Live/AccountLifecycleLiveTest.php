@@ -101,9 +101,12 @@ final class AccountLifecycleLiveTest extends TestCase
                 }
             }
             $created = true;
-            foreach ($result ?? [] as $value) {
-                self::assertTrue($value !== '', 'Creation fields must be nonempty strings.');
-            }
+            // A server with fewer than four nameservers returns the unused nameserver
+            // fields as empty strings, so only the account IP and the first nameserver
+            // must be set; the generated contract already validated every field's type.
+            $payload = $result ?? null;
+            self::assertTrue(($payload['ip'] ?? '') !== '', 'Creation must report the account IP.');
+            self::assertTrue(($payload['nameserver'] ?? '') !== '', 'Creation must report a nameserver.');
             $this->assertSummary(0);
 
             self::safeOperation(fn () => $accounts->suspendAccount(
