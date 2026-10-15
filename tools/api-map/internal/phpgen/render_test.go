@@ -116,3 +116,35 @@ func TestRenderIsDeterministicAndBounded(t *testing.T) {
 		}
 	}
 }
+
+func TestRenderDocumentsPayloadMismatchOnlyForPayloadOperations(t *testing.T) {
+	const use = `use HostingPal\WhmApiClient\Exception\PayloadMismatchException;`
+	const throws = "@throws PayloadMismatchException"
+	accounts := string(Render(goldenResult())["src/Api/Whm/Accounts.php"])
+	if !strings.Contains(accounts, use) {
+		t.Fatalf("Accounts.php does not import PayloadMismatchException")
+	}
+	if !strings.Contains(methodDoc(t, accounts, "createAccount"), throws) {
+		t.Fatalf("createAccount returns a payload but lacks %q", throws)
+	}
+	if strings.Contains(methodDoc(t, accounts, "suspendAccount"), throws) {
+		t.Fatalf("suspendAccount is void but documents %q", throws)
+	}
+
+	result := goldenResult()
+	result.Groups = result.Groups[1:]
+	result.Groups[0].Operations = result.Groups[0].Operations[1:]
+	voidOnly := string(Render(result)["src/Api/Whm/Accounts.php"])
+	if strings.Contains(voidOnly, use) || strings.Contains(voidOnly, throws) {
+		t.Fatalf("a group of void operations must not import or document PayloadMismatchException")
+	}
+}
+
+func methodDoc(t *testing.T, class, name string) string {
+	t.Helper()
+	end := strings.Index(class, "public function "+name+"(")
+	if end < 0 {
+		t.Fatalf("method %s not rendered", name)
+	}
+	return class[strings.LastIndex(class[:end], "/**"):end]
+}
