@@ -102,6 +102,7 @@ final class UapiClient extends AbstractApiClient
     public function call(
         string $module,
         string $function,
+        #[SensitiveParameter]
         array $parameters = [],
         RequestMethod $method = RequestMethod::Get,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
@@ -163,6 +164,7 @@ final class UapiClient extends AbstractApiClient
     private function request(
         string $module,
         string $operation,
+        #[SensitiveParameter]
         array $parameters,
         RequestMethod $method = RequestMethod::Get,
         OutcomePolicy $outcome = OutcomePolicy::Flag,

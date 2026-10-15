@@ -76,6 +76,7 @@ final class WhmClient extends AbstractApiClient
      */
     public function call(
         string $function,
+        #[SensitiveParameter]
         array $parameters = [],
         RequestMethod $method = RequestMethod::Get,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
@@ -132,6 +133,7 @@ final class WhmClient extends AbstractApiClient
      */
     private function request(
         string $operation,
+        #[SensitiveParameter]
         array $parameters,
         RequestMethod $method = RequestMethod::Get,
         OutcomePolicy $outcome = OutcomePolicy::Flag,

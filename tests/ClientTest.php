@@ -163,8 +163,12 @@ final class ClientTest extends TestCase
         $frames = [
             [WhmClient::class, 'run', 'arguments'],
             [WhmClient::class, 'dispatch', 'parameters'],
+            [WhmClient::class, 'request', 'parameters'],
+            [WhmClient::class, 'call', 'parameters'],
             [UapiClient::class, 'run', 'arguments'],
             [UapiClient::class, 'dispatch', 'parameters'],
+            [UapiClient::class, 'request', 'parameters'],
+            [UapiClient::class, 'call', 'parameters'],
         ];
 
         foreach ($frames as [$class, $method, $name]) {

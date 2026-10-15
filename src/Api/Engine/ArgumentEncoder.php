@@ -70,7 +70,7 @@ final class ArgumentEncoder
         return $encoded;
     }
 
-    private static function scalar(mixed $value): string|int
+    private static function scalar(#[SensitiveParameter] mixed $value): string|int
     {
         return match (true) {
             is_string($value), is_int($value) => $value,
@@ -80,7 +80,7 @@ final class ArgumentEncoder
     }
 
     /** @return string|array<array-key, mixed> */
-    private static function multiple(mixed $value): string|array
+    private static function multiple(#[SensitiveParameter] mixed $value): string|array
     {
         if (is_string($value) || is_array($value)) {
             return $value;
