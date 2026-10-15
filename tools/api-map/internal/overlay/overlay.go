@@ -51,7 +51,7 @@ type Operation struct {
 	Order           []string              `json:"order,omitempty"`
 	Params          map[string]Param      `json:"params,omitempty"`
 	Response        map[string]Correction `json:"response,omitempty"`
-	Notes           []string              `json:"notes,omitempty"`
+	Notes           []Note                `json:"notes,omitempty"`
 	Exclude         *Exclusion            `json:"exclude,omitempty"`
 	Probe           json.RawMessage       `json:"probe,omitempty"`
 	// Evidence backs behaviour-changing settings: variant, method, outcome,
@@ -59,6 +59,19 @@ type Operation struct {
 	// parameter.
 	Evidence []Evidence `json:"evidence,omitempty"`
 }
+
+// Note is one line appended to the generated docblock. Kind separates facts
+// stated in the pinned documentation ("documented") from runtime behaviour
+// seen on a server ("observed", which needs live evidence), so generated PHPDoc
+// never presents a documented fact as an observation. Further kinds (such as a
+// caution channel) extend NoteKinds.
+type Note struct {
+	Kind string `json:"kind"`
+	Text string `json:"text"`
+}
+
+// NoteKinds maps each note kind to the label that starts its docblock line.
+var NoteKinds = map[string]string{"documented": "Documented", "observed": "Observed"}
 
 // Param renames, re-encodes or omits one documented parameter, keyed by wire
 // name. Omitted parameters (aliases, wildcard patterns such as MXCHECK-*) stay

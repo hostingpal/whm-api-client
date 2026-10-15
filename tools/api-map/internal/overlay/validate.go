@@ -60,10 +60,31 @@ func Validate(set Set) []string {
 				problems = append(problems, id+": void and optional_payload are exclusive")
 			}
 			problems = append(problems, missingEvidence(id, op)...)
+			if observedWithoutLive(op) {
+				problems = append(problems, id+": an observed note needs live evidence")
+			}
 		}
 	}
 	sort.Strings(problems)
 	return problems
+}
+
+// observedWithoutLive reports an "observed" note on an operation whose
+// evidence holds no live observation.
+func observedWithoutLive(op Operation) bool {
+	observed := false
+	for _, note := range op.Notes {
+		observed = observed || note.Kind == "observed"
+	}
+	if !observed {
+		return false
+	}
+	for _, evidence := range op.Evidence {
+		if evidence.Kind == "live" {
+			return false
+		}
+	}
+	return true
 }
 
 // missingEvidence reports behaviour-changing settings (variant, request method, outcome

@@ -37,6 +37,8 @@ final readonly class Accounts
     /**
      * Create cPanel account.
      *
+     * Documented: You must use either the username or the domain parameter.
+     *
      * Returns null when the server sends no data.
      *
      * API-map identity: whm1:createacct#GET (wire name createacct; Account Creation).

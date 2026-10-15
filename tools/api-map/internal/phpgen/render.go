@@ -245,7 +245,7 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	}
 	for _, note := range op.Notes {
 		w.line(indent + " *")
-		w.doc(indent, "Observed: "+note)
+		w.doc(indent, note.Label+": "+note.Text)
 	}
 	if op.OptionalPayload && ret != nil {
 		w.line(indent + " *")

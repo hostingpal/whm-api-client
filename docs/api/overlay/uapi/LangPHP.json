@@ -3,14 +3,14 @@
   "family": "uapi",
   "group": "LangPHP",
   "operations": {
-    "uapi:LangPHP/php_get_domain_handler": {"unwrap": "php_handler", "notes": ["Requires EasyApache 4 and the WebServer role."]},
+    "uapi:LangPHP/php_get_domain_handler": {"unwrap": "php_handler", "notes": [{"kind": "documented", "text": "Requires EasyApache 4 and the WebServer role."}]},
     "uapi:LangPHP/php_get_impacted_domains": {
       "params": {"domain": {"php": "domains", "encoding": "repeat"}},
       "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-15", "note": "The pinned domain description says the parameter can be passed multiple times; the list is sent as repeated domain keys (docs/api/source-audit.md, PHP and feature inventory observations)."}],
       "unwrap": "domains",
-      "notes": ["Requires EasyApache 4 and the WebServer role."]
+      "notes": [{"kind": "documented", "text": "Requires EasyApache 4 and the WebServer role."}]
     },
-    "uapi:LangPHP/php_get_installed_versions": {"unwrap": "versions", "notes": ["Applies to EasyApache 4 systems and is disabled when the WebServer role is disabled."]},
-    "uapi:LangPHP/php_get_system_default_version": {"unwrap": "version", "notes": ["Disabling the WebServer role disables this operation."]}
+    "uapi:LangPHP/php_get_installed_versions": {"unwrap": "versions", "notes": [{"kind": "documented", "text": "Applies to EasyApache 4 systems and is disabled when the WebServer role is disabled."}]},
+    "uapi:LangPHP/php_get_system_default_version": {"unwrap": "version", "notes": [{"kind": "documented", "text": "Disabling the WebServer role disables this operation."}]}
   }
 }

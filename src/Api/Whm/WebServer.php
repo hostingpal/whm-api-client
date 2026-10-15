@@ -42,7 +42,7 @@ final readonly class WebServer
      * This function indicates whether the system's process to convert all of WHM's accounts to use PHP-FPM is in
      * progress.
      *
-     * Observed: Requires the WebServer role.
+     * Documented: Requires the WebServer role.
      *
      * API-map identity: whm1:is_conversion_in_progress#GET (wire name is_conversion_in_progress; PHP-FPM).
      *
@@ -63,7 +63,7 @@ final readonly class WebServer
      *
      * This function determines whether the system enables PHP-FPM for new domains and accounts.
      *
-     * Observed: Requires the WebServer role.
+     * Documented: Requires the WebServer role.
      *
      * API-map identity: whm1:php_get_default_accounts_to_fpm#GET (wire name php_get_default_accounts_to_fpm; PHP-FPM).
      *
@@ -84,7 +84,7 @@ final readonly class WebServer
      *
      * This function returns the PHP handlers on the system.
      *
-     * Observed: Requires the WebServer role.
+     * Documented: Requires the WebServer role.
      *
      * API-map identity: whm1:php_get_handlers#GET (wire name php_get_handlers; PHP).
      *
@@ -106,7 +106,7 @@ final readonly class WebServer
      *
      * This function returns the installed PHP versions on a server.
      *
-     * Observed: Requires EasyApache 4 and the WebServer role.
+     * Documented: Requires EasyApache 4 and the WebServer role.
      *
      * API-map identity: whm1:php_get_installed_versions#GET (wire name php_get_installed_versions; PHP).
      *
@@ -127,7 +127,7 @@ final readonly class WebServer
      *
      * This function determines whether your system runs with a preconfigured PHP-FPM configuration.
      *
-     * Observed: Requires the WebServer role.
+     * Documented: Requires the WebServer role.
      *
      * API-map identity: whm1:php_get_old_fpm_flag#GET (wire name php_get_old_fpm_flag; PHP-FPM).
      *
@@ -148,7 +148,7 @@ final readonly class WebServer
      *
      * This function returns the system default PHP version.
      *
-     * Observed: Requires EasyApache 4 and the WebServer role.
+     * Documented: Requires EasyApache 4 and the WebServer role.
      *
      * API-map identity: whm1:php_get_system_default_version#GET (wire name php_get_system_default_version; PHP).
      *
@@ -169,7 +169,7 @@ final readonly class WebServer
      *
      * This function lists the virtual hosts that use a specified version of PHP.
      *
-     * Observed: Requires EasyApache 4 and the WebServer role.
+     * Documented: Requires EasyApache 4 and the WebServer role.
      *
      * API-map identity: whm1:php_get_vhosts_by_version#GET (wire name php_get_vhosts_by_version; PHP).
      *

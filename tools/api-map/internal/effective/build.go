@@ -182,7 +182,7 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		Description: firstParagraph(text(node["description"])),
 		Subcategory: subcategory(op.Family, node),
 		SeeURL:      b.seeURL(op, v, node),
-		Notes:       ov.Notes,
+		Notes:       notes(ov.Notes),
 		Unwrap:      ov.Unwrap,
 
 		OptionalPayload: ov.OptionalPayload,
@@ -759,6 +759,16 @@ func (b *builder) seeURL(op model.Operation, v model.Variant, node map[string]an
 	}
 	b.problem(op.ID + ": no tag in x-tagGroups to derive the documentation link from")
 	return ""
+}
+
+// notes labels overlay notes by kind; the overlay schema admits only the kinds
+// overlay.NoteKinds lists.
+func notes(source []overlay.Note) []Note {
+	var result []Note
+	for _, note := range source {
+		result = append(result, Note{Label: overlay.NoteKinds[note.Kind], Text: note.Text})
+	}
+	return result
 }
 
 func text(v any) string {

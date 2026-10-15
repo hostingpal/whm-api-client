@@ -26,6 +26,13 @@ type Field struct {
 	Spec TypeSpec
 }
 
+// Note is one overlay note line: Label ("Documented" or "Observed") says
+// whether the text restates the pinned documentation or a live observation.
+type Note struct {
+	Label string
+	Text  string
+}
+
 // Param is one generated method argument.
 type Param struct {
 	Wire        string
@@ -54,7 +61,7 @@ type Operation struct {
 	Description string
 	Subcategory string
 	SeeURL      string
-	Notes       []string
+	Notes       []Note
 	Params      []Param
 	Returns     *TypeSpec
 	Unwrap      string

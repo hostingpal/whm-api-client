@@ -30,7 +30,7 @@ func goldenResult() effective.Result {
 			{Family: "uapi", Name: "DomainInfo", Accessor: "domainInfo", Class: "DomainInfo", Description: "Retrieve domain information.", Operations: []effective.Operation{
 				{ID: "uapi:DomainInfo/list_domains", VariantID: "uapi:DomainInfo/list_domains#GET", Family: "uapi", Module: "DomainInfo", Function: "list_domains", Method: "GET", Outcome: "flag",
 					PHPName: "listDomains", Constant: "LIST_DOMAINS", Alias: "ListDomainsResult", Summary: "Return domains.", Description: "This function lists the account's domains.",
-					SeeURL: "https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-information/domaininfo-list_domains", Notes: []string{"is_temporary can be omitted."},
+					SeeURL: "https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-information/domaininfo-list_domains", Notes: []effective.Note{{Label: "Observed", Text: "is_temporary can be omitted."}},
 					Params:  []effective.Param{{Wire: "hide_temporary_domains", PHP: "hideTemporaryDomains", Encoding: "bool", PHPType: "bool", DocType: "bool", Description: "Whether to hide temporary domains."}},
 					Returns: &domainList},
 				{ID: "uapi:DomainInfo/primary_domain", VariantID: "uapi:DomainInfo/primary_domain#GET", Family: "uapi", Module: "DomainInfo", Function: "primary_domain", Method: "GET", Outcome: "flag",
@@ -39,7 +39,7 @@ func goldenResult() effective.Result {
 			}},
 			{Family: "whm1", Name: "Accounts", Accessor: "accounts", Class: "Accounts", Description: "WHM API 1 functions in the documented Accounts group.", Operations: []effective.Operation{
 				{ID: "whm1:createacct", VariantID: "whm1:createacct#GET", Family: "whm1", Function: "createacct", Method: "POST", Outcome: "flag",
-					PHPName: "createAccount", Constant: "CREATEACCT", Alias: "CreateAccountResult", Summary: "Create cPanel account.", Subcategory: "Account Creation",
+					PHPName: "createAccount", Constant: "CREATEACCT", Alias: "CreateAccountResult", Summary: "Create cPanel account.", Subcategory: "Account Creation", Notes: []effective.Note{{Label: "Documented", Text: "You must use either the username or the domain parameter."}},
 					SeeURL: "https://api.docs.cpanel.net/specifications/whm.openapi/account-creation/accounts-createacct",
 					Params: []effective.Param{
 						{Wire: "username", PHP: "username", Encoding: "scalar", PHPType: "string", DocType: "string", Description: "The account's username.", Required: true},

@@ -16,7 +16,7 @@
     "whm1:listmxs": {"name": "listMxRecords", "response": {"record[].preference": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "listmxs returned record[].preference as a decimal string, although the pinned schema declares an integer; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]}}},
     "whm1:listzones": {"name": "listZones"},
     "whm1:lookupnsip": {"name": "lookupNameserverIp"},
-    "whm1:lookupnsips": {"name": "lookupNameserverIps", "notes": ["Returns ipv6 as an empty string, rather than omitting it, when the nameserver has no IPv6 address."], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "lookupnsips returned ipv6 as an empty string for a nameserver without an IPv6 address, although the pinned description says the field is returned only when an IPv6 address exists; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]},
+    "whm1:lookupnsips": {"name": "lookupNameserverIps", "notes": [{"kind": "observed", "text": "Returns ipv6 as an empty string, rather than omitting it, when the nameserver has no IPv6 address."}], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "lookupnsips returned ipv6 as an empty string for a nameserver without an IPv6 address, although the pinned description says the field is returned only when an IPv6 address exists; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]},
     "whm1:parse_dns_zone": {},
     "whm1:resolvedomainname": {"name": "resolveDomainName"}
   }
