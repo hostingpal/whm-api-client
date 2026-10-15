@@ -46,7 +46,8 @@ use LogicException;
  *
  * A payload mismatch raises InvalidResponseException through the supplied
  * reader, so the response snapshot travels with the failure. A malformed spec
- * is a generator defect and raises LogicException.
+ * is a generator defect and raises LogicException; Api\Engine\SpecChecker checks
+ * this grammar completely before a generated operation dispatches its request.
  *
  * @internal
  */

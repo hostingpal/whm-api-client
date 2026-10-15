@@ -31,10 +31,12 @@ final class OperationRunner
     /**
      * Run an operation and return its validated result.
      *
-     * Arguments are encoded from the spec's params before the dispatch closure
-     * is called, so an argument the spec does not declare fails without I/O.
-     * The spec is checked before dispatch, so a defective spec never sends a
-     * request. The returned value is whatever result() produces for the response.
+     * The whole spec is checked first (SpecChecker: operation keys, every
+     * parameter spec and the complete return type grammar), so a defective spec
+     * never sends a request. Arguments are then encoded from the spec's params
+     * before the dispatch closure is called, so an argument the spec does not
+     * declare fails without I/O. The returned value is whatever result() produces
+     * for the response.
      *
      * @param array<mixed> $spec Generated operation spec.
      * @param array<string, mixed> $arguments Named arguments of the generated method.
@@ -50,7 +52,7 @@ final class OperationRunner
         array $arguments,
         Closure $dispatch,
     ): mixed {
-        self::returns($spec);
+        SpecChecker::check($spec);
         $params = $spec['params'] ?? null;
         if (!is_array($params)) {
             throw new LogicException('Operation spec is missing "params".');
