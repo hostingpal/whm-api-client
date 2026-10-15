@@ -178,7 +178,7 @@ final class UapiClient extends AbstractApiClient
         string $operation,
         #[SensitiveParameter]
         array $parameters,
-        RequestMethod $method = RequestMethod::Get,
+        RequestMethod $method,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): ApiResponse {
         if ($this->isBridged()) {

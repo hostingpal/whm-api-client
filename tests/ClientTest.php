@@ -233,6 +233,15 @@ final class ClientTest extends TestCase
         self::assertCount(2, $http->getRequests());
     }
 
+    public function testInternalRequestsAlwaysNameTheirMethod(): void
+    {
+        foreach ([WhmClient::class, UapiClient::class] as $class) {
+            $parameter = new ReflectionParameter([$class, 'request'], 'method');
+
+            self::assertFalse($parameter->isOptional(), $class . '::request($method)');
+        }
+    }
+
     public function testRequiresAnExplicitTransport(): void
     {
         $parameter = new ReflectionParameter([Client::class, '__construct'], 'transport');

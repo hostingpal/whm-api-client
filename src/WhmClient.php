@@ -145,7 +145,7 @@ final class WhmClient extends AbstractApiClient
         string $operation,
         #[SensitiveParameter]
         array $parameters,
-        RequestMethod $method = RequestMethod::Get,
+        RequestMethod $method,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): ApiResponse {
         $path = '/json-api/' . $operation;
