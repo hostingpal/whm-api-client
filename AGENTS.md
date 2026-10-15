@@ -218,7 +218,11 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   retains raw WHM metadata; `$uapi` retains the UAPI result envelope without `data`.
   `ApiException::$metadata` exposes the same snapshot, with distinct
   `ApiErrorException`, `HttpException`, `InvalidResponseException`, and
-  `TransportException` failures. Both bridge outcomes are checked. Do not apply
+  `TransportException` failures. A payload that fails its generated spec after the
+  envelope and outcome were accepted raises the `PayloadMismatchException` subclass
+  (`$outcomeConfirmed`, unvalidated `$payload`): writes are validated as strictly as
+  reads, and callers must not retry a mutation that took effect (8x0.23). Both bridge
+  outcomes are checked. Do not apply
   these operations' status semantics universally or claim generic bridge coverage.
   Typed metadata accessors and `errors()` read the documented envelope fields;
   `ApiException::errors()` exposes upstream error text outside `getMessage()`.

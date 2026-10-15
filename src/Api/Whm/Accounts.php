@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient\Api\Whm;
 use Closure;
 use HostingPal\WhmApiClient\Api\Whm\Spec\AccountsSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
+use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use InvalidArgumentException;
 use SensitiveParameter;
 
@@ -186,6 +187,8 @@ final readonly class Accounts
      * @param string|null $searchtype The type of search to perform. Null omits it.
      * @return AccountSummaryResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/accountsummary
      */
     public function accountSummary(
@@ -239,6 +242,8 @@ final readonly class Accounts
      * @param bool|null $digestauth Whether to enable Digest Authentication for the account. Null omits it.
      * @return ChangePasswordResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/passwd
      */
     public function changePassword(
@@ -330,6 +335,8 @@ final readonly class Accounts
      * @param bool|null $useregns Whether to use registered nameservers for the domain. Null omits it.
      * @return CreateAccountResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/createacct
      */
@@ -455,6 +462,8 @@ final readonly class Accounts
      *
      * @return GetDomainInfoResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/get_domain_info
      */
     public function getDomainInfo(): array
@@ -478,6 +487,8 @@ final readonly class Accounts
      * @param string|null $want The returns to include in the output for each account. Null omits it.
      * @return ListAccountsResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/listaccts
      */
     public function listAccounts(
@@ -591,6 +602,8 @@ final readonly class Accounts
      *     match the value of `MAX_EMAILACCT_QUOTA` setting. Null omits it.
      * @return ModifyAccountResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/modifyacct
      */
     public function modifyAccount(

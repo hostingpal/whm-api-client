@@ -10,6 +10,7 @@ use HostingPal\WhmApiClient\Api\Engine\OperationSpec;
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Api\RequestMethod;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
+use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Response\ApiResponse;
 use HostingPal\WhmApiClient\Response\ResponseMetadata;
 use LogicException;
@@ -76,10 +77,87 @@ final class OperationRunnerTest extends TestCase
         try {
             OperationRunner::result($spec, new ApiResponse(new stdClass(), $metadata));
             self::fail('Expected an invalid payload.');
-        } catch (InvalidResponseException $exception) {
+        } catch (PayloadMismatchException $exception) {
             self::assertSame($metadata, $exception->metadata);
             self::assertSame('Invalid primary_domain payload.', $exception->getMessage());
+            self::assertSame([], $exception->payload);
         }
+    }
+
+    public function testPayloadMismatchAfterAConfirmedOutcomeCarriesAnUnvalidatedCopy(): void
+    {
+        $metadata = new ResponseMetadata(200, ['result' => 1]);
+        $data = (object) ['primary_domain' => 1, 'nested' => (object) ['list' => [1, (object) ['a' => 'b']]]];
+        $expected = ['primary_domain' => 1, 'nested' => ['list' => [1, ['a' => 'b']]]];
+
+        try {
+            OperationRunner::result(self::SPEC, new ApiResponse($data, $metadata));
+            self::fail('Expected a payload mismatch.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertInstanceOf(InvalidResponseException::class, $exception);
+            self::assertSame('Invalid primary_domain payload.', $exception->getMessage());
+            self::assertSame($metadata, $exception->metadata);
+            self::assertTrue($exception->outcomeConfirmed);
+
+            $data->nested->list[1]->a = 'changed';
+            self::assertSame($expected, $exception->payload, 'The payload is a detached copy.');
+        }
+    }
+
+    public function testPayloadMismatchKeepsThePayloadOutOfDebugOutput(): void
+    {
+        $exception = new PayloadMismatchException(
+            'Invalid createacct payload.',
+            new ResponseMetadata(200, ['result' => 1]),
+            true,
+            ['token' => 'fixture-secret'],
+        );
+
+        self::assertSame(['token' => 'fixture-secret'], $exception->payload);
+        self::assertStringNotContainsString('fixture-secret', print_r($exception, true));
+        ob_start();
+        var_dump($exception);
+        $dump = (string) ob_get_clean();
+        self::assertStringNotContainsString('fixture-secret', $dump);
+        self::assertStringContainsString('Invalid createacct payload.', $dump);
+        self::assertStringContainsString('outcomeConfirmed', $dump);
+    }
+
+    public function testPayloadMismatchUnderAnUncheckedOutcomeIsNotConfirmed(): void
+    {
+        try {
+            OperationRunner::result(
+                ['outcome' => 'unchecked'] + self::SPEC,
+                self::response((object) ['primary_domain' => 1]),
+            );
+            self::fail('Expected a payload mismatch.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertFalse($exception->outcomeConfirmed);
+            self::assertSame(['primary_domain' => 1], $exception->payload);
+        }
+    }
+
+    public function testOmittedDataIsAPayloadMismatchWithoutAPayload(): void
+    {
+        $metadata = new ResponseMetadata(200, ['result' => 1]);
+
+        try {
+            OperationRunner::result(self::SPEC, new ApiResponse(null, $metadata, false));
+            self::fail('Expected a payload mismatch.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertSame($metadata, $exception->metadata);
+            self::assertTrue($exception->outcomeConfirmed);
+            self::assertNull($exception->payload);
+        }
+    }
+
+    public function testSpecDefectsFoundDuringValidationAreNotPayloadMismatches(): void
+    {
+        $spec = ['returns' => ['type' => 'object', 'fields' => ['a' => ['type' => 'bogus']]]] + self::SPEC;
+
+        $this->expectException(LogicException::class);
+
+        OperationRunner::result($spec, self::response((object) ['a' => 1]));
     }
 
     public function testVoidOperationsIgnoreThePayload(): void

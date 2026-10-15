@@ -6,8 +6,10 @@ namespace HostingPal\WhmApiClient\Api\Engine;
 
 use Closure;
 use HostingPal\WhmApiClient\Api\AbstractApiClient;
+use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
+use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Response\ApiResponse;
 use HostingPal\WhmApiClient\Response\PayloadReader;
 use HostingPal\WhmApiClient\Response\ShapeValidator;
@@ -40,6 +42,8 @@ final class OperationRunner
      * @param array<string, mixed> $arguments Named arguments of the generated method.
      * @param Closure(array<mixed>, Parameters): ApiResponse $dispatch
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the envelope and outcome were accepted but the payload differs from the
+     *     spec; under the flag policy the operation took effect.
      * @throws LogicException If the spec is malformed or the arguments disagree with it.
      * @throws InvalidArgumentException Raised by the shared encoder through the dispatch closure, after the
      *     metadata reset, when multi-value contents are invalid.
@@ -69,8 +73,13 @@ final class OperationRunner
      * returns null for an omitted or null data member without validating it. An
      * unwrapped field must be present in the validated object.
      *
+     * The response reaching this point already passed the envelope checks and the
+     * outcome policy, so every payload failure raises PayloadMismatchException:
+     * outcomeConfirmed is true under the flag policy (the operation took effect)
+     * and false when the outcome was not checked. Spec defects stay LogicException.
+     *
      * @param array<mixed> $spec
-     * @throws InvalidResponseException If the payload does not satisfy the spec.
+     * @throws PayloadMismatchException If the payload does not satisfy the spec.
      * @throws LogicException If the spec is malformed.
      */
     public static function result(array $spec, ApiResponse $response): mixed
@@ -84,7 +93,30 @@ final class OperationRunner
             return null;
         }
 
+        $confirmed = OperationSpec::outcome($spec) === OutcomePolicy::Flag;
         $read = new PayloadReader($response->metadata, OperationSpec::text($spec, 'function') . ' payload');
+        try {
+            return self::validated($spec, $returns, $response, $read);
+        } catch (InvalidResponseException $exception) {
+            throw new PayloadMismatchException(
+                $exception->getMessage(),
+                $response->metadata,
+                $confirmed,
+                $response->hasData ? $read->json($response->data) : null,
+            );
+        }
+    }
+
+    /**
+     * Validate a declared payload and apply the unwrap rule.
+     *
+     * @param array<mixed> $spec
+     * @param array<mixed> $returns
+     * @throws InvalidResponseException If the payload is omitted or does not satisfy the spec.
+     * @throws LogicException If the spec is malformed.
+     */
+    private static function validated(array $spec, array $returns, ApiResponse $response, PayloadReader $read): mixed
+    {
         if (!$response->hasData) {
             return $read->fail();
         }

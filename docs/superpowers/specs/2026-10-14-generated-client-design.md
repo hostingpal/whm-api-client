@@ -261,7 +261,20 @@ enforces; engine tests and generated fixture rows verify that the two agree.
 4. executes through the existing request lifecycle (metadata reset, single
    attempt, envelope reading, typed exceptions);
 5. validates and normalizes the payload against the spec in a single pass,
-   raising `InvalidResponseException` with the response snapshot on mismatch.
+   raising `PayloadMismatchException` (an `InvalidResponseException`) with the
+   response snapshot on mismatch.
+
+**Write responses** (decision of 2026-10-15, `whm-api-client-8x0.23`). Mutations are
+validated as strictly as reads; the typed return contract never weakens. Because a
+mismatch is raised only after the envelope and outcome were accepted, it must not be
+mistaken for a failed operation: `PayloadMismatchException` exposes
+`$outcomeConfirmed` (true under the flag policy, so the operation took effect; false
+when the outcome was not checked) and `$payload`, the unvalidated decoded data member
+as plain arrays (null when omitted or null), so callers can recover data instead of
+retrying a non-idempotent call. It covers shape mismatches, an omitted declared data
+member and a missing unwrap field; envelope and JSON failures keep the plain
+`InvalidResponseException`, and spec defects stay `LogicException`. Every generated
+method with a payload documents it in `@throws`.
 
 **Performance.** Specs are immutable class constants that opcache stores once;
 groups load lazily through PSR-4 and are cached per handle; validation is one
