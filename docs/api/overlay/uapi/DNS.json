@@ -3,7 +3,14 @@
   "family": "uapi",
   "group": "DNS",
   "operations": {
+    "uapi:DNS/ensure_domains_reside_only_locally": {"params": {"domain": {"php": "domains", "encoding": "repeat"}}},
+    "uapi:DNS/ensure_domains_use_recognized_nameservers": {"params": {"domain": {"php": "domains", "encoding": "repeat"}}},
     "uapi:DNS/fetch_cpanel_generated_domains": {},
-    "uapi:DNS/lookup": {"name": "lookup"}
+    "uapi:DNS/has_local_authority": {},
+    "uapi:DNS/is_alias_available": {},
+    "uapi:DNS/is_https_available": {},
+    "uapi:DNS/is_svcb_available": {},
+    "uapi:DNS/lookup": {"name": "lookup"},
+    "uapi:DNS/parse_zone": {"response": {"[]": {"replace": {"type": "object", "fields": {"data_b64": {"type": "list", "items": {"type": "string"}}, "dname_b64": {"type": "string"}, "line_index": {"type": "int"}, "record_type": {"type": "string"}, "text_b64": {"type": "string"}, "ttl": {"type": "int"}, "type": {"type": "string"}}}, "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-15", "note": "The documented list item is a oneOf of record, control and comment objects whose fields are all optional; the generated union keeps the first matching branch and would drop text_b64 from control and comment lines, so the branches are merged into one object with every documented field optional."}]}}}
   }
 }

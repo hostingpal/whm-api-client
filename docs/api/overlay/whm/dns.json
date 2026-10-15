@@ -4,6 +4,20 @@
   "group": "DNS",
   "accessor": "dns",
   "operations": {
-    "whm1:dumpzone": {"exclude": {"reason": "Deprecated; use parse_dns_zone, which returns the same zone data in a different format.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; This function is deprecated."}]}}
+    "whm1:dumpzone": {"exclude": {"reason": "Deprecated; use parse_dns_zone, which returns the same zone data in a different format.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; This function is deprecated."}]}},
+    "whm1:export_zone_files": {"params": {"zone": {"php": "zones", "encoding": "repeat"}}},
+    "whm1:fetch_ds_records_for_domains": {"params": {"domain": {"php": "domains", "encoding": "repeat"}}},
+    "whm1:get_nameserver_config": {},
+    "whm1:getzonerecord": {"name": "getZoneRecord"},
+    "whm1:has_local_authority": {},
+    "whm1:is_alias_available": {},
+    "whm1:is_https_available": {},
+    "whm1:is_svcb_available": {},
+    "whm1:listmxs": {"name": "listMxRecords"},
+    "whm1:listzones": {"name": "listZones"},
+    "whm1:lookupnsip": {"name": "lookupNameserverIp"},
+    "whm1:lookupnsips": {"name": "lookupNameserverIps"},
+    "whm1:parse_dns_zone": {"response": {"payload[]": {"replace": {"type": "object", "fields": {"data_b64": {"type": "list", "items": {"type": "string"}}, "dname_b64": {"type": "string"}, "line_index": {"type": "int"}, "record_type": {"type": "string"}, "text_b64": {"type": "string"}, "ttl": {"type": "int"}, "type": {"type": "string"}}}, "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-15", "note": "The documented payload item is a oneOf of record, control and comment objects whose fields are all optional; the generated union keeps the first matching branch and would drop text_b64 from control and comment lines, so the branches are merged into one object with every documented field optional."}]}}},
+    "whm1:resolvedomainname": {"name": "resolveDomainName"}
   }
 }
