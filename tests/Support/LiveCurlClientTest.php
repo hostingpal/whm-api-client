@@ -330,9 +330,24 @@ final class LiveCurlClientTest extends TestCase
     #[DataProvider('malformedDerivedBindings')]
     public function testRejectsMalformedDerivedBindings(array $binding): void
     {
-        $this->expectException(LogicException::class);
+        $executed = false;
+        $execute = static function (RequestInterface $request) use (&$executed): ResponseInterface {
+            $executed = true;
 
-        new LiveCurlClient(static fn (RequestInterface $request): ResponseInterface => new Response(204), ...$binding);
+            return new Response(204);
+        };
+
+        try {
+            $client = new LiveCurlClient($execute, ...$binding);
+            // Had the binding been accepted, its derived request would reach the execution boundary.
+            $prefix = 'https://test.oblak.host:2087/json-api/';
+            $client->sendRequest(new Request('GET', array_key_exists('zoneLine', $binding)
+                ? $prefix . 'getzonerecord?api.version=1&domain=npr.rs&line=' . $binding['zoneLine']
+                : $prefix . 'lookupnsip?api.version=1&host=' . rawurlencode($binding['nameserver'] ?? '')));
+            self::fail('The live transport accepted a malformed derived binding.');
+        } catch (LogicException) {
+            self::assertFalse($executed, 'Malformed bindings must be rejected before the cURL execution boundary.');
+        }
     }
 
     /** @return iterable<string, array{array{zoneLine?: int, nameserver?: string}}> */
@@ -345,6 +360,12 @@ final class LiveCurlClientTest extends TestCase
         yield 'query injection' => [['nameserver' => 'ns1.example.test&host=other.example']];
         yield 'trailing dot' => [['nameserver' => 'ns1.example.test.']];
         yield 'path' => [['nameserver' => 'ns1.example.test/x']];
+        yield 'encoded ampersand' => [['nameserver' => 'ns1.example.test%26host=other.example']];
+        yield 'query separator' => [['nameserver' => 'ns1.example.test?host=other.example']];
+        yield 'fragment' => [['nameserver' => 'ns1.example.test#x']];
+        yield 'space' => [['nameserver' => 'ns1.example .test']];
+        yield 'trailing newline' => [['nameserver' => "ns1.example.test\n"]];
+        yield 'non-ASCII host' => [['nameserver' => 'ns1.exämple.test']];
     }
 
     #[DataProvider('approvedPosts')]
