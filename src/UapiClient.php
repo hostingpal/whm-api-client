@@ -85,8 +85,11 @@ final class UapiClient extends AbstractApiClient
      * list_pops). Direct cPanel credentials request /execute/Module/function;
      * WHM credentials route through the uapi_cpanel bridge with this account as
      * the target, and the bridge's api.version and cpanel.* fields cannot be
-     * overridden. Parameters are sent in the query string for Get or form-encoded
-     * in the body for Post; use Post for secret-bearing parameters. The result's
+     * overridden. Post, the default, form-encodes the parameters in the body (the
+     * bridge's routing fields stay in the query string), so secrets never reach the
+     * URL; POST was verified live on both routes for read-only functions. Pass Get
+     * explicitly to send every parameter in the query string, never for a
+     * secret-bearing parameter. The result's
      * data is the UAPI payload converted to arrays without schema validation, and
      * metadata, exceptions, and responseMeta() behave as for typed operations.
      * Flag applies the documented status 1/0 rule (and the WHM result rule on the
@@ -107,7 +110,7 @@ final class UapiClient extends AbstractApiClient
         string $function,
         #[SensitiveParameter]
         array $parameters = [],
-        RequestMethod $method = RequestMethod::Get,
+        RequestMethod $method = RequestMethod::Post,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): CallResult {
         $this->beginRequest();

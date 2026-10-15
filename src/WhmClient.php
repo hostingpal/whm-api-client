@@ -61,9 +61,11 @@ final class WhmClient extends AbstractApiClient
      *
      * The function name is the documented path segment after /json-api/ (such as
      * listaccts or 360Monitoring/webpros_auth_callback); api.version=1 is always
-     * added and cannot be overridden. Parameters are sent in the query string for
-     * Get or form-encoded in the body for Post; use Post for any secret-bearing
-     * parameter because the server records query strings in its access log. The
+     * added and cannot be overridden. Post, the default, form-encodes the parameters
+     * in the body and keeps api.version in the query string, so passwords and other
+     * secrets never reach the URL that the server records in its access log; POST
+     * was verified live for read-only functions. Pass Get explicitly to send every
+     * parameter in the query string, never for a secret-bearing parameter. The
      * result's data is the envelope payload converted to arrays without schema
      * validation; metadata, exceptions, and responseMeta() behave as for typed
      * operations. Flag applies the documented metadata.result 1/0 rule; Unchecked
@@ -80,7 +82,7 @@ final class WhmClient extends AbstractApiClient
         string $function,
         #[SensitiveParameter]
         array $parameters = [],
-        RequestMethod $method = RequestMethod::Get,
+        RequestMethod $method = RequestMethod::Post,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): CallResult {
         $this->beginRequest();

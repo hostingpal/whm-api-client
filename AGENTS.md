@@ -210,8 +210,9 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   `OutcomePolicy::Unchecked` records the envelope for operations whose status
   carries payload semantics; on the WHM bridge it waives only the UAPI status, and
   the outer WHM result is checked under both policies. Both require a usable envelope.
-- `whm()->call()` and `uapi()->call()` are generic escape hatches: validated names,
-  reserved fields removed from caller parameters, `CallResult` with the payload
+- `whm()->call()` and `uapi()->call()` are generic escape hatches: POST by default
+  (GET only when passed explicitly), metadata cleared before name and parameter
+  validation, reserved fields removed from caller parameters, `CallResult` with the payload
   converted to arrays and no schema. They are an escape hatch, not coverage;
   typed coverage comes from generation.
 - Each attempt clears old response metadata. A usable envelope records an

@@ -74,6 +74,28 @@ final class GenericCallTest extends TestCase
         self::assertSame('whm root:fixture-token', $request->getHeaderLine('Authorization'));
     }
 
+    public function testCallsDefaultToPostSoParametersStayOutOfTheUrl(): void
+    {
+        [$client, $http] = $this->client();
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1}}'));
+        $http->addResponse(new Response(200, [], self::BRIDGED));
+        [$cpanel, $direct] = $this->client(true);
+        $direct->addResponse(new Response(200, [], self::DIRECT));
+
+        $client->whm()->call('passwd', ['user' => 'npr', 'password' => 'fixture-secret']);
+        $client->uapi('npr')->call('Email', 'passwd_pop', ['email' => 'box', 'password' => 'fixture-secret']);
+        $cpanel->uapi()->call('Email', 'passwd_pop', ['email' => 'box', 'password' => 'fixture-secret']);
+
+        $requests = [...$http->getRequests(), ...$direct->getRequests()];
+        self::assertCount(3, $requests);
+        foreach ($requests as $request) {
+            self::assertSame('POST', $request->getMethod());
+            self::assertSame('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
+            self::assertStringNotContainsString('fixture-secret', (string) $request->getUri());
+            self::assertStringContainsString('password=fixture-secret', (string) $request->getBody());
+        }
+    }
+
     public function testWhmCallAcceptsNamespacedFunctionsAndRejectsOtherSeparators(): void
     {
         [$client, $http] = $this->client();

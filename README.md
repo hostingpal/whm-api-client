@@ -286,12 +286,15 @@ and exceptions:
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Api\RequestMethod;
 
+// POST (the default) keeps api.version in the URL and form-encodes the parameters in the body.
 $result = $client->whm()->call('listaccts', ['searchtype' => 'user', 'search' => 'npr']);
 $accounts = $result->data['acct'];   // Envelope data converted to arrays; no schema applied.
 $reason = $result->metadata->whmReason();
 
-// POST keeps api.version in the URL and form-encodes the parameters in the body.
-$client->whm()->call('passwd', ['user' => 'npr', 'password' => $password], RequestMethod::Post);
+$client->whm()->call('passwd', ['user' => 'npr', 'password' => $password]); // The password stays out of the URL.
+
+// GET is explicit: every parameter goes into the query string, which the server logs.
+$version = $client->whm()->call('version', [], RequestMethod::Get);
 
 // UAPI: direct with a cPanel token or bridged through WHM; cpanel.* fields cannot be overridden.
 $pops = $client->uapi('npr')->call('Email', 'list_pops');
@@ -303,16 +306,18 @@ $state = $feature->metadata->uapiStatus();
 
 `CallResult::$data` is the payload with JSON objects converted to associative
 arrays (numeric keys become integers); `$hasData` distinguishes an omitted `data`
-member from an explicit null. Names are validated before I/O (`[A-Za-z0-9_]`
-segments; WHM allows `/`-separated namespaces), and the reserved `api.version` and
-bridge `cpanel.*` fields are removed from caller parameters. `OutcomePolicy::Flag`
+member from an explicit null. Each call first clears `responseMeta()`, then validates
+the names (`[A-Za-z0-9_]` segments; WHM allows `/`-separated namespaces) and the
+parameter values (strings, integers or nonempty lists of strings; a failure names the
+parameter, never its value) before I/O. The reserved `api.version` and bridge
+`cpanel.*` fields are removed from caller parameters. `OutcomePolicy::Flag`
 (default) applies the documented `metadata.result`/`status` 1/0 rule;
 `OutcomePolicy::Unchecked` records the envelope without interpreting the operation's
 outcome. On the WHM bridge it waives only the UAPI `status`: the outer WHM
 `metadata.result` reports whether the UAPI call ran, so a failed bridge raises
 `ApiErrorException` under both policies. Both still require a usable envelope and
-report HTTP failures. POST execution on all three
-routes was verified live on 2026-10-14 with read-only functions.
+report HTTP failures. POST, the default method, was verified live on all three
+routes on 2026-10-14 with read-only functions.
 
 ## Response metadata and failures
 
