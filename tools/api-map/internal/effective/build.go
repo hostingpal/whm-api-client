@@ -215,12 +215,17 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 	var required, optional []Param
 	used := map[string]bool{}
 	documented := map[string]bool{}
+	omitted := map[string]bool{}
 	for _, p := range v.Parameters {
 		if p.In != "query" {
 			continue
 		}
 		documented[p.Name] = true
 		if o, ok := ov.Params[p.Name]; ok && o.Omit {
+			omitted[p.Name] = true
+			if p.Definition["required"] == true {
+				b.problem(op.ID + ": required parameter " + p.Name + " cannot be omitted; exclude the operation and use call()")
+			}
 			continue
 		}
 		if strings.ContainsAny(p.Name, "*") {
@@ -235,11 +240,15 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 			Required:    decl["required"] == true,
 			Description: firstSentence(text(decl["description"])),
 		}
-		param.PHPType, param.DocType, param.Encoding = paramTypes(spec, b.schemas.enumDoc(p.Locator.SourceID, decl["schema"]))
+		var composite bool
+		param.PHPType, param.DocType, param.Encoding, composite = paramTypes(spec, b.schemas.enumDoc(p.Locator.SourceID, decl["schema"]))
 		param.Sensitive = sensitiveName(p.Name, spec)
 		o := ov.Params[p.Name]
 		if keyDecision(p.Name, spec, param.Sensitive) && o.Sensitive == nil {
 			b.problem(op.ID + ": parameter " + p.Name + ` may carry a key; declare "sensitive" true or false`)
+		}
+		if composite && o.Encoding == "" {
+			b.problem(op.ID + ": parameter " + p.Name + " has an object or list schema; declare its encoding or omit it")
 		}
 		if o.PHP != "" {
 			param.PHP = o.PHP
@@ -268,9 +277,23 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 			b.problem(op.ID + ": overlay parameter " + wire + " is not documented")
 		}
 	}
+	isRequired := map[string]bool{}
+	for _, p := range required {
+		isRequired[p.Wire] = true
+	}
+	firstOptional := ""
 	for _, wire := range ov.Order {
-		if !documented[wire] {
+		switch {
+		case !documented[wire]:
 			b.problem(op.ID + ": order lists undocumented parameter " + wire)
+		case omitted[wire]:
+			b.problem(op.ID + ": order lists omitted parameter " + wire)
+		case isRequired[wire] && firstOptional != "":
+			// Required arguments always precede optional ones, so this order
+			// cannot be honoured.
+			b.problem(op.ID + ": order lists optional parameter " + firstOptional + " before required parameter " + wire)
+		case !isRequired[wire] && firstOptional == "":
+			firstOptional = wire
 		}
 	}
 	return append(orderParams(required, ov.Order), orderParams(optional, ov.Order)...)
@@ -417,20 +440,72 @@ func (b *builder) finish(groups map[string]*Group) {
 	b.result.Problems = sortedKeys(b.problems)
 }
 
-func paramTypes(spec TypeSpec, enumDoc string) (string, string, string) {
+// paramTypes returns the native type, the PHPStan type and the encoding of a
+// query parameter, and whether its schema is composite (an object, a map, or
+// a union with a list, map or object branch), which no scalar encoding can
+// represent without an overlay decision. A union of scalar branches becomes
+// the union of their PHP types; an untyped schema or branch stays string|int.
+func paramTypes(spec TypeSpec, enumDoc string) (string, string, string, bool) {
 	switch spec.Type {
 	case "flag", "bool":
-		return "bool", "bool", "bool"
+		return "bool", "bool", "bool", false
 	case "int":
-		return "int", firstNonEmpty(enumDoc, "int"), "scalar"
+		return "int", firstNonEmpty(enumDoc, "int"), "scalar", false
 	case "number":
-		return "int|float", "int|float", "scalar"
+		return "int|float", "int|float", "scalar", false
 	case "string":
-		return "string", firstNonEmpty(enumDoc, "string"), "scalar"
+		return "string", firstNonEmpty(enumDoc, "string"), "scalar", false
 	case "list":
-		return "string|array", "string|list<string>", "repeat"
+		return "string|array", "string|list<string>", "repeat", false
+	case "union":
+		kinds := map[string]bool{}
+		if scalarKinds(spec, kinds) {
+			native := scalarUnion(kinds)
+			return native, native, "scalar", false
+		}
+	case "mixed":
+		return "string|int", "string|int", "scalar", false
 	}
-	return "string|int", "string|int", "scalar"
+	return "string|int", "string|int", "scalar", true
+}
+
+// scalarKinds collects the scalar kinds (string, int, number, unknown) of a
+// union's branches and reports false when a branch is a list, map or object.
+// Flags and booleans travel as 0/1 integers.
+func scalarKinds(spec TypeSpec, kinds map[string]bool) bool {
+	switch spec.Type {
+	case "string":
+		kinds["string"] = true
+	case "int", "flag", "bool":
+		kinds["int"] = true
+	case "number":
+		kinds["number"] = true
+	case "mixed":
+		kinds["unknown"] = true
+	case "union":
+		for _, option := range spec.AnyOf {
+			if !scalarKinds(option, kinds) {
+				return false
+			}
+		}
+	default:
+		return false
+	}
+	return true
+}
+
+func scalarUnion(kinds map[string]bool) string {
+	var types []string
+	if kinds["string"] || kinds["unknown"] {
+		types = append(types, "string")
+	}
+	if kinds["int"] || kinds["number"] || kinds["unknown"] {
+		types = append(types, "int")
+	}
+	if kinds["number"] {
+		types = append(types, "float")
+	}
+	return strings.Join(types, "|")
 }
 
 func encodingTypes(encoding string, current Param) (string, string, string) {

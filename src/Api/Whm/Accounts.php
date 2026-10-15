@@ -549,7 +549,7 @@ final readonly class Accounts
      *     Null omits it.
      * @param string|null $contactemail The cPanel account's contact email address. Null omits it.
      * @param string|null $domain The cPanel account's main domain. Null omits it.
-     * @param string|int|null $mailNodeAlias The server that will manage the cPanel account's mail. Null omits it.
+     * @param string|null $mailNodeAlias The server that will manage the cPanel account's mail. Null omits it.
      * @param int|null $maxTeamUsers The maximum number of Team users for this account. Null omits it.
      * @param bool|null $modifyFirewall Whether to modify the firewall rules as part of the cPanel account modification.
      *     Null omits it.
@@ -629,7 +629,7 @@ final readonly class Accounts
         ?string $accountEnhancements = null,
         ?string $contactemail = null,
         ?string $domain = null,
-        string|int|null $mailNodeAlias = null,
+        ?string $mailNodeAlias = null,
         ?int $maxTeamUsers = null,
         ?bool $modifyFirewall = null,
         ?string $newuser = null,

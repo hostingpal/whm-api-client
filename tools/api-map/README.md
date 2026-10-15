@@ -81,11 +81,15 @@ Operation entries (all keys optional):
   `repeat` (repeated keys) or `numbered` (`name`, `name-1`, ...), `sensitive`
   overrides secret detection (names split at separators and case boundaries;
   a parameter whose last word is `key` and that the heuristic leaves
-  non-sensitive needs an explicit `sensitive` decision), and `omit` drops the parameter from the signature
-  (it stays reachable through `call()`); name patterns such as `MXCHECK-*` must
-  be omitted.
+  non-sensitive needs an explicit `sensitive` decision), and `omit` drops the
+  parameter from the signature (it stays reachable through `call()`); name
+  patterns such as `MXCHECK-*` must be omitted, and a required parameter cannot
+  be omitted (exclude the operation instead). A union of scalar schemas becomes
+  the union of their PHP types; an object, map or a union with a list, map or
+  object branch needs an `encoding` (or `omit`).
 - `order`: wire names moved to the front of the signature in that order;
-  required arguments always precede optional ones.
+  required arguments always precede optional ones, so an order that lists an
+  optional parameter before a required one, or an omitted parameter, is a problem.
 - `method` (`GET`/`POST`), `outcome` (`flag`, the default, or `unchecked`),
   `void` (no payload) and `unwrap` (return one documented object field; exclusive
   with `void`). Read-only operations default to GET; mutating, unknown-risk and
