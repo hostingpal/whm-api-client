@@ -237,16 +237,18 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		}
 		param.PHPType, param.DocType, param.Encoding = paramTypes(spec, b.schemas.enumDoc(p.Locator.SourceID, decl["schema"]))
 		param.Sensitive = sensitiveName(p.Name, spec)
-		if o, ok := ov.Params[p.Name]; ok {
-			if o.PHP != "" {
-				param.PHP = o.PHP
-			}
-			if o.Encoding != "" {
-				param.PHPType, param.DocType, param.Encoding = encodingTypes(o.Encoding, param)
-			}
-			if o.Sensitive != nil {
-				param.Sensitive = *o.Sensitive
-			}
+		o := ov.Params[p.Name]
+		if keyDecision(p.Name, spec, param.Sensitive) && o.Sensitive == nil {
+			b.problem(op.ID + ": parameter " + p.Name + ` may carry a key; declare "sensitive" true or false`)
+		}
+		if o.PHP != "" {
+			param.PHP = o.PHP
+		}
+		if o.Encoding != "" {
+			param.PHPType, param.DocType, param.Encoding = encodingTypes(o.Encoding, param)
+		}
+		if o.Sensitive != nil {
+			param.Sensitive = *o.Sensitive
 		}
 		if !IsMethodName(param.PHP) || reservedArguments[param.PHP] {
 			b.problem(op.ID + ": parameter " + p.Name + " needs an overlay php name")
@@ -451,14 +453,28 @@ var secretWords = map[string]bool{
 	"newpass": true, "oldpass": true, "privatekey": true, "passhash": true,
 }
 
-// sensitiveName decides from the lower-cased words of the name; flag, bool and
-// int parameters are never secrets.
-func sensitiveName(name string, spec TypeSpec) bool {
-	switch spec.Type {
-	case "flag", "bool", "int":
-		return false
+// lowerWords splits a name at separators and case boundaries (so promptToken
+// is "prompt token") and lower-cases the words.
+func lowerWords(name string) []string {
+	words := Words(name)
+	for i, word := range words {
+		words[i] = strings.ToLower(word)
 	}
-	words := Words(strings.ToLower(name))
+	return words
+}
+
+// sensitiveName decides from the lower-cased words of the name. Flag and bool
+// parameters are never secrets; an integer is a secret only as a one-time code
+// whose last word is "token" (such as tfa_token), because integer "passwd"
+// parameters are password-strength settings.
+func sensitiveName(name string, spec TypeSpec) bool {
+	words := lowerWords(name)
+	switch spec.Type {
+	case "flag", "bool":
+		return false
+	case "int":
+		return len(words) > 0 && words[len(words)-1] == "token"
+	}
 	for _, word := range words {
 		if secretWords[word] {
 			return true
@@ -468,6 +484,18 @@ func sensitiveName(name string, spec TypeSpec) bool {
 		return false
 	}
 	return words[len(words)-1] == "token" || secretWords[strings.Join(words, "")]
+}
+
+// keyDecision reports whether a parameter the name heuristic leaves
+// non-sensitive ends in the word "key": private keys and remote access keys
+// share that word with setting and lookup keys, so the overlay must decide.
+func keyDecision(name string, spec TypeSpec, sensitive bool) bool {
+	switch spec.Type {
+	case "flag", "bool", "int", "number":
+		return false
+	}
+	words := lowerWords(name)
+	return !sensitive && len(words) > 0 && words[len(words)-1] == "key"
 }
 
 func tagGroups(doc model.Object) map[string]string {

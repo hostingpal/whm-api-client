@@ -239,10 +239,74 @@ func TestSensitiveNameDecisions(t *testing.T) {
 		{"passwd", "int", false},
 		{"notify_password_change", "flag", false},
 		{"username", "string", false},
+		// camelCase names split at case boundaries.
+		{"promptToken", "string", true},
+		{"newPassword", "string", true},
+		{"tokenName", "string", false},
+		// One-time codes documented as integers are secrets; other integers are not.
+		{"tfa_token", "int", true},
+		{"acl-passwd", "int", false},
+		{"tfa_token", "flag", false},
 	}
 	for _, c := range cases {
 		if got := sensitiveName(c.name, TypeSpec{Type: c.spec}); got != c.want {
 			t.Errorf("%s (%s): got %v", c.name, c.spec, got)
+		}
+	}
+}
+
+// addQueryParameter documents an optional query parameter on a fixture operation.
+func addQueryParameter(t *testing.T, m model.Map, id, name string, schema map[string]any) {
+	t.Helper()
+	for i := range m.Operations {
+		if m.Operations[i].ID != id {
+			continue
+		}
+		v := &m.Operations[i].Variants[0]
+		v.Parameters = append(v.Parameters, model.Parameter{
+			Name: name, In: "query",
+			Definition: model.Object{"name": name, "in": "query", "required": false, "schema": schema},
+			Locator:    model.Locator{SourceID: v.OperationLocator.SourceID},
+		})
+		return
+	}
+	t.Fatalf("fixture operation %s missing", id)
+}
+
+func TestBuildRequiresSensitiveDecisionsForKeyParameters(t *testing.T) {
+	m := fixtureMap(t)
+	addQueryParameter(t, m, "whm1:createacct", "key", map[string]any{"type": "string"})
+	addQueryParameter(t, m, "whm1:createacct", "remote_access_key", map[string]any{"type": "string"})
+	addQueryParameter(t, m, "whm1:createacct", "abort_on_existing_key", map[string]any{"type": "integer", "enum": []any{0, 1}})
+	addQueryParameter(t, m, "whm1:createacct", "private_key", map[string]any{"type": "string"})
+	_, joined := buildProblems(t, m, fixtureOverlay("listed"))
+	for _, want := range []string{
+		`whm1:createacct: parameter key may carry a key; declare "sensitive" true or false`,
+		`whm1:createacct: parameter remote_access_key may carry a key; declare "sensitive" true or false`,
+	} {
+		if !strings.Contains(joined, want) {
+			t.Errorf("missing %q in %s", want, joined)
+		}
+	}
+	for _, unwanted := range []string{"parameter abort_on_existing_key", "parameter private_key"} {
+		if strings.Contains(joined, unwanted) {
+			t.Errorf("unexpected decision request %q in %s", unwanted, joined)
+		}
+	}
+
+	yes, no := true, false
+	set := fixtureOverlay("listed")
+	op := set.Files[1].Operations["whm1:createacct"]
+	op.Params = map[string]overlay.Param{"key": {Sensitive: &no}, "remote_access_key": {Sensitive: &yes}}
+	op.Evidence = evidence()
+	set.Files[1].Operations["whm1:createacct"] = op
+	result, joined := buildProblems(t, m, set)
+	if joined != "" {
+		t.Fatal(joined)
+	}
+	for _, p := range groupByClass(t, result, "Accounts").Operations[0].Params {
+		if want := p.Wire == "remote_access_key" || p.Wire == "private_key" || p.Wire == "password"; p.Sensitive != want {
+			t.Errorf("%s: sensitive %v", p.Wire, p.Sensitive)
 		}
 	}
 }

@@ -79,7 +79,9 @@ Operation entries (all keys optional):
 - `params`, keyed by wire name: `php` renames the argument (required when the
   derived name is invalid or `this`/`result`), `encoding` is `scalar`, `bool`,
   `repeat` (repeated keys) or `numbered` (`name`, `name-1`, ...), `sensitive`
-  overrides secret detection, and `omit` drops the parameter from the signature
+  overrides secret detection (names split at separators and case boundaries;
+  a parameter whose last word is `key` and that the heuristic leaves
+  non-sensitive needs an explicit `sensitive` decision), and `omit` drops the parameter from the signature
   (it stays reachable through `call()`); name patterns such as `MXCHECK-*` must
   be omitted.
 - `order`: wire names moved to the front of the signature in that order;
