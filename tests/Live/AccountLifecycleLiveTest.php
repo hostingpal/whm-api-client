@@ -101,10 +101,11 @@ final class AccountLifecycleLiveTest extends TestCase
                 }
             }
             $created = true;
-            // A server with fewer than four nameservers returns the unused nameserver
-            // fields as empty strings, so only the account IP and the first nameserver
-            // must be set; the generated contract already validated every field's type.
-            $payload = $result ?? null;
+            // On the test server (two configured nameservers) at least one creation field
+            // was an empty string, presumably the unused nameserver fields, so only the
+            // account IP and the first nameserver must be set; the generated contract
+            // already validated every field's type.
+            $payload = $result;
             self::assertTrue(($payload['ip'] ?? '') !== '', 'Creation must report the account IP.');
             self::assertTrue(($payload['nameserver'] ?? '') !== '', 'Creation must report a nameserver.');
             $this->assertSummary(0);

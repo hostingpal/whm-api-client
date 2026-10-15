@@ -431,7 +431,7 @@ After these corrections the full explicitly opted-in read-only live suite passed
 Composer validation and offline API-map checks, and the typed surface reached 39
 operations. `removeacct`, `passwd` and `modifyacct` leave their alias or pattern
 parameters (`user`, `enabledigest`, `MXCHECK-<domain>`) to `call()`.
-The approval-gated mutating lifecycle test has not been executed; these observations
+The approval-gated mutating lifecycle test was not executed; these observations
 remain scoped to the tested server/date without saved revision-bound evidence.
 
 ## Runtime observations 2026-10-15 (generated client cutover)
