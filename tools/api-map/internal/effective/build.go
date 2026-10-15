@@ -629,7 +629,7 @@ func encodingTypes(encoding string, current Param) (string, string, string) {
 
 var secretWords = map[string]bool{
 	"pass": true, "passwd": true, "password": true, "passphrase": true, "secret": true,
-	"newpass": true, "oldpass": true, "privatekey": true, "passhash": true,
+	"newpass": true, "oldpass": true, "privatekey": true, "passhash": true, "keypass": true, "sshkeypass": true,
 }
 
 // lowerWords splits a name at separators and case boundaries (so promptToken

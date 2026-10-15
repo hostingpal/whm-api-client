@@ -247,6 +247,9 @@ func TestSensitiveNameDecisions(t *testing.T) {
 		{"tfa_token", "int", true},
 		{"acl-passwd", "int", false},
 		{"tfa_token", "flag", false},
+		// Concatenated passphrase names (UAPI WebApp/stage and redeploy).
+		{"sshkeypass", "string", true},
+		{"showpass", "string", false},
 	}
 	for _, c := range cases {
 		if got := sensitiveName(c.name, TypeSpec{Type: c.spec}); got != c.want {
