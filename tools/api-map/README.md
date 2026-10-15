@@ -99,8 +99,8 @@ Operation entries (all keys optional):
   it returns null in that case (other payloads are validated as usual). Needs a
   documented payload and is exclusive with `void`.
 - `evidence`: operation-level evidence, required when the entry sets `method`,
-  `outcome`, `void` or `optional_payload`, or marks a parameter
-  `"sensitive": false`.
+  `outcome`, `void` or `optional_payload`, sets a parameter `encoding` (it
+  changes the wire request), or marks a parameter `"sensitive": false`.
 - `notes` (rendered as "Observed:" lines) and `probe` (stored, not read by the
   generator).
 - `response`: corrections keyed by payload path. A path is dot-separated field

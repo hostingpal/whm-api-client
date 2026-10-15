@@ -151,6 +151,7 @@ func TestValidateRequiresEvidenceForBehaviourOverrides(t *testing.T) {
 		"void":             {`"void": true`, "whm1:listaccts: void needs evidence"},
 		"optional payload": {`"optional_payload": true`, "whm1:listaccts: optional_payload needs evidence"},
 		"sensitive false":  {`"params": {"search": {"sensitive": false}}`, "whm1:listaccts: sensitive false on parameter search needs evidence"},
+		"encoding":         {`"params": {"search": {"encoding": "repeat"}}`, "whm1:listaccts: encoding on parameter search needs evidence"},
 	} {
 		t.Run(name, func(t *testing.T) {
 			without := strings.Replace(validWHM, `"name": "listAccounts",`, `"name": "listAccounts", `+c.setting+`,`, 1)

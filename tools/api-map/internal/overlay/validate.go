@@ -67,8 +67,9 @@ func Validate(set Set) []string {
 }
 
 // missingEvidence reports behaviour-changing settings (request method, outcome
-// check, void result, optional payload, a parameter declared not sensitive)
-// made without operation-level evidence.
+// check, void result, optional payload, a parameter encoding, which changes
+// the wire request, or a parameter declared not sensitive) made without
+// operation-level evidence.
 func missingEvidence(id string, op Operation) []string {
 	if len(op.Evidence) > 0 {
 		return nil
@@ -92,6 +93,9 @@ func missingEvidence(id string, op Operation) []string {
 	}
 	sort.Strings(wires)
 	for _, wire := range wires {
+		if op.Params[wire].Encoding != "" {
+			settings = append(settings, "encoding on parameter "+wire)
+		}
 		if sensitive := op.Params[wire].Sensitive; sensitive != nil && !*sensitive {
 			settings = append(settings, "sensitive false on parameter "+wire)
 		}

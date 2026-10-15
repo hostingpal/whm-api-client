@@ -52,7 +52,8 @@ type Operation struct {
 	Exclude         *Exclusion            `json:"exclude,omitempty"`
 	Probe           json.RawMessage       `json:"probe,omitempty"`
 	// Evidence backs behaviour-changing settings: method, outcome, void,
-	// optional_payload and "sensitive": false on a parameter.
+	// optional_payload, a parameter encoding and "sensitive": false on a
+	// parameter.
 	Evidence []Evidence `json:"evidence,omitempty"`
 }
 
