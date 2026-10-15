@@ -146,7 +146,8 @@ final readonly class HostingPlans
      *
      * This function lists features in a specific feature list.
      *
-     * Documented: In the disabled feature list, value 1 means the feature is disabled (inverted meaning).
+     * Documented: The disabled feature list uses the opposite logic for value: 1 means that list does not include the
+     * feature and 0 means it does (the feature is disabled); is_disabled is not used for that list.
      *
      * API-map identity: whm1:get_featurelist_data#GET (wire name get_featurelist_data; Feature Lists).
      *
@@ -259,8 +260,8 @@ final readonly class HostingPlans
      *
      * This function checks whether a user has access to a feature on a feature list.
      *
-     * Documented: Returns 1 for feature IDs the server does not know, so it does not prove a feature exists; check the
-     * ID against getFeatureNames() first.
+     * Documented: Returns 1 for any feature that does not exist in a feature list, because the system presumes access
+     * to features outside its feature lists; a 1 does not prove that the feature exists.
      *
      * API-map identity: whm1:verify_user_has_feature#GET (wire name verify_user_has_feature; Feature Access).
      *

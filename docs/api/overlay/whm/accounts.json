@@ -6,7 +6,7 @@
   "operations": {
     "whm1:accountsummary": {
       "name": "accountSummary",
-      "notes": [{"kind": "documented", "text": "Returns the acct record list; it does not enforce exactly one record."}],
+      "notes": [{"kind": "documented", "text": "The pinned acct member is an array of account records, so the result is a list rather than a single record."}],
       "order": ["user", "domain"],
       "unwrap": "acct",
       "response": {

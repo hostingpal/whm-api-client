@@ -175,7 +175,8 @@ final readonly class Accounts
      *
      * This function retrieves a summary of a user's account.
      *
-     * Documented: Returns the acct record list; it does not enforce exactly one record.
+     * Documented: The pinned acct member is an array of account records, so the result is a list rather than a single
+     * record.
      *
      * API-map identity: whm1:accountsummary#GET (wire name accountsummary; Account Management).
      *

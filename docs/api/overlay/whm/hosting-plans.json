@@ -10,7 +10,7 @@
     },
     "whm1:get_feature_names": {},
     "whm1:get_featurelist_data": {
-      "notes": [{"kind": "documented", "text": "In the disabled feature list, value 1 means the feature is disabled (inverted meaning)."}],
+      "notes": [{"kind": "documented", "text": "The disabled feature list uses the opposite logic for value: 1 means that list does not include the feature and 0 means it does (the feature is disabled); is_disabled is not used for that list."}],
       "response": {
         "features[].is_disabled": {"accept": ["string-flag"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "feature endpoints returned exact string flags \"0\"/\"1\"; docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
         "features[].is_meridian_only": {"accept": ["bool"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "get_featurelist_data returned booleans for presentation flags; docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
@@ -31,6 +31,6 @@
     },
     "whm1:listpkgs": {"name": "listPackages", "unwrap": "pkg"},
     "whm1:read_featurelist": {"exclude": {"reason": "Deprecated; use getFeaturelistData() (get_featurelist_data).", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; DEPRECATED: Use get_featurelist_data instead."}]}},
-    "whm1:verify_user_has_feature": {"notes": [{"kind": "documented", "text": "Returns 1 for feature IDs the server does not know, so it does not prove a feature exists; check the ID against getFeatureNames() first."}], "order": ["user", "feature"], "unwrap": "has_feature"}
+    "whm1:verify_user_has_feature": {"notes": [{"kind": "documented", "text": "Returns 1 for any feature that does not exist in a feature list, because the system presumes access to features outside its feature lists; a 1 does not prove that the feature exists."}], "order": ["user", "feature"], "unwrap": "has_feature"}
   }
 }
