@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/hostingpal/whm-api-client/tools/api-map/internal/capability"
 	"github.com/hostingpal/whm-api-client/tools/api-map/internal/model"
-	"github.com/hostingpal/whm-api-client/tools/api-map/internal/parity"
+	"github.com/hostingpal/whm-api-client/tools/api-map/internal/overlay"
+	"github.com/hostingpal/whm-api-client/tools/api-map/internal/phpgen"
 	"github.com/hostingpal/whm-api-client/tools/api-map/internal/schema"
 )
 
@@ -26,8 +26,7 @@ func checkCommand(ctx context.Context, args []string, stdout, stderr io.Writer) 
 	return Check(ctx, *root, stdout, stderr)
 }
 
-// Check only reads repository inputs. All generated files live in a disposable
-// directory; neither baseline/report regeneration nor network commands are exposed.
+// Check only reads repository inputs; generated maps live in a disposable directory and generated code is compared, never written.
 func Check(ctx context.Context, root string, stdout, stderr io.Writer) int {
 	if ctx.Err() != nil {
 		return failure(stderr, "operation cancelled")
@@ -82,85 +81,17 @@ func Check(ctx context.Context, root string, stdout, stderr io.Writer) int {
 	if ctx.Err() != nil {
 		return failure(stderr, "operation cancelled")
 	}
-	symbolsPath := filepath.Join(temp, "symbols.json")
-	exporter, err := confinedCheckPath(root, "tools/php-symbols/export.php")
+	set, err := overlay.Load(cfg.Overlay)
 	if err != nil {
-		return failure(stderr, "trusted PHP exporter unavailable")
-	}
-	// The exporter is trusted repository code. Configuration cannot replace the
-	// executable, script, argv, or environment with shell commands.
-	command := exec.CommandContext(ctx, "php", exporter, "--root", root, "--output", symbolsPath)
-	command.Dir = root
-	if err = command.Run(); err != nil {
-		return failure(stderr, "PHP symbol export failed or cancelled")
-	}
-	raw, err = os.ReadFile(symbolsPath)
-	if err != nil {
-		return failure(stderr, "fresh PHP symbols read failed")
-	}
-	symbols, err := parity.LoadSymbols(raw)
-	if err != nil {
-		return failure(stderr, "fresh PHP symbols validation failed")
-	}
-	freshSymbols := raw
-	raw, err = os.ReadFile(cfg.Registry)
-	if err != nil {
-		return failure(stderr, "registry read failed")
-	}
-	registry, err := parity.LoadRegistry(raw)
-	if err != nil {
-		return failure(stderr, "registry validation failed")
-	}
-	evidence := parity.Evidence{Revision: cfg.Revision}
-	if cfg.TestEvidence != "" {
-		raw, err = os.ReadFile(cfg.TestEvidence)
-		if err != nil {
-			return failure(stderr, "test evidence read failed")
-		}
-		saved, e := parity.LoadTestEvidence(raw)
-		if e != nil {
-			return failure(stderr, "test evidence validation failed")
-		}
-		evidence.TestRuns = saved.Runs
-	}
-	report, err := parity.Compare(m, registry, symbols, evidence)
-	if err != nil {
-		return failure(stderr, "parity contract comparison failed")
-	}
-	if err = schema.Validate("parity-report-v1.schema.json", report); err != nil {
-		return failure(stderr, "parity report validation failed")
-	}
-	reportRaw, err := model.Encode(report)
-	if err != nil {
-		return failure(stderr, "parity report encoding failed")
-	}
-	for name, data := range map[string][]byte{"report.json": reportRaw, "report.md": parity.Markdown(report)} {
-		if err = model.WriteAtomic(filepath.Join(temp, name), data); err != nil {
-			return failure(stderr, "temporary report write failed")
-		}
-	}
-	raw, err = os.ReadFile(cfg.Baseline)
-	if err != nil {
-		return failure(stderr, "baseline read failed")
-	}
-	baseline, err := parity.LoadBaseline(raw)
-	if err != nil {
-		return failure(stderr, "baseline validation failed")
-	}
-	violations := parity.CheckBaseline(report, baseline)
-	for _, d := range report.Diagnostics {
-		if d.Severity == "error" {
-			fmt.Fprintf(stderr, "api-map: %s %s\n", d.Severity, d.Code)
-		}
-	}
-	for _, v := range violations {
-		fmt.Fprintf(stderr, "api-map: baseline %s %s: %s\n", v.Code, v.ID, v.Message)
-	}
-	// Invalid registry/evidence is always an input failure, even if a protected
-	// mapping is also lost. Keep both diagnostics so regression cannot be concealed.
-	if !report.Valid {
+		fmt.Fprintln(stderr, "api-map: overlay:", err)
 		return 1
 	}
+	result, ok := contractFromMap(m, set, stderr)
+	if !ok {
+		return 1
+	}
+	// Computed before the examples, acted on after them; the comparison is read-only.
+	current, compareErr := generatedCurrent(root, phpgen.Render(result), stderr)
 	for _, example := range cfg.Examples {
 		if ctx.Err() != nil {
 			return failure(stderr, "operation cancelled")
@@ -192,28 +123,13 @@ func Check(ctx context.Context, root string, stdout, stderr io.Writer) int {
 	if ctx.Err() != nil {
 		return failure(stderr, "operation cancelled")
 	}
-	stale := false
-	for _, artifact := range []struct {
-		path  string
-		data  []byte
-		label string
-	}{{cfg.Symbols, freshSymbols, "PHP symbols"}, {cfg.ReportJSON, reportRaw, "parity JSON report"}, {cfg.ReportMarkdown, parity.Markdown(report), "parity Markdown report"}} {
-		checked, e := os.ReadFile(artifact.path)
-		if e != nil {
-			return failure(stderr, "checked artifact read failed")
-		}
-		if !bytes.Equal(checked, artifact.data) {
-			fmt.Fprintf(stderr, "api-map: checked %s differs; regenerate explicitly after review\n", artifact.label)
-			stale = true
-		}
+	if compareErr != nil {
+		return failure(stderr, "generated code comparison failed")
 	}
-	if len(violations) > 0 {
-		return 3
-	}
-	if stale {
+	if !current {
 		return 1
 	}
-	if _, err = fmt.Fprintln(stdout, "Offline API map checks passed; baseline unchanged."); err != nil {
+	if _, err = fmt.Fprintln(stdout, "Offline API map checks passed; generated code is current."); err != nil {
 		return failure(stderr, "check result write failed")
 	}
 	return 0

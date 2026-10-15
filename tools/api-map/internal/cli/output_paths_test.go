@@ -80,62 +80,10 @@ func TestMapOutputProtectsAllInputs(t *testing.T) {
 		}
 	}
 }
-func TestParityOutputsProtectInputsAndEachOther(t *testing.T) {
-	for _, outputFlag := range []string{"--output", "--markdown"} {
-		for _, target := range []string{"map.json", "registry.json", "symbols.json", "tests.json", "live.json", "companion"} {
-			for _, alias := range []bool{false, true} {
-				t.Run(fmt.Sprintf("%s/%s/alias=%t", outputFlag, target, alias), func(t *testing.T) {
-					dir := outputFixture(t)
-					mapPath := filepath.Join(dir, "map.json")
-					if code, _, errout := run("map", "build", "--manifest", filepath.Join(dir, "manifest.json"), "--annotations", filepath.Join(dir, "annotations.json"), "--output", mapPath); code != 0 {
-						t.Fatal(errout)
-					}
-					outDir := dir
-					if alias {
-						outDir = directoryAlias(t, dir)
-					}
-					out, md := filepath.Join(dir, "report.json"), filepath.Join(dir, "report.md")
-					name := target
-					if name == "companion" {
-						name = "report.json"
-						if outputFlag == "--output" {
-							name = "report.md"
-						}
-						if err := os.WriteFile(filepath.Join(dir, name), []byte("prior output"), 0600); err != nil {
-							t.Fatal(err)
-						}
-					}
-					if outputFlag == "--output" {
-						out = filepath.Join(outDir, name)
-					} else {
-						md = filepath.Join(outDir, name)
-					}
-					preserved := map[string][]byte{}
-					for _, name := range []string{"map.json", "registry.json", "symbols.json", "tests.json", "live.json"} {
-						p := filepath.Join(dir, name)
-						preserved[p], _ = os.ReadFile(p)
-					}
-					if target == "companion" {
-						p := filepath.Join(dir, name)
-						preserved[p], _ = os.ReadFile(p)
-					}
-					code, stdout, stderr := run("parity", "report", "--map", mapPath, "--registry", filepath.Join(dir, "registry.json"), "--symbols", filepath.Join(dir, "symbols.json"), "--test-evidence", filepath.Join(dir, "tests.json"), "--live-evidence", filepath.Join(dir, "live.json"), "--output", out, "--markdown", md)
-					assertPreserved(t, preserved)
-					if code != 1 || stdout != "" || !strings.Contains(stderr, "distinct") {
-						t.Fatalf("collision not rejected: %d %q %s", code, stdout, stderr)
-					}
-				})
-			}
-		}
-	}
-}
 func TestGeneratedOutputsCanBeReplaced(t *testing.T) {
 	dir := outputFixture(t)
 	for i := 0; i < 2; i++ {
 		if code, _, stderr := run("map", "build", "--manifest", filepath.Join(dir, "manifest.json"), "--annotations", filepath.Join(dir, "annotations.json"), "--output", filepath.Join(dir, "map.json")); code != 0 {
-			t.Fatal(stderr)
-		}
-		if code, _, stderr := run("parity", "report", "--map", filepath.Join(dir, "map.json"), "--registry", filepath.Join(dir, "registry.json"), "--symbols", filepath.Join(dir, "symbols.json"), "--output", filepath.Join(dir, "report.json"), "--markdown", filepath.Join(dir, "report.md")); code != 0 {
 			t.Fatal(stderr)
 		}
 	}

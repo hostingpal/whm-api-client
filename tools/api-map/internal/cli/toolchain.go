@@ -14,20 +14,14 @@ import (
 )
 
 type toolchainConfig struct {
-	SchemaVersion  string         `json:"schema_version"`
-	Manifest       string         `json:"manifest"`
-	Annotations    string         `json:"annotations"`
-	Registry       string         `json:"registry"`
-	Symbols        string         `json:"symbols"`
-	Baseline       string         `json:"baseline"`
-	SchemaDir      string         `json:"schema_dir"`
-	Map            string         `json:"map"`
-	MapChecksum    string         `json:"map_checksum"`
-	ReportJSON     string         `json:"report_json"`
-	ReportMarkdown string         `json:"report_markdown"`
-	TestEvidence   string         `json:"test_evidence,omitempty"`
-	Revision       string         `json:"revision,omitempty"`
-	Examples       []checkExample `json:"examples"`
+	SchemaVersion string         `json:"schema_version"`
+	Manifest      string         `json:"manifest"`
+	Annotations   string         `json:"annotations"`
+	Overlay       string         `json:"overlay"`
+	SchemaDir     string         `json:"schema_dir"`
+	Map           string         `json:"map"`
+	MapChecksum   string         `json:"map_checksum"`
+	Examples      []checkExample `json:"examples"`
 }
 type checkExample struct {
 	Path   string `json:"path"`
@@ -54,7 +48,7 @@ func loadToolchain(root string) (toolchainConfig, error) {
 	if err = json.Unmarshal(raw, &cfg); err != nil {
 		return cfg, err
 	}
-	for _, p := range []*string{&cfg.Manifest, &cfg.Annotations, &cfg.Registry, &cfg.Symbols, &cfg.Baseline, &cfg.SchemaDir, &cfg.MapChecksum, &cfg.ReportJSON, &cfg.ReportMarkdown, &cfg.TestEvidence} {
+	for _, p := range []*string{&cfg.Manifest, &cfg.Annotations, &cfg.Overlay, &cfg.SchemaDir, &cfg.MapChecksum} {
 		if *p == "" {
 			continue
 		}

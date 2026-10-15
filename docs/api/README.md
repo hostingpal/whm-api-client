@@ -3,8 +3,9 @@
 The source audit for Beads `whm-api-client-gwi.1` covers **WHM API 1** and
 **cPanel UAPI**. The PHP package implements typed groups for 39 reviewed operations
 plus generic calls; these documents pin the contracts and do not by themselves
-establish endpoint implementation or live-test coverage (see the
-[coverage report](coverage/report.md)).
+establish endpoint implementation or live-test coverage. Coverage is generated:
+[coverage.md](coverage.md) lists generated groups and exclusions, and live
+verification is separate.
 
 - [Audit and contract discrepancies](source-audit.md)
 - [Measured source structure](source-inventory.json)
@@ -61,7 +62,7 @@ query/body contracts. Risk follows explicit evidence; absence stays unknown.
 Build validates before atomic output replacement. Use `--output -` to emit the
 map JSON to stdout; file output writes a small JSON summary to stdout. Safe
 category diagnostics use stderr. Exit codes are 0 for success, 1 for input or
-contract failure, 2 for usage, and 3 for baseline regression. A failed build preserves any previous output.
+contract failure, and 2 for usage. A failed build preserves any previous output.
 Generated large maps remain under `.cache/api-map/`; the reviewed checksum is
 [map.sha256](map.sha256). Rebuild twice and compare bytes when reviewing changes.
 
@@ -111,28 +112,24 @@ pass byte/reference and OpenAPI contract validation before publication. Review
 new source hashes and update annotations explicitly before selecting it for
 map builds. No command shown here calls a WHM or cPanel endpoint.
 
-## Coverage, baseline, and offline CI
+## Coverage and offline CI
 
-[Toolchain commands](../../tools/api-map/README.md) cover PHP symbol export,
-parity, saved capability comparison, drift, explicit regeneration, and manual
-baseline review. The [toolchain configuration](toolchain.json) selects local
-inputs, checked reports, schemas, and synthetic examples.
+[Toolchain commands](../../tools/api-map/README.md) cover saved capability
+comparison, drift, explicit regeneration, and the overlay and PHP generation
+rules. Coverage is the generated [coverage.md](coverage.md). The
+[toolchain configuration](toolchain.json) selects local inputs, the overlay,
+schemas, and synthetic examples.
 
 ```bash
 composer api-map:check
 ```
 
 This read-only check builds twice in temporary storage, verifies the reviewed
-map checksum and schema copies, exports fresh PHP symbols, validates registry
-and evidence, regenerates parity reports, compares checked bytes, and enforces
-the [coverage baseline](coverage/baseline.json). It validates saved synthetic
+map checksum and schema copies, validates the overlay against the map, checks
+that committed generated code is current, and validates saved synthetic
 capability/drift examples without contacting a server. A changed artifact
 requires explicit regeneration and review; the check has no update switch.
-
-Baseline protection uses exact operation/variant IDs, PHP symbols, contract
-hashes, and test mappings. An empty baseline is appropriate while no endpoints
-are implemented, but it never allows invalid or orphaned mappings. Live
-verification is a separate optional dimension and was not run to validate this
+Live verification is a separate optional dimension and was not run to validate this
 toolchain. The [CI workflow](../../.github/workflows/api-map.yml) uses PHP 8.3,
 Go 1.24, locked dependencies, Go formatting/test/vet, Composer validation and
 PHP checks, and this offline gate. It receives no live credentials.

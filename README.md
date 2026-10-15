@@ -374,8 +374,8 @@ go through `call()`. The server's `uid` is accepted as the observed canonical de
 string and normalized to the pinned integer; see the
 [runtime observations](docs/api/source-audit.md#runtime-observations-2026-10-14).
 The alias parameters `removeacct` `user` and `passwd` `enabledigest`, and the
-`accountsummary` lookups other than `user`, are not sent, so the coverage report
-lists those variants as partial.
+`accountsummary` lookups other than `user`, are not sent; those parameters stay
+reachable through `call()`.
 
 #### Generic calls
 
@@ -529,7 +529,7 @@ even when live-test environment variables are set. Pair new read-only slices wit
 an explicit live run on the approved test server; add reviewed routes to the live
 group as implementation grows. Mutating/destructive tests require approval for
 the specific operations and targets. Live runs do not update pinned documentation
-or the offline coverage baseline.
+or the generated coverage.
 
 The PHPCS ruleset adds sorted and unused-import checks (including PHPDoc uses),
 short arrays, multiline trailing commas, consistent member and type spacing,
@@ -611,14 +611,15 @@ A separate Composer package will provide Laravel integration and supply its
 configured Guzzle client. Laravel dependencies belong in that package.
 
 The Go tool parses pinned official API documentation, generates a canonical
-API map, and compares documented operations with declared PHP implementation coverage.
+API map, validates the overlay, generates the typed client and
+`docs/api/coverage.md`, and checks that generated code is current.
 Go was selected for the separate development tool; it is not a PHP runtime
 dependency. The [source audit, approved design, and implementation plan](docs/api/README.md) preserve
 documentation provenance and distinguish implementation from live coverage.
 
 Run `composer api-map:check` with Go 1.24+ for the read-only offline toolchain
-gate. It validates deterministic output, PHP mappings, checked reports, and the
-reviewed coverage baseline. `composer check` remains PHP-only. See the
+gate. It validates deterministic output, the overlay, and that committed generated
+code is current. `composer check` remains PHP-only. See the
 [tool commands and artifact review workflow](tools/api-map/README.md).
 
 ## License

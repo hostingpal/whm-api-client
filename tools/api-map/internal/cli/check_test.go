@@ -10,27 +10,29 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
-	"syscall"
+	"reflect"
+	"strings"
 	"testing"
-	"time"
 
+	"github.com/hostingpal/whm-api-client/tools/api-map/internal/effective"
 	"github.com/hostingpal/whm-api-client/tools/api-map/internal/mapbuild"
 	"github.com/hostingpal/whm-api-client/tools/api-map/internal/model"
-	"github.com/hostingpal/whm-api-client/tools/api-map/internal/parity"
+	"github.com/hostingpal/whm-api-client/tools/api-map/internal/overlay"
+	"github.com/hostingpal/whm-api-client/tools/api-map/internal/phpgen"
 	"github.com/hostingpal/whm-api-client/tools/api-map/internal/source"
 )
 
 func checkWrite(t *testing.T, root, name string, data []byte) {
 	t.Helper()
 	p := filepath.Join(root, name)
-	if e := os.MkdirAll(filepath.Dir(p), 0755); e != nil {
+	if e := os.MkdirAll(filepath.Dir(p), 0o755); e != nil {
 		t.Fatal(e)
 	}
-	if e := os.WriteFile(p, data, 0600); e != nil {
+	if e := os.WriteFile(p, data, 0o600); e != nil {
 		t.Fatal(e)
 	}
 }
+
 func checkJSON(t *testing.T, root, name string, v any) {
 	t.Helper()
 	b, e := model.Encode(v)
@@ -39,6 +41,20 @@ func checkJSON(t *testing.T, root, name string, v any) {
 	}
 	checkWrite(t, root, name, b)
 }
+
+func checkToolchain() model.Object {
+	return model.Object{
+		"schema_version": "1.0",
+		"manifest":       "sources/manifest.json",
+		"annotations":    "annotations.json",
+		"overlay":        "overlay",
+		"schema_dir":     "schema",
+		"map":            ".cache/map.json",
+		"map_checksum":   "map.sha256",
+		"examples":       []any{},
+	}
+}
+
 func checkFixture(t *testing.T) string {
 	t.Helper()
 	root := t.TempDir()
@@ -61,19 +77,6 @@ func checkFixture(t *testing.T) string {
 		t.Fatal(e)
 	}
 	checkWrite(t, root, "map.sha256", []byte(fmt.Sprintf("%x  .cache/map.json\n", sha256.Sum256(data))))
-	registry := parity.Registry{SchemaVersion: "1.0", Entries: []parity.Entry{}, Infrastructure: []parity.Infrastructure{}, Exclusions: []parity.Exclusion{}}
-	symbols := parity.Symbols{SchemaVersion: "1.0", Symbols: []parity.Symbol{}, Diagnostics: []parity.SymbolDiagnostic{}}
-	checkJSON(t, root, "registry.json", registry)
-	checkJSON(t, root, "symbols.json", symbols)
-	checkWrite(t, root, "tools/php-symbols/export.php", []byte("<?php\nif ($argc !== 5 || $argv[1] !== '--root' || $argv[3] !== '--output') { exit(9); }\ncopy($argv[2] . '/symbols.json', $argv[4]);\n"))
-	checkJSON(t, root, "tests.json", parity.TestEvidence{SchemaVersion: "1.0", Runs: []parity.TestRun{}})
-	report, e := parity.Compare(m, registry, symbols, parity.Evidence{})
-	if e != nil {
-		t.Fatal(e)
-	}
-	checkJSON(t, root, "report.json", report)
-	checkWrite(t, root, "report.md", parity.Markdown(report))
-	checkJSON(t, root, "baseline.json", parity.Baseline{SchemaVersion: "1.0", Operations: []string{}, Mappings: []parity.ProtectedMapping{}})
 	files, e := filepath.Glob("../../../../docs/api/schema/*.schema.json")
 	if e != nil {
 		t.Fatal(e)
@@ -85,9 +88,23 @@ func checkFixture(t *testing.T) string {
 		}
 		checkWrite(t, root, "schema/"+filepath.Base(p), b)
 	}
-	checkJSON(t, root, "docs/api/toolchain.json", model.Object{"schema_version": "1.0", "manifest": "sources/manifest.json", "annotations": "annotations.json", "registry": "registry.json", "symbols": "symbols.json", "baseline": "baseline.json", "schema_dir": "schema", "map": ".cache/map.json", "map_checksum": "map.sha256", "report_json": "report.json", "report_markdown": "report.md", "test_evidence": "tests.json", "examples": []any{}})
+	checkWrite(t, root, "overlay/config.json", []byte(`{"schema_version":"1.0","scope":"listed"}`))
+	for _, dir := range []string{"overlay/uapi", "overlay/whm"} {
+		if e := os.MkdirAll(filepath.Join(root, dir), 0o755); e != nil {
+			t.Fatal(e)
+		}
+	}
+	result, e := effective.Build(m, overlay.Set{Config: overlay.Config{SchemaVersion: "1.0", Scope: "listed"}})
+	if e != nil {
+		t.Fatal(e)
+	}
+	for path, content := range phpgen.Render(result) {
+		checkWrite(t, root, path, content)
+	}
+	checkJSON(t, root, "docs/api/toolchain.json", checkToolchain())
 	return root
 }
+
 func checkSnapshot(t *testing.T, root string) map[string]string {
 	t.Helper()
 	result := map[string]string{}
@@ -109,170 +126,149 @@ func checkSnapshot(t *testing.T, root string) map[string]string {
 	}
 	return result
 }
+
+func runCheck(t *testing.T, ctx context.Context, root string) (int, string, string) {
+	t.Helper()
+	var stdout, stderr bytes.Buffer
+	code := Check(ctx, root, &stdout, &stderr)
+	return code, stdout.String(), stderr.String()
+}
+
 func TestCheckIsReadOnlyAndOffline(t *testing.T) {
-	requests := 0
-	original := http.DefaultTransport
-	http.DefaultTransport = roundTripFunc(func(*http.Request) (*http.Response, error) { requests++; return nil, fmt.Errorf("network prohibited") })
-	t.Cleanup(func() { http.DefaultTransport = original })
 	root := checkFixture(t)
-	for _, mode := range []string{"pass", "regression", "invalid registry", "invalid source"} {
-		t.Run(mode, func(t *testing.T) {
-			want := 0
-			switch mode {
-			case "regression":
-				checkJSON(t, root, "baseline.json", parity.Baseline{SchemaVersion: "1.0", Operations: []string{"whm1:demo"}, Mappings: []parity.ProtectedMapping{}})
-				want = 3
-			case "invalid registry":
-				checkWrite(t, root, "registry.json", []byte(`{}`))
-				want = 1
-			case "invalid source":
-				checkWrite(t, root, "sources/source.json", []byte(`{}`))
-				want = 1
-			}
-			before := checkSnapshot(t, root)
-			var out, err bytes.Buffer
-			code := Run(context.Background(), []string{"check", "--root", root}, &out, &err)
-			if code != want {
-				t.Fatalf("exit=%d want=%d stderr=%s", code, want, err.String())
-			}
-			after := checkSnapshot(t, root)
-			b, _ := json.Marshal(before)
-			a, _ := json.Marshal(after)
-			if !bytes.Equal(b, a) {
-				t.Fatal("check modified repository artifacts")
+	before := checkSnapshot(t, root)
+	code, stdout, stderr := runCheck(t, context.Background(), root)
+	if code != 0 || !strings.Contains(stdout, "generated code is current") {
+		t.Fatalf("check %d: %s %s", code, stdout, stderr)
+	}
+	after := checkSnapshot(t, root)
+	if len(before) != len(after) {
+		t.Fatal("check created or removed files")
+	}
+	for path, content := range before {
+		if after[path] != content {
+			t.Fatalf("check modified %s", path)
+		}
+	}
+}
+
+func TestCheckRejectsStaleGeneratedCode(t *testing.T) {
+	root := checkFixture(t)
+	current, e := os.ReadFile(filepath.Join(root, "docs/api/coverage.md"))
+	if e != nil {
+		t.Fatal(e)
+	}
+	checkWrite(t, root, "docs/api/coverage.md", append(current, []byte("\nedited by hand\n")...))
+	if code, _, stderr := runCheck(t, context.Background(), root); code != 1 || !strings.Contains(stderr, "out of date: docs/api/coverage.md") {
+		t.Fatalf("edited summary accepted: %d %s", code, stderr)
+	}
+
+	root = checkFixture(t)
+	checkWrite(t, root, "src/Api/Uapi/Old.php", []byte("<?php\n/** "+phpgen.Marker+" */\n"))
+	if code, _, stderr := runCheck(t, context.Background(), root); code != 1 || !strings.Contains(stderr, "src/Api/Uapi/Old.php") {
+		t.Fatalf("stale generated file accepted: %d %s", code, stderr)
+	}
+}
+
+func TestCheckRefusesHandWrittenFileAtRenderedPath(t *testing.T) {
+	root := checkFixture(t)
+	checkWrite(t, root, "docs/api/coverage.md", []byte("# written by hand\n"))
+	if code, _, stderr := runCheck(t, context.Background(), root); code != 1 || !strings.Contains(stderr, "refusing to overwrite hand-written file: docs/api/coverage.md") {
+		t.Fatalf("hand-written file accepted: %d %s", code, stderr)
+	}
+}
+
+func TestCheckRejectsOverlayProblems(t *testing.T) {
+	root := checkFixture(t)
+	checkWrite(t, root, "overlay/uapi/Missing.json", []byte(`{"schema_version":"1.0","family":"uapi","group":"Missing","operations":{"uapi:Missing/nothing":{}}}`))
+	if code, _, stderr := runCheck(t, context.Background(), root); code != 1 || !strings.Contains(stderr, "not in the API map") {
+		t.Fatalf("overlay problem accepted: %d %s", code, stderr)
+	}
+}
+
+func TestCheckRejectsConfigurationEscapesAndRemovedKeys(t *testing.T) {
+	for name, mutate := range map[string]func(model.Object){
+		"escaping overlay":     func(c model.Object) { c["overlay"] = "../overlay" },
+		"removed registry key": func(c model.Object) { c["registry"] = "registry.json" },
+		"missing overlay":      func(c model.Object) { delete(c, "overlay") },
+	} {
+		t.Run(name, func(t *testing.T) {
+			root := checkFixture(t)
+			config := checkToolchain()
+			mutate(config)
+			checkJSON(t, root, "docs/api/toolchain.json", config)
+			if code, _, stderr := runCheck(t, context.Background(), root); code != 1 || !strings.Contains(stderr, "toolchain configuration validation failed") {
+				t.Fatalf("accepted %s: %d %s", name, code, stderr)
 			}
 		})
+	}
+}
+
+func TestCheckStopsWhenCancelled(t *testing.T) {
+	root := checkFixture(t)
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if code, _, stderr := runCheck(t, ctx, root); code == 0 || !strings.Contains(stderr, "operation cancelled") {
+		t.Fatalf("cancelled check returned %d: %s", code, stderr)
+	}
+}
+
+func TestCheckStaysOffline(t *testing.T) {
+	requests := 0
+	original := http.DefaultTransport
+	http.DefaultTransport = roundTripFunc(func(*http.Request) (*http.Response, error) {
+		requests++
+		return nil, fmt.Errorf("network prohibited")
+	})
+	t.Cleanup(func() { http.DefaultTransport = original })
+	root := checkFixture(t)
+	if code, _, stderr := runCheck(t, context.Background(), root); code != 0 {
+		t.Fatalf("check %d: %s", code, stderr)
 	}
 	if requests != 0 {
 		t.Fatalf("made %d HTTP requests", requests)
 	}
 }
-func TestCheckRejectsStaleArtifactsAndCancellation(t *testing.T) {
-	for _, name := range []string{"symbols", "report", "checksum", "schema", "config", "cancel"} {
+
+func TestCheckRejectsBrokenInputsWithoutModifyingTheTree(t *testing.T) {
+	for name, mutate := range map[string]func(*testing.T, string){
+		"checksum": func(t *testing.T, root string) { checkWrite(t, root, "map.sha256", []byte("bad")) },
+		"schema drift": func(t *testing.T, root string) {
+			checkWrite(t, root, "schema/api-map-v1.schema.json", []byte("{}"))
+		},
+		"invalid source": func(t *testing.T, root string) { checkWrite(t, root, "sources/source.json", []byte(`{}`)) },
+	} {
 		t.Run(name, func(t *testing.T) {
 			root := checkFixture(t)
-			ctx := context.Background()
-			switch name {
-			case "symbols":
-				checkWrite(t, root, "tools/php-symbols/export.php", []byte("<?php file_put_contents($argv[4], '{\"schema_version\":\"1.0\",\"symbols\":[],\"diagnostics\":[]}');"))
-			case "report":
-				checkWrite(t, root, "report.md", []byte("stale"))
-			case "checksum":
-				checkWrite(t, root, "map.sha256", []byte("bad"))
-			case "schema":
-				checkWrite(t, root, "schema/api-map-v1.schema.json", []byte("{}"))
-			case "config":
-				checkWrite(t, root, "docs/api/toolchain.json", []byte(`{"schema_version":"1.0","command":"curl"}`))
-			case "cancel":
-				c, cancel := context.WithCancel(ctx)
-				cancel()
-				ctx = c
-			}
+			mutate(t, root)
 			before := checkSnapshot(t, root)
-			var out, err bytes.Buffer
-			if code := Check(ctx, root, &out, &err); code != 1 {
-				t.Fatalf("exit=%d %s", code, err.String())
+			if code, _, stderr := runCheck(t, context.Background(), root); code != 1 {
+				t.Fatalf("exit %d: %s", code, stderr)
 			}
 			after := checkSnapshot(t, root)
-			b, _ := json.Marshal(before)
-			a, _ := json.Marshal(after)
-			if !bytes.Equal(a, b) {
-				t.Fatal("failure modified repository")
+			if !reflect.DeepEqual(before, after) {
+				t.Fatal("failing check modified the repository")
 			}
 		})
 	}
 }
 
-func TestCheckExactRemovedAndMismappedFixtures(t *testing.T) {
-	for _, mode := range []string{"unchanged", "removed", "mismapped"} {
+func TestCheckRejectsAmbiguousOrEscapingToolchain(t *testing.T) {
+	for _, mode := range []string{"absolute", "symlink", "duplicate", "trailing"} {
 		t.Run(mode, func(t *testing.T) {
 			root := checkFixture(t)
-			symbols := parity.Symbols{SchemaVersion: "1.0", Symbols: []parity.Symbol{{ID: "Client::demo", Kind: "method", DeclaringClass: "Client", File: "src/Client.php", Line: 1, Public: true, Providers: []string{}}}, Diagnostics: []parity.SymbolDiagnostic{}}
-			checkJSON(t, root, "symbols.json", symbols)
-			entry := parity.Entry{OperationID: "whm1:demo", VariantID: "whm1:demo#GET", Symbol: "Client::demo", Status: "partial", Tests: []string{}, ContractUnits: []parity.ContractClaim{}, LiveEvidenceIDs: []string{}}
-			registry := parity.Registry{SchemaVersion: "1.0", Entries: []parity.Entry{entry}, Infrastructure: []parity.Infrastructure{}, Exclusions: []parity.Exclusion{}}
-			checkJSON(t, root, "baseline.json", parity.Baseline{SchemaVersion: "1.0", Operations: []string{}, Mappings: []parity.ProtectedMapping{{OperationID: entry.OperationID, VariantID: entry.VariantID, Symbol: entry.Symbol, Status: entry.Status, Tests: []string{}, ContractUnits: []parity.ContractClaim{}}}})
-			bundle, e := source.Load(filepath.Join(root, "sources/manifest.json"), source.Limits{})
-			if e != nil {
-				t.Fatal(e)
-			}
-			m, e := mapbuild.Build(bundle, nil, nil)
-			if e != nil {
-				t.Fatal(e)
-			}
-			report, e := parity.Compare(m, registry, symbols, parity.Evidence{})
-			if e != nil {
-				t.Fatal(e)
-			}
-			checkJSON(t, root, "report.json", report)
-			checkWrite(t, root, "report.md", parity.Markdown(report))
-			want := 0
-			switch mode {
-			case "removed":
-				registry.Entries = []parity.Entry{}
-				want = 3
-			case "mismapped":
-				registry.Entries[0].OperationID = "whm1:missing"
-				registry.Entries[0].VariantID = "whm1:missing#GET"
-				want = 1
-			}
-			checkJSON(t, root, "registry.json", registry)
-			temporary := t.TempDir()
-			t.Setenv("TMPDIR", temporary)
-			before := checkSnapshot(t, root)
-			var out, err bytes.Buffer
-			code := Check(context.Background(), root, &out, &err)
-			if code != want {
-				t.Fatalf("exit %d want %d: %s", code, want, err.String())
-			}
-			if mode != "unchanged" && !bytes.Contains(err.Bytes(), []byte("mapping_regression")) {
-				t.Fatal("missing exact mapping regression diagnosis", err.String())
-			}
-			after := checkSnapshot(t, root)
-			a, _ := json.Marshal(after)
-			b, _ := json.Marshal(before)
-			if !bytes.Equal(a, b) {
-				t.Fatal("check changed artifacts")
-			}
-			leftovers, e := os.ReadDir(temporary)
-			if e != nil || len(leftovers) != 0 {
-				t.Fatal("temporary outputs not cleaned", e, leftovers)
-			}
-		})
-	}
-}
-
-func TestCheckRejectsConfigurationEscapesAndAmbiguity(t *testing.T) {
-	for _, mode := range []string{"absolute", "parent", "symlink", "duplicate", "trailing", "exporter failure"} {
-		t.Run(mode, func(t *testing.T) {
-			root := checkFixture(t)
-			p := filepath.Join(root, "docs/api/toolchain.json")
-			raw, e := os.ReadFile(p)
-			if e != nil {
-				t.Fatal(e)
-			}
-			var cfg map[string]any
-			if e = json.Unmarshal(raw, &cfg); e != nil {
-				t.Fatal(e)
-			}
+			config := checkToolchain()
 			switch mode {
 			case "absolute":
-				cfg["symbols"] = "/tmp/symbols.json"
-			case "parent":
-				cfg["symbols"] = "../symbols.json"
+				config["overlay"] = "/tmp/overlay"
 			case "symlink":
-				outside := filepath.Join(t.TempDir(), "outside.json")
-				if e = os.WriteFile(outside, []byte("{}"), 0600); e != nil {
+				outside := t.TempDir()
+				if e := os.Symlink(outside, filepath.Join(root, "outside")); e != nil {
 					t.Fatal(e)
 				}
-				if e = os.Symlink(outside, filepath.Join(root, "outside.json")); e != nil {
-					t.Fatal(e)
-				}
-				cfg["symbols"] = "outside.json"
-			case "exporter failure":
-				checkWrite(t, root, "tools/php-symbols/export.php", []byte("<?php exit(4);"))
+				config["overlay"] = "outside"
 			}
-			raw, e = model.Encode(cfg)
+			raw, e := model.Encode(config)
 			if e != nil {
 				t.Fatal(e)
 			}
@@ -283,89 +279,40 @@ func TestCheckRejectsConfigurationEscapesAndAmbiguity(t *testing.T) {
 				raw = append(raw, []byte(" {}")...)
 			}
 			checkWrite(t, root, "docs/api/toolchain.json", raw)
-			var out, err bytes.Buffer
-			if code := Check(context.Background(), root, &out, &err); code != 1 {
-				t.Fatalf("exit %d: %s", code, err.String())
+			if code, _, stderr := runCheck(t, context.Background(), root); code != 1 || !strings.Contains(stderr, "toolchain configuration validation failed") {
+				t.Fatalf("accepted %s: %d %s", mode, code, stderr)
 			}
 		})
 	}
 }
 
-func TestCheckCancelsRunningExporterAndCleansTemporaryOutputs(t *testing.T) {
-	root := checkFixture(t)
+func TestCheckCleansTemporaryOutputs(t *testing.T) {
 	temporary := t.TempDir()
 	t.Setenv("TMPDIR", temporary)
-	checkWrite(t, root, "tools/php-symbols/export.php", []byte(`<?php
-file_put_contents($argv[4] . '.started', (string) getmypid());
-while (true) { usleep(10000); }
-`))
-	before := checkSnapshot(t, root)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	var stdout, stderr bytes.Buffer
-	done := make(chan int, 1)
-	go func() { done <- Check(ctx, root, &stdout, &stderr) }()
+	root := checkFixture(t)
+	if code, _, stderr := runCheck(t, context.Background(), root); code != 0 {
+		t.Fatalf("check %d: %s", code, stderr)
+	}
+	checkWrite(t, root, "map.sha256", []byte("bad"))
+	if code, _, _ := runCheck(t, context.Background(), root); code != 1 {
+		t.Fatal("broken checksum accepted")
+	}
+	leftovers, e := os.ReadDir(temporary)
+	if e != nil || len(leftovers) != 0 {
+		t.Fatal("temporary outputs not cleaned", e, leftovers)
+	}
+}
 
-	deadline := time.NewTimer(5 * time.Second)
-	defer deadline.Stop()
-	ticker := time.NewTicker(5 * time.Millisecond)
-	defer ticker.Stop()
-	var process *os.Process
-	for process == nil {
-		select {
-		case code := <-done:
-			t.Fatalf("check exited before exporter startup: %d: %s", code, stderr.String())
-		case <-deadline.C:
-			t.Fatal("exporter did not start")
-		case <-ticker.C:
-			markers, err := filepath.Glob(filepath.Join(temporary, "api-map-check-*", "symbols.json.started"))
-			if err != nil {
-				t.Fatal(err)
-			}
-			if len(markers) == 0 {
-				continue
-			}
-			data, err := os.ReadFile(markers[0])
-			if err != nil {
-				t.Fatal(err)
-			}
-			if len(data) == 0 {
-				continue
-			} // The writer may have created, but not filled, the marker.
-			pid, err := strconv.Atoi(string(data))
-			if err != nil {
-				t.Fatal(err)
-			}
-			process, err = os.FindProcess(pid)
-			if err != nil {
-				t.Fatal(err)
-			}
-		}
+func TestCheckedToolchainMatchesTheRepository(t *testing.T) {
+	raw, err := os.ReadFile("../../../../docs/api/toolchain.json")
+	if err != nil {
+		t.Fatal(err)
 	}
-	// Cleanup also bounds a failing implementation that neglects to stop PHP.
-	defer process.Kill()
-	cancel()
-	select {
-	case code := <-done:
-		if code != 1 {
-			t.Fatalf("cancelled exporter exit=%d: %s", code, stderr.String())
-		}
-	case <-time.After(5 * time.Second):
-		_ = process.Kill()
-		<-done
-		t.Fatal("cancellation did not stop the running exporter")
+	var config map[string]any
+	if err := json.Unmarshal(raw, &config); err != nil {
+		t.Fatal(err)
 	}
-	if err := process.Signal(syscall.Signal(0)); err == nil {
-		t.Fatal("exporter process is still alive after cancellation returned")
-	}
-	leftovers, err := os.ReadDir(temporary)
-	if err != nil || len(leftovers) != 0 {
-		t.Fatalf("temporary outputs remain: %v, %v", leftovers, err)
-	}
-	after := checkSnapshot(t, root)
-	oldBytes, _ := json.Marshal(before)
-	newBytes, _ := json.Marshal(after)
-	if !bytes.Equal(oldBytes, newBytes) {
-		t.Fatal("cancellation modified repository artifacts")
+	if config["overlay"] != "docs/api/overlay" {
+		t.Fatalf("repository toolchain overlay %v", config["overlay"])
 	}
 }

@@ -148,7 +148,7 @@ gaps in those sources.
 The core package must remain framework-independent. A future Laravel
 integration belongs in a separate Composer package and will use Guzzle. The
 Go documentation tool under `tools/api-map/` produces a canonical API map;
-implementation parity and further commands are tracked under `gwi`. Go is a
+further commands are tracked under `gwi`. Go is a
 development-tool choice, not a runtime dependency of the PHP package. Preserve pinned documentation snapshots and
 refresh them explicitly; routine checks must remain offline. The tool design
 is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
@@ -178,7 +178,7 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   malformed lists with metadata. Requires EasyApache 4 and the WebServer role.
   WHM port fields accept pinned integers and observed canonical nonnegative decimal
   strings within PHP integer range; `toArray()` preserves the original wire type.
-  Runtime observations remain separate from pinned contracts and saved parity evidence.
+  Runtime observations remain separate from pinned contracts and saved evidence.
 - `whm()->server()->hostname(): string`, `loadAverage(): ServerLoadAverage`, and
   `diskUsage(): ServerDiskUsage` map to WHM `gethostname`, `systemloadavg`, and
   `getdiskusage`. All are parameterless read-only server operations. Load windows
@@ -234,17 +234,14 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   carries payload semantics. Both require a usable envelope.
 - `whm()->call()` and `uapi()->call()` are generic escape hatches: validated names,
   reserved fields removed from caller parameters, `CallResult` with the payload
-  converted to arrays and no schema. They are registry infrastructure, never
-  endpoint coverage; add a typed group when a consumer relies on an operation.
+  converted to arrays and no schema. They are an escape hatch, not coverage;
+  typed coverage comes from generation.
 - `whm()->accounts()` follows the lean pattern: precise array shapes
   (`AccountRecord`, `PackageRecord`, `CreateAccountOptions`, `AccountChanges`, ...),
   present fields validated against pinned types with the shared `PayloadReader`,
   unknown fields ignored, enumerations not enforced, decimal-string `uid`
   normalized to `int` (observed 2026-10-14), optional booleans encoded as omitted,
-  `0` or `1`, and `summary()` requiring exactly one record. Alias parameters the
-  methods do not send (`removeacct` `user`, `passwd` `enabledigest`,
-  `accountsummary` lookups other than `user`, `modifyacct` `MXCHECK-*`) keep those
-  variants `partial` in the registry.
+  `0` or `1`, and `summary()` requiring exactly one record.
 - Each attempt clears old response metadata. A usable envelope records an
   immutable snapshot before API or payload errors. `ResponseMetadata::$whm`
   retains raw WHM metadata; `$uapi` retains the UAPI result envelope without `data`.
@@ -384,21 +381,6 @@ and BasicAuth alongside token-guide evidence. Generated large maps live under
 `.cache/api-map/`; `docs/api/map.sha256` records the reviewed deterministic map.
 `composer check` continues to validate the PHP package offline.
 
-Offline implementation parity uses explicit PHP symbol and registry declarations:
-
-```bash
-php tools/php-symbols/export.php --root . --output docs/api/coverage/symbols.json
-go -C tools/api-map run ./cmd/api-map parity report --map ../../.cache/api-map/map.json --registry ../../docs/api/coverage/registry.json --symbols ../../docs/api/coverage/symbols.json --output ../../docs/api/coverage/report.json --markdown ../../docs/api/coverage/report.md
-```
-
-Optional `--test-evidence PATH` and `--live-evidence PATH` read saved artifacts;
-`--revision REVISION` independently identifies the code revision being assessed.
-Without a matching revision, saved outcomes remain stale/unverified. Declared
-PHP tests do not prove passing outcomes, and infrastructure tests do not count
-as endpoint coverage. Invalid registry mappings emit diagnostic reports and
-exit 1. Contract hashes follow reachable schemas and discriminator mappings;
-response schemas retain the complete upstream envelope.
-
 Live capability capture is a separate, explicitly opted-in command, never a
 routine check:
 
@@ -422,11 +404,10 @@ go -C tools/api-map generate ./internal/schema
 
 `api-map:check` runs `check --root ../..`, reading `docs/api/toolchain.json`.
 It builds in temporary storage, checks exact schema copies/map reproducibility,
-fresh PHP symbols, checked parity artifacts, synthetic capability/drift examples,
-and exact operation/variant/PHP/contract/test baseline mappings. It is read-only
-and offline; it has no baseline-update flag. Review baseline edits manually.
-Invalid input/mappings exit 1; valid-input baseline regressions exit 3. Live
-verification never affects the offline baseline. Keep `composer check` PHP-only.
+the overlay against the map, that committed generated code is current (including
+stale generated files), and synthetic capability/drift examples. It is read-only
+and offline. Invalid input, overlay problems or stale generated code exit 1. Live
+verification never affects the offline checks. Keep `composer check` PHP-only.
 See `tools/api-map/README.md` for explicit artifact regeneration and the saved
 `capabilities compare` / `drift report` commands. The CI workflow uses locked
 dependencies and receives no WHM/cPanel secrets.
@@ -441,7 +422,9 @@ composer api-map:generate:check  # fail on overlay problems or stale generated f
 
 Generated files carry the marker line `Generated by tools/api-map from the pinned
 API map and docs/api/overlay; do not edit.` and are never edited by hand: change
-the overlay or the generator and regenerate.
+the overlay or the generator and regenerate. Every overlay correction and
+exclusion needs evidence (`doc` or `live`, version, date, note). Coverage is a fact
+of construction: `docs/api/coverage.md` lists generated groups and exclusions.
 
 
 ## Git Workflow
@@ -456,8 +439,8 @@ every session that changes files.
 - Commit in logical units with conventional messages (`feat:`, `fix:`,
   `refactor:`, `docs:`, `test:`, `chore:`).
 - Before pushing, run `composer validate` and `composer check`, plus
-  `composer api-map:check` when public PHP symbols, the coverage registry, or
-  parity artifacts change. Do not push failing gates; if a gate cannot pass, open
+  `composer api-map:check` when `tools/api-map`, anything under `docs/api/`, or generated
+  code change. Do not push failing gates; if a gate cannot pass, open
   a draft pull request that says why.
 - Push the branch (`git push -u origin HEAD`) and open a pull request against
   `master` with `gh pr create`. Describe the changes, validation (including live

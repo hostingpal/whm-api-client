@@ -51,39 +51,26 @@ func generatePHP(_ context.Context, args []string, stdout, stderr io.Writer) int
 		return 1
 	}
 	files := phpgen.Render(result)
+	if *check {
+		current, err := generatedCurrent(*root, files, stderr)
+		if err != nil {
+			fmt.Fprintln(stderr, "api-map:", err)
+			return 1
+		}
+		if !current {
+			return 1
+		}
+		fmt.Fprintf(stdout, "generated PHP is current: %d files\n", len(files))
+		return 0
+	}
 	stale, err := staleGenerated(*root, files)
 	if err != nil {
 		fmt.Fprintln(stderr, "api-map:", err)
 		return 1
 	}
-	paths := make([]string, 0, len(files))
-	for path := range files {
-		paths = append(paths, path)
-	}
-	sort.Strings(paths)
-	if conflicts := handWrittenConflicts(*root, paths); len(conflicts) > 0 {
-		for _, path := range conflicts {
-			fmt.Fprintln(stderr, "api-map: refusing to overwrite hand-written file:", path)
-		}
+	paths := renderedPaths(files)
+	if reportConflicts(*root, paths, stderr) {
 		return 1
-	}
-	if *check {
-		var outdated []string
-		for _, path := range paths {
-			current, err := os.ReadFile(filepath.Join(*root, filepath.FromSlash(path)))
-			if err != nil || !bytes.Equal(current, files[path]) {
-				outdated = append(outdated, path)
-			}
-		}
-		outdated = append(outdated, stale...)
-		for _, path := range outdated {
-			fmt.Fprintln(stderr, "api-map: generated file out of date:", path)
-		}
-		if len(outdated) > 0 {
-			return 1
-		}
-		fmt.Fprintf(stdout, "generated PHP is current: %d files\n", len(files))
-		return 0
 	}
 	for _, path := range paths {
 		if err := model.WriteAtomic(filepath.Join(*root, filepath.FromSlash(path)), files[path]); err != nil {
@@ -117,6 +104,11 @@ func effectiveContract(mapPath, overlayDir string, stderr io.Writer) (effective.
 		fmt.Fprintln(stderr, "api-map: overlay:", err)
 		return effective.Result{}, false
 	}
+	return contractFromMap(m, set, stderr)
+}
+
+// contractFromMap validates the overlay against the map and reports every problem.
+func contractFromMap(m model.Map, set overlay.Set, stderr io.Writer) (effective.Result, bool) {
 	problems := overlay.Validate(set)
 	result, err := effective.Build(m, set)
 	if err != nil {
@@ -128,6 +120,62 @@ func effectiveContract(mapPath, overlayDir string, stderr io.Writer) (effective.
 		fmt.Fprintln(stderr, "api-map: overlay:", problem)
 	}
 	return result, len(problems) == 0
+}
+
+// renderedPaths returns the sorted paths of a render.
+func renderedPaths(files map[string][]byte) []string {
+	paths := make([]string, 0, len(files))
+	for path := range files {
+		paths = append(paths, path)
+	}
+	sort.Strings(paths)
+	return paths
+}
+
+// reportConflicts prints the overwrite refusal for every rendered path that
+// exists without the generated marker and reports whether there was any.
+func reportConflicts(root string, paths []string, stderr io.Writer) bool {
+	conflicts := handWrittenConflicts(root, paths)
+	for _, path := range conflicts {
+		fmt.Fprintln(stderr, "api-map: refusing to overwrite hand-written file:", path)
+	}
+	return len(conflicts) > 0
+}
+
+// outdatedFiles lists rendered files that are missing or differ under root, plus
+// stale generated files the render no longer produces, sorted.
+func outdatedFiles(root string, files map[string][]byte) ([]string, error) {
+	var outdated []string
+	for path, data := range files {
+		current, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(path)))
+		if err != nil || !bytes.Equal(current, data) {
+			outdated = append(outdated, path)
+		}
+	}
+	stale, err := staleGenerated(root, files)
+	if err != nil {
+		return nil, err
+	}
+	outdated = append(outdated, stale...)
+	sort.Strings(outdated)
+	return outdated, nil
+}
+
+// generatedCurrent is the comparison shared by generate php --check and check.
+// It prints hand-written conflicts (and stops there, as a refusal) or else every
+// outdated file, and reports whether the tree matches the render exactly.
+func generatedCurrent(root string, files map[string][]byte, stderr io.Writer) (bool, error) {
+	if reportConflicts(root, renderedPaths(files), stderr) {
+		return false, nil
+	}
+	outdated, err := outdatedFiles(root, files)
+	if err != nil {
+		return false, err
+	}
+	for _, path := range outdated {
+		fmt.Fprintln(stderr, "api-map: generated file out of date:", path)
+	}
+	return len(outdated) == 0, nil
 }
 
 // staleGenerated lists generated PHP files (carrying the marker) that the
