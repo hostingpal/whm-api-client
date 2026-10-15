@@ -173,7 +173,7 @@ func TestCheckRejectsStaleGeneratedCode(t *testing.T) {
 func TestCheckRefusesHandWrittenFileAtRenderedPath(t *testing.T) {
 	root := checkFixture(t)
 	checkWrite(t, root, "docs/api/coverage.md", []byte("# written by hand\n"))
-	if code, _, stderr := runCheck(t, context.Background(), root); code != 1 || !strings.Contains(stderr, "refusing to overwrite hand-written file: docs/api/coverage.md") {
+	if code, _, stderr := runCheck(t, context.Background(), root); code != 1 || !strings.Contains(stderr, "hand-written file at generated path: docs/api/coverage.md") {
 		t.Fatalf("hand-written file accepted: %d %s", code, stderr)
 	}
 }

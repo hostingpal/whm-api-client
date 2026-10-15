@@ -116,9 +116,17 @@ type Set struct {
 	Files  []File
 }
 
-// Load reads config.json and every group file in deterministic order.
+// Load reads config.json and every group file in deterministic order. Entries
+// inside dir (config.json, the family folders and the group files) must be
+// regular files and folders, never symbolic links, so an overlay cannot pull
+// in files from outside its directory.
 func Load(dir string) (Set, error) {
 	var set Set
+	for _, name := range []string{"config.json", "uapi", "whm"} {
+		if err := rejectLink(filepath.Join(dir, name), name); err != nil {
+			return Set{}, err
+		}
+	}
 	raw, err := readLimited(filepath.Join(dir, "config.json"))
 	if err != nil {
 		return Set{}, fmt.Errorf("overlay config: %w", err)
@@ -144,6 +152,9 @@ func Load(dir string) (Set, error) {
 		}
 		sort.Strings(paths)
 		for _, path := range paths {
+			if err := rejectLink(path, family+"/"+filepath.Base(path)); err != nil {
+				return Set{}, err
+			}
 			file, err := loadFile(path)
 			if err != nil {
 				return Set{}, fmt.Errorf("%s/%s: %w", family, filepath.Base(path), err)
@@ -152,6 +163,22 @@ func Load(dir string) (Set, error) {
 		}
 	}
 	return set, nil
+}
+
+// rejectLink fails when path is a symbolic link; a missing path is left to the
+// caller (a missing family folder simply has no group files).
+func rejectLink(path, name string) error {
+	info, err := os.Lstat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	if info.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("overlay entry %s is a symbolic link", name)
+	}
+	return nil
 }
 
 // requireConfigKeys accepts only the exact keys schema_version and scope, both

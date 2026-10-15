@@ -158,8 +158,10 @@ and `docs/api/coverage.md` carries it after its heading; the generator recognise
 its own files by that exact line within their first 40 lines. `generate php`
 writes each file atomically (a run is atomic per file, not across files), removes
 previously generated files that are no longer produced, and never overwrites or
-removes a file without the marker. Generated files must not be edited by hand:
-change the overlay or the generator and regenerate.
+removes a file without the marker. Symbolic links are refused inside the overlay
+directory and at every generated path (folders and files beneath `--root`), so
+neither reading nor writing can leave the repository. Generated files must not
+be edited by hand: change the overlay or the generator and regenerate.
 
 ## Saved capability comparison and source drift
 

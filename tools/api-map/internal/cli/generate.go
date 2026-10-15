@@ -51,8 +51,13 @@ func generatePHP(_ context.Context, args []string, stdout, stderr io.Writer) int
 		return 1
 	}
 	files := phpgen.Render(result)
+	rootDir, err := resolvedRoot(*root)
+	if err != nil {
+		fmt.Fprintln(stderr, "api-map:", err)
+		return 1
+	}
 	if *check {
-		current, err := generatedCurrent(*root, files, stderr)
+		current, err := generatedCurrent(rootDir, files, stderr)
 		if err != nil {
 			fmt.Fprintln(stderr, "api-map:", err)
 			return 1
@@ -63,29 +68,77 @@ func generatePHP(_ context.Context, args []string, stdout, stderr io.Writer) int
 		fmt.Fprintf(stdout, "generated PHP is current: %d files\n", len(files))
 		return 0
 	}
-	stale, err := staleGenerated(*root, files)
+	paths := renderedPaths(files)
+	targets := make(map[string]string, len(paths))
+	for _, path := range paths {
+		if targets[path], err = confinedGenerated(rootDir, path); err != nil {
+			fmt.Fprintln(stderr, "api-map:", err)
+			return 1
+		}
+	}
+	stale, err := staleGenerated(rootDir, files)
 	if err != nil {
 		fmt.Fprintln(stderr, "api-map:", err)
 		return 1
 	}
-	paths := renderedPaths(files)
-	if reportConflicts(*root, paths, stderr) {
+	conflicts, err := handWrittenConflicts(rootDir, paths)
+	if err != nil {
+		fmt.Fprintln(stderr, "api-map:", err)
+		return 1
+	}
+	if reportConflicts(conflicts, false, stderr) {
 		return 1
 	}
 	for _, path := range paths {
-		if err := model.WriteAtomic(filepath.Join(*root, filepath.FromSlash(path)), files[path]); err != nil {
+		if err := model.WriteAtomic(targets[path], files[path]); err != nil {
 			fmt.Fprintln(stderr, "api-map:", err)
 			return 1
 		}
 	}
 	for _, path := range stale {
-		if err := os.Remove(filepath.Join(*root, filepath.FromSlash(path))); err != nil {
+		if err := os.Remove(filepath.Join(rootDir, filepath.FromSlash(path))); err != nil {
 			fmt.Fprintln(stderr, "api-map:", err)
 			return 1
 		}
 	}
 	fmt.Fprintf(stdout, "generated %d files, removed %d stale\n", len(files), len(stale))
 	return 0
+}
+
+// resolvedRoot returns the absolute root with its own symbolic links resolved;
+// generated paths beneath it are then confined by confinedGenerated.
+func resolvedRoot(root string) (string, error) {
+	absolute, err := filepath.Abs(root)
+	if err != nil {
+		return "", err
+	}
+	return filepath.EvalSymlinks(absolute)
+}
+
+// confinedGenerated returns the absolute path for a rendered or scanned
+// repository-relative path. The path must be local, and no existing component
+// beneath root (folders or the file itself) may be a symbolic link, so reads,
+// writes and removals cannot leave the repository. A missing tail is fine; it
+// is created as plain folders.
+func confinedGenerated(root, name string) (string, error) {
+	if !filepath.IsLocal(name) || filepath.ToSlash(filepath.Clean(name)) != name || strings.Contains(name, "\\") {
+		return "", fmt.Errorf("generated path %s is not a confined relative path", name)
+	}
+	current := root
+	for _, part := range strings.Split(name, "/") {
+		current = filepath.Join(current, part)
+		info, err := os.Lstat(current)
+		if errors.Is(err, fs.ErrNotExist) {
+			break
+		}
+		if err != nil {
+			return "", err
+		}
+		if info.Mode()&os.ModeSymlink != 0 {
+			return "", fmt.Errorf("generated path %s passes through a symbolic link", name)
+		}
+	}
+	return filepath.Join(root, filepath.FromSlash(name)), nil
 }
 
 func effectiveContract(mapPath, overlayDir string, stderr io.Writer) (effective.Result, bool) {
@@ -132,12 +185,16 @@ func renderedPaths(files map[string][]byte) []string {
 	return paths
 }
 
-// reportConflicts prints the overwrite refusal for every rendered path that
-// exists without the generated marker and reports whether there was any.
-func reportConflicts(root string, paths []string, stderr io.Writer) bool {
-	conflicts := handWrittenConflicts(root, paths)
+// reportConflicts prints every rendered path that exists without the generated
+// marker and reports whether there was any. A write refuses to overwrite them;
+// a read-only comparison only names them.
+func reportConflicts(conflicts []string, readOnly bool, stderr io.Writer) bool {
+	message := "api-map: refusing to overwrite hand-written file:"
+	if readOnly {
+		message = "api-map: hand-written file at generated path:"
+	}
 	for _, path := range conflicts {
-		fmt.Fprintln(stderr, "api-map: refusing to overwrite hand-written file:", path)
+		fmt.Fprintln(stderr, message, path)
 	}
 	return len(conflicts) > 0
 }
@@ -147,7 +204,11 @@ func reportConflicts(root string, paths []string, stderr io.Writer) bool {
 func outdatedFiles(root string, files map[string][]byte) ([]string, error) {
 	var outdated []string
 	for path, data := range files {
-		current, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(path)))
+		target, err := confinedGenerated(root, path)
+		if err != nil {
+			return nil, err
+		}
+		current, err := os.ReadFile(target)
 		if err != nil || !bytes.Equal(current, data) {
 			outdated = append(outdated, path)
 		}
@@ -161,11 +222,16 @@ func outdatedFiles(root string, files map[string][]byte) ([]string, error) {
 	return outdated, nil
 }
 
-// generatedCurrent is the comparison shared by generate php --check and check.
-// It prints hand-written conflicts (and stops there, as a refusal) or else every
-// outdated file, and reports whether the tree matches the render exactly.
+// generatedCurrent is the read-only comparison shared by generate php --check
+// and check. It prints hand-written files at rendered paths (and stops there)
+// or else every outdated file, and reports whether the tree matches the render
+// exactly. root must already be resolved (see resolvedRoot).
 func generatedCurrent(root string, files map[string][]byte, stderr io.Writer) (bool, error) {
-	if reportConflicts(root, renderedPaths(files), stderr) {
+	conflicts, err := handWrittenConflicts(root, renderedPaths(files))
+	if err != nil {
+		return false, err
+	}
+	if reportConflicts(conflicts, true, stderr) {
 		return false, nil
 	}
 	outdated, err := outdatedFiles(root, files)
@@ -179,25 +245,34 @@ func generatedCurrent(root string, files map[string][]byte, stderr io.Writer) (b
 }
 
 // staleGenerated lists generated PHP files (carrying the marker) that the
-// current render no longer produces; hand-written files are never listed.
+// current render no longer produces, in every generated folder
+// (phpgen.FamilyDirs); hand-written files are never listed. A symbolic link in
+// a generated folder is an error, so the sweep never reads outside the root.
 func staleGenerated(root string, files map[string][]byte) ([]string, error) {
 	var stale []string
-	for _, dir := range []string{"src/Api/Uapi", "src/Api/Whm"} {
-		err := filepath.WalkDir(filepath.Join(root, filepath.FromSlash(dir)), func(path string, d fs.DirEntry, err error) error {
+	for _, dir := range phpgen.FamilyDirs() {
+		base, err := confinedGenerated(root, dir)
+		if err != nil {
+			return nil, err
+		}
+		err = filepath.WalkDir(base, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				if errors.Is(err, fs.ErrNotExist) {
 					return nil
 				}
 				return err
 			}
-			if d.IsDir() || !strings.HasSuffix(path, ".php") {
-				return nil
-			}
 			relative, err := filepath.Rel(root, path)
 			if err != nil {
 				return err
 			}
 			relative = filepath.ToSlash(relative)
+			if d.Type()&fs.ModeSymlink != 0 {
+				return fmt.Errorf("generated folder entry %s is a symbolic link", relative)
+			}
+			if d.IsDir() || !strings.HasSuffix(path, ".php") {
+				return nil
+			}
 			if _, current := files[relative]; current {
 				return nil
 			}
@@ -241,14 +316,19 @@ func isGenerated(content []byte) bool {
 	return false
 }
 
-// handWrittenConflicts lists rendered paths whose existing content is not generated.
-func handWrittenConflicts(root string, paths []string) []string {
+// handWrittenConflicts lists rendered paths whose existing content is not
+// generated; a rendered path that is not confined beneath root is an error.
+func handWrittenConflicts(root string, paths []string) ([]string, error) {
 	var conflicts []string
 	for _, path := range paths {
-		current, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(path)))
+		target, err := confinedGenerated(root, path)
+		if err != nil {
+			return nil, err
+		}
+		current, err := os.ReadFile(target)
 		if err == nil && !isGenerated(current) {
 			conflicts = append(conflicts, path)
 		}
 	}
-	return conflicts
+	return conflicts, nil
 }
