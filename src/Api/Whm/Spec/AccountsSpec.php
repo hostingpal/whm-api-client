@@ -468,7 +468,14 @@ final class AccountsSpec
                                     ['type' => 'string', 'nullable' => true],
                                 ],
                             ],
-                            'suspendtime' => ['type' => 'int', 'nullable' => true],
+                            'suspendtime' => [
+                                'type' => 'union',
+                                'nullable' => true,
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'int'],
+                                ],
+                            ],
                             'temporary' => ['type' => 'flag'],
                             'theme' => ['type' => 'string'],
                             'uid' => ['type' => 'int', 'accept' => ['numeric-string']],

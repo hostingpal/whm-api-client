@@ -28,8 +28,10 @@ use LogicException;
  *   omitted or null data member is a valid response and the operation returns
  *   null; any other payload is validated as usual.
  *
- * A malformed spec is a generator defect: it raises LogicException before the
- * request is dispatched, never an API or payload failure.
+ * A malformed spec is a generator defect: SpecChecker rejects it with
+ * LogicException before the request is dispatched, never as an API or payload
+ * failure. Wire names are unique across params; "unwrap" requires a non-nullable
+ * object "returns".
  *
  * @internal
  */

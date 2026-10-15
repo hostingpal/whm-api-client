@@ -76,6 +76,60 @@ final class LiveCurlClientTest extends TestCase
             'password=x',
             'lifecycle1',
         ];
+        yield 'alias key overriding the target of a user mutation' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/suspendacct?api.version=1',
+            'username=lifecycle1&user=npr',
+            'lifecycle1',
+        ];
+        yield 'alias key beside the target of a username mutation' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/createacct?api.version=1',
+            'username=lifecycle1&user=npr&domain=lc.example',
+            'lifecycle1',
+        ];
+        yield 'alias key beside the target of a user mutation' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/passwd?api.version=1',
+            'user=lifecycle1&username=npr&password=x',
+            'lifecycle1',
+        ];
+        yield 'alias key instead of the target' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/removeacct?api.version=1',
+            'user=lifecycle1',
+            'lifecycle1',
+        ];
+        yield 'duplicate target keys with the last one approved' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/passwd?api.version=1',
+            'user=npr&user=lifecycle1&password=x',
+            'lifecycle1',
+        ];
+        yield 'duplicate target keys with an encoded name' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/modifyacct?api.version=1',
+            'us%65r=npr&user=lifecycle1',
+            'lifecycle1',
+        ];
+        yield 'duplicate unrelated keys' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/modifyacct?api.version=1',
+            'user=lifecycle1&newuser=a&newuser=b',
+            'lifecycle1',
+        ];
+        yield 'bracketed target key' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/unsuspendacct?api.version=1',
+            'user[]=lifecycle1',
+            'lifecycle1',
+        ];
+        yield 'target with a trailing character' => [
+            'POST',
+            'https://test.oblak.host:2087/json-api/changepackage?api.version=1',
+            'user=lifecycle1%20&pkg=default',
+            'lifecycle1',
+        ];
         yield 'unlisted mutation for the lifecycle account' => [
             'POST',
             'https://test.oblak.host:2087/json-api/removeacct',

@@ -17,6 +17,7 @@ use InvalidArgumentException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Client\RequestExceptionInterface;
+use SensitiveParameter;
 
 /**
  * Share configuration and the request lifecycle across API family implementations.
@@ -26,6 +27,13 @@ use Psr\Http\Client\RequestExceptionInterface;
  * or raising an API error. Metadata is instance-local. GET places parameters in the
  * query string; POST keeps routing fields there and form-encodes the operation
  * parameters in the body. The outcome policy is declared per request.
+ * Every library frame that receives request parameters marks them
+ * #[SensitiveParameter], so the library's frames in exception traces carry no
+ * passwords, tokens or other parameters even when PHP records call arguments
+ * (zend.exception_ignore_args=0, the default without a php.ini). The PSR-18
+ * client's own frames are outside the library's control: a client that throws from
+ * sendRequest() records the request it was handed, with its Authorization header
+ * and any GET query (see HttpTransport::send()).
  *
  * @phpstan-type Parameters array<string, string|int|list<string>|NumberedList|RepeatedList>
  */
@@ -93,11 +101,12 @@ abstract class AbstractApiClient
      * operation groups pass caller input through unvalidated.
      *
      * @param Parameters $query
-     * @throws InvalidArgumentException If a multi-value parameter is invalid.
+     * @throws InvalidArgumentException If a parameter value or a multi-value parameter is invalid.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      */
     final protected function executeGet(
         string $path,
+        #[SensitiveParameter]
         array $query,
         ResponseRoute $route,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
@@ -116,12 +125,14 @@ abstract class AbstractApiClient
      *
      * @param Parameters $query Routing fields that remain in the URL.
      * @param Parameters $body Operation parameters sent in the form-encoded body.
-     * @throws InvalidArgumentException If a multi-value parameter is invalid.
+     * @throws InvalidArgumentException If a parameter value or a multi-value parameter is invalid.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      */
     final protected function executePost(
         string $path,
+        #[SensitiveParameter]
         array $query,
+        #[SensitiveParameter]
         array $body,
         ResponseRoute $route,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
@@ -134,13 +145,15 @@ abstract class AbstractApiClient
      *
      * @param Parameters $query
      * @param Parameters $body
-     * @throws InvalidArgumentException If a multi-value parameter is invalid.
+     * @throws InvalidArgumentException If a parameter value or a multi-value parameter is invalid.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      */
     private function execute(
         RequestMethod $method,
         string $path,
+        #[SensitiveParameter]
         array $query,
+        #[SensitiveParameter]
         array $body,
         ResponseRoute $route,
         OutcomePolicy $outcome,
@@ -193,9 +206,9 @@ abstract class AbstractApiClient
      * Encode parameters as RFC 3986 key=value pairs joined by "&", in order.
      *
      * @param Parameters $parameters
-     * @throws InvalidArgumentException If a multi-value parameter is invalid.
+     * @throws InvalidArgumentException If a parameter value or a multi-value parameter is invalid.
      */
-    private static function encode(array $parameters): string
+    private static function encode(#[SensitiveParameter] array $parameters): string
     {
         $parts = [];
         foreach ($parameters as $name => $value) {
@@ -210,12 +223,14 @@ abstract class AbstractApiClient
      *
      * List values and RepeatedList values repeat their literal name; NumberedList
      * values use WHM's name, name-1, name-2, ... convention. The mixed boundary
-     * validates PHP array contents supplied to typed methods.
+     * validates PHP array contents supplied to typed methods and generic calls.
+     * Failure messages may name the parameter but never include its value.
      *
      * @return non-empty-list<string>
-     * @throws InvalidArgumentException If a list is empty, keyed, or contains non-strings.
+     * @throws InvalidArgumentException If a value is not a string, an integer or a list of strings, or a
+     *     list is empty, keyed, or contains non-strings.
      */
-    private static function queryValues(string $name, mixed $value): array
+    private static function queryValues(string $name, #[SensitiveParameter] mixed $value): array
     {
         $numbered = $value instanceof NumberedList;
         if ($numbered || $value instanceof RepeatedList) {
@@ -224,7 +239,13 @@ abstract class AbstractApiClient
         if (is_string($value) || is_int($value)) {
             return [rawurlencode($name) . '=' . rawurlencode((string) $value)];
         }
-        if (!is_array($value) || !array_is_list($value) || $value === []) {
+        // List markers hold a string or an array, so only plain values reach this branch.
+        if (!is_array($value)) {
+            throw new InvalidArgumentException(
+                'Parameter "' . $name . '" must be a string, an integer or a list of strings.',
+            );
+        }
+        if (!array_is_list($value) || $value === []) {
             throw new InvalidArgumentException('Multi-value parameters require a nonempty list of strings.');
         }
         $parts = [];

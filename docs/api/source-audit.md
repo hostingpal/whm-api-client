@@ -389,8 +389,8 @@ and 277 assertions**, including 14 new WHM operations and each of the eight new
 UAPI operations through both direct cPanel-token and WHM-token routes. All requests
 used verified TLS, redirects disabled, and no retries. The final offline suite
 passed **1,087 tests and 4,757 assertions**, with formatting, maximum-level static
-analysis, Composer validation and offline API-map checks also passing. Coverage
-now declares 29 implemented operations; these live observations remain scoped to
+analysis, Composer validation and offline API-map checks also passing. The slice
+brought the typed surface to 29 operations; these live observations remain scoped to
 the tested server/date and working tree, without saved revision-bound evidence.
 
 ## Runtime observations: 2026-10-14
@@ -428,9 +428,9 @@ typed record ignores. All pinned fields are optional, so no compatibility was ne
 After these corrections the full explicitly opted-in read-only live suite passed
 **46 tests and 328 assertions** (39 previous plus 7 new). The offline suite passed
 **1,256 tests and 5,431 assertions** with formatting, maximum-level static analysis,
-Composer validation and offline API-map checks. Coverage now declares 39 registry
-operations, 35 of them implemented and 4 partial (`accountsummary`, `removeacct`,
-`passwd`, `modifyacct`) because alias or alternative parameters are left to `call()`.
+Composer validation and offline API-map checks, and the typed surface reached 39
+operations. `removeacct`, `passwd` and `modifyacct` leave their alias or pattern
+parameters (`user`, `enabledigest`, `MXCHECK-<domain>`) to `call()`.
 The approval-gated mutating lifecycle test has not been executed; these observations
 remain scoped to the tested server/date without saved revision-bound evidence.
 
@@ -453,6 +453,15 @@ matched its pinned nullable integer type, and `acct[].child_nodes` items in
 `listaccts` and `accountsummary` matched their pinned object shape (or were not
 supplied). Undeclared fields are dropped by the generated validator rather than
 rejected, so this run does not establish their types.
+
+Suspended accounts were never observed, so `listaccts` `acct[].suspendtime` carries a
+`doc` correction that gives it the `accountsummary` contract: the pinned
+`accountsummary` record declares the same field of the same account record as a
+nullable string and returned integer `0` live, so both operations accept a string, an
+integer or `null`. `acct[].child_nodes` keeps its pinned item shape in both
+operations: the pinned item schema lists the `alias` and `workload` properties without
+an explicit `type`, the generator renders it as an object, and only empty lists were
+observed, so a non-object item is rejected and nonempty lists remain unverified.
 
 The only live failure was outside the payload layer: the test-only request scope
 guard approved the filtered `listaccts` GET by exact URI with the old parameter
@@ -486,8 +495,8 @@ Live corrections added (overlay `live` evidence, version `11.138.0.15`):
 | UAPI `DNS/is_alias_available` (both routes) | `resolver` | explicit `null` | string | nullable |
 | WHM `listmxs` | `record[].preference` | decimal string | integer | accept canonical decimal strings, normalized to `int` |
 | UAPI `DNS/ensure_domains_reside_only_locally` (both routes) | `[]` | one-item list whose item is `null` | non-nullable string items, although the data description documents `null` for a domain that only resolves locally | nullable items (doc and live evidence) |
-| WHM `getzonerecord` (added in the final review fix) | `record[].preference` (MX) | decimal string | integer | accept canonical decimal strings, normalized to `int` |
-| WHM `getzonerecord` (added in the final review fix) | `record[].serial`, `record[].refresh`, `record[].retry`, `record[].expire` (SOA) | decimal strings | integers | accept canonical decimal strings, normalized to `int` |
+| WHM `getzonerecord` | `record[].preference` (MX) | decimal string | integer | accept canonical decimal strings, normalized to `int` |
+| WHM `getzonerecord` | `record[].serial`, `record[].refresh`, `record[].retry`, `record[].expire` (SOA) | decimal strings | integers | accept canonical decimal strings, normalized to `int` |
 
 WHM `lookupnsips` returned `ipv6` as an empty string for a nameserver without an
 IPv6 address, while the pinned description says the field is returned only when an
@@ -509,28 +518,20 @@ same record type), confirming the 0-based index and the 1-based line number.
 an undocumented string field `dname_raw`, which the generated validator drops; this
 run does not establish its contract.
 
-After the corrections the full explicitly opted-in read-only live suite passed
-**74 tests and 706 assertions with no skips** (46 previous plus 28 DNS tests). The
-offline suite passed **1,512 tests and 7,757 assertions**, with `composer
-api-map:check` and `composer api-map:generate:check` current. These observations
-remain scoped to the tested server and date without saved revision-bound evidence.
+### `getzonerecord` record data
 
-### `getzonerecord` record data (final review fix, 2026-10-15)
+In the pinned WHM schema each `getzonerecord` `record[]` item is
+`getzonerecordResponseBase` (`Line`, `class`, `name`, `ttl`, `type`) with a
+discriminator mapping on `type` to 19 per-type schemas (`A`, `A6`, `AAAA`, `AFSDB`,
+`ALIAS`, `CAA`, `CNAME`, `DNAME`, `DS`, `HINFO`, `LOC`, `MX`, `NS`, `PTR`, `RP`, `SOA`,
+`SRV`, `SSHFP`, `TXT`) that carry the record data (addresses, `exchange`/`preference`,
+`txtdata`, the SOA timers, and so on). The generator reads only the base schema and
+the validator drops undeclared fields, so without a correction the record data would
+be silently removed. Live verification therefore compares the observed fields against
+the rendered effective contract (the generated spec), not only against the pinned
+schema or the validated result.
 
-The run above reported `getzonerecord` as matching its pinned type. That was wrong:
-the comparison covered only the five base fields, which were all the effective
-contract then rendered in the generated `DnsSpec` declared. In the pinned
-WHM schema each `record[]` item is `getzonerecordResponseBase` (`Line`, `class`,
-`name`, `ttl`, `type`) with a discriminator mapping on `type` to 19 per-type schemas
-(`A`, `A6`, `AAAA`, `AFSDB`, `ALIAS`, `CAA`, `CNAME`, `DNAME`, `DS`, `HINFO`, `LOC`,
-`MX`, `NS`, `PTR`, `RP`, `SOA`, `SRV`, `SSHFP`, `TXT`) that carry the record data
-(addresses, `exchange`/`preference`, `txtdata`, the SOA timers, and so on). The
-generator reads only the base schema and the validator drops undeclared fields, so
-the record data was silently removed. Live verification must therefore compare the
-observed fields against the rendered effective contract (the generated spec), not
-only against the pinned schema or the validated result.
-
-A `replace` correction (doc evidence) now merges the base and every per-type field
+A `replace` correction (doc evidence) merges the base and every per-type field
 into one object whose 50 fields are all optional, as no field is required upstream:
 integers stay `int`, the 0/1 enums (`CAA` `flag`, `CNAME` `flatten`, `TXT`
 `unencoded`) become flags, and every other field, including `class` and
@@ -550,9 +551,16 @@ not observed. Observed against the merged contract:
   `dname_raw` on every record, a decimal-string `minimum` on the `SOA` record and a
   list `char_str_list` on `TXT` records.
 
-With the corrections the typed method validated every record line of the test zone,
-and the live test now requires the derived record to carry at least one field beyond
-the five base fields. The full explicitly opted-in read-only live suite then passed
-**74 tests and 707 assertions with no skips**, and the offline suite **1,540 tests
-and 8,001 assertions**. These observations remain scoped to the tested server and
-date without saved revision-bound evidence.
+With the corrections the typed method validates every record line of the test zone,
+and the live test requires the derived record to carry at least one field beyond the
+five base fields.
+
+### DNS slice counts
+
+With every correction above, the full explicitly opted-in read-only live suite passed
+**74 tests and 707 assertions with no skips**: the 46 tests that existed before the
+slice (3 server identity and health, 6 read-only operation, 30 inventory and 7
+account tests) plus 28 DNS tests. The offline suite passed **1,540 tests and 8,001
+assertions**, with `composer api-map:check` and `composer api-map:generate:check`
+current. These observations remain scoped to the tested server and date without
+saved revision-bound evidence.

@@ -18,7 +18,8 @@ use RuntimeException;
  *
  * Read-only GET and POST requests are approved by exact method, URI, and body.
  * Lifecycle mutations are approved only when the client was built for an
- * explicitly named throwaway account and the body targets that account. Three
+ * explicitly named throwaway account and the operation's single target key names
+ * that account, without duplicate keys or the alias account key. Three
  * read-only DNS GETs are approved only for a zone line or nameserver host bound
  * at construction from an earlier read-only response.
  */
@@ -111,16 +112,22 @@ final readonly class LiveCurlClient implements ClientInterface
         [self::BRIDGE . '&cpanel.module=DomainInfo&cpanel.function=primary_domain', ''],
     ];
 
-    /** Mutations approved only for the explicitly named throwaway account. */
+    /**
+     * Mutations approved only for the explicitly named throwaway account, mapped to
+     * the single body key that names their target account.
+     */
     private const LIFECYCLE = [
-        'createacct',
-        'suspendacct',
-        'unsuspendacct',
-        'removeacct',
-        'passwd',
-        'changepackage',
-        'modifyacct',
+        'createacct' => 'username',
+        'suspendacct' => 'user',
+        'unsuspendacct' => 'user',
+        'removeacct' => 'username',
+        'passwd' => 'user',
+        'changepackage' => 'user',
+        'modifyacct' => 'user',
     ];
+
+    /** The other account key of each target key, which the server may also read. */
+    private const ALIAS = ['user' => 'username', 'username' => 'user'];
 
     /** @var Closure(RequestInterface): ResponseInterface */
     private Closure $execute;
@@ -200,7 +207,15 @@ final readonly class LiveCurlClient implements ClientInterface
             && $uri === self::WHM . 'accountsummary?api.version=1&user=' . $this->lifecycleAccount;
     }
 
-    /** Approve a lifecycle mutation only when its body targets the throwaway account. */
+    /**
+     * Approve a lifecycle mutation only when its body targets the throwaway account.
+     *
+     * The body is decoded pair by pair instead of with parse_str(), which keeps only
+     * the last duplicate and rewrites bracketed names. Every key must be unique after
+     * decoding, the operation's target key must name the account exactly, and the
+     * alias key must be absent, so neither a duplicate nor an alias can redirect the
+     * mutation to another account.
+     */
     private function lifecycleMutation(string $uri, string $body): bool
     {
         if (
@@ -211,13 +226,23 @@ final readonly class LiveCurlClient implements ClientInterface
             return false;
         }
         $operation = substr($uri, strlen(self::WHM), -strlen('?api.version=1'));
-        if (!in_array($operation, self::LIFECYCLE, true)) {
+        $target = self::LIFECYCLE[$operation] ?? null;
+        if ($target === null) {
             return false;
         }
-        parse_str($body, $parameters);
-        $target = $parameters['username'] ?? $parameters['user'] ?? null;
 
-        return $target === $this->lifecycleAccount;
+        $parameters = [];
+        foreach ($body === '' ? [] : explode('&', $body) as $pair) {
+            [$key, $value] = array_pad(explode('=', $pair, 2), 2, '');
+            $key = rawurldecode($key);
+            if (array_key_exists($key, $parameters)) {
+                return false;
+            }
+            $parameters[$key] = rawurldecode($value);
+        }
+
+        return !array_key_exists(self::ALIAS[$target], $parameters)
+            && ($parameters[$target] ?? null) === $this->lifecycleAccount;
     }
 
     /** Make one verified HTTPS request with no redirect following or retries. */

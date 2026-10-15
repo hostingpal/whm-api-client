@@ -124,8 +124,9 @@ final class AccountsLiveTest extends TestCase
     public function testWhmAcceptsFormEncodedPostForReadOnlyFunctions(): void
     {
         $whm = $this->whm->whm();
-        $get = self::safeOperation(static fn (): CallResult => $whm->call('version'));
-        $post = self::safeOperation(static fn (): CallResult => $whm->call('version', [], RequestMethod::Post));
+        $get = self::safeOperation(static fn (): CallResult => $whm->call('version', [], RequestMethod::Get));
+        // call() defaults to POST.
+        $post = self::safeOperation(static fn (): CallResult => $whm->call('version'));
 
         $data = $get->data;
         self::assertTrue(is_array($data) && is_string($data['version'] ?? null), 'GET version must return a string.');
@@ -149,13 +150,14 @@ final class AccountsLiveTest extends TestCase
     public function testDirectUapiAcceptsPost(): void
     {
         $account = $this->cpanel->uapi();
-        $get = self::safeOperation(static fn (): CallResult => $account->call('DomainInfo', 'primary_domain'));
-        $post = self::safeOperation(static fn (): CallResult => $account->call(
+        $get = self::safeOperation(static fn (): CallResult => $account->call(
             'DomainInfo',
             'primary_domain',
             [],
-            RequestMethod::Post,
+            RequestMethod::Get,
         ));
+        // call() defaults to POST.
+        $post = self::safeOperation(static fn (): CallResult => $account->call('DomainInfo', 'primary_domain'));
 
         self::assertTrue($get->hasData && $get->data !== null, 'GET must return a payload.');
         self::assertTrue($get->data === $post->data, 'POST must return the same payload as GET.');
@@ -167,13 +169,14 @@ final class AccountsLiveTest extends TestCase
     public function testBridgedUapiAcceptsPost(): void
     {
         $account = $this->whm->uapi('npr');
-        $get = self::safeOperation(static fn (): CallResult => $account->call('DomainInfo', 'primary_domain'));
-        $post = self::safeOperation(static fn (): CallResult => $account->call(
+        $get = self::safeOperation(static fn (): CallResult => $account->call(
             'DomainInfo',
             'primary_domain',
             [],
-            RequestMethod::Post,
+            RequestMethod::Get,
         ));
+        // call() defaults to POST.
+        $post = self::safeOperation(static fn (): CallResult => $account->call('DomainInfo', 'primary_domain'));
 
         self::assertTrue($get->hasData && $get->data !== null, 'GET must return a payload.');
         self::assertTrue($get->data === $post->data, 'POST must return the same payload as GET.');

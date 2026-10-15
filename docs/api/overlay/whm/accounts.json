@@ -38,7 +38,10 @@
       "name": "listAccounts",
       "order": ["search", "searchtype", "searchmethod", "want"],
       "unwrap": "acct",
-      "response": {"acct[].uid": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "listaccts and accountsummary returned uid as a decimal string; docs/api/source-audit.md"}]}}
+      "response": {
+        "acct[].suspendtime": {"replace": {"type": "union", "nullable": true, "anyOf": [{"type": "string"}, {"type": "int"}]}, "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "The pinned listaccts record declares suspendtime as a nullable integer timestamp, while the pinned accountsummary record declares the same field of the same account record as a nullable string and returned integer 0 live (whm1:accountsummary correction). Suspended accounts were never observed, so listaccts accepts the same string/integer/null union as accountsummary; docs/api/source-audit.md#runtime-observations-2026-10-15-generated-client-cutover"}]},
+        "acct[].uid": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "listaccts and accountsummary returned uid as a decimal string; docs/api/source-audit.md"}]}
+      }
     },
     "whm1:modifyacct": {
       "name": "modifyAccount",
@@ -51,13 +54,14 @@
     },
     "whm1:passwd": {
       "name": "changePassword",
+      "notes": ["Omitting dbPassUpdate applies the documented default 1, so the account's MySQL password changes as well; pass false to keep it."],
       "optional_payload": true,
       "order": ["user", "password"],
       "params": {"enabledigest": {"omit": true}},
       "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "The pinned passwd response does not require data, and the deleted hand-written changePassword() (4d5088a) returned an empty result when WHM sent no data or null data."}]
     },
-    "whm1:removeacct": {"name": "removeAccount", "params": {"user": {"omit": true}}},
-    "whm1:suspendacct": {"name": "suspendAccount", "order": ["user", "reason", "disallowun", "leave-ftp-accts-enabled"]},
+    "whm1:removeacct": {"name": "removeAccount", "notes": ["Deletes the account and its data; the API cannot reverse the removal."], "params": {"user": {"omit": true}}},
+    "whm1:suspendacct": {"name": "suspendAccount", "notes": ["Omitting reason records the documented default reason Unknown; pass a reason."], "order": ["user", "reason", "disallowun", "leave-ftp-accts-enabled"]},
     "whm1:unsuspendacct": {"name": "unsuspendAccount"}
   }
 }

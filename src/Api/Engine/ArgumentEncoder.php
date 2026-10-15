@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient\Api\Engine;
 use HostingPal\WhmApiClient\Api\AbstractApiClient;
 use HostingPal\WhmApiClient\Api\NumberedList;
 use HostingPal\WhmApiClient\Api\RepeatedList;
+use InvalidArgumentException;
 use LogicException;
 use SensitiveParameter;
 
@@ -15,10 +16,13 @@ use SensitiveParameter;
  *
  * Null arguments are omitted, so an explicit null and an omitted argument send
  * the same request. Flags become 0/1, repeated and numbered lists become their
- * marker objects, and float scalars are sent as strings (shortest round-trip form,
- * independent of the precision setting). List contents are not
- * validated here: AbstractApiClient validates them after clearing metadata. An
- * argument or encoding the spec does not declare is a generator defect.
+ * marker objects, and finite float scalars are sent as strings that round-trip
+ * exactly (see float()), independent of the precision, serialize_precision and
+ * locale settings. List contents are not validated here: AbstractApiClient
+ * validates them after clearing metadata. A non-finite float is caller input that
+ * no wire form represents and is rejected here; the handles clear metadata before
+ * the runner encodes arguments. An argument or encoding the spec does not declare
+ * is a generator defect.
  *
  * @phpstan-import-type Parameters from AbstractApiClient
  * @internal
@@ -35,6 +39,7 @@ final class ArgumentEncoder
      * @param array<string, mixed> $arguments Arguments keyed by PHP argument name.
      * @return Parameters
      * @throws LogicException If arguments and specs disagree.
+     * @throws InvalidArgumentException If a float argument is NAN or infinite.
      */
     public static function encode(array $params, #[SensitiveParameter] array $arguments): array
     {
@@ -70,17 +75,70 @@ final class ArgumentEncoder
         return $encoded;
     }
 
-    private static function scalar(mixed $value): string|int
+    private static function scalar(#[SensitiveParameter] mixed $value): string|int
     {
         return match (true) {
             is_string($value), is_int($value) => $value,
-            is_float($value) => var_export($value, true),
+            is_float($value) => self::float($value),
             default => throw new LogicException('Scalar arguments must be strings or numbers.'),
         };
     }
 
+    /**
+     * Encode a finite float as a decimal string that parses back to the same float.
+     *
+     * The string uses the first precision from 1 to 16 significant digits whose
+     * correctly rounded form round-trips, and 17 digits otherwise, which always
+     * round-trips; it is computed without reading the precision, serialize_precision
+     * or locale settings. Fixed notation is used for decimal exponents from -4 to 16
+     * and E notation otherwise, and an integral value gets ".0", so an integral
+     * float stays visibly a float ("1.0", "-0.0", "1.0E+20") rather than becoming
+     * an integer string. The digit count is not always the minimum (2 ** -1017,
+     * for example, uses 17 digits where 16 would do), so the output can differ from
+     * var_export() in its last digits while denoting the same float.
+     *
+     * @throws InvalidArgumentException If the float is NAN or infinite.
+     */
+    private static function float(#[SensitiveParameter] float $value): string
+    {
+        if (!is_finite($value)) {
+            throw new InvalidArgumentException('Float arguments must be finite.');
+        }
+
+        // %H is the locale-independent form of %G: E notation from the precision on.
+        $text = sprintf('%.17H', $value);
+        for ($digits = 1; $digits < 17; $digits++) {
+            $candidate = sprintf('%.' . $digits . 'H', $value);
+            if ((float) $candidate === $value) {
+                $text = $candidate;
+
+                break;
+            }
+        }
+
+        $marker = strpos($text, 'E');
+        if ($marker === false) {
+            return str_contains($text, '.') ? $text : $text . '.0';
+        }
+
+        $mantissa = substr($text, 0, $marker);
+        $exponent = (int) substr($text, $marker + 1);
+        if ($exponent < -4 || $exponent >= 17) {
+            $mantissa = str_contains($mantissa, '.') ? $mantissa : $mantissa . '.0';
+
+            return $mantissa . 'E' . ($exponent < 0 ? '-' : '+') . abs($exponent);
+        }
+
+        // %H chose E notation because the exponent reached the digit count, so the
+        // value is integral: write its digits out in fixed notation.
+        $sign = str_starts_with($mantissa, '-') ? '-' : '';
+        $significant = rtrim(str_replace(['-', '.'], '', $mantissa), '0');
+
+        return $sign . str_pad($significant === '' ? '0' : $significant, $exponent + 1, '0') . '.0';
+    }
+
     /** @return string|array<array-key, mixed> */
-    private static function multiple(mixed $value): string|array
+    private static function multiple(#[SensitiveParameter] mixed $value): string|array
     {
         if (is_string($value) || is_array($value)) {
             return $value;

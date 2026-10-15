@@ -68,9 +68,10 @@ final readonly class HttpTransport
      *
      * Header lists are preserved and the optional body is already-encoded content.
      * HTTP error responses are returned for the API layer to interpret; PSR client
-     * exceptions propagate without retries. This transport does not add credentials;
-     * the headers parameter is marked sensitive so this frame's trace arguments omit
-     * authorization values. The PSR request handed to the client still carries them.
+     * exceptions propagate without retries. This transport does not add credentials.
+     * The URI, headers and body are marked sensitive, so this frame's trace arguments
+     * omit authorization values and any secret-bearing query or form parameters; the
+     * PSR request handed to the client still carries them.
      *
      * @param array<string, string|list<string>> $headers
      *
@@ -78,9 +79,11 @@ final readonly class HttpTransport
      */
     public function send(
         string $method,
+        #[SensitiveParameter]
         string|UriInterface $uri,
         #[SensitiveParameter]
         array $headers = [],
+        #[SensitiveParameter]
         ?string $body = null,
     ): ResponseInterface {
         $request = $this->requestFactory->createRequest($method, $uri);

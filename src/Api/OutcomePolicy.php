@@ -13,7 +13,9 @@ namespace HostingPal\WhmApiClient\Api;
  * typed operation group declares Flag. Unchecked records the envelope metadata
  * without interpreting the outcome, for operations whose status field carries
  * payload semantics (UAPI Features/has_feature reports feature state there) or
- * when the caller inspects responseMeta() itself. HTTP failures are reported
+ * when the caller inspects responseMeta() itself. On the WHM bridge, Unchecked
+ * waives only the UAPI status: the outer WHM metadata.result reports whether the
+ * UAPI call ran and is checked under both policies. HTTP failures are reported
  * under both policies, and both still require a usable envelope.
  */
 enum OutcomePolicy

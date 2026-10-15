@@ -163,8 +163,12 @@ final class ClientTest extends TestCase
         $frames = [
             [WhmClient::class, 'run', 'arguments'],
             [WhmClient::class, 'dispatch', 'parameters'],
+            [WhmClient::class, 'request', 'parameters'],
+            [WhmClient::class, 'call', 'parameters'],
             [UapiClient::class, 'run', 'arguments'],
             [UapiClient::class, 'dispatch', 'parameters'],
+            [UapiClient::class, 'request', 'parameters'],
+            [UapiClient::class, 'call', 'parameters'],
         ];
 
         foreach ($frames as [$class, $method, $name]) {
@@ -181,6 +185,60 @@ final class ClientTest extends TestCase
                 $parameter->getAttributes(SensitiveParameter::class),
                 $class . '::' . $method . '($' . $name . ')',
             );
+        }
+    }
+
+    /** @return iterable<string, array{array<string, mixed>, class-string<\Throwable>}> */
+    public static function argumentsRejectedBeforeDispatch(): iterable
+    {
+        yield 'non-finite float' => [['ratio' => NAN], InvalidArgumentException::class];
+        yield 'undeclared argument' => [['undeclared' => 'x'], LogicException::class];
+    }
+
+    /**
+     * @param array<string, mixed> $arguments
+     * @param class-string<\Throwable> $expected
+     */
+    #[DataProvider('argumentsRejectedBeforeDispatch')]
+    public function testGeneratedRunsClearMetadataBeforeRejectingArguments(array $arguments, string $expected): void
+    {
+        $factory = new Psr17Factory();
+        $http = new MockClient($factory);
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{"version":"11.138.0.15"}}'));
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":{}}}}'));
+        $client = $this->client($http);
+        $spec = [
+            'function' => 'version',
+            'module' => 'DomainInfo',
+            'method' => 'GET',
+            'outcome' => 'flag',
+            'params' => ['ratio' => ['name' => 'ratio', 'encoding' => 'scalar']],
+            'returns' => null,
+        ];
+
+        foreach ([[WhmClient::class, $client->whm()], [UapiClient::class, $client->uapi('npr')]] as [$class, $handle]) {
+            $run = new ReflectionMethod($class, 'run');
+            $run->invoke($handle, $spec, []);
+            self::assertNotNull($handle->responseMeta());
+
+            try {
+                $run->invoke($handle, $spec, $arguments);
+                self::fail('Expected the arguments to be rejected before dispatch.');
+            } catch (InvalidArgumentException | LogicException $exception) {
+                self::assertInstanceOf($expected, $exception);
+                self::assertNull($handle->responseMeta(), $class);
+            }
+        }
+
+        self::assertCount(2, $http->getRequests());
+    }
+
+    public function testInternalRequestsAlwaysNameTheirMethod(): void
+    {
+        foreach ([WhmClient::class, UapiClient::class] as $class) {
+            $parameter = new ReflectionParameter([$class, 'request'], 'method');
+
+            self::assertFalse($parameter->isOptional(), $class . '::request($method)');
         }
     }
 

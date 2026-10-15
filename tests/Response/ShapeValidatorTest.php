@@ -38,6 +38,30 @@ final class ShapeValidatorTest extends TestCase
             ['type' => 'number', 'accept' => ['numeric-string'], 'preserve' => true],
             '0.50',
         ];
+        yield 'number from zero-padded string' => ['"007"', ['type' => 'number', 'accept' => ['numeric-string']], 7];
+        yield 'number from plus-signed string' => ['"+5"', ['type' => 'number', 'accept' => ['numeric-string']], 5];
+        yield 'number from negative zero string' => ['"-0"', ['type' => 'number', 'accept' => ['numeric-string']], 0];
+        yield 'number from negative decimal string' => [
+            '"-0.25"',
+            ['type' => 'number', 'accept' => ['numeric-string']],
+            -0.25,
+        ];
+        yield 'number from overflowing integer string' => [
+            '"99999999999999999999"',
+            ['type' => 'number', 'accept' => ['numeric-string']],
+            1.0E+20,
+        ];
+        yield 'number from overflowing negative integer string' => [
+            '"-99999999999999999999"',
+            ['type' => 'number', 'accept' => ['numeric-string']],
+            -1.0E+20,
+        ];
+        yield 'number from overflowing decimal string' => [
+            '"99999999999999999999.5"',
+            ['type' => 'number', 'accept' => ['numeric-string']],
+            1.0E+20,
+        ];
+        yield 'number from overflowing JSON integer' => ['99999999999999999999', ['type' => 'number'], 1.0E+20];
         yield 'number preserved overflow string' => [
             '"99999999999999999999"',
             ['type' => 'number', 'accept' => ['numeric-string'], 'preserve' => true],
@@ -100,10 +124,11 @@ final class ShapeValidatorTest extends TestCase
         yield 'float as int' => ['1.5', ['type' => 'int']];
         yield 'number from text' => ['"abc"', ['type' => 'number', 'accept' => ['numeric-string']]];
         yield 'number exponent string' => ['"1e5"', ['type' => 'number', 'accept' => ['numeric-string']]];
-        yield 'number overflow string' => [
-            '"99999999999999999999"',
+        yield 'number decimal string without digits after the point' => [
+            '"5."',
             ['type' => 'number', 'accept' => ['numeric-string']],
         ];
+        yield 'number string with surrounding space' => ['" 5"', ['type' => 'number', 'accept' => ['numeric-string']]];
         yield 'bool from string without accept' => ['"1"', ['type' => 'bool']];
         yield 'flag out of range' => ['2', ['type' => 'flag']];
         yield 'flag string without accept' => ['"1"', ['type' => 'flag']];
@@ -183,9 +208,46 @@ final class ShapeValidatorTest extends TestCase
             '[]',
             ['type' => 'object', 'fields' => ['a' => ['type' => 'string']], 'required' => ['a']],
         ];
+        yield 'explicit null in a non-nullable field' => [
+            '{"a":null}',
+            ['type' => 'object', 'fields' => ['a' => ['type' => 'string']]],
+        ];
+        yield 'explicit null in a non-nullable required field' => [
+            '{"a":null}',
+            ['type' => 'object', 'fields' => ['a' => ['type' => 'string']], 'required' => ['a']],
+        ];
         yield 'union without match' => [
             'true',
             ['type' => 'union', 'anyOf' => [['type' => 'int'], ['type' => 'string']]],
+        ];
+    }
+
+    /** @param array<mixed> $type */
+    #[DataProvider('unionsWithMalformedBranches')]
+    public function testMalformedUnionBranchesPassThroughInsteadOfBeingSwallowed(string $json, array $type): void
+    {
+        $this->expectException(LogicException::class);
+
+        ShapeValidator::value(self::decode($json), $type, self::reader());
+    }
+
+    /** @return iterable<string, array{string, array<mixed>}> */
+    public static function unionsWithMalformedBranches(): iterable
+    {
+        yield 'unknown first branch' => [
+            '"a"',
+            ['type' => 'union', 'anyOf' => [['type' => 'bogus'], ['type' => 'string']]],
+        ];
+        yield 'nested unknown type in the first branch' => [
+            '{"a":1}',
+            ['type' => 'union', 'anyOf' => [
+                ['type' => 'object', 'fields' => ['a' => ['type' => 'bogus']]],
+                ['type' => 'mixed'],
+            ]],
+        ];
+        yield 'malformed branch after a failing one' => [
+            '1',
+            ['type' => 'union', 'anyOf' => [['type' => 'string'], ['type' => 'union', 'anyOf' => []]]],
         ];
     }
 

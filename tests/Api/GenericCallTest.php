@@ -11,6 +11,7 @@ use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\Response\CallResult;
+use HostingPal\WhmApiClient\WhmClient;
 use Http\Mock\Client as MockClient;
 use InvalidArgumentException;
 use Nyholm\Psr7\Factory\Psr17Factory;
@@ -18,6 +19,8 @@ use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
+use ReflectionMethod;
+use stdClass;
 
 final class GenericCallTest extends TestCase
 {
@@ -69,6 +72,28 @@ final class GenericCallTest extends TestCase
             $request->getHeaderLine('Content-Type'),
         );
         self::assertSame('whm root:fixture-token', $request->getHeaderLine('Authorization'));
+    }
+
+    public function testCallsDefaultToPostSoParametersStayOutOfTheUrl(): void
+    {
+        [$client, $http] = $this->client();
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1}}'));
+        $http->addResponse(new Response(200, [], self::BRIDGED));
+        [$cpanel, $direct] = $this->client(true);
+        $direct->addResponse(new Response(200, [], self::DIRECT));
+
+        $client->whm()->call('passwd', ['user' => 'npr', 'password' => 'fixture-secret']);
+        $client->uapi('npr')->call('Email', 'passwd_pop', ['email' => 'box', 'password' => 'fixture-secret']);
+        $cpanel->uapi()->call('Email', 'passwd_pop', ['email' => 'box', 'password' => 'fixture-secret']);
+
+        $requests = [...$http->getRequests(), ...$direct->getRequests()];
+        self::assertCount(3, $requests);
+        foreach ($requests as $request) {
+            self::assertSame('POST', $request->getMethod());
+            self::assertSame('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
+            self::assertStringNotContainsString('fixture-secret', (string) $request->getUri());
+            self::assertStringContainsString('password=fixture-secret', (string) $request->getBody());
+        }
     }
 
     public function testWhmCallAcceptsNamespacedFunctionsAndRejectsOtherSeparators(): void
@@ -225,6 +250,107 @@ final class GenericCallTest extends TestCase
         $this->expectExceptionMessage('Missing UAPI response envelope.');
 
         $client->uapi('npr')->call('DomainInfo', 'primary_domain', outcome: OutcomePolicy::Unchecked);
+    }
+
+    public function testBridgedUncheckedCallStillChecksTheWhmResult(): void
+    {
+        [$client, $http] = $this->client();
+        $npr = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":0,"reason":"Access denied."}}'));
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":"1"},"data":{"uapi":{"status":1}}}'));
+
+        try {
+            $npr->call('DomainInfo', 'primary_domain', outcome: OutcomePolicy::Unchecked);
+            self::fail('A failed bridge must raise ApiErrorException under every policy.');
+        } catch (ApiErrorException $exception) {
+            self::assertSame(['Access denied.'], $exception->errors());
+            self::assertSame($exception->metadata, $npr->responseMeta());
+            self::assertSame(0, $exception->metadata?->whmResult());
+        }
+
+        try {
+            $npr->call('DomainInfo', 'primary_domain', outcome: OutcomePolicy::Unchecked);
+            self::fail('A bridge outcome outside the 0/1 rule is invalid under every policy.');
+        } catch (InvalidResponseException $exception) {
+            self::assertSame('Missing or invalid WHM outcome.', $exception->getMessage());
+            self::assertSame($exception->metadata, $npr->responseMeta());
+        }
+    }
+
+    public function testBridgedUncheckedCallWaivesOnlyTheUapiStatus(): void
+    {
+        [$client, $http] = $this->client();
+        $npr = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1,"reason":"OK"},'
+            . '"data":{"uapi":{"data":{"has_feature":0},"status":0,"errors":["Feature is disabled."]}}}'));
+
+        $result = $npr->call('Features', 'has_feature', ['name' => 'ssh'], outcome: OutcomePolicy::Unchecked);
+
+        self::assertSame(['has_feature' => 0], $result->data);
+        self::assertSame(1, $result->metadata->whmResult());
+        self::assertSame(0, $result->metadata->uapiStatus());
+        self::assertSame($result->metadata, $npr->responseMeta());
+    }
+
+    /** @return iterable<string, array{mixed}> */
+    public static function unsupportedValues(): iterable
+    {
+        yield 'false' => [false];
+        yield 'true' => [true];
+        yield 'null' => [null];
+        yield 'float' => [1.5];
+        yield 'object' => [new stdClass()];
+    }
+
+    #[DataProvider('unsupportedValues')]
+    public function testUnsupportedParameterValuesNameTheKeyAfterClearingMetadata(mixed $value): void
+    {
+        [$client, $http] = $this->client();
+        $whm = $client->whm();
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1}}'));
+        $whm->call('version');
+        self::assertNotNull($whm->responseMeta());
+
+        try {
+            (new ReflectionMethod(WhmClient::class, 'call'))->invoke($whm, 'version', ['flag' => $value]);
+            self::fail('Unsupported parameter values must be rejected before I/O.');
+        } catch (InvalidArgumentException $exception) {
+            self::assertSame(
+                'Parameter "flag" must be a string, an integer or a list of strings.',
+                $exception->getMessage(),
+            );
+            self::assertNull($whm->responseMeta());
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
+    public function testInvalidNamesClearMetadataLikeInvalidParameters(): void
+    {
+        [$client, $http] = $this->client();
+        $whm = $client->whm();
+        $npr = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1}}'));
+        $http->addResponse(new Response(200, [], self::BRIDGED));
+        $whm->call('version');
+        $npr->call('DomainInfo', 'primary_domain');
+        self::assertNotNull($whm->responseMeta());
+        self::assertNotNull($npr->responseMeta());
+
+        try {
+            $whm->call('../version');
+            self::fail('Invalid WHM function names must be rejected.');
+        } catch (InvalidArgumentException) {
+            self::assertNull($whm->responseMeta());
+        }
+
+        try {
+            $npr->call('DomainInfo', 'primary domain');
+            self::fail('Invalid UAPI function names must be rejected.');
+        } catch (InvalidArgumentException) {
+            self::assertNull($npr->responseMeta());
+        }
+
+        self::assertCount(2, $http->getRequests());
     }
 
     /** @return array{Client, MockClient} */

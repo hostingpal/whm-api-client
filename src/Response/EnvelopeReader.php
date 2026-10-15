@@ -20,7 +20,9 @@ use stdClass;
  * The integer 0/1 outcome rule (OutcomePolicy::Flag) is the documented envelope
  * convention of the pinned contracts and is what every typed operation group
  * declares; OutcomePolicy::Unchecked records metadata without interpreting the
- * outcome, for operations whose status carries payload semantics.
+ * operation's outcome, for operations whose status carries payload semantics. On
+ * the WHM bridge, Unchecked waives only the UAPI status: the outer WHM result is
+ * checked under both policies because it reports whether the UAPI call ran.
  * JSON objects remain distinct from lists until an endpoint validates its payload.
  * Metadata is opaque JSON copied into arrays, with payload data excluded.
  * Direct UAPI accepts the pinned result wrapper and the bare result observed
@@ -35,11 +37,13 @@ final class EnvelopeReader
      *
      * HTTP failure takes precedence over API outcome. On malformed envelopes,
      * available metadata is retained without inventing missing success flags.
-     * Both policies require a usable envelope; only Flag interprets the outcome.
+     * Both policies require a usable envelope; only Flag interprets the operation's
+     * outcome (WHM metadata.result or UAPI status), while the bridge's outer WHM
+     * result is interpreted under both.
      *
      * @throws HttpException If HTTP status is outside 200-299.
      * @throws InvalidResponseException If JSON or required envelope fields are unusable.
-     * @throws ApiErrorException If the Flag policy finds a WHM or UAPI failure outcome.
+     * @throws ApiErrorException If the Flag policy finds a WHM or UAPI failure outcome, or the bridge failed.
      */
     public static function read(
         ResponseInterface $response,
@@ -84,7 +88,11 @@ final class EnvelopeReader
             throw new HttpException($status, $metadata);
         }
 
-        if ($outcome === OutcomePolicy::Flag && $route !== ResponseRoute::DirectUapi) {
+        // The bridge's WHM result reports whether the UAPI call ran at all, so it is
+        // checked under both policies; Unchecked waives only the UAPI status there.
+        $checkWhm = $route === ResponseRoute::BridgedUapi
+            || ($route === ResponseRoute::Whm && $outcome === OutcomePolicy::Flag);
+        if ($checkWhm) {
             self::outcome($whm['result'] ?? null, 'WHM', $metadata);
         }
 

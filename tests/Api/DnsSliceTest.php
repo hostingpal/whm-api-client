@@ -18,7 +18,8 @@ use RuntimeException;
 /**
  * Offline coverage for the generated read-only DNS slice: 14 WHM API 1 functions and 7 new UAPI functions
  * (plus the two pre-existing UAPI ones, which keep their own tests). Fixtures are synthetic and follow the
- * pinned schema; they contain only example.test names and 192.0.2.0/24 / 2001:db8::/32 addresses.
+ * pinned schema; they contain only reserved names (example.test and its subdomains, example.org, missing.test
+ * and bare.test) and 192.0.2.0/24 / 2001:db8::/32 addresses.
  */
 final class DnsSliceTest extends TestCase
 {

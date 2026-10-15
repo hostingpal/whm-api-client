@@ -1,6 +1,7 @@
 # Contract-driven generated client for full API parity
 
-Status: design agreed with the user on 2026-10-14; awaiting written-spec review.
+Status: implemented through phase 1 (plans 1-4); design agreed with the user on
+2026-10-14.
 Decision record: `whm-api-client-8x0.10`. This design supersedes the
 "typed core plus generic calls / lean pattern" scaling decision
 (`whm-api-client-8x0.7`, recorded in the
@@ -361,6 +362,9 @@ validate`, `composer check`. No live calls.
    Then retire the hand-written groups, the DTOs, the symbol inventory
    (`tools/php-symbols`), the registry, report and baseline artifacts under
    `docs/api/coverage/`, and the parity code that only served them.
+   Phase 1 note: the hand-written endpoint tests were adapted to the generated
+   groups and serve as the equivalence oracle; the per-operation fixture rows of the
+   generated-surface tests come in phase 2, with the runner and fingerprints.
 2. **Runner, fingerprints and discrepancy loop.** Sweep all read-only operations
    and correct the overlay. Retire the per-endpoint live test classes once the
    runner covers their operations.
