@@ -13,6 +13,58 @@ namespace HostingPal\WhmApiClient\Api\Uapi\Spec;
  */
 final class EmailSpec
 {
+    public const COUNT_POPS = [
+        'function' => 'count_pops',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'int'],
+    ];
+
+    public const LIST_DOMAIN_FORWARDERS = [
+        'function' => 'list_domain_forwarders',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'dest' => ['type' => 'string'],
+                    'forward' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_MAIL_DOMAINS = [
+        'function' => 'list_mail_domains',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'addWww' => ['name' => 'add_www', 'encoding' => 'bool'],
+            'includeWildcard' => ['name' => 'include_wildcard', 'encoding' => 'bool'],
+            'returnTemporaryDomain' => ['name' => 'return_temporary_domain', 'encoding' => 'bool'],
+            'select' => ['name' => 'select', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'domain' => ['type' => 'string'],
+                    'select' => ['type' => 'int'],
+                ],
+            ],
+        ],
+    ];
+
     public const LIST_POPS = [
         'function' => 'list_pops',
         'module' => 'Email',

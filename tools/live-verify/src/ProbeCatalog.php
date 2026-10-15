@@ -7,7 +7,10 @@ namespace HostingPal\WhmApiClient\Tools\LiveVerify;
 use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\DomainInfoSpec;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\EmailSpec;
+use HostingPal\WhmApiClient\Api\Uapi\Spec\LangPhpSpec;
+use HostingPal\WhmApiClient\Api\Whm\Spec\AccountsSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
+use HostingPal\WhmApiClient\Api\Whm\Spec\WebServerSpec;
 use HostingPal\WhmApiClient\Client;
 use JsonException;
 use RuntimeException;
@@ -21,6 +24,9 @@ final class ProbeCatalog
         $server = self::read($root . '/docs/api/overlay/whm/server-administration.json');
         $domains = self::read($root . '/docs/api/overlay/uapi/DomainInfo.json');
         $email = self::read($root . '/docs/api/overlay/uapi/Email.json');
+        $accounts = self::read($root . '/docs/api/overlay/whm/accounts.json');
+        $webServer = self::read($root . '/docs/api/overlay/whm/web-server-configuration.json');
+        $php = self::read($root . '/docs/api/overlay/uapi/LangPHP.json');
 
         return [
             self::probe(
@@ -73,6 +79,157 @@ final class ProbeCatalog
                 . '&cpanel.module=Email&cpanel.function=list_pops',
                 static fn (Client $client): mixed => $client->uapi('npr')->email()->listPops(),
             ),
+            self::probe(
+                $accounts,
+                'whm1:listaccts',
+                'whm',
+                AccountsSpec::LISTACCTS,
+                'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
+                . '&search=npr&searchtype=user&searchmethod=exact',
+                static fn (Client $client): mixed => $client->whm()->accounts()->listAccounts(
+                    search: 'npr',
+                    searchtype: 'user',
+                    searchmethod: 'exact',
+                ),
+                ['search' => 'npr', 'searchtype' => 'user', 'searchmethod' => 'exact'],
+            ),
+            self::probe(
+                $accounts,
+                'whm1:accountsummary',
+                'whm',
+                AccountsSpec::ACCOUNTSUMMARY,
+                'https://test.oblak.host:2087/json-api/accountsummary?api.version=1&user=npr',
+                static fn (Client $client): mixed => $client->whm()->accounts()->accountSummary(user: 'npr'),
+                ['user' => 'npr'],
+            ),
+            self::probe(
+                $accounts,
+                'whm1:get_domain_info',
+                'whm',
+                AccountsSpec::GET_DOMAIN_INFO,
+                'https://test.oblak.host:2087/json-api/get_domain_info?api.version=1',
+                static fn (Client $client): mixed => $client->whm()->accounts()->getDomainInfo(),
+            ),
+            self::probe(
+                $webServer,
+                'whm1:php_get_installed_versions',
+                'whm',
+                WebServerSpec::PHP_GET_INSTALLED_VERSIONS,
+                'https://test.oblak.host:2087/json-api/php_get_installed_versions?api.version=1',
+                static fn (Client $client): mixed => $client->whm()->webServer()->phpGetInstalledVersions(),
+            ),
+            self::probe(
+                $webServer,
+                'whm1:php_get_system_default_version',
+                'whm',
+                WebServerSpec::PHP_GET_SYSTEM_DEFAULT_VERSION,
+                'https://test.oblak.host:2087/json-api/php_get_system_default_version?api.version=1',
+                static fn (Client $client): mixed => $client->whm()->webServer()->phpGetSystemDefaultVersion(),
+            ),
+            self::probe(
+                $domains,
+                'uapi:DomainInfo/primary_domain',
+                'direct-uapi',
+                DomainInfoSpec::PRIMARY_DOMAIN,
+                'https://test.oblak.host:2083/execute/DomainInfo/primary_domain',
+                static fn (Client $client): mixed => $client->uapi()->domainInfo()->primaryDomain(),
+            ),
+            self::probe(
+                $domains,
+                'uapi:DomainInfo/primary_domain',
+                'bridged-uapi',
+                DomainInfoSpec::PRIMARY_DOMAIN,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=DomainInfo&cpanel.function=primary_domain',
+                static fn (Client $client): mixed => $client->uapi('npr')->domainInfo()->primaryDomain(),
+            ),
+            self::probe(
+                $php,
+                'uapi:LangPHP/php_get_installed_versions',
+                'direct-uapi',
+                LangPhpSpec::PHP_GET_INSTALLED_VERSIONS,
+                'https://test.oblak.host:2083/execute/LangPHP/php_get_installed_versions',
+                static fn (Client $client): mixed => $client->uapi()->langPhp()->phpGetInstalledVersions(),
+            ),
+            self::probe(
+                $php,
+                'uapi:LangPHP/php_get_installed_versions',
+                'bridged-uapi',
+                LangPhpSpec::PHP_GET_INSTALLED_VERSIONS,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=LangPHP&cpanel.function=php_get_installed_versions',
+                static fn (Client $client): mixed => $client->uapi('npr')->langPhp()->phpGetInstalledVersions(),
+            ),
+            self::probe(
+                $php,
+                'uapi:LangPHP/php_get_domain_handler',
+                'direct-uapi',
+                LangPhpSpec::PHP_GET_DOMAIN_HANDLER,
+                'https://test.oblak.host:2083/execute/LangPHP/php_get_domain_handler?type=home',
+                static fn (Client $client): mixed => $client->uapi()->langPhp()->phpGetDomainHandler(type: 'home'),
+                ['type' => 'home'],
+            ),
+            self::probe(
+                $php,
+                'uapi:LangPHP/php_get_domain_handler',
+                'bridged-uapi',
+                LangPhpSpec::PHP_GET_DOMAIN_HANDLER,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=LangPHP&cpanel.function=php_get_domain_handler&type=home',
+                static fn (Client $client): mixed => $client->uapi('npr')->langPhp()->phpGetDomainHandler(type: 'home'),
+                ['type' => 'home'],
+            ),
+            self::probe(
+                $email,
+                'uapi:Email/list_mail_domains',
+                'direct-uapi',
+                EmailSpec::LIST_MAIL_DOMAINS,
+                'https://test.oblak.host:2083/execute/Email/list_mail_domains',
+                static fn (Client $client): mixed => $client->uapi()->email()->listMailDomains(),
+            ),
+            self::probe(
+                $email,
+                'uapi:Email/list_mail_domains',
+                'bridged-uapi',
+                EmailSpec::LIST_MAIL_DOMAINS,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=Email&cpanel.function=list_mail_domains',
+                static fn (Client $client): mixed => $client->uapi('npr')->email()->listMailDomains(),
+            ),
+            self::probe(
+                $email,
+                'uapi:Email/list_domain_forwarders',
+                'direct-uapi',
+                EmailSpec::LIST_DOMAIN_FORWARDERS,
+                'https://test.oblak.host:2083/execute/Email/list_domain_forwarders',
+                static fn (Client $client): mixed => $client->uapi()->email()->listDomainForwarders(),
+            ),
+            self::probe(
+                $email,
+                'uapi:Email/list_domain_forwarders',
+                'bridged-uapi',
+                EmailSpec::LIST_DOMAIN_FORWARDERS,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=Email&cpanel.function=list_domain_forwarders',
+                static fn (Client $client): mixed => $client->uapi('npr')->email()->listDomainForwarders(),
+            ),
+            self::probe(
+                $email,
+                'uapi:Email/count_pops',
+                'direct-uapi',
+                EmailSpec::COUNT_POPS,
+                'https://test.oblak.host:2083/execute/Email/count_pops',
+                static fn (Client $client): mixed => $client->uapi()->email()->countPops(),
+            ),
+            self::probe(
+                $email,
+                'uapi:Email/count_pops',
+                'bridged-uapi',
+                EmailSpec::COUNT_POPS,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=Email&cpanel.function=count_pops',
+                static fn (Client $client): mixed => $client->uapi('npr')->email()->countPops(),
+            ),
         ];
     }
 
@@ -83,6 +240,7 @@ final class ProbeCatalog
      * @param 'whm'|'direct-uapi'|'bridged-uapi' $route
      * @param array<mixed> $spec
      * @param Closure(Client): mixed $invoke
+     * @param array<string, string> $arguments Exact reviewed recipe values, never passed through to the call.
      */
     private static function probe(
         array $overlay,
@@ -91,6 +249,7 @@ final class ProbeCatalog
         array $spec,
         string $uri,
         Closure $invoke,
+        array $arguments = [],
     ): Probe {
         $operations = $overlay['operations'] ?? null;
         $entry = is_array($operations) ? ($operations[$operation] ?? null) : null;
@@ -101,7 +260,7 @@ final class ProbeCatalog
         } else {
             $expected = [
                 'phase' => 'read-only',
-                'arguments' => [],
+                'arguments' => $arguments,
                 'routes' => $route === 'whm' ? ['whm'] : ['direct-uapi', 'bridged-uapi'],
                 'expected' => 'success',
             ];

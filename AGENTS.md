@@ -139,8 +139,11 @@ server, domain, PHP and feature inventory, the WHM account lifecycle
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
 read-only DNS slice (14 WHM functions in the `whm()->dns()` group plus 7 UAPI `DNS`
 functions in `uapi()->dns()`).
-`uapi()->email()->listPops()` adds read-only Email inventory. Its optional booleans
-preserve omission and explicit false, and its result keeps the documented wire keys.
+`uapi()->email()` adds read-only mailbox, mail-domain, domain-forwarder and mailbox-count
+inventory (`listPops()`, `listMailDomains()`, `listDomainForwarders()`, `countPops()`).
+Optional booleans preserve omission and explicit false; array results keep documented
+wire keys. The typed surface contains 64 operations. All four Email operations require
+the Receive Mail role; `countPops()` does not establish whether the main account is included.
 `whm()->call()` and `uapi()->call()` reach every other documented function
 generically. The 2026-10-13 spec's
 [scaling decision (typed core plus generic calls)](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls)
@@ -293,11 +296,13 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
 ## Generated-client delivery
 
 - Follow the [current delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
-  The development-only runner in `tools/live-verify/` captures six reviewed
+  The development-only runner in `tools/live-verify/` captures 23 reviewed
   read-only route-specific probes through the generated client; run it explicitly
   with `WHM_API_LIVE=1 composer live:verify -- --output=docs/api/evidence/read-only.json`.
-  It requires committed code and persists sanitized structure only. Email inventory
-  is included (`8x0.10.2`); consumer feedback (`8x0.10.3`) remains independent.
+  It requires committed code and persists sanitized structure only. Catalog entries
+  bind exact arguments, including the `npr` account filters and `type: 'home'` PHP
+  handler. Account/domain/PHP evidence (`8x0.2.3`) and expanded Email inventory
+  (`8x0.4.1`) build on the initial slices; consumer feedback (`8x0.10.3`) remains independent.
 - Capture evidence from the same raw HTTP response before normalization and
   unknown-field removal. Preserve the response delivered to the client; never
   replay an operation to recover evidence. Persist only sanitized structural

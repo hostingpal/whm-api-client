@@ -114,6 +114,45 @@ final class VerifyCommandTest extends TestCase
         self::assertSame("whm1:version whm: passed\n", $stdout);
     }
 
+    #[DataProvider('inventoryLabels')]
+    public function testFixtureHarnessPrintsReviewedInventoryLabels(string $operation, string $route): void
+    {
+        $root = $this->fixtureHarness();
+        [$status, $stdout, $stderr] = self::executeCli(
+            ['--output=' . $root . '/observed.json'],
+            array_replace(self::fixtureEnvironment(), [
+                'CLI_FIXTURE_OPERATION' => $operation, 'CLI_FIXTURE_ROUTE' => $route,
+            ]),
+            $root,
+        );
+
+        self::assertSame(0, $status);
+        self::assertSame($operation . ' ' . $route . ": passed\n", $stdout);
+        self::assertSame('', $stderr);
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function inventoryLabels(): iterable
+    {
+        yield 'account search' => ['whm1:listaccts', 'whm'];
+        yield 'account summary' => ['whm1:accountsummary', 'whm'];
+        yield 'domain inventory' => ['whm1:get_domain_info', 'whm'];
+        yield 'WHM PHP versions' => ['whm1:php_get_installed_versions', 'whm'];
+        yield 'WHM default PHP' => ['whm1:php_get_system_default_version', 'whm'];
+        yield 'direct primary domain' => ['uapi:DomainInfo/primary_domain', 'direct-uapi'];
+        yield 'bridged primary domain' => ['uapi:DomainInfo/primary_domain', 'bridged-uapi'];
+        yield 'direct PHP versions' => ['uapi:LangPHP/php_get_installed_versions', 'direct-uapi'];
+        yield 'bridged PHP versions' => ['uapi:LangPHP/php_get_installed_versions', 'bridged-uapi'];
+        yield 'direct PHP handler' => ['uapi:LangPHP/php_get_domain_handler', 'direct-uapi'];
+        yield 'bridged PHP handler' => ['uapi:LangPHP/php_get_domain_handler', 'bridged-uapi'];
+        yield 'direct mail domains' => ['uapi:Email/list_mail_domains', 'direct-uapi'];
+        yield 'bridged mail domains' => ['uapi:Email/list_mail_domains', 'bridged-uapi'];
+        yield 'direct domain forwarders' => ['uapi:Email/list_domain_forwarders', 'direct-uapi'];
+        yield 'bridged domain forwarders' => ['uapi:Email/list_domain_forwarders', 'bridged-uapi'];
+        yield 'direct mailbox count' => ['uapi:Email/count_pops', 'direct-uapi'];
+        yield 'bridged mailbox count' => ['uapi:Email/count_pops', 'bridged-uapi'];
+    }
+
     #[DataProvider('unsuccessfulEvidence')]
     public function testFixtureHarnessRetainsEvidenceOnFailedExit(string $case): void
     {
@@ -241,8 +280,8 @@ final class EvidenceRunner
             throw new \RuntimeException(getenv('CLI_PRIVATE_MARKER'));
         }
         return [[
-            'operation' => 'whm1:version',
-            'route' => 'whm',
+            'operation' => getenv('CLI_FIXTURE_OPERATION') ?: 'whm1:version',
+            'route' => getenv('CLI_FIXTURE_ROUTE') ?: 'whm',
             'probe_outcome' => in_array($case, ['failed', 'skipped'], true) ? $case : 'passed',
             'discrepancies' => $case === 'discrepancy' ? [['path' => '$.load', 'kind' => 'type_mismatch']] : [],
         ]];

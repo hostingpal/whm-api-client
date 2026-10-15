@@ -1,10 +1,18 @@
 # Live contract evidence
 
 This development-only PHP command exercises the generated client on the approved
-test server. It covers WHM `version`, WHM `systemloadavg`, and UAPI
-`DomainInfo/list_domains` and `Email/list_pops` through direct cPanel and WHM-bridged
-routes. It performs six GET requests, with exact route and argument guards, verified TLS, redirects
+test server. It performs 23 GET requests across 15 operations, with exact route
+and argument guards, verified TLS, redirects
 disabled, and no retries. The core package has no dependency on this tool.
+
+| Route | Reviewed operations and arguments |
+| --- | --- |
+| WHM | `version`, `systemloadavg`, `listaccts(search: 'npr', searchtype: 'user', searchmethod: 'exact')`, `accountsummary(user: 'npr')`, `get_domain_info`, `php_get_installed_versions`, `php_get_system_default_version` |
+| Direct and WHM-bridged UAPI, account `npr` | `DomainInfo/list_domains`, `DomainInfo/primary_domain`, `LangPHP/php_get_installed_versions`, `LangPHP/php_get_domain_handler(type: 'home')`, `Email/list_pops`, `Email/list_mail_domains`, `Email/list_domain_forwarders`, `Email/count_pops` |
+
+Unlisted optional arguments are omitted. The Email probes observe default
+behavior; explicit flags, filters and selection behavior are covered separately
+by independent offline tests. Empty lists establish no item-field observations.
 
 ```sh
 # Export both OBLAK_TEST_WHM_KEY and OBLAK_TEST_NPR_KEY without printing them.
@@ -66,9 +74,9 @@ and use the overlay/generator workflow for any justified contract change.
 
 ## Adding a reviewed slice
 
-Recipes live in their operation's overlay `probe` object. This first runner accepts
-only `phase: read-only`, empty `arguments`, `expected: success`, and the exact
-reviewed route list. The code catalog binds each recipe to its generated method
+Recipes live in their operation's overlay `probe` object. The runner accepts
+only `phase: read-only`, the exact arguments reviewed for that operation,
+`expected: success`, and the exact reviewed route list. The code catalog binds each recipe to its generated method
 and exact permitted request. New operations require both a reviewed catalog entry
 and offline request/response tests; editing an overlay cannot authorize arbitrary
 network calls. Mutation fixtures, broad discovery and automated overlay edits are

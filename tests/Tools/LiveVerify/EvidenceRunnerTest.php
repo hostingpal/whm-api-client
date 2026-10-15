@@ -33,7 +33,7 @@ final class EvidenceRunnerTest extends TestCase
             $http->addResponse(new Response(200, [], $body));
         }
         $records = (new EvidenceRunner($http, self::context()))->run(
-            ProbeCatalog::load(self::ROOT),
+            array_slice(ProbeCatalog::load(self::ROOT), 0, 6),
             '1',
             ['whm' => 'synthetic-whm', 'cpanel' => 'synthetic-cpanel'],
         );
@@ -57,6 +57,91 @@ final class EvidenceRunnerTest extends TestCase
             'private@example.test', 'example.test', 'secret', 'synthetic-whm', 'synthetic-cpanel', '0.50',
         ];
         foreach ($privateValues as $private) {
+            self::assertStringNotContainsString($private, $json);
+        }
+    }
+
+    public function testInventoryProbesCaptureReviewedArgumentsAndRawPayloadShapes(): void
+    {
+        $http = new Client();
+        $bodies = [
+            '{"metadata":{"result":1},"data":{"acct":[{"user":"private-user-marker",'
+                . '"domain":"private-domain.test","uid":"12345","suspendtime":0,"child_nodes":[]}]}}',
+            '{"metadata":{"result":1},"data":{"acct":[{"user":"private-user-marker",'
+                . '"domain":"private-domain.test","uid":"12345","suspendreason":null,"standalone_feature":""}]}}',
+            '{"metadata":{"result":1},"data":{"domains":[{"domain":"private-domain.test",'
+                . '"user":"private-user-marker","port":"80","port_ssl":"443","ipv6":null}]}}',
+            '{"metadata":{"result":1},"data":{"versions":["ea-php82","ea-php83"]}}',
+            '{"metadata":{"result":1},"data":{"version":"ea-php82"}}',
+            '{"result":{"status":1,"data":{"primary_domain":"private-domain.test"}}}',
+            '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":{"primary_domain":null}}}}',
+            '{"status":1,"data":{"versions":["ea-php82"]}}',
+            '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":{"versions":[]}}}}',
+            '{"status":1,"data":{"php_handler":"suphp"}}',
+            '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":{"php_handler":"suphp"}}}}',
+        ];
+        foreach ($bodies as $body) {
+            $http->addResponse(new Response(200, [], $body));
+        }
+        $records = (new EvidenceRunner($http, self::context()))->run(
+            array_slice(ProbeCatalog::load(self::ROOT), 6, 11),
+            '1',
+            ['whm' => 'synthetic-whm', 'cpanel' => 'synthetic-cpanel'],
+        );
+
+        $requests = $http->getRequests();
+        self::assertCount(11, $requests);
+        $expectedUris = [
+            'https://test.oblak.host:2087/json-api/listaccts?api.version=1'
+                . '&search=npr&searchtype=user&searchmethod=exact',
+            'https://test.oblak.host:2087/json-api/accountsummary?api.version=1&user=npr',
+            'https://test.oblak.host:2087/json-api/get_domain_info?api.version=1',
+            'https://test.oblak.host:2087/json-api/php_get_installed_versions?api.version=1',
+            'https://test.oblak.host:2087/json-api/php_get_system_default_version?api.version=1',
+            'https://test.oblak.host:2083/execute/DomainInfo/primary_domain',
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=DomainInfo&cpanel.function=primary_domain',
+            'https://test.oblak.host:2083/execute/LangPHP/php_get_installed_versions',
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=LangPHP&cpanel.function=php_get_installed_versions',
+            'https://test.oblak.host:2083/execute/LangPHP/php_get_domain_handler?type=home',
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=LangPHP&cpanel.function=php_get_domain_handler&type=home',
+        ];
+        foreach ($requests as $index => $request) {
+            self::assertSame($expectedUris[$index], (string) $request->getUri());
+            self::assertSame('GET', $request->getMethod());
+            self::assertSame('', (string) $request->getBody());
+        }
+        self::assertSame(array_fill(0, 11, 'passed'), array_column($records, 'probe_outcome'));
+        self::assertSame(array_fill(0, 11, []), array_column($records, 'discrepancies'));
+        self::assertSame([
+            'whm1:listaccts', 'whm1:accountsummary', 'whm1:get_domain_info',
+            'whm1:php_get_installed_versions', 'whm1:php_get_system_default_version',
+            'uapi:DomainInfo/primary_domain', 'uapi:DomainInfo/primary_domain',
+            'uapi:LangPHP/php_get_installed_versions', 'uapi:LangPHP/php_get_installed_versions',
+            'uapi:LangPHP/php_get_domain_handler', 'uapi:LangPHP/php_get_domain_handler',
+        ], array_column($records, 'operation'));
+        self::assertSame(['numeric-string'], $records[0]['payload_paths']['$.acct[].uid']);
+        self::assertSame(['int'], $records[0]['payload_paths']['$.acct[].suspendtime']);
+        self::assertSame(['empty-list'], $records[0]['payload_paths']['$.acct[].child_nodes']);
+        self::assertArrayNotHasKey('$.acct[].child_nodes[]', $records[0]['payload_paths']);
+        self::assertSame(['null'], $records[1]['payload_paths']['$.acct[].suspendreason']);
+        self::assertSame(['empty-string'], $records[1]['payload_paths']['$.acct[].standalone_feature']);
+        self::assertSame(['numeric-string'], $records[2]['payload_paths']['$.domains[].port']);
+        self::assertSame(['numeric-string'], $records[2]['payload_paths']['$.domains[].port_ssl']);
+        self::assertSame(['null'], $records[2]['payload_paths']['$.domains[].ipv6']);
+        self::assertSame(['string'], $records[3]['payload_paths']['$.versions[]']);
+        self::assertSame(['string'], $records[4]['payload_paths']['$.version']);
+        self::assertSame(['string'], $records[5]['payload_paths']['$.primary_domain']);
+        self::assertSame(['null'], $records[6]['payload_paths']['$.primary_domain']);
+        self::assertSame(['string'], $records[7]['payload_paths']['$.versions[]']);
+        self::assertSame(['empty-list'], $records[8]['payload_paths']['$.versions']);
+        self::assertArrayNotHasKey('$.versions[]', $records[8]['payload_paths']);
+        self::assertSame(['string'], $records[9]['payload_paths']['$.php_handler']);
+        self::assertSame(['string'], $records[10]['payload_paths']['$.php_handler']);
+        $json = json_encode($records, JSON_THROW_ON_ERROR);
+        foreach (['private-user-marker', 'private-domain.test', '12345', 'ea-php82', 'suphp'] as $private) {
             self::assertStringNotContainsString($private, $json);
         }
     }

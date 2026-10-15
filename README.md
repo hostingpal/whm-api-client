@@ -3,11 +3,11 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The generated typed groups cover 61 reviewed operations (see
+The generated typed groups cover 64 reviewed operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
-features. Generic `call()`
+features and Email inventory. Generic `call()`
 methods reach every other documented WHM API 1 and UAPI function. The library
 provides token authentication, direct and WHM-routed UAPI, GET and form-encoded
 POST execution, typed array payloads, API exceptions, and per-client response
@@ -140,6 +140,9 @@ $phpVersions = $account->langPhp()->phpGetInstalledVersions(); // list<string>
 
 // Email inventory; skipMain excludes the cPanel main account.
 $mailboxes = $account->email()->listPops(skipMain: true);
+$mailDomains = $account->email()->listMailDomains();
+$domainForwarders = $account->email()->listDomainForwarders();
+$mailboxCount = $account->email()->countPops();
 ```
 
 Results are arrays keyed by the upstream wire names (`$domains['main_domain'] ?? null`).
@@ -496,10 +499,12 @@ from the pinned documentation, and caveats it lacks are recorded as overlay note
 The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
 
 The [live evidence runner](tools/live-verify/README.md) captures the same raw
-response before normalization and field filtering for six reviewed route-specific
+response before normalization and field filtering for 23 reviewed route-specific
 probes. It saves sanitized structural evidence with revision and contract hashes,
 while independent regression expectations remain in the offline suite. It covers
-WHM version/load and UAPI domain/Email inventory through both UAPI routes; see the
+WHM version/load, account/domain/PHP inventory, and UAPI domain/PHP/Email inventory
+through both UAPI routes. Account-list and summary probes target `npr` explicitly;
+the PHP handler probe uses the reviewed `type: 'home'` argument. See the
 [delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
 Real HostingPal consumer feedback can proceed against the current client before
 full API coverage or a release. Any public prerelease is a separate decision with
