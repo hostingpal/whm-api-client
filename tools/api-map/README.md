@@ -129,13 +129,18 @@ A `oneOf`/`anyOf` branch that admits only null makes the union nullable; two or
 more object branches, and the schemas of a base schema's discriminator mapping,
 merge into one object holding every branch's fields (required only when every
 branch requires them), so the engine's first-match union rule cannot drop
-fields that only later branches declare. A 0/1 enum becomes a flag (documented
+fields that only later branches declare; list and map branches likewise merge
+their elements. Inside an `allOf` a referenced base is read without expanding
+its mapping. A 0/1 enum becomes a flag (documented
 as strings, it also accepts `"0"`/`"1"`), and an enum with a null member is
 nullable. A node the engine cannot represent (`properties` beside
 `additionalProperties`) is a problem until a `replace` covers it. A 200 envelope
 that cannot be resolved is a problem until the entry declares `void`, and data
 documented in only some `oneOf`/`anyOf` envelope alternatives needs
-`optional_payload`.
+`optional_payload`. The rules the runtime `SpecChecker` enforces before every
+call are problems here too: every `required` name must be a declared field (also
+after `replace` or `add`), `unwrap` needs a non-nullable object payload, and a
+wire name may appear only once.
 
 The fields of a documented `application/x-www-form-urlencoded` request body
 become parameters after the query parameters (required only when the body and

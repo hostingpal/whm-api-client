@@ -36,6 +36,57 @@ func parsePath(path string) ([]segment, error) {
 	return segments, nil
 }
 
+// specDefects lists, with payload paths, the parts of a final spec that the
+// runtime SpecChecker rejects before every call: required names that are not
+// declared fields (possible after an overlay replace or add), and containers
+// without their element spec or branches.
+func specDefects(spec TypeSpec, path string) []string {
+	var defects []string
+	label := fmt.Sprintf("payload path %q", path)
+	if path == "" {
+		label = "the payload root"
+	}
+	switch spec.Type {
+	case "object":
+		for _, name := range spec.Required {
+			if fieldIndex(&spec, name) < 0 {
+				defects = append(defects, label+" requires undeclared field "+name)
+			}
+		}
+	case "list":
+		if spec.Items == nil {
+			defects = append(defects, label+" is a list without items")
+		}
+	case "map":
+		if spec.Values == nil {
+			defects = append(defects, label+" is a map without values")
+		}
+	case "union":
+		if len(spec.AnyOf) == 0 {
+			defects = append(defects, label+" is a union without branches")
+		}
+	}
+	for _, field := range spec.Fields {
+		child := field.Name
+		if path != "" {
+			child = path + "." + field.Name
+		}
+		defects = append(defects, specDefects(field.Spec, child)...)
+	}
+	if spec.Items != nil {
+		defects = append(defects, specDefects(*spec.Items, path+"[]")...)
+	}
+	if spec.Values != nil {
+		defects = append(defects, specDefects(*spec.Values, path+"{}")...)
+	}
+	for i, option := range spec.AnyOf {
+		for _, defect := range specDefects(option, path) {
+			defects = append(defects, fmt.Sprintf("%s (union branch %d)", defect, i+1))
+		}
+	}
+	return defects
+}
+
 // specIssues lists the unresolved issues in a spec with their payload paths,
 // in the correction path syntax; a union branch has no path of its own and is
 // named after the union's path.

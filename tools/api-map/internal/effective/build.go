@@ -216,11 +216,18 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		for _, issue := range specIssues(*returns, "") {
 			b.problem(op.ID + ": " + issue + "; replace it in the overlay")
 		}
+		for _, defect := range specDefects(*returns, "") {
+			b.problem(op.ID + ": " + defect)
+		}
 	} else if len(ov.Response) > 0 {
 		b.problem(op.ID + ": response corrections need a documented payload")
 	}
 	if ov.Unwrap != "" && (returns == nil || returns.Type != "object" || fieldIndex(returns, ov.Unwrap) < 0) {
 		b.problem(op.ID + ": unwrap field " + ov.Unwrap + " is not a documented object field")
+	} else if ov.Unwrap != "" && returns.Nullable {
+		// A null payload could never be unwrapped (OptionalPayload is the way
+		// to accept a missing or null data member).
+		b.problem(op.ID + ": unwrap needs a non-nullable object payload")
 	}
 	if ov.OptionalPayload && returns == nil {
 		b.problem(op.ID + ": optional_payload needs a documented payload")
@@ -316,6 +323,11 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 	omitted := map[string]bool{}
 	for _, p := range append(append([]model.Parameter{}, v.Parameters...), body...) {
 		if p.In != "query" && p.In != "body" {
+			continue
+		}
+		if documented[p.Name] {
+			// The second value would overwrite the first in the request.
+			b.problem(op.ID + ": parameter " + p.Name + " is documented more than once")
 			continue
 		}
 		documented[p.Name] = true
