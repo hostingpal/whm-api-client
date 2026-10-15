@@ -10,7 +10,7 @@ namespace HostingPal\WhmApiClient\Api;
  * One string encodes as name=value; a list encodes as name, name-1, name-2, ...
  * in order. Contents are validated by AbstractApiClient::executeGet() after it
  * clears response metadata, so groups never validate parameters before the
- * request lifecycle starts. Repeated-key lists remain plain list<string> values.
+ * request lifecycle starts. Repeated-key values are plain list<string> values or RepeatedList markers.
  *
  * @internal Built by operation groups for documented numbered parameters.
  */

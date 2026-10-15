@@ -6,6 +6,7 @@ namespace HostingPal\WhmApiClient\Tests\Api;
 
 use HostingPal\WhmApiClient\Api\AbstractApiClient;
 use HostingPal\WhmApiClient\Api\NumberedList;
+use HostingPal\WhmApiClient\Api\RepeatedList;
 use HostingPal\WhmApiClient\Config\ClientConfigFactory;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\Response\ApiResponse;
@@ -96,6 +97,39 @@ final class QueryEncodingTest extends TestCase
         yield 'empty' => [[]];
         yield 'keyed' => [['first' => 'alice']];
         yield 'non-string' => [['alice', 7]];
+    }
+
+    public function testRepeatedListsRepeatTheLiteralName(): void
+    {
+        $factory = new Psr17Factory();
+        $http = new MockClient($factory);
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{}}'));
+        $client = $this->whmClient($http, $factory);
+
+        $client->get(['domain' => new RepeatedList(['a.test', 'b&b.test'])]);
+
+        self::assertSame(
+            'api.version=1&domain=a.test&domain=b%26b.test',
+            $http->getRequests()[0]->getUri()->getQuery(),
+        );
+    }
+
+    public function testInvalidRepeatedListsClearMetadataBeforeIo(): void
+    {
+        $factory = new Psr17Factory();
+        $http = new MockClient($factory);
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{}}'));
+        $client = $this->whmClient($http, $factory);
+        $client->get([]);
+        self::assertNotNull($client->responseMeta());
+
+        try {
+            $client->get(['domain' => new RepeatedList([])]);
+            self::fail('Expected the repeated list to be rejected.');
+        } catch (InvalidArgumentException) {
+            self::assertNull($client->responseMeta());
+            self::assertCount(1, $http->getRequests());
+        }
     }
 
     private function whmClient(MockClient $http, Psr17Factory $factory): WhmQueryClient
