@@ -3,11 +3,11 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The generated typed groups cover 64 reviewed operations (see
+The generated typed groups cover 70 reviewed operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
-features and Email inventory. Generic `call()`
+features, Email inventory and SSL/AutoSSL inventory. Generic `call()`
 methods reach every other documented WHM API 1 and UAPI function. The library
 provides token authentication, direct and WHM-routed UAPI, GET and form-encoded
 POST execution, typed array payloads, API exceptions, and per-client response
@@ -143,6 +143,15 @@ $mailboxes = $account->email()->listPops(skipMain: true);
 $mailDomains = $account->email()->listMailDomains();
 $domainForwarders = $account->email()->listDomainForwarders();
 $mailboxCount = $account->email()->countPops();
+
+// Account-scoped certificate inventory and AutoSSL status.
+$ssl = $account->ssl();
+$installedHosts = $ssl->installedHosts();
+$renewal = $ssl->getAutosslRenewalStatus(domain: 'example.com'); // cPanel 134+
+$willRenew = $renewal['will_renew'] ?? null; // 0|1, or absent.
+$autosslProblems = $ssl->getAutosslProblems();
+$checkInProgress = $ssl->isAutosslCheckInProgress(); // 0|1
+$canRedirect = $ssl->canSslRedirect(); // Capability; does not enable redirects.
 ```
 
 Results are arrays keyed by the upstream wire names (`$domains['main_domain'] ?? null`).
@@ -499,12 +508,13 @@ from the pinned documentation, and caveats it lacks are recorded as overlay note
 The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
 
 The [live evidence runner](tools/live-verify/README.md) captures the same raw
-response before normalization and field filtering for 23 reviewed route-specific
+response before normalization and field filtering for 35 reviewed route-specific
 probes. It saves sanitized structural evidence with revision and contract hashes,
 while independent regression expectations remain in the offline suite. It covers
-WHM version/load, account/domain/PHP inventory, and UAPI domain/PHP/Email inventory
+WHM version/load, account/domain/PHP inventory, and UAPI domain/PHP/Email/SSL inventory
 through both UAPI routes. Account-list and summary probes target `npr` explicitly;
-the PHP handler probe uses the reviewed `type: 'home'` argument. See the
+the PHP handler probe uses the reviewed `type: 'home'` argument, and AutoSSL renewal
+status targets `npr.rs`. See the
 [delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
 Real HostingPal consumer feedback can proceed against the current client before
 full API coverage or a release. Any public prerelease is a separate decision with

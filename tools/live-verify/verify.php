@@ -91,6 +91,30 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
             'uapi:Email/list_domain_forwarders|bridged-uapi' => 'uapi:Email/list_domain_forwarders bridged-uapi',
             'uapi:Email/count_pops|direct-uapi' => 'uapi:Email/count_pops direct-uapi',
             'uapi:Email/count_pops|bridged-uapi' => 'uapi:Email/count_pops bridged-uapi',
+            'uapi:SSL/installed_hosts|direct-uapi'
+                => 'uapi:SSL/installed_hosts direct-uapi',
+            'uapi:SSL/installed_hosts|bridged-uapi'
+                => 'uapi:SSL/installed_hosts bridged-uapi',
+            'uapi:SSL/get_autossl_excluded_domains|direct-uapi'
+                => 'uapi:SSL/get_autossl_excluded_domains direct-uapi',
+            'uapi:SSL/get_autossl_excluded_domains|bridged-uapi'
+                => 'uapi:SSL/get_autossl_excluded_domains bridged-uapi',
+            'uapi:SSL/get_autossl_problems|direct-uapi'
+                => 'uapi:SSL/get_autossl_problems direct-uapi',
+            'uapi:SSL/get_autossl_problems|bridged-uapi'
+                => 'uapi:SSL/get_autossl_problems bridged-uapi',
+            'uapi:SSL/get_autossl_renewal_status|direct-uapi'
+                => 'uapi:SSL/get_autossl_renewal_status direct-uapi',
+            'uapi:SSL/get_autossl_renewal_status|bridged-uapi'
+                => 'uapi:SSL/get_autossl_renewal_status bridged-uapi',
+            'uapi:SSL/is_autossl_check_in_progress|direct-uapi'
+                => 'uapi:SSL/is_autossl_check_in_progress direct-uapi',
+            'uapi:SSL/is_autossl_check_in_progress|bridged-uapi'
+                => 'uapi:SSL/is_autossl_check_in_progress bridged-uapi',
+            'uapi:SSL/can_ssl_redirect|direct-uapi'
+                => 'uapi:SSL/can_ssl_redirect direct-uapi',
+            'uapi:SSL/can_ssl_redirect|bridged-uapi'
+                => 'uapi:SSL/can_ssl_redirect bridged-uapi',
             'whm1:listaccts|whm' => 'whm1:listaccts whm',
             'whm1:accountsummary|whm' => 'whm1:accountsummary whm',
             'whm1:get_domain_info|whm' => 'whm1:get_domain_info whm',

@@ -27,6 +27,7 @@ final class ProbeCatalogTest extends TestCase
             $root . '/docs/api/overlay/whm/accounts.json',
             $root . '/docs/api/overlay/whm/web-server-configuration.json',
             $root . '/docs/api/overlay/uapi/LangPHP.json',
+            $root . '/docs/api/overlay/uapi/SSL.json',
         ];
         file_put_contents($server, json_encode(['operations' => [
             'whm1:version' => $recipe === null ? [] : ['probe' => $recipe],
@@ -66,17 +67,21 @@ final class ProbeCatalogTest extends TestCase
         }
     }
 
-    /** @param array<string, string> $arguments */
+    /**
+     * @param array<string, string> $arguments
+     * @param array<string, mixed> $recipeChanges
+     */
     #[DataProvider('changedInventoryArguments')]
     public function testChangedInventoryArgumentsBlockTheWholeRun(
         string $file,
         string $operation,
         array $arguments,
+        array $recipeChanges = [],
     ): void {
         $root = sys_get_temp_dir() . '/probe-inventory-' . bin2hex(random_bytes(6));
         $files = [
             'whm/server-administration.json', 'whm/accounts.json', 'whm/web-server-configuration.json',
-            'uapi/DomainInfo.json', 'uapi/Email.json', 'uapi/LangPHP.json',
+            'uapi/DomainInfo.json', 'uapi/Email.json', 'uapi/LangPHP.json', 'uapi/SSL.json',
         ];
         mkdir($root . '/docs/api/overlay/whm', 0700, true);
         mkdir($root . '/docs/api/overlay/uapi', 0700, true);
@@ -93,11 +98,11 @@ final class ProbeCatalogTest extends TestCase
                 self::assertIsArray($operations);
                 $entry = $operations[$operation] ?? [];
                 self::assertIsArray($entry);
-                $entry['probe'] = [
+                $entry['probe'] = array_replace([
                     'phase' => 'read-only', 'arguments' => $arguments,
                     'routes' => str_starts_with($operation, 'whm1:') ? ['whm'] : ['direct-uapi', 'bridged-uapi'],
                     'expected' => 'success',
-                ];
+                ], $recipeChanges);
                 $operations[$operation] = $entry;
                 $overlay['operations'] = $operations;
             }
@@ -137,7 +142,9 @@ final class ProbeCatalogTest extends TestCase
         }
     }
 
-    /** @return iterable<string, array{string, string, array<string, string>}> */
+    /**
+     * @return iterable<string, array{0: string, 1: string, 2: array<string, string>, 3?: array<string, mixed>}>
+     */
     public static function changedInventoryArguments(): iterable
     {
         yield 'different account search' => ['whm/accounts.json', 'whm1:listaccts', [
@@ -158,6 +165,21 @@ final class ProbeCatalogTest extends TestCase
             'type' => 'home', 'vhost' => 'other.test',
         ]];
         yield 'missing handler type' => ['uapi/LangPHP.json', 'uapi:LangPHP/php_get_domain_handler', []];
+        yield 'different renewal domain' => ['uapi/SSL.json', 'uapi:SSL/get_autossl_renewal_status', [
+            'domain' => 'other.example.test',
+        ]];
+        yield 'missing renewal domain' => ['uapi/SSL.json', 'uapi:SSL/get_autossl_renewal_status', []];
+        yield 'extra renewal parameter' => ['uapi/SSL.json', 'uapi:SSL/get_autossl_renewal_status', [
+            'domain' => 'npr.rs', 'cpanel.user' => 'other',
+        ]];
+        yield 'unexpected host filter' => ['uapi/SSL.json', 'uapi:SSL/installed_hosts', ['domain' => 'npr.rs']];
+        yield 'unreviewed SSL method' => ['uapi/SSL.json', 'uapi:SSL/installed_hosts', [], ['method' => 'POST']];
+        yield 'unreviewed SSL route' => ['uapi/SSL.json', 'uapi:SSL/installed_hosts', [], [
+            'routes' => ['direct-uapi'],
+        ]];
+        yield 'unreviewed renewal route' => ['uapi/SSL.json', 'uapi:SSL/get_autossl_renewal_status', [
+            'domain' => 'npr.rs',
+        ], ['routes' => ['whm']]];
     }
 
     /** @return iterable<string, array{array<mixed>|null, string}> */

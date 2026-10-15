@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. Typed groups cover 64 reviewed operations: the read-only
+and cPanel UAPI surface. Typed groups cover 70 reviewed operations: the read-only
 server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -144,6 +144,13 @@ inventory (`listPops()`, `listMailDomains()`, `listDomainForwarders()`, `countPo
 Optional booleans preserve omission and explicit false; array results keep documented
 wire keys. All four Email operations require the Receive Mail role. The pinned
 `countPops()` documentation does not specify whether the main account is included.
+`uapi()->ssl()` exposes installed-host certificates, AutoSSL exclusions, problems,
+renewal status and check progress, plus secure-redirect capability. Renewal status
+requires cPanel 134 or later; `has_problems` also becomes 1 when the problems database
+is unreachable, and `will_renew` depends on provider, certificate, exclusion and DCV
+conditions. Flags remain `0|1` integers. Preserve optional and nullable certificate
+fields and the pinned literal dotted issuer/subject keys. The certificate PEM and
+upstream problem text are payload data; evidence keeps only their structural types.
 `whm()->call()` and `uapi()->call()` reach every other documented function
 generically. The 2026-10-13 spec's
 [scaling decision (typed core plus generic calls)](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls)
@@ -296,13 +303,14 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
 ## Generated-client delivery
 
 - Follow the [current delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
-  The development-only runner in `tools/live-verify/` captures 23 reviewed
+  The development-only runner in `tools/live-verify/` captures 35 reviewed
   read-only route-specific probes through the generated client; run it explicitly
   with `WHM_API_LIVE=1 composer live:verify -- --output=docs/api/evidence/read-only.json`.
   It requires committed code and persists sanitized structure only. Catalog entries
   bind exact arguments, including the `npr` account filters and `type: 'home'` PHP
-  handler. Account/domain/PHP evidence (`8x0.2.3`) and expanded Email inventory
-  (`8x0.4.1`) build on the initial slices; consumer feedback (`8x0.10.3`) remains independent.
+  handler, plus the `npr.rs` domain for AutoSSL renewal. Account/domain/PHP evidence
+  (`8x0.2.3`), expanded Email inventory (`8x0.4.1`) and the SSL slice (`8x0.4.2`) build
+  on the initial slices; consumer feedback (`8x0.10.3`) remains independent.
 - Capture evidence from the same raw HTTP response before normalization and
   unknown-field removal. Preserve the response delivered to the client; never
   replay an operation to recover evidence. Persist only sanitized structural

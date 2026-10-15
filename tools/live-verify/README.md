@@ -1,7 +1,7 @@
 # Live contract evidence
 
 This development-only PHP command exercises the generated client on the approved
-test server. It performs 23 GET requests across 15 operations, with exact route
+test server. It performs 35 GET requests across 21 operations, with exact route
 and argument guards, verified TLS, redirects
 disabled, and no retries. The core package has no dependency on this tool.
 
@@ -9,10 +9,14 @@ disabled, and no retries. The core package has no dependency on this tool.
 | --- | --- |
 | WHM | `version`, `systemloadavg`, `listaccts(search: 'npr', searchtype: 'user', searchmethod: 'exact')`, `accountsummary(user: 'npr')`, `get_domain_info`, `php_get_installed_versions`, `php_get_system_default_version` |
 | Direct and WHM-bridged UAPI, account `npr` | `DomainInfo/list_domains`, `DomainInfo/primary_domain`, `LangPHP/php_get_installed_versions`, `LangPHP/php_get_domain_handler(type: 'home')`, `Email/list_pops`, `Email/list_mail_domains`, `Email/list_domain_forwarders`, `Email/count_pops` |
+| Direct and WHM-bridged UAPI, account `npr` | `SSL/installed_hosts`, `SSL/get_autossl_excluded_domains`, `SSL/get_autossl_problems`, `SSL/get_autossl_renewal_status(domain: 'npr.rs')`, `SSL/is_autossl_check_in_progress`, `SSL/can_ssl_redirect` |
 
 Unlisted optional arguments are omitted. The Email probes observe default
 behavior; explicit flags, filters and selection behavior are covered separately
 by independent offline tests. Empty lists establish no item-field observations.
+The SSL recipes inspect account state; the renewal-status function requires cPanel
+134 or later. Certificate PEM, domain/IP/path values, issuer/subject text and arbitrary
+AutoSSL problem messages remain in memory and are never saved as evidence.
 
 ```sh
 # Export both OBLAK_TEST_WHM_KEY and OBLAK_TEST_NPR_KEY without printing them.

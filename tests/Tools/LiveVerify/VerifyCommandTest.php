@@ -151,6 +151,18 @@ final class VerifyCommandTest extends TestCase
         yield 'bridged domain forwarders' => ['uapi:Email/list_domain_forwarders', 'bridged-uapi'];
         yield 'direct mailbox count' => ['uapi:Email/count_pops', 'direct-uapi'];
         yield 'bridged mailbox count' => ['uapi:Email/count_pops', 'bridged-uapi'];
+        yield 'direct-uapi installed_hosts' => ['uapi:SSL/installed_hosts', 'direct-uapi'];
+        yield 'bridged-uapi installed_hosts' => ['uapi:SSL/installed_hosts', 'bridged-uapi'];
+        yield 'direct-uapi get_autossl_excluded_domains' => ['uapi:SSL/get_autossl_excluded_domains', 'direct-uapi'];
+        yield 'bridged-uapi get_autossl_excluded_domains' => ['uapi:SSL/get_autossl_excluded_domains', 'bridged-uapi'];
+        yield 'direct-uapi get_autossl_problems' => ['uapi:SSL/get_autossl_problems', 'direct-uapi'];
+        yield 'bridged-uapi get_autossl_problems' => ['uapi:SSL/get_autossl_problems', 'bridged-uapi'];
+        yield 'direct-uapi get_autossl_renewal_status' => ['uapi:SSL/get_autossl_renewal_status', 'direct-uapi'];
+        yield 'bridged-uapi get_autossl_renewal_status' => ['uapi:SSL/get_autossl_renewal_status', 'bridged-uapi'];
+        yield 'direct-uapi is_autossl_check_in_progress' => ['uapi:SSL/is_autossl_check_in_progress', 'direct-uapi'];
+        yield 'bridged-uapi is_autossl_check_in_progress' => ['uapi:SSL/is_autossl_check_in_progress', 'bridged-uapi'];
+        yield 'direct-uapi can_ssl_redirect' => ['uapi:SSL/can_ssl_redirect', 'direct-uapi'];
+        yield 'bridged-uapi can_ssl_redirect' => ['uapi:SSL/can_ssl_redirect', 'bridged-uapi'];
     }
 
     #[DataProvider('unsuccessfulEvidence')]
