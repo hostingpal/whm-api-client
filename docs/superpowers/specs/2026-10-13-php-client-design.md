@@ -268,7 +268,9 @@ the WHM result is `0` with the UAPI errors.
 `ApiException` exposes public readonly `?ResponseMetadata $metadata`, matching
 the selected client's snapshot for that attempt. Its subclasses distinguish
 `ApiErrorException` (WHM or UAPI outcome failure), `HttpException` (HTTP outside
-200–299), `InvalidResponseException` (unusable envelope, outcome, or payload), and
+200–299), `InvalidResponseException` (unusable envelope, outcome, or payload; its
+`PayloadMismatchException` subclass marks a payload mismatch after an accepted
+envelope and outcome, per the generated-client design), and
 `TransportException` (PSR transport failure). `ApiException::errors()` exposes
 the snapshot's upstream error text. Messages exclude raw bodies, credentials, and
 upstream error text. Transport failures omit the original exception chain because

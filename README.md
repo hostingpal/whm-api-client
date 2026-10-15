@@ -149,8 +149,10 @@ precision and trailing zeros survive.
 
 Response validation enforces the pinned types, required fields and the observed
 wire variants. Documented minimum, range and enumeration constraints are not yet
-enforced (tracked as `whm-api-client-8x0.18`). A malformed payload raises
-`InvalidResponseException` carrying the response metadata. Caveats recorded as
+enforced (tracked as `whm-api-client-8x0.18`). Writes are validated as strictly as
+reads. A payload that differs from its contract after the API reported success raises
+`PayloadMismatchException` (an `InvalidResponseException`) carrying the response
+metadata and the unvalidated payload; see [Errors](#errors) for retry guidance. Caveats recorded as
 observed notes (for example the EasyApache 4 and WebServer role requirement of the
 PHP operations) appear in the affected methods' PHPDoc.
 
@@ -343,7 +345,26 @@ or null when no usable API metadata was received:
 | `ApiErrorException` | WHM or UAPI reports an operation failure, including over HTTP 200. |
 | `HttpException` | HTTP status is outside 200–299, including redirects. |
 | `InvalidResponseException` | The envelope, outcome, or endpoint payload cannot satisfy the reviewed contract. |
+| `PayloadMismatchException` | An `InvalidResponseException`: the envelope and outcome were accepted, but the payload differs from the contract. |
 | `TransportException` | The PSR HTTP transport reports a request failure. |
+
+`PayloadMismatchException` means the server accepted the request. When
+`$outcomeConfirmed` is true (every generated operation checks its outcome), the
+operation took effect: an account was created or a password changed even though the
+response did not match. Do not retry a mutating operation on this exception; read
+`$payload`, the unvalidated decoded `data` member as plain arrays (null when it was
+omitted or null), or confirm the server state instead. The payload can contain secrets
+such as a newly created token, so log it deliberately. Malformed JSON and unusable
+envelopes raise a plain `InvalidResponseException`, where the outcome is unknown.
+
+```php
+try {
+    $created = $client->whm()->accounts()->createAccount('example', domain: 'example.test');
+} catch (PayloadMismatchException $exception) {
+    // Created upstream; the response shape differed from the contract.
+    $raw = $exception->payload;
+}
+```
 
 `ApiException::errors()` returns the upstream error descriptions from its
 snapshot (empty without metadata). Exception messages exclude raw bodies,
