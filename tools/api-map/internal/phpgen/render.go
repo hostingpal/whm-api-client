@@ -32,7 +32,8 @@ func (w *writer) doc(indent, text string) {
 // the description wraps, with continuation lines indented four spaces after
 // the asterisk.
 func (w *writer) paramDoc(indent string, p effective.Param, description string) {
-	docType := paramDocType(p)
+	// Enum literals come from the pinned documents and could contain "*/".
+	docType := escapeDoc(paramDocType(p))
 	head := func(t string) string { return indent + " * @param " + t + " $" + p.PHP }
 	if len(head(docType)) > lineWidth {
 		docType = p.PHPType
@@ -63,6 +64,20 @@ func (w *writer) docTag(indent, text string) {
 	}
 }
 
+// families lists every generated family. Both handles use their family's
+// accessor trait, so each trait is rendered even when it has no groups.
+var families = []string{"uapi", "whm1"}
+
+// FamilyDirs returns the repository folders that hold generated PHP; stale
+// generated files are looked for in these folders.
+func FamilyDirs() []string {
+	dirs := make([]string, len(families))
+	for i, family := range families {
+		dirs[i] = "src/Api/" + familyDir(family)
+	}
+	return dirs
+}
+
 // Render returns generated file contents keyed by repository-relative path.
 func Render(result effective.Result) map[string][]byte {
 	files := map[string][]byte{}
@@ -73,9 +88,9 @@ func Render(result effective.Result) map[string][]byte {
 		files["src/Api/"+dir+"/Spec/"+group.Class+"Spec.php"] = []byte(specClass(group))
 		byFamily[group.Family] = append(byFamily[group.Family], group)
 	}
-	for family, groups := range byFamily {
+	for _, family := range families {
 		dir := familyDir(family)
-		files["src/Api/"+dir+"/"+dir+"Groups.php"] = []byte(groupsTrait(family, groups))
+		files["src/Api/"+dir+"/"+dir+"Groups.php"] = []byte(groupsTrait(family, byFamily[family]))
 	}
 	files["docs/api/coverage.md"] = []byte(coverage(result))
 	return files
