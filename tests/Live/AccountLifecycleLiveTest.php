@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient\Tests\Live;
 use Closure;
 use HostingPal\WhmApiClient\Api\Whm\Accounts;
 use HostingPal\WhmApiClient\Client;
+use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\Tests\Support\LiveCurlClient;
@@ -26,6 +27,9 @@ use Throwable;
  * exactly the account named by WHM_API_LIVE_ACCOUNT, and runs only with
  * WHM_API_LIVE=1, WHM_API_LIVE_MUTATIONS=1, WHM_API_LIVE_ACCOUNT, and
  * WHM_API_LIVE_DOMAIN set. The transport double refuses every other mutation.
+ * The account must be absent before creation. If creation raises (the server may
+ * have created the account before a payload or transport failure), the test checks
+ * again and removes the account when it now exists, so no account is left behind.
  * Run it only after the owner approves the target account and server snapshot:
  * `WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_ACCOUNT=... WHM_API_LIVE_DOMAIN=...
  * vendor/bin/phpunit --testsuite live --group live-mutating`.
@@ -70,15 +74,31 @@ final class AccountLifecycleLiveTest extends TestCase
         $plan = $packages[0]['name'] ?? null;
         self::assertTrue(is_string($plan), 'A creatable package is required for the lifecycle.');
 
+        self::assertFalse(
+            self::safeOperation(fn (): bool => $this->accountExists()),
+            'The lifecycle account must not exist before the test.',
+        );
+
         $created = false;
         try {
-            $result = self::safeOperation(fn (): ?array => $accounts->createAccount(
-                $this->account,
-                contactemail: 'lifecycle@' . $this->domain,
-                domain: $this->domain,
-                password: self::password(),
-                plan: $plan,
-            ));
+            try {
+                $result = $accounts->createAccount(
+                    $this->account,
+                    contactemail: 'lifecycle@' . $this->domain,
+                    domain: $this->domain,
+                    password: self::password(),
+                    plan: $plan,
+                );
+            } catch (Throwable $error) {
+                // The server can create the account and still fail the response (payload or
+                // transport); the account was absent before, so an existing one is ours.
+                // The creation failure is reported even if this check fails as well.
+                try {
+                    $created = $this->accountExists();
+                } finally {
+                    self::failSafely($error);
+                }
+            }
             $created = true;
             foreach ($result ?? [] as $value) {
                 self::assertTrue($value !== '', 'Creation fields must be nonempty strings.');
@@ -121,6 +141,32 @@ final class AccountLifecycleLiveTest extends TestCase
         }
     }
 
+    /**
+     * Report whether the lifecycle account exists, without failing the test.
+     *
+     * Only a successful summary with a record for the account counts as existing. A
+     * failed outcome or a list without a matching record counts as absent: how WHM
+     * reports an unknown account is neither pinned nor observed, so both forms are
+     * accepted. Cleanup after a failed creation therefore removes an account only on
+     * positive evidence that it now exists; other failures still fail the test.
+     */
+    private function accountExists(): bool
+    {
+        try {
+            $summaries = $this->whm->accounts()->accountSummary(user: $this->account);
+        } catch (ApiErrorException) {
+            return false;
+        }
+
+        foreach ($summaries as $summary) {
+            if (($summary['user'] ?? null) === $this->account) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function assertSummary(int $suspended): void
     {
         $summary = $this->summary();
@@ -160,15 +206,21 @@ final class AccountLifecycleLiveTest extends TestCase
         try {
             return $operation();
         } catch (Throwable $error) {
-            $metadata = $error instanceof ApiException ? $error->metadata : null;
-            $status = $metadata?->httpStatus;
-            $result = $metadata?->whmResult();
-            self::fail(sprintf(
-                'Live operation failed (%s; HTTP %s; WHM result %s).',
-                $error::class,
-                $status === null ? 'none' : (string) $status,
-                $result === null ? 'none' : (string) $result,
-            ));
+            self::failSafely($error);
         }
+    }
+
+    /** Fail with the exception class, HTTP status and WHM result only. */
+    private static function failSafely(Throwable $error): never
+    {
+        $metadata = $error instanceof ApiException ? $error->metadata : null;
+        $status = $metadata?->httpStatus;
+        $result = $metadata?->whmResult();
+        self::fail(sprintf(
+            'Live operation failed (%s; HTTP %s; WHM result %s).',
+            $error::class,
+            $status === null ? 'none' : (string) $status,
+            $result === null ? 'none' : (string) $result,
+        ));
     }
 }
