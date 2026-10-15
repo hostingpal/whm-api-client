@@ -454,6 +454,15 @@ matched its pinned nullable integer type, and `acct[].child_nodes` items in
 supplied). Undeclared fields are dropped by the generated validator rather than
 rejected, so this run does not establish their types.
 
+Suspended accounts were never observed, so `listaccts` `acct[].suspendtime` carries a
+`doc` correction that gives it the `accountsummary` contract: the pinned
+`accountsummary` record declares the same field of the same account record as a
+nullable string and returned integer `0` live, so both operations accept a string, an
+integer or `null`. `acct[].child_nodes` keeps its pinned item shape in both
+operations: the pinned item schema lists the `alias` and `workload` properties without
+an explicit `type`, the generator renders it as an object, and only empty lists were
+observed, so a non-object item is rejected and nonempty lists remain unverified.
+
 The only live failure was outside the payload layer: the test-only request scope
 guard approved the filtered `listaccts` GET by exact URI with the old parameter
 order, while the generated encoder emits the restored signature order

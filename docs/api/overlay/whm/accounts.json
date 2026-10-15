@@ -38,7 +38,10 @@
       "name": "listAccounts",
       "order": ["search", "searchtype", "searchmethod", "want"],
       "unwrap": "acct",
-      "response": {"acct[].uid": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "listaccts and accountsummary returned uid as a decimal string; docs/api/source-audit.md"}]}}
+      "response": {
+        "acct[].suspendtime": {"replace": {"type": "union", "nullable": true, "anyOf": [{"type": "string"}, {"type": "int"}]}, "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "The pinned listaccts record declares suspendtime as a nullable integer timestamp, while the pinned accountsummary record declares the same field of the same account record as a nullable string and returned integer 0 live (whm1:accountsummary correction). Suspended accounts were never observed, so listaccts accepts the same string/integer/null union as accountsummary; docs/api/source-audit.md#runtime-observations-2026-10-15-generated-client-cutover"}]},
+        "acct[].uid": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "listaccts and accountsummary returned uid as a decimal string; docs/api/source-audit.md"}]}
+      }
     },
     "whm1:modifyacct": {
       "name": "modifyAccount",

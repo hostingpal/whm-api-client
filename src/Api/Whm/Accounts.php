@@ -144,7 +144,7 @@ use SensitiveParameter;
  *     startdate?: string,
  *     suspended?: 0|1,
  *     suspendreason?: string|string|null,
- *     suspendtime?: int|null,
+ *     suspendtime?: string|int|null,
  *     temporary?: 0|1,
  *     theme?: string,
  *     uid?: int,
