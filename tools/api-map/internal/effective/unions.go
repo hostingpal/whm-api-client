@@ -12,7 +12,8 @@ import (
 //     (null satisfies the union either way);
 //   - two or more object branches merge into one object at the first object
 //     branch's position: an all-optional object branch would otherwise match
-//     every object and drop the fields only later branches declare;
+//     every object and drop the fields only later branches declare; list
+//     branches and map branches likewise merge their element specs;
 //   - identical branches are removed;
 //   - a single remaining branch replaces the union, and no branch at all
 //     (every option admitted only null) leaves a nullable mixed.
@@ -37,20 +38,18 @@ func simplifyUnion(union TypeSpec) TypeSpec {
 	for _, option := range union.AnyOf {
 		flatten(option)
 	}
-	var objects []TypeSpec
+	byType := map[string][]TypeSpec{}
 	for _, option := range options {
-		if option.Type == "object" {
-			objects = append(objects, option)
-		}
+		byType[option.Type] = append(byType[option.Type], option)
 	}
 	var branches []TypeSpec
-	merged := false
+	merged := map[string]bool{}
 	for _, option := range options {
-		if option.Type == "object" && len(objects) > 1 {
-			if merged {
+		if same := byType[option.Type]; len(same) > 1 && mergeable[option.Type] {
+			if merged[option.Type] {
 				continue
 			}
-			option, merged = mergeObjects(objects), true
+			option, merged[option.Type] = mergeBranches(same), true
 		}
 		duplicate := false
 		for _, existing := range branches {
@@ -74,6 +73,25 @@ func simplifyUnion(union TypeSpec) TypeSpec {
 	return TypeSpec{Type: "union", Nullable: nullable, AnyOf: branches}
 }
 
+// mergeable lists the branch types merged when a union has several of them:
+// the engine's first match would otherwise validate every object (or every
+// list or map element) against the first branch and drop the fields only
+// later branches declare.
+var mergeable = map[string]bool{"object": true, "list": true, "map": true}
+
+// mergeBranches merges union branches of one mergeable type: objects field
+// by field, lists and maps by combining their element specs.
+func mergeBranches(branches []TypeSpec) TypeSpec {
+	if branches[0].Type == "object" {
+		return mergeObjects(branches)
+	}
+	merged := branches[0]
+	for _, branch := range branches[1:] {
+		merged = combineSpecs(merged, branch)
+	}
+	return merged
+}
+
 // mergeObjects merges object specs into one: every field of any object, with
 // the specs of a field declared in several objects combined; a field is
 // required only when every object requires it. The first issue is kept.
@@ -93,8 +111,12 @@ func mergeObjects(objects []TypeSpec) TypeSpec {
 				specs[field.Name] = field.Spec
 			}
 		}
+		counted := map[string]bool{}
 		for _, name := range object.Required {
-			requiredCount[name]++
+			if !counted[name] {
+				counted[name] = true
+				requiredCount[name]++
+			}
 		}
 	}
 	names := make([]string, 0, len(specs))
