@@ -274,7 +274,9 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   reviewed read-only operations on this test server. Mutating/destructive tests
   still require explicit approval for specific operations and targets; snapshot
   readiness is not confirmed. Do not automatically restore the server. The
-  approval-gated `live-mutating` lifecycle test exists but stays unexecuted until then.
+  approval-gated `live-mutating` lifecycle test ran with the owner's approval on
+  2026-10-15 (see `docs/api/source-audit.md`); each further run still needs explicit
+  approval for the target account and snapshot.
 
 ## Documentation Requirements
 
@@ -353,8 +355,9 @@ group `live-mutating`) is excluded from `composer test:live`. It creates and
 removes exactly the throwaway account named by `WHM_API_LIVE_ACCOUNT` and runs only
 with `WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_ACCOUNT=<user>
 WHM_API_LIVE_DOMAIN=<domain>` after the owner approves the target and a server
-snapshot; the transport double refuses every other mutation. It has not been
-executed yet.
+snapshot; the transport double refuses every other mutation. It ran green once with
+the owner's approval on 2026-10-15 (throwaway account on an RFC 2606 domain); every
+further run needs the same explicit approval.
 
 Go documentation tooling (Go 1.24+) uses a separate module and cache:
 
