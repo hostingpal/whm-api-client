@@ -35,6 +35,39 @@ func parsePath(path string) ([]segment, error) {
 	return segments, nil
 }
 
+// specIssues lists the unresolved issues in a spec with their payload paths,
+// in the correction path syntax; a union branch has no path of its own and is
+// named after the union's path.
+func specIssues(spec TypeSpec, path string) []string {
+	var issues []string
+	if spec.Issue != "" {
+		label := fmt.Sprintf("payload path %q", path)
+		if path == "" {
+			label = "the payload root"
+		}
+		issues = append(issues, label+" "+spec.Issue)
+	}
+	for _, field := range spec.Fields {
+		child := field.Name
+		if path != "" {
+			child = path + "." + field.Name
+		}
+		issues = append(issues, specIssues(field.Spec, child)...)
+	}
+	if spec.Items != nil {
+		issues = append(issues, specIssues(*spec.Items, path+"[]")...)
+	}
+	if spec.Values != nil {
+		issues = append(issues, specIssues(*spec.Values, path+"{}")...)
+	}
+	for i, option := range spec.AnyOf {
+		for _, issue := range specIssues(option, path) {
+			issues = append(issues, fmt.Sprintf("%s (union branch %d)", issue, i+1))
+		}
+	}
+	return issues
+}
+
 func fieldIndex(spec *TypeSpec, name string) int {
 	for i := range spec.Fields {
 		if spec.Fields[i].Name == name {
@@ -54,6 +87,16 @@ func applyCorrection(root *TypeSpec, path string, c overlay.Correction) error {
 	}
 	if c.Type != "" && !scalarTypes[c.Type] {
 		return fmt.Errorf("path %q: type %q is not a scalar type; use replace", path, c.Type)
+	}
+	if path == "" && c.Replace != nil && len(c.Accept) == 0 && c.Nullable == nil && !c.Preserve && c.Required == nil {
+		// Only a replace may address the payload root, for a documented root
+		// the engine cannot represent.
+		replacement, err := fromOverlay(path, *c.Replace)
+		if err != nil {
+			return err
+		}
+		*root = replacement
+		return nil
 	}
 	segments, err := parsePath(path)
 	if err != nil {

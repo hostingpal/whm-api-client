@@ -63,41 +63,63 @@ func (s schemas) follow(sourceID string, node any) (map[string]any, string, stri
 	return nil, sourceID, key, false
 }
 
-// specFor converts an OpenAPI schema node into a type spec.
+// flatMarker marks a schema key whose discriminator mapping is being expanded:
+// the mapped schemas usually extend the base through allOf, and inside them the
+// base is read as a plain object instead of being expanded again.
+const flatMarker = "flat|"
+
+// withSeen returns a copy of seen with the given keys added and removed.
+func withSeen(seen map[string]bool, add string, remove string) map[string]bool {
+	next := make(map[string]bool, len(seen)+1)
+	for k := range seen {
+		if k != remove {
+			next[k] = true
+		}
+	}
+	if add != "" {
+		next[add] = true
+	}
+	return next
+}
+
+// specFor converts an OpenAPI schema node into a type spec. A nullable schema,
+// a type list with "null" and an enum with a null member all make it nullable.
 func (s schemas) specFor(sourceID string, node any, depth int, seen map[string]bool) TypeSpec {
 	obj, sourceID, key, ok := s.follow(sourceID, node)
 	if !ok || depth > maxDepth || (key != "" && seen[key]) {
 		return TypeSpec{Type: "mixed"}
 	}
+	flat := key != "" && seen[flatMarker+key]
 	if key != "" {
-		next := make(map[string]bool, len(seen)+1)
-		for k := range seen {
-			next[k] = true
-		}
-		next[key] = true
-		seen = next
+		seen = withSeen(seen, key, "")
 	}
-	spec := s.shape(sourceID, obj, depth, seen)
-	if isNullable(obj) {
+	spec := s.shape(sourceID, obj, key, flat, depth, seen)
+	if isNullable(obj) || enumHasNull(obj) {
 		spec.Nullable = true
 	}
 	return spec
 }
 
-func (s schemas) shape(sourceID string, obj map[string]any, depth int, seen map[string]bool) TypeSpec {
+// shape converts a resolved schema object; key identifies it when it was
+// reached through a reference, and flat suppresses discriminator expansion.
+func (s schemas) shape(sourceID string, obj map[string]any, key string, flat bool, depth int, seen map[string]bool) TypeSpec {
 	if parts, ok := obj["allOf"].([]any); ok && len(parts) > 0 {
-		return s.allOf(sourceID, parts, depth, seen)
+		return s.allOf(sourceID, obj, parts, depth, seen)
 	}
-	for _, key := range []string{"oneOf", "anyOf"} {
-		if options, ok := obj[key].([]any); ok && len(options) > 0 {
-			union := TypeSpec{Type: "union"}
-			for _, option := range options {
-				union.AnyOf = append(union.AnyOf, s.specFor(sourceID, option, depth+1, seen))
-			}
-			return union
+	for _, unionKey := range []string{"oneOf", "anyOf"} {
+		if options, ok := obj[unionKey].([]any); ok && len(options) > 0 {
+			return s.union(sourceID, options, depth, seen)
 		}
 	}
+	if targets := discriminatorTargets(obj); len(targets) > 0 && !flat {
+		return s.discriminated(sourceID, obj, key, targets, depth, seen)
+	}
 	if isFlagEnum(obj) {
+		// A 0/1 enum documented as strings arrives as "0"/"1"; it is accepted
+		// and normalized to the 0|1 flag like any other flag.
+		if typeName(obj) == "string" || enumHasString(obj) {
+			return TypeSpec{Type: "flag", Accept: []string{"string-flag"}}
+		}
 		return TypeSpec{Type: "flag"}
 	}
 	switch typeName(obj) {
@@ -122,6 +144,12 @@ func (s schemas) shape(sourceID string, obj map[string]any, depth int, seen map[
 			spec.Fields = append(spec.Fields, Field{Name: name, Spec: s.specFor(sourceID, props[name], depth+1, seen)})
 		}
 		spec.Required = requiredNames(obj, props)
+		if _, dynamic := asObject(obj["additionalProperties"]); dynamic {
+			// The engine's objects drop undeclared keys and its maps type every
+			// value alike, so neither keeps both the declared fields and the
+			// dynamic keys.
+			spec.Issue = "declares properties and additionalProperties, which the engine cannot represent together"
+		}
 		return spec
 	}
 	if extra, ok := asObject(obj["additionalProperties"]); ok {
@@ -134,20 +162,129 @@ func (s schemas) shape(sourceID string, obj map[string]any, depth int, seen map[
 	return TypeSpec{Type: "mixed"}
 }
 
-func (s schemas) allOf(sourceID string, parts []any, depth int, seen map[string]bool) TypeSpec {
+// allOf merges the parts of an allOf together with the schema's own sibling
+// keywords (properties and required beside allOf). Parts that carry only
+// annotations (description, title, example, nullable, a bare object type)
+// constrain nothing and are skipped, but their required names still apply. A
+// single contributing part is returned as is; several must all be objects.
+func (s schemas) allOf(sourceID string, obj map[string]any, parts []any, depth int, seen map[string]bool) TypeSpec {
+	sibling := map[string]any{}
+	for k, v := range obj {
+		if k != "allOf" {
+			sibling[k] = v
+		}
+	}
+	var contributing []any
+	var required []string
+	for _, part := range append(append([]any{}, parts...), sibling) {
+		resolved, _, _, ok := s.follow(sourceID, part)
+		if ok {
+			required = append(required, stringList(resolved["required"])...)
+			if !contributes(resolved) {
+				continue
+			}
+		}
+		contributing = append(contributing, part)
+	}
+	if len(contributing) == 0 {
+		return TypeSpec{Type: "mixed"}
+	}
+	if len(contributing) == 1 && len(required) == 0 {
+		return s.specFor(sourceID, contributing[0], depth+1, seen)
+	}
 	merged := TypeSpec{Type: "object"}
-	for _, part := range parts {
+	for _, part := range contributing {
 		spec := s.specFor(sourceID, part, depth+1, seen)
 		if spec.Type != "object" {
-			if len(parts) == 1 {
+			if len(contributing) == 1 {
 				return spec
 			}
 			return TypeSpec{Type: "mixed"}
 		}
 		merged.Fields = mergeFields(merged.Fields, spec.Fields)
 		merged.Required = mergeNames(merged.Required, spec.Required)
+		if merged.Issue == "" {
+			merged.Issue = spec.Issue
+		}
+	}
+	for _, name := range required {
+		if fieldIndex(&merged, name) >= 0 {
+			merged.Required = mergeNames(merged.Required, []string{name})
+		}
 	}
 	return merged
+}
+
+// contributes reports whether a schema constrains its value beyond
+// annotations: a bare "type": "object" adds nothing inside an allOf.
+func contributes(obj map[string]any) bool {
+	for _, key := range []string{"$ref", "properties", "items", "allOf", "oneOf", "anyOf", "enum", "additionalProperties"} {
+		if _, ok := obj[key]; ok {
+			return true
+		}
+	}
+	name := typeName(obj)
+	return name != "" && name != "object"
+}
+
+// union converts oneOf/anyOf options. An option that admits only null makes
+// the union nullable instead of becoming a mixed branch.
+func (s schemas) union(sourceID string, options []any, depth int, seen map[string]bool) TypeSpec {
+	union := TypeSpec{Type: "union"}
+	for _, option := range options {
+		if resolved, _, _, ok := s.follow(sourceID, option); ok && nullOnly(resolved) {
+			union.Nullable = true
+			continue
+		}
+		union.AnyOf = append(union.AnyOf, s.specFor(sourceID, option, depth+1, seen))
+	}
+	return simplifyUnion(union)
+}
+
+// discriminated expands a base schema whose discriminator maps values to other
+// schemas (without a oneOf or anyOf listing them) into the union of the base
+// and the mapped schemas, which simplifyUnion merges into one object. Inside
+// the mapped schemas the base is read flat, so their allOf can extend it.
+func (s schemas) discriminated(sourceID string, obj map[string]any, key string, targets []string, depth int, seen map[string]bool) TypeSpec {
+	union := TypeSpec{Type: "union", AnyOf: []TypeSpec{s.shape(sourceID, obj, key, true, depth, seen)}}
+	targetSeen := seen
+	if key != "" {
+		targetSeen = withSeen(seen, flatMarker+key, key)
+	}
+	for _, target := range targets {
+		union.AnyOf = append(union.AnyOf, s.specFor(sourceID, map[string]any{"$ref": target}, depth+1, targetSeen))
+	}
+	return simplifyUnion(union)
+}
+
+// discriminatorTargets lists the distinct references of a discriminator
+// mapping, sorted. A bare schema name refers to #/components/schemas/<name>.
+func discriminatorTargets(obj map[string]any) []string {
+	discriminator, _ := asObject(obj["discriminator"])
+	mapping, _ := asObject(discriminator["mapping"])
+	set := map[string]bool{}
+	for _, value := range mapping {
+		ref, ok := value.(string)
+		if !ok || ref == "" {
+			continue
+		}
+		if !strings.Contains(ref, "#") && !strings.Contains(ref, "/") {
+			ref = "#/components/schemas/" + ref
+		}
+		set[ref] = true
+	}
+	return sortedKeys(set)
+}
+
+func stringList(v any) []string {
+	items, _ := v.([]any)
+	var names []string
+	for _, item := range items {
+		if name, ok := item.(string); ok {
+			names = append(names, name)
+		}
+	}
+	return names
 }
 
 // operationNode returns the operation object a variant points to, or nil when
@@ -166,47 +303,100 @@ func (s schemas) operationNode(v model.Variant) map[string]any {
 }
 
 // payload returns the documented success payload (WHM data, UAPI result.data),
-// nil when the envelope documents none, and the operation object.
-func (s schemas) payload(op model.Operation, v model.Variant) (*TypeSpec, map[string]any, error) {
+// and the operation object. A nil spec without an issue means the envelope
+// documents no data member (a void operation).
+func (s schemas) payload(op model.Operation, v model.Variant) (payloadInfo, map[string]any, error) {
 	loc := v.OperationLocator
 	if loc.Pointer == nil {
-		return nil, nil, fmt.Errorf("%s: missing operation pointer", v.ID)
+		return payloadInfo{}, nil, fmt.Errorf("%s: missing operation pointer", v.ID)
 	}
 	node, err := source.Pointer(s.m.Documents[loc.SourceID], *loc.Pointer)
 	if err != nil {
-		return nil, nil, fmt.Errorf("%s: %w", v.ID, err)
+		return payloadInfo{}, nil, fmt.Errorf("%s: %w", v.ID, err)
 	}
 	operation, ok := asObject(node)
 	if !ok {
-		return nil, nil, fmt.Errorf("%s: operation is not an object", v.ID)
+		return payloadInfo{}, nil, fmt.Errorf("%s: operation is not an object", v.ID)
 	}
 	responses, _ := asObject(operation["responses"])
 	response, responseSource, _, ok := s.follow(loc.SourceID, responses["200"])
 	if !ok {
-		return nil, operation, nil
+		return payloadInfo{issue: "documents no resolvable 200 response"}, operation, nil
 	}
 	content, _ := asObject(response["content"])
-	media, _ := asObject(content["application/json"])
+	media, ok := asObject(content["application/json"])
+	if !ok {
+		return payloadInfo{issue: "documents no JSON 200 response"}, operation, nil
+	}
 	envelope, envelopeSource, _, ok := s.follow(responseSource, media["schema"])
 	if !ok {
-		return nil, operation, nil
+		return payloadInfo{issue: "the 200 response schema cannot be resolved"}, operation, nil
 	}
-	props, _ := asObject(envelope["properties"])
-	data, has := props["data"]
-	if op.Family == "uapi" {
-		if result, hasResult := props["result"]; hasResult {
-			if resultObject, resultSource, _, ok := s.follow(envelopeSource, result); ok {
-				resultProps, _ := asObject(resultObject["properties"])
+	return s.envelopeData(op, envelopeSource, envelope), operation, nil
+}
+
+// payloadInfo is the documented success payload. partial marks data that only
+// some envelope alternatives document; issue explains an envelope that could
+// not be resolved (never silently treated as void).
+type payloadInfo struct {
+	spec    *TypeSpec
+	partial bool
+	issue   string
+}
+
+// envelopeData reads the data member of a 200 envelope: WHM data, UAPI
+// result.data, or the data of a bare UAPI result object. An envelope given as
+// oneOf/anyOf alternatives yields the union of the alternatives' data.
+func (s schemas) envelopeData(op model.Operation, sourceID string, envelope map[string]any) payloadInfo {
+	if props, ok := asObject(envelope["properties"]); ok && len(props) > 0 {
+		data, has := props["data"]
+		if op.Family == "uapi" {
+			if result, hasResult := props["result"]; hasResult {
+				resultObject, resultSource, _, ok := s.follow(sourceID, result)
+				resultProps, propsOK := asObject(resultObject["properties"])
+				if !ok || !propsOK {
+					return payloadInfo{issue: "the UAPI result envelope cannot be resolved"}
+				}
 				data, has = resultProps["data"]
-				envelopeSource = resultSource
+				sourceID = resultSource
 			}
 		}
+		if !has {
+			return payloadInfo{}
+		}
+		spec := s.specFor(sourceID, data, 0, nil)
+		return payloadInfo{spec: &spec}
 	}
-	if !has {
-		return nil, operation, nil
+	for _, key := range []string{"oneOf", "anyOf"} {
+		options, ok := envelope[key].([]any)
+		if !ok || len(options) == 0 {
+			continue
+		}
+		union := TypeSpec{Type: "union"}
+		partial := false
+		for _, option := range options {
+			branch, branchSource, _, ok := s.follow(sourceID, option)
+			if !ok {
+				return payloadInfo{issue: "a 200 envelope alternative cannot be resolved"}
+			}
+			info := s.envelopeData(op, branchSource, branch)
+			if info.issue != "" {
+				return info
+			}
+			if info.spec == nil {
+				partial = true
+				continue
+			}
+			union.AnyOf = append(union.AnyOf, *info.spec)
+			partial = partial || info.partial
+		}
+		if len(union.AnyOf) == 0 {
+			return payloadInfo{}
+		}
+		spec := simplifyUnion(union)
+		return payloadInfo{spec: &spec, partial: partial}
 	}
-	spec := s.specFor(envelopeSource, data, 0, nil)
-	return &spec, operation, nil
+	return payloadInfo{issue: "the 200 envelope documents neither properties nor alternatives"}
 }
 
 // enumDoc renders a schema's enum as a PHPStan literal union, or "" when absent.

@@ -461,13 +461,7 @@ final class AccountsSpec
                             'standalone_feature_name' => ['type' => 'string'],
                             'startdate' => ['type' => 'string'],
                             'suspended' => ['type' => 'flag'],
-                            'suspendreason' => [
-                                'type' => 'union',
-                                'anyOf' => [
-                                    ['type' => 'string'],
-                                    ['type' => 'string', 'nullable' => true],
-                                ],
-                            ],
+                            'suspendreason' => ['type' => 'string', 'nullable' => true],
                             'suspendtime' => ['type' => 'int', 'nullable' => true],
                             'temporary' => ['type' => 'flag'],
                             'theme' => ['type' => 'string'],

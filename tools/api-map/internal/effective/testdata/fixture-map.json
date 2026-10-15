@@ -38,7 +38,11 @@
         }
       },
       "components": {"schemas": {
-        "Node": {"type": "object", "properties": {"child": {"$ref": "#/components/schemas/Node"}, "name": {"type": "string"}}}
+        "Node": {"type": "object", "properties": {"child": {"$ref": "#/components/schemas/Node"}, "name": {"type": "string"}}},
+        "Record": {"type": "object", "properties": {"type": {"type": "string"}, "line": {"type": "integer"}}, "required": ["type"],
+          "discriminator": {"propertyName": "type", "mapping": {"a": "#/components/schemas/RecordA", "txt": "RecordTXT"}}},
+        "RecordA": {"allOf": [{"$ref": "#/components/schemas/Record"}, {"type": "object", "properties": {"address": {"type": "string"}}, "required": ["address"]}]},
+        "RecordTXT": {"allOf": [{"$ref": "#/components/schemas/Record"}, {"type": "object", "properties": {"text_b64": {"type": "string"}, "line": {"type": "integer", "nullable": true}}}]}
       }}
     },
     "whm-openapi": {

@@ -143,7 +143,7 @@ use SensitiveParameter;
  *     standalone_feature_name?: string,
  *     startdate?: string,
  *     suspended?: 0|1,
- *     suspendreason?: string|string|null,
+ *     suspendreason?: string|null,
  *     suspendtime?: int|null,
  *     temporary?: 0|1,
  *     theme?: string,

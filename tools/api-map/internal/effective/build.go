@@ -122,11 +122,12 @@ var reservedLower = func() map[string]bool {
 func (b *builder) problem(message string) { b.problems[message] = true }
 
 func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Operation) (Operation, string, bool) {
-	returns, node, err := b.schemas.payload(op, v)
+	payload, node, err := b.schemas.payload(op, v)
 	if err != nil {
 		b.problem(err.Error())
 		return Operation{}, "", false
 	}
+	returns := payload.spec
 	// Only query parameters are generated; a documented body (multipart, JSON
 	// or form, possibly carrying secrets) must never be dropped silently.
 	if _, hasBody := node["requestBody"]; hasBody {
@@ -162,6 +163,12 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	result.Alias = Pascal(result.PHPName) + "Result"
 	result.Params = b.params(op, v, ov)
 	result.Method = b.method(op, v, ov, result.Params)
+	if payload.issue != "" && !ov.Void {
+		b.problem(op.ID + ": " + payload.issue + "; declare void with evidence or exclude the operation")
+	}
+	if payload.partial && !ov.OptionalPayload && !ov.Void {
+		b.problem(op.ID + ": data is documented in only some 200 envelope alternatives; set optional_payload")
+	}
 	if ov.Void {
 		returns = nil
 	}
@@ -170,6 +177,9 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 			if err := applyCorrection(returns, path, ov.Response[path]); err != nil {
 				b.problem(op.ID + ": " + err.Error())
 			}
+		}
+		for _, issue := range specIssues(*returns, "") {
+			b.problem(op.ID + ": " + issue + "; replace it in the overlay")
 		}
 	} else if len(ov.Response) > 0 {
 		b.problem(op.ID + ": response corrections need a documented payload")

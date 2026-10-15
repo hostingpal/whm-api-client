@@ -112,7 +112,22 @@ Operation entries (all keys optional):
   (a full type spec declaring an undocumented field) and `replace` (a full type
   spec replacing a documented node entirely, not combined with `type` or `add`).
   Every correction needs evidence. Type specs need their companion keys: list
-  `items`, map `values`, union `anyOf`, object `fields`.
+  `items`, map `values`, union `anyOf`, object `fields`. Only `replace` may
+  address the payload root, with the empty path.
+
+The generator reads the pinned schemas as follows. `allOf` merges its parts and
+its sibling `properties`/`required`, skipping parts that carry only annotations.
+A `oneOf`/`anyOf` branch that admits only null makes the union nullable; two or
+more object branches, and the schemas of a base schema's discriminator mapping,
+merge into one object holding every branch's fields (required only when every
+branch requires them), so the engine's first-match union rule cannot drop
+fields that only later branches declare. A 0/1 enum becomes a flag (documented
+as strings, it also accepts `"0"`/`"1"`), and an enum with a null member is
+nullable. A node the engine cannot represent (`properties` beside
+`additionalProperties`) is a problem until a `replace` covers it. A 200 envelope
+that cannot be resolved is a problem until the entry declares `void`, and data
+documented in only some `oneOf`/`anyOf` envelope alternatives needs
+`optional_payload`.
 
 Operations that document a request body or are flagged deprecated upstream must
 be excluded. Evidence is `kind` (`doc` or `live`), `version`, `date`

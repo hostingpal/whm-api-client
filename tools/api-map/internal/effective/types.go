@@ -14,6 +14,10 @@ type TypeSpec struct {
 	Fields   []Field
 	Required []string
 	AnyOf    []TypeSpec
+	// Issue names a documented construct the engine cannot represent at this
+	// node. The builder reports it as a problem unless an overlay replace
+	// covers the node; it is never rendered.
+	Issue string
 }
 
 // Field is one declared object field, kept in name order for determinism.
