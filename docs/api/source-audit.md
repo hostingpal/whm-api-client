@@ -606,3 +606,16 @@ validation, with no structural discrepancies on cPanel `11.138.0.15`.
 generator, overlay and effective-contract hashes. No overlay correction was needed.
 The observer captured the same response bytes before normalization; only sanitized
 paths/types were persisted. Empty lists do not establish their item types.
+
+The subsequent Email batch added `uapi:Email/list_pops` and repeated the four core
+probes. All six passed on the same cPanel version, with zero discrepancies and no
+response corrections. [Core and Email evidence](evidence/2026-10-15-core-email.json)
+records revision `240c844ee37567697ee869cfe0e07e3515394a96`. Both Email routes
+returned nonempty lists with observed `email`/`login` strings and
+`suspended_incoming`/`suspended_login` integers. Live arguments were omitted;
+explicit booleans, regex encoding, empty lists, optional fields and failure
+semantics are independently covered by 54 offline endpoint cases. This establishes
+these observations for the recorded route, server version and contracts, not
+complete Email coverage or all possible records. The evidence/audit commit adds
+only these saved observations; executable code and contracts remain those of the
+recorded revision.

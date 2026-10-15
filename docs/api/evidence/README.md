@@ -10,3 +10,11 @@ server version, code revision and contract. Empty lists do not establish item
 fields. The generated coverage table and independent offline tests remain separate
 claims. Re-run a reviewed recipe when its code or contract changes; historical
 evidence is not silently promoted to the new revision.
+
+- [Initial core run](2026-10-15-core.json): four route-specific probes at `788cdbd`.
+- [Core and Email run](2026-10-15-core-email.json): six route-specific probes at
+  `240c844`, including nonempty Email lists through direct and bridged UAPI.
+
+Both runs reported cPanel `11.138.0.15`, successful API/payload/probe outcomes and
+no discrepancies. These files are structural evidence; synthetic tests retain
+independent expected values and request behavior.
