@@ -18,7 +18,7 @@ use InvalidArgumentException;
  * according to the configured credentials, with a single attempt and no retries. The handle clears responseMeta()
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
- * @phpstan-type EnsureDomainsResideOnlyLocallyResult list<string>|null
+ * @phpstan-type EnsureDomainsResideOnlyLocallyResult list<string|null>|null
  * @phpstan-type EnsureDomainsUseRecognizedNameserversResult list<array{
  *     message?: string,
  *     type?: string,
@@ -28,7 +28,7 @@ use InvalidArgumentException;
  * }>
  * @phpstan-type HasLocalAuthorityResult list<array{
  *     domain?: string,
- *     error?: string,
+ *     error?: string|null,
  *     local_authority?: 0|1,
  *     nameservers?: list<string>,
  *     zone?: string|null,
@@ -36,7 +36,7 @@ use InvalidArgumentException;
  * @phpstan-type IsAliasAvailableResult array{
  *     alias?: 0|1,
  *     aname?: 0|1,
- *     resolver?: string,
+ *     resolver?: string|null,
  * }
  * @phpstan-type IsHttpsAvailableResult array{
  *     dns_server?: string,

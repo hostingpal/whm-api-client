@@ -3,10 +3,11 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The generated typed groups cover 39 reviewed operations (see
+The generated typed groups cover 60 reviewed operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
-usage, domain inventory, PHP configuration, feature inventory and the cPanel
-account lifecycle, plus cPanel domains, DNS, PHP and features. Generic `call()`
+usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
+and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
+features. Generic `call()`
 methods reach every other documented WHM API 1 and UAPI function. The library
 provides token authentication, direct and WHM-routed UAPI, GET and form-encoded
 POST execution, typed array payloads, API exceptions, and per-client response
@@ -161,6 +162,7 @@ PHP operations) appear in the affected methods' PHPDoc.
 | `whm()->accounts()` | `listAccounts()`, `accountSummary()`, `getDomainInfo()`, `createAccount()`, `suspendAccount()`, `unsuspendAccount()`, `removeAccount()`, `changePassword()`, `changePackage()`, `modifyAccount()` |
 | `whm()->webServer()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetHandlers()`, `phpGetDefaultAccountsToFpm()`, `phpGetOldFpmFlag()`, `isConversionInProgress()`, `phpGetVhostsByVersion()` |
 | `whm()->hostingPlans()` | `listPackages()`, `getFeatureMetadata()`, `getFeatureNames()`, `getFeaturelistData()`, `getFeaturelists()`, `getFeaturelistsByPackageTypes()`, `getUsersFeaturesSettings()`, `verifyUserHasFeature()` |
+| `whm()->dns()` | `listZones()`, `parseDnsZone()`, `getZoneRecord()`, `listMxRecords()`, `exportZoneFiles()`, `resolveDomainName()`, `hasLocalAuthority()`, `fetchDsRecordsForDomains()`, `getNameserverConfig()`, `lookupNameserverIp()`, `lookupNameserverIps()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
 
 ### cPanel UAPI
 
@@ -169,11 +171,41 @@ PHP operations) appear in the affected methods' PHPDoc.
 | `uapi()->domainInfo()` | `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
 | `uapi()->langPhp()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetDomainHandler()`, `phpGetImpactedDomains()` |
 | `uapi()->features()` | `listFeatures()` |
-| `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()` |
+| `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
 
 UAPI groups operate on the selected cPanel account through either credential route.
 `uapi()->dns()->fetchCpanelGeneratedDomains()` requires cPanel 120 and preserves
 trailing dots; `lookup()` returns textual lines or explicit `null`.
+
+The DNS methods are read-only (GET):
+
+```php
+$zone = $client->whm()->dns()->parseDnsZone('example.com'); // array{payload?: list<...>}
+foreach ($zone['payload'] ?? [] as $line) {
+    if (($line['type'] ?? null) === 'record') {
+        $owner = base64_decode($line['dname_b64'] ?? '', true); // Zone text stays base64-encoded.
+    }
+}
+
+// line_index starts at 0; getZoneRecord() takes the 1-based zone file line number.
+$record = $client->whm()->dns()->getZoneRecord('example.com', 3);
+
+// One domain or a nonempty list, sent as repeated domain parameters; null items mean "only local".
+$remote = $client->uapi('npr')->dns()->ensureDomainsResideOnlyLocally(['example.com', 'example.net']);
+```
+
+- `parseDnsZone()`/`parseZone()` and `exportZoneFiles()` return the zone's owner names,
+  record data and text base64-encoded, as documented; decode with a binary-safe decoder.
+- `exportZoneFiles()`, `fetchDsRecordsForDomains()` and the two UAPI `ensure*()` checks
+  accept one name or a nonempty list (repeated parameters). DS records may include
+  DNSSEC private key material (`privatekey`); treat that result as secret.
+- `hasLocalAuthority()` records carry `error` only when the check fails and an explicit
+  `null` otherwise; `isAliasAvailable()` reports `resolver` as `null` when PowerDNS has
+  no resolver setting; `listMxRecords()` normalizes `preference` to `int` even when the
+  server sends a decimal string; `lookupNameserverIps()` returns `ipv6` as an empty
+  string when the nameserver has no IPv6 address.
+- `ensureDomainsUseRecognizedNameservers()` fails as a whole when the check cannot be
+  determined; treat that failure as "unknown" rather than as every domain failing.
 
 Selected behaviors worth knowing:
 
@@ -406,18 +438,22 @@ WHM_API_LIVE=1 composer test:live
 ```
 
 This requires PHP's cURL extension and exercises WHM version, hostname, load average,
-disk usage, domain inventory, PHP configuration and feature inventory, plus
-account domain/DNS/PHP/feature discovery through direct cPanel and WHM-routed UAPI
-for `npr`, all through the generated groups (see
-[runtime observations](docs/api/source-audit.md)). It validates the known `npr.rs` account, typed payloads and API metadata, with
+disk usage, domain inventory, PHP configuration, feature inventory and the read-only
+DNS operations for the `npr.rs` zone, plus account domain/DNS/PHP/feature discovery
+through direct cPanel and WHM-routed UAPI for `npr`, all through the generated groups
+(see [runtime observations](docs/api/source-audit.md)). It validates the known
+`npr.rs` account, typed payloads and API metadata, with
 verified TLS, disabled redirects and no retries. The test transport accepts only
-the reviewed GET routes. Missing opt-in or prerequisites fail the live command
-before requests; failure messages exclude raw credentials and account payloads.
+the reviewed GET routes; the DNS test's zone line and nameserver host, derived from
+earlier read-only responses, are approved only for those exact values. Missing
+opt-in or prerequisites fail the live command before requests; failure messages
+exclude raw credentials and account payloads.
 
 Run just the server identity and health slice with
 `WHM_API_LIVE=1 composer test:live -- --filter WhmServerLiveTest`.
 Run the expanded inventory slice with
-`WHM_API_LIVE=1 composer test:live -- --filter InventoryLiveTest`.
+`WHM_API_LIVE=1 composer test:live -- --filter InventoryLiveTest`, or the DNS slice
+with `WHM_API_LIVE=1 composer test:live -- --filter DnsLiveTest`.
 
 The default PHPUnit suite, `composer test`, `composer check`, and CI remain offline,
 even when live-test environment variables are set. Pair new read-only slices with

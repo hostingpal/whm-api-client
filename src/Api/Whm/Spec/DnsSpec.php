@@ -170,7 +170,7 @@ final class DnsSpec
                         'type' => 'object',
                         'fields' => [
                             'domain' => ['type' => 'string'],
-                            'error' => ['type' => 'string'],
+                            'error' => ['type' => 'string', 'nullable' => true],
                             'local_authority' => ['type' => 'flag'],
                             'nameservers' => ['type' => 'list', 'items' => ['type' => 'string']],
                             'zone' => ['type' => 'string', 'nullable' => true],
@@ -191,7 +191,7 @@ final class DnsSpec
             'fields' => [
                 'alias' => ['type' => 'flag'],
                 'aname' => ['type' => 'flag'],
-                'resolver' => ['type' => 'string'],
+                'resolver' => ['type' => 'string', 'nullable' => true],
             ],
         ],
     ];
@@ -243,7 +243,7 @@ final class DnsSpec
                             'class' => ['type' => 'string'],
                             'exchange' => ['type' => 'string'],
                             'name' => ['type' => 'string'],
-                            'preference' => ['type' => 'int'],
+                            'preference' => ['type' => 'int', 'accept' => ['numeric-string']],
                             'ttl' => ['type' => 'int'],
                             'type' => ['type' => 'string'],
                         ],

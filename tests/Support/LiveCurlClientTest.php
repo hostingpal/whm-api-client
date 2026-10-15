@@ -114,6 +114,23 @@ final class LiveCurlClientTest extends TestCase
             'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1'
                 . '&cpanel.user=npr&cpanel.module=Email&cpanel.function=list_pops',
         ];
+        yield 'another DNS zone' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/parse_dns_zone?api.version=1&zone=example.test',
+        ];
+        yield 'unbound zone record' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/getzonerecord?api.version=1&domain=npr.rs&line=1',
+        ];
+        yield 'unbound nameserver lookup' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/lookupnsip?api.version=1&host=ns1.example.test',
+        ];
+        yield 'another bridged DNS zone' => [
+            'GET',
+            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1'
+                . '&cpanel.user=npr&cpanel.module=DNS&cpanel.function=parse_zone&zone=example.test',
+        ];
         yield 'userinfo' => ['GET', 'https://root@test.oblak.host:2087/json-api/version?api.version=1'];
         yield 'fragment' => ['GET', 'https://test.oblak.host:2087/json-api/version?api.version=1#unexpected'];
     }
@@ -226,6 +243,108 @@ final class LiveCurlClientTest extends TestCase
         yield 'WHM creatable packages' => [
             'https://test.oblak.host:2087/json-api/listpkgs?api.version=1&want=creatable',
         ];
+        yield 'WHM DNS zones' => ['https://test.oblak.host:2087/json-api/listzones?api.version=1'];
+        yield 'WHM parsed zone' => ['https://test.oblak.host:2087/json-api/parse_dns_zone?api.version=1&zone=npr.rs'];
+        yield 'WHM MX records' => ['https://test.oblak.host:2087/json-api/listmxs?api.version=1&domain=npr.rs'];
+        yield 'WHM resolve domain' => [
+            'https://test.oblak.host:2087/json-api/resolvedomainname?api.version=1&domain=npr.rs',
+        ];
+        yield 'WHM nameserver config' => ['https://test.oblak.host:2087/json-api/get_nameserver_config?api.version=1'];
+        yield 'WHM local authority' => [
+            'https://test.oblak.host:2087/json-api/has_local_authority?api.version=1&domain=npr.rs',
+        ];
+        yield 'WHM ALIAS availability' => ['https://test.oblak.host:2087/json-api/is_alias_available?api.version=1'];
+        yield 'WHM HTTPS availability' => ['https://test.oblak.host:2087/json-api/is_https_available?api.version=1'];
+        yield 'WHM SVCB availability' => ['https://test.oblak.host:2087/json-api/is_svcb_available?api.version=1'];
+        yield 'WHM zone export' => [
+            'https://test.oblak.host:2087/json-api/export_zone_files?api.version=1&zone=npr.rs',
+        ];
+        yield 'WHM DS records' => [
+            'https://test.oblak.host:2087/json-api/fetch_ds_records_for_domains?api.version=1&domain=npr.rs',
+        ];
+        $dns = [
+            'parse_zone' => 'zone=npr.rs',
+            'has_local_authority' => 'domain=npr.rs',
+            'ensure_domains_reside_only_locally' => 'domain=npr.rs',
+            'ensure_domains_use_recognized_nameservers' => 'domain=npr.rs',
+            'is_alias_available' => '',
+            'is_https_available' => '',
+            'is_svcb_available' => '',
+        ];
+        foreach ($dns as $function => $query) {
+            yield 'direct DNS ' . $function => [
+                'https://test.oblak.host:2083/execute/DNS/' . $function . ($query === '' ? '' : '?' . $query),
+            ];
+            yield 'bridged DNS ' . $function => [
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                    . '&cpanel.module=DNS&cpanel.function=' . $function . ($query === '' ? '' : '&' . $query),
+            ];
+        }
+    }
+
+    public function testApprovesDerivedDnsReadsOnlyForTheBoundValues(): void
+    {
+        $prefix = 'https://test.oblak.host:2087/json-api/';
+        $line = $prefix . 'getzonerecord?api.version=1&domain=npr.rs&line=7';
+        $address = $prefix . 'lookupnsip?api.version=1&host=ns1.example.test';
+        $addresses = $prefix . 'lookupnsips?api.version=1&host=ns1.example.test';
+        $executed = 0;
+        $respond = static function (RequestInterface $request) use (&$executed): ResponseInterface {
+            $executed++;
+
+            return new Response(204);
+        };
+        $bound = new LiveCurlClient($respond, zoneLine: 7, nameserver: 'ns1.example.test');
+        foreach ([$line, $address, $addresses] as $uri) {
+            self::assertSame(204, $bound->sendRequest(new Request('GET', $uri))->getStatusCode());
+        }
+
+        $rejected = [
+            [$bound, 'GET', $prefix . 'getzonerecord?api.version=1&domain=npr.rs&line=8', ''],
+            [$bound, 'GET', $prefix . 'getzonerecord?api.version=1&domain=example.test&line=7', ''],
+            [$bound, 'GET', $prefix . 'lookupnsip?api.version=1&host=ns2.example.test', ''],
+            [$bound, 'GET', $prefix . 'lookupnsips?api.version=1&host=ns2.example.test', ''],
+            [$bound, 'GET', $line . '&extra=1', ''],
+            [$bound, 'GET', $line, 'x=1'],
+            [$bound, 'POST', $address, ''],
+            [new LiveCurlClient($respond), 'GET', $line, ''],
+            [new LiveCurlClient($respond), 'GET', $address, ''],
+            [new LiveCurlClient($respond), 'GET', $addresses, ''],
+            [new LiveCurlClient($respond, zoneLine: 7), 'GET', $address, ''],
+            [new LiveCurlClient($respond, nameserver: 'ns1.example.test'), 'GET', $line, ''],
+        ];
+        $rejections = 0;
+        foreach ($rejected as [$client, $method, $uri, $body]) {
+            try {
+                $client->sendRequest(new Request($method, $uri, [], $body));
+            } catch (LogicException) {
+                $rejections++;
+            }
+        }
+
+        self::assertSame(count($rejected), $rejections, 'Derived requests outside the bound scope must be rejected.');
+        self::assertSame(3, $executed, 'Rejected requests must not reach the cURL execution boundary.');
+    }
+
+    /** @param array{zoneLine?: int, nameserver?: string} $binding */
+    #[DataProvider('malformedDerivedBindings')]
+    public function testRejectsMalformedDerivedBindings(array $binding): void
+    {
+        $this->expectException(LogicException::class);
+
+        new LiveCurlClient(static fn (RequestInterface $request): ResponseInterface => new Response(204), ...$binding);
+    }
+
+    /** @return iterable<string, array{array{zoneLine?: int, nameserver?: string}}> */
+    public static function malformedDerivedBindings(): iterable
+    {
+        yield 'zero line' => [['zoneLine' => 0]];
+        yield 'negative line' => [['zoneLine' => -1]];
+        yield 'empty host' => [['nameserver' => '']];
+        yield 'bare label' => [['nameserver' => 'localhost']];
+        yield 'query injection' => [['nameserver' => 'ns1.example.test&host=other.example']];
+        yield 'trailing dot' => [['nameserver' => 'ns1.example.test.']];
+        yield 'path' => [['nameserver' => 'ns1.example.test/x']];
     }
 
     #[DataProvider('approvedPosts')]

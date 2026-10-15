@@ -9,14 +9,14 @@
     "whm1:fetch_ds_records_for_domains": {"params": {"domain": {"php": "domains", "encoding": "repeat"}}},
     "whm1:get_nameserver_config": {},
     "whm1:getzonerecord": {"name": "getZoneRecord"},
-    "whm1:has_local_authority": {},
-    "whm1:is_alias_available": {},
+    "whm1:has_local_authority": {"response": {"records[].error": {"nullable": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "has_local_authority returned records[].error as an explicit null when the authority check succeeded, although the pinned schema declares a string returned only on failure; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]}}},
+    "whm1:is_alias_available": {"response": {"resolver": {"nullable": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "is_alias_available returned resolver as an explicit null when no PowerDNS resolver setting exists, although the pinned schema declares a string; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]}}},
     "whm1:is_https_available": {},
     "whm1:is_svcb_available": {},
-    "whm1:listmxs": {"name": "listMxRecords"},
+    "whm1:listmxs": {"name": "listMxRecords", "response": {"record[].preference": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "listmxs returned record[].preference as a decimal string, although the pinned schema declares an integer; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]}}},
     "whm1:listzones": {"name": "listZones"},
     "whm1:lookupnsip": {"name": "lookupNameserverIp"},
-    "whm1:lookupnsips": {"name": "lookupNameserverIps"},
+    "whm1:lookupnsips": {"name": "lookupNameserverIps", "notes": ["Returns ipv6 as an empty string, rather than omitting it, when the nameserver has no IPv6 address."], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "lookupnsips returned ipv6 as an empty string for a nameserver without an IPv6 address, although the pinned description says the field is returned only when an IPv6 address exists; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]},
     "whm1:parse_dns_zone": {"response": {"payload[]": {"replace": {"type": "object", "fields": {"data_b64": {"type": "list", "items": {"type": "string"}}, "dname_b64": {"type": "string"}, "line_index": {"type": "int"}, "record_type": {"type": "string"}, "text_b64": {"type": "string"}, "ttl": {"type": "int"}, "type": {"type": "string"}}}, "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-15", "note": "The documented payload item is a oneOf of record, control and comment objects whose fields are all optional; the generated union keeps the first matching branch and would drop text_b64 from control and comment lines, so the branches are merged into one object with every documented field optional."}]}}},
     "whm1:resolvedomainname": {"name": "resolveDomainName"}
   }

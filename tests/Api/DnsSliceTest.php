@@ -168,6 +168,17 @@ final class DnsSliceTest extends TestCase
         yield 'is_alias_available omitted' => ['isAliasAvailable', [], 'is_alias_available', '', '{"alias":0}', [
             'alias' => 0,
         ]];
+        yield 'has_local_authority explicit null error (observed 2026-10-15)' => [
+            'hasLocalAuthority', ['example.test'], 'has_local_authority', 'domain=example.test',
+            '{"records":[{"domain":"example.test","error":null,"local_authority":1,"zone":"example.test"}]}',
+            ['records' => [
+                ['domain' => 'example.test', 'error' => null, 'local_authority' => 1, 'zone' => 'example.test'],
+            ]],
+        ];
+        yield 'is_alias_available explicit null resolver (observed 2026-10-15)' => [
+            'isAliasAvailable', [], 'is_alias_available', '',
+            '{"alias":0,"aname":0,"resolver":null}', ['alias' => 0, 'aname' => 0, 'resolver' => null],
+        ];
         yield 'is_https_available' => [
             'isHttpsAvailable', [], 'is_https_available', '',
             '{"dns_server":"powerdns","https":1}', ['dns_server' => 'powerdns', 'https' => 1],
@@ -175,6 +186,10 @@ final class DnsSliceTest extends TestCase
         yield 'is_svcb_available' => [
             'isSvcbAvailable', [], 'is_svcb_available', '',
             '{"dns_server":"bind","svcb":0}', ['dns_server' => 'bind', 'svcb' => 0],
+        ];
+        yield 'listmxs decimal-string preference (observed 2026-10-15)' => [
+            'listMxRecords', ['example.test'], 'listmxs', 'domain=example.test',
+            '{"record":[{"preference":"10","type":"MX"}]}', ['record' => [['preference' => 10, 'type' => 'MX']]],
         ];
         yield 'listmxs' => [
             'listMxRecords', ['example.test'], 'listmxs', 'domain=example.test',
@@ -209,6 +224,10 @@ final class DnsSliceTest extends TestCase
         yield 'lookupnsips ipv4 only' => [
             'lookupNameserverIps', ['ns1.example.test'], 'lookupnsips', 'host=ns1.example.test',
             '{"ipv4":"192.0.2.1"}', ['ipv4' => '192.0.2.1'],
+        ];
+        yield 'lookupnsips empty ipv6 (observed 2026-10-15)' => [
+            'lookupNameserverIps', ['ns1.example.test'], 'lookupnsips', 'host=ns1.example.test',
+            '{"ipv4":"192.0.2.1","ipv6":""}', ['ipv4' => '192.0.2.1', 'ipv6' => ''],
         ];
         yield 'parse_dns_zone' => [
             'parseDnsZone', ['example.test'], 'parse_dns_zone', 'zone=example.test',
@@ -277,12 +296,14 @@ final class DnsSliceTest extends TestCase
             ['getZoneRecord', ['example.test', 1], 'getzonerecord', ['null', '{"record":[{"Line":"5"}]}',
                 '{"record":[{"ttl":"14400"}]}', '{"record":{"Line":5}}']],
             ['hasLocalAuthority', ['example.test'], 'has_local_authority', ['null', '{"records":[{"domain":1}]}',
-                '{"records":[{"local_authority":2}]}', '{"records":[{"nameservers":"ns1"}]}']],
+                '{"records":[{"local_authority":2}]}', '{"records":[{"nameservers":"ns1"}]}',
+                '{"records":[{"error":5}]}']],
             ['isAliasAvailable', [], 'is_alias_available', ['null', '"x"', '{"alias":2}', '{"aname":"yes"}',
                 '{"resolver":5}']],
             ['isHttpsAvailable', [], 'is_https_available', ['null', '{"https":2}', '{"dns_server":false}']],
             ['isSvcbAvailable', [], 'is_svcb_available', ['null', '{"svcb":-1}', '{"dns_server":[]}']],
-            ['listMxRecords', ['example.test'], 'listmxs', ['null', '{"record":[{"preference":"10"}]}',
+            ['listMxRecords', ['example.test'], 'listmxs', ['null', '{"record":[{"preference":"ten"}]}',
+                '{"record":[{"preference":"1.5"}]}', '{"record":[{"preference":"010"}]}',
                 '{"record":[{"exchange":1}]}', '{"record":"mail"}']],
             ['listZones', [], 'listzones', ['null', '{"zone":[{"domain":1}]}', '{"zone":[{"zonefile":[]}]}',
                 '{"zone":"example.test"}']],
@@ -368,6 +389,11 @@ final class DnsSliceTest extends TestCase
                 'ensureDomainsResideOnlyLocally', ['example.test'], 'ensure_domains_reside_only_locally',
                 'domain=example.test', 'null', null,
             ],
+            'ensure_domains_reside_only_locally null item (observed 2026-10-15)' => [
+                'ensureDomainsResideOnlyLocally', [['example.test', 'example.org']],
+                'ensure_domains_reside_only_locally', 'domain=example.test&domain=example.org',
+                '[null,"Resolves elsewhere"]', [null, 'Resolves elsewhere'],
+            ],
             'ensure_domains_use_recognized_nameservers repeated' => [
                 'ensureDomainsUseRecognizedNameservers', [['example.test', 'example.org']],
                 'ensure_domains_use_recognized_nameservers', 'domain=example.test&domain=example.org',
@@ -400,6 +426,15 @@ final class DnsSliceTest extends TestCase
             ],
             'has_local_authority empty' => [
                 'hasLocalAuthority', ['example.test'], 'has_local_authority', 'domain=example.test', '[]', [],
+            ],
+            'has_local_authority explicit null error (observed 2026-10-15)' => [
+                'hasLocalAuthority', ['example.test'], 'has_local_authority', 'domain=example.test',
+                '[{"domain":"example.test","error":null,"local_authority":1}]',
+                [['domain' => 'example.test', 'error' => null, 'local_authority' => 1]],
+            ],
+            'is_alias_available explicit null resolver (observed 2026-10-15)' => [
+                'isAliasAvailable', [], 'is_alias_available', '',
+                '{"alias":0,"aname":0,"resolver":null}', ['alias' => 0, 'aname' => 0, 'resolver' => null],
             ],
             'is_alias_available' => [
                 'isAliasAvailable', [], 'is_alias_available', '',
@@ -473,11 +508,12 @@ final class DnsSliceTest extends TestCase
     public static function uapiInvalidPayloads(): iterable
     {
         $cases = [
-            ['ensureDomainsResideOnlyLocally', ['example.test'], ['{}', '"example.test"', '[1]', '[null]']],
+            ['ensureDomainsResideOnlyLocally', ['example.test'], ['{}', '"example.test"', '[1]', '[false]',
+                '[["x"]]']],
             ['ensureDomainsUseRecognizedNameservers', ['example.test'], ['{}', '"x"', '[1]',
                 '[{"message":1}]', '[{"type":[]}]']],
             ['hasLocalAuthority', ['example.test'], ['null', '{}', '[1]', '[{"domain":1}]',
-                '[{"local_authority":2}]', '[{"nameservers":"ns1"}]']],
+                '[{"local_authority":2}]', '[{"nameservers":"ns1"}]', '[{"error":5}]']],
             ['isAliasAvailable', [], ['null', '[1]', '{"alias":2}', '{"resolver":5}']],
             ['isHttpsAvailable', [], ['null', '{"https":"yes"}', '{"dns_server":false}']],
             ['isSvcbAvailable', [], ['null', '{"svcb":3}', '{"dns_server":[]}']],

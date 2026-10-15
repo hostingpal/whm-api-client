@@ -72,7 +72,7 @@ use InvalidArgumentException;
  * @phpstan-type HasLocalAuthorityResult array{
  *     records?: list<array{
  *         domain?: string,
- *         error?: string,
+ *         error?: string|null,
  *         local_authority?: 0|1,
  *         nameservers?: list<string>,
  *         zone?: string|null,
@@ -81,7 +81,7 @@ use InvalidArgumentException;
  * @phpstan-type IsAliasAvailableResult array{
  *     alias?: 0|1,
  *     aname?: 0|1,
- *     resolver?: string,
+ *     resolver?: string|null,
  * }
  * @phpstan-type IsHttpsAvailableResult array{
  *     dns_server?: string,
@@ -369,6 +369,8 @@ final readonly class Dns
      * Return nameserver's IPv4 and IPv6 addresses.
      *
      * This function retrieves a nameserver's IPv4 and IPv6 addresses.
+     *
+     * Observed: Returns ipv6 as an empty string, rather than omitting it, when the nameserver has no IPv6 address.
      *
      * API-map identity: whm1:lookupnsips#GET (wire name lookupnsips; Resolvers).
      *

@@ -21,7 +21,7 @@ final class DnsSpec
         'params' => [
             'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
         ],
-        'returns' => ['type' => 'list', 'nullable' => true, 'items' => ['type' => 'string']],
+        'returns' => ['type' => 'list', 'nullable' => true, 'items' => ['type' => 'string', 'nullable' => true]],
     ];
 
     public const ENSURE_DOMAINS_USE_RECOGNIZED_NAMESERVERS = [
@@ -79,7 +79,7 @@ final class DnsSpec
                 'type' => 'object',
                 'fields' => [
                     'domain' => ['type' => 'string'],
-                    'error' => ['type' => 'string'],
+                    'error' => ['type' => 'string', 'nullable' => true],
                     'local_authority' => ['type' => 'flag'],
                     'nameservers' => ['type' => 'list', 'items' => ['type' => 'string']],
                     'zone' => ['type' => 'string', 'nullable' => true],
@@ -99,7 +99,7 @@ final class DnsSpec
             'fields' => [
                 'alias' => ['type' => 'flag'],
                 'aname' => ['type' => 'flag'],
-                'resolver' => ['type' => 'string'],
+                'resolver' => ['type' => 'string', 'nullable' => true],
             ],
         ],
     ];

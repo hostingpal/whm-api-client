@@ -18,7 +18,9 @@ use RuntimeException;
  *
  * Read-only GET and POST requests are approved by exact method, URI, and body.
  * Lifecycle mutations are approved only when the client was built for an
- * explicitly named throwaway account and the body targets that account.
+ * explicitly named throwaway account and the body targets that account. Three
+ * read-only DNS GETs are approved only for a zone line or nameserver host bound
+ * at construction from an earlier read-only response.
  */
 final readonly class LiveCurlClient implements ClientInterface
 {
@@ -74,6 +76,31 @@ final readonly class LiveCurlClient implements ClientInterface
         self::WHM . 'accountsummary?api.version=1&user=npr',
         self::WHM . 'listpkgs?api.version=1',
         self::WHM . 'listpkgs?api.version=1&want=creatable',
+        self::WHM . 'listzones?api.version=1',
+        self::WHM . 'parse_dns_zone?api.version=1&zone=npr.rs',
+        self::WHM . 'listmxs?api.version=1&domain=npr.rs',
+        self::WHM . 'resolvedomainname?api.version=1&domain=npr.rs',
+        self::WHM . 'get_nameserver_config?api.version=1',
+        self::WHM . 'has_local_authority?api.version=1&domain=npr.rs',
+        self::WHM . 'is_alias_available?api.version=1',
+        self::WHM . 'is_https_available?api.version=1',
+        self::WHM . 'is_svcb_available?api.version=1',
+        self::WHM . 'export_zone_files?api.version=1&zone=npr.rs',
+        self::WHM . 'fetch_ds_records_for_domains?api.version=1&domain=npr.rs',
+        self::CPANEL . 'DNS/parse_zone?zone=npr.rs',
+        self::BRIDGE . '&cpanel.module=DNS&cpanel.function=parse_zone&zone=npr.rs',
+        self::CPANEL . 'DNS/has_local_authority?domain=npr.rs',
+        self::BRIDGE . '&cpanel.module=DNS&cpanel.function=has_local_authority&domain=npr.rs',
+        self::CPANEL . 'DNS/ensure_domains_reside_only_locally?domain=npr.rs',
+        self::BRIDGE . '&cpanel.module=DNS&cpanel.function=ensure_domains_reside_only_locally&domain=npr.rs',
+        self::CPANEL . 'DNS/ensure_domains_use_recognized_nameservers?domain=npr.rs',
+        self::BRIDGE . '&cpanel.module=DNS&cpanel.function=ensure_domains_use_recognized_nameservers&domain=npr.rs',
+        self::CPANEL . 'DNS/is_alias_available',
+        self::BRIDGE . '&cpanel.module=DNS&cpanel.function=is_alias_available',
+        self::CPANEL . 'DNS/is_https_available',
+        self::BRIDGE . '&cpanel.module=DNS&cpanel.function=is_https_available',
+        self::CPANEL . 'DNS/is_svcb_available',
+        self::BRIDGE . '&cpanel.module=DNS&cpanel.function=is_svcb_available',
     ];
 
     /** Approved read-only POST requests as exact [URI, form body] pairs. */
@@ -101,11 +128,31 @@ final readonly class LiveCurlClient implements ClientInterface
     /**
      * An optional execution boundary lets offline tests prove rejection before cURL.
      *
+     * The DNS live test derives two read-only GET parameters from earlier
+     * responses: a line of the test zone (from parse_dns_zone) and a nameserver
+     * host (from get_nameserver_config). Binding a value approves exactly the
+     * corresponding getzonerecord or lookupnsip/lookupnsips URI for that value.
+     *
      * @param (Closure(RequestInterface): ResponseInterface)|null $execute
      * @param string|null $lifecycleAccount Throwaway account whose lifecycle mutations are approved.
+     * @param int|null $zoneLine Test zone line whose getzonerecord GET is approved (at least 1).
+     * @param string|null $nameserver Bare hostname whose lookupnsip and lookupnsips GETs are approved.
+     * @throws LogicException If a bound zone line or nameserver host is malformed.
      */
-    public function __construct(?Closure $execute = null, private ?string $lifecycleAccount = null)
-    {
+    public function __construct(
+        ?Closure $execute = null,
+        private ?string $lifecycleAccount = null,
+        private ?int $zoneLine = null,
+        private ?string $nameserver = null,
+    ) {
+        $label = '[a-z0-9](?:[a-z0-9-]*[a-z0-9])?';
+        if (
+            ($zoneLine !== null && $zoneLine < 1)
+            || ($nameserver !== null && preg_match('/\A' . $label . '(?:\.' . $label . ')+\z/i', $nameserver) !== 1)
+        ) {
+            throw new LogicException('Derived live-test approvals require a positive line and a bare hostname.');
+        }
+
         $this->execute = $execute ?? self::sendCurl(...);
     }
 
@@ -114,7 +161,11 @@ final readonly class LiveCurlClient implements ClientInterface
         $uri = (string) $request->getUri();
         $body = (string) $request->getBody();
         $approved = match ($request->getMethod()) {
-            'GET' => $body === '' && (in_array($uri, self::READ_ONLY_GET, true) || $this->lifecycleSummary($uri)),
+            'GET' => $body === '' && (
+                in_array($uri, self::READ_ONLY_GET, true)
+                || $this->lifecycleSummary($uri)
+                || $this->derivedDnsRead($uri)
+            ),
             'POST' => in_array([$uri, $body], self::READ_ONLY_POST, true) || $this->lifecycleMutation($uri, $body),
             default => false,
         };
@@ -123,6 +174,23 @@ final readonly class LiveCurlClient implements ClientInterface
         }
 
         return ($this->execute)($request);
+    }
+
+    /** Approve the read-only DNS requests whose parameter was bound from an earlier response. */
+    private function derivedDnsRead(string $uri): bool
+    {
+        $approved = [];
+        if ($this->zoneLine !== null) {
+            $approved[] = self::WHM . 'getzonerecord?api.version=1&domain=npr.rs&line=' . $this->zoneLine;
+        }
+
+        if ($this->nameserver !== null) {
+            $host = rawurlencode($this->nameserver);
+            $approved[] = self::WHM . 'lookupnsip?api.version=1&host=' . $host;
+            $approved[] = self::WHM . 'lookupnsips?api.version=1&host=' . $host;
+        }
+
+        return in_array($uri, $approved, true);
     }
 
     /** Approve the summary of the throwaway account while a lifecycle runs. */
