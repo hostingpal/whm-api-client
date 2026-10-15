@@ -27,9 +27,13 @@ use SensitiveParameter;
  * or raising an API error. Metadata is instance-local. GET places parameters in the
  * query string; POST keeps routing fields there and form-encodes the operation
  * parameters in the body. The outcome policy is declared per request.
- * Every frame that receives request parameters marks them #[SensitiveParameter],
- * so exception traces never carry passwords or tokens even when PHP records call
- * arguments (zend.exception_ignore_args=0, the default without a php.ini).
+ * Every library frame that receives request parameters marks them
+ * #[SensitiveParameter], so the library's frames in exception traces carry no
+ * passwords, tokens or other parameters even when PHP records call arguments
+ * (zend.exception_ignore_args=0, the default without a php.ini). The PSR-18
+ * client's own frames are outside the library's control: a client that throws from
+ * sendRequest() records the request it was handed, with its Authorization header
+ * and any GET query (see HttpTransport::send()).
  *
  * @phpstan-type Parameters array<string, string|int|list<string>|NumberedList|RepeatedList>
  */

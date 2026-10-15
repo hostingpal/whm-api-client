@@ -20,8 +20,10 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Client\ClientInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 use SensitiveParameterValue;
 use Throwable;
@@ -30,12 +32,15 @@ use Throwable;
  * Prove that secret-bearing arguments never reach exception trace arguments.
  *
  * PHP records call arguments in exception traces unless zend.exception_ignore_args
- * is enabled, which is not the default without a php.ini. Every frame between a
- * public method and the PSR-18 client that receives a secret must therefore mark
+ * is enabled, which is not the default without a php.ini. Every library frame between
+ * a public method and the PSR-18 client that receives a secret must therefore mark
  * it with #[SensitiveParameter]. These tests force argument capture on, trigger
  * every API failure type for secret-bearing calls on all three routes, and search
  * every frame argument recursively, including nested arrays, list markers and
- * private object properties.
+ * private object properties. A client double that throws from inside sendRequest()
+ * puts HttpTransport::send() on the stack, covering its URI and body marks; only
+ * that client's own frame, which necessarily holds the request with the token and
+ * any GET query, is left out of the search, because the library cannot redact it.
  */
 final class SensitiveTraceTest extends TestCase
 {
@@ -113,6 +118,49 @@ final class SensitiveTraceTest extends TestCase
             foreach ($failures as $failure => $expected) {
                 yield $name . ', ' . $failure => [$route, $call, $failure, $expected];
             }
+        }
+    }
+
+    /** @return iterable<string, array{RequestMethod}> */
+    public static function transportMethods(): iterable
+    {
+        yield 'POST body' => [RequestMethod::Post];
+        yield 'GET query' => [RequestMethod::Get];
+    }
+
+    /**
+     * A PSR-18 client may throw any Throwable from sendRequest(); it then propagates
+     * unwrapped with HttpTransport::send() on the stack, holding the URI and body.
+     */
+    #[DataProvider('transportMethods')]
+    public function testTransportFramesStayRedactedWhenTheClientThrowsInsideSendRequest(RequestMethod $method): void
+    {
+        $factory = new Psr17Factory();
+        $http = new class implements ClientInterface {
+            public function sendRequest(RequestInterface $request): ResponseInterface
+            {
+                throw new RuntimeException('Client failure.');
+            }
+        };
+        $client = new Client(
+            ['host' => 'api.example.test', 'authType' => 'whm', 'username' => 'root', 'token' => 'fixture-token'],
+            new HttpTransport($http, $factory, $factory),
+        );
+
+        try {
+            $client->whm()->call('passwd', ['user' => 'bob', 'password' => self::SECRET], $method);
+            self::fail('Expected the client failure to propagate.');
+        } catch (RuntimeException $exception) {
+            $frames = $exception->getTrace();
+            self::assertSame([$http::class, 'sendRequest'], [$frames[0]['class'] ?? null, $frames[0]['function']]);
+            self::assertSame([HttpTransport::class, 'send'], [$frames[1]['class'] ?? null, $frames[1]['function']]);
+
+            // The client's own frame necessarily holds the request it was handed; the
+            // library cannot redact it, so only that argument is left out of the search.
+            unset($frames[0]['args']);
+            $seen = [];
+            self::assertFalse(self::contains($frames, $seen), 'A library frame argument contains the secret.');
+            self::assertStringNotContainsString(self::SECRET, $exception->getTraceAsString());
         }
     }
 

@@ -236,9 +236,12 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   timeouts, and `HttpTransport::discover()` is the explicit opt-in for unverified
   discovered defaults. The API layer rejects HTTP 3xx responses. Handles never
   expose `ClientConfig` or credentials, and credentials refuse serialization.
-  Every frame between a public method and the PSR-18 client that receives request
-  parameters marks them `#[SensitiveParameter]`, so traces never carry secrets even
-  with `zend.exception_ignore_args=0`; `SensitiveTraceTest` searches them recursively.
+  Every library frame between a public method and the PSR-18 client that receives
+  request parameters marks them `#[SensitiveParameter]`, so the library's trace
+  frames carry no secrets even with `zend.exception_ignore_args=0`;
+  `SensitiveTraceTest` searches them recursively for every failure type, including a
+  client that throws inside `sendRequest()`. That client's own frame holds the
+  request (token, GET query) and is outside the library's control.
   Direct UAPI supports the pinned `result` wrapper and the observed bare result
   object. A present `result` takes precedence even if malformed; the bare form
   requires top-level `status`. Authorized direct library verification on
