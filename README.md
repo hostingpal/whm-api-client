@@ -203,6 +203,8 @@ $remote = $client->uapi('npr')->dns()->ensureDomainsResideOnlyLocally(['example.
 - `getZoneRecord()` returns the base fields (`Line`, `class`, `name`, `ttl`, `type`)
   plus the documented fields of the record's type (for example `address`,
   `exchange`/`preference`, `txtdata`, or the SOA `serial` and timers), all optional.
+  It was verified live only for `A`, `CNAME`, `MX`, `NS`, `SOA` and `TXT` lines; the
+  fields of the other documented record types follow the pinned schema unverified.
 - Observed on cPanel 11.138.0.15 on the test server on 2026-10-15
   ([runtime observations](docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice)):
   `hasLocalAuthority()` records carried `error` as an explicit `null` after a successful
@@ -451,9 +453,11 @@ It preserves PSR-12 spacing, multiline arrow functions, and existing public name
 Slevomat is registered through `phpcs.xml.dist`; its Composer installer plugin
 stays disabled, so no machine-wide PHPCS configuration is required.
 
-Production APIs require useful PHPDoc. Endpoint methods must include a short
-summary, detailed behavior, an exact official cPanel operation link, and precise
-array shapes when they return arrays. The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
+Production APIs require useful PHPDoc. Hand-written API methods must include a
+short summary, detailed behavior, an exact official cPanel operation link, and
+precise array shapes when they return arrays. Generated methods take their PHPDoc
+from the pinned documentation, and caveats it lacks are recorded as overlay notes.
+The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
 
 The development lockfile resolves dependencies against PHP 8.3. Runtime
 requirements for consumers come from `composer.json`, not this lockfile.

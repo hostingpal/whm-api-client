@@ -196,9 +196,11 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   account-bound UAPI helper for direct and bridged execution), validates the payload
   with `ShapeValidator` and the internal `PayloadReader`, which attaches the response
   snapshot to every failure, and unwraps the result. Reserved bridge fields take
-  precedence over endpoint parameters. Multi-value input passes through as
-  `list<string>` (repeated keys) or `NumberedList` (WHM `name`, `name-1`, ...) and the
-  shared encoder validates it after the metadata reset. Selectors only bind callbacks
+  precedence over endpoint parameters. Generated multi-value parameters pass caller
+  input through as `RepeatedList` (repeated keys, overlay encoding `repeat`) or
+  `NumberedList` (WHM `name`, `name-1`, ..., encoding `numbered`); generic `call()` also
+  accepts a plain `list<string>` as repeated keys. The shared encoder validates the
+  contents after the metadata reset. Selectors only bind callbacks
   and cache groups; they perform no I/O or metadata reset.
 - Requests declare their method and outcome policy. `RequestMethod::Get` places
   parameters in the query string; `RequestMethod::Post` keeps the routing fields
@@ -266,10 +268,18 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
 - Document production classes, public APIs, configuration options, and
   non-obvious internal behavior as part of the implementation, not as a later
   cleanup task. Keep PHPDoc, usage examples, and README guidance current.
-- Every API endpoint method must have a short PHPDoc summary and a separate
+- Every hand-written API method (the generic `call()` methods and any future
+  hand-written endpoint) must have a short PHPDoc summary and a separate
   detailed description covering its purpose, account scope, meaningful
   parameter behavior, returned payload, and relevant failure or metadata
   semantics. Use the reviewed source contract; do not invent missing details.
+- Generated endpoint methods take their PHPDoc from the generator and are never
+  edited by hand: the upstream summary and description, per-parameter text, the
+  API-map identity, the operation `@see` link and the result shape, while the group
+  docblock states the shared request, metadata and failure semantics. Record every
+  caveat the upstream text lacks (irreversible operations, defaults that change
+  behavior, role requirements, inverted meanings, observed wire behavior) as an
+  overlay `note`, which renders in the method's PHPDoc, and regenerate.
 - Include `@see` links to the exact official operation documentation on
   `https://api.docs.cpanel.net/` (the canonical cPanel developer documentation
   host). Add relevant guide links when authentication or bridge behavior needs
