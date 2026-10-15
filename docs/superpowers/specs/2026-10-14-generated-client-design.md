@@ -1,6 +1,7 @@
 # Contract-driven generated client for full API parity
 
-Status: design agreed with the user on 2026-10-14; awaiting written-spec review.
+Status: implemented through phase 1 (plans 1-4); design agreed with the user on
+2026-10-14.
 Decision record: `whm-api-client-8x0.10`. This design supersedes the
 "typed core plus generic calls / lean pattern" scaling decision
 (`whm-api-client-8x0.7`, recorded in the
@@ -261,7 +262,20 @@ enforces; engine tests and generated fixture rows verify that the two agree.
 4. executes through the existing request lifecycle (metadata reset, single
    attempt, envelope reading, typed exceptions);
 5. validates and normalizes the payload against the spec in a single pass,
-   raising `InvalidResponseException` with the response snapshot on mismatch.
+   raising `PayloadMismatchException` (an `InvalidResponseException`) with the
+   response snapshot on mismatch.
+
+**Write responses** (decision of 2026-10-15, `whm-api-client-8x0.23`). Mutations are
+validated as strictly as reads; the typed return contract never weakens. Because a
+mismatch is raised only after the envelope and outcome were accepted, it must not be
+mistaken for a failed operation: `PayloadMismatchException` exposes
+`$outcomeConfirmed` (true under the flag policy, so the operation took effect; false
+when the outcome was not checked) and `$payload`, the unvalidated decoded data member
+as plain arrays (null when omitted or null), so callers can recover data instead of
+retrying a non-idempotent call. It covers shape mismatches, an omitted declared data
+member and a missing unwrap field; envelope and JSON failures keep the plain
+`InvalidResponseException`, and spec defects stay `LogicException`. Every generated
+method with a payload documents it in `@throws`.
 
 **Performance.** Specs are immutable class constants that opcache stores once;
 groups load lazily through PSR-4 and are cached per handle; validation is one
@@ -348,6 +362,9 @@ validate`, `composer check`. No live calls.
    Then retire the hand-written groups, the DTOs, the symbol inventory
    (`tools/php-symbols`), the registry, report and baseline artifacts under
    `docs/api/coverage/`, and the parity code that only served them.
+   Phase 1 note: the hand-written endpoint tests were adapted to the generated
+   groups and serve as the equivalence oracle; the per-operation fixture rows of the
+   generated-surface tests come in phase 2, with the runner and fingerprints.
 2. **Runner, fingerprints and discrepancy loop.** Sweep all read-only operations
    and correct the overlay. Retire the per-endpoint live test classes once the
    runner covers their operations.

@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient\Api\Uapi;
 use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\LangPhpSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
+use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use InvalidArgumentException;
 
 /**
@@ -46,6 +47,8 @@ final readonly class LangPhp
      * @param string|null $vhost The name of a virtual host. Null omits it.
      * @return string
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_domain_handler
      */
     public function phpGetDomainHandler(string $type, ?string $vhost = null): string
@@ -70,6 +73,8 @@ final readonly class LangPhp
      *     omits it.
      * @return PhpGetImpactedDomainsResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_impacted_domains
      */
@@ -95,6 +100,8 @@ final readonly class LangPhp
      *
      * @return PhpGetInstalledVersionsResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_installed_versions
      */
     public function phpGetInstalledVersions(): array
@@ -116,6 +123,8 @@ final readonly class LangPhp
      *
      * @return string|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_system_default_version
      */
     public function phpGetSystemDefaultVersion(): ?string

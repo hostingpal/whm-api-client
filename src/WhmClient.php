@@ -61,25 +61,31 @@ final class WhmClient extends AbstractApiClient
      *
      * The function name is the documented path segment after /json-api/ (such as
      * listaccts or 360Monitoring/webpros_auth_callback); api.version=1 is always
-     * added and cannot be overridden. Parameters are sent in the query string for
-     * Get or form-encoded in the body for Post; use Post for any secret-bearing
-     * parameter because the server records query strings in its access log. The
+     * added and cannot be overridden. Post, the default, form-encodes the parameters
+     * in the body and keeps api.version in the query string, so passwords and other
+     * secrets never reach the URL that the server records in its access log; POST
+     * was verified live for read-only functions. Pass Get explicitly to send every
+     * parameter in the query string, never for a secret-bearing parameter. The
      * result's data is the envelope payload converted to arrays without schema
      * validation; metadata, exceptions, and responseMeta() behave as for typed
      * operations. Flag applies the documented metadata.result 1/0 rule; Unchecked
      * leaves the outcome to the caller. Typed groups remain the reviewed contracts.
      *
      * @param Parameters $parameters
-     * @throws InvalidArgumentException If the function name or a multi-value parameter is invalid.
+     * @throws InvalidArgumentException If the function name or a parameter value is invalid; responseMeta() is
+     *     cleared first, so it never reports an earlier request.
+     *     Messages may name a parameter but never include its value.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      * @see https://api.docs.cpanel.net/whm/introduction
      */
     public function call(
         string $function,
+        #[SensitiveParameter]
         array $parameters = [],
-        RequestMethod $method = RequestMethod::Get,
+        RequestMethod $method = RequestMethod::Post,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): CallResult {
+        $this->beginRequest();
         if (preg_match('/\A[A-Za-z0-9_]+(?:\/[A-Za-z0-9_]+)*\z/', $function) !== 1) {
             throw new InvalidArgumentException(
                 'WHM function names contain only letters, digits, underscores, and "/" separators.',
@@ -93,13 +99,18 @@ final class WhmClient extends AbstractApiClient
      * Run a generated operation spec through this handle.
      *
      * Generated groups receive this method as their run callback; selecting a
-     * group performs no I/O.
+     * group performs no I/O. The attempt starts here: metadata is cleared before
+     * the runner checks the spec and encodes the arguments, so an argument rejected
+     * before dispatch (for example a non-finite float) never leaves an earlier
+     * request's metadata in responseMeta().
      *
      * @param array<mixed> $spec
      * @param array<string, mixed> $arguments
      */
     private function run(array $spec, #[SensitiveParameter] array $arguments): mixed
     {
+        $this->beginRequest();
+
         return OperationRunner::run($spec, $arguments, $this->dispatch(...));
     }
 
@@ -132,8 +143,9 @@ final class WhmClient extends AbstractApiClient
      */
     private function request(
         string $operation,
+        #[SensitiveParameter]
         array $parameters,
-        RequestMethod $method = RequestMethod::Get,
+        RequestMethod $method,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): ApiResponse {
         $path = '/json-api/' . $operation;

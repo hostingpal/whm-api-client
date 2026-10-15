@@ -7,9 +7,11 @@ namespace HostingPal\WhmApiClient\Tests\Api\Engine;
 use HostingPal\WhmApiClient\Api\AbstractApiClient;
 use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
 use HostingPal\WhmApiClient\Api\Engine\OperationSpec;
+use HostingPal\WhmApiClient\Api\Engine\SpecChecker;
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Api\RequestMethod;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
+use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Response\ApiResponse;
 use HostingPal\WhmApiClient\Response\ResponseMetadata;
 use LogicException;
@@ -76,10 +78,87 @@ final class OperationRunnerTest extends TestCase
         try {
             OperationRunner::result($spec, new ApiResponse(new stdClass(), $metadata));
             self::fail('Expected an invalid payload.');
-        } catch (InvalidResponseException $exception) {
+        } catch (PayloadMismatchException $exception) {
             self::assertSame($metadata, $exception->metadata);
             self::assertSame('Invalid primary_domain payload.', $exception->getMessage());
+            self::assertSame([], $exception->payload);
         }
+    }
+
+    public function testPayloadMismatchAfterAConfirmedOutcomeCarriesAnUnvalidatedCopy(): void
+    {
+        $metadata = new ResponseMetadata(200, ['result' => 1]);
+        $data = (object) ['primary_domain' => 1, 'nested' => (object) ['list' => [1, (object) ['a' => 'b']]]];
+        $expected = ['primary_domain' => 1, 'nested' => ['list' => [1, ['a' => 'b']]]];
+
+        try {
+            OperationRunner::result(self::SPEC, new ApiResponse($data, $metadata));
+            self::fail('Expected a payload mismatch.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertInstanceOf(InvalidResponseException::class, $exception);
+            self::assertSame('Invalid primary_domain payload.', $exception->getMessage());
+            self::assertSame($metadata, $exception->metadata);
+            self::assertTrue($exception->outcomeConfirmed);
+
+            $data->nested->list[1]->a = 'changed';
+            self::assertSame($expected, $exception->payload, 'The payload is a detached copy.');
+        }
+    }
+
+    public function testPayloadMismatchKeepsThePayloadOutOfDebugOutput(): void
+    {
+        $exception = new PayloadMismatchException(
+            'Invalid createacct payload.',
+            new ResponseMetadata(200, ['result' => 1]),
+            true,
+            ['token' => 'fixture-secret'],
+        );
+
+        self::assertSame(['token' => 'fixture-secret'], $exception->payload);
+        self::assertStringNotContainsString('fixture-secret', print_r($exception, true));
+        ob_start();
+        var_dump($exception);
+        $dump = (string) ob_get_clean();
+        self::assertStringNotContainsString('fixture-secret', $dump);
+        self::assertStringContainsString('Invalid createacct payload.', $dump);
+        self::assertStringContainsString('outcomeConfirmed', $dump);
+    }
+
+    public function testPayloadMismatchUnderAnUncheckedOutcomeIsNotConfirmed(): void
+    {
+        try {
+            OperationRunner::result(
+                ['outcome' => 'unchecked'] + self::SPEC,
+                self::response((object) ['primary_domain' => 1]),
+            );
+            self::fail('Expected a payload mismatch.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertFalse($exception->outcomeConfirmed);
+            self::assertSame(['primary_domain' => 1], $exception->payload);
+        }
+    }
+
+    public function testOmittedDataIsAPayloadMismatchWithoutAPayload(): void
+    {
+        $metadata = new ResponseMetadata(200, ['result' => 1]);
+
+        try {
+            OperationRunner::result(self::SPEC, new ApiResponse(null, $metadata, false));
+            self::fail('Expected a payload mismatch.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertSame($metadata, $exception->metadata);
+            self::assertTrue($exception->outcomeConfirmed);
+            self::assertNull($exception->payload);
+        }
+    }
+
+    public function testSpecDefectsFoundDuringValidationAreNotPayloadMismatches(): void
+    {
+        $spec = ['returns' => ['type' => 'object', 'fields' => ['a' => ['type' => 'bogus']]]] + self::SPEC;
+
+        $this->expectException(LogicException::class);
+
+        OperationRunner::result($spec, self::response((object) ['a' => 1]));
     }
 
     public function testVoidOperationsIgnoreThePayload(): void
@@ -180,6 +259,140 @@ final class OperationRunnerTest extends TestCase
         yield 'unwrap of undeclared field' => [['unwrap' => 'missing'] + self::SPEC];
         yield 'non-boolean optional' => [['optional' => 1] + self::SPEC];
         yield 'optional void returns' => [['returns' => null, 'optional' => true] + self::SPEC];
+        yield 'unknown return type on a POST' => [['method' => 'POST'] + self::returning(['type' => 'bogus'])];
+        yield 'return spec without a type' => [self::returning([])];
+        yield 'unknown type of a nullable spec' => [self::returning(['type' => 'bogus', 'nullable' => true])];
+        yield 'list items of an empty list' => [self::returning(self::list(['type' => 'bogus']))];
+        yield 'list without items' => [self::returning(['type' => 'list'])];
+        yield 'map without values' => [self::returning(['type' => 'map'])];
+        yield 'later union branch' => [
+            self::returning(['type' => 'union', 'anyOf' => [['type' => 'string'], ['type' => 'bogus']]]),
+        ];
+        yield 'union without branches' => [self::returning(['type' => 'union', 'anyOf' => []])];
+        yield 'keyed union branches' => [self::returning(['type' => 'union', 'anyOf' => ['a' => ['type' => 'int']]])];
+        yield 'nested object field' => [
+            self::returning(self::object(['a' => self::object(['b' => ['type' => 'bogus']])])),
+        ];
+        yield 'field spec not an array' => [self::returning(self::object(['a' => 'string']))];
+        yield 'required undeclared field' => [self::returning(self::object(['a' => ['type' => 'string']], ['b']))];
+        yield 'required integer name' => [self::returning(self::object(['0' => ['type' => 'string']], [0]))];
+        yield 'required not a list' => [self::returning(self::object(['a' => ['type' => 'string']], 'a'))];
+        yield 'non-boolean nullable' => [self::returning(['type' => 'string', 'nullable' => 1])];
+        yield 'variant the type cannot accept' => [
+            self::returning(['type' => 'string', 'accept' => ['numeric-string']]),
+        ];
+        yield 'unknown accepted variant' => [self::returning(['type' => 'int', 'accept' => ['hex-string']])];
+        yield 'preserve on a non-number' => [self::returning(['type' => 'int', 'preserve' => true])];
+        yield 'unwrap of a nullable object' => [
+            ['returns' => ['nullable' => true] + self::SPEC['returns'], 'unwrap' => 'primary_domain'] + self::SPEC,
+        ];
+        yield 'duplicate wire names' => [
+            ['params' => [
+                'first' => ['name' => 'domain', 'encoding' => 'scalar'],
+                'second' => ['name' => 'domain', 'encoding' => 'repeat'],
+            ]] + self::SPEC,
+        ];
+        yield 'parameter of an omitted argument without a wire name' => [
+            ['params' => ['omitted' => ['encoding' => 'scalar']]] + self::SPEC,
+        ];
+        yield 'parameter of an omitted argument with an unknown encoding' => [
+            ['params' => ['omitted' => ['name' => 'omitted', 'encoding' => 'json']]] + self::SPEC,
+        ];
+        yield 'empty wire name' => [['params' => ['omitted' => ['name' => '', 'encoding' => 'scalar']]] + self::SPEC];
+        yield 'missing params' => [array_diff_key(self::SPEC, ['params' => true])];
+        yield 'unsupported method' => [['method' => 'PATCH'] + self::SPEC];
+        yield 'unsupported outcome' => [['outcome' => 'status'] + self::SPEC];
+        yield 'non-string module' => [['module' => 7] + self::SPEC];
+    }
+
+    /** @param array<mixed> $spec */
+    #[DataProvider('defectiveSpecs')]
+    public function testDefectiveSpecsAreRejectedOnEveryCall(array $spec): void
+    {
+        $rejected = 0;
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            try {
+                SpecChecker::check($spec);
+            } catch (LogicException) {
+                $rejected++;
+            }
+        }
+
+        self::assertSame(2, $rejected);
+    }
+
+    public function testSoundSpecsPassTheCheckRepeatedly(): void
+    {
+        $sound = [
+            self::SPEC,
+            ['returns' => null] + self::SPEC,
+            ['optional' => true, 'unwrap' => 'primary_domain'] + self::SPEC,
+            ['returns' => self::object(['0' => ['type' => 'int', 'accept' => ['numeric-string']]], ['0'])] + self::SPEC,
+            ['returns' => ['type' => 'number', 'accept' => ['numeric-string'], 'preserve' => true]] + self::SPEC,
+            ['returns' => ['type' => 'union', 'nullable' => true, 'anyOf' => [
+                ['type' => 'flag', 'accept' => ['string-flag', 'bool']],
+                ['type' => 'bool', 'accept' => ['int-flag', 'string-flag']],
+                ['type' => 'map', 'values' => ['type' => 'mixed']],
+            ]]] + self::SPEC,
+        ];
+
+        foreach ($sound as $spec) {
+            SpecChecker::check($spec);
+            SpecChecker::check($spec);
+        }
+
+        $this->expectNotToPerformAssertions();
+    }
+
+    public function testAnUndeclaredArgumentNeverDispatches(): void
+    {
+        $calls = 0;
+
+        try {
+            OperationRunner::run(
+                ['method' => 'POST'] + self::SPEC,
+                ['hideTemporaryDomains' => true, 'undeclared' => 'x'],
+                /**
+                 * @param array<mixed> $spec
+                 * @param Parameters $parameters
+                 */
+                static function (array $spec, array $parameters) use (&$calls): ApiResponse {
+                    $calls++;
+
+                    return self::response(new stdClass());
+                },
+            );
+            self::fail('Expected a rejected argument.');
+        } catch (LogicException) {
+            self::assertSame(0, $calls);
+        }
+    }
+
+    /**
+     * @param array<mixed> $returns
+     * @return array<mixed>
+     */
+    private static function returning(array $returns): array
+    {
+        return ['returns' => $returns] + self::SPEC;
+    }
+
+    /**
+     * @param array<mixed> $items
+     * @return array<mixed>
+     */
+    private static function list(array $items): array
+    {
+        return ['type' => 'list', 'items' => $items];
+    }
+
+    /**
+     * @param array<mixed> $fields
+     * @return array<mixed>
+     */
+    private static function object(array $fields, mixed $required = []): array
+    {
+        return ['type' => 'object', 'fields' => $fields, 'required' => $required];
     }
 
     public function testSpecHelpersMapWireValues(): void

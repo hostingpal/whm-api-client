@@ -447,6 +447,24 @@ final class WhmAccountsTest extends TestCase
         );
     }
 
+    public function testListAndSummaryShareTheSuspendtimeContract(): void
+    {
+        [$client, $http] = $this->client();
+        $payload = '{"acct":[{"suspendtime":1594040856},{"suspendtime":"1594040856"},{"suspendtime":null},'
+            . '{"suspendtime":0}]}';
+        $http->addResponse(new Response(200, [], self::response('listaccts', $payload)));
+        $http->addResponse(new Response(200, [], self::response('accountsummary', $payload)));
+        $expected = [
+            ['suspendtime' => 1594040856],
+            ['suspendtime' => '1594040856'],
+            ['suspendtime' => null],
+            ['suspendtime' => 0],
+        ];
+
+        self::assertSame($expected, $client->whm()->accounts()->listAccounts());
+        self::assertSame($expected, $client->whm()->accounts()->accountSummary('npr'));
+    }
+
     public function testSignedDecimalUidIsAcceptedPendingRangeEnforcement(): void
     {
         // The deleted hand-written validator rejected signed decimal strings; minimum/range enforcement is

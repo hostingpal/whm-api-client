@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient\Api\Whm;
 use Closure;
 use HostingPal\WhmApiClient\Api\Whm\Spec\AccountsSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
+use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use InvalidArgumentException;
 use SensitiveParameter;
 
@@ -144,7 +145,7 @@ use SensitiveParameter;
  *     startdate?: string,
  *     suspended?: 0|1,
  *     suspendreason?: string|null,
- *     suspendtime?: int|null,
+ *     suspendtime?: string|int|null,
  *     temporary?: 0|1,
  *     theme?: string,
  *     uid?: int,
@@ -187,6 +188,8 @@ final readonly class Accounts
      * @param string|null $searchtype The type of search to perform. Null omits it.
      * @return AccountSummaryResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-accountsummary
      */
     public function accountSummary(
@@ -230,6 +233,9 @@ final readonly class Accounts
      *
      * This function modifies a cPanel or reseller account's password.
      *
+     * Documented: Omitting dbPassUpdate applies the documented default 1, so the account's MySQL password changes as
+     * well; pass false to keep it.
+     *
      * Returns null when the server sends no data.
      *
      * API-map identity: whm1:passwd#GET (wire name passwd; Passwords).
@@ -240,6 +246,8 @@ final readonly class Accounts
      * @param bool|null $digestauth Whether to enable Digest Authentication for the account. Null omits it.
      * @return ChangePasswordResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/passwords/sys-passwd
      */
     public function changePassword(
@@ -331,6 +339,8 @@ final readonly class Accounts
      * @param bool|null $useregns Whether to use registered nameservers for the domain. Null omits it.
      * @return CreateAccountResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-creation/accounts-createacct
      */
@@ -456,6 +466,8 @@ final readonly class Accounts
      *
      * @return GetDomainInfoResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/accounts-get_domain_info
      */
     public function getDomainInfo(): array
@@ -479,6 +491,8 @@ final readonly class Accounts
      * @param string|null $want The returns to include in the output for each account. Null omits it.
      * @return ListAccountsResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-listaccts
      */
     public function listAccounts(
@@ -592,6 +606,8 @@ final readonly class Accounts
      *     match the value of `MAX_EMAILACCT_QUOTA` setting. Null omits it.
      * @return ModifyAccountResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-modifyacct
      */
     public function modifyAccount(
@@ -739,6 +755,8 @@ final readonly class Accounts
      * Suspend cPanel account.
      *
      * This function suspends an account.
+     *
+     * Documented: Omitting reason records the documented default reason Unknown; pass a reason.
      *
      * API-map identity: whm1:suspendacct#GET (wire name suspendacct; Suspensions).
      *

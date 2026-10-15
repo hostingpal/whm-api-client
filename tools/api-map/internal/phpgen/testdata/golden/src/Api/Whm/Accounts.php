@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient\Api\Whm;
 use Closure;
 use HostingPal\WhmApiClient\Api\Whm\Spec\AccountsSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
+use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use InvalidArgumentException;
 use SensitiveParameter;
 
@@ -48,6 +49,8 @@ final readonly class Accounts
      * @param 'default'|'custom'|null $plan Null omits it.
      * @return CreateAccountResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-creation/accounts-createacct
      */
     public function createAccount(

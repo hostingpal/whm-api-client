@@ -85,16 +85,22 @@ final class UapiClient extends AbstractApiClient
      * list_pops). Direct cPanel credentials request /execute/Module/function;
      * WHM credentials route through the uapi_cpanel bridge with this account as
      * the target, and the bridge's api.version and cpanel.* fields cannot be
-     * overridden. Parameters are sent in the query string for Get or form-encoded
-     * in the body for Post; use Post for secret-bearing parameters. The result's
+     * overridden. Post, the default, form-encodes the parameters in the body (the
+     * bridge's routing fields stay in the query string), so secrets never reach the
+     * URL; POST was verified live on both routes for read-only functions. Pass Get
+     * explicitly to send every parameter in the query string, never for a
+     * secret-bearing parameter. The result's
      * data is the UAPI payload converted to arrays without schema validation, and
      * metadata, exceptions, and responseMeta() behave as for typed operations.
      * Flag applies the documented status 1/0 rule (and the WHM result rule on the
-     * bridge); Unchecked leaves the outcome to the caller, for functions such as
-     * Features/has_feature whose status reports feature state.
+     * bridge); Unchecked leaves the UAPI status to the caller, for functions such as
+     * Features/has_feature whose status reports feature state. The bridge's WHM
+     * result is checked under both policies, so a failed bridge always raises.
      *
      * @param Parameters $parameters
-     * @throws InvalidArgumentException If a name or a multi-value parameter is invalid.
+     * @throws InvalidArgumentException If a name or a parameter value is invalid; responseMeta() is cleared
+     *     first, so it never reports an earlier request.
+     *     Messages may name a parameter but never include its value.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      * @see https://api.docs.cpanel.net/cpanel/introduction
      * @see https://api.docs.cpanel.net/whm/use-whm-api-to-call-cpanel-api-and-uapi
@@ -102,10 +108,12 @@ final class UapiClient extends AbstractApiClient
     public function call(
         string $module,
         string $function,
+        #[SensitiveParameter]
         array $parameters = [],
-        RequestMethod $method = RequestMethod::Get,
+        RequestMethod $method = RequestMethod::Post,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): CallResult {
+        $this->beginRequest();
         foreach ([$module, $function] as $segment) {
             if (preg_match('/\A[A-Za-z0-9_]+\z/', $segment) !== 1) {
                 throw new InvalidArgumentException(
@@ -121,13 +129,18 @@ final class UapiClient extends AbstractApiClient
      * Run a generated operation spec through this handle.
      *
      * Generated groups receive this method as their run callback; selecting a
-     * group performs no I/O.
+     * group performs no I/O. The attempt starts here: metadata is cleared before
+     * the runner checks the spec and encodes the arguments, so an argument rejected
+     * before dispatch (for example a non-finite float) never leaves an earlier
+     * request's metadata in responseMeta().
      *
      * @param array<mixed> $spec
      * @param array<string, mixed> $arguments
      */
     private function run(array $spec, #[SensitiveParameter] array $arguments): mixed
     {
+        $this->beginRequest();
+
         return OperationRunner::run($spec, $arguments, $this->dispatch(...));
     }
 
@@ -163,8 +176,9 @@ final class UapiClient extends AbstractApiClient
     private function request(
         string $module,
         string $operation,
+        #[SensitiveParameter]
         array $parameters,
-        RequestMethod $method = RequestMethod::Get,
+        RequestMethod $method,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): ApiResponse {
         if ($this->isBridged()) {

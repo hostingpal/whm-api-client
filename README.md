@@ -149,8 +149,10 @@ precision and trailing zeros survive.
 
 Response validation enforces the pinned types, required fields and the observed
 wire variants. Documented minimum, range and enumeration constraints are not yet
-enforced (tracked as `whm-api-client-8x0.18`). A malformed payload raises
-`InvalidResponseException` carrying the response metadata. Caveats recorded as
+enforced (tracked as `whm-api-client-8x0.18`). Writes are validated as strictly as
+reads. A payload that differs from its contract after the envelope was accepted raises
+`PayloadMismatchException` (an `InvalidResponseException`) carrying the response
+metadata and the unvalidated payload; see [Errors](#errors) for retry guidance. Caveats recorded as
 observed notes (for example the EasyApache 4 and WebServer role requirement of the
 PHP operations) appear in the affected methods' PHPDoc.
 
@@ -203,6 +205,8 @@ $remote = $client->uapi('npr')->dns()->ensureDomainsResideOnlyLocally(['example.
 - `getZoneRecord()` returns the base fields (`Line`, `class`, `name`, `ttl`, `type`)
   plus the documented fields of the record's type (for example `address`,
   `exchange`/`preference`, `txtdata`, or the SOA `serial` and timers), all optional.
+  It was verified live only for `A`, `CNAME`, `MX`, `NS`, `SOA` and `TXT` lines; the
+  fields of the other documented record types follow the pinned schema unverified.
 - Observed on cPanel 11.138.0.15 on the test server on 2026-10-15
   ([runtime observations](docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice)):
   `hasLocalAuthority()` records carried `error` as an explicit `null` after a successful
@@ -286,12 +290,15 @@ and exceptions:
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Api\RequestMethod;
 
+// POST (the default) keeps api.version in the URL and form-encodes the parameters in the body.
 $result = $client->whm()->call('listaccts', ['searchtype' => 'user', 'search' => 'npr']);
 $accounts = $result->data['acct'];   // Envelope data converted to arrays; no schema applied.
 $reason = $result->metadata->whmReason();
 
-// POST keeps api.version in the URL and form-encodes the parameters in the body.
-$client->whm()->call('passwd', ['user' => 'npr', 'password' => $password], RequestMethod::Post);
+$client->whm()->call('passwd', ['user' => 'npr', 'password' => $password]); // The password stays out of the URL.
+
+// GET is explicit: every parameter goes into the query string, which the server logs.
+$version = $client->whm()->call('version', [], RequestMethod::Get);
 
 // UAPI: direct with a cPanel token or bridged through WHM; cpanel.* fields cannot be overridden.
 $pops = $client->uapi('npr')->call('Email', 'list_pops');
@@ -303,13 +310,18 @@ $state = $feature->metadata->uapiStatus();
 
 `CallResult::$data` is the payload with JSON objects converted to associative
 arrays (numeric keys become integers); `$hasData` distinguishes an omitted `data`
-member from an explicit null. Names are validated before I/O (`[A-Za-z0-9_]`
-segments; WHM allows `/`-separated namespaces), and the reserved `api.version` and
-bridge `cpanel.*` fields are removed from caller parameters. `OutcomePolicy::Flag`
+member from an explicit null. Each call first clears `responseMeta()`, then validates
+the names (`[A-Za-z0-9_]` segments; WHM allows `/`-separated namespaces) and the
+parameter values (strings, integers or nonempty lists of strings; a failure names the
+parameter, never its value) before I/O. The reserved `api.version` and bridge
+`cpanel.*` fields are removed from caller parameters. `OutcomePolicy::Flag`
 (default) applies the documented `metadata.result`/`status` 1/0 rule;
-`OutcomePolicy::Unchecked` records the envelope without interpreting it. Both still
-require a usable envelope and report HTTP failures. POST execution on all three
-routes was verified live on 2026-10-14 with read-only functions.
+`OutcomePolicy::Unchecked` records the envelope without interpreting the operation's
+outcome. On the WHM bridge it waives only the UAPI `status`: the outer WHM
+`metadata.result` reports whether the UAPI call ran, so a failed bridge raises
+`ApiErrorException` under both policies. Both still require a usable envelope and
+report HTTP failures. POST, the default method, was verified live on all three
+routes on 2026-10-14 with read-only functions.
 
 ## Response metadata and failures
 
@@ -343,7 +355,28 @@ or null when no usable API metadata was received:
 | `ApiErrorException` | WHM or UAPI reports an operation failure, including over HTTP 200. |
 | `HttpException` | HTTP status is outside 200–299, including redirects. |
 | `InvalidResponseException` | The envelope, outcome, or endpoint payload cannot satisfy the reviewed contract. |
+| `PayloadMismatchException` | An `InvalidResponseException`: the envelope and outcome were accepted, but the payload differs from the contract. |
 | `TransportException` | The PSR HTTP transport reports a request failure. |
+
+`PayloadMismatchException` means the response envelope was accepted. When
+`$outcomeConfirmed` is true, the API also reported success, so the operation took
+effect: an account was created or a password changed even though the response did not
+match. Every generated operation checks its outcome today; `$outcomeConfirmed` is false
+only for an operation whose outcome is not checked. Do not retry a mutating operation
+on this exception; read `$payload`, the unvalidated decoded `data` member as plain
+arrays (null when it was omitted or null), or confirm the server state instead. The
+payload can contain secrets such as a newly created token, so `var_dump()` and
+`print_r()` elide it; log it deliberately. Malformed JSON and unusable
+envelopes raise a plain `InvalidResponseException`, where the outcome is unknown.
+
+```php
+try {
+    $created = $client->whm()->accounts()->createAccount('example', domain: 'example.test');
+} catch (PayloadMismatchException $exception) {
+    // Created upstream; the response shape differed from the contract.
+    $raw = $exception->payload;
+}
+```
 
 `ApiException::errors()` returns the upstream error descriptions from its
 snapshot (empty without metadata). Exception messages exclude raw bodies,
@@ -443,9 +476,11 @@ It preserves PSR-12 spacing, multiline arrow functions, and existing public name
 Slevomat is registered through `phpcs.xml.dist`; its Composer installer plugin
 stays disabled, so no machine-wide PHPCS configuration is required.
 
-Production APIs require useful PHPDoc. Endpoint methods must include a short
-summary, detailed behavior, an exact official cPanel operation link, and precise
-array shapes when they return arrays. The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
+Production APIs require useful PHPDoc. Hand-written API methods must include a
+short summary, detailed behavior, an exact official cPanel operation link, and
+precise array shapes when they return arrays. Generated methods take their PHPDoc
+from the pinned documentation, and caveats it lacks are recorded as overlay notes.
+The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
 
 The development lockfile resolves dependencies against PHP 8.3. Runtime
 requirements for consumers come from `composer.json`, not this lockfile.

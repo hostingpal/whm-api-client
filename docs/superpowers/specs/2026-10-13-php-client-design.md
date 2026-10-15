@@ -29,8 +29,9 @@ do not need a separate public `bridge()` method.
 > **Superseded:** the operation table below describes the original hand-written
 > slice. The typed groups are now generated from the pinned map plus
 > `docs/api/overlay/`; the current operation surface is listed in
-> [`docs/api/coverage.md`](../../api/coverage.md) and designed in the generated-client
-> design. Method names and plain-array results there replace the names and DTOs here.
+> [`docs/api/coverage.md`](../../api/coverage.md) and designed in the
+> [generated-client design](2026-10-14-generated-client-design.md). Method names and
+> plain-array results there replace the names and DTOs here.
 
 ```php
 // Client configured with WHM credentials, such as a root token.
@@ -268,7 +269,9 @@ the WHM result is `0` with the UAPI errors.
 `ApiException` exposes public readonly `?ResponseMetadata $metadata`, matching
 the selected client's snapshot for that attempt. Its subclasses distinguish
 `ApiErrorException` (WHM or UAPI outcome failure), `HttpException` (HTTP outside
-200–299), `InvalidResponseException` (unusable envelope, outcome, or payload), and
+200–299), `InvalidResponseException` (unusable envelope, outcome, or payload; its
+`PayloadMismatchException` subclass marks a payload mismatch after an accepted
+envelope and outcome, per the generated-client design), and
 `TransportException` (PSR transport failure). `ApiException::errors()` exposes
 the snapshot's upstream error text. Messages exclude raw bodies, credentials, and
 upstream error text. Transport failures omit the original exception chain because
@@ -280,8 +283,8 @@ diagnostic values.
 ## Scaling decision: typed core plus generic calls
 
 > **Superseded:** the hand-written lean-pattern group decision below is replaced by
-> the generated-client design (bead `whm-api-client-8x0.10`). The foundation and
-> generic-call tiers remain in force.
+> the [generated-client design](2026-10-14-generated-client-design.md) (bead
+> `whm-api-client-8x0.10`). The foundation and generic-call tiers remain in force.
 
 Decided 2026-10-14 (`whm-api-client-8x0.7`). The pinned map holds 1,323 functions
 and 1,325 variants. The first 29 hand-written operations cost about 90 source and
