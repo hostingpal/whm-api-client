@@ -148,15 +148,17 @@ final readonly class Dns
      *
      * API-map identity: uapi:DNS/has_local_authority#GET (wire name has_local_authority).
      *
-     * @param string $domain The domain to check whether the local server is authoritative for the domain's DNS records.
+     * @param string|list<string> $domains The domain to check whether the local server is authoritative for the
+     *     domain's DNS records.
      * @return HasLocalAuthorityResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/openapi/cpanel/operation/has_local_authority
      */
-    public function hasLocalAuthority(string $domain): array
+    public function hasLocalAuthority(string|array $domains): array
     {
         /** @var HasLocalAuthorityResult $result Validated against DnsSpec::HAS_LOCAL_AUTHORITY. */
-        $result = ($this->run)(DnsSpec::HAS_LOCAL_AUTHORITY, ['domain' => $domain]);
+        $result = ($this->run)(DnsSpec::HAS_LOCAL_AUTHORITY, ['domains' => $domains]);
 
         return $result;
     }

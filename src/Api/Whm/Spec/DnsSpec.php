@@ -198,7 +198,7 @@ final class DnsSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
-            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
         ],
         'returns' => [
             'type' => 'object',

@@ -281,6 +281,15 @@ final class DnsSliceTest extends TestCase
                 ['domain' => 'bare.test'],
             ]],
         ];
+        yield 'has_local_authority repeated' => [
+            'hasLocalAuthority', [['example.test', 'example.org']], 'has_local_authority',
+            'domain=example.test&domain=example.org',
+            '{"records":[{"domain":"example.test","local_authority":1},{"domain":"example.org","local_authority":0}]}',
+            ['records' => [
+                ['domain' => 'example.test', 'local_authority' => 1],
+                ['domain' => 'example.org', 'local_authority' => 0],
+            ]],
+        ];
         yield 'is_alias_available' => [
             'isAliasAvailable', [], 'is_alias_available', '',
             '{"alias":1,"aname":0,"resolver":"192.0.2.53"}',
@@ -547,6 +556,15 @@ final class DnsSliceTest extends TestCase
                     ],
                     ['domain' => 'missing.test', 'error' => 'No zone', 'local_authority' => 0, 'zone' => null],
                     ['domain' => 'bare.test'],
+                ],
+            ],
+            'has_local_authority repeated' => [
+                'hasLocalAuthority', [['example.test', 'example.org']], 'has_local_authority',
+                'domain=example.test&domain=example.org',
+                '[{"domain":"example.test","local_authority":1},{"domain":"example.org","local_authority":0}]',
+                [
+                    ['domain' => 'example.test', 'local_authority' => 1],
+                    ['domain' => 'example.org', 'local_authority' => 0],
                 ],
             ],
             'has_local_authority empty' => [
