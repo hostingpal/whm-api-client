@@ -61,11 +61,11 @@ func Build(m model.Map, set overlay.Set) (Result, error) {
 		if set.Config.Scope == "listed" && !listed {
 			continue
 		}
-		if len(op.Variants) != 1 {
-			b.problem(op.ID + ": operations with several variants need an overlay decision")
+		variant, ok := b.variant(op, entry.op)
+		if !ok {
 			continue
 		}
-		operation, groupName, ok := b.operation(op, op.Variants[0], entry.op)
+		operation, groupName, ok := b.operation(op, variant, entry.op)
 		if !ok {
 			continue
 		}
@@ -78,7 +78,7 @@ func Build(m model.Map, set overlay.Set) (Result, error) {
 		}
 		key := op.Family + "|" + groupName
 		if groups[key] == nil {
-			groups[key] = b.group(op.Family, groupName, op.Variants[0])
+			groups[key] = b.group(op.Family, groupName, variant)
 		}
 		groups[key].Operations = append(groups[key].Operations, operation)
 	}
@@ -121,6 +121,31 @@ var reservedLower = func() map[string]bool {
 
 func (b *builder) problem(message string) { b.problems[message] = true }
 
+// variant picks the variant to generate: the only one, or the one the overlay
+// selects by HTTP method. An operation with several variants needs that
+// decision, and the selected method must be documented.
+func (b *builder) variant(op model.Operation, ov overlay.Operation) (model.Variant, bool) {
+	methods := make([]string, len(op.Variants))
+	for i, v := range op.Variants {
+		methods[i] = v.Method
+	}
+	documented := strings.Join(methods, ", ")
+	if ov.Variant == "" {
+		if len(op.Variants) == 1 {
+			return op.Variants[0], true
+		}
+		b.problem(op.ID + ": operations with several variants need an overlay variant decision (" + documented + ")")
+		return model.Variant{}, false
+	}
+	for _, v := range op.Variants {
+		if v.Method == ov.Variant {
+			return v, true
+		}
+	}
+	b.problem(op.ID + ": variant " + ov.Variant + " is not documented (" + documented + ")")
+	return model.Variant{}, false
+}
+
 func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Operation) (Operation, string, bool) {
 	payload, node, err := b.schemas.payload(op, v)
 	if err != nil {
@@ -128,10 +153,11 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		return Operation{}, "", false
 	}
 	returns := payload.spec
-	// Only query parameters are generated; a documented body (multipart, JSON
-	// or form, possibly carrying secrets) must never be dropped silently.
-	if _, hasBody := node["requestBody"]; hasBody {
-		b.problem(op.ID + ": documents a request body; exclude it until body parameters are supported")
+	// Query parameters and form-encoded body fields are generated; any other
+	// documented body (multipart or JSON, possibly carrying secrets) must
+	// never be dropped silently.
+	body, ok := b.formBody(op, v, node)
+	if !ok {
 		return Operation{}, "", false
 	}
 	if deprecated, _ := node["deprecated"].(bool); deprecated {
@@ -161,8 +187,8 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	result.PHPName = b.methodName(op, ov)
 	result.Constant = b.constant(op, result.PHPName)
 	result.Alias = Pascal(result.PHPName) + "Result"
-	result.Params = b.params(op, v, ov)
-	result.Method = b.method(op, v, ov, result.Params)
+	result.Params = b.params(op, v, ov, body)
+	result.Method = b.method(op, v, ov, result.Params, len(body) > 0)
 	if payload.issue != "" && !ov.Void {
 		b.problem(op.ID + ": " + payload.issue + "; declare void with evidence or exclude the operation")
 	}
@@ -221,13 +247,66 @@ func (b *builder) methodName(op model.Operation, ov overlay.Operation) string {
 	return Camel(op.Function)
 }
 
-func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operation) []Param {
+// formBody returns the fields of a documented application/x-www-form-urlencoded
+// request body as parameters (in "body"), in name order. A field is required
+// only when the body is required and its schema requires the field. It reports
+// false, with a problem, for any other body, which is never dropped silently.
+func (b *builder) formBody(op model.Operation, v model.Variant, node map[string]any) ([]model.Parameter, bool) {
+	raw, documented := node["requestBody"]
+	if !documented {
+		return nil, true
+	}
+	body, bodySource, _, ok := b.schemas.follow(v.OperationLocator.SourceID, raw)
+	content, _ := asObject(body["content"])
+	media, isForm := asObject(content["application/x-www-form-urlencoded"])
+	if !ok || !isForm {
+		b.problem(op.ID + ": documents a request body that is not form-encoded; exclude it until such bodies are supported")
+		return nil, false
+	}
+	schema, schemaSource, _, ok := b.schemas.follow(bodySource, media["schema"])
+	props, hasProps := asObject(schema["properties"])
+	if !ok || !hasProps || len(props) == 0 {
+		b.problem(op.ID + ": documents a form request body without plain properties; exclude it until such bodies are supported")
+		return nil, false
+	}
+	bodyRequired := body["required"] == true
+	required := map[string]bool{}
+	for _, name := range stringList(schema["required"]) {
+		required[name] = bodyRequired
+	}
+	query := map[string]bool{}
+	for _, p := range v.Parameters {
+		query[p.Name] = true
+	}
+	params := make([]model.Parameter, 0, len(props))
+	for _, name := range sortedKeys(props) {
+		if query[name] {
+			b.problem(op.ID + ": parameter " + name + " is documented in both the query and the request body")
+			return nil, false
+		}
+		field, _, _, _ := b.schemas.follow(schemaSource, props[name])
+		params = append(params, model.Parameter{
+			Name: name,
+			In:   "body",
+			Definition: model.Object{
+				"name": name, "in": "body", "required": required[name],
+				"description": field["description"], "schema": props[name],
+			},
+			Locator: model.Locator{SourceID: schemaSource},
+		})
+	}
+	return params, true
+}
+
+// params builds the generated arguments from the variant's query parameters
+// followed by the form body fields; required arguments come first.
+func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operation, body []model.Parameter) []Param {
 	var required, optional []Param
 	used := map[string]bool{}
 	documented := map[string]bool{}
 	omitted := map[string]bool{}
-	for _, p := range v.Parameters {
-		if p.In != "query" {
+	for _, p := range append(append([]model.Parameter{}, v.Parameters...), body...) {
+		if p.In != "query" && p.In != "body" {
 			continue
 		}
 		documented[p.Name] = true
@@ -331,7 +410,10 @@ func orderParams(params []Param, order []string) []Param {
 	return params
 }
 
-func (b *builder) method(op model.Operation, v model.Variant, ov overlay.Operation, params []Param) string {
+// method picks GET for read-only operations and POST otherwise. Secret-bearing
+// parameters and form body fields always need POST, which form-encodes the
+// operation parameters in the body.
+func (b *builder) method(op model.Operation, v model.Variant, ov overlay.Operation, params []Param, body bool) string {
 	sensitive := false
 	for _, p := range params {
 		sensitive = sensitive || p.Sensitive
@@ -340,9 +422,12 @@ func (b *builder) method(op model.Operation, v model.Variant, ov overlay.Operati
 		if ov.Method == "GET" && sensitive {
 			b.problem(op.ID + ": secret-bearing parameters require POST")
 		}
+		if ov.Method == "GET" && body {
+			b.problem(op.ID + ": request body parameters require POST")
+		}
 		return ov.Method
 	}
-	if v.Risk.Classification == "read-only" && !sensitive {
+	if v.Risk.Classification == "read-only" && !sensitive && !body {
 		return "GET"
 	}
 	return "POST"

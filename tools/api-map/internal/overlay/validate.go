@@ -50,7 +50,7 @@ func Validate(set Set) []string {
 			seen[id] = name
 			op := file.Operations[id]
 			if op.Exclude != nil && (op.Name != "" || len(op.Params) > 0 || len(op.Response) > 0 || op.Unwrap != "" ||
-				op.OptionalPayload) {
+				op.OptionalPayload || op.Variant != "") {
 				problems = append(problems, id+": excluded operations take no other settings")
 			}
 			if op.Void && op.Unwrap != "" {
@@ -66,7 +66,7 @@ func Validate(set Set) []string {
 	return problems
 }
 
-// missingEvidence reports behaviour-changing settings (request method, outcome
+// missingEvidence reports behaviour-changing settings (variant, request method, outcome
 // check, void result, optional payload, a parameter encoding, which changes
 // the wire request, or a parameter declared not sensitive) made without
 // operation-level evidence.
@@ -75,6 +75,9 @@ func missingEvidence(id string, op Operation) []string {
 		return nil
 	}
 	var settings []string
+	if op.Variant != "" {
+		settings = append(settings, "variant")
+	}
 	if op.Method != "" {
 		settings = append(settings, "method")
 	}

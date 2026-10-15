@@ -406,7 +406,7 @@ func TestBuildRejectsDocumentedRequestBodies(t *testing.T) {
 	fixtureNode(t, m, "whm1:createacct")["requestBody"] = body
 	fixtureNode(t, m, "whm1:suspendacct")["requestBody"] = body
 	result, joined := buildProblems(t, m, fixtureOverlay("listed"))
-	want := "whm1:createacct: documents a request body; exclude it until body parameters are supported"
+	want := "whm1:createacct: documents a request body that is not form-encoded; exclude it until such bodies are supported"
 	if !strings.Contains(joined, want) {
 		t.Fatalf("missing %q in %s", want, joined)
 	}

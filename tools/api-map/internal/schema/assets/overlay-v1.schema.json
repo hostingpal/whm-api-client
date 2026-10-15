@@ -83,6 +83,7 @@
       "type": "object",
       "properties": {
         "name": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
+        "variant": {"enum": ["GET", "POST"]},
         "method": {"enum": ["GET", "POST"]},
         "outcome": {"enum": ["flag", "unchecked"]},
         "unwrap": {"type": "string", "minLength": 1},

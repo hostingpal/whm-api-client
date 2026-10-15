@@ -76,6 +76,10 @@ Operation entries (all keys optional):
 
 - `name`: the PHP method name. Required when the function has no `_` separator,
   starts with `_`, or contains `/`; otherwise the camelCase function name is used.
+- `variant` (`GET`/`POST`): the documented variant to generate, required for an
+  operation the map documents with several variants (UAPI `WebApp/stage` and
+  `WebApp/redeploy`); it selects that variant's parameters, request body and
+  documentation link.
 - `params`, keyed by wire name: `php` renames the argument (required when the
   derived name is invalid or `this`/`result`), `encoding` is `scalar`, `bool`,
   `repeat` (repeated keys) or `numbered` (`name`, `name-1`, ...), `sensitive`
@@ -98,7 +102,7 @@ Operation entries (all keys optional):
   spec gains `'optional' => true`, the method's return type becomes nullable and
   it returns null in that case (other payloads are validated as usual). Needs a
   documented payload and is exclusive with `void`.
-- `evidence`: operation-level evidence, required when the entry sets `method`,
+- `evidence`: operation-level evidence, required when the entry sets `variant`, `method`,
   `outcome`, `void` or `optional_payload`, sets a parameter `encoding` (it
   changes the wire request), or marks a parameter `"sensitive": false`.
 - `notes` (rendered as "Observed:" lines) and `probe` (stored, not read by the
@@ -129,8 +133,12 @@ that cannot be resolved is a problem until the entry declares `void`, and data
 documented in only some `oneOf`/`anyOf` envelope alternatives needs
 `optional_payload`.
 
-Operations that document a request body or are flagged deprecated upstream must
-be excluded. Evidence is `kind` (`doc` or `live`), `version`, `date`
+The fields of a documented `application/x-www-form-urlencoded` request body
+become parameters after the query parameters (required only when the body and
+its schema require them) and force POST, which form-encodes every operation
+parameter in the body. Operations whose request body is not form-encoded
+(multipart, JSON), or whose form schema has no plain properties, and operations
+flagged deprecated upstream must be excluded. Evidence is `kind` (`doc` or `live`), `version`, `date`
 (`YYYY-MM-DD`), `note` and an optional `fingerprint`.
 
 ```bash

@@ -37,7 +37,10 @@ type File struct {
 
 // Operation holds per-operation decisions; zero values keep generator defaults.
 type Operation struct {
-	Name    string `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
+	// Variant selects the documented variant (by HTTP method) of an operation
+	// the map documents with several variants.
+	Variant string `json:"variant,omitempty"`
 	Method  string `json:"method,omitempty"`
 	Outcome string `json:"outcome,omitempty"`
 	Unwrap  string `json:"unwrap,omitempty"`
@@ -51,8 +54,8 @@ type Operation struct {
 	Notes           []string              `json:"notes,omitempty"`
 	Exclude         *Exclusion            `json:"exclude,omitempty"`
 	Probe           json.RawMessage       `json:"probe,omitempty"`
-	// Evidence backs behaviour-changing settings: method, outcome, void,
-	// optional_payload, a parameter encoding and "sensitive": false on a
+	// Evidence backs behaviour-changing settings: variant, method, outcome,
+	// void, optional_payload, a parameter encoding and "sensitive": false on a
 	// parameter.
 	Evidence []Evidence `json:"evidence,omitempty"`
 }
