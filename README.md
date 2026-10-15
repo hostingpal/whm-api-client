@@ -3,10 +3,13 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 29 read-only operations cover WHM server identity, load, disk usage, domain inventory,
-PHP configuration and feature inventory, plus cPanel domains, DNS, PHP and features. They provide token authentication, direct and WHM-routed UAPI,
-typed payloads, API exceptions, and per-client response metadata over a PSR HTTP
-transport. Other endpoints and broader execution features remain separate work.
+The typed groups cover 39 reviewed operations: WHM server identity, load, disk
+usage, domain inventory, PHP configuration, feature inventory and the cPanel
+account lifecycle, plus cPanel domains, DNS, PHP and features. Generic `call()`
+methods reach every other documented WHM API 1 and UAPI function. The library
+provides token authentication, direct and WHM-routed UAPI, GET and form-encoded
+POST execution, typed payloads, API exceptions, and per-client response metadata
+over a PSR HTTP transport.
 
 The [agreed PHP client interface](docs/superpowers/specs/2026-10-13-php-client-design.md)
 uses `whm()` and `uapi(?string $user = null)`, with typed resource groups
@@ -326,6 +329,89 @@ or malformed lists fail locally and clear prior metadata before network I/O. Sem
 reported by the API. Optional booleans distinguish omission, false and true.
 Generated DNS domains require cPanel 120 and preserve trailing dots.
 
+### Account lifecycle, POST execution and generic calls
+
+`whm()->accounts()` covers the cPanel account lifecycle. Inventory methods use
+GET; mutations use POST so passwords and other parameters stay out of the URL,
+which the pinned WHM documentation says the server records in its access log.
+Records are precise array shapes (`AccountRecord`, `PackageRecord`, `CreatedAccount`,
+`ModifiedAccount`) whose present fields are validated against their pinned types;
+unknown fields are ignored and documented enumerations are not enforced.
+
+| PHP method | Upstream operation | Method | Return |
+| --- | --- | --- | --- |
+| `accounts()->list($search, $searchType, $searchMethod, $want)` | `listaccts` | GET | `list<AccountRecord>` |
+| `accounts()->summary(string $user)` | `accountsummary` | GET | `AccountRecord` |
+| `accounts()->packages(?string $want = null)` | `listpkgs` | GET | `list<PackageRecord>` |
+| `accounts()->create(string $username, array $options = [])` | `createacct` | POST | `CreatedAccount` |
+| `accounts()->suspend($user, $reason, $onlyRootMayUnsuspend, $leaveFtpAccountsEnabled)` | `suspendacct` | POST | `void` |
+| `accounts()->unsuspend($user, $retainServiceProxies)` | `unsuspendacct` | POST | `void` |
+| `accounts()->remove($username, $keepDns)` | `removeacct` | POST | `void` |
+| `accounts()->changePassword($user, $password, $updateDatabasePassword, $digestAuthentication)` | `passwd` | POST | `array{app?: list<string>}` |
+| `accounts()->changePackage($user, $package)` | `changepackage` | POST | `void` |
+| `accounts()->modify(string $user, array $changes)` | `modifyacct` | POST | `ModifiedAccount` |
+
+```php
+$accounts = $client->whm()->accounts();
+$created = $accounts->create('newuser', [
+    'domain' => 'new.example',
+    'password' => $password, // Sent in the form body, never in the URL.
+    'plan' => 'default',
+]);
+$summary = $accounts->summary('newuser'); // AccountRecord: user, domain, plan, suspended, ...
+$accounts->suspend('newuser', 'Unpaid invoice');
+$accounts->unsuspend('newuser');
+$accounts->changePackage('newuser', 'gold');
+$accounts->modify('newuser', ['contactemail' => 'owner@new.example']);
+$accounts->remove('newuser', keepDns: false);
+```
+
+Optional booleans distinguish omission (upstream default), `false` (`0`) and `true`
+(`1`). `summary()` requires exactly one record. `create()` and `modify()` forward
+every documented option key unchanged (`username`/`user` come from the argument);
+per-domain `MXCHECK-<domain>` keys for `modifyacct` are outside the typed shape and
+go through `call()`. The server's `uid` is accepted as the observed canonical decimal
+string and normalized to the pinned integer; see the
+[runtime observations](docs/api/source-audit.md#runtime-observations-2026-10-14).
+The alias parameters `removeacct` `user` and `passwd` `enabledigest`, and the
+`accountsummary` lookups other than `user`, are not sent, so the coverage report
+lists those variants as partial.
+
+#### Generic calls
+
+Every documented WHM API 1 and UAPI function is reachable without a typed group,
+through the same authentication, routing, encoding, envelope handling, metadata
+and exceptions:
+
+```php
+use HostingPal\WhmApiClient\Api\OutcomePolicy;
+use HostingPal\WhmApiClient\Api\RequestMethod;
+
+$result = $client->whm()->call('listaccts', ['searchtype' => 'user', 'search' => 'npr']);
+$accounts = $result->data['acct'];   // Envelope data converted to arrays; no schema applied.
+$reason = $result->metadata->whmReason();
+
+// POST keeps api.version in the URL and form-encodes the parameters in the body.
+$client->whm()->call('passwd', ['user' => 'npr', 'password' => $password], RequestMethod::Post);
+
+// UAPI: direct with a cPanel token or bridged through WHM; cpanel.* fields cannot be overridden.
+$pops = $client->uapi('npr')->call('Email', 'list_pops');
+
+// Status with payload semantics: record the envelope and interpret it yourself.
+$feature = $client->uapi('npr')->call('Features', 'has_feature', ['name' => 'ssh'], outcome: OutcomePolicy::Unchecked);
+$state = $feature->metadata->uapiStatus();
+```
+
+`CallResult::$data` is the payload with JSON objects converted to associative
+arrays (numeric keys become integers); `$hasData` distinguishes an omitted `data`
+member from an explicit null. Names are validated before I/O (`[A-Za-z0-9_]`
+segments; WHM allows `/`-separated namespaces), and the reserved `api.version` and
+bridge `cpanel.*` fields are removed from caller parameters. `OutcomePolicy::Flag`
+(default) applies the documented `metadata.result`/`status` 1/0 rule;
+`OutcomePolicy::Unchecked` records the envelope without interpreting it. Both still
+require a usable envelope and report HTTP failures. POST execution on all three
+routes was verified live on 2026-10-14 with read-only functions.
+
 ## Response metadata and failures
 
 `responseMeta(): ?ResponseMetadata` belongs to the selected WHM or UAPI client.
@@ -339,7 +425,8 @@ contains the WHM envelope's raw `metadata`; `$uapi` contains the UAPI result
 envelope without `data`, including any supplied status, errors, messages,
 warnings, and metadata. Nested JSON metadata objects are represented as arrays. Bridged calls
 retain both maps and check both outcomes; outer WHM success alone is insufficient.
-These outcome rules apply to the implemented operations.
+These are the `OutcomePolicy::Flag` rules that every typed operation declares;
+generic calls may choose `OutcomePolicy::Unchecked` (see above).
 
 Typed accessors read the documented envelope fields without coercion:
 `whmResult()`, `whmReason()`, `uapiStatus()`, `uapiErrors()`, `uapiWarnings()` and

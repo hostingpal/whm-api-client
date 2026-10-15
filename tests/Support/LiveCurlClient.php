@@ -13,9 +13,88 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 
-/** Test-only HTTPS adapter restricted to the approved read-only requests. */
+/**
+ * Test-only HTTPS adapter restricted to the approved requests.
+ *
+ * Read-only GET and POST requests are approved by exact method, URI, and body.
+ * Lifecycle mutations are approved only when the client was built for an
+ * explicitly named throwaway account and the body targets that account.
+ */
 final readonly class LiveCurlClient implements ClientInterface
 {
+    private const WHM = 'https://test.oblak.host:2087/json-api/';
+
+    private const CPANEL = 'https://test.oblak.host:2083/execute/';
+
+    private const BRIDGE = self::WHM . 'uapi_cpanel?api.version=1&cpanel.user=npr';
+
+    /** Approved read-only GET requests; the body must be empty. */
+    private const READ_ONLY_GET = [
+        self::WHM . 'get_feature_metadata?api.version=1',
+        self::WHM . 'get_feature_names?api.version=1',
+        self::WHM . 'get_featurelist_data?api.version=1&featurelist=default',
+        self::WHM . 'get_featurelists?api.version=1',
+        self::WHM . 'get_featurelists_by_package_types?api.version=1',
+        self::WHM . 'get_users_features_settings?api.version=1&user=npr&feature=autossl',
+        self::WHM . 'verify_user_has_feature?api.version=1&user=npr&feature=autossl',
+        self::WHM . 'php_get_installed_versions?api.version=1',
+        self::WHM . 'php_get_system_default_version?api.version=1',
+        self::WHM . 'php_get_handlers?api.version=1',
+        self::WHM . 'php_get_default_accounts_to_fpm?api.version=1',
+        self::WHM . 'php_get_old_fpm_flag?api.version=1',
+        self::WHM . 'is_conversion_in_progress?api.version=1',
+        self::WHM . 'php_get_vhosts_by_version?api.version=1&version=ea-php82',
+        self::CPANEL . 'DomainInfo/primary_domain',
+        self::BRIDGE . '&cpanel.module=DomainInfo&cpanel.function=primary_domain',
+        self::CPANEL . 'DomainInfo/main_domain_builtin_subdomain_aliases',
+        self::BRIDGE . '&cpanel.module=DomainInfo&cpanel.function=main_domain_builtin_subdomain_aliases',
+        self::CPANEL . 'LangPHP/php_get_system_default_version',
+        self::BRIDGE . '&cpanel.module=LangPHP&cpanel.function=php_get_system_default_version',
+        self::CPANEL . 'LangPHP/php_get_domain_handler?type=home',
+        self::BRIDGE . '&cpanel.module=LangPHP&cpanel.function=php_get_domain_handler&type=home',
+        self::CPANEL . 'LangPHP/php_get_impacted_domains?domain=npr.rs',
+        self::BRIDGE . '&cpanel.module=LangPHP&cpanel.function=php_get_impacted_domains&domain=npr.rs',
+        self::CPANEL . 'Features/list_features',
+        self::BRIDGE . '&cpanel.module=Features&cpanel.function=list_features',
+        self::CPANEL . 'DNS/lookup?domain=npr.rs',
+        self::BRIDGE . '&cpanel.module=DNS&cpanel.function=lookup&domain=npr.rs',
+        self::CPANEL . 'DNS/fetch_cpanel_generated_domains?domain=npr.rs',
+        self::BRIDGE . '&cpanel.module=DNS&cpanel.function=fetch_cpanel_generated_domains&domain=npr.rs',
+        self::WHM . 'version?api.version=1',
+        self::WHM . 'gethostname?api.version=1',
+        self::WHM . 'systemloadavg?api.version=1',
+        self::WHM . 'getdiskusage?api.version=1',
+        self::WHM . 'get_domain_info?api.version=1',
+        self::BRIDGE . '&cpanel.module=DomainInfo&cpanel.function=list_domains',
+        self::BRIDGE . '&cpanel.module=LangPHP&cpanel.function=php_get_installed_versions',
+        self::CPANEL . 'DomainInfo/list_domains',
+        self::CPANEL . 'LangPHP/php_get_installed_versions',
+        self::WHM . 'listaccts?api.version=1',
+        self::WHM . 'listaccts?api.version=1&search=npr&searchmethod=exact&searchtype=user',
+        self::WHM . 'accountsummary?api.version=1&user=npr',
+        self::WHM . 'listpkgs?api.version=1',
+        self::WHM . 'listpkgs?api.version=1&want=creatable',
+    ];
+
+    /** Approved read-only POST requests as exact [URI, form body] pairs. */
+    private const READ_ONLY_POST = [
+        [self::WHM . 'version?api.version=1', ''],
+        [self::WHM . 'listaccts?api.version=1', 'search=npr&searchmethod=exact&searchtype=user'],
+        [self::CPANEL . 'DomainInfo/primary_domain', ''],
+        [self::BRIDGE . '&cpanel.module=DomainInfo&cpanel.function=primary_domain', ''],
+    ];
+
+    /** Mutations approved only for the explicitly named throwaway account. */
+    private const LIFECYCLE = [
+        'createacct',
+        'suspendacct',
+        'unsuspendacct',
+        'removeacct',
+        'passwd',
+        'changepackage',
+        'modifyacct',
+    ];
+
     /** @var Closure(RequestInterface): ResponseInterface */
     private Closure $execute;
 
@@ -23,70 +102,54 @@ final readonly class LiveCurlClient implements ClientInterface
      * An optional execution boundary lets offline tests prove rejection before cURL.
      *
      * @param (Closure(RequestInterface): ResponseInterface)|null $execute
+     * @param string|null $lifecycleAccount Throwaway account whose lifecycle mutations are approved.
      */
-    public function __construct(?Closure $execute = null)
+    public function __construct(?Closure $execute = null, private ?string $lifecycleAccount = null)
     {
         $this->execute = $execute ?? self::sendCurl(...);
     }
 
     public function sendRequest(RequestInterface $request): ResponseInterface
     {
-        $approvedUris = [
-            'https://test.oblak.host:2087/json-api/get_feature_metadata?api.version=1',
-            'https://test.oblak.host:2087/json-api/get_feature_names?api.version=1',
-            'https://test.oblak.host:2087/json-api/get_featurelist_data?api.version=1&featurelist=default',
-            'https://test.oblak.host:2087/json-api/get_featurelists?api.version=1',
-            'https://test.oblak.host:2087/json-api/get_featurelists_by_package_types?api.version=1',
-            'https://test.oblak.host:2087/json-api/get_users_features_settings?api.version=1&user=npr&feature=autossl',
-            'https://test.oblak.host:2087/json-api/verify_user_has_feature?api.version=1&user=npr&feature=autossl',
-            'https://test.oblak.host:2087/json-api/php_get_installed_versions?api.version=1',
-            'https://test.oblak.host:2087/json-api/php_get_system_default_version?api.version=1',
-            'https://test.oblak.host:2087/json-api/php_get_handlers?api.version=1',
-            'https://test.oblak.host:2087/json-api/php_get_default_accounts_to_fpm?api.version=1',
-            'https://test.oblak.host:2087/json-api/php_get_old_fpm_flag?api.version=1',
-            'https://test.oblak.host:2087/json-api/is_conversion_in_progress?api.version=1',
-            'https://test.oblak.host:2087/json-api/php_get_vhosts_by_version?api.version=1&version=ea-php82',
-            'https://test.oblak.host:2083/execute/DomainInfo/primary_domain',
-            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
-                . '&cpanel.module=DomainInfo&cpanel.function=primary_domain',
-            'https://test.oblak.host:2083/execute/DomainInfo/main_domain_builtin_subdomain_aliases',
-            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
-                . '&cpanel.module=DomainInfo&cpanel.function=main_domain_builtin_subdomain_aliases',
-            'https://test.oblak.host:2083/execute/LangPHP/php_get_system_default_version',
-            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
-                . '&cpanel.module=LangPHP&cpanel.function=php_get_system_default_version',
-            'https://test.oblak.host:2083/execute/LangPHP/php_get_domain_handler?type=home',
-            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
-                . '&cpanel.module=LangPHP&cpanel.function=php_get_domain_handler&type=home',
-            'https://test.oblak.host:2083/execute/LangPHP/php_get_impacted_domains?domain=npr.rs',
-            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
-                . '&cpanel.module=LangPHP&cpanel.function=php_get_impacted_domains&domain=npr.rs',
-            'https://test.oblak.host:2083/execute/Features/list_features',
-            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
-                . '&cpanel.module=Features&cpanel.function=list_features',
-            'https://test.oblak.host:2083/execute/DNS/lookup?domain=npr.rs',
-            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
-                . '&cpanel.module=DNS&cpanel.function=lookup&domain=npr.rs',
-            'https://test.oblak.host:2083/execute/DNS/fetch_cpanel_generated_domains?domain=npr.rs',
-            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
-                . '&cpanel.module=DNS&cpanel.function=fetch_cpanel_generated_domains&domain=npr.rs',
-            'https://test.oblak.host:2087/json-api/version?api.version=1',
-            'https://test.oblak.host:2087/json-api/gethostname?api.version=1',
-            'https://test.oblak.host:2087/json-api/systemloadavg?api.version=1',
-            'https://test.oblak.host:2087/json-api/getdiskusage?api.version=1',
-            'https://test.oblak.host:2087/json-api/get_domain_info?api.version=1',
-            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1'
-                . '&cpanel.user=npr&cpanel.module=DomainInfo&cpanel.function=list_domains',
-            'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1'
-                . '&cpanel.user=npr&cpanel.module=LangPHP&cpanel.function=php_get_installed_versions',
-            'https://test.oblak.host:2083/execute/DomainInfo/list_domains',
-            'https://test.oblak.host:2083/execute/LangPHP/php_get_installed_versions',
-        ];
-        if ($request->getMethod() !== 'GET' || !in_array((string) $request->getUri(), $approvedUris, true)) {
+        $uri = (string) $request->getUri();
+        $body = (string) $request->getBody();
+        $approved = match ($request->getMethod()) {
+            'GET' => $body === '' && (in_array($uri, self::READ_ONLY_GET, true) || $this->lifecycleSummary($uri)),
+            'POST' => in_array([$uri, $body], self::READ_ONLY_POST, true) || $this->lifecycleMutation($uri, $body),
+            default => false,
+        };
+        if (!$approved) {
             throw new LogicException('Request outside the approved live-test scope.');
         }
 
         return ($this->execute)($request);
+    }
+
+    /** Approve the summary of the throwaway account while a lifecycle runs. */
+    private function lifecycleSummary(string $uri): bool
+    {
+        return $this->lifecycleAccount !== null
+            && $uri === self::WHM . 'accountsummary?api.version=1&user=' . $this->lifecycleAccount;
+    }
+
+    /** Approve a lifecycle mutation only when its body targets the throwaway account. */
+    private function lifecycleMutation(string $uri, string $body): bool
+    {
+        if (
+            $this->lifecycleAccount === null
+            || !str_starts_with($uri, self::WHM)
+            || !str_ends_with($uri, '?api.version=1')
+        ) {
+            return false;
+        }
+        $operation = substr($uri, strlen(self::WHM), -strlen('?api.version=1'));
+        if (!in_array($operation, self::LIFECYCLE, true)) {
+            return false;
+        }
+        parse_str($body, $parameters);
+        $target = $parameters['username'] ?? $parameters['user'] ?? null;
+
+        return $target === $this->lifecycleAccount;
     }
 
     /** Make one verified HTTPS request with no redirect following or retries. */
@@ -98,21 +161,30 @@ final readonly class LiveCurlClient implements ClientInterface
             throw new RuntimeException('Unable to initialize the live HTTPS transport.');
         }
 
+        $headers = [
+            'Authorization: ' . $request->getHeaderLine('Authorization'),
+            'Accept: application/json',
+        ];
+        $options = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+        ];
+        if ($request->getMethod() === 'POST') {
+            $headers[] = 'Content-Type: ' . $request->getHeaderLine('Content-Type');
+            $options[CURLOPT_POST] = true;
+            $options[CURLOPT_POSTFIELDS] = (string) $request->getBody();
+        } else {
+            $options[CURLOPT_HTTPGET] = true;
+        }
+        $options[CURLOPT_HTTPHEADER] = $headers;
+
         try {
-            curl_setopt_array($curl, [
-                CURLOPT_HTTPGET => true,
-                CURLOPT_HTTPHEADER => [
-                    'Authorization: ' . $request->getHeaderLine('Authorization'),
-                    'Accept: application/json',
-                ],
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_FOLLOWLOCATION => false,
-                CURLOPT_SSL_VERIFYPEER => true,
-                CURLOPT_SSL_VERIFYHOST => 2,
-                CURLOPT_CONNECTTIMEOUT => 10,
-                CURLOPT_TIMEOUT => 30,
-                CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
-            ]);
+            curl_setopt_array($curl, $options);
             $body = curl_exec($curl);
             $status = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
             $errorNumber = curl_errno($curl);

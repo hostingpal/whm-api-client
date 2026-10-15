@@ -11,7 +11,7 @@ use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\Response\ApiResponse;
 use HostingPal\WhmApiClient\Response\ResponseRoute;
 
-/** Expose the shared WHM GET executor so tests can exercise query encoding directly. */
+/** Expose the shared WHM executors so tests can exercise query and body encoding directly. */
 final class WhmQueryClient extends AbstractApiClient
 {
     public function __construct(HttpTransport $transport)
@@ -29,6 +29,17 @@ final class WhmQueryClient extends AbstractApiClient
         return $this->executeGet(
             '/json-api/get_users_features_settings',
             ['api.version' => 1] + $query,
+            ResponseRoute::Whm,
+        );
+    }
+
+    /** @param array<string, string|int|list<string>|NumberedList> $body */
+    public function post(array $body): ApiResponse
+    {
+        return $this->executePost(
+            '/json-api/get_users_features_settings',
+            ['api.version' => 1],
+            $body,
             ResponseRoute::Whm,
         );
     }

@@ -1,8 +1,10 @@
 # Official API documentation inputs
 
 The source audit for Beads `whm-api-client-gwi.1` covers **WHM API 1** and
-**cPanel UAPI**. The PHP package currently implements only an HTTP transport;
-these documents do not establish endpoint implementation or live-test coverage.
+**cPanel UAPI**. The PHP package implements typed groups for 39 reviewed operations
+plus generic calls; these documents pin the contracts and do not by themselves
+establish endpoint implementation or live-test coverage (see the
+[coverage report](coverage/report.md)).
 
 - [Audit and contract discrepancies](source-audit.md)
 - [Measured source structure](source-inventory.json)
