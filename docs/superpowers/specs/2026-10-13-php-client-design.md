@@ -279,6 +279,10 @@ diagnostic values.
 
 ## Scaling decision: typed core plus generic calls
 
+> **Superseded:** the hand-written lean-pattern group decision below is replaced by
+> the generated-client design (bead `whm-api-client-8x0.10`). The foundation and
+> generic-call tiers remain in force.
+
 Decided 2026-10-14 (`whm-api-client-8x0.7`). The pinned map holds 1,323 functions
 and 1,325 variants. The first 29 hand-written operations cost about 90 source and
 150 test lines each, which extrapolates to well over 100,000 lines, and the runtime

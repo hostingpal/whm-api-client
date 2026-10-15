@@ -3,12 +3,13 @@
   "family": "uapi",
   "group": "LangPHP",
   "operations": {
-    "uapi:LangPHP/php_get_domain_handler": {"unwrap": "php_handler"},
+    "uapi:LangPHP/php_get_domain_handler": {"unwrap": "php_handler", "notes": ["Requires EasyApache 4 and the WebServer role."]},
     "uapi:LangPHP/php_get_impacted_domains": {
       "params": {"domain": {"php": "domains", "encoding": "repeat"}},
-      "unwrap": "domains"
+      "unwrap": "domains",
+      "notes": ["Requires EasyApache 4 and the WebServer role."]
     },
-    "uapi:LangPHP/php_get_installed_versions": {"unwrap": "versions"},
-    "uapi:LangPHP/php_get_system_default_version": {"unwrap": "version"}
+    "uapi:LangPHP/php_get_installed_versions": {"unwrap": "versions", "notes": ["Applies to EasyApache 4 systems and is disabled when the WebServer role is disabled."]},
+    "uapi:LangPHP/php_get_system_default_version": {"unwrap": "version", "notes": ["Disabling the WebServer role disables this operation."]}
   }
 }

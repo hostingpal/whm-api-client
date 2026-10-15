@@ -138,8 +138,10 @@ server, domain, PHP and feature inventory plus the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`).
 `whm()->call()` and `uapi()->call()` reach every other documented function
-generically. The scaling decision behind generated typed groups is recorded in the
-[client design spec](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls).
+generically. The 2026-10-13 spec's
+[scaling decision (typed core plus generic calls)](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls)
+is superseded: its hand-written-group decision is replaced by the generated-client
+design (bead `whm-api-client-8x0.10`).
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.

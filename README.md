@@ -103,8 +103,9 @@ Typed groups are generated from the pinned API map plus the reviewed overlay in
 `docs/api/overlay/`; the classes under `src/Api/Whm/` and `src/Api/Uapi/` are never
 edited by hand. [`docs/api/coverage.md`](docs/api/coverage.md) lists the generated
 groups, their accessors, operation counts and the excluded (deprecated) operations.
-Every method has PHPDoc with the official operation link and a precise PHPStan array
-shape for its result.
+Every method has generated PHPDoc: a summary, the upstream description, any observed
+notes recorded in the overlay, the API-map identity, the official operation `@see`
+link and a precise PHPStan array shape for its result.
 
 Selectors and groups perform no network I/O. A group method executes one request
 immediately, takes named arguments (optional parameters are `null` to omit; booleans
@@ -116,7 +117,7 @@ payload as a plain array, scalar or `null`:
 $version = $client->whm()->server()->version();       // string
 $hostname = $client->whm()->server()->getHostname();  // string
 $load = $client->whm()->server()->getLoadAverage();   // array{one?: ..., five?: ..., fifteen?: ...}
-$oneMinuteLoad = $load['one'];                        // int|float|numeric-string, original form.
+$oneMinuteLoad = $load['one'] ?? null;                // int|float|numeric-string, original form.
 
 foreach ($client->whm()->server()->getDiskUsage()['partition'] ?? [] as $partition) {
     $usedPercent = $partition['percentage'] ?? null;
@@ -124,7 +125,7 @@ foreach ($client->whm()->server()->getDiskUsage()['partition'] ?? [] as $partiti
 
 $account = $client->uapi('npr');
 $domains = $account->domainInfo()->listDomains();
-$mainDomain = $domains['main_domain'];
+$mainDomain = $domains['main_domain'] ?? null;
 
 // Optional filter: null omits it, false sends 0, true sends 1.
 $withoutTemporary = $account->domainInfo()->listDomains(hideTemporaryDomains: true);
@@ -137,7 +138,7 @@ foreach ($client->whm()->accounts()->getDomainInfo()['domains'] ?? [] as $domain
 $phpVersions = $account->langPhp()->phpGetInstalledVersions(); // list<string>
 ```
 
-Results are arrays keyed by the upstream wire names (`$domains['main_domain']`).
+Results are arrays keyed by the upstream wire names (`$domains['main_domain'] ?? null`).
 Omitted fields are absent keys (use `array_key_exists()` or `??`) and an explicit
 upstream `null` stays `null`. Values that vary on real servers are normalized to the
 documented type: for example ports and `uid` become `int`, feature flags become
@@ -148,9 +149,9 @@ precision and trailing zeros survive.
 Response validation enforces the pinned types, required fields and the observed
 wire variants. Documented minimum, range and enumeration constraints are not yet
 enforced (tracked as `whm-api-client-8x0.18`). A malformed payload raises
-`InvalidResponseException` carrying the response metadata. The generated PHPDoc
-states the account scope, requirements (for example EasyApache 4 for PHP
-operations) and upstream caveats of each operation.
+`InvalidResponseException` carrying the response metadata. Caveats recorded as
+observed notes (for example the EasyApache 4 and WebServer role requirement of the
+PHP operations) appear in the affected methods' PHPDoc.
 
 ### WHM API 1
 
@@ -250,9 +251,26 @@ DTOs and `toArray()` are gone: read arrays with wire keys. Renamed calls:
 | `uapi()->domains()->list()` / `primary()` / `builtinAliases()` | `uapi()->domainInfo()->listDomains()` / `primaryDomain()` / `mainDomainBuiltinSubdomainAliases()` |
 | `uapi()->php()->...` | `uapi()->langPhp()->phpGet...` |
 | `uapi()->dns()->generatedDomains()` | `uapi()->dns()->fetchCpanelGeneratedDomains()` |
+| `uapi()->features()->list()` | `uapi()->features()->listFeatures()` |
 
 Boolean results (`defaultAccountsToFpm`, `isConversionInProgress`, `verifyUserHasFeature`)
 are now `0|1`, and `create`/`modify` options are named arguments instead of an options array.
+`createAccount()`, `changePassword()` and `modifyAccount()` return `null` when the server
+sends no data (and the documented array otherwise), and `accountSummary()` returns the
+`acct` record list rather than a single record.
+
+Named-argument names now follow the upstream wire names. Renames from the earlier
+signatures:
+
+| Earlier name | Generated name |
+| --- | --- |
+| `searchType`, `searchMethod` (`listAccounts`) | `searchtype`, `searchmethod` |
+| `keepDns` (`removeAccount`) | `keepdns` |
+| `onlyRootMayUnsuspend`, `leaveFtpAccountsEnabled` (`suspendAccount`) | `disallowun`, `leaveFtpAcctsEnabled` |
+| `updateDatabasePassword`, `digestAuthentication` (`changePassword`) | `dbPassUpdate`, `digestauth` |
+| `domain` (`phpGetImpactedDomains`) | `domains` |
+| `user`, `feature` (`getUsersFeaturesSettings`) | `users`, `features` |
+| `featureList` (`getFeaturelistData`) | `featurelist` |
 
 ### Generic calls
 

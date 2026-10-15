@@ -10,9 +10,10 @@ use stdClass;
 /**
  * Validate decoded payload values for one response without coercing them.
  *
- * Operation groups and DTOs compose these primitives with their reviewed field
- * lists. Every failure raises InvalidResponseException carrying this response's
- * metadata snapshot and a message naming only the payload subject, never values.
+ * The generated-operation engine (ShapeValidator) and generic or legacy callers
+ * compose these primitives with their reviewed field lists. Every failure raises
+ * InvalidResponseException carrying this response's metadata snapshot and a message
+ * naming only the payload subject, never values.
  * Values are returned unchanged; lists are copied so array references in the
  * decoded source cannot alter the result. Compatibility primitives such as
  * stringFlag() widen a pinned type only where an endpoint opts in per field

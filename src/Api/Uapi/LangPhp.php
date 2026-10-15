@@ -38,6 +38,8 @@ final readonly class LangPhp
      *
      * This function returns a PHP version's assigned PHP handler.
      *
+     * Observed: Requires EasyApache 4 and the WebServer role.
+     *
      * API-map identity: uapi:LangPHP/php_get_domain_handler#GET (wire name php_get_domain_handler).
      *
      * @param 'home'|'vhost' $type The type of `php.ini` file.
@@ -58,6 +60,8 @@ final readonly class LangPhp
      * Return domains that shared PHP configuration.
      *
      * This function lists domains that obtain their PHP version from a specified PHP configuration.
+     *
+     * Observed: Requires EasyApache 4 and the WebServer role.
      *
      * API-map identity: uapi:LangPHP/php_get_impacted_domains#GET (wire name php_get_impacted_domains).
      *
@@ -85,6 +89,8 @@ final readonly class LangPhp
      *
      * This function lists the system's PHP versions.
      *
+     * Observed: Applies to EasyApache 4 systems and is disabled when the WebServer role is disabled.
+     *
      * API-map identity: uapi:LangPHP/php_get_installed_versions#GET (wire name php_get_installed_versions).
      *
      * @return PhpGetInstalledVersionsResult
@@ -103,6 +109,8 @@ final readonly class LangPhp
      * Return default PHP version.
      *
      * This function lists the system’s default PHP version.
+     *
+     * Observed: Disabling the WebServer role disables this operation.
      *
      * API-map identity: uapi:LangPHP/php_get_system_default_version#GET (wire name php_get_system_default_version).
      *
