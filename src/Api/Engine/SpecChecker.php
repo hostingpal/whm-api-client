@@ -69,7 +69,7 @@ final class SpecChecker
      *
      * @throws LogicException If the type spec is defective.
      */
-    public static function type(mixed $type): void
+    private static function type(mixed $type): void
     {
         if (!is_array($type) || !in_array($type['type'] ?? null, self::TYPES, true)) {
             throw new LogicException('Unsupported type spec.');
