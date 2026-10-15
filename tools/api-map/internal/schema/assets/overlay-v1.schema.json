@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hostingpal.github.io/whm-api-client/schema/overlay-v1.schema.json",
+  "title": "Generated-client overlay group file v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "family": {"enum": ["uapi", "whm1"]},
+    "group": {"type": "string", "minLength": 1},
+    "accessor": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
+    "class": {"type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$"},
+    "description": {"type": "string", "minLength": 1},
+    "operations": {
+      "type": "object",
+      "propertyNames": {"pattern": "^(uapi|whm1):[A-Za-z0-9_/]+$"},
+      "additionalProperties": {"$ref": "#/$defs/operation"}
+    }
+  },
+  "required": ["schema_version", "family", "group", "operations"],
+  "additionalProperties": false,
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "kind": {"enum": ["doc", "live"]},
+        "version": {"type": "string", "minLength": 1},
+        "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+        "note": {"type": "string", "minLength": 1},
+        "fingerprint": {"type": "string", "minLength": 1}
+      },
+      "required": ["kind", "version", "date", "note"],
+      "additionalProperties": false
+    },
+    "evidenceList": {"type": "array", "items": {"$ref": "#/$defs/evidence"}, "minItems": 1},
+    "param": {
+      "type": "object",
+      "properties": {
+        "php": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
+        "encoding": {"enum": ["scalar", "bool", "repeat", "numbered"]},
+        "sensitive": {"type": "boolean"},
+        "omit": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "typeSpec": {
+      "type": "object",
+      "properties": {
+        "type": {"enum": ["string", "int", "number", "bool", "flag", "mixed", "list", "map", "object", "union"]},
+        "nullable": {"type": "boolean"},
+        "accept": {"type": "array", "items": {"enum": ["numeric-string", "string-flag", "int-flag", "bool"]}, "uniqueItems": true},
+        "preserve": {"type": "boolean"},
+        "items": {"$ref": "#/$defs/typeSpec"},
+        "values": {"$ref": "#/$defs/typeSpec"},
+        "fields": {"type": "object", "additionalProperties": {"$ref": "#/$defs/typeSpec"}},
+        "required": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "anyOf": {"type": "array", "items": {"$ref": "#/$defs/typeSpec"}, "minItems": 1}
+      },
+      "required": ["type"],
+      "additionalProperties": false,
+      "allOf": [
+        {"if": {"properties": {"type": {"const": "list"}}}, "then": {"required": ["items"]}},
+        {"if": {"properties": {"type": {"const": "map"}}}, "then": {"required": ["values"]}},
+        {"if": {"properties": {"type": {"const": "union"}}}, "then": {"required": ["anyOf"]}},
+        {"if": {"properties": {"type": {"const": "object"}}}, "then": {"required": ["fields"]}}
+      ]
+    },
+    "correction": {
+      "type": "object",
+      "properties": {
+        "type": {"enum": ["string", "int", "number", "bool", "flag", "mixed"]},
+        "accept": {"type": "array", "items": {"enum": ["numeric-string", "string-flag", "int-flag", "bool"]}, "uniqueItems": true},
+        "nullable": {"type": "boolean"},
+        "preserve": {"type": "boolean"},
+        "required": {"type": "boolean"},
+        "add": {"$ref": "#/$defs/typeSpec"},
+        "replace": {"$ref": "#/$defs/typeSpec"},
+        "evidence": {"$ref": "#/$defs/evidenceList"}
+      },
+      "required": ["evidence"],
+      "additionalProperties": false
+    },
+    "operation": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
+        "method": {"enum": ["GET", "POST"]},
+        "outcome": {"enum": ["flag", "unchecked"]},
+        "unwrap": {"type": "string", "minLength": 1},
+        "void": {"type": "boolean"},
+        "order": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "params": {"type": "object", "additionalProperties": {"$ref": "#/$defs/param"}},
+        "response": {"type": "object", "additionalProperties": {"$ref": "#/$defs/correction"}},
+        "notes": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "exclude": {
+          "type": "object",
+          "properties": {
+            "reason": {"type": "string", "minLength": 1},
+            "evidence": {"$ref": "#/$defs/evidenceList"}
+          },
+          "required": ["reason", "evidence"],
+          "additionalProperties": false
+        },
+        "probe": {"type": "object"},
+        "evidence": {"$ref": "#/$defs/evidenceList"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

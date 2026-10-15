@@ -1,0 +1,225 @@
+package effective
+
+import (
+	"fmt"
+	"sort"
+	"strings"
+
+	"github.com/hostingpal/whm-api-client/tools/api-map/internal/overlay"
+)
+
+type segment struct {
+	name     string
+	suffixes []string
+}
+
+// parsePath splits "acct[].uid" into fields with list ("[]") and map ("{}") steps.
+// The empty path would address the payload root, which is not a field path.
+func parsePath(path string) ([]segment, error) {
+	if path == "" {
+		return nil, fmt.Errorf("path %q is not a field path", path)
+	}
+	var segments []segment
+	for i, part := range strings.Split(path, ".") {
+		seg := segment{}
+		for strings.HasSuffix(part, "[]") || strings.HasSuffix(part, "{}") {
+			seg.suffixes = append([]string{part[len(part)-2:]}, seg.suffixes...)
+			part = part[:len(part)-2]
+		}
+		seg.name = part
+		if seg.name == "" && i > 0 {
+			return nil, fmt.Errorf("invalid response path %q", path)
+		}
+		segments = append(segments, seg)
+	}
+	return segments, nil
+}
+
+func fieldIndex(spec *TypeSpec, name string) int {
+	for i := range spec.Fields {
+		if spec.Fields[i].Name == name {
+			return i
+		}
+	}
+	return -1
+}
+
+// applyCorrection changes the spec at path. "add" declares an undocumented
+// field; "replace" swaps a documented node for an overlay type spec, keeping
+// nothing from the documented node. The node's final accept and preserve
+// settings must suit its type.
+func applyCorrection(root *TypeSpec, path string, c overlay.Correction) error {
+	if c.Replace != nil && (c.Type != "" || c.Add != nil) {
+		return fmt.Errorf("path %q: replace cannot be combined with type or add", path)
+	}
+	if c.Type != "" && !scalarTypes[c.Type] {
+		return fmt.Errorf("path %q: type %q is not a scalar type; use replace", path, c.Type)
+	}
+	segments, err := parsePath(path)
+	if err != nil {
+		return err
+	}
+	current := root
+	var parent *TypeSpec
+	field := ""
+	for i, seg := range segments {
+		if seg.name != "" {
+			if current.Type != "object" {
+				return fmt.Errorf("path %q: %q is not an object field", path, seg.name)
+			}
+			index := fieldIndex(current, seg.name)
+			if index >= 0 && i == len(segments)-1 && len(seg.suffixes) == 0 && c.Add != nil {
+				return fmt.Errorf("path %q: field %q is documented; use type, accept or nullable instead of add", path, seg.name)
+			}
+			if index < 0 {
+				if i != len(segments)-1 || c.Add == nil {
+					return fmt.Errorf("path %q: field %q is not documented", path, seg.name)
+				}
+				added, err := fromOverlay(path, *c.Add)
+				if err != nil {
+					return err
+				}
+				current.Fields = append(current.Fields, Field{Name: seg.name, Spec: added})
+				sort.Slice(current.Fields, func(a, b int) bool { return current.Fields[a].Name < current.Fields[b].Name })
+				index = fieldIndex(current, seg.name)
+			}
+			parent, field = current, seg.name
+			current = &current.Fields[index].Spec
+		}
+		for _, suffix := range seg.suffixes {
+			if suffix == "[]" {
+				if current.Items == nil {
+					return fmt.Errorf("path %q: not a list", path)
+				}
+				current = current.Items
+			} else {
+				if current.Values == nil {
+					return fmt.Errorf("path %q: not a map", path)
+				}
+				current = current.Values
+			}
+			parent, field = nil, ""
+		}
+	}
+	if c.Replace != nil {
+		replacement, err := fromOverlay(path, *c.Replace)
+		if err != nil {
+			return err
+		}
+		*current = replacement
+	}
+	if c.Type != "" {
+		*current = TypeSpec{Type: c.Type, Nullable: current.Nullable}
+	}
+	if len(c.Accept) > 0 {
+		current.Accept = append([]string(nil), c.Accept...)
+	}
+	if c.Nullable != nil {
+		current.Nullable = *c.Nullable
+	}
+	if c.Preserve {
+		current.Preserve = true
+	}
+	if err := checkAccept(path, *current); err != nil {
+		return err
+	}
+	if c.Required != nil {
+		if parent == nil {
+			return fmt.Errorf("path %q: required applies to object fields", path)
+		}
+		parent.Required = setName(parent.Required, field, *c.Required)
+	}
+	return nil
+}
+
+func setName(names []string, name string, present bool) []string {
+	set := map[string]bool{}
+	for _, existing := range names {
+		set[existing] = true
+	}
+	if present {
+		set[name] = true
+	} else {
+		delete(set, name)
+	}
+	return sortedKeys(set)
+}
+
+// scalarTypes are the types a correction's "type" may set; containers need
+// their companion keys and are declared with "replace" or "add".
+var scalarTypes = map[string]bool{"string": true, "int": true, "number": true, "bool": true, "flag": true, "mixed": true}
+
+// acceptable lists the wire variants each type admits (src/Response/ShapeValidator.php).
+var acceptable = map[string]map[string]bool{
+	"int":    {"numeric-string": true},
+	"number": {"numeric-string": true},
+	"bool":   {"int-flag": true, "string-flag": true},
+	"flag":   {"string-flag": true, "bool": true},
+}
+
+// checkAccept rejects accept tokens the spec's type does not admit and
+// preserve on anything but number.
+func checkAccept(path string, spec TypeSpec) error {
+	for _, token := range spec.Accept {
+		if !acceptable[spec.Type][token] {
+			return fmt.Errorf("path %q: accept %q does not apply to type %q", path, token, spec.Type)
+		}
+	}
+	if spec.Preserve && spec.Type != "number" {
+		return fmt.Errorf("path %q: preserve does not apply to type %q", path, spec.Type)
+	}
+	return nil
+}
+
+// fromOverlay converts an overlay type spec. It rejects unknown types, missing
+// companion keys (list items, map values, union anyOf, object fields) and
+// accept or preserve settings the type does not admit, so a hand-built overlay
+// cannot yield a spec the renderer or the engine cannot handle. path locates
+// the node in problem messages.
+func fromOverlay(path string, s overlay.Spec) (TypeSpec, error) {
+	switch {
+	case !scalarTypes[s.Type] && s.Type != "list" && s.Type != "map" && s.Type != "object" && s.Type != "union":
+		return TypeSpec{}, fmt.Errorf("path %q: unknown type %q", path, s.Type)
+	case s.Type == "list" && s.Items == nil:
+		return TypeSpec{}, fmt.Errorf("path %q: list needs items", path)
+	case s.Type == "map" && s.Values == nil:
+		return TypeSpec{}, fmt.Errorf("path %q: map needs values", path)
+	case s.Type == "union" && len(s.AnyOf) == 0:
+		return TypeSpec{}, fmt.Errorf("path %q: union needs anyOf", path)
+	case s.Type == "object" && s.Fields == nil:
+		return TypeSpec{}, fmt.Errorf("path %q: object needs fields", path)
+	}
+	spec := TypeSpec{Type: s.Type, Nullable: s.Nullable, Accept: s.Accept, Preserve: s.Preserve, Required: s.Required}
+	if err := checkAccept(path, spec); err != nil {
+		return TypeSpec{}, err
+	}
+	if s.Items != nil {
+		items, err := fromOverlay(path+"[]", *s.Items)
+		if err != nil {
+			return TypeSpec{}, err
+		}
+		spec.Items = &items
+	}
+	if s.Values != nil {
+		values, err := fromOverlay(path+"{}", *s.Values)
+		if err != nil {
+			return TypeSpec{}, err
+		}
+		spec.Values = &values
+	}
+	for _, name := range sortedKeys(s.Fields) {
+		field, err := fromOverlay(path+"."+name, s.Fields[name])
+		if err != nil {
+			return TypeSpec{}, err
+		}
+		spec.Fields = append(spec.Fields, Field{Name: name, Spec: field})
+	}
+	for _, option := range s.AnyOf {
+		converted, err := fromOverlay(path, option)
+		if err != nil {
+			return TypeSpec{}, err
+		}
+		spec.AnyOf = append(spec.AnyOf, converted)
+	}
+	return spec, nil
+}

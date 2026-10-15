@@ -1,0 +1,142 @@
+{
+  "schema_version": "1.0",
+  "sources": [],
+  "documents": {
+    "cpanel-openapi": {
+      "tags": [{"name": "DomainInfo", "description": "Retrieve domain information.\n\nMore detail."}],
+      "paths": {
+        "/DomainInfo/list_domains": {
+          "get": {
+            "summary": "Return domains",
+            "description": "This function lists the account's domains.\n\nIt also explains things.",
+            "tags": ["DomainInfo"],
+            "responses": {"200": {"content": {"application/json": {"schema": {
+              "type": "object",
+              "properties": {"result": {"type": "object", "properties": {
+                "status": {"type": "integer"},
+                "data": {"type": "object", "properties": {
+                  "main_domain": {"type": "string", "nullable": true},
+                  "sub_domains": {"type": "array", "items": {"type": "string"}},
+                  "is_temporary": {"type": "object", "additionalProperties": {"type": "integer", "enum": [0, 1]}}
+                }, "required": ["main_domain"]}
+              }}}
+            }}}}}
+          }
+        },
+        "/DomainInfo/primary_domain": {
+          "get": {
+            "summary": "Return primary domain.",
+            "responses": {"200": {"content": {"application/json": {"schema": {
+              "type": "object",
+              "properties": {"result": {"type": "object", "properties": {
+                "data": {"type": "object", "properties": {"primary_domain": {"type": "string", "nullable": true}}}
+              }}}
+            }}}}}
+          }
+        }
+      },
+      "components": {"schemas": {
+        "Node": {"type": "object", "properties": {"child": {"$ref": "#/components/schemas/Node"}, "name": {"type": "string"}}}
+      }}
+    },
+    "whm-openapi": {
+      "x-tagGroups": [{"name": "Accounts", "tags": ["Account Creation", "Account Management"]}],
+      "paths": {
+        "/createacct": {
+          "get": {
+            "summary": "Create cPanel account",
+            "description": "Creates an account. It returns *details*.",
+            "tags": ["Accounts", "Account Creation"],
+            "responses": {"200": {"content": {"application/json": {"schema": {
+              "type": "object",
+              "properties": {
+                "metadata": {"type": "object"},
+                "data": {"type": "object", "properties": {"uid": {"type": "integer"}, "MXCHECK-domain": {"type": "string"}}}
+              }
+            }}}}}
+          }
+        },
+        "/listaccts": {
+          "get": {
+            "summary": "Return accounts",
+            "tags": ["Accounts", "Account Management"],
+            "responses": {"200": {"content": {"application/json": {"schema": {
+              "type": "object",
+              "properties": {"data": {"type": "object", "properties": {"acct": {"type": "array", "items": {
+                "type": "object", "properties": {"uid": {"type": "integer"}, "user": {"type": "string"}}
+              }}}}}}
+            }}}}
+          }
+        },
+        "/suspendacct": {
+          "get": {
+            "summary": "Suspend account",
+            "tags": ["Accounts", "Account Management"],
+            "responses": {"200": {"content": {"application/json": {"schema": {
+              "type": "object",
+              "properties": {"metadata": {"type": "object"}}
+            }}}}}
+          }
+        }
+      }
+    }
+  },
+  "operations": [
+    {"id": "uapi:DomainInfo/list_domains", "family": "uapi", "module": "DomainInfo", "function": "list_domains", "path": "/DomainInfo/list_domains", "provenance": [],
+     "variants": [{"id": "uapi:DomainInfo/list_domains#GET", "method": "GET", "upstream_operation_id": "DomainInfo-list_domains",
+       "operation_locator": {"source_id": "cpanel-openapi", "source_sha256": "x", "pointer": "/paths/~1DomainInfo~1list_domains/get"},
+       "path_item_locator": {"source_id": "cpanel-openapi", "source_sha256": "x", "pointer": "/paths/~1DomainInfo~1list_domains"},
+       "parameters": [
+         {"name": "hide_temporary_domains", "in": "query", "definition": {"name": "hide_temporary_domains", "in": "query", "required": false, "description": "Whether to hide temporary domains. Defaults to 0.", "schema": {"type": "integer", "enum": [0, 1]}},
+          "locator": {"source_id": "cpanel-openapi", "source_sha256": "x", "pointer": "/paths/~1DomainInfo~1list_domains/get/parameters/0"}}
+       ],
+       "security": {"present": false, "value": null, "locator": null, "level": "none"},
+       "servers": {"present": false, "value": null, "locator": null, "level": "none"},
+       "risk": {"classification": "read-only", "destructive_potential": "no", "evidence": []}}]},
+    {"id": "uapi:DomainInfo/primary_domain", "family": "uapi", "module": "DomainInfo", "function": "primary_domain", "path": "/DomainInfo/primary_domain", "provenance": [],
+     "variants": [{"id": "uapi:DomainInfo/primary_domain#GET", "method": "GET", "upstream_operation_id": "DomainInfo-primary_domain",
+       "operation_locator": {"source_id": "cpanel-openapi", "source_sha256": "x", "pointer": "/paths/~1DomainInfo~1primary_domain/get"},
+       "path_item_locator": {"source_id": "cpanel-openapi", "source_sha256": "x", "pointer": "/paths/~1DomainInfo~1primary_domain"},
+       "parameters": [],
+       "security": {"present": false, "value": null, "locator": null, "level": "none"},
+       "servers": {"present": false, "value": null, "locator": null, "level": "none"},
+       "risk": {"classification": "read-only", "destructive_potential": "no", "evidence": []}}]},
+    {"id": "whm1:createacct", "family": "whm1", "module": null, "function": "createacct", "path": "/createacct", "provenance": [],
+     "variants": [{"id": "whm1:createacct#GET", "method": "GET", "upstream_operation_id": "Accounts-createacct",
+       "operation_locator": {"source_id": "whm-openapi", "source_sha256": "y", "pointer": "/paths/~1createacct/get"},
+       "path_item_locator": {"source_id": "whm-openapi", "source_sha256": "y", "pointer": "/paths/~1createacct"},
+       "parameters": [
+         {"name": "username", "in": "query", "definition": {"name": "username", "in": "query", "required": true, "description": "The account's username.", "schema": {"type": "string"}},
+          "locator": {"source_id": "whm-openapi", "source_sha256": "y", "pointer": "/paths/~1createacct/get/parameters/0"}},
+         {"name": "password", "in": "query", "definition": {"name": "password", "in": "query", "required": false, "description": "The password.", "schema": {"type": "string"}},
+          "locator": {"source_id": "whm-openapi", "source_sha256": "y", "pointer": "/paths/~1createacct/get/parameters/1"}},
+         {"name": "plan", "in": "query", "definition": {"name": "plan", "in": "query", "required": false, "schema": {"type": "string", "enum": ["default", "custom"]}},
+          "locator": {"source_id": "whm-openapi", "source_sha256": "y", "pointer": "/paths/~1createacct/get/parameters/2"}}
+       ],
+       "security": {"present": false, "value": null, "locator": null, "level": "none"},
+       "servers": {"present": false, "value": null, "locator": null, "level": "none"},
+       "risk": {"classification": "mutating", "destructive_potential": "unknown", "evidence": []}}]},
+    {"id": "whm1:listaccts", "family": "whm1", "module": null, "function": "listaccts", "path": "/listaccts", "provenance": [],
+     "variants": [{"id": "whm1:listaccts#GET", "method": "GET", "upstream_operation_id": "Accounts-listaccts",
+       "operation_locator": {"source_id": "whm-openapi", "source_sha256": "y", "pointer": "/paths/~1listaccts/get"},
+       "path_item_locator": {"source_id": "whm-openapi", "source_sha256": "y", "pointer": "/paths/~1listaccts"},
+       "parameters": [
+         {"name": "MXCHECK-*", "in": "query", "definition": {"name": "MXCHECK-*", "in": "query", "required": false, "schema": {"type": "integer"}},
+          "locator": {"source_id": "whm-openapi", "source_sha256": "y", "pointer": "/paths/~1listaccts/get/parameters/0"}}
+       ],
+       "security": {"present": false, "value": null, "locator": null, "level": "none"},
+       "servers": {"present": false, "value": null, "locator": null, "level": "none"},
+       "risk": {"classification": "read-only", "destructive_potential": "no", "evidence": []}}]},
+    {"id": "whm1:suspendacct", "family": "whm1", "module": null, "function": "suspendacct", "path": "/suspendacct", "provenance": [],
+     "variants": [{"id": "whm1:suspendacct#GET", "method": "GET", "upstream_operation_id": "Accounts-suspendacct",
+       "operation_locator": {"source_id": "whm-openapi", "source_sha256": "y", "pointer": "/paths/~1suspendacct/get"},
+       "path_item_locator": {"source_id": "whm-openapi", "source_sha256": "y", "pointer": "/paths/~1suspendacct"},
+       "parameters": [],
+       "security": {"present": false, "value": null, "locator": null, "level": "none"},
+       "servers": {"present": false, "value": null, "locator": null, "level": "none"},
+       "risk": {"classification": "mutating", "destructive_potential": "unknown", "evidence": []}}]}
+  ],
+  "aliases": [],
+  "annotations": [],
+  "diagnostics": []
+}
