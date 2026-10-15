@@ -8,7 +8,9 @@ use HostingPal\WhmApiClient\Api\Engine\ArgumentEncoder;
 use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
 use HostingPal\WhmApiClient\Api\NumberedList;
 use HostingPal\WhmApiClient\Api\RepeatedList;
+use InvalidArgumentException;
 use LogicException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 use SensitiveParameter;
@@ -85,6 +87,64 @@ final class ArgumentEncoderTest extends TestCase
         } finally {
             ini_set('precision', $previous === false ? '14' : $previous);
         }
+    }
+
+    /** @return iterable<string, array{float, string}> */
+    public static function floats(): iterable
+    {
+        yield 'integral' => [1.0, '1.0'];
+        yield 'negative zero' => [-0.0, '-0.0'];
+        yield 'fraction' => [0.1, '0.1'];
+        yield 'negative fraction' => [-2.5, '-2.5'];
+        yield 'largest fixed exponent' => [1e16, '10000000000000000.0'];
+        yield 'smallest E exponent' => [1e17, '1.0E+17'];
+        yield 'large' => [1e20, '1.0E+20'];
+        yield 'smallest fixed exponent' => [0.0001, '0.0001'];
+        yield 'small' => [0.00001, '1.0E-5'];
+        yield 'seventeen digits' => [0.30000000000000004, '0.30000000000000004'];
+        yield 'maximum' => [PHP_FLOAT_MAX, '1.7976931348623157E+308'];
+        yield 'subnormal' => [5e-324, '5.0E-324'];
+    }
+
+    #[DataProvider('floats')]
+    public function testFloatsUseTheShortestRoundTripFormIndependentOfSettings(float $value, string $expected): void
+    {
+        $serialize = ini_get('serialize_precision');
+        $precision = ini_get('precision');
+        $locale = setlocale(LC_NUMERIC, '0');
+
+        try {
+            foreach (['-1', '17', '5'] as $setting) {
+                ini_set('serialize_precision', $setting);
+                ini_set('precision', $setting === '-1' ? '14' : $setting);
+                setlocale(LC_NUMERIC, ['de_DE.UTF-8', 'de_DE', 'fr_FR.UTF-8', 'C']);
+                $encoded = ArgumentEncoder::encode(self::PARAMS, ['ratio' => $value]);
+
+                self::assertSame($expected, $encoded['ratio'], 'serialize_precision ' . $setting);
+                self::assertSame($value, (float) $expected);
+            }
+        } finally {
+            ini_set('serialize_precision', $serialize);
+            ini_set('precision', $precision);
+            setlocale(LC_NUMERIC, $locale === false ? 'C' : $locale);
+        }
+    }
+
+    /** @return iterable<string, array{float}> */
+    public static function nonFiniteFloats(): iterable
+    {
+        yield 'NAN' => [NAN];
+        yield 'INF' => [INF];
+        yield '-INF' => [-INF];
+    }
+
+    #[DataProvider('nonFiniteFloats')]
+    public function testNonFiniteFloatsAreRejected(float $value): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Float arguments must be finite.');
+
+        ArgumentEncoder::encode(self::PARAMS, ['ratio' => $value]);
     }
 
     public function testArgumentsAreMarkedSensitiveOnEngineFrames(): void

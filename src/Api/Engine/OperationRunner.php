@@ -43,8 +43,9 @@ final class OperationRunner
      * @param Closure(array<mixed>, Parameters): ApiResponse $dispatch
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws LogicException If the spec is malformed or the arguments disagree with it.
-     * @throws InvalidArgumentException Raised by the shared encoder through the dispatch closure, after the
-     *     metadata reset, when multi-value contents are invalid.
+     * @throws InvalidArgumentException If a float argument is not finite (ArgumentEncoder), or raised by the
+     *     shared encoder through the dispatch closure, after the metadata reset, when multi-value contents
+     *     are invalid. The handles clear metadata before calling run(), so neither leaves stale metadata.
      */
     public static function run(
         array $spec,

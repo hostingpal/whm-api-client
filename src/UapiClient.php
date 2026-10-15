@@ -129,13 +129,18 @@ final class UapiClient extends AbstractApiClient
      * Run a generated operation spec through this handle.
      *
      * Generated groups receive this method as their run callback; selecting a
-     * group performs no I/O.
+     * group performs no I/O. The attempt starts here: metadata is cleared before
+     * the runner checks the spec and encodes the arguments, so an argument rejected
+     * before dispatch (for example a non-finite float) never leaves an earlier
+     * request's metadata in responseMeta().
      *
      * @param array<mixed> $spec
      * @param array<string, mixed> $arguments
      */
     private function run(array $spec, #[SensitiveParameter] array $arguments): mixed
     {
+        $this->beginRequest();
+
         return OperationRunner::run($spec, $arguments, $this->dispatch(...));
     }
 
