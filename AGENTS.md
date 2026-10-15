@@ -133,12 +133,14 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. Typed groups cover 60 reviewed operations: the read-only
+and cPanel UAPI surface. Typed groups cover 61 reviewed operations: the read-only
 server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
 read-only DNS slice (14 WHM functions in the `whm()->dns()` group plus 7 UAPI `DNS`
 functions in `uapi()->dns()`).
+`uapi()->email()->listPops()` adds read-only Email inventory. Its optional booleans
+preserve omission and explicit false, and its result keeps the documented wire keys.
 `whm()->call()` and `uapi()->call()` reach every other documented function
 generically. The 2026-10-13 spec's
 [scaling decision (typed core plus generic calls)](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls)
@@ -291,9 +293,11 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
 ## Generated-client delivery
 
 - Follow the [current delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
-  The next runner slice is `8x0.10.1`, followed by the read-only Email inventory
-  slice `8x0.10.2`; the HostingPal consumer exercise `8x0.10.3` can proceed
-  independently. Runner/fingerprint artifacts are planned, not implemented.
+  The development-only runner in `tools/live-verify/` captures six reviewed
+  read-only route-specific probes through the generated client; run it explicitly
+  with `WHM_API_LIVE=1 composer live:verify -- --output=docs/api/evidence/read-only.json`.
+  It requires committed code and persists sanitized structure only. Email inventory
+  is included (`8x0.10.2`); consumer feedback (`8x0.10.3`) remains independent.
 - Capture evidence from the same raw HTTP response before normalization and
   unknown-field removal. Preserve the response delivered to the client; never
   replay an operation to recover evidence. Persist only sanitized structural

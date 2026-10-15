@@ -17,6 +17,8 @@ trait UapiGroups
 
     private ?DomainInfo $domainInfoGroup = null;
 
+    private ?Email $emailGroup = null;
+
     private ?Features $featuresGroup = null;
 
     private ?LangPhp $langPhpGroup = null;
@@ -39,6 +41,16 @@ trait UapiGroups
     public function domainInfo(): DomainInfo
     {
         return $this->domainInfoGroup ??= new DomainInfo($this->run(...));
+    }
+
+    /**
+     * Select the Email operations without making a request.
+     *
+     * The Email module for UAPI.
+     */
+    public function email(): Email
+    {
+        return $this->emailGroup ??= new Email($this->run(...));
     }
 
     /**

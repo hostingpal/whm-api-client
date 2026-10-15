@@ -594,3 +594,28 @@ IP and the first nameserver to be set; the full lifecycle then passed **1 test a
 assertions**. Read-only checks after both runs confirmed that the server reports the
 account as nonexistent and that its zone is gone. These observations remain scoped to
 the tested server and date without saved revision-bound evidence.
+
+## Sanitized evidence runner — 2026-10-15
+
+The first runner slice exercised WHM `version` and `systemloadavg`, plus UAPI
+`DomainInfo/list_domains` through direct and WHM-bridged routes on `test.oblak.host`.
+All four generated calls returned successful API outcomes and passed payload
+validation, with no structural discrepancies on cPanel `11.138.0.15`.
+[Core evidence](evidence/2026-10-15-core.json) records revision
+`788cdbd34b470c77af10a95374fcf70c2434eab6`, actual routes/methods and source,
+generator, overlay and effective-contract hashes. No overlay correction was needed.
+The observer captured the same response bytes before normalization; only sanitized
+paths/types were persisted. Empty lists do not establish their item types.
+
+The subsequent Email batch added `uapi:Email/list_pops` and repeated the four core
+probes. All six passed on the same cPanel version, with zero discrepancies and no
+response corrections. [Core and Email evidence](evidence/2026-10-15-core-email.json)
+records revision `240c844ee37567697ee869cfe0e07e3515394a96`. Both Email routes
+returned nonempty lists with observed `email`/`login` strings and
+`suspended_incoming`/`suspended_login` integers. Live arguments were omitted;
+explicit booleans, regex encoding, empty lists, optional fields and failure
+semantics are independently covered by 54 offline endpoint cases. This establishes
+these observations for the recorded route, server version and contracts, not
+complete Email coverage or all possible records. The evidence/audit commit adds
+only these saved observations; executable code and contracts remain those of the
+recorded revision.

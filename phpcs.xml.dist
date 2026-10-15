@@ -4,6 +4,7 @@
 
     <file>src</file>
     <file>tests</file>
+    <file>tools/live-verify</file>
 
     <arg name="extensions" value="php"/>
     <arg value="sp"/>
