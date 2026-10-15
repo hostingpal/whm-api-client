@@ -191,9 +191,12 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   separate; the read-only live suite passes through the generated groups on
   `test.oblak.host`.
 - Generated groups receive one synchronous `run(spec, arguments)` callback from their
-  handle. The internal `OperationRunner` encodes the named arguments from the spec,
-  dispatches through the handle (WHM and UAPI handles own route construction, with one
-  account-bound UAPI helper for direct and bridged execution), validates the payload
+  handle, which clears the metadata first. The internal `OperationRunner` checks the
+  whole spec before dispatch (`SpecChecker`: operation keys, every parameter spec and
+  the full type grammar, cached per spec; `GeneratedSpecsTest` lints every generated
+  spec offline), encodes the named arguments from the spec, dispatches through the
+  handle (WHM and UAPI handles own route construction, with one account-bound UAPI
+  helper for direct and bridged execution), validates the payload
   with `ShapeValidator` and the internal `PayloadReader`, which attaches the response
   snapshot to every failure, and unwraps the result. Reserved bridge fields take
   precedence over endpoint parameters. Generated multi-value parameters pass caller
@@ -233,6 +236,9 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   timeouts, and `HttpTransport::discover()` is the explicit opt-in for unverified
   discovered defaults. The API layer rejects HTTP 3xx responses. Handles never
   expose `ClientConfig` or credentials, and credentials refuse serialization.
+  Every frame between a public method and the PSR-18 client that receives request
+  parameters marks them `#[SensitiveParameter]`, so traces never carry secrets even
+  with `zend.exception_ignore_args=0`; `SensitiveTraceTest` searches them recursively.
   Direct UAPI supports the pinned `result` wrapper and the observed bare result
   object. A present `result` takes precedence even if malformed; the bare form
   requires top-level `status`. Authorized direct library verification on
