@@ -95,7 +95,9 @@ final class UapiClient extends AbstractApiClient
      * result is checked under both policies, so a failed bridge always raises.
      *
      * @param Parameters $parameters
-     * @throws InvalidArgumentException If a name or a multi-value parameter is invalid.
+     * @throws InvalidArgumentException If a name or a parameter value is invalid; responseMeta() is cleared
+     *     first, so it never reports an earlier request.
+     *     Messages may name a parameter but never include its value.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      * @see https://api.docs.cpanel.net/cpanel/introduction
      * @see https://api.docs.cpanel.net/whm/use-whm-api-to-call-cpanel-api-and-uapi
@@ -108,6 +110,7 @@ final class UapiClient extends AbstractApiClient
         RequestMethod $method = RequestMethod::Get,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): CallResult {
+        $this->beginRequest();
         foreach ([$module, $function] as $segment) {
             if (preg_match('/\A[A-Za-z0-9_]+\z/', $segment) !== 1) {
                 throw new InvalidArgumentException(

@@ -70,7 +70,9 @@ final class WhmClient extends AbstractApiClient
      * leaves the outcome to the caller. Typed groups remain the reviewed contracts.
      *
      * @param Parameters $parameters
-     * @throws InvalidArgumentException If the function name or a multi-value parameter is invalid.
+     * @throws InvalidArgumentException If the function name or a parameter value is invalid; responseMeta() is
+     *     cleared first, so it never reports an earlier request.
+     *     Messages may name a parameter but never include its value.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      * @see https://api.docs.cpanel.net/whm/introduction
      */
@@ -81,6 +83,7 @@ final class WhmClient extends AbstractApiClient
         RequestMethod $method = RequestMethod::Get,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): CallResult {
+        $this->beginRequest();
         if (preg_match('/\A[A-Za-z0-9_]+(?:\/[A-Za-z0-9_]+)*\z/', $function) !== 1) {
             throw new InvalidArgumentException(
                 'WHM function names contain only letters, digits, underscores, and "/" separators.',

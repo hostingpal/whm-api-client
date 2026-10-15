@@ -11,6 +11,7 @@ use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\Response\CallResult;
+use HostingPal\WhmApiClient\WhmClient;
 use Http\Mock\Client as MockClient;
 use InvalidArgumentException;
 use Nyholm\Psr7\Factory\Psr17Factory;
@@ -18,6 +19,8 @@ use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
+use ReflectionMethod;
+use stdClass;
 
 final class GenericCallTest extends TestCase
 {
@@ -265,6 +268,67 @@ final class GenericCallTest extends TestCase
         self::assertSame(1, $result->metadata->whmResult());
         self::assertSame(0, $result->metadata->uapiStatus());
         self::assertSame($result->metadata, $npr->responseMeta());
+    }
+
+    /** @return iterable<string, array{mixed}> */
+    public static function unsupportedValues(): iterable
+    {
+        yield 'false' => [false];
+        yield 'true' => [true];
+        yield 'null' => [null];
+        yield 'float' => [1.5];
+        yield 'object' => [new stdClass()];
+    }
+
+    #[DataProvider('unsupportedValues')]
+    public function testUnsupportedParameterValuesNameTheKeyAfterClearingMetadata(mixed $value): void
+    {
+        [$client, $http] = $this->client();
+        $whm = $client->whm();
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1}}'));
+        $whm->call('version');
+        self::assertNotNull($whm->responseMeta());
+
+        try {
+            (new ReflectionMethod(WhmClient::class, 'call'))->invoke($whm, 'version', ['flag' => $value]);
+            self::fail('Unsupported parameter values must be rejected before I/O.');
+        } catch (InvalidArgumentException $exception) {
+            self::assertSame(
+                'Parameter "flag" must be a string, an integer or a list of strings.',
+                $exception->getMessage(),
+            );
+            self::assertNull($whm->responseMeta());
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
+    public function testInvalidNamesClearMetadataLikeInvalidParameters(): void
+    {
+        [$client, $http] = $this->client();
+        $whm = $client->whm();
+        $npr = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1}}'));
+        $http->addResponse(new Response(200, [], self::BRIDGED));
+        $whm->call('version');
+        $npr->call('DomainInfo', 'primary_domain');
+        self::assertNotNull($whm->responseMeta());
+        self::assertNotNull($npr->responseMeta());
+
+        try {
+            $whm->call('../version');
+            self::fail('Invalid WHM function names must be rejected.');
+        } catch (InvalidArgumentException) {
+            self::assertNull($whm->responseMeta());
+        }
+
+        try {
+            $npr->call('DomainInfo', 'primary domain');
+            self::fail('Invalid UAPI function names must be rejected.');
+        } catch (InvalidArgumentException) {
+            self::assertNull($npr->responseMeta());
+        }
+
+        self::assertCount(2, $http->getRequests());
     }
 
     /** @return array{Client, MockClient} */
