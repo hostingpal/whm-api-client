@@ -147,6 +147,9 @@ flagged deprecated upstream must be excluded. Evidence is `kind` (`doc` or `live
 go -C tools/api-map run ./cmd/api-map overlay validate --map ../../.cache/api-map/map.json --overlay ../../docs/api/overlay
 composer api-map:generate        # build the map, then write generated PHP and docs/api/coverage.md
 composer api-map:generate:check  # fail when committed generated files are stale
+# Opt-in full-surface stress render (scope "all") into a scratch directory, for
+# php -l, PHPCS and PHPStan runs over every operation; never part of the checks.
+API_MAP_STRESS_DIR="$PWD/.cache/stress" go -C tools/api-map test ./internal/cli -run TestStressRenderFullSurface
 ```
 
 `overlay validate` and `generate php` exit 0 on success, 1 on overlay problems,
