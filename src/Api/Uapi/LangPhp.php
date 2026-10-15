@@ -46,7 +46,7 @@ final readonly class LangPhp
      * @param string|null $vhost The name of a virtual host. Null omits it.
      * @return string
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/php_get_domain_handler
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_domain_handler
      */
     public function phpGetDomainHandler(string $type, ?string $vhost = null): string
     {
@@ -71,7 +71,7 @@ final readonly class LangPhp
      * @return PhpGetImpactedDomainsResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/php_get_impacted_domains
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_impacted_domains
      */
     public function phpGetImpactedDomains(string|array|null $domains = null, ?bool $systemDefault = null): array
     {
@@ -95,7 +95,7 @@ final readonly class LangPhp
      *
      * @return PhpGetInstalledVersionsResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/php_get_installed_versions
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_installed_versions
      */
     public function phpGetInstalledVersions(): array
     {
@@ -116,7 +116,7 @@ final readonly class LangPhp
      *
      * @return string|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/php_get_system_default_version
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_system_default_version
      */
     public function phpGetSystemDefaultVersion(): ?string
     {

@@ -145,7 +145,7 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		Summary:     sentence(text(node["summary"])),
 		Description: firstParagraph(text(node["description"])),
 		Subcategory: subcategory(op.Family, node),
-		SeeURL:      seeURL(op),
+		SeeURL:      b.seeURL(op, v, node),
 		Notes:       ov.Notes,
 		Unwrap:      ov.Unwrap,
 
@@ -506,12 +506,52 @@ func subcategory(family string, node map[string]any) string {
 	return fmt.Sprint(tags[len(tags)-1])
 }
 
-func seeURL(op model.Operation) string {
+// docSlugAlphabet is the tag alphabet whose documentation slug rule was
+// verified against https://api.docs.cpanel.net/ (letters, digits, spaces,
+// hyphens and parentheses; spaces become hyphens, everything is lower-cased).
+var docSlugAlphabet = regexp.MustCompile(`^[A-Za-z0-9 ()-]+$`)
+
+// docSlug returns the documentation portal's path segment for a tag, and false
+// for a tag outside the verified alphabet.
+func docSlug(tag string) (string, bool) {
+	if !docSlugAlphabet.MatchString(tag) {
+		return "", false
+	}
+	return strings.ToLower(strings.ReplaceAll(tag, " ", "-")), true
+}
+
+// seeURL links the variant's canonical operation page:
+// /specifications/{cpanel|whm}.openapi/<slug of the operation's first tag that
+// appears in x-tagGroups>/<lower-cased upstream operation id>. The legacy
+// /openapi/<site>/operation/<function> links redirect by function name only,
+// which is ambiguous for UAPI function names shared across modules and does
+// not resolve names containing "/".
+func (b *builder) seeURL(op model.Operation, v model.Variant, node map[string]any) string {
 	site := "whm"
 	if op.Family == "uapi" {
 		site = "cpanel"
 	}
-	return "https://api.docs.cpanel.net/openapi/" + site + "/operation/" + op.Function
+	if v.UpstreamOperationID == nil || *v.UpstreamOperationID == "" {
+		b.problem(op.ID + ": no upstream operation id to derive the documentation link from")
+		return ""
+	}
+	groups := tagGroups(b.schemas.m.Documents[v.OperationLocator.SourceID])
+	tags, _ := node["tags"].([]any)
+	for _, tag := range tags {
+		name := fmt.Sprint(tag)
+		if _, grouped := groups[name]; !grouped {
+			continue
+		}
+		slug, ok := docSlug(name)
+		if !ok {
+			b.problem(fmt.Sprintf("%s: tag %q has no verified documentation slug", op.ID, name))
+			return ""
+		}
+		return "https://api.docs.cpanel.net/specifications/" + site + ".openapi/" + slug + "/" +
+			strings.ToLower(*v.UpstreamOperationID)
+	}
+	b.problem(op.ID + ": no tag in x-tagGroups to derive the documentation link from")
+	return ""
 }
 
 func text(v any) string {

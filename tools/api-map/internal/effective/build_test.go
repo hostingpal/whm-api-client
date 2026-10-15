@@ -61,7 +61,7 @@ func TestBuildAssemblesGroupsOperationsAndParams(t *testing.T) {
 	if list.Params[0].PHP != "hideTemporaryDomains" || list.Params[0].Encoding != "bool" || list.Params[0].PHPType != "bool" {
 		t.Fatalf("params %+v", list.Params)
 	}
-	if list.SeeURL != "https://api.docs.cpanel.net/openapi/cpanel/operation/list_domains" {
+	if list.SeeURL != "https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-information/domaininfo-list_domains" {
 		t.Fatal(list.SeeURL)
 	}
 	if list.Description != "This function lists the account's domains." || list.Summary != "Return domains." {
@@ -564,6 +564,60 @@ func TestApplyCorrectionReplaceRefinesDocumentedNodes(t *testing.T) {
 		err := applyCorrection(documented(), c.path, c.correction)
 		if err == nil || err.Error() != c.want {
 			t.Errorf("%s %+v: got %v, want %s", c.path, c.correction, err, c.want)
+		}
+	}
+}
+
+func TestBuildLinksCanonicalDocumentationPages(t *testing.T) {
+	result, joined := buildProblems(t, fixtureMap(t), fixtureOverlay("listed"))
+	if joined != "" {
+		t.Fatal(joined)
+	}
+	want := map[string]string{
+		"uapi:DomainInfo/primary_domain": "https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-information/domaininfo-primary_domain",
+		"whm1:createacct":                "https://api.docs.cpanel.net/specifications/whm.openapi/account-creation/accounts-createacct",
+		"whm1:listaccts":                 "https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-listaccts",
+	}
+	for _, group := range result.Groups {
+		for _, op := range group.Operations {
+			if url, ok := want[op.ID]; ok && op.SeeURL != url {
+				t.Errorf("%s: got %s, want %s", op.ID, op.SeeURL, url)
+			}
+		}
+	}
+}
+
+func TestDocumentationSlugKeepsParentheses(t *testing.T) {
+	for tag, want := range map[string]string{
+		"Spam Prevention (BoxTrapper)": "spam-prevention-(boxtrapper)",
+		"Plugin-Based Features":        "plugin-based-features",
+		"360 Monitoring":               "360-monitoring",
+		"PHP":                          "php",
+	} {
+		if got, ok := docSlug(tag); !ok || got != want {
+			t.Errorf("docSlug(%q) = %q %v, want %q", tag, got, ok, want)
+		}
+	}
+	if _, ok := docSlug("Mail & Spam"); ok {
+		t.Error("accepted a tag outside the verified slug alphabet")
+	}
+}
+
+func TestBuildReportsUnlinkableOperations(t *testing.T) {
+	m := fixtureMap(t)
+	fixtureNode(t, m, "whm1:listaccts")["tags"] = []any{"Accounts"}
+	for i := range m.Operations {
+		if m.Operations[i].ID == "whm1:createacct" {
+			m.Operations[i].Variants[0].UpstreamOperationID = nil
+		}
+	}
+	_, joined := buildProblems(t, m, fixtureOverlay("listed"))
+	for _, want := range []string{
+		"whm1:listaccts: no tag in x-tagGroups to derive the documentation link from",
+		"whm1:createacct: no upstream operation id to derive the documentation link from",
+	} {
+		if !strings.Contains(joined, want) {
+			t.Errorf("missing %q in %s", want, joined)
 		}
 	}
 }

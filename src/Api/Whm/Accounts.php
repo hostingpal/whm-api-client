@@ -186,7 +186,7 @@ final readonly class Accounts
      * @param string|null $searchtype The type of search to perform. Null omits it.
      * @return AccountSummaryResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/accountsummary
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-accountsummary
      */
     public function accountSummary(
         ?string $user = null,
@@ -217,7 +217,7 @@ final readonly class Accounts
      * @param string $user The cPanel account's username.
      * @param string $package The hosting plan's name.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/changepackage
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-changepackage
      */
     public function changePackage(string $user, string $package): void
     {
@@ -239,7 +239,7 @@ final readonly class Accounts
      * @param bool|null $digestauth Whether to enable Digest Authentication for the account. Null omits it.
      * @return ChangePasswordResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/passwd
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/passwords/sys-passwd
      */
     public function changePassword(
         string $user,
@@ -331,7 +331,7 @@ final readonly class Accounts
      * @return CreateAccountResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/createacct
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-creation/accounts-createacct
      */
     public function createAccount(
         string $username,
@@ -455,7 +455,7 @@ final readonly class Accounts
      *
      * @return GetDomainInfoResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/get_domain_info
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/accounts-get_domain_info
      */
     public function getDomainInfo(): array
     {
@@ -478,7 +478,7 @@ final readonly class Accounts
      * @param string|null $want The returns to include in the output for each account. Null omits it.
      * @return ListAccountsResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/listaccts
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-listaccts
      */
     public function listAccounts(
         ?string $search = null,
@@ -591,7 +591,7 @@ final readonly class Accounts
      *     match the value of `MAX_EMAILACCT_QUOTA` setting. Null omits it.
      * @return ModifyAccountResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/modifyacct
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-modifyacct
      */
     public function modifyAccount(
         string $user,
@@ -727,7 +727,7 @@ final readonly class Accounts
      * @param string $username The account's username.
      * @param bool|null $keepdns Whether to retain the account's DNS entries. Null omits it.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/removeacct
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-removeacct
      */
     public function removeAccount(string $username, ?bool $keepdns = null): void
     {
@@ -746,7 +746,7 @@ final readonly class Accounts
      * @param bool|null $disallowun Whether to allow only the `root` user to unsuspend the account. Null omits it.
      * @param bool|null $leaveFtpAcctsEnabled Whether to skip suspension of the account's FTP accounts. Null omits it.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/suspendacct
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/suspensions/accounts-suspendacct
      */
     public function suspendAccount(
         string $user,
@@ -772,7 +772,7 @@ final readonly class Accounts
      * @param string $user The account to unsuspend.
      * @param bool|null $retainServiceProxies Whether to retain any service proxies on an account. Null omits it.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/unsuspendacct
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/suspensions/accounts-unsuspendacct
      */
     public function unsuspendAccount(string $user, ?bool $retainServiceProxies = null): void
     {

@@ -27,7 +27,7 @@ func longLimitsResult() effective.Result {
 		Operations: []effective.Operation{{
 			ID: "whm1:long", VariantID: "whm1:long#GET", Family: "whm1", Function: "long", Method: "POST", Outcome: "flag",
 			PHPName: "doLong", Constant: "LONG_OPERATION_CONSTANT_NAME_TEST", Alias: "ExtremelyLongResultAliasNameForTestingTheLimit",
-			Summary: "Long operation.", SeeURL: "https://api.docs.cpanel.net/openapi/whm/operation/long",
+			Summary: "Long operation.", SeeURL: "https://api.docs.cpanel.net/specifications/whm.openapi/long/long",
 			Params: []effective.Param{
 				{Wire: "key", PHP: "key", Encoding: "scalar", PHPType: "string", DocType: strings.Join(literals, "|"),
 					Description: strings.Repeat("A long description with many words. ", 8)},

@@ -48,7 +48,7 @@ final readonly class WebServer
      *
      * @return 0|1
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/is_conversion_in_progress
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/php-fpm/php-is_conversion_in_progress
      */
     public function isConversionInProgress(): int
     {
@@ -69,7 +69,7 @@ final readonly class WebServer
      *
      * @return 0|1
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/php_get_default_accounts_to_fpm
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/php-fpm/php-php_get_default_accounts_to_fpm
      */
     public function phpGetDefaultAccountsToFpm(): int
     {
@@ -91,7 +91,7 @@ final readonly class WebServer
      * @param string|null $version An installed PHP version. Null omits it.
      * @return PhpGetHandlersResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/php_get_handlers
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_get_handlers
      */
     public function phpGetHandlers(?string $version = null): array
     {
@@ -112,7 +112,7 @@ final readonly class WebServer
      *
      * @return PhpGetInstalledVersionsResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/php_get_installed_versions
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_get_installed_versions
      */
     public function phpGetInstalledVersions(): array
     {
@@ -133,7 +133,7 @@ final readonly class WebServer
      *
      * @return int
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/php_get_old_fpm_flag
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/php-fpm/php-php_get_old_fpm_flag
      */
     public function phpGetOldFpmFlag(): int
     {
@@ -154,7 +154,7 @@ final readonly class WebServer
      *
      * @return string
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/php_get_system_default_version
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_get_system_default_version
      */
     public function phpGetSystemDefaultVersion(): string
     {
@@ -176,7 +176,7 @@ final readonly class WebServer
      * @param string $version The name of an installed PHP package.
      * @return PhpGetVhostsByVersionResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/php_get_vhosts_by_version
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_get_vhosts_by_version
      */
     public function phpGetVhostsByVersion(string $version): array
     {

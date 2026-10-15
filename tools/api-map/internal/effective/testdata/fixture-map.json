@@ -4,12 +4,13 @@
   "documents": {
     "cpanel-openapi": {
       "tags": [{"name": "DomainInfo", "description": "Retrieve domain information.\n\nMore detail."}],
+      "x-tagGroups": [{"name": "Domains", "tags": ["Domain Information"]}],
       "paths": {
         "/DomainInfo/list_domains": {
           "get": {
             "summary": "Return domains",
             "description": "This function lists the account's domains.\n\nIt also explains things.",
-            "tags": ["DomainInfo"],
+            "tags": ["DomainInfo", "Domain Information"],
             "responses": {"200": {"content": {"application/json": {"schema": {
               "type": "object",
               "properties": {"result": {"type": "object", "properties": {
@@ -26,6 +27,7 @@
         "/DomainInfo/primary_domain": {
           "get": {
             "summary": "Return primary domain.",
+            "tags": ["DomainInfo", "Domain Information"],
             "responses": {"200": {"content": {"application/json": {"schema": {
               "type": "object",
               "properties": {"result": {"type": "object", "properties": {

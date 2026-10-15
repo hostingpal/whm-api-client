@@ -40,7 +40,7 @@ final readonly class Features
      *
      * @return ListFeaturesResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/cpanel/operation/list_features
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/cpanel-features/features-list_features
      */
     public function listFeatures(): array
     {

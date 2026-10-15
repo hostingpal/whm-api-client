@@ -59,7 +59,7 @@ final readonly class Server
      *
      * @return GetDiskUsageResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/getdiskusage
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/system-information/sys-getdiskusage
      */
     public function getDiskUsage(): array
     {
@@ -78,7 +78,7 @@ final readonly class Server
      *
      * @return string
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/gethostname
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/system-information/sys-gethostname
      */
     public function getHostname(): string
     {
@@ -97,7 +97,7 @@ final readonly class Server
      *
      * @return GetLoadAverageResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/systemloadavg
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/system-information/cpanel-systemloadavg
      */
     public function getLoadAverage(): array
     {
@@ -116,7 +116,7 @@ final readonly class Server
      *
      * @return string
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/version
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/updates/cpanel-version
      */
     public function version(): string
     {

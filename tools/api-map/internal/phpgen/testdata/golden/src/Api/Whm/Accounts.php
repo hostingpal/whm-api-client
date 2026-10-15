@@ -46,7 +46,7 @@ final readonly class Accounts
      * @param 'default'|'custom'|null $plan Null omits it.
      * @return CreateAccountResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/createacct
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-creation/accounts-createacct
      */
     public function createAccount(
         string $username,
@@ -72,7 +72,7 @@ final readonly class Accounts
      * @param string|list<string> $users
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
-     * @see https://api.docs.cpanel.net/openapi/whm/operation/suspendacct
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-suspendacct
      */
     public function suspendAccount(string|array $users): void
     {
