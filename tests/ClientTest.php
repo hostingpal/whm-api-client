@@ -25,6 +25,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
+use SensitiveParameter;
 
 final class ClientTest extends TestCase
 {
@@ -155,6 +156,32 @@ final class ClientTest extends TestCase
 
         self::assertNotSame($first->whm(), $second->whm());
         self::assertNotSame($first->uapi('npr'), $second->uapi('npr'));
+    }
+
+    public function testGeneratedHandleFramesRedactSensitiveArguments(): void
+    {
+        $frames = [
+            [WhmClient::class, 'run', 'arguments'],
+            [WhmClient::class, 'dispatch', 'parameters'],
+            [UapiClient::class, 'run', 'arguments'],
+            [UapiClient::class, 'dispatch', 'parameters'],
+        ];
+
+        foreach ($frames as [$class, $method, $name]) {
+            $matches = array_filter(
+                (new ReflectionMethod($class, $method))->getParameters(),
+                static fn (ReflectionParameter $parameter): bool => $parameter->getName() === $name,
+            );
+
+            self::assertCount(1, $matches, $class . '::' . $method);
+            $parameter = reset($matches);
+            self::assertInstanceOf(ReflectionParameter::class, $parameter);
+            self::assertNotSame(
+                [],
+                $parameter->getAttributes(SensitiveParameter::class),
+                $class . '::' . $method . '($' . $name . ')',
+            );
+        }
     }
 
     public function testRequiresAnExplicitTransport(): void
