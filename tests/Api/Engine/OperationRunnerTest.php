@@ -104,6 +104,25 @@ final class OperationRunnerTest extends TestCase
         }
     }
 
+    public function testPayloadMismatchKeepsThePayloadOutOfDebugOutput(): void
+    {
+        $exception = new PayloadMismatchException(
+            'Invalid createacct payload.',
+            new ResponseMetadata(200, ['result' => 1]),
+            true,
+            ['token' => 'fixture-secret'],
+        );
+
+        self::assertSame(['token' => 'fixture-secret'], $exception->payload);
+        self::assertStringNotContainsString('fixture-secret', print_r($exception, true));
+        ob_start();
+        var_dump($exception);
+        $dump = (string) ob_get_clean();
+        self::assertStringNotContainsString('fixture-secret', $dump);
+        self::assertStringContainsString('Invalid createacct payload.', $dump);
+        self::assertStringContainsString('outcomeConfirmed', $dump);
+    }
+
     public function testPayloadMismatchUnderAnUncheckedOutcomeIsNotConfirmed(): void
     {
         try {

@@ -48,7 +48,7 @@ final readonly class LangPhp
      * @return string
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     the operation took effect, so do not retry it.
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/openapi/cpanel/operation/php_get_domain_handler
      */
     public function phpGetDomainHandler(string $type, ?string $vhost = null): string
@@ -74,7 +74,7 @@ final readonly class LangPhp
      * @return PhpGetImpactedDomainsResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     the operation took effect, so do not retry it.
+     *     any change the operation makes has already taken effect.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/openapi/cpanel/operation/php_get_impacted_domains
      */
@@ -101,7 +101,7 @@ final readonly class LangPhp
      * @return PhpGetInstalledVersionsResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     the operation took effect, so do not retry it.
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/openapi/cpanel/operation/php_get_installed_versions
      */
     public function phpGetInstalledVersions(): array
@@ -124,7 +124,7 @@ final readonly class LangPhp
      * @return string|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     the operation took effect, so do not retry it.
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/openapi/cpanel/operation/php_get_system_default_version
      */
     public function phpGetSystemDefaultVersion(): ?string

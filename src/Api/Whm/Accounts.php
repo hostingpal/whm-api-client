@@ -188,7 +188,7 @@ final readonly class Accounts
      * @return AccountSummaryResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     the operation took effect, so do not retry it.
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/accountsummary
      */
     public function accountSummary(
@@ -243,7 +243,7 @@ final readonly class Accounts
      * @return ChangePasswordResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     the operation took effect, so do not retry it.
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/passwd
      */
     public function changePassword(
@@ -336,7 +336,7 @@ final readonly class Accounts
      * @return CreateAccountResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     the operation took effect, so do not retry it.
+     *     any change the operation makes has already taken effect.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/createacct
      */
@@ -463,7 +463,7 @@ final readonly class Accounts
      * @return GetDomainInfoResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     the operation took effect, so do not retry it.
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/get_domain_info
      */
     public function getDomainInfo(): array
@@ -488,7 +488,7 @@ final readonly class Accounts
      * @return ListAccountsResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     the operation took effect, so do not retry it.
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/listaccts
      */
     public function listAccounts(
@@ -603,7 +603,7 @@ final readonly class Accounts
      * @return ModifyAccountResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     the operation took effect, so do not retry it.
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/openapi/whm/operation/modifyacct
      */
     public function modifyAccount(

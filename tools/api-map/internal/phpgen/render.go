@@ -261,9 +261,10 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	w.line(indent + " * @throws ApiException If transport, HTTP, the outcome, or the payload fails.")
 	if ret != nil && op.Outcome == "flag" {
 		w.line(indent + " * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;")
-		w.line(indent + " *     the operation took effect, so do not retry it.")
+		w.line(indent + " *     any change the operation makes has already taken effect.")
 	} else if ret != nil {
-		w.line(indent + " * @throws PayloadMismatchException If the payload differs from the contract; the outcome is not checked.")
+		w.line(indent + " * @throws PayloadMismatchException If the envelope was accepted but the payload differs from the contract;")
+		w.line(indent + " *     the outcome is not checked.")
 	}
 	if multi {
 		w.line(indent + " * @throws InvalidArgumentException If a list argument is empty or contains non-strings.")

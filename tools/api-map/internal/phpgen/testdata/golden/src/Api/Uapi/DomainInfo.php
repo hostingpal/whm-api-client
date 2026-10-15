@@ -49,7 +49,7 @@ final readonly class DomainInfo
      * @return ListDomainsResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     the operation took effect, so do not retry it.
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/openapi/cpanel/operation/list_domains
      */
     public function listDomains(?bool $hideTemporaryDomains = null): array
@@ -68,7 +68,7 @@ final readonly class DomainInfo
      * @return string|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     the operation took effect, so do not retry it.
+     *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/openapi/cpanel/operation/primary_domain
      */
     public function primaryDomain(): ?string

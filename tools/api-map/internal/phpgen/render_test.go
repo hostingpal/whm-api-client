@@ -124,8 +124,10 @@ func TestRenderDocumentsPayloadMismatchOnlyForPayloadOperations(t *testing.T) {
 	if !strings.Contains(accounts, use) {
 		t.Fatalf("Accounts.php does not import PayloadMismatchException")
 	}
-	if !strings.Contains(methodDoc(t, accounts, "createAccount"), throws) {
-		t.Fatalf("createAccount returns a payload but lacks %q", throws)
+	created := methodDoc(t, accounts, "createAccount")
+	if !strings.Contains(created, throws+" If the API reported success") ||
+		!strings.Contains(created, "any change the operation makes has already taken effect.") {
+		t.Fatalf("createAccount returns a payload under the flag policy but lacks the confirmed wording:\n%s", created)
 	}
 	if strings.Contains(methodDoc(t, accounts, "suspendAccount"), throws) {
 		t.Fatalf("suspendAccount is void but documents %q", throws)
@@ -135,8 +137,19 @@ func TestRenderDocumentsPayloadMismatchOnlyForPayloadOperations(t *testing.T) {
 	result.Groups = result.Groups[1:]
 	result.Groups[0].Operations = result.Groups[0].Operations[1:]
 	voidOnly := string(Render(result)["src/Api/Whm/Accounts.php"])
+	if !strings.Contains(voidOnly, "public function suspendAccount(") {
+		t.Fatalf("the void-only fixture did not render suspendAccount")
+	}
 	if strings.Contains(voidOnly, use) || strings.Contains(voidOnly, throws) {
 		t.Fatalf("a group of void operations must not import or document PayloadMismatchException")
+	}
+
+	unchecked := goldenResult()
+	unchecked.Groups[1].Operations[0].Outcome = "unchecked"
+	doc := methodDoc(t, string(Render(unchecked)["src/Api/Whm/Accounts.php"]), "createAccount")
+	if !strings.Contains(doc, throws+" If the envelope was accepted but the payload differs from the contract;") ||
+		!strings.Contains(doc, "the outcome is not checked.") || strings.Contains(doc, "taken effect") {
+		t.Fatalf("an unchecked operation must not claim the change took effect:\n%s", doc)
 	}
 }
 

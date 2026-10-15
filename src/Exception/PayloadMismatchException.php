@@ -16,8 +16,9 @@ use HostingPal\WhmApiClient\Response\ResponseMetadata;
  *
  * $payload is the unvalidated decoded data member as plain PHP values (objects become
  * associative arrays), detached from the response, or null when the data member was
- * omitted or null. It is not part of getMessage(). It can contain secrets such as a
- * newly created token or key, so do not log it indiscriminately.
+ * omitted or null. It is not part of getMessage() and var_dump()/print_r() output
+ * elides it. It can contain secrets such as a newly created token or key, so do not
+ * log it indiscriminately.
  */
 final class PayloadMismatchException extends InvalidResponseException
 {
@@ -34,5 +35,25 @@ final class PayloadMismatchException extends InvalidResponseException
         public readonly mixed $payload,
     ) {
         parent::__construct($message, $metadata);
+    }
+
+    /**
+     * Describe the exception for var_dump() and print_r() without its payload.
+     *
+     * The payload can hold secrets; read $payload directly when it is needed.
+     *
+     * @return array{message: string, file: string, line: int, metadata: ?ResponseMetadata,
+     *     outcomeConfirmed: bool, payload: string}
+     */
+    public function __debugInfo(): array
+    {
+        return [
+            'message' => $this->getMessage(),
+            'file' => $this->getFile(),
+            'line' => $this->getLine(),
+            'metadata' => $this->metadata,
+            'outcomeConfirmed' => $this->outcomeConfirmed,
+            'payload' => '[elided; read $payload]',
+        ];
     }
 }
