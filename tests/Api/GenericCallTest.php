@@ -227,6 +227,46 @@ final class GenericCallTest extends TestCase
         $client->uapi('npr')->call('DomainInfo', 'primary_domain', outcome: OutcomePolicy::Unchecked);
     }
 
+    public function testBridgedUncheckedCallStillChecksTheWhmResult(): void
+    {
+        [$client, $http] = $this->client();
+        $npr = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":0,"reason":"Access denied."}}'));
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":"1"},"data":{"uapi":{"status":1}}}'));
+
+        try {
+            $npr->call('DomainInfo', 'primary_domain', outcome: OutcomePolicy::Unchecked);
+            self::fail('A failed bridge must raise ApiErrorException under every policy.');
+        } catch (ApiErrorException $exception) {
+            self::assertSame(['Access denied.'], $exception->errors());
+            self::assertSame($exception->metadata, $npr->responseMeta());
+            self::assertSame(0, $exception->metadata?->whmResult());
+        }
+
+        try {
+            $npr->call('DomainInfo', 'primary_domain', outcome: OutcomePolicy::Unchecked);
+            self::fail('A bridge outcome outside the 0/1 rule is invalid under every policy.');
+        } catch (InvalidResponseException $exception) {
+            self::assertSame('Missing or invalid WHM outcome.', $exception->getMessage());
+            self::assertSame($exception->metadata, $npr->responseMeta());
+        }
+    }
+
+    public function testBridgedUncheckedCallWaivesOnlyTheUapiStatus(): void
+    {
+        [$client, $http] = $this->client();
+        $npr = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1,"reason":"OK"},'
+            . '"data":{"uapi":{"data":{"has_feature":0},"status":0,"errors":["Feature is disabled."]}}}'));
+
+        $result = $npr->call('Features', 'has_feature', ['name' => 'ssh'], outcome: OutcomePolicy::Unchecked);
+
+        self::assertSame(['has_feature' => 0], $result->data);
+        self::assertSame(1, $result->metadata->whmResult());
+        self::assertSame(0, $result->metadata->uapiStatus());
+        self::assertSame($result->metadata, $npr->responseMeta());
+    }
+
     /** @return array{Client, MockClient} */
     private function client(bool $cpanel = false): array
     {

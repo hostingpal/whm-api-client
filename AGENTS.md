@@ -208,7 +208,8 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   a secret-bearing parameter must use POST. `OutcomePolicy::Flag` (the documented
   `metadata.result`/`status` 1/0 rule) is what every typed group declares;
   `OutcomePolicy::Unchecked` records the envelope for operations whose status
-  carries payload semantics. Both require a usable envelope.
+  carries payload semantics; on the WHM bridge it waives only the UAPI status, and
+  the outer WHM result is checked under both policies. Both require a usable envelope.
 - `whm()->call()` and `uapi()->call()` are generic escape hatches: validated names,
   reserved fields removed from caller parameters, `CallResult` with the payload
   converted to arrays and no schema. They are an escape hatch, not coverage;

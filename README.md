@@ -307,8 +307,11 @@ member from an explicit null. Names are validated before I/O (`[A-Za-z0-9_]`
 segments; WHM allows `/`-separated namespaces), and the reserved `api.version` and
 bridge `cpanel.*` fields are removed from caller parameters. `OutcomePolicy::Flag`
 (default) applies the documented `metadata.result`/`status` 1/0 rule;
-`OutcomePolicy::Unchecked` records the envelope without interpreting it. Both still
-require a usable envelope and report HTTP failures. POST execution on all three
+`OutcomePolicy::Unchecked` records the envelope without interpreting the operation's
+outcome. On the WHM bridge it waives only the UAPI `status`: the outer WHM
+`metadata.result` reports whether the UAPI call ran, so a failed bridge raises
+`ApiErrorException` under both policies. Both still require a usable envelope and
+report HTTP failures. POST execution on all three
 routes was verified live on 2026-10-14 with read-only functions.
 
 ## Response metadata and failures

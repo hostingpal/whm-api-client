@@ -90,8 +90,9 @@ final class UapiClient extends AbstractApiClient
      * data is the UAPI payload converted to arrays without schema validation, and
      * metadata, exceptions, and responseMeta() behave as for typed operations.
      * Flag applies the documented status 1/0 rule (and the WHM result rule on the
-     * bridge); Unchecked leaves the outcome to the caller, for functions such as
-     * Features/has_feature whose status reports feature state.
+     * bridge); Unchecked leaves the UAPI status to the caller, for functions such as
+     * Features/has_feature whose status reports feature state. The bridge's WHM
+     * result is checked under both policies, so a failed bridge always raises.
      *
      * @param Parameters $parameters
      * @throws InvalidArgumentException If a name or a multi-value parameter is invalid.
