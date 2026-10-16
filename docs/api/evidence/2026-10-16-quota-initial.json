@@ -1,0 +1,501 @@
+{
+    "schema_version": 1,
+    "probes": [
+        {
+            "operation": "uapi:Quota/get_quota_info",
+            "variant": "uapi:Quota/get_quota_info#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-16T14:25:37Z",
+            "revision": "2cb479bf6fb681815825531e7c16481bbabfc2ea",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "93d1f9d5e1bb8e87d372d6765d1766b4ead8d79e619828592e07c3f3edeec84c",
+            "effective_contract_sha256": "ad518202ee373a58ffa90ebc3b4a5dfc3a8c80bb45faaeda9c6cd757fd0f4a1c",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "failed",
+            "probe_outcome": "failed",
+            "failure_kind": "payload_mismatch",
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.*": [
+                    "int"
+                ],
+                "$.data.inode_limit": [
+                    "numeric-string"
+                ],
+                "$.data.inodes_remain": [
+                    "numeric-string"
+                ],
+                "$.data.inodes_used": [
+                    "int"
+                ],
+                "$.data.megabyte_limit": [
+                    "numeric-string"
+                ],
+                "$.data.megabytes_remain": [
+                    "numeric-string"
+                ],
+                "$.data.megabytes_used": [
+                    "float"
+                ],
+                "$.data.under_inode_limit": [
+                    "numeric-string"
+                ],
+                "$.data.under_megabyte_limit": [
+                    "numeric-string"
+                ],
+                "$.data.under_quota_overall": [
+                    "numeric-string"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "empty-object"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.*": [
+                    "int"
+                ],
+                "$.inode_limit": [
+                    "numeric-string"
+                ],
+                "$.inodes_remain": [
+                    "numeric-string"
+                ],
+                "$.inodes_used": [
+                    "int"
+                ],
+                "$.megabyte_limit": [
+                    "numeric-string"
+                ],
+                "$.megabytes_remain": [
+                    "numeric-string"
+                ],
+                "$.megabytes_used": [
+                    "float"
+                ],
+                "$.under_inode_limit": [
+                    "numeric-string"
+                ],
+                "$.under_megabyte_limit": [
+                    "numeric-string"
+                ],
+                "$.under_quota_overall": [
+                    "numeric-string"
+                ]
+            },
+            "discrepancies": [
+                {
+                    "path": "$.*",
+                    "kind": "unknown_field"
+                },
+                {
+                    "path": "$.inode_limit",
+                    "kind": "type_mismatch"
+                },
+                {
+                    "path": "$.inodes_remain",
+                    "kind": "type_mismatch"
+                },
+                {
+                    "path": "$.megabyte_limit",
+                    "kind": "type_mismatch"
+                },
+                {
+                    "path": "$.megabytes_remain",
+                    "kind": "type_mismatch"
+                },
+                {
+                    "path": "$.under_inode_limit",
+                    "kind": "type_mismatch"
+                },
+                {
+                    "path": "$.under_megabyte_limit",
+                    "kind": "type_mismatch"
+                },
+                {
+                    "path": "$.under_quota_overall",
+                    "kind": "type_mismatch"
+                }
+            ]
+        },
+        {
+            "operation": "uapi:Quota/get_quota_info",
+            "variant": "uapi:Quota/get_quota_info#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-16T14:25:38Z",
+            "revision": "2cb479bf6fb681815825531e7c16481bbabfc2ea",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "93d1f9d5e1bb8e87d372d6765d1766b4ead8d79e619828592e07c3f3edeec84c",
+            "effective_contract_sha256": "ad518202ee373a58ffa90ebc3b4a5dfc3a8c80bb45faaeda9c6cd757fd0f4a1c",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "failed",
+            "probe_outcome": "failed",
+            "failure_kind": "payload_mismatch",
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "object"
+                ],
+                "$.data.uapi.data.*": [
+                    "int"
+                ],
+                "$.data.uapi.data.inode_limit": [
+                    "numeric-string"
+                ],
+                "$.data.uapi.data.inodes_remain": [
+                    "numeric-string"
+                ],
+                "$.data.uapi.data.inodes_used": [
+                    "int"
+                ],
+                "$.data.uapi.data.megabyte_limit": [
+                    "numeric-string"
+                ],
+                "$.data.uapi.data.megabytes_remain": [
+                    "numeric-string"
+                ],
+                "$.data.uapi.data.megabytes_used": [
+                    "float"
+                ],
+                "$.data.uapi.data.under_inode_limit": [
+                    "numeric-string"
+                ],
+                "$.data.uapi.data.under_megabyte_limit": [
+                    "numeric-string"
+                ],
+                "$.data.uapi.data.under_quota_overall": [
+                    "numeric-string"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "empty-object"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.*": [
+                    "int"
+                ],
+                "$.inode_limit": [
+                    "numeric-string"
+                ],
+                "$.inodes_remain": [
+                    "numeric-string"
+                ],
+                "$.inodes_used": [
+                    "int"
+                ],
+                "$.megabyte_limit": [
+                    "numeric-string"
+                ],
+                "$.megabytes_remain": [
+                    "numeric-string"
+                ],
+                "$.megabytes_used": [
+                    "float"
+                ],
+                "$.under_inode_limit": [
+                    "numeric-string"
+                ],
+                "$.under_megabyte_limit": [
+                    "numeric-string"
+                ],
+                "$.under_quota_overall": [
+                    "numeric-string"
+                ]
+            },
+            "discrepancies": [
+                {
+                    "path": "$.*",
+                    "kind": "unknown_field"
+                },
+                {
+                    "path": "$.inode_limit",
+                    "kind": "type_mismatch"
+                },
+                {
+                    "path": "$.inodes_remain",
+                    "kind": "type_mismatch"
+                },
+                {
+                    "path": "$.megabyte_limit",
+                    "kind": "type_mismatch"
+                },
+                {
+                    "path": "$.megabytes_remain",
+                    "kind": "type_mismatch"
+                },
+                {
+                    "path": "$.under_inode_limit",
+                    "kind": "type_mismatch"
+                },
+                {
+                    "path": "$.under_megabyte_limit",
+                    "kind": "type_mismatch"
+                },
+                {
+                    "path": "$.under_quota_overall",
+                    "kind": "type_mismatch"
+                }
+            ]
+        },
+        {
+            "operation": "uapi:Quota/get_local_quota_info",
+            "variant": "uapi:Quota/get_local_quota_info#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-16T14:25:38Z",
+            "revision": "2cb479bf6fb681815825531e7c16481bbabfc2ea",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "93d1f9d5e1bb8e87d372d6765d1766b4ead8d79e619828592e07c3f3edeec84c",
+            "effective_contract_sha256": "c65151ee5f3282e513fd9b525a098711d25c39b9f5a819dc542dde49e9fc582a",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "failed",
+            "probe_outcome": "failed",
+            "failure_kind": "payload_mismatch",
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.byte_limit": [
+                    "null"
+                ],
+                "$.data.bytes_used": [
+                    "numeric-string"
+                ],
+                "$.data.inode_limit": [
+                    "null"
+                ],
+                "$.data.inodes_used": [
+                    "int"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "empty-object"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.byte_limit": [
+                    "null"
+                ],
+                "$.bytes_used": [
+                    "numeric-string"
+                ],
+                "$.inode_limit": [
+                    "null"
+                ],
+                "$.inodes_used": [
+                    "int"
+                ]
+            },
+            "discrepancies": [
+                {
+                    "path": "$.byte_limit",
+                    "kind": "type_mismatch"
+                },
+                {
+                    "path": "$.bytes_used",
+                    "kind": "type_mismatch"
+                },
+                {
+                    "path": "$.inode_limit",
+                    "kind": "type_mismatch"
+                }
+            ]
+        },
+        {
+            "operation": "uapi:Quota/get_local_quota_info",
+            "variant": "uapi:Quota/get_local_quota_info#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-16T14:25:38Z",
+            "revision": "2cb479bf6fb681815825531e7c16481bbabfc2ea",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "93d1f9d5e1bb8e87d372d6765d1766b4ead8d79e619828592e07c3f3edeec84c",
+            "effective_contract_sha256": "c65151ee5f3282e513fd9b525a098711d25c39b9f5a819dc542dde49e9fc582a",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "failed",
+            "probe_outcome": "failed",
+            "failure_kind": "payload_mismatch",
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "object"
+                ],
+                "$.data.uapi.data.byte_limit": [
+                    "null"
+                ],
+                "$.data.uapi.data.bytes_used": [
+                    "int"
+                ],
+                "$.data.uapi.data.inode_limit": [
+                    "null"
+                ],
+                "$.data.uapi.data.inodes_used": [
+                    "int"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "empty-object"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.byte_limit": [
+                    "null"
+                ],
+                "$.bytes_used": [
+                    "int"
+                ],
+                "$.inode_limit": [
+                    "null"
+                ],
+                "$.inodes_used": [
+                    "int"
+                ]
+            },
+            "discrepancies": [
+                {
+                    "path": "$.byte_limit",
+                    "kind": "type_mismatch"
+                },
+                {
+                    "path": "$.inode_limit",
+                    "kind": "type_mismatch"
+                }
+            ]
+        }
+    ]
+}

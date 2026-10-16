@@ -1,0 +1,223 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Quota",
+  "operations": {
+    "uapi:Quota/get_local_quota_info": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 88 and later. This operation returns quota information only for the server where it runs; distributed accounts may have different account-wide totals. byte_limit is in bytes and does not update immediately."
+        },
+        {
+          "kind": "documented",
+          "text": "Zero limits mean unlimited or disabled server quotas; zero usage means no usage or disabled server quotas. Omitted fields remain absent."
+        },
+        {
+          "kind": "documented",
+          "text": "The upstream description refers to Quota::get_quota, which is not a documented operation in the pinned API map. The documented account quota operation is Quota/get_quota_info, exposed as getQuotaInfo()."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.15, byte_limit and inode_limit were explicitly null on both routes; those nulls are preserved, separately from zero or omission. bytes_used was a numeric string directly and an integer through WHM, and canonical numeric strings within PHP integer bounds normalize to int."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      },
+      "response": {
+        "byte_limit": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-16",
+              "note": "Quota/get_local_quota_info returned explicit null byte_limit and inode_limit on both routes, bytes_used as a numeric string directly and an integer through WHM; inodes_used remained integer. Null is preserved without inferring a numeric limit. Captured from the same raw response at revision 2cb479bf6fb681815825531e7c16481bbabfc2ea before normalization.",
+              "fingerprint": "docs/api/evidence/2026-10-16-quota-initial.json"
+            }
+          ]
+        },
+        "bytes_used": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-16",
+              "note": "Quota/get_local_quota_info returned explicit null byte_limit and inode_limit on both routes, bytes_used as a numeric string directly and an integer through WHM; inodes_used remained integer. Null is preserved without inferring a numeric limit. Captured from the same raw response at revision 2cb479bf6fb681815825531e7c16481bbabfc2ea before normalization.",
+              "fingerprint": "docs/api/evidence/2026-10-16-quota-initial.json"
+            }
+          ]
+        },
+        "inode_limit": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-16",
+              "note": "Quota/get_local_quota_info returned explicit null byte_limit and inode_limit on both routes, bytes_used as a numeric string directly and an integer through WHM; inodes_used remained integer. Null is preserved without inferring a numeric limit. Captured from the same raw response at revision 2cb479bf6fb681815825531e7c16481bbabfc2ea before normalization.",
+              "fingerprint": "docs/api/evidence/2026-10-16-quota-initial.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.15",
+          "date": "2026-10-16",
+          "note": "Quota/get_local_quota_info returned explicit null byte_limit and inode_limit on both routes, bytes_used as a numeric string directly and an integer through WHM; inodes_used remained integer. Null is preserved without inferring a numeric limit. Captured from the same raw response at revision 2cb479bf6fb681815825531e7c16481bbabfc2ea before normalization.",
+          "fingerprint": "docs/api/evidence/2026-10-16-quota-initial.json"
+        }
+      ]
+    },
+    "uapi:Quota/get_quota_info": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 56 and later. Disk space fields are in megabytes (MB); local byte counts are returned separately by getLocalQuotaInfo()."
+        },
+        {
+          "kind": "documented",
+          "text": "A zero inode_limit or megabyte_limit means unlimited or disabled server quotas. The documentation lists zero inodes_remain and megabytes_remain for the same case but does not describe remaining values for an exhausted finite quota. Read remaining values together with their limits and the under_* flags. Zero usage means no usage or disabled quotas."
+        },
+        {
+          "kind": "documented",
+          "text": "The under_inode_limit, under_megabyte_limit and under_quota_overall payload fields are integer flags: 1 means under the applicable limit and 0 means over it. They do not replace the UAPI envelope status. Omitted fields remain absent."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.15, inode_limit, inodes_remain, megabyte_limit and megabytes_remain arrived as numeric strings, and under_* flags as numeric strings on both routes. The compatibility rule admits only the documented string 0/1 flags. They normalize to the documented numeric types; unreviewed fields are omitted from the typed result and remain discrepancies in saved evidence."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      },
+      "response": {
+        "inode_limit": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-16",
+              "note": "Quota/get_quota_info returned inode limits/remaining, MB limits/remaining and under_* flags as numeric strings on both direct and WHM-bridged routes for the designated test account. Only exact string 0/1 flags and the established integer/number conversion grammar are admitted. Captured from the same raw response at revision 2cb479bf6fb681815825531e7c16481bbabfc2ea before normalization.",
+              "fingerprint": "docs/api/evidence/2026-10-16-quota-initial.json"
+            }
+          ]
+        },
+        "inodes_remain": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-16",
+              "note": "Quota/get_quota_info returned inode limits/remaining, MB limits/remaining and under_* flags as numeric strings on both direct and WHM-bridged routes for the designated test account. Only exact string 0/1 flags and the established integer/number conversion grammar are admitted. Captured from the same raw response at revision 2cb479bf6fb681815825531e7c16481bbabfc2ea before normalization.",
+              "fingerprint": "docs/api/evidence/2026-10-16-quota-initial.json"
+            }
+          ]
+        },
+        "megabyte_limit": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-16",
+              "note": "Quota/get_quota_info returned inode limits/remaining, MB limits/remaining and under_* flags as numeric strings on both direct and WHM-bridged routes for the designated test account. Only exact string 0/1 flags and the established integer/number conversion grammar are admitted. Captured from the same raw response at revision 2cb479bf6fb681815825531e7c16481bbabfc2ea before normalization.",
+              "fingerprint": "docs/api/evidence/2026-10-16-quota-initial.json"
+            }
+          ]
+        },
+        "megabytes_remain": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-16",
+              "note": "Quota/get_quota_info returned inode limits/remaining, MB limits/remaining and under_* flags as numeric strings on both direct and WHM-bridged routes for the designated test account. Only exact string 0/1 flags and the established integer/number conversion grammar are admitted. Captured from the same raw response at revision 2cb479bf6fb681815825531e7c16481bbabfc2ea before normalization.",
+              "fingerprint": "docs/api/evidence/2026-10-16-quota-initial.json"
+            }
+          ]
+        },
+        "under_inode_limit": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-16",
+              "note": "Quota/get_quota_info returned inode limits/remaining, MB limits/remaining and under_* flags as numeric strings on both direct and WHM-bridged routes for the designated test account. Only exact string 0/1 flags and the established integer/number conversion grammar are admitted. Captured from the same raw response at revision 2cb479bf6fb681815825531e7c16481bbabfc2ea before normalization.",
+              "fingerprint": "docs/api/evidence/2026-10-16-quota-initial.json"
+            }
+          ]
+        },
+        "under_megabyte_limit": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-16",
+              "note": "Quota/get_quota_info returned inode limits/remaining, MB limits/remaining and under_* flags as numeric strings on both direct and WHM-bridged routes for the designated test account. Only exact string 0/1 flags and the established integer/number conversion grammar are admitted. Captured from the same raw response at revision 2cb479bf6fb681815825531e7c16481bbabfc2ea before normalization.",
+              "fingerprint": "docs/api/evidence/2026-10-16-quota-initial.json"
+            }
+          ]
+        },
+        "under_quota_overall": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-16",
+              "note": "Quota/get_quota_info returned inode limits/remaining, MB limits/remaining and under_* flags as numeric strings on both direct and WHM-bridged routes for the designated test account. Only exact string 0/1 flags and the established integer/number conversion grammar are admitted. Captured from the same raw response at revision 2cb479bf6fb681815825531e7c16481bbabfc2ea before normalization.",
+              "fingerprint": "docs/api/evidence/2026-10-16-quota-initial.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.15",
+          "date": "2026-10-16",
+          "note": "Quota/get_quota_info returned inode limits/remaining, MB limits/remaining and under_* flags as numeric strings on both direct and WHM-bridged routes for the designated test account. Only exact string 0/1 flags and the established integer/number conversion grammar are admitted. Captured from the same raw response at revision 2cb479bf6fb681815825531e7c16481bbabfc2ea before normalization.",
+          "fingerprint": "docs/api/evidence/2026-10-16-quota-initial.json"
+        }
+      ]
+    }
+  }
+}

@@ -134,6 +134,10 @@ final class VerifyCommandTest extends TestCase
     /** @return iterable<string, array{string, string}> */
     public static function inventoryLabels(): iterable
     {
+        yield 'direct total quota' => ['uapi:Quota/get_quota_info', 'direct-uapi'];
+        yield 'bridged total quota' => ['uapi:Quota/get_quota_info', 'bridged-uapi'];
+        yield 'direct local quota' => ['uapi:Quota/get_local_quota_info', 'direct-uapi'];
+        yield 'bridged local quota' => ['uapi:Quota/get_local_quota_info', 'bridged-uapi'];
         yield 'account search' => ['whm1:listaccts', 'whm'];
         yield 'account summary' => ['whm1:accountsummary', 'whm'];
         yield 'domain inventory' => ['whm1:get_domain_info', 'whm'];

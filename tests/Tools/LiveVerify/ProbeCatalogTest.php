@@ -13,6 +13,24 @@ use PHPUnit\Framework\TestCase;
 
 final class ProbeCatalogTest extends TestCase
 {
+    public function testCatalogContainsExactlyFourReviewedQuotaProbes(): void
+    {
+        $probes = array_values(array_filter(
+            ProbeCatalog::load(dirname(__DIR__, 3)),
+            static fn (Probe $probe): bool => str_starts_with($probe->operation, 'uapi:Quota/'),
+        ));
+
+        self::assertCount(4, $probes);
+        self::assertSame([
+            ['uapi:Quota/get_quota_info', 'direct-uapi', null],
+            ['uapi:Quota/get_quota_info', 'bridged-uapi', null],
+            ['uapi:Quota/get_local_quota_info', 'direct-uapi', null],
+            ['uapi:Quota/get_local_quota_info', 'bridged-uapi', null],
+        ], array_map(static fn (Probe $probe): array => [
+            $probe->operation, $probe->route, $probe->unavailable,
+        ], $probes));
+    }
+
     /** @param array<mixed>|null $recipe */
     #[DataProvider('recipes')]
     public function testUnreviewedRecipesNeverDispatch(?array $recipe, string $outcome): void
@@ -28,6 +46,7 @@ final class ProbeCatalogTest extends TestCase
             $root . '/docs/api/overlay/whm/web-server-configuration.json',
             $root . '/docs/api/overlay/uapi/LangPHP.json',
             $root . '/docs/api/overlay/uapi/SSL.json',
+            $root . '/docs/api/overlay/uapi/Quota.json',
         ];
         file_put_contents($server, json_encode(['operations' => [
             'whm1:version' => $recipe === null ? [] : ['probe' => $recipe],
@@ -81,7 +100,7 @@ final class ProbeCatalogTest extends TestCase
         $root = sys_get_temp_dir() . '/probe-inventory-' . bin2hex(random_bytes(6));
         $files = [
             'whm/server-administration.json', 'whm/accounts.json', 'whm/web-server-configuration.json',
-            'uapi/DomainInfo.json', 'uapi/Email.json', 'uapi/LangPHP.json', 'uapi/SSL.json',
+            'uapi/DomainInfo.json', 'uapi/Email.json', 'uapi/LangPHP.json', 'uapi/SSL.json', 'uapi/Quota.json',
         ];
         mkdir($root . '/docs/api/overlay/whm', 0700, true);
         mkdir($root . '/docs/api/overlay/uapi', 0700, true);
@@ -147,6 +166,17 @@ final class ProbeCatalogTest extends TestCase
      */
     public static function changedInventoryArguments(): iterable
     {
+        foreach (['get_quota_info', 'get_local_quota_info'] as $function) {
+            $operation = 'uapi:Quota/' . $function;
+            yield $function . ' unexpected account' => ['uapi/Quota.json', $operation, ['user' => 'other']];
+            yield $function . ' unexpected bridge account' => ['uapi/Quota.json', $operation, [
+                'cpanel.user' => 'other',
+            ]];
+            yield $function . ' unreviewed method' => ['uapi/Quota.json', $operation, [], ['method' => 'POST']];
+            yield $function . ' unreviewed route' => ['uapi/Quota.json', $operation, [], [
+                'routes' => ['direct-uapi'],
+            ]];
+        }
         yield 'different account search' => ['whm/accounts.json', 'whm1:listaccts', [
             'search' => 'other', 'searchtype' => 'user', 'searchmethod' => 'exact',
         ]];

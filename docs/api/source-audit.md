@@ -694,3 +694,84 @@ complete SSL coverage. Saved evidence contains structural paths and types only,
 with no certificate bodies, account/domain values, paths, arbitrary diagnostics,
 request arguments or credentials. The evidence/audit commit changes no executable
 code or contracts from the recorded revision.
+
+
+## Runtime observations (2026-10-16, Quota inventory)
+
+The two documented UAPI Quota operations are generated as
+`uapi()->quota()->getQuotaInfo()` and `getLocalQuotaInfo()`, with four exact GET
+recipes for direct cPanel and WHM-bridged access to the designated `npr` test
+account on `test.oblak.host`. Account-total disk fields are in MB; local disk
+fields are in bytes. Zero limits mean unlimited or disabled quotas; the
+documentation lists zero remaining values for that case but does not describe
+remaining values for an exhausted finite quota. Remaining values must be read
+with their limits and the `under_*` flags. Zero usage can mean no usage or
+disabled quotas. Local byte limits can lag updates; separate requests and
+distributed account totals must not be compared as equivalent measurements.
+
+On 2026-10-16, a read of the current official
+[UAPI OpenAPI specification](https://api.docs.cpanel.net/_spec/specifications/cpanel.openapi.json)
+returned SHA-256 `172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`,
+identical to the pinned source. Both Quota path objects were unchanged. The local
+operation's description refers to `Quota::get_quota`, which is absent from the
+map; the documented account-total operation is
+[`Quota/get_quota_info`](https://api.docs.cpanel.net/specifications/cpanel.openapi/disk-quotas/quota-get_quota_info).
+The [local operation](https://api.docs.cpanel.net/specifications/cpanel.openapi/disk-quotas/quota-get_local_quota_info)
+requires cPanel 88+, while account totals require cPanel 56+.
+
+The initial live run used committed revision
+`2cb479bf6fb681815825531e7c16481bbabfc2ea` on cPanel `11.138.0.15`.
+All 35 previous probes passed. All four Quota requests received HTTP 200 and
+successful API outcomes but failed payload validation. The
+[initial artifact](evidence/2026-10-16-quota-initial.json) retains only the four
+Quota records from that run, with each record and its provenance unchanged:
+
+- Account totals returned `inode_limit`, `inodes_remain`, `megabyte_limit` and
+  `megabytes_remain` as numeric strings on both routes. The three `under_*` flags
+  were numeric strings; the compatibility rule admits only documented string
+  `0`/`1` flags. The overlay admits those representations only for the
+  observed fields, normalizing them through the existing integer/number/flag
+  validators; integer bounds and exact flag checks remain enforced.
+- Local `byte_limit` and `inode_limit` were explicit `null` on both routes. They
+  remain nullable separately from zero and omission, without inferring what null
+  means. `bytes_used` was a numeric string directly and an integer through WHM;
+  canonical decimal strings within PHP integer bounds normalize to integers.
+- Total `inodes_used` and local `inodes_used` were integers, and total
+  `megabytes_used` was a float. Their contracts were not broadened.
+- Both account-total responses included unreviewed integer-valued fields,
+  represented only by `$.*`. This does not establish their names or exact count.
+  The client removes them under its existing unknown-field behavior; the evidence
+  runner continues to report `unknown_field` and exits nonzero. Follow-up
+  `whm-api-client-8x0.4.3.1` tracks their review. No names or fields are guessed,
+  and no discrepancy is silently suppressed.
+
+Ten field corrections cite the initial same-response fingerprint. Independent
+synthetic tests cover the documented and accepted wire forms, zero/fractional
+values, omission/null distinctions, conversion failures, all three envelope
+forms, routing/authentication, account isolation, metadata failures and unknown
+key privacy. The fixtures are authored independently of generated specs and do
+not contain live quota values. Distributed accounts, quota enforcement changes,
+finite-limit scenarios and other server versions have not been live-tested.
+
+
+[Corrected-contract evidence](evidence/2026-10-16-quota-inventory.json) records
+revision `344136e95e8b8359bf50e1d5fee157d980add82e`. All 39 probes across 23
+operations passed API outcome, payload validation and probe checks on
+`11.138.0.15`. The four Quota probes retained the same field representations as
+the initial run. Passing validation now establishes that the string flag values
+matched the accepted `0`/`1` grammar, without persisting which flag value was
+returned. The two local probes had no discrepancies. Each account-total route
+still reported `unknown_field` at `$.*`; consequently `composer live:verify`
+exited **1**, not a clean evidence pass.
+
+The subsequent evidence/documentation commit corrects the initial observation's
+flag wording in the overlay and regenerated PHPDoc. It does not change the
+operation specs, response corrections, request recipes or executable behavior.
+The artifact retains the actual earlier revision and overlay digest; its
+applicability to the unchanged effective specs was checked explicitly rather
+than replacing provenance or treating the later HEAD as live-observed.
+
+This slice adds two generated methods (72 total in 12 groups), four probe recipes
+and ten evidenced field corrections, without runtime/generator changes or
+mutations. The unknown-field review remains tracked under
+`whm-api-client-8x0.4.3.1` ([issue #18](https://github.com/hostingpal/whm-api-client/issues/18)).

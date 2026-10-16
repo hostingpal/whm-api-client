@@ -7,7 +7,8 @@ Delivery and validation policy refined on 2026-10-15 under
 implemented under `8x0.10.1`, with Email inventory added under `8x0.10.2`.
 The account/domain/PHP evidence batch (`8x0.2.3`) and additional Email inventory
 (`8x0.4.1`), followed by SSL/AutoSSL inventory (`8x0.4.2`), extend this to 35
-route-specific probes and 70 generated operations.
+route-specific probes and 70 generated operations. Quota (`8x0.4.3`) adds four
+route-specific probes and two generated operations, bringing these to 39 and 72.
 Further coverage and the consumer exercise remain planned work.
 Decision record: `whm-api-client-8x0.10`. This design supersedes the
 "typed core plus generic calls / lean pattern" scaling decision
@@ -246,7 +247,7 @@ The generated PHP is committed so consumers never need Go; CI regenerates it and
 fails on any difference.
 
 Generation is checked against the selected overlay scope. The current `listed`
-scope contains 70 operations; only a complete `all` scope establishes that every
+scope contains 72 operations; only a complete `all` scope establishes that every
 non-excluded operation in the map is generated. The generated coverage summary
 currently reports generated groups and exclusions. Phase 2 adds evidence-backed
 offline-test and live-observation reporting; neither is implied by generation.
