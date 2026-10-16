@@ -23,6 +23,8 @@ trait UapiGroups
 
     private ?LangPhp $langPhpGroup = null;
 
+    private ?Quota $quotaGroup = null;
+
     private ?Ssl $sslGroup = null;
 
     /**
@@ -73,6 +75,16 @@ trait UapiGroups
     public function langPhp(): LangPhp
     {
         return $this->langPhpGroup ??= new LangPhp($this->run(...));
+    }
+
+    /**
+     * Select the Quota operations without making a request.
+     *
+     * The Quota module for UAPI.
+     */
+    public function quota(): Quota
+    {
+        return $this->quotaGroup ??= new Quota($this->run(...));
     }
 
     /**

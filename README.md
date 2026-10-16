@@ -3,11 +3,11 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The generated typed groups cover 70 reviewed operations (see
+The generated typed groups cover 72 reviewed operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
-features, Email inventory and SSL/AutoSSL inventory. Generic `call()`
+features, Email inventory, SSL/AutoSSL inventory and disk quotas. Generic `call()`
 methods reach every other documented WHM API 1 and UAPI function. The library
 provides token authentication, direct and WHM-routed UAPI, GET and form-encoded
 POST execution, typed array payloads, API exceptions, and per-client response
@@ -152,7 +152,17 @@ $willRenew = $renewal['will_renew'] ?? null; // 0|1, or absent.
 $autosslProblems = $ssl->getAutosslProblems();
 $checkInProgress = $ssl->isAutosslCheckInProgress(); // 0|1
 $canRedirect = $ssl->canSslRedirect(); // Capability; does not enable redirects.
+
+// Account quota totals and usage on the local server are distinct views.
+$quota = $account->quota()->getQuotaInfo(); // Disk fields in MB.
+$localQuota = $account->quota()->getLocalQuotaInfo(); // Disk fields in bytes.
+$underQuota = $quota['under_quota_overall'] ?? null; // 0|1, or absent.
 ```
+
+Quota limits and remaining values of zero mean unlimited or disabled quotas;
+zero usage means no usage or disabled quotas. The local `byte_limit` can lag
+changes, and distributed accounts can have different local and account totals.
+`getQuotaInfo()` requires cPanel 56+, and `getLocalQuotaInfo()` requires cPanel 88+.
 
 Results are arrays keyed by the upstream wire names (`$domains['main_domain'] ?? null`).
 Omitted fields are absent keys (use `array_key_exists()` or `??`) and an explicit
@@ -195,6 +205,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->domainInfo()` | `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
 | `uapi()->langPhp()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetDomainHandler()`, `phpGetImpactedDomains()` |
 | `uapi()->features()` | `listFeatures()` |
+| `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
 
 UAPI groups operate on the selected cPanel account through either credential route.
@@ -508,10 +519,10 @@ from the pinned documentation, and caveats it lacks are recorded as overlay note
 The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
 
 The [live evidence runner](tools/live-verify/README.md) captures the same raw
-response before normalization and field filtering for 35 reviewed route-specific
+response before normalization and field filtering for 39 reviewed route-specific
 probes. It saves sanitized structural evidence with revision and contract hashes,
 while independent regression expectations remain in the offline suite. It covers
-WHM version/load, account/domain/PHP inventory, and UAPI domain/PHP/Email/SSL inventory
+WHM version/load, account/domain/PHP inventory, and UAPI domain/PHP/Email/SSL inventory and quotas
 through both UAPI routes. Account-list and summary probes target `npr` explicitly;
 the PHP handler probe uses the reviewed `type: 'home'` argument, and AutoSSL renewal
 status targets `npr.rs`. See the

@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Quota",
+  "operations": {
+    "uapi:Quota/get_local_quota_info": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 88 and later. This operation returns quota information only for the server where it runs; distributed accounts may have different account-wide totals. byte_limit is in bytes and does not update immediately."
+        },
+        {
+          "kind": "documented",
+          "text": "Zero limits mean unlimited or disabled server quotas; zero usage means no usage or disabled server quotas. Omitted fields remain absent."
+        },
+        {
+          "kind": "documented",
+          "text": "The upstream description refers to Quota::get_quota, which is not a documented operation in the pinned API map. The documented account quota operation is Quota/get_quota_info, exposed as getQuotaInfo()."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:Quota/get_quota_info": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 56 and later. Disk space fields are in megabytes (MB); local byte counts are returned separately by getLocalQuotaInfo()."
+        },
+        {
+          "kind": "documented",
+          "text": "Zero limits and remaining values mean unlimited or disabled server quotas, while zero usage means no usage or disabled quotas. Preserve these values rather than interpreting zero remaining as exhausted quota."
+        },
+        {
+          "kind": "documented",
+          "text": "The under_inode_limit, under_megabyte_limit and under_quota_overall payload fields are integer flags: 1 means under the applicable limit and 0 means over it. They do not replace the UAPI envelope status. Omitted fields remain absent."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    }
+  }
+}

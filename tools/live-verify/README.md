@@ -1,7 +1,7 @@
 # Live contract evidence
 
 This development-only PHP command exercises the generated client on the approved
-test server. It performs 35 GET requests across 21 operations, with exact route
+test server. It performs 39 GET requests across 23 operations, with exact route
 and argument guards, verified TLS, redirects
 disabled, and no retries. The core package has no dependency on this tool.
 
@@ -10,6 +10,7 @@ disabled, and no retries. The core package has no dependency on this tool.
 | WHM | `version`, `systemloadavg`, `listaccts(search: 'npr', searchtype: 'user', searchmethod: 'exact')`, `accountsummary(user: 'npr')`, `get_domain_info`, `php_get_installed_versions`, `php_get_system_default_version` |
 | Direct and WHM-bridged UAPI, account `npr` | `DomainInfo/list_domains`, `DomainInfo/primary_domain`, `LangPHP/php_get_installed_versions`, `LangPHP/php_get_domain_handler(type: 'home')`, `Email/list_pops`, `Email/list_mail_domains`, `Email/list_domain_forwarders`, `Email/count_pops` |
 | Direct and WHM-bridged UAPI, account `npr` | `SSL/installed_hosts`, `SSL/get_autossl_excluded_domains`, `SSL/get_autossl_problems`, `SSL/get_autossl_renewal_status(domain: 'npr.rs')`, `SSL/is_autossl_check_in_progress`, `SSL/can_ssl_redirect` |
+| Direct and WHM-bridged UAPI, account `npr` | `Quota/get_quota_info`, `Quota/get_local_quota_info` |
 
 Unlisted optional arguments are omitted. The Email probes observe default
 behavior; explicit flags, filters and selection behavior are covered separately
@@ -27,6 +28,11 @@ Run from a committed checkout after `composer check` and `composer api-map:check
 Runtime code, tools, Composer files, pinned sources and overlays must match the
 recorded commit, including untracked files. Evidence files themselves may be new.
 Ordinary Composer checks remain offline; this command is never part of CI.
+
+Quota recipes take no arguments and read account totals in MB and local usage in
+bytes. They do not compare values from separate requests: usage may change and
+distributed account totals can differ. Only field paths and types are retained,
+not quota values.
 
 ## Capture and privacy
 

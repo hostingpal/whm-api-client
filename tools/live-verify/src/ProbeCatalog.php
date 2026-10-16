@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\DomainInfoSpec;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\EmailSpec;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\LangPhpSpec;
+use HostingPal\WhmApiClient\Api\Uapi\Spec\QuotaSpec;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\SslSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\AccountsSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
@@ -29,6 +30,7 @@ final class ProbeCatalog
         $webServer = self::read($root . '/docs/api/overlay/whm/web-server-configuration.json');
         $php = self::read($root . '/docs/api/overlay/uapi/LangPHP.json');
         $ssl = self::read($root . '/docs/api/overlay/uapi/SSL.json');
+        $quota = self::read($root . '/docs/api/overlay/uapi/Quota.json');
 
         return [
             self::probe(
@@ -336,6 +338,40 @@ final class ProbeCatalog
                 'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
                 . '&cpanel.module=SSL&cpanel.function=can_ssl_redirect',
                 static fn (Client $client): mixed => $client->uapi('npr')->ssl()->canSslRedirect(),
+            ),
+            self::probe(
+                $quota,
+                'uapi:Quota/get_quota_info',
+                'direct-uapi',
+                QuotaSpec::GET_QUOTA_INFO,
+                'https://test.oblak.host:2083/execute/Quota/get_quota_info',
+                static fn (Client $client): mixed => $client->uapi()->quota()->getQuotaInfo(),
+            ),
+            self::probe(
+                $quota,
+                'uapi:Quota/get_quota_info',
+                'bridged-uapi',
+                QuotaSpec::GET_QUOTA_INFO,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=Quota&cpanel.function=get_quota_info',
+                static fn (Client $client): mixed => $client->uapi('npr')->quota()->getQuotaInfo(),
+            ),
+            self::probe(
+                $quota,
+                'uapi:Quota/get_local_quota_info',
+                'direct-uapi',
+                QuotaSpec::GET_LOCAL_QUOTA_INFO,
+                'https://test.oblak.host:2083/execute/Quota/get_local_quota_info',
+                static fn (Client $client): mixed => $client->uapi()->quota()->getLocalQuotaInfo(),
+            ),
+            self::probe(
+                $quota,
+                'uapi:Quota/get_local_quota_info',
+                'bridged-uapi',
+                QuotaSpec::GET_LOCAL_QUOTA_INFO,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=Quota&cpanel.function=get_local_quota_info',
+                static fn (Client $client): mixed => $client->uapi('npr')->quota()->getLocalQuotaInfo(),
             ),
         ];
     }
