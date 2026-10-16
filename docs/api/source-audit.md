@@ -619,3 +619,39 @@ these observations for the recorded route, server version and contracts, not
 complete Email coverage or all possible records. The evidence/audit commit adds
 only these saved observations; executable code and contracts remain those of the
 recorded revision.
+
+## Account, domain, PHP and Email inventory evidence — 2026-10-15
+
+The next bounded batch adds evidence for eight existing operations: WHM
+`listaccts`, `accountsummary`, `get_domain_info`, `php_get_installed_versions` and
+`php_get_system_default_version`, plus UAPI `DomainInfo/primary_domain`,
+`LangPHP/php_get_installed_versions` and `LangPHP/php_get_domain_handler` on both
+direct and WHM-bridged routes. The account list uses an exact username search for
+`npr`; the summary targets that account explicitly. Both PHP handler requests use
+`type=home`. The code catalog pins these arguments and rejects changed recipes
+before any network request.
+
+The same delivery adds three generated Email operations from the pinned map:
+`list_mail_domains`, `list_domain_forwarders` and `count_pops`, bringing typed
+coverage to 64 operations. Each has independent synthetic request, payload,
+empty/zero, failure and metadata tests. All three have no-argument GET probes on
+both UAPI routes; optional flags and filters remain independently tested offline.
+
+[Inventory and Email evidence](evidence/2026-10-15-inventory-email.json) records
+revision `95631264b8cf66b92e97026c0e6487d65dae6ea1`, actual methods/routes and source,
+map, generator, overlay and effective-contract hashes. All 23 probes across 15
+operations passed API, payload and probe checks on `test.oblak.host`, cPanel
+`11.138.0.15`, with zero structural discrepancies and no response corrections.
+The initial sandboxed attempt received no HTTP responses; the authorized run with
+network access produced the saved evidence. Each probe captures its original
+response, with no replay to recover observations.
+
+Both `list_mail_domains` routes returned nonempty lists with string `domain`
+fields and absent `select` fields. Both `list_domain_forwarders` routes returned
+empty lists, which establish no observations of `dest` or `forward` item fields.
+Both `count_pops` payloads were integers; their values are not retained, and this
+does not establish whether the main account is included. Nonempty forwarder
+records and explicit mail-domain options remain offline-tested only. Saved data
+contains sanitized structural paths and types, not live domains, account values,
+request arguments, raw responses or credentials. The evidence/audit commit changes
+no executable code or contracts from the recorded revision.

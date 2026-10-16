@@ -5,6 +5,7 @@
   "accessor": "accounts",
   "operations": {
     "whm1:accountsummary": {
+      "probe": {"phase": "read-only", "arguments": {"user": "npr"}, "routes": ["whm"], "expected": "success"},
       "name": "accountSummary",
       "notes": [{"kind": "documented", "text": "The pinned acct member is an array of account records, so the result is a list rather than a single record."}],
       "order": ["user", "domain"],
@@ -29,12 +30,14 @@
       "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "The pinned createacct response does not require data, and the deleted hand-written create() (4d5088a) returned an empty result when WHM sent no data or null data; the pinned account_enhancements schema is oneOf a string or a list of strings (single and multiple examples), which create() sent as repeated keys."}]
     },
     "whm1:get_domain_info": {
+      "probe": {"phase": "read-only", "arguments": {}, "routes": ["whm"], "expected": "success"},
       "response": {
         "domains[].port": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "get_domain_info returned port and port_ssl as decimal strings (80, 443); docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
         "domains[].port_ssl": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "get_domain_info returned port and port_ssl as decimal strings (80, 443); docs/api/source-audit.md#runtime-observations-2026-10-13"}]}
       }
     },
     "whm1:listaccts": {
+      "probe": {"phase": "read-only", "arguments": {"search": "npr", "searchtype": "user", "searchmethod": "exact"}, "routes": ["whm"], "expected": "success"},
       "name": "listAccounts",
       "order": ["search", "searchtype", "searchmethod", "want"],
       "unwrap": "acct",

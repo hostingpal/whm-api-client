@@ -18,6 +18,14 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  * according to the configured credentials, with a single attempt and no retries. The handle clears responseMeta()
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
+ * @phpstan-type ListDomainForwardersResult list<array{
+ *     dest?: string,
+ *     forward?: string,
+ * }>
+ * @phpstan-type ListMailDomainsResult list<array{
+ *     domain?: string,
+ *     select?: int,
+ * }>
  * @phpstan-type ListPopsResult list<array{
  *     email?: string,
  *     login?: string,
@@ -35,6 +43,102 @@ final readonly class Email
      */
     public function __construct(private Closure $run)
     {
+    }
+
+    /**
+     * Return cPanel account's email account total.
+     *
+     * This function returns the number of email accounts for a cPanel account.
+     *
+     * Documented: Disabling the Receive Mail role disables this operation. The result is the cPanel account's number of
+     * email accounts, including zero.
+     *
+     * API-map identity: uapi:Email/count_pops#GET (wire name count_pops).
+     *
+     * @return int
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-count_pops
+     */
+    public function countPops(): int
+    {
+        /** @var int $result Validated against EmailSpec::COUNT_POPS. */
+        $result = ($this->run)(EmailSpec::COUNT_POPS, []);
+
+        return $result;
+    }
+
+    /**
+     * Return domain-level forwarders.
+     *
+     * This function lists domain-level forwarders.
+     *
+     * Documented: Disabling the Receive Mail role disables this operation. Omitting domain returns all domain-level
+     * forwarders for this cPanel account.
+     *
+     * Documented: The result preserves the documented wire names: dest is the forwarded domain, and forward is the
+     * destination domain.
+     *
+     * API-map identity: uapi:Email/list_domain_forwarders#GET (wire name list_domain_forwarders).
+     *
+     * @param string|null $domain The domain name to query. Null omits it.
+     * @return ListDomainForwardersResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-forwarding/email-list_domain_forwarders
+     */
+    public function listDomainForwarders(?string $domain = null): array
+    {
+        /** @var ListDomainForwardersResult $result Validated against EmailSpec::LIST_DOMAIN_FORWARDERS. */
+        $result = ($this->run)(EmailSpec::LIST_DOMAIN_FORWARDERS, ['domain' => $domain]);
+
+        return $result;
+    }
+
+    /**
+     * Return cPanel account's mail domains.
+     *
+     * This function lists the account's mail domains.
+     *
+     * Documented: Disabling the Receive Mail role disables this operation. The account's main domain is returned first.
+     *
+     * Documented: Omitting addWww and includeWildcard excludes www and wildcard addresses. Temporary domains
+     * (*.cpanel.site) are excluded unless returnTemporaryDomain is true.
+     *
+     * Documented: Omitting select omits the select output field. When select is supplied, the documented select output
+     * identifies that domain and defaults to integer 1.
+     *
+     * API-map identity: uapi:Email/list_mail_domains#GET (wire name list_mail_domains).
+     *
+     * @param bool|null $addWww Whether to list `www.` addresses. Null omits it.
+     * @param bool|null $includeWildcard Whether to list wildcard addresses. Null omits it.
+     * @param bool|null $returnTemporaryDomain Whether to include temporary domains (*.cpanel.site) in the output. Null
+     *     omits it.
+     * @param string|null $select The name of the domain that the function returns with the `select `output parameter.
+     *     Null omits it.
+     * @return ListMailDomainsResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-list_mail_domains
+     */
+    public function listMailDomains(
+        ?bool $addWww = null,
+        ?bool $includeWildcard = null,
+        ?bool $returnTemporaryDomain = null,
+        ?string $select = null,
+    ): array {
+        /** @var ListMailDomainsResult $result Validated against EmailSpec::LIST_MAIL_DOMAINS. */
+        $result = ($this->run)(EmailSpec::LIST_MAIL_DOMAINS, [
+            'addWww' => $addWww,
+            'includeWildcard' => $includeWildcard,
+            'returnTemporaryDomain' => $returnTemporaryDomain,
+            'select' => $select,
+        ]);
+
+        return $result;
     }
 
     /**

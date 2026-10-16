@@ -5,6 +5,6 @@
   "operations": {
     "uapi:DomainInfo/list_domains": {"probe": {"phase": "read-only", "arguments": {}, "routes": ["direct-uapi", "bridged-uapi"], "expected": "success"}},
     "uapi:DomainInfo/main_domain_builtin_subdomain_aliases": {},
-    "uapi:DomainInfo/primary_domain": {"unwrap": "primary_domain"}
+    "uapi:DomainInfo/primary_domain": {"unwrap": "primary_domain", "probe": {"phase": "read-only", "arguments": {}, "routes": ["direct-uapi", "bridged-uapi"], "expected": "success"}}
   }
 }

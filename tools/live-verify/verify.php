@@ -85,6 +85,25 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
             'uapi:DomainInfo/list_domains|bridged-uapi' => 'uapi:DomainInfo/list_domains bridged-uapi',
             'uapi:Email/list_pops|direct-uapi' => 'uapi:Email/list_pops direct-uapi',
             'uapi:Email/list_pops|bridged-uapi' => 'uapi:Email/list_pops bridged-uapi',
+            'uapi:Email/list_mail_domains|direct-uapi' => 'uapi:Email/list_mail_domains direct-uapi',
+            'uapi:Email/list_mail_domains|bridged-uapi' => 'uapi:Email/list_mail_domains bridged-uapi',
+            'uapi:Email/list_domain_forwarders|direct-uapi' => 'uapi:Email/list_domain_forwarders direct-uapi',
+            'uapi:Email/list_domain_forwarders|bridged-uapi' => 'uapi:Email/list_domain_forwarders bridged-uapi',
+            'uapi:Email/count_pops|direct-uapi' => 'uapi:Email/count_pops direct-uapi',
+            'uapi:Email/count_pops|bridged-uapi' => 'uapi:Email/count_pops bridged-uapi',
+            'whm1:listaccts|whm' => 'whm1:listaccts whm',
+            'whm1:accountsummary|whm' => 'whm1:accountsummary whm',
+            'whm1:get_domain_info|whm' => 'whm1:get_domain_info whm',
+            'whm1:php_get_installed_versions|whm' => 'whm1:php_get_installed_versions whm',
+            'whm1:php_get_system_default_version|whm' => 'whm1:php_get_system_default_version whm',
+            'uapi:DomainInfo/primary_domain|direct-uapi' => 'uapi:DomainInfo/primary_domain direct-uapi',
+            'uapi:DomainInfo/primary_domain|bridged-uapi' => 'uapi:DomainInfo/primary_domain bridged-uapi',
+            'uapi:LangPHP/php_get_installed_versions|direct-uapi'
+                => 'uapi:LangPHP/php_get_installed_versions direct-uapi',
+            'uapi:LangPHP/php_get_installed_versions|bridged-uapi'
+                => 'uapi:LangPHP/php_get_installed_versions bridged-uapi',
+            'uapi:LangPHP/php_get_domain_handler|direct-uapi' => 'uapi:LangPHP/php_get_domain_handler direct-uapi',
+            'uapi:LangPHP/php_get_domain_handler|bridged-uapi' => 'uapi:LangPHP/php_get_domain_handler bridged-uapi',
         ];
         $outcomes = [
             'passed' => 'passed', 'failed' => 'failed', 'skipped' => 'skipped', 'unsupported' => 'unsupported',

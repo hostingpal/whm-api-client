@@ -3,6 +3,69 @@
   "family": "uapi",
   "group": "Email",
   "operations": {
+    "uapi:Email/count_pops": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Disabling the Receive Mail role disables this operation. The result is the cPanel account's number of email accounts, including zero."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:Email/list_domain_forwarders": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Disabling the Receive Mail role disables this operation. Omitting domain returns all domain-level forwarders for this cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "The result preserves the documented wire names: dest is the forwarded domain, and forward is the destination domain."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:Email/list_mail_domains": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Disabling the Receive Mail role disables this operation. The account's main domain is returned first."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting addWww and includeWildcard excludes www and wildcard addresses. Temporary domains (*.cpanel.site) are excluded unless returnTemporaryDomain is true."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting select omits the select output field. When select is supplied, the documented select output identifies that domain and defaults to integer 1."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
     "uapi:Email/list_pops": {
       "notes": [
         {
