@@ -123,6 +123,10 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
                 => 'uapi:Quota/get_local_quota_info direct-uapi',
             'uapi:Quota/get_local_quota_info|bridged-uapi'
                 => 'uapi:Quota/get_local_quota_info bridged-uapi',
+            'uapi:Mysql/list_databases|direct-uapi' => 'uapi:Mysql/list_databases direct-uapi',
+            'uapi:Mysql/list_databases|bridged-uapi' => 'uapi:Mysql/list_databases bridged-uapi',
+            'uapi:Mysql/list_users|direct-uapi' => 'uapi:Mysql/list_users direct-uapi',
+            'uapi:Mysql/list_users|bridged-uapi' => 'uapi:Mysql/list_users bridged-uapi',
             'whm1:listaccts|whm' => 'whm1:listaccts whm',
             'whm1:accountsummary|whm' => 'whm1:accountsummary whm',
             'whm1:get_domain_info|whm' => 'whm1:get_domain_info whm',

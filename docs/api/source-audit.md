@@ -775,3 +775,29 @@ This slice adds two generated methods (72 total in 12 groups), four probe recipe
 and ten evidenced field corrections, without runtime/generator changes or
 mutations. The unknown-field review remains tracked under
 `whm-api-client-8x0.4.3.1` ([issue #18](https://github.com/hostingpal/whm-api-client/issues/18)).
+
+
+## Contract review (2026-10-16, MySQL inventory)
+
+The read-only database inventory slice generates
+`uapi()->mysql()->listDatabases()` and `listUsers()` from
+[`Mysql/list_databases`](https://api.docs.cpanel.net/specifications/cpanel.openapi/database-management/mysql-list_databases)
+and [`Mysql/list_users`](https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-list_users).
+Both are parameterless GET operations available in cPanel 82 and later. They
+are disabled when the MySQL/MariaDB role is disabled and remote MySQL is not
+configured. This slice covers two of the module's 25 documented operations.
+
+Database records declare optional `database`, integer `disk_usage` in bytes and
+`users` list fields. User records declare optional `user`, `shortuser` and
+`databases` list fields. No row fields are required or nullable in the pinned
+schemas. Empty lists, omitted fields and zero disk usage remain distinct. The
+shared response-constraint policy remains unchanged; this slice does not add
+general minimum/range validation or infer numeric-string compatibility.
+
+On 2026-10-16, the current official
+[UAPI OpenAPI source](https://api.docs.cpanel.net/_spec/specifications/cpanel.openapi.json)
+had SHA-256 `172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`,
+identical to the pinned snapshot. Both MySQL operation objects were unchanged.
+Independent synthetic fixtures exercise nonempty and empty records, nested
+lists, omission, malformed values and account-bound request/error behavior.
+These fixtures establish offline behavior, not live observations of row fields.

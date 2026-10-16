@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Mysql",
+  "operations": {
+    "uapi:Mysql/list_databases": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the MySQL/MariaDB role disables this operation only when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "disk_usage is in bytes. The users list is empty when a database has no users. Omitted fields remain absent."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:Mysql/list_users": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the MySQL/MariaDB role disables this operation only when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "The result lists database users for this cPanel account. Preserve the user and shortuser wire keys and each user's databases list; omitted fields remain absent."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    }
+  }
+}

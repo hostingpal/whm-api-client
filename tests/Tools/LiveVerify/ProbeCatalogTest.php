@@ -13,6 +13,24 @@ use PHPUnit\Framework\TestCase;
 
 final class ProbeCatalogTest extends TestCase
 {
+    public function testCatalogContainsExactlyFourReviewedMysqlProbes(): void
+    {
+        $probes = array_values(array_filter(
+            ProbeCatalog::load(dirname(__DIR__, 3)),
+            static fn (Probe $probe): bool => str_starts_with($probe->operation, 'uapi:Mysql/'),
+        ));
+
+        self::assertCount(4, $probes);
+        self::assertSame([
+            ['uapi:Mysql/list_databases', 'direct-uapi', null],
+            ['uapi:Mysql/list_databases', 'bridged-uapi', null],
+            ['uapi:Mysql/list_users', 'direct-uapi', null],
+            ['uapi:Mysql/list_users', 'bridged-uapi', null],
+        ], array_map(static fn (Probe $probe): array => [
+            $probe->operation, $probe->route, $probe->unavailable,
+        ], $probes));
+    }
+
     public function testCatalogContainsExactlyFourReviewedQuotaProbes(): void
     {
         $probes = array_values(array_filter(
@@ -47,6 +65,7 @@ final class ProbeCatalogTest extends TestCase
             $root . '/docs/api/overlay/uapi/LangPHP.json',
             $root . '/docs/api/overlay/uapi/SSL.json',
             $root . '/docs/api/overlay/uapi/Quota.json',
+            $root . '/docs/api/overlay/uapi/Mysql.json',
         ];
         file_put_contents($server, json_encode(['operations' => [
             'whm1:version' => $recipe === null ? [] : ['probe' => $recipe],
@@ -101,6 +120,7 @@ final class ProbeCatalogTest extends TestCase
         $files = [
             'whm/server-administration.json', 'whm/accounts.json', 'whm/web-server-configuration.json',
             'uapi/DomainInfo.json', 'uapi/Email.json', 'uapi/LangPHP.json', 'uapi/SSL.json', 'uapi/Quota.json',
+            'uapi/Mysql.json',
         ];
         mkdir($root . '/docs/api/overlay/whm', 0700, true);
         mkdir($root . '/docs/api/overlay/uapi', 0700, true);
@@ -166,6 +186,18 @@ final class ProbeCatalogTest extends TestCase
      */
     public static function changedInventoryArguments(): iterable
     {
+        foreach (['list_databases', 'list_users'] as $function) {
+            $operation = 'uapi:Mysql/' . $function;
+            yield $function . ' unexpected account' => ['uapi/Mysql.json', $operation, ['user' => 'other']];
+            yield $function . ' unexpected bridge account' => ['uapi/Mysql.json', $operation, [
+                'cpanel.user' => 'other',
+            ]];
+            yield $function . ' unexpected parameter' => ['uapi/Mysql.json', $operation, ['database' => 'other']];
+            yield $function . ' unreviewed method' => ['uapi/Mysql.json', $operation, [], ['method' => 'POST']];
+            yield $function . ' unreviewed route' => ['uapi/Mysql.json', $operation, [], [
+                'routes' => ['direct-uapi'],
+            ]];
+        }
         foreach (['get_quota_info', 'get_local_quota_info'] as $function) {
             $operation = 'uapi:Quota/' . $function;
             yield $function . ' unexpected account' => ['uapi/Quota.json', $operation, ['user' => 'other']];

@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\DomainInfoSpec;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\EmailSpec;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\LangPhpSpec;
+use HostingPal\WhmApiClient\Api\Uapi\Spec\MysqlSpec;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\QuotaSpec;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\SslSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\AccountsSpec;
@@ -31,6 +32,7 @@ final class ProbeCatalog
         $php = self::read($root . '/docs/api/overlay/uapi/LangPHP.json');
         $ssl = self::read($root . '/docs/api/overlay/uapi/SSL.json');
         $quota = self::read($root . '/docs/api/overlay/uapi/Quota.json');
+        $mysql = self::read($root . '/docs/api/overlay/uapi/Mysql.json');
 
         return [
             self::probe(
@@ -372,6 +374,40 @@ final class ProbeCatalog
                 'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
                 . '&cpanel.module=Quota&cpanel.function=get_local_quota_info',
                 static fn (Client $client): mixed => $client->uapi('npr')->quota()->getLocalQuotaInfo(),
+            ),
+            self::probe(
+                $mysql,
+                'uapi:Mysql/list_databases',
+                'direct-uapi',
+                MysqlSpec::LIST_DATABASES,
+                'https://test.oblak.host:2083/execute/Mysql/list_databases',
+                static fn (Client $client): mixed => $client->uapi()->mysql()->listDatabases(),
+            ),
+            self::probe(
+                $mysql,
+                'uapi:Mysql/list_databases',
+                'bridged-uapi',
+                MysqlSpec::LIST_DATABASES,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=Mysql&cpanel.function=list_databases',
+                static fn (Client $client): mixed => $client->uapi('npr')->mysql()->listDatabases(),
+            ),
+            self::probe(
+                $mysql,
+                'uapi:Mysql/list_users',
+                'direct-uapi',
+                MysqlSpec::LIST_USERS,
+                'https://test.oblak.host:2083/execute/Mysql/list_users',
+                static fn (Client $client): mixed => $client->uapi()->mysql()->listUsers(),
+            ),
+            self::probe(
+                $mysql,
+                'uapi:Mysql/list_users',
+                'bridged-uapi',
+                MysqlSpec::LIST_USERS,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=Mysql&cpanel.function=list_users',
+                static fn (Client $client): mixed => $client->uapi('npr')->mysql()->listUsers(),
             ),
         ];
     }

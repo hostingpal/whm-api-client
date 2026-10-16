@@ -23,6 +23,8 @@ trait UapiGroups
 
     private ?LangPhp $langPhpGroup = null;
 
+    private ?Mysql $mysqlGroup = null;
+
     private ?Quota $quotaGroup = null;
 
     private ?Ssl $sslGroup = null;
@@ -75,6 +77,16 @@ trait UapiGroups
     public function langPhp(): LangPhp
     {
         return $this->langPhpGroup ??= new LangPhp($this->run(...));
+    }
+
+    /**
+     * Select the Mysql operations without making a request.
+     *
+     * The Mysql module for UAPI.
+     */
+    public function mysql(): Mysql
+    {
+        return $this->mysqlGroup ??= new Mysql($this->run(...));
     }
 
     /**
