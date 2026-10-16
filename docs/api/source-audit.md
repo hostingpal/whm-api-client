@@ -726,7 +726,8 @@ Quota records from that run, with each record and its provenance unchanged:
 
 - Account totals returned `inode_limit`, `inodes_remain`, `megabyte_limit` and
   `megabytes_remain` as numeric strings on both routes. The three `under_*` flags
-  were string `0`/`1`. The overlay admits those representations only for the
+  were numeric strings; the compatibility rule admits only documented string
+  `0`/`1` flags. The overlay admits those representations only for the
   observed fields, normalizing them through the existing integer/number/flag
   validators; integer bounds and exact flag checks remain enforced.
 - Local `byte_limit` and `inode_limit` were explicit `null` on both routes. They
@@ -749,3 +750,26 @@ forms, routing/authentication, account isolation, metadata failures and unknown
 key privacy. The fixtures are authored independently of generated specs and do
 not contain live quota values. Distributed accounts, quota enforcement changes,
 finite-limit scenarios and other server versions have not been live-tested.
+
+
+[Corrected-contract evidence](evidence/2026-10-16-quota-inventory.json) records
+revision `344136e95e8b8359bf50e1d5fee157d980add82e`. All 39 probes across 23
+operations passed API outcome, payload validation and probe checks on
+`11.138.0.15`. The four Quota probes retained the same field representations as
+the initial run. Passing validation now establishes that the string flag values
+matched the accepted `0`/`1` grammar, without persisting which flag value was
+returned. The two local probes had no discrepancies. Each account-total route
+still reported `unknown_field` at `$.*`; consequently `composer live:verify`
+exited **1**, not a clean evidence pass.
+
+The subsequent evidence/documentation commit corrects the initial observation's
+flag wording in the overlay and regenerated PHPDoc. It does not change the
+operation specs, response corrections, request recipes or executable behavior.
+The artifact retains the actual earlier revision and overlay digest; its
+applicability to the unchanged effective specs was checked explicitly rather
+than replacing provenance or treating the later HEAD as live-observed.
+
+This slice adds two generated methods (72 total in 12 groups), four probe recipes
+and ten evidenced field corrections, without runtime/generator changes or
+mutations. The unresolved unknown-field review remains open, so the PR is a
+draft pending Opus review and disposition of `whm-api-client-8x0.4.3.1`.

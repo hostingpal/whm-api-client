@@ -101,8 +101,9 @@ final readonly class Quota
      * fields remain absent.
      *
      * Observed: On cPanel 11.138.0.15, inode_limit, inodes_remain, megabyte_limit and megabytes_remain arrived as
-     * numeric strings, and under_* flags as string 0/1 on both routes. They normalize to the documented numeric types;
-     * unreviewed fields are omitted from the typed result and remain discrepancies in saved evidence.
+     * numeric strings, and under_* flags as numeric strings on both routes. The compatibility rule admits only the
+     * documented string 0/1 flags. They normalize to the documented numeric types; unreviewed fields are omitted from
+     * the typed result and remain discrepancies in saved evidence.
      *
      * API-map identity: uapi:Quota/get_quota_info#GET (wire name get_quota_info).
      *
