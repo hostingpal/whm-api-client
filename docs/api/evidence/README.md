@@ -37,3 +37,10 @@ independent expected values and request behavior.
 
 These later artifacts also record cPanel `11.138.0.15`; their observations remain
 scoped to the exact contracts, revisions and routes recorded in each file.
+
+- [Discrepancy-policy verification](2026-10-16-discrepancy-policy.json): all 43
+  probes across 25 operations at `ac37938050033c7e8a6d12f3347eb2bd6f6773a6`
+  passed on cPanel `11.138.0.15`. Schema 2 retains the two original Quota
+  discrepancies and reports a separate assessment: 2 acknowledged, 0 unexpected,
+  0 stale. The command exited 0. This establishes the reviewed policy's behavior,
+  not discrepancy-free evidence or knowledge of masked key identities/counts.

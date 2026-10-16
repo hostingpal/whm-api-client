@@ -38,9 +38,10 @@ Quota recipes take no arguments and read account totals in MB and local usage in
 bytes. They do not compare values from separate requests: usage may change and
 distributed account totals can differ. Only field paths and types are retained,
 not quota values. Quota total responses currently include unreviewed fields
-reported as `$.*` discrepancies. The command keeps its nonzero exit for these
-discrepancies even when API outcomes, typed payload validation and probes pass;
-see `whm-api-client-8x0.4.3.1` and the source audit.
+reported as `$.*` discrepancies. Two exact structural observations are acknowledged
+by the development evidence policy described below. Their field contracts remain
+unresolved in `whm-api-client-8x0.4.3.1`; acknowledgment does not add them to typed
+results or remove their discrepancy records.
 
 ## Capture and privacy
 
@@ -83,12 +84,47 @@ Unknown fields, missing required fields and type mismatches are sorted and
 deduplicated. Failed or unusable API envelopes retain fingerprints but do not
 suggest changes to the success payload contract.
 
-The command atomically writes sanitized JSON, then exits 0 only when every probe
-passed and has no discrepancies. Exit 1 also covers skipped/unsupported probes,
-request or payload failures, and discrepancies needing review. Saved evidence
-still exists when probes ran but reported those outcomes. No correction is applied
-automatically. Review differences, retain independent synthetic regression tests,
-and use the overlay/generator workflow for any justified contract change.
+The command atomically writes sanitized JSON with `schema_version: 2`. Probe records
+retain their observations; the separate `discrepancy_review` assessment identifies
+its policy, tracking issue, immutable reference artifact and SHA-256, plus
+acknowledged IDs, unexpected observations and stale acknowledgments. Historical
+schema-1 artifacts remain unchanged. The CLI prints the assessment separately
+from each probe outcome.
+
+Exit 0 requires successful HTTP/API/payload/probe outcomes for every observation,
+no duplicate probe identities, no unexpected discrepancies and no stale
+acknowledgments. Empty runs, skipped/unsupported probes and request/payload
+failures exit 1. Evidence still exists when probes ran but reported failures.
+A passing assessment with acknowledgments is **not a discrepancy-free run**.
+
+### Reviewed structural acknowledgments
+
+`DiscrepancyPolicy` contains only the two reviewed Quota total observations from
+`docs/api/evidence/2026-10-16-quota-inventory.json`. It verifies that file's fixed
+SHA-256 before any network request and refuses it (including filesystem aliases)
+as an output destination. There is no command-line option to create acknowledgments.
+Policy changes require code review and independent tests.
+
+Each acknowledgment requires exactly one matching operation, HTTP variant, route,
+actual method, server version, pinned source hash and effective generated contract
+hash. The **entire** sanitized payload fingerprint and discrepancy set must also
+match. This deliberately conservative comparison fails even for otherwise
+accepted representation or omission changes in documented fields. Removing an
+unknown field also makes the acknowledgment stale; review and remove the policy
+entry instead of silently retaining an unused exception. Changes to unrelated
+overlays, map entries, timestamps or code revisions do not broaden an acknowledgment.
+The new run still records all of its own provenance.
+
+Unknown names remain masked. Different unknown keys, or additional keys with the
+same masked paths and types, can produce an identical fingerprint. An acknowledgment
+therefore covers a structural observation, **not unknown-key identity or count**.
+This policy neither resolves those fields nor guarantees detection of every new
+unknown key. It never overrides an unsuccessful API or payload outcome, changes
+fingerprinting, or widens the generated contract.
+
+No correction is applied automatically. Review differences, retain independent
+synthetic regression tests, and use the overlay/generator workflow for any
+justified contract change.
 
 ## Adding a reviewed slice
 

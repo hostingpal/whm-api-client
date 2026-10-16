@@ -830,3 +830,41 @@ only, without database/user names, disk-usage values, credentials, request
 arguments or raw error text. This batch adds two generated methods (74 total
 in 13 groups), four recipes and 253 independent offline test cases, with no
 runtime/generator changes or live mutations.
+
+### Runtime observations: 2026-10-16 discrepancy policy
+
+Tracking: `whm-api-client-8x0.2.5`; proposal and review context:
+[issue #18](https://github.com/hostingpal/whm-api-client/issues/18#issuecomment-6223158415).
+The field-contract follow-up `whm-api-client-8x0.4.3.1` stays open.
+
+At committed revision `ac37938050033c7e8a6d12f3347eb2bd6f6773a6`, the existing
+43 read-only GET probes across 25 operations passed API outcomes, typed payload
+validation and probe checks on cPanel `11.138.0.15`. No requests, generated
+contracts, overlays or fingerprint rules changed. The
+[saved schema-2 artifact](evidence/2026-10-16-discrepancy-policy.json) retains the
+two Quota total `unknown_field` / `$.*` observations and all sanitized paths/types.
+Its separate `discrepancy_review` reports **2 acknowledged, 0 unexpected, 0 stale**;
+the command exited **0**.
+
+The policy binds only those two historical observations to the immutable
+[Quota artifact](evidence/2026-10-16-quota-inventory.json), SHA-256
+`5f65d66acc36673ee37be1b4e024dad3ac725e5313d45c208abb489d5c9f6811`.
+Matching requires operation, variant, route, actual method, server version,
+pinned source and effective contract hashes, and the entire sanitized payload
+fingerprint and discrepancy set. It never overrides a failed outcome. A missing,
+changed or resolved acknowledged observation fails until reviewed; unrelated
+clean observations need no acknowledgment.
+
+This is a passing run **with acknowledged structural discrepancies**. Unknown
+key names and multiplicity remain unobserved: different integer-valued fields can
+collapse to the same `$.*` fingerprint. No key names or values were disclosed,
+no unknown fields were added to the typed return shape, and no historical
+artifact was rewritten. The MySQL inventories remain empty, so this run does not
+resolve their row-field evidence gap (`8x0.2.4`).
+
+Independent offline tests exercise policy scope, full-fingerprint changes,
+stale/duplicate observations, failure precedence, source tampering, output-file
+aliases, privacy and CLI exit behavior. These synthetic and saved-artifact tests
+are distinct from the explicitly opted-in test-server run above. The policy is
+development tooling; it adds no endpoint coverage or runtime dependency to the
+core package.

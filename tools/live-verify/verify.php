@@ -66,11 +66,14 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
         $root = dirname(__DIR__, 2);
         require $root . '/vendor/autoload.php';
         $context = RepositoryContext::load($root);
+        $policy = DiscrepancyPolicy::load($root);
+        $policy->assertOutputAllowed($output);
         $probes = ProbeCatalog::load($root);
         $temporary = $prepareEvidenceOutput($output);
         $records = (new EvidenceRunner(new CurlClient(), $context))->run($probes, $optIn, $tokens);
+        $review = $policy->assess($records);
         $json = json_encode(
-            ['schema_version' => 1, 'probes' => $records],
+            ['schema_version' => 2, 'probes' => $records, 'discrepancy_review' => $review],
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
         ) . "\n";
         if (@file_put_contents($temporary, $json) !== strlen($json) || !@rename($temporary, $output)) {
@@ -144,7 +147,6 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
         $outcomes = [
             'passed' => 'passed', 'failed' => 'failed', 'skipped' => 'skipped', 'unsupported' => 'unsupported',
         ];
-        $failed = $records === [];
         foreach ($records as $record) {
             $key = $record['operation'] . '|' . $record['route'];
             $outcome = $record['probe_outcome'];
@@ -152,10 +154,44 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
                 throw new RuntimeException('Unexpected evidence record.');
             }
             fwrite(STDOUT, $labels[$key] . ': ' . $outcomes[$outcome] . "\n");
-            $failed = $failed || $outcome !== 'passed' || $record['discrepancies'] !== [];
         }
 
-        return $failed ? 1 : 0;
+        $reviewStatus = $review['status'] === 'passed' ? 'passed' : 'failed';
+        fwrite(STDOUT, 'Discrepancy review: ' . $reviewStatus
+            . ' (acknowledged: ' . count($review['acknowledged'])
+            . ', unexpected: ' . count($review['unexpected'])
+            . ', stale: ' . count($review['stale']) . ")\n");
+        $acknowledgmentLabels = [
+            'quota-total-direct-11.138.0.15' => 'quota-total-direct-11.138.0.15 ($.* unknown_field)',
+            'quota-total-bridge-11.138.0.15' => 'quota-total-bridge-11.138.0.15 ($.* unknown_field)',
+        ];
+        foreach (['acknowledged' => 'Acknowledged', 'stale' => 'Stale'] as $field => $label) {
+            foreach ($review[$field] as $id) {
+                if (!isset($acknowledgmentLabels[$id])) {
+                    throw new RuntimeException('Unexpected discrepancy acknowledgment.');
+                }
+                fwrite(STDOUT, $label . ': ' . $acknowledgmentLabels[$id] . "\n");
+            }
+        }
+        /** @var array<string, string> $unexpectedReasons */
+        $unexpectedReasons = [
+            'unacknowledged_discrepancy' => 'unacknowledged discrepancy',
+            'duplicate_probe' => 'duplicate probe',
+            'unsuccessful_probe' => 'unsuccessful probe',
+            'empty_run' => 'empty run',
+        ];
+        foreach ($review['unexpected'] as $finding) {
+            $reason = $finding['reason'];
+            if (!isset($unexpectedReasons[$reason])) {
+                throw new RuntimeException('Unexpected discrepancy review reason.');
+            }
+            $key = $finding['operation'] . '|' . $finding['route'];
+            $label = $labels[$key] ?? 'unrecognized probe';
+            fwrite(STDOUT, 'Unexpected: ' . ($reason === 'empty_run' ? $unexpectedReasons[$reason]
+                : $label . ' (' . $unexpectedReasons[$reason] . ')') . "\n");
+        }
+
+        return $review['status'] === 'passed' ? 0 : 1;
     } catch (Throwable $error) {
         $kind = match (true) {
             $error instanceof JsonException => 'serialization_failure',

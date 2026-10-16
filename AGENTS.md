@@ -330,6 +330,14 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   Report generated, offline-tested and live-observed claims separately, scoped
   by operation, actual method, route, version, revision and contract hashes.
   Empty live lists provide no evidence about unobserved item fields.
+- The development runner reports schema-2 evidence with a separate `discrepancy_review`
+  assessment. Its two Quota acknowledgments bind an immutable artifact hash and
+  exact operation/variant/route/method/version/source/effective-contract plus full
+  masked payload fingerprint. Preserve every original discrepancy. Unexpected or
+  stale observations, duplicates and unsuccessful probes fail the gate; a passing
+  gate with acknowledgments does not mean discrepancy-free evidence. Wildcards
+  cannot identify unknown key names or counts. Policy changes require review;
+  unknown Quota field contracts remain tracked in `8x0.4.3.1`.
 - Grow evidence tooling alongside useful module slices. Record batch effort and
   discrepancies in Beads. Consumer feedback needs neither full parity, a release
   tag nor the separate Laravel package; publication remains a separate decision.
