@@ -32,7 +32,10 @@ Ordinary Composer checks remain offline; this command is never part of CI.
 Quota recipes take no arguments and read account totals in MB and local usage in
 bytes. They do not compare values from separate requests: usage may change and
 distributed account totals can differ. Only field paths and types are retained,
-not quota values.
+not quota values. Quota total responses currently include unreviewed fields
+reported as `$.*` discrepancies. The command keeps its nonzero exit for these
+discrepancies even when API outcomes, typed payload validation and probes pass;
+see `whm-api-client-8x0.4.3.1` and the source audit.
 
 ## Capture and privacy
 

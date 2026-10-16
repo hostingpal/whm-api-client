@@ -22,9 +22,9 @@ final class QuotaSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'byte_limit' => ['type' => 'int'],
-                'bytes_used' => ['type' => 'int'],
-                'inode_limit' => ['type' => 'int'],
+                'byte_limit' => ['type' => 'int', 'nullable' => true],
+                'bytes_used' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'inode_limit' => ['type' => 'int', 'nullable' => true],
                 'inodes_used' => ['type' => 'int'],
             ],
         ],
@@ -39,15 +39,15 @@ final class QuotaSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'inode_limit' => ['type' => 'int'],
-                'inodes_remain' => ['type' => 'int'],
+                'inode_limit' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'inodes_remain' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'inodes_used' => ['type' => 'int'],
-                'megabyte_limit' => ['type' => 'number'],
-                'megabytes_remain' => ['type' => 'number'],
+                'megabyte_limit' => ['type' => 'number', 'accept' => ['numeric-string']],
+                'megabytes_remain' => ['type' => 'number', 'accept' => ['numeric-string']],
                 'megabytes_used' => ['type' => 'number'],
-                'under_inode_limit' => ['type' => 'flag'],
-                'under_megabyte_limit' => ['type' => 'flag'],
-                'under_quota_overall' => ['type' => 'flag'],
+                'under_inode_limit' => ['type' => 'flag', 'accept' => ['string-flag']],
+                'under_megabyte_limit' => ['type' => 'flag', 'accept' => ['string-flag']],
+                'under_quota_overall' => ['type' => 'flag', 'accept' => ['string-flag']],
             ],
         ],
     ];

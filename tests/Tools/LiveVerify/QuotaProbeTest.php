@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
 
+use HostingPal\WhmApiClient\Client as ApiClient;
 use HostingPal\WhmApiClient\Tools\LiveVerify\EvidenceRunner;
 use HostingPal\WhmApiClient\Tools\LiveVerify\Probe;
 use HostingPal\WhmApiClient\Tools\LiveVerify\ProbeCatalog;
@@ -80,6 +81,98 @@ final class QuotaProbeTest extends TestCase
         }
     }
 
+    /**
+     * @param array<string, int|float|null> $expected
+     * @param array<string, list<string>> $paths
+     */
+    #[DataProvider('observedWirePayloads')]
+    public function testAcceptedWireVariantsKeepRawEvidenceDespiteTypedNormalization(
+        string $operation,
+        string $route,
+        string $payload,
+        array $expected,
+        array $paths,
+    ): void {
+        $http = new Client();
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        $reviewed = self::probe($operation, $route);
+        $normalized = null;
+        $probe = new Probe(
+            $reviewed->operation,
+            $reviewed->route,
+            $reviewed->spec,
+            $reviewed->uri,
+            static function (ApiClient $client) use ($reviewed, &$normalized): mixed {
+                $normalized = ($reviewed->invoke)($client);
+
+                return $normalized;
+            },
+            $reviewed->unavailable,
+        );
+
+        $records = self::capture($http, $probe);
+
+        self::assertRequest($http, $operation, $route);
+        self::assertSame('success', $records[0]['api_outcome']);
+        self::assertSame('passed', $records[0]['payload_validation']);
+        self::assertSame('passed', $records[0]['probe_outcome']);
+        self::assertSame($expected, $normalized);
+        self::assertSame($paths, $records[0]['payload_paths']);
+        self::assertSame(
+            $operation === 'get_quota_info' ? [['path' => '$.*', 'kind' => 'unknown_field']] : [],
+            $records[0]['discrepancies'],
+        );
+        self::assertPrivateValuesAbsent($records);
+    }
+
+    /**
+     * @return iterable<string, array{
+     *     string, string, string, array<string, int|float|null>, array<string, list<string>>
+     * }>
+     */
+    public static function observedWirePayloads(): iterable
+    {
+        foreach (['direct-uapi', 'bridged-uapi'] as $route) {
+            yield $route . ' total numeric strings' => [
+                'get_quota_info', $route,
+                '{"inode_limit":"0","inodes_remain":"512","inodes_used":1035,'
+                . '"megabyte_limit":"0.00","megabytes_remain":"64.5","megabytes_used":5.46,'
+                . '"under_inode_limit":"1","under_megabyte_limit":"0","under_quota_overall":"0",'
+                . '"private-account":4149284}',
+                [
+                    'inode_limit' => 0, 'inodes_remain' => 512, 'inodes_used' => 1035,
+                    'megabyte_limit' => 0.0, 'megabytes_remain' => 64.5, 'megabytes_used' => 5.46,
+                    'under_inode_limit' => 1, 'under_megabyte_limit' => 0, 'under_quota_overall' => 0,
+                ],
+                [
+                    '$' => ['object'], '$.*' => ['int'], '$.inode_limit' => ['numeric-string'],
+                    '$.inodes_remain' => ['numeric-string'], '$.inodes_used' => ['int'],
+                    '$.megabyte_limit' => ['numeric-string'], '$.megabytes_remain' => ['numeric-string'],
+                    '$.megabytes_used' => ['float'], '$.under_inode_limit' => ['numeric-string'],
+                    '$.under_megabyte_limit' => ['numeric-string'], '$.under_quota_overall' => ['numeric-string'],
+                ],
+            ];
+        }
+        yield 'direct local nullable limits and numeric bytes' => [
+            'get_local_quota_info', 'direct-uapi',
+            '{"byte_limit":null,"bytes_used":"4149284","inode_limit":null,"inodes_used":1035}',
+            ['byte_limit' => null, 'bytes_used' => 4149284, 'inode_limit' => null, 'inodes_used' => 1035],
+            [
+                '$' => ['object'], '$.byte_limit' => ['null'], '$.bytes_used' => ['numeric-string'],
+                '$.inode_limit' => ['null'], '$.inodes_used' => ['int'],
+            ],
+        ];
+        yield 'bridged local nullable limits and integer bytes' => [
+            'get_local_quota_info', 'bridged-uapi',
+            '{"byte_limit":null,"bytes_used":4149284,"inode_limit":null,"inodes_used":1035}',
+            ['byte_limit' => null, 'bytes_used' => 4149284, 'inode_limit' => null, 'inodes_used' => 1035],
+            [
+                '$' => ['object'], '$.byte_limit' => ['null'], '$.bytes_used' => ['int'],
+                '$.inode_limit' => ['null'], '$.inodes_used' => ['int'],
+            ],
+        ];
+    }
+
     #[DataProvider('operationsAndRoutes')]
     public function testUnknownQuotaKeysAreWildcardedBeforeGeneratedFieldRemoval(string $operation, string $route): void
     {
@@ -152,7 +245,6 @@ final class QuotaProbeTest extends TestCase
             ['get_quota_info', '{"megabytes_used":"private usage"}', '$.megabytes_used', 'string'],
             ['get_quota_info', '{"inode_limit":null}', '$.inode_limit', 'null'],
             ['get_local_quota_info', '{"bytes_used":"private usage"}', '$.bytes_used', 'string'],
-            ['get_local_quota_info', '{"byte_limit":null}', '$.byte_limit', 'null'],
         ];
         foreach (['direct-uapi', 'bridged-uapi'] as $route) {
             foreach ($cases as $index => [$operation, $payload, $path, $type]) {

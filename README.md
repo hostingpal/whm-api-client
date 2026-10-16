@@ -162,6 +162,11 @@ $underQuota = $quota['under_quota_overall'] ?? null; // 0|1, or absent.
 Quota limits and remaining values of zero mean unlimited or disabled quotas;
 zero usage means no usage or disabled quotas. The local `byte_limit` can lag
 changes, and distributed accounts can have different local and account totals.
+Observed numeric strings normalize to the documented numbers and flags. Local
+`byte_limit` and `inode_limit` can also be explicit `null`; this remains distinct
+from zero and omission. The account-total response has unreviewed integer-valued
+fields that are omitted from typed results and retained as wildcard discrepancies
+in [the evidence audit](docs/api/source-audit.md#runtime-observations-2026-10-16-quota-inventory).
 `getQuotaInfo()` requires cPanel 56+, and `getLocalQuotaInfo()` requires cPanel 88+.
 
 Results are arrays keyed by the upstream wire names (`$domains['main_domain'] ?? null`).

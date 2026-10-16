@@ -31,7 +31,7 @@ final class UapiQuotaTest extends TestCase
         self::assertSame([], $http->getRequests());
     }
 
-    /** @param array<string, int|float> $expected */
+    /** @param array<string, int|float|null> $expected */
     #[DataProvider('successfulPayloads')]
     public function testQuotaUsesAnAccountBoundGetAndPreservesDocumentedValues(
         string $route,
@@ -57,7 +57,7 @@ final class UapiQuotaTest extends TestCase
         self::assertCount(1, $http->getRequests());
     }
 
-    /** @return iterable<string, array{string, string, string, array<string, int|float>}> */
+    /** @return iterable<string, array{string, string, string, array<string, int|float|null>}> */
     public static function successfulPayloads(): iterable
     {
         // Expectations come from the pinned Quota operation fields, not generated specs or live values.
@@ -89,7 +89,48 @@ final class UapiQuotaTest extends TestCase
                 '{"byte_limit":0,"bytes_used":0,"inode_limit":0,"inodes_used":0}',
                 ['byte_limit' => 0, 'bytes_used' => 0, 'inode_limit' => 0, 'inodes_used' => 0]],
             'omitted local fields stay absent' => ['get_local_quota_info', '{"bytes_used":0}', ['bytes_used' => 0]],
+            'observed total numeric strings' => ['get_quota_info',
+                '{"inode_limit":"100","inodes_remain":"93","inodes_used":7,"megabyte_limit":"1024.25",'
+                . '"megabytes_remain":"1023","megabytes_used":1.25,"under_inode_limit":"1",'
+                . '"under_megabyte_limit":"0","under_quota_overall":"0"}',
+                [
+                    'inode_limit' => 100, 'inodes_remain' => 93, 'inodes_used' => 7,
+                    'megabyte_limit' => 1024.25, 'megabytes_remain' => 1023, 'megabytes_used' => 1.25,
+                    'under_inode_limit' => 1, 'under_megabyte_limit' => 0, 'under_quota_overall' => 0,
+                ]],
+            'observed local nullable limits and numeric bytes' => ['get_local_quota_info',
+                '{"byte_limit":null,"bytes_used":"1048577","inode_limit":null,"inodes_used":7}',
+                ['byte_limit' => null, 'bytes_used' => 1048577, 'inode_limit' => null, 'inodes_used' => 7]],
+            'string zero values and complementary flags' => ['get_quota_info',
+                '{"inode_limit":"0","inodes_remain":"0","megabyte_limit":"0.00","megabytes_remain":"0",'
+                . '"under_inode_limit":"0","under_megabyte_limit":"1","under_quota_overall":"1"}',
+                [
+                    'inode_limit' => 0, 'inodes_remain' => 0, 'megabyte_limit' => 0.0, 'megabytes_remain' => 0,
+                    'under_inode_limit' => 0, 'under_megabyte_limit' => 1, 'under_quota_overall' => 1,
+                ]],
+            'number strings use decimal normalization' => ['get_quota_info',
+                '{"megabyte_limit":"+0012.50","megabytes_remain":"0007"}',
+                ['megabyte_limit' => 12.5, 'megabytes_remain' => 7]],
+            'finite number strings beyond integer range become floats' => ['get_quota_info',
+                '{"megabyte_limit":"99999999999999999999","megabytes_remain":"99999999999999999999.00"}',
+                ['megabyte_limit' => 1.0E+20, 'megabytes_remain' => 1.0E+20]],
+            'local numeric string zero remains an integer' => ['get_local_quota_info',
+                '{"bytes_used":"0"}', ['bytes_used' => 0]],
+            'local null byte limit does not fill absent fields' => ['get_local_quota_info',
+                '{"byte_limit":null}', ['byte_limit' => null]],
+            'local null inode limit does not fill absent fields' => ['get_local_quota_info',
+                '{"inode_limit":null}', ['inode_limit' => null]],
         ];
+        foreach (
+            [
+            ['get_quota_info', 'inode_limit'], ['get_quota_info', 'inodes_remain'],
+            ['get_local_quota_info', 'bytes_used'],
+            ] as [$function, $field]
+        ) {
+            $cases[$function . ' ' . $field . ' integer upper boundary'] = [
+                $function, '{"' . $field . '":"' . PHP_INT_MAX . '"}', [$field => PHP_INT_MAX],
+            ];
+        }
         foreach (['get_quota_info', 'get_local_quota_info'] as $function) {
             $cases[$function . ' empty object'] = [$function, '{}', []];
             $cases[$function . ' empty array object compatibility'] = [$function, '[]', []];
@@ -141,22 +182,59 @@ final class UapiQuotaTest extends TestCase
             foreach ([null, 'null', '[0]', '"0"', 'true'] as $payload) {
                 $cases[] = [$function, $payload];
             }
-            $integers = $function === 'get_quota_info'
-                ? ['inode_limit', 'inodes_remain', 'inodes_used']
-                : ['byte_limit', 'bytes_used', 'inode_limit', 'inodes_used'];
-            foreach ($integers as $field) {
-                foreach (['null', '"7"', '1.5'] as $value) {
+        }
+        // Only the observed fields accept the reviewed wire alternatives.
+        $integerFields = [
+            'get_quota_info' => [
+                'inode_limit' => ['null', '1.5', 'true'],
+                'inodes_remain' => ['null', '1.5', 'true'],
+                'inodes_used' => ['null', '"7"', '1.5', 'true'],
+            ],
+            'get_local_quota_info' => [
+                'byte_limit' => ['"7"', '1.5', 'true'],
+                'bytes_used' => ['null', '1.5', 'true'],
+                'inode_limit' => ['"7"', '1.5', 'true'],
+                'inodes_used' => ['null', '"7"', '1.5', 'true'],
+            ],
+        ];
+        foreach ($integerFields as $function => $fields) {
+            foreach ($fields as $field => $values) {
+                foreach ($values as $value) {
                     $cases[] = [$function, '{"' . $field . '":' . $value . '}'];
                 }
             }
         }
+        foreach (
+            [
+            ['get_quota_info', 'inode_limit'], ['get_quota_info', 'inodes_remain'],
+            ['get_local_quota_info', 'bytes_used'],
+            ] as [$function, $field]
+        ) {
+            foreach (
+                [
+                '""', '"07"', '"+7"', '"-0"', '"7.0"', '"1e3"', '" 7"', '"7x"',
+                '"99999999999999999999"', '"-99999999999999999999"',
+                ] as $value
+            ) {
+                $cases[] = [$function, '{"' . $field . '":' . $value . '}'];
+            }
+        }
         foreach (['megabyte_limit', 'megabytes_remain', 'megabytes_used'] as $field) {
-            foreach (['null', '"1.25"', 'true'] as $value) {
+            foreach (['null', 'true'] as $value) {
+                $cases[] = ['get_quota_info', '{"' . $field . '":' . $value . '}'];
+            }
+        }
+        $cases[] = ['get_quota_info', '{"megabytes_used":"1.25"}'];
+        foreach (['megabyte_limit', 'megabytes_remain'] as $field) {
+            foreach (
+                ['""', '"1e3"', '"1."', '".5"', '" 1"', '"1x"', '"NaN"', '"Infinity"',
+                '"1' . str_repeat('0', 400) . '"'] as $value
+            ) {
                 $cases[] = ['get_quota_info', '{"' . $field . '":' . $value . '}'];
             }
         }
         foreach (['under_inode_limit', 'under_megabyte_limit', 'under_quota_overall'] as $field) {
-            foreach (['null', '"1"', 'true', '2', '0.5'] as $value) {
+            foreach (['null', 'true', '2', '0.5', '""', '"2"', '"01"', '"1.0"', '"+1"', '" 1"'] as $value) {
                 $cases[] = ['get_quota_info', '{"' . $field . '":' . $value . '}'];
             }
         }
@@ -263,7 +341,7 @@ final class UapiQuotaTest extends TestCase
         yield 'local quota' => ['get_local_quota_info'];
     }
 
-    /** @return array<string, int|float> */
+    /** @return array<string, int|float|null> */
     private static function invoke(Quota $quota, string $function): array
     {
         return match ($function) {

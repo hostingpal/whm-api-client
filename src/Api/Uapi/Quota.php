@@ -19,9 +19,9 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
  * @phpstan-type GetLocalQuotaInfoResult array{
- *     byte_limit?: int,
+ *     byte_limit?: int|null,
  *     bytes_used?: int,
- *     inode_limit?: int,
+ *     inode_limit?: int|null,
  *     inodes_used?: int,
  * }
  * @phpstan-type GetQuotaInfoResult array{
@@ -65,6 +65,10 @@ final readonly class Quota
      * Documented: The upstream description refers to Quota::get_quota, which is not a documented operation in the
      * pinned API map. The documented account quota operation is Quota/get_quota_info, exposed as getQuotaInfo().
      *
+     * Observed: On cPanel 11.138.0.15, byte_limit and inode_limit were explicitly null on both routes; those nulls are
+     * preserved, separately from zero or omission. bytes_used was a numeric string directly and an integer through WHM,
+     * and canonical numeric strings within PHP integer bounds normalize to int.
+     *
      * API-map identity: uapi:Quota/get_local_quota_info#GET (wire name get_local_quota_info).
      *
      * @return GetLocalQuotaInfoResult
@@ -95,6 +99,10 @@ final readonly class Quota
      * Documented: The under_inode_limit, under_megabyte_limit and under_quota_overall payload fields are integer flags:
      * 1 means under the applicable limit and 0 means over it. They do not replace the UAPI envelope status. Omitted
      * fields remain absent.
+     *
+     * Observed: On cPanel 11.138.0.15, inode_limit, inodes_remain, megabyte_limit and megabytes_remain arrived as
+     * numeric strings, and under_* flags as string 0/1 on both routes. They normalize to the documented numeric types;
+     * unreviewed fields are omitted from the typed result and remain discrepancies in saved evidence.
      *
      * API-map identity: uapi:Quota/get_quota_info#GET (wire name get_quota_info).
      *
