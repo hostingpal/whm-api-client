@@ -775,3 +775,58 @@ This slice adds two generated methods (72 total in 12 groups), four probe recipe
 and ten evidenced field corrections, without runtime/generator changes or
 mutations. The unknown-field review remains tracked under
 `whm-api-client-8x0.4.3.1` ([issue #18](https://github.com/hostingpal/whm-api-client/issues/18)).
+
+
+## Contract review (2026-10-16, MySQL inventory)
+
+The read-only database inventory slice generates
+`uapi()->mysql()->listDatabases()` and `listUsers()` from
+[`Mysql/list_databases`](https://api.docs.cpanel.net/specifications/cpanel.openapi/database-management/mysql-list_databases)
+and [`Mysql/list_users`](https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-list_users).
+Both are parameterless GET operations available in cPanel 82 and later. They
+are disabled when the MySQL/MariaDB role is disabled and remote MySQL is not
+configured. This slice covers two of the module's 25 documented operations.
+
+Database records declare optional `database`, integer `disk_usage` in bytes and
+`users` list fields. User records declare optional `user`, `shortuser` and
+`databases` list fields. No row fields are required or nullable in the pinned
+schemas. Empty lists, omitted fields and zero disk usage remain distinct. The
+shared response-constraint policy remains unchanged; this slice does not add
+general minimum/range validation or infer numeric-string compatibility.
+
+On 2026-10-16, the current official
+[UAPI OpenAPI source](https://api.docs.cpanel.net/_spec/specifications/cpanel.openapi.json)
+had SHA-256 `172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`,
+identical to the pinned snapshot. Both MySQL operation objects were unchanged.
+Independent synthetic fixtures exercise nonempty and empty records, nested
+lists, omission, malformed values and account-bound request/error behavior.
+These fixtures establish offline behavior, not live observations of row fields.
+
+### Runtime observations
+
+The [MySQL inventory evidence](evidence/2026-10-16-mysql-inventory.json) records
+committed revision `1592922f10d23859f815bb626c0cf45c9e74ede7` on cPanel
+`11.138.0.15`. All 43 probes across 25 operations received HTTP 200 and passed
+API outcome, payload validation and probe checks. Both MySQL operations returned
+empty lists on both the direct cPanel and WHM-bridged routes for the designated
+test account. Their four records contain no discrepancies. This observes the
+routes and empty-list responses only; database/user record fields, nested list
+contents and `disk_usage` wire types remain unobserved. No MySQL response
+corrections were added. Nonempty inventories, remote MySQL configurations,
+disabled-role behavior and other server versions require separate evidence.
+
+The full command exited **1** because the two known Quota account-total
+`unknown_field` entries at `$.*` remain. An explicit comparison with
+`2026-10-16-quota-inventory.json` found identical discrepancy tuples, including
+operation, variant, route, HTTP method, server version, path, kind and masked
+path type (`int`). No new discrepancy was present. The wildcard still does not
+establish unknown key names or counts; this comparison does not claim that the
+underlying unknown fields are identical. Detection and exit policy are unchanged
+and remain tracked in [issue #18](https://github.com/hostingpal/whm-api-client/issues/18).
+
+All 43 effective-spec hashes match the current catalog. The artifact retains
+the actual code revision and input hashes. It stores structural paths/types
+only, without database/user names, disk-usage values, credentials, request
+arguments or raw error text. This batch adds two generated methods (74 total
+in 13 groups), four recipes and 253 independent offline test cases, with no
+runtime/generator changes or live mutations.

@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. Typed groups cover 72 reviewed operations: the read-only
+and cPanel UAPI surface. Typed groups cover 74 reviewed operations: the read-only
 server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -151,6 +151,11 @@ is unreachable, and `will_renew` depends on provider, certificate, exclusion and
 conditions. Flags remain `0|1` integers. Preserve optional and nullable certificate
 fields and the pinned literal dotted issuer/subject keys. The certificate PEM and
 upstream problem text are payload data; evidence keeps only their structural types.
+`uapi()->mysql()` exposes account database and database-user inventory through
+`listDatabases()` and `listUsers()` (cPanel 82+). Database `disk_usage` is in bytes;
+row fields remain optional and nested user/database lists preserve empty lists.
+Both operations are disabled when the MySQL/MariaDB role is disabled and remote
+MySQL is not configured.
 `uapi()->quota()` exposes account quota totals in MB and local usage in bytes.
 Preserve zero/unlimited/disabled semantics, optional fields and integer status flags;
 local byte limits can lag updates and distributed totals differ from local usage.
@@ -306,14 +311,15 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
 ## Generated-client delivery
 
 - Follow the [current delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
-  The development-only runner in `tools/live-verify/` captures 39 reviewed
+  The development-only runner in `tools/live-verify/` captures 43 reviewed
   read-only route-specific probes through the generated client; run it explicitly
   with `WHM_API_LIVE=1 composer live:verify -- --output=docs/api/evidence/read-only.json`.
   It requires committed code and persists sanitized structure only. Catalog entries
   bind exact arguments, including the `npr` account filters and `type: 'home'` PHP
   handler, plus the `npr.rs` domain for AutoSSL renewal. Account/domain/PHP evidence
-  (`8x0.2.3`), expanded Email inventory (`8x0.4.1`), the SSL slice (`8x0.4.2`)
-  and Quota (`8x0.4.3`) build on the initial slices; consumer feedback (`8x0.10.3`) remains independent.
+  (`8x0.2.3`), expanded Email inventory (`8x0.4.1`), the SSL slice (`8x0.4.2`),
+  Quota (`8x0.4.3`) and MySQL inventory (`8x0.4.4`) build on the initial slices;
+  consumer feedback (`8x0.10.3`) remains independent.
 - Capture evidence from the same raw HTTP response before normalization and
   unknown-field removal. Preserve the response delivered to the client; never
   replay an operation to recover evidence. Persist only sanitized structural

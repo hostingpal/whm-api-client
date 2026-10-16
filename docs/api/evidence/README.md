@@ -18,3 +18,22 @@ evidence is not silently promoted to the new revision.
 Both runs reported cPanel `11.138.0.15`, successful API/payload/probe outcomes and
 no discrepancies. These files are structural evidence; synthetic tests retain
 independent expected values and request behavior.
+
+- [Account/PHP and Email inventory](2026-10-15-inventory-email.json): 23 probes
+  across 15 operations, with no discrepancies.
+- [SSL inventory](2026-10-16-ssl-inventory.json): 35 probes across 21 operations,
+  with no discrepancies.
+- [Initial Quota observations](2026-10-16-quota-initial.json): four Quota probes
+  with successful API outcomes but payload mismatches, retained as the basis for
+  the field-specific compatibility corrections.
+- [Corrected Quota inventory](2026-10-16-quota-inventory.json): 39 probes across
+  23 operations passed all outcomes; two masked unknown-field discrepancies
+  remain, so the command exited 1.
+- [MySQL inventory](2026-10-16-mysql-inventory.json): 43 probes across 25
+  operations at `1592922` passed all outcomes. The four MySQL responses were empty
+  lists and establish no item-field observations. The two Quota discrepancies
+  match the preceding artifact's operation/route/version/path/kind/type tuples;
+  the command still exited 1. No new discrepancy or MySQL correction was added.
+
+These later artifacts also record cPanel `11.138.0.15`; their observations remain
+scoped to the exact contracts, revisions and routes recorded in each file.

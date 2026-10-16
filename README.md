@@ -3,12 +3,12 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The generated typed groups cover 72 reviewed operations (see
+The generated typed groups cover 74 reviewed operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
-features, Email inventory, SSL/AutoSSL inventory and disk quotas. Generic `call()`
-methods reach every other documented WHM API 1 and UAPI function. The library
+features, Email inventory, SSL/AutoSSL inventory, disk quotas and MySQL inventory.
+Generic `call()` methods reach every other documented WHM API 1 and UAPI function. The library
 provides token authentication, direct and WHM-routed UAPI, GET and form-encoded
 POST execution, typed array payloads, API exceptions, and per-client response
 metadata over a PSR HTTP transport.
@@ -157,6 +157,10 @@ $canRedirect = $ssl->canSslRedirect(); // Capability; does not enable redirects.
 $quota = $account->quota()->getQuotaInfo(); // Disk fields in MB.
 $localQuota = $account->quota()->getLocalQuotaInfo(); // Disk fields in bytes.
 $underQuota = $quota['under_quota_overall'] ?? null; // 0|1, or absent.
+
+// MySQL inventory belongs to the selected cPanel account (cPanel 82+).
+$databases = $account->mysql()->listDatabases(); // database, disk_usage (bytes), users
+$databaseUsers = $account->mysql()->listUsers(); // user, shortuser, databases
 ```
 
 A zero `inode_limit` or `megabyte_limit` means unlimited or disabled quotas.
@@ -172,6 +176,10 @@ from zero and omission. The account-total response has unreviewed integer-valued
 fields that are omitted from typed results and retained as wildcard discrepancies
 in [the evidence audit](docs/api/source-audit.md#runtime-observations-2026-10-16-quota-inventory).
 `getQuotaInfo()` requires cPanel 56+, and `getLocalQuotaInfo()` requires cPanel 88+.
+
+MySQL inventory returns lists of records with optional wire-key fields; empty
+lists and zero disk usage are preserved. These operations are unavailable when
+the MySQL/MariaDB role is disabled and remote MySQL is not configured.
 
 Results are arrays keyed by the upstream wire names (`$domains['main_domain'] ?? null`).
 Omitted fields are absent keys (use `array_key_exists()` or `??`) and an explicit
@@ -215,6 +223,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->langPhp()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetDomainHandler()`, `phpGetImpactedDomains()` |
 | `uapi()->features()` | `listFeatures()` |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
+| `uapi()->mysql()` | `listDatabases()`, `listUsers()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
 
 UAPI groups operate on the selected cPanel account through either credential route.
