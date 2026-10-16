@@ -702,10 +702,12 @@ The two documented UAPI Quota operations are generated as
 `uapi()->quota()->getQuotaInfo()` and `getLocalQuotaInfo()`, with four exact GET
 recipes for direct cPanel and WHM-bridged access to the designated `npr` test
 account on `test.oblak.host`. Account-total disk fields are in MB; local disk
-fields are in bytes. Zero limits/remaining values can mean unlimited or disabled
-quotas, while zero usage can mean no usage or disabled quotas. Local byte limits
-can lag updates; separate requests and distributed account totals must not be
-compared as equivalent measurements.
+fields are in bytes. Zero limits mean unlimited or disabled quotas; the
+documentation lists zero remaining values for that case but does not describe
+remaining values for an exhausted finite quota. Remaining values must be read
+with their limits and the `under_*` flags. Zero usage can mean no usage or
+disabled quotas. Local byte limits can lag updates; separate requests and
+distributed account totals must not be compared as equivalent measurements.
 
 On 2026-10-16, a read of the current official
 [UAPI OpenAPI specification](https://api.docs.cpanel.net/_spec/specifications/cpanel.openapi.json)
@@ -771,5 +773,5 @@ than replacing provenance or treating the later HEAD as live-observed.
 
 This slice adds two generated methods (72 total in 12 groups), four probe recipes
 and ten evidenced field corrections, without runtime/generator changes or
-mutations. The unresolved unknown-field review remains open, so the PR is a
-draft pending Opus review and disposition of `whm-api-client-8x0.4.3.1`.
+mutations. The unknown-field review remains tracked under
+`whm-api-client-8x0.4.3.1` ([issue #18](https://github.com/hostingpal/whm-api-client/issues/18)).

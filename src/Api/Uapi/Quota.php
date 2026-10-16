@@ -93,8 +93,10 @@ final readonly class Quota
      * Documented: Available in cPanel 56 and later. Disk space fields are in megabytes (MB); local byte counts are
      * returned separately by getLocalQuotaInfo().
      *
-     * Documented: Zero limits and remaining values mean unlimited or disabled server quotas, while zero usage means no
-     * usage or disabled quotas. Preserve these values rather than interpreting zero remaining as exhausted quota.
+     * Documented: A zero inode_limit or megabyte_limit means unlimited or disabled server quotas. The documentation
+     * lists zero inodes_remain and megabytes_remain for the same case but does not describe remaining values for an
+     * exhausted finite quota. Read remaining values together with their limits and the under_* flags. Zero usage means
+     * no usage or disabled quotas.
      *
      * Documented: The under_inode_limit, under_megabyte_limit and under_quota_overall payload fields are integer flags:
      * 1 means under the applicable limit and 0 means over it. They do not replace the UAPI envelope status. Omitted

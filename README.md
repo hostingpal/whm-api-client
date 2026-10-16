@@ -159,9 +159,13 @@ $localQuota = $account->quota()->getLocalQuotaInfo(); // Disk fields in bytes.
 $underQuota = $quota['under_quota_overall'] ?? null; // 0|1, or absent.
 ```
 
-Quota limits and remaining values of zero mean unlimited or disabled quotas;
-zero usage means no usage or disabled quotas. The local `byte_limit` can lag
-changes, and distributed accounts can have different local and account totals.
+A zero `inode_limit` or `megabyte_limit` means unlimited or disabled quotas.
+The documentation lists zero remaining values for that case but does not describe
+remaining values for an exhausted finite quota. Read remaining values together
+with their limits and the `under_*` flags. Zero usage means no usage or disabled
+quotas. The local `byte_limit` can lag changes, and distributed accounts can have
+different local and account totals. Megabyte fields are `int|float`; zero checks
+must recognize both `0` and `0.0`, separately from absent fields.
 Observed numeric strings normalize to the documented numbers and flags. Local
 `byte_limit` and `inode_limit` can also be explicit `null`; this remains distinct
 from zero and omission. The account-total response has unreviewed integer-valued

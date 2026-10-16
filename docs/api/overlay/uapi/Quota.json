@@ -89,7 +89,7 @@
         },
         {
           "kind": "documented",
-          "text": "Zero limits and remaining values mean unlimited or disabled server quotas, while zero usage means no usage or disabled quotas. Preserve these values rather than interpreting zero remaining as exhausted quota."
+          "text": "A zero inode_limit or megabyte_limit means unlimited or disabled server quotas. The documentation lists zero inodes_remain and megabytes_remain for the same case but does not describe remaining values for an exhausted finite quota. Read remaining values together with their limits and the under_* flags. Zero usage means no usage or disabled quotas."
         },
         {
           "kind": "documented",
