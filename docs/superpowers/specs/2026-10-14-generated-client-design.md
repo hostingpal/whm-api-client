@@ -410,6 +410,16 @@ an agent reviews corrections and their evidence before committing an overlay
 change. Never apply corrections automatically. Re-running reviewed read-only
 recipes after a cPanel upgrade supplies version-scoped drift evidence.
 
+The development runner may acknowledge explicitly reviewed structural observations
+without resolving their field contracts (issue #18, bead `8x0.2.5`). Such a policy
+binds an immutable evidence artifact hash, operation/variant/route/method/version,
+source and effective contract hashes, complete masked payload fingerprint and
+discrepancy set. Keep observations intact and report acknowledgments separately.
+Unexpected or stale observations and unsuccessful probes fail the gate. Masked
+paths cannot identify unknown key names or multiplicity, so this policy does not
+promise detection of new keys with identical masked types. See the
+[live runner policy](../../../tools/live-verify/README.md#reviewed-structural-acknowledgments).
+
 **Unverifiable operations** (missing plugins per `x-cpanel-plugin`, external
 services such as Market, Sitejet and 360 Monitoring, operations that need a second
 server such as transfers and clusters) are marked with a reason, generated from

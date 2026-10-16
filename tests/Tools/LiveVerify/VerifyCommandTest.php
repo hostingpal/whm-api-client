@@ -88,14 +88,23 @@ final class VerifyCommandTest extends TestCase
 
         self::assertSame(0, $status);
         self::assertFileExists($root . '/runner-invoked');
-        self::assertSame("whm1:version whm: passed\n", $stdout);
+        self::assertSame(
+            "whm1:version whm: passed\nDiscrepancy review: passed (acknowledged: 0, unexpected: 0, stale: 0)\n",
+            $stdout,
+        );
         self::assertSame('', $stderr);
         self::assertSame(0600, fileperms($output) & 0777);
         self::assertSame([
-            'schema_version' => 1,
+            'schema_version' => 2,
             'probes' => [[
                 'operation' => 'whm1:version', 'route' => 'whm', 'probe_outcome' => 'passed', 'discrepancies' => [],
             ]],
+            'discrepancy_review' => [
+                'status' => 'passed', 'acknowledged' => [], 'unexpected' => [], 'stale' => [],
+                'policy' => 'reviewed-quota-discrepancies-v1', 'tracking' => 'whm-api-client-8x0.4.3.1',
+                'evidence' => 'docs/api/evidence/2026-10-16-quota-inventory.json',
+                'evidence_sha256' => str_repeat('a', 64),
+            ],
         ], json_decode((string) file_get_contents($output), true, 512, JSON_THROW_ON_ERROR));
         self::assertSame([], glob($root . '/evidence/.live-verify-*'));
     }
@@ -111,7 +120,10 @@ final class VerifyCommandTest extends TestCase
 
         self::assertSame(0, $status);
         self::assertSame('', $stderr);
-        self::assertSame("whm1:version whm: passed\n", $stdout);
+        self::assertSame(
+            "whm1:version whm: passed\nDiscrepancy review: passed (acknowledged: 0, unexpected: 0, stale: 0)\n",
+            $stdout,
+        );
     }
 
     #[DataProvider('inventoryLabels')]
@@ -127,7 +139,11 @@ final class VerifyCommandTest extends TestCase
         );
 
         self::assertSame(0, $status);
-        self::assertSame($operation . ' ' . $route . ": passed\n", $stdout);
+        self::assertSame(
+            $operation . ' ' . $route . ": passed\n"
+                . "Discrepancy review: passed (acknowledged: 0, unexpected: 0, stale: 0)\n",
+            $stdout,
+        );
         self::assertSame('', $stderr);
     }
 
@@ -190,7 +206,10 @@ final class VerifyCommandTest extends TestCase
         self::assertStringContainsString('whm1:version whm:', $stdout);
         $document = json_decode((string) file_get_contents($output), true, 512, JSON_THROW_ON_ERROR);
         self::assertIsArray($document);
-        self::assertSame(1, $document['schema_version']);
+        self::assertSame(2, $document['schema_version']);
+        self::assertIsArray($document['discrepancy_review']);
+        self::assertSame('failed', $document['discrepancy_review']['status']);
+        self::assertStringContainsString('Discrepancy review: failed', $stdout);
         self::assertSame([], glob($root . '/.live-verify-*'));
     }
 
@@ -200,6 +219,201 @@ final class VerifyCommandTest extends TestCase
         yield 'discrepancies' => ['discrepancy'];
         yield 'probe failure' => ['failed'];
         yield 'skipped' => ['skipped'];
+        yield 'stale acknowledgment' => ['stale'];
+    }
+
+    public function testAcknowledgedDiscrepanciesPassWithoutChangingObservedRecords(): void
+    {
+        $root = $this->fixtureHarness();
+        $output = $root . '/observed.json';
+        [$status, $stdout, $stderr] = self::executeCli(
+            ['--output=' . $output],
+            self::fixtureEnvironment('acknowledged'),
+            $root,
+        );
+
+        self::assertSame(0, $status);
+        self::assertSame('', $stderr);
+        self::assertSame(
+            "uapi:Quota/get_quota_info direct-uapi: passed\n"
+                . "uapi:Quota/get_quota_info bridged-uapi: passed\n"
+                . "Discrepancy review: passed (acknowledged: 2, unexpected: 0, stale: 0)\n"
+                . "Acknowledged: quota-total-direct-11.138.0.15 ($.* unknown_field)\n"
+                . "Acknowledged: quota-total-bridge-11.138.0.15 ($.* unknown_field)\n",
+            $stdout,
+        );
+        $document = json_decode((string) file_get_contents($output), true, 512, JSON_THROW_ON_ERROR);
+        self::assertIsArray($document);
+        self::assertSame(2, $document['schema_version']);
+        $expectedProbes = [
+            [
+                'operation' => 'uapi:Quota/get_quota_info', 'route' => 'direct-uapi',
+                'probe_outcome' => 'passed', 'payload_paths' => ['$.*' => ['int']],
+                'discrepancies' => [['path' => '$.*', 'kind' => 'unknown_field']],
+            ],
+            [
+                'operation' => 'uapi:Quota/get_quota_info', 'route' => 'bridged-uapi',
+                'probe_outcome' => 'passed', 'payload_paths' => ['$.*' => ['int']],
+                'discrepancies' => [['path' => '$.*', 'kind' => 'unknown_field']],
+            ],
+        ];
+        self::assertSame($expectedProbes, $document['probes']);
+        self::assertSame($expectedProbes, json_decode(
+            (string) file_get_contents($root . '/assessed-probes.json'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        ));
+        self::assertIsArray($document['discrepancy_review']);
+        self::assertSame([
+            'quota-total-direct-11.138.0.15', 'quota-total-bridge-11.138.0.15',
+        ], $document['discrepancy_review']['acknowledged']);
+        self::assertSame([], glob($root . '/.live-verify-*'));
+    }
+
+    public function testStaleAcknowledgmentFailsWhenEveryObservedProbePasses(): void
+    {
+        $root = $this->fixtureHarness();
+        [$status, $stdout, $stderr] = self::executeCli(
+            ['--output=' . $root . '/observed.json'],
+            self::fixtureEnvironment('stale'),
+            $root,
+        );
+
+        self::assertSame(1, $status);
+        self::assertSame('', $stderr);
+        self::assertSame(
+            "whm1:version whm: passed\nDiscrepancy review: failed (acknowledged: 0, unexpected: 0, stale: 1)\n"
+                . "Stale: quota-total-direct-11.138.0.15 ($.* unknown_field)\n",
+            $stdout,
+        );
+    }
+
+    public function testEmptyRunKeepsFailedAssessmentAndEmptyObservedRecords(): void
+    {
+        $root = $this->fixtureHarness();
+        $output = $root . '/observed.json';
+        [$status, $stdout, $stderr] = self::executeCli(
+            ['--output=' . $output],
+            self::fixtureEnvironment('empty'),
+            $root,
+        );
+
+        self::assertSame(1, $status);
+        self::assertSame('', $stderr);
+        self::assertSame(
+            "Discrepancy review: failed (acknowledged: 0, unexpected: 1, stale: 0)\nUnexpected: empty run\n",
+            $stdout,
+        );
+        $document = json_decode((string) file_get_contents($output), true, 512, JSON_THROW_ON_ERROR);
+        self::assertIsArray($document);
+        self::assertSame([], $document['probes']);
+        self::assertIsArray($document['discrepancy_review']);
+        self::assertSame('failed', $document['discrepancy_review']['status']);
+    }
+
+    #[DataProvider('policyPreflightFailures')]
+    public function testPolicyPreflightFailuresNeverRunOrPrepareOutput(string $case): void
+    {
+        $root = $this->fixtureHarness();
+        $output = $root . '/not-created/observed.json';
+        [$status, $stdout, $stderr] = self::executeCli(
+            ['--output=' . $output],
+            self::fixtureEnvironment($case),
+            $root,
+        );
+
+        self::assertSame(1, $status);
+        self::assertSame('', $stdout);
+        self::assertStringContainsString('Live verification failed', $stderr);
+        self::assertStringNotContainsString(self::SECRET, $stderr);
+        self::assertDirectoryDoesNotExist(dirname($output));
+        self::assertFileDoesNotExist($root . '/runner-invoked');
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function policyPreflightFailures(): iterable
+    {
+        yield 'reference cannot be loaded' => ['policy-load-failure'];
+        yield 'output would overwrite reference' => ['policy-output-failure'];
+    }
+
+    public function testUnexpectedAssessmentDetailsNeverReachConsole(): void
+    {
+        $root = $this->fixtureHarness();
+        [$status, $stdout, $stderr] = self::executeCli(
+            ['--output=' . $root . '/observed.json'],
+            self::fixtureEnvironment('private-review'),
+            $root,
+        );
+
+        self::assertSame(1, $status);
+        self::assertSame('', $stderr);
+        self::assertStringContainsString('unexpected: 1', $stdout);
+        self::assertStringContainsString('Unexpected: unrecognized probe (unacknowledged discrepancy)', $stdout);
+        self::assertStringNotContainsString(self::SECRET, $stdout);
+    }
+
+    #[DataProvider('unexpectedReasons')]
+    public function testUnexpectedFindingsPrintOnlyReviewedOperationAndReasonLabels(string $case, string $reason): void
+    {
+        $root = $this->fixtureHarness();
+        [$status, $stdout, $stderr] = self::executeCli(
+            ['--output=' . $root . '/observed.json'],
+            self::fixtureEnvironment($case),
+            $root,
+        );
+
+        self::assertSame(1, $status);
+        self::assertSame('', $stderr);
+        self::assertStringContainsString('Unexpected: whm1:version whm (' . $reason . ')', $stdout);
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function unexpectedReasons(): iterable
+    {
+        yield 'unacknowledged discrepancy' => ['discrepancy', 'unacknowledged discrepancy'];
+        yield 'duplicate probe' => ['duplicate', 'duplicate probe'];
+        yield 'failed probe' => ['failed', 'unsuccessful probe'];
+        yield 'skipped probe' => ['skipped', 'unsuccessful probe'];
+    }
+
+    public function testUnrecognizedUnexpectedReasonFailsWithoutReachingConsole(): void
+    {
+        $root = $this->fixtureHarness();
+        [$status, $stdout, $stderr] = self::executeCli(
+            ['--output=' . $root . '/observed.json'],
+            self::fixtureEnvironment('private-reason'),
+            $root,
+        );
+
+        self::assertSame(1, $status);
+        self::assertStringContainsString('Live verification failed', $stderr);
+        self::assertStringNotContainsString(self::SECRET, $stdout);
+        self::assertStringNotContainsString(self::SECRET, $stderr);
+    }
+
+    #[DataProvider('privateAcknowledgmentIds')]
+    public function testUnknownAcknowledgmentIdsFailWithoutReachingConsole(string $case): void
+    {
+        $root = $this->fixtureHarness();
+        [$status, $stdout, $stderr] = self::executeCli(
+            ['--output=' . $root . '/observed.json'],
+            self::fixtureEnvironment($case),
+            $root,
+        );
+
+        self::assertSame(1, $status);
+        self::assertStringContainsString('Live verification failed', $stderr);
+        self::assertStringNotContainsString(self::SECRET, $stdout);
+        self::assertStringNotContainsString(self::SECRET, $stderr);
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function privateAcknowledgmentIds(): iterable
+    {
+        yield 'unreviewed acknowledgment' => ['private-acknowledgment'];
+        yield 'unreviewed stale acknowledgment' => ['private-stale'];
     }
 
     public function testFixtureHarnessOutputFailureNeverLeaksPrivatePath(): void
@@ -288,6 +502,58 @@ final class ProbeCatalog
 {
     public static function load(string $root): array { return []; }
 }
+final class DiscrepancyPolicy
+{
+    public static function load(string $root): self
+    {
+        if (getenv('CLI_FIXTURE_CASE') === 'policy-load-failure') {
+            throw new \RuntimeException(getenv('CLI_PRIVATE_MARKER'));
+        }
+        return new self();
+    }
+    public function assertOutputAllowed(string $output): void
+    {
+        if (getenv('CLI_FIXTURE_CASE') === 'policy-output-failure') {
+            throw new \RuntimeException(getenv('CLI_PRIVATE_MARKER'));
+        }
+    }
+    public function assess(array $records): array
+    {
+        file_put_contents(dirname(__DIR__) . '/assessed-probes.json', json_encode($records));
+        $case = getenv('CLI_FIXTURE_CASE');
+        $unexpected = in_array($case, [
+            'failed', 'skipped', 'discrepancy', 'duplicate', 'empty', 'private-review', 'private-reason',
+        ], true);
+        $failed = $unexpected || $case === 'stale';
+        $reason = match ($case) {
+            'failed', 'skipped' => 'unsuccessful_probe',
+            'duplicate' => 'duplicate_probe',
+            'empty' => 'empty_run',
+            'private-reason' => getenv('CLI_PRIVATE_MARKER'),
+            default => 'unacknowledged_discrepancy',
+        };
+        $review = [
+            'status' => $failed ? 'failed' : 'passed',
+            'acknowledged' => $case === 'acknowledged' ? [
+                'quota-total-direct-11.138.0.15', 'quota-total-bridge-11.138.0.15',
+            ] : [],
+            'unexpected' => $unexpected ? [[
+                'operation' => $case === 'private-review' ? getenv('CLI_PRIVATE_MARKER') : 'whm1:version',
+                'variant' => 'whm1:version#GET', 'route' => 'whm', 'reason' => $reason,
+            ]] : [],
+            'stale' => $case === 'stale' ? ['quota-total-direct-11.138.0.15'] : [],
+            'policy' => 'reviewed-quota-discrepancies-v1', 'tracking' => 'whm-api-client-8x0.4.3.1',
+            'evidence' => 'docs/api/evidence/2026-10-16-quota-inventory.json',
+            'evidence_sha256' => str_repeat('a', 64),
+        ];
+        if ($case === 'private-acknowledgment') {
+            $review['acknowledged'] = [getenv('CLI_PRIVATE_MARKER')];
+        } elseif ($case === 'private-stale') {
+            $review['stale'] = [getenv('CLI_PRIVATE_MARKER')];
+        }
+        return $review;
+    }
+}
 final class CurlClient {}
 final class EvidenceRunner
 {
@@ -298,6 +564,16 @@ final class EvidenceRunner
         $case = getenv('CLI_FIXTURE_CASE');
         if ($case === 'exception') {
             throw new \RuntimeException(getenv('CLI_PRIVATE_MARKER'));
+        }
+        if ($case === 'empty') {
+            return [];
+        }
+        if ($case === 'acknowledged') {
+            return array_map(static fn (string $route): array => [
+                'operation' => 'uapi:Quota/get_quota_info', 'route' => $route,
+                'probe_outcome' => 'passed', 'payload_paths' => ['$.*' => ['int']],
+                'discrepancies' => [['path' => '$.*', 'kind' => 'unknown_field']],
+            ], ['direct-uapi', 'bridged-uapi']);
         }
         return [[
             'operation' => getenv('CLI_FIXTURE_OPERATION') ?: 'whm1:version',
