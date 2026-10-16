@@ -296,10 +296,13 @@ every operation would fail on real servers. The library therefore has three tier
 1. **Foundation** (done): transport, credentials, routes, envelope reading with a
    per-request `OutcomePolicy`, GET and form-encoded POST execution, metadata and
    typed exceptions.
-2. **Generic calls**: `whm()->call()` and `uapi()->call()` reach every documented
-   function through that foundation and return `CallResult` (payload converted to
-   arrays, presence flag, metadata) without a schema. They are infrastructure in
-   the coverage registry, never endpoint coverage.
+2. **Generic calls**: `whm()->call()` and `uapi()->call()` provide GET and
+   form-encoded POST access through that foundation, subject to each operation's
+   parameter, route and envelope requirements. They return `CallResult` (payload
+   converted to arrays, presence flag, metadata) without a schema. JSON and
+   multipart request bodies remain unsupported (`whm-api-client-8x0.1.18` and
+   `whm-api-client-8x0.1.19`). Generic access does not establish typed coverage or
+   live verification.
 3. **Typed groups on demand**: reviewed operations that consumers rely on
    (inventory, server health, PHP, features, and the account lifecycle that
    HostingPal's provisioning needs), hand-written in the lean pattern below with
