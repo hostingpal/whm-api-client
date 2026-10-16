@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\DomainInfoSpec;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\EmailSpec;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\LangPhpSpec;
+use HostingPal\WhmApiClient\Api\Uapi\Spec\SslSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\AccountsSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\WebServerSpec;
@@ -27,6 +28,7 @@ final class ProbeCatalog
         $accounts = self::read($root . '/docs/api/overlay/whm/accounts.json');
         $webServer = self::read($root . '/docs/api/overlay/whm/web-server-configuration.json');
         $php = self::read($root . '/docs/api/overlay/uapi/LangPHP.json');
+        $ssl = self::read($root . '/docs/api/overlay/uapi/SSL.json');
 
         return [
             self::probe(
@@ -229,6 +231,111 @@ final class ProbeCatalog
                 'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
                 . '&cpanel.module=Email&cpanel.function=count_pops',
                 static fn (Client $client): mixed => $client->uapi('npr')->email()->countPops(),
+            ),
+            self::probe(
+                $ssl,
+                'uapi:SSL/installed_hosts',
+                'direct-uapi',
+                SslSpec::INSTALLED_HOSTS,
+                'https://test.oblak.host:2083/execute/SSL/installed_hosts',
+                static fn (Client $client): mixed => $client->uapi()->ssl()->installedHosts(),
+            ),
+            self::probe(
+                $ssl,
+                'uapi:SSL/installed_hosts',
+                'bridged-uapi',
+                SslSpec::INSTALLED_HOSTS,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=SSL&cpanel.function=installed_hosts',
+                static fn (Client $client): mixed => $client->uapi('npr')->ssl()->installedHosts(),
+            ),
+            self::probe(
+                $ssl,
+                'uapi:SSL/get_autossl_excluded_domains',
+                'direct-uapi',
+                SslSpec::GET_AUTOSSL_EXCLUDED_DOMAINS,
+                'https://test.oblak.host:2083/execute/SSL/get_autossl_excluded_domains',
+                static fn (Client $client): mixed => $client->uapi()->ssl()->getAutosslExcludedDomains(),
+            ),
+            self::probe(
+                $ssl,
+                'uapi:SSL/get_autossl_excluded_domains',
+                'bridged-uapi',
+                SslSpec::GET_AUTOSSL_EXCLUDED_DOMAINS,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=SSL&cpanel.function=get_autossl_excluded_domains',
+                static fn (Client $client): mixed => $client->uapi('npr')->ssl()->getAutosslExcludedDomains(),
+            ),
+            self::probe(
+                $ssl,
+                'uapi:SSL/get_autossl_problems',
+                'direct-uapi',
+                SslSpec::GET_AUTOSSL_PROBLEMS,
+                'https://test.oblak.host:2083/execute/SSL/get_autossl_problems',
+                static fn (Client $client): mixed => $client->uapi()->ssl()->getAutosslProblems(),
+            ),
+            self::probe(
+                $ssl,
+                'uapi:SSL/get_autossl_problems',
+                'bridged-uapi',
+                SslSpec::GET_AUTOSSL_PROBLEMS,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=SSL&cpanel.function=get_autossl_problems',
+                static fn (Client $client): mixed => $client->uapi('npr')->ssl()->getAutosslProblems(),
+            ),
+            self::probe(
+                $ssl,
+                'uapi:SSL/get_autossl_renewal_status',
+                'direct-uapi',
+                SslSpec::GET_AUTOSSL_RENEWAL_STATUS,
+                'https://test.oblak.host:2083/execute/SSL/get_autossl_renewal_status?domain=npr.rs',
+                static fn (Client $client): mixed => $client->uapi()->ssl()->getAutosslRenewalStatus(domain: 'npr.rs'),
+                ['domain' => 'npr.rs'],
+            ),
+            self::probe(
+                $ssl,
+                'uapi:SSL/get_autossl_renewal_status',
+                'bridged-uapi',
+                SslSpec::GET_AUTOSSL_RENEWAL_STATUS,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=SSL&cpanel.function=get_autossl_renewal_status&domain=npr.rs',
+                static fn (Client $client): mixed =>
+                    $client->uapi('npr')->ssl()->getAutosslRenewalStatus(domain: 'npr.rs'),
+                ['domain' => 'npr.rs'],
+            ),
+            self::probe(
+                $ssl,
+                'uapi:SSL/is_autossl_check_in_progress',
+                'direct-uapi',
+                SslSpec::IS_AUTOSSL_CHECK_IN_PROGRESS,
+                'https://test.oblak.host:2083/execute/SSL/is_autossl_check_in_progress',
+                static fn (Client $client): mixed => $client->uapi()->ssl()->isAutosslCheckInProgress(),
+            ),
+            self::probe(
+                $ssl,
+                'uapi:SSL/is_autossl_check_in_progress',
+                'bridged-uapi',
+                SslSpec::IS_AUTOSSL_CHECK_IN_PROGRESS,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=SSL&cpanel.function=is_autossl_check_in_progress',
+                static fn (Client $client): mixed => $client->uapi('npr')->ssl()->isAutosslCheckInProgress(),
+            ),
+            self::probe(
+                $ssl,
+                'uapi:SSL/can_ssl_redirect',
+                'direct-uapi',
+                SslSpec::CAN_SSL_REDIRECT,
+                'https://test.oblak.host:2083/execute/SSL/can_ssl_redirect',
+                static fn (Client $client): mixed => $client->uapi()->ssl()->canSslRedirect(),
+            ),
+            self::probe(
+                $ssl,
+                'uapi:SSL/can_ssl_redirect',
+                'bridged-uapi',
+                SslSpec::CAN_SSL_REDIRECT,
+                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=SSL&cpanel.function=can_ssl_redirect',
+                static fn (Client $client): mixed => $client->uapi('npr')->ssl()->canSslRedirect(),
             ),
         ];
     }

@@ -23,6 +23,8 @@ trait UapiGroups
 
     private ?LangPhp $langPhpGroup = null;
 
+    private ?Ssl $sslGroup = null;
+
     /**
      * Select the DNS operations without making a request.
      *
@@ -71,5 +73,15 @@ trait UapiGroups
     public function langPhp(): LangPhp
     {
         return $this->langPhpGroup ??= new LangPhp($this->run(...));
+    }
+
+    /**
+     * Select the SSL operations without making a request.
+     *
+     * The SSL module for UAPI.
+     */
+    public function ssl(): Ssl
+    {
+        return $this->sslGroup ??= new Ssl($this->run(...));
     }
 }

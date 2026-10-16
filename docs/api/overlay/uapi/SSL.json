@@ -3,6 +3,100 @@
   "family": "uapi",
   "group": "SSL",
   "operations": {
-    "uapi:SSL/check_shared_cert": {"exclude": {"reason": "Deprecated without a successor.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true."}]}}
+    "uapi:SSL/check_shared_cert": {"exclude": {"reason": "Deprecated without a successor.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true."}]}},
+    "uapi:SSL/installed_hosts": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "For a dedicated IP address, use SSL/installed_host. The fqdns list includes service (proxy) subdomains."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": ["direct-uapi", "bridged-uapi"],
+        "expected": "success"
+      }
+    },
+    "uapi:SSL/get_autossl_excluded_domains": {
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": ["direct-uapi", "bridged-uapi"],
+        "expected": "success"
+      }
+    },
+    "uapi:SSL/get_autossl_problems": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": ["direct-uapi", "bridged-uapi"],
+        "expected": "success"
+      }
+    },
+    "uapi:SSL/is_autossl_check_in_progress": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Reports the AutoSSL check task for the current cPanel user: 1 means in progress and 0 means not in progress."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": ["direct-uapi", "bridged-uapi"],
+        "expected": "success"
+      }
+    },
+    "uapi:SSL/can_ssl_redirect": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Reports whether the system can automatically redirect account domains to SSL; this is a capability flag, not the current redirect configuration."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": ["direct-uapi", "bridged-uapi"],
+        "expected": "success"
+      }
+    },
+    "uapi:SSL/get_autossl_renewal_status": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 134 and later. The required domain is the fully qualified domain name to check."
+        },
+        {
+          "kind": "documented",
+          "text": "The is_active flag means an AutoSSL provider is configured. The has_problems flag reports recorded DCV failures and defaults to 1 if the problems database is unreachable."
+        },
+        {
+          "kind": "documented",
+          "text": "The will_renew flag is true only when an AutoSSL provider is active, that provider issued the current certificate, the domain is not excluded, and no DCV problems are recorded."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {"domain": "npr.rs"},
+        "routes": ["direct-uapi", "bridged-uapi"],
+        "expected": "success"
+      }
+    }
   }
 }
