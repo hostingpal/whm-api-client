@@ -5,13 +5,15 @@ Status: implemented through phase 1 (plans 1-4); design agreed with the user on
 Delivery and validation policy refined on 2026-10-15 under
 `whm-api-client-8x0.26`. The first phase-2 evidence runner and fingerprints are
 implemented under `8x0.10.1`, with Email inventory added under `8x0.10.2`.
-The account/domain/PHP evidence batch (`8x0.2.3`) and additional Email inventory
-(`8x0.4.1`), followed by SSL/AutoSSL inventory (`8x0.4.2`), extend this to 35
-route-specific probes and 70 generated operations. Quota (`8x0.4.3`) adds four
-route-specific probes and two generated operations, bringing these to 39 and 72.
-MySQL database/user inventory (`8x0.4.4`) adds four probes and two methods,
-bringing these to 43 and 74.
-Further coverage and the consumer exercise remain planned work.
+At the PR20 checkpoint (2026-10-16), [generated coverage](../../api/coverage.md)
+contains 74 operations in 13 groups. The
+[saved evidence](../../api/evidence/2026-10-16-discrepancy-policy.json) covers
+43 route-specific probes across 25 operations, including account/domain/PHP,
+Email, SSL/AutoSSL, Quota and MySQL inventory. Its discrepancy review passes with
+2 acknowledged Quota observations, 0 unexpected and 0 stale; their field contracts
+remain unresolved under `8x0.4.3.1`. Empty MySQL lists do not establish row-field
+evidence. The consumer exercise and further coverage remain unfinished. The
+approved correction cycle below gates the next expansion pilot.
 Decision record: `whm-api-client-8x0.10`. This design supersedes the
 "typed core plus generic calls / lean pattern" scaling decision
 (`whm-api-client-8x0.7`, recorded in the
@@ -78,14 +80,14 @@ agent sessions. Generation from contract data is expected to produce roughly
 | Topic | Decision |
 | --- | --- |
 | Approach | Generate the typed surface from the canonical map plus an evidence-bound overlay corrected by live verification |
-| Deprecated functions | Exclude the 13 flagged functions from generation, with documented reasons; they stay reachable through `call()` |
+| Deprecated functions | Exclude the 13 flagged functions from generation, with documented reasons; generic calls remain subject to supported request encodings, routes and envelopes |
 | Groups | UAPI: one group per module (105). WHM: one group per documented `x-tagGroups` entry (29) |
 | Method names | Mechanical camelCase of the documented name; the overlay names every separator-less function and resolves collisions |
 | Returns | Plain arrays with generated PHPStan shapes; no DTO classes |
 | Generator | Go, inside `tools/api-map` |
 | Response validation | One hand-written engine interprets compact generated specs (class constants) |
 | Evidence | Sanitized type fingerprints (paths and types, no values) are committed |
-| Escape hatch | `whm()->call()` and `uapi()->call()` remain for excluded or not-yet-generated functions |
+| Escape hatch | `whm()->call()` and `uapi()->call()` provide GET/form POST access for compatible excluded or not-yet-generated functions; JSON/multipart bodies remain unsupported |
 
 ## Architecture
 
@@ -150,9 +152,10 @@ exception and `errors()` contracts. `call()` remains.
   parameters follow their overlay entry.
 - Secret-bearing parameters (overlay flag, suggested by name heuristics such as
   password, token, secret, key) receive `#[SensitiveParameter]` and force POST.
-- HTTP method: read-only operations use GET; mutating, unknown-risk and
+- HTTP method within the supported encodings: read-only operations use GET; mutating, unknown-risk and
   secret-bearing operations use form-encoded POST (routing fields stay in the
-  query string). The overlay can override with evidence.
+  query string). The overlay can override with evidence. This policy does not
+  implement documented JSON or multipart request bodies.
 
 **Returns.**
 
@@ -171,7 +174,7 @@ exception and `errors()` contracts. `call()` remains.
   objects become `array<string, mixed>` with a docblock note until live evidence
   refines them. Recursive schemas are expanded to a depth of 8, below which the
   node is typed `array<array-key, mixed>`.
-- Unknown response fields are dropped from the typed result. The planned live
+- Unknown response fields are dropped from the typed result. The implemented live
   runner observes the same response before this filtering and normalization, so
   its fingerprints can reveal extensions for review. A successful empty list
   supplies no evidence about the types of its unobserved record fields.
@@ -251,8 +254,9 @@ fails on any difference.
 Generation is checked against the selected overlay scope. The current `listed`
 scope contains 74 operations; only a complete `all` scope establishes that every
 non-excluded operation in the map is generated. The generated coverage summary
-currently reports generated groups and exclusions. Phase 2 adds evidence-backed
-offline-test and live-observation reporting; neither is implied by generation.
+currently reports generated groups and exclusions. Independent offline tests and
+saved live fingerprints cover scoped cases separately; neither is implied by
+generation. Consolidated coverage reporting remains planned work.
 
 Report the fixed documented target alongside generated operations, tested cases,
 and live observations. A live record identifies the route, version, code revision,
@@ -448,6 +452,32 @@ batches to test whether generation is reducing maintenance work. Broader runners
 fixture orchestration and request-body support are added when a reviewed batch
 needs them; JSON/multipart support is still required for eventual full parity.
 
+### Approved post-PR20 correction cycle
+
+The resumed delivery sequence is tracked under `whm-api-client-8x0.10`:
+
+1. Correct support claims and stale progress (`8x0.1.17`). Current execution
+   supports GET and form-encoded POST. The pinned inventory includes 13 JSON and
+   9 multipart operations whose body formats remain unsupported.
+2. Exercise the real HostingPal account/domain inventory workflow (`8x0.10.3`).
+   Record the actual consumer integration and client revision; a synthetic demo
+   does not satisfy this task. Missing consumer access is an explicit blocker.
+3. Observe nonempty MySQL records through both routes (`8x0.2.4`), then finite
+   Quota limits and cleanup (`8x0.3.1`). These evidence tasks may proceed if
+   consumer access is blocked, under the standing test-account authorization.
+4. Pilot a bounded reduction in repetitive test/probe plumbing (`8x0.10.4`),
+   preserving independently authored contract expectations and measuring manual
+   touchpoints and review effort. Add only machinery justified by these tasks.
+5. Implement selected JSON (`8x0.1.18`) or multipart (`8x0.1.19`) support when an
+   identified useful operation requires it, with explicit route/body contracts.
+6. Deliver one coherent expansion pilot (`8x0.4.5`), gated on the consumer,
+   MySQL, finite-Quota and plumbing tasks. JSON/multipart dependencies are
+   conditional on its chosen operations. Record blockers without bypassing them.
+
+Keep one PR at a time. Address Opus's review comments and obtain substantive
+external approval of the current head plus passing required checks before
+authorized merge. This cycle does not resume unrestricted endpoint expansion.
+
 ## Testing and quality gates
 
 1. **Core engine** (hand-written, exhaustive): request lifecycle, parameter
@@ -486,8 +516,9 @@ validate`, `composer check`. No live calls.
    (`tools/php-symbols`), the registry, report and baseline artifacts under
    `docs/api/coverage/`, and the parity code that only served them.
    Phase 1 note: the hand-written endpoint tests were adapted to the generated
-   groups and serve as the equivalence oracle; the per-operation fixture rows of the
-   generated-surface tests come in phase 2, with the runner and fingerprints.
+   groups and serve as the equivalence oracle. The phase-2 runner and fingerprints
+   are implemented for the recorded probes; broader fixture-row consolidation
+   remains subject to the bounded plumbing pilot (`8x0.10.4`).
 2. **First evidence loop and consumer feedback.** Deliver the bounded existing-
    operation slice, then the Email inventory slice described above. In parallel,
    exercise a real HostingPal read-only account/domain inventory workflow with the
@@ -495,7 +526,8 @@ validate`, `composer check`. No live calls.
    integration point and record argument, result, error-handling and testing
    friction as focused follow-ups. This does not require a tag, full parity or
    the separate Laravel package.
-3. **Expand toward the full surface (1,310).** Grow read-only recipes, evidence
+3. **Expand toward the full surface (1,310).** After the approved correction-cycle
+   prerequisites and expansion pilot above, grow read-only recipes, evidence
    and generated coverage together in reviewed batches per UAPI module or WHM
    group. Curate names and resolve contract/request-body gaps as each batch
    requires. Per-group files permit parallel work; the first runner is not a
@@ -516,11 +548,14 @@ progress separate throughout expansion.
 
 ## Open questions (with proposed defaults)
 
-- **Internal-only functions** (`x-cpanel-internal-only`, 28): generate them with a
-  docblock warning that cPanel marks them internal-only.
+- **Internal-only metadata:** the pinned sources contain 28
+  `x-cpanel-internal-only` occurrences (27 UAPI, 1 WHM), all explicitly `false`.
+  Presence alone establishes no internal-only restriction or warning. Reassess
+  if a future reviewed snapshot contains true values.
 - **Functions present on the server but undocumented** (WHM `applist` reported 675
   functions against 630 documented): out of scope for generation from
-  documentation; reachable through `call()`; revisit after phase 3 with
+  documentation; generic calls are limited to compatible GET/form contracts;
+  revisit after phase 3 with
   overlay-authored contracts backed by live evidence.
 - **Consumer feedback and releases:** exercise the current client in HostingPal
   before full coverage. Full parity remains the target, but is not a prerequisite
@@ -534,8 +569,9 @@ progress separate throughout expansion.
   use parallel analysis, and measure in phase 1.
 - **Schema quality:** reference cycles, deep recursion and very large payloads
   (776 fields) must be handled by the generator's depth limits.
-- **POST acceptance:** form-encoded POST is verified on all three routes with
-  read-only functions; the read-only sweep confirms it per operation family.
+- **POST acceptance:** form-encoded POST has scoped live observations on all three
+  routes with read-only functions. Acceptance by additional operations remains to
+  be verified; the latest saved 43-probe run uses GET only.
 - **Curation volume:** about 1,310 probe recipes, 174 names and 250–350 corrections
   are agent work in batches; the overlay schema and evidence requirement keep it
   auditable.

@@ -27,8 +27,9 @@ use SensitiveParameter;
  * The credential type selects direct cPanel access or execution through WHM.
  * Both routes share this handle type and expose the same endpoint groups.
  * Typed groups are generated from the pinned API map and overlay (see docs/api/coverage.md);
- * call() reaches every documented UAPI function through the same routing,
- * authentication, and envelope handling.
+ * call() provides GET and form-encoded POST access without a typed group through
+ * the same routing, authentication, and envelope handling. JSON and multipart
+ * request bodies are not supported on either route.
  *
  * @phpstan-import-type Parameters from AbstractApiClient
  */
@@ -79,7 +80,7 @@ final class UapiClient extends AbstractApiClient
     }
 
     /**
-     * Execute any documented UAPI function for this account without a typed group.
+     * Execute a UAPI function for this account using GET or form-encoded POST.
      *
      * The module and function are the documented names (such as Email and
      * list_pops). Direct cPanel credentials request /execute/Module/function;
@@ -96,6 +97,10 @@ final class UapiClient extends AbstractApiClient
      * bridge); Unchecked leaves the UAPI status to the caller, for functions such as
      * Features/has_feature whose status reports feature state. The bridge's WHM
      * result is checked under both policies, so a failed bridge always raises.
+     * The caller must check the function's method, parameter representation, route
+     * and envelope requirements. JSON and multipart request bodies are unsupported
+     * on either route; generic access does not establish operation coverage or
+     * live verification.
      *
      * @param Parameters $parameters
      * @throws InvalidArgumentException If a name or a parameter value is invalid; responseMeta() is cleared

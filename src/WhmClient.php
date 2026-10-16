@@ -27,8 +27,9 @@ use SensitiveParameter;
  * Only WHM credentials are accepted. Endpoint groups share this handle's metadata;
  * constructing it performs no authentication request or other network I/O.
  * Typed groups are generated from the pinned API map and overlay (see docs/api/coverage.md);
- * call() reaches every documented WHM API 1 function through the same routing,
- * authentication, and envelope handling.
+ * call() provides GET and form-encoded POST access without a typed group through
+ * the same routing, authentication, and envelope handling. JSON and multipart
+ * request bodies are not supported.
  *
  * @phpstan-import-type Parameters from AbstractApiClient
  */
@@ -57,7 +58,7 @@ final class WhmClient extends AbstractApiClient
     }
 
     /**
-     * Execute any documented WHM API 1 function without a typed group.
+     * Execute a WHM API 1 function using GET or form-encoded POST without a typed group.
      *
      * The function name is the documented path segment after /json-api/ (such as
      * listaccts or 360Monitoring/webpros_auth_callback); api.version=1 is always
@@ -70,6 +71,9 @@ final class WhmClient extends AbstractApiClient
      * validation; metadata, exceptions, and responseMeta() behave as for typed
      * operations. Flag applies the documented metadata.result 1/0 rule; Unchecked
      * leaves the outcome to the caller. Typed groups remain the reviewed contracts.
+     * The caller must check the function's method, parameter representation and
+     * envelope requirements. JSON and multipart request bodies are unsupported;
+     * generic access does not establish operation coverage or live verification.
      *
      * @param Parameters $parameters
      * @throws InvalidArgumentException If the function name or a parameter value is invalid; responseMeta() is
