@@ -328,6 +328,13 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   (`8x0.2.3`), expanded Email inventory (`8x0.4.1`), the SSL slice (`8x0.4.2`),
   Quota (`8x0.4.3`) and MySQL inventory (`8x0.4.4`) build on the initial slices;
   consumer feedback (`8x0.10.3`) remains independent.
+- The optional `--mysql-fixture` runner mode additionally requires
+  `WHM_API_LIVE_MUTATIONS=1`. It creates two databases and two database users on
+  the designated `npr` account, checks linked/unlinked inventory through both
+  routes, and verifies exact-resource cleanup before writing evidence. The
+  [populated MySQL artifact](docs/api/evidence/2026-10-17-mysql-populated.json)
+  observes all documented row fields and integer `disk_usage` on `11.138.0.15`.
+  Generic fixture setup/cleanup POSTs do not add generated endpoint coverage.
 - Capture evidence from the same raw HTTP response before normalization and
   unknown-field removal. Preserve the response delivered to the client; never
   replay an operation to recover evidence. Persist only sanitized structural

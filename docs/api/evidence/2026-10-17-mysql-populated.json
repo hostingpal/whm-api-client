@@ -1,0 +1,4239 @@
+{
+    "schema_version": 2,
+    "probes": [
+        {
+            "operation": "whm1:version",
+            "variant": "whm1:version#GET",
+            "route": "whm",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:11Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "a3b55069b379516f20fcf82f959226d68b68ac515a7e55c0bde8842d39effd60",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.version": [
+                    "string"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.version": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "whm1:systemloadavg",
+            "variant": "whm1:systemloadavg#GET",
+            "route": "whm",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:11Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "c37c72aafde4aa64384dca7e7570f4c87d859c5939d4e861cf6be0ec3740882d",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.fifteen": [
+                    "numeric-string"
+                ],
+                "$.data.five": [
+                    "numeric-string"
+                ],
+                "$.data.one": [
+                    "numeric-string"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.fifteen": [
+                    "numeric-string"
+                ],
+                "$.five": [
+                    "numeric-string"
+                ],
+                "$.one": [
+                    "numeric-string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:DomainInfo/list_domains",
+            "variant": "uapi:DomainInfo/list_domains#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:11Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "29ae961e5a966f3c668fb0a1caac6871f6dbd0f3f8e3bb61fe073a9db477b8b4",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.addon_domains": [
+                    "empty-list"
+                ],
+                "$.data.is_temporary": [
+                    "missing"
+                ],
+                "$.data.main_domain": [
+                    "string"
+                ],
+                "$.data.parked_domains": [
+                    "empty-list"
+                ],
+                "$.data.sub_domains": [
+                    "empty-list"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "empty-object"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.addon_domains": [
+                    "empty-list"
+                ],
+                "$.is_temporary": [
+                    "missing"
+                ],
+                "$.main_domain": [
+                    "string"
+                ],
+                "$.parked_domains": [
+                    "empty-list"
+                ],
+                "$.sub_domains": [
+                    "empty-list"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:DomainInfo/list_domains",
+            "variant": "uapi:DomainInfo/list_domains#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:11Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "29ae961e5a966f3c668fb0a1caac6871f6dbd0f3f8e3bb61fe073a9db477b8b4",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "object"
+                ],
+                "$.data.uapi.data.addon_domains": [
+                    "empty-list"
+                ],
+                "$.data.uapi.data.is_temporary": [
+                    "missing"
+                ],
+                "$.data.uapi.data.main_domain": [
+                    "string"
+                ],
+                "$.data.uapi.data.parked_domains": [
+                    "empty-list"
+                ],
+                "$.data.uapi.data.sub_domains": [
+                    "empty-list"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "empty-object"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.addon_domains": [
+                    "empty-list"
+                ],
+                "$.is_temporary": [
+                    "missing"
+                ],
+                "$.main_domain": [
+                    "string"
+                ],
+                "$.parked_domains": [
+                    "empty-list"
+                ],
+                "$.sub_domains": [
+                    "empty-list"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:Email/list_pops",
+            "variant": "uapi:Email/list_pops#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:12Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "cd08dfa6866f75fd7d01284e81ddead808d878ba6a984aa98a34836bd23532bf",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "list"
+                ],
+                "$.data[]": [
+                    "object"
+                ],
+                "$.data[].email": [
+                    "string"
+                ],
+                "$.data[].login": [
+                    "string"
+                ],
+                "$.data[].suspended_incoming": [
+                    "int"
+                ],
+                "$.data[].suspended_login": [
+                    "int"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.*": [
+                    "int"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "list"
+                ],
+                "$[]": [
+                    "object"
+                ],
+                "$[].email": [
+                    "string"
+                ],
+                "$[].login": [
+                    "string"
+                ],
+                "$[].suspended_incoming": [
+                    "int"
+                ],
+                "$[].suspended_login": [
+                    "int"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:Email/list_pops",
+            "variant": "uapi:Email/list_pops#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:12Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "cd08dfa6866f75fd7d01284e81ddead808d878ba6a984aa98a34836bd23532bf",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "list"
+                ],
+                "$.data.uapi.data[]": [
+                    "object"
+                ],
+                "$.data.uapi.data[].email": [
+                    "string"
+                ],
+                "$.data.uapi.data[].login": [
+                    "string"
+                ],
+                "$.data.uapi.data[].suspended_incoming": [
+                    "int"
+                ],
+                "$.data.uapi.data[].suspended_login": [
+                    "int"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "object"
+                ],
+                "$.data.uapi.metadata.*": [
+                    "int"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "list"
+                ],
+                "$[]": [
+                    "object"
+                ],
+                "$[].email": [
+                    "string"
+                ],
+                "$[].login": [
+                    "string"
+                ],
+                "$[].suspended_incoming": [
+                    "int"
+                ],
+                "$[].suspended_login": [
+                    "int"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "whm1:listaccts",
+            "variant": "whm1:listaccts#GET",
+            "route": "whm",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:12Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "158e33f7807138ecd781f0568a6e9ce5e844c40295efe5937b3b914c522c7c40",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.acct": [
+                    "list"
+                ],
+                "$.data.acct[]": [
+                    "object"
+                ],
+                "$.data.acct[].backup": [
+                    "int"
+                ],
+                "$.data.acct[].child_nodes": [
+                    "empty-list"
+                ],
+                "$.data.acct[].disklimit": [
+                    "string"
+                ],
+                "$.data.acct[].diskused": [
+                    "string"
+                ],
+                "$.data.acct[].domain": [
+                    "string"
+                ],
+                "$.data.acct[].email": [
+                    "string"
+                ],
+                "$.data.acct[].has_backup": [
+                    "int"
+                ],
+                "$.data.acct[].inodeslimit": [
+                    "string"
+                ],
+                "$.data.acct[].inodesused": [
+                    "int"
+                ],
+                "$.data.acct[].ip": [
+                    "string"
+                ],
+                "$.data.acct[].ipv6": [
+                    "empty-list"
+                ],
+                "$.data.acct[].is_locked": [
+                    "int"
+                ],
+                "$.data.acct[].is_temporary_domain": [
+                    "int"
+                ],
+                "$.data.acct[].legacy_backup": [
+                    "int"
+                ],
+                "$.data.acct[].mailbox_format": [
+                    "string"
+                ],
+                "$.data.acct[].max_defer_fail_percentage": [
+                    "string"
+                ],
+                "$.data.acct[].max_email_per_hour": [
+                    "string"
+                ],
+                "$.data.acct[].max_emailacct_quota": [
+                    "string"
+                ],
+                "$.data.acct[].maxaddons": [
+                    "numeric-string"
+                ],
+                "$.data.acct[].maxftp": [
+                    "string"
+                ],
+                "$.data.acct[].maxlst": [
+                    "string"
+                ],
+                "$.data.acct[].maxparked": [
+                    "numeric-string"
+                ],
+                "$.data.acct[].maxpop": [
+                    "string"
+                ],
+                "$.data.acct[].maxsql": [
+                    "string"
+                ],
+                "$.data.acct[].maxsub": [
+                    "string"
+                ],
+                "$.data.acct[].min_defer_fail_to_trigger_protection": [
+                    "numeric-string"
+                ],
+                "$.data.acct[].outgoing_mail_hold": [
+                    "int"
+                ],
+                "$.data.acct[].outgoing_mail_suspended": [
+                    "int"
+                ],
+                "$.data.acct[].owner": [
+                    "string"
+                ],
+                "$.data.acct[].partition": [
+                    "string"
+                ],
+                "$.data.acct[].plan": [
+                    "string"
+                ],
+                "$.data.acct[].shell": [
+                    "string"
+                ],
+                "$.data.acct[].standalone_feature": [
+                    "empty-string"
+                ],
+                "$.data.acct[].standalone_feature_name": [
+                    "empty-string"
+                ],
+                "$.data.acct[].startdate": [
+                    "string"
+                ],
+                "$.data.acct[].suspended": [
+                    "int"
+                ],
+                "$.data.acct[].suspendreason": [
+                    "string"
+                ],
+                "$.data.acct[].suspendtime": [
+                    "int"
+                ],
+                "$.data.acct[].temporary": [
+                    "int"
+                ],
+                "$.data.acct[].theme": [
+                    "string"
+                ],
+                "$.data.acct[].uid": [
+                    "numeric-string"
+                ],
+                "$.data.acct[].unix_startdate": [
+                    "int"
+                ],
+                "$.data.acct[].user": [
+                    "string"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.acct": [
+                    "list"
+                ],
+                "$.acct[]": [
+                    "object"
+                ],
+                "$.acct[].backup": [
+                    "int"
+                ],
+                "$.acct[].child_nodes": [
+                    "empty-list"
+                ],
+                "$.acct[].disklimit": [
+                    "string"
+                ],
+                "$.acct[].diskused": [
+                    "string"
+                ],
+                "$.acct[].domain": [
+                    "string"
+                ],
+                "$.acct[].email": [
+                    "string"
+                ],
+                "$.acct[].has_backup": [
+                    "int"
+                ],
+                "$.acct[].inodeslimit": [
+                    "string"
+                ],
+                "$.acct[].inodesused": [
+                    "int"
+                ],
+                "$.acct[].ip": [
+                    "string"
+                ],
+                "$.acct[].ipv6": [
+                    "empty-list"
+                ],
+                "$.acct[].is_locked": [
+                    "int"
+                ],
+                "$.acct[].is_temporary_domain": [
+                    "int"
+                ],
+                "$.acct[].legacy_backup": [
+                    "int"
+                ],
+                "$.acct[].mailbox_format": [
+                    "string"
+                ],
+                "$.acct[].max_defer_fail_percentage": [
+                    "string"
+                ],
+                "$.acct[].max_email_per_hour": [
+                    "string"
+                ],
+                "$.acct[].max_emailacct_quota": [
+                    "string"
+                ],
+                "$.acct[].maxaddons": [
+                    "numeric-string"
+                ],
+                "$.acct[].maxftp": [
+                    "string"
+                ],
+                "$.acct[].maxlst": [
+                    "string"
+                ],
+                "$.acct[].maxparked": [
+                    "numeric-string"
+                ],
+                "$.acct[].maxpop": [
+                    "string"
+                ],
+                "$.acct[].maxsql": [
+                    "string"
+                ],
+                "$.acct[].maxsub": [
+                    "string"
+                ],
+                "$.acct[].min_defer_fail_to_trigger_protection": [
+                    "numeric-string"
+                ],
+                "$.acct[].outgoing_mail_hold": [
+                    "int"
+                ],
+                "$.acct[].outgoing_mail_suspended": [
+                    "int"
+                ],
+                "$.acct[].owner": [
+                    "string"
+                ],
+                "$.acct[].partition": [
+                    "string"
+                ],
+                "$.acct[].plan": [
+                    "string"
+                ],
+                "$.acct[].shell": [
+                    "string"
+                ],
+                "$.acct[].standalone_feature": [
+                    "empty-string"
+                ],
+                "$.acct[].standalone_feature_name": [
+                    "empty-string"
+                ],
+                "$.acct[].startdate": [
+                    "string"
+                ],
+                "$.acct[].suspended": [
+                    "int"
+                ],
+                "$.acct[].suspendreason": [
+                    "string"
+                ],
+                "$.acct[].suspendtime": [
+                    "int"
+                ],
+                "$.acct[].temporary": [
+                    "int"
+                ],
+                "$.acct[].theme": [
+                    "string"
+                ],
+                "$.acct[].uid": [
+                    "numeric-string"
+                ],
+                "$.acct[].unix_startdate": [
+                    "int"
+                ],
+                "$.acct[].user": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "whm1:accountsummary",
+            "variant": "whm1:accountsummary#GET",
+            "route": "whm",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:13Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "a9a3e2cbdce6d487dca89e4a3ebdedcdeb47fdd33cb847dab989515c4d3e5cad",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.acct": [
+                    "list"
+                ],
+                "$.data.acct[]": [
+                    "object"
+                ],
+                "$.data.acct[].backup": [
+                    "int"
+                ],
+                "$.data.acct[].child_nodes": [
+                    "empty-list"
+                ],
+                "$.data.acct[].disklimit": [
+                    "string"
+                ],
+                "$.data.acct[].diskused": [
+                    "string"
+                ],
+                "$.data.acct[].domain": [
+                    "string"
+                ],
+                "$.data.acct[].email": [
+                    "string"
+                ],
+                "$.data.acct[].has_backup": [
+                    "missing"
+                ],
+                "$.data.acct[].inodeslimit": [
+                    "string"
+                ],
+                "$.data.acct[].inodesused": [
+                    "int"
+                ],
+                "$.data.acct[].ip": [
+                    "string"
+                ],
+                "$.data.acct[].ipv6": [
+                    "empty-list"
+                ],
+                "$.data.acct[].is_locked": [
+                    "int"
+                ],
+                "$.data.acct[].is_temporary_domain": [
+                    "int"
+                ],
+                "$.data.acct[].legacy_backup": [
+                    "int"
+                ],
+                "$.data.acct[].mailbox_format": [
+                    "string"
+                ],
+                "$.data.acct[].max_defer_fail_percentage": [
+                    "string"
+                ],
+                "$.data.acct[].max_email_per_hour": [
+                    "string"
+                ],
+                "$.data.acct[].max_emailacct_quota": [
+                    "string"
+                ],
+                "$.data.acct[].maxaddons": [
+                    "numeric-string"
+                ],
+                "$.data.acct[].maxftp": [
+                    "string"
+                ],
+                "$.data.acct[].maxlst": [
+                    "string"
+                ],
+                "$.data.acct[].maxparked": [
+                    "numeric-string"
+                ],
+                "$.data.acct[].maxpop": [
+                    "string"
+                ],
+                "$.data.acct[].maxsql": [
+                    "string"
+                ],
+                "$.data.acct[].maxsub": [
+                    "string"
+                ],
+                "$.data.acct[].min_defer_fail_to_trigger_protection": [
+                    "numeric-string"
+                ],
+                "$.data.acct[].outgoing_mail_hold": [
+                    "int"
+                ],
+                "$.data.acct[].outgoing_mail_suspended": [
+                    "int"
+                ],
+                "$.data.acct[].owner": [
+                    "string"
+                ],
+                "$.data.acct[].partition": [
+                    "string"
+                ],
+                "$.data.acct[].plan": [
+                    "string"
+                ],
+                "$.data.acct[].shell": [
+                    "string"
+                ],
+                "$.data.acct[].standalone_feature": [
+                    "empty-string"
+                ],
+                "$.data.acct[].standalone_feature_name": [
+                    "empty-string"
+                ],
+                "$.data.acct[].startdate": [
+                    "string"
+                ],
+                "$.data.acct[].suspended": [
+                    "int"
+                ],
+                "$.data.acct[].suspendreason": [
+                    "string"
+                ],
+                "$.data.acct[].suspendtime": [
+                    "int"
+                ],
+                "$.data.acct[].temporary": [
+                    "int"
+                ],
+                "$.data.acct[].theme": [
+                    "string"
+                ],
+                "$.data.acct[].uid": [
+                    "numeric-string"
+                ],
+                "$.data.acct[].unix_startdate": [
+                    "int"
+                ],
+                "$.data.acct[].user": [
+                    "string"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.acct": [
+                    "list"
+                ],
+                "$.acct[]": [
+                    "object"
+                ],
+                "$.acct[].backup": [
+                    "int"
+                ],
+                "$.acct[].child_nodes": [
+                    "empty-list"
+                ],
+                "$.acct[].disklimit": [
+                    "string"
+                ],
+                "$.acct[].diskused": [
+                    "string"
+                ],
+                "$.acct[].domain": [
+                    "string"
+                ],
+                "$.acct[].email": [
+                    "string"
+                ],
+                "$.acct[].has_backup": [
+                    "missing"
+                ],
+                "$.acct[].inodeslimit": [
+                    "string"
+                ],
+                "$.acct[].inodesused": [
+                    "int"
+                ],
+                "$.acct[].ip": [
+                    "string"
+                ],
+                "$.acct[].ipv6": [
+                    "empty-list"
+                ],
+                "$.acct[].is_locked": [
+                    "int"
+                ],
+                "$.acct[].is_temporary_domain": [
+                    "int"
+                ],
+                "$.acct[].legacy_backup": [
+                    "int"
+                ],
+                "$.acct[].mailbox_format": [
+                    "string"
+                ],
+                "$.acct[].max_defer_fail_percentage": [
+                    "string"
+                ],
+                "$.acct[].max_email_per_hour": [
+                    "string"
+                ],
+                "$.acct[].max_emailacct_quota": [
+                    "string"
+                ],
+                "$.acct[].maxaddons": [
+                    "numeric-string"
+                ],
+                "$.acct[].maxftp": [
+                    "string"
+                ],
+                "$.acct[].maxlst": [
+                    "string"
+                ],
+                "$.acct[].maxparked": [
+                    "numeric-string"
+                ],
+                "$.acct[].maxpop": [
+                    "string"
+                ],
+                "$.acct[].maxsql": [
+                    "string"
+                ],
+                "$.acct[].maxsub": [
+                    "string"
+                ],
+                "$.acct[].min_defer_fail_to_trigger_protection": [
+                    "numeric-string"
+                ],
+                "$.acct[].outgoing_mail_hold": [
+                    "int"
+                ],
+                "$.acct[].outgoing_mail_suspended": [
+                    "int"
+                ],
+                "$.acct[].owner": [
+                    "string"
+                ],
+                "$.acct[].partition": [
+                    "string"
+                ],
+                "$.acct[].plan": [
+                    "string"
+                ],
+                "$.acct[].shell": [
+                    "string"
+                ],
+                "$.acct[].standalone_feature": [
+                    "empty-string"
+                ],
+                "$.acct[].standalone_feature_name": [
+                    "empty-string"
+                ],
+                "$.acct[].startdate": [
+                    "string"
+                ],
+                "$.acct[].suspended": [
+                    "int"
+                ],
+                "$.acct[].suspendreason": [
+                    "string"
+                ],
+                "$.acct[].suspendtime": [
+                    "int"
+                ],
+                "$.acct[].temporary": [
+                    "int"
+                ],
+                "$.acct[].theme": [
+                    "string"
+                ],
+                "$.acct[].uid": [
+                    "numeric-string"
+                ],
+                "$.acct[].unix_startdate": [
+                    "int"
+                ],
+                "$.acct[].user": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "whm1:get_domain_info",
+            "variant": "whm1:get_domain_info#GET",
+            "route": "whm",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:13Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "afb5f2ce21dcc3b6494239da1a64348ba7e110e877ba926de54791511cb0b9fe",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.domains": [
+                    "list"
+                ],
+                "$.data.domains[]": [
+                    "object"
+                ],
+                "$.data.domains[].docroot": [
+                    "string"
+                ],
+                "$.data.domains[].domain": [
+                    "string"
+                ],
+                "$.data.domains[].domain_type": [
+                    "string"
+                ],
+                "$.data.domains[].ipv4": [
+                    "string"
+                ],
+                "$.data.domains[].ipv4_ssl": [
+                    "string"
+                ],
+                "$.data.domains[].ipv6": [
+                    "null"
+                ],
+                "$.data.domains[].ipv6_is_dedicated": [
+                    "int"
+                ],
+                "$.data.domains[].modsecurity_enabled": [
+                    "int"
+                ],
+                "$.data.domains[].parent_domain": [
+                    "string"
+                ],
+                "$.data.domains[].php_version": [
+                    "string"
+                ],
+                "$.data.domains[].port": [
+                    "numeric-string"
+                ],
+                "$.data.domains[].port_ssl": [
+                    "numeric-string"
+                ],
+                "$.data.domains[].user": [
+                    "string"
+                ],
+                "$.data.domains[].user_owner": [
+                    "string"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.domains": [
+                    "list"
+                ],
+                "$.domains[]": [
+                    "object"
+                ],
+                "$.domains[].docroot": [
+                    "string"
+                ],
+                "$.domains[].domain": [
+                    "string"
+                ],
+                "$.domains[].domain_type": [
+                    "string"
+                ],
+                "$.domains[].ipv4": [
+                    "string"
+                ],
+                "$.domains[].ipv4_ssl": [
+                    "string"
+                ],
+                "$.domains[].ipv6": [
+                    "null"
+                ],
+                "$.domains[].ipv6_is_dedicated": [
+                    "int"
+                ],
+                "$.domains[].modsecurity_enabled": [
+                    "int"
+                ],
+                "$.domains[].parent_domain": [
+                    "string"
+                ],
+                "$.domains[].php_version": [
+                    "string"
+                ],
+                "$.domains[].port": [
+                    "numeric-string"
+                ],
+                "$.domains[].port_ssl": [
+                    "numeric-string"
+                ],
+                "$.domains[].user": [
+                    "string"
+                ],
+                "$.domains[].user_owner": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "whm1:php_get_installed_versions",
+            "variant": "whm1:php_get_installed_versions#GET",
+            "route": "whm",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:13Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "45eb52effdfa65f7cecf7e2bb7298a259f970b779db351570cdea5ed990da4ae",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.versions": [
+                    "list"
+                ],
+                "$.data.versions[]": [
+                    "string"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.versions": [
+                    "list"
+                ],
+                "$.versions[]": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "whm1:php_get_system_default_version",
+            "variant": "whm1:php_get_system_default_version#GET",
+            "route": "whm",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:14Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "9a7ed4147fc66cac251a3b74280278145aaee03d02c7a10e3cb4a28a1b3f105d",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.version": [
+                    "string"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.version": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:DomainInfo/primary_domain",
+            "variant": "uapi:DomainInfo/primary_domain#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:14Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "6c076c459fdad115d8477ab1dec66a5e449ff0933c2bdaf23ff8ee4494645f94",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.primary_domain": [
+                    "string"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "empty-object"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.primary_domain": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:DomainInfo/primary_domain",
+            "variant": "uapi:DomainInfo/primary_domain#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:14Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "6c076c459fdad115d8477ab1dec66a5e449ff0933c2bdaf23ff8ee4494645f94",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "object"
+                ],
+                "$.data.uapi.data.primary_domain": [
+                    "string"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "empty-object"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.primary_domain": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:LangPHP/php_get_installed_versions",
+            "variant": "uapi:LangPHP/php_get_installed_versions#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:14Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "70a7163caadfb2f0c8d040d25e039959d30227f2e72dc67a76d053d64c4190b4",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.versions": [
+                    "list"
+                ],
+                "$.data.versions[]": [
+                    "string"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "empty-object"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.versions": [
+                    "list"
+                ],
+                "$.versions[]": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:LangPHP/php_get_installed_versions",
+            "variant": "uapi:LangPHP/php_get_installed_versions#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:15Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "70a7163caadfb2f0c8d040d25e039959d30227f2e72dc67a76d053d64c4190b4",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "object"
+                ],
+                "$.data.uapi.data.versions": [
+                    "list"
+                ],
+                "$.data.uapi.data.versions[]": [
+                    "string"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "empty-object"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.versions": [
+                    "list"
+                ],
+                "$.versions[]": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:LangPHP/php_get_domain_handler",
+            "variant": "uapi:LangPHP/php_get_domain_handler#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:15Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "7ea3654243e46f7c90569c98fab109eb9ff86f121102aedb67348b86fbdc0cbf",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.php_handler": [
+                    "string"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "empty-object"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.php_handler": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:LangPHP/php_get_domain_handler",
+            "variant": "uapi:LangPHP/php_get_domain_handler#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:15Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "7ea3654243e46f7c90569c98fab109eb9ff86f121102aedb67348b86fbdc0cbf",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "object"
+                ],
+                "$.data.uapi.data.php_handler": [
+                    "string"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "empty-object"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.php_handler": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:Email/list_mail_domains",
+            "variant": "uapi:Email/list_mail_domains#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:15Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "03da5ec7fa8c5849ca12676f940da12a7898a18338fc7345450f231474580737",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "list"
+                ],
+                "$.data[]": [
+                    "object"
+                ],
+                "$.data[].domain": [
+                    "string"
+                ],
+                "$.data[].select": [
+                    "missing"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.*": [
+                    "int"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "list"
+                ],
+                "$[]": [
+                    "object"
+                ],
+                "$[].domain": [
+                    "string"
+                ],
+                "$[].select": [
+                    "missing"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:Email/list_mail_domains",
+            "variant": "uapi:Email/list_mail_domains#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:16Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "03da5ec7fa8c5849ca12676f940da12a7898a18338fc7345450f231474580737",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "list"
+                ],
+                "$.data.uapi.data[]": [
+                    "object"
+                ],
+                "$.data.uapi.data[].domain": [
+                    "string"
+                ],
+                "$.data.uapi.data[].select": [
+                    "missing"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "object"
+                ],
+                "$.data.uapi.metadata.*": [
+                    "int"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "list"
+                ],
+                "$[]": [
+                    "object"
+                ],
+                "$[].domain": [
+                    "string"
+                ],
+                "$[].select": [
+                    "missing"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:Email/list_domain_forwarders",
+            "variant": "uapi:Email/list_domain_forwarders#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:16Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "02d53ba802a3a9a7d4343df5e73d9fbb68d01483fa1e576879b000f70fd48c0a",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "empty-list"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.*": [
+                    "int"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "empty-list"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:Email/list_domain_forwarders",
+            "variant": "uapi:Email/list_domain_forwarders#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:16Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "02d53ba802a3a9a7d4343df5e73d9fbb68d01483fa1e576879b000f70fd48c0a",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "empty-list"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "object"
+                ],
+                "$.data.uapi.metadata.*": [
+                    "int"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "empty-list"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:Email/count_pops",
+            "variant": "uapi:Email/count_pops#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:17Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "ceb3d1bc6a102819900dfaae1fed51490eded9af6aa6e8b56b23f0bf37c0f219",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "int"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "empty-object"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "int"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:Email/count_pops",
+            "variant": "uapi:Email/count_pops#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:17Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "ceb3d1bc6a102819900dfaae1fed51490eded9af6aa6e8b56b23f0bf37c0f219",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "int"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "empty-object"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "int"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:SSL/installed_hosts",
+            "variant": "uapi:SSL/installed_hosts#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:17Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "af4897020a85d48afbdb6f8a211dc541e68ac462cfa59aa270c92f3c5f847b57",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "list"
+                ],
+                "$.data[]": [
+                    "object"
+                ],
+                "$.data[].certificate": [
+                    "object"
+                ],
+                "$.data[].certificate.auto_ssl_provider": [
+                    "string"
+                ],
+                "$.data[].certificate.auto_ssl_provider_display_name": [
+                    "string"
+                ],
+                "$.data[].certificate.domains": [
+                    "list"
+                ],
+                "$.data[].certificate.domains[]": [
+                    "string"
+                ],
+                "$.data[].certificate.ecdsa_curve_name": [
+                    "missing"
+                ],
+                "$.data[].certificate.ecdsa_public": [
+                    "missing"
+                ],
+                "$.data[].certificate.id": [
+                    "string"
+                ],
+                "$.data[].certificate.is_autossl": [
+                    "int"
+                ],
+                "$.data[].certificate.is_self_signed": [
+                    "int"
+                ],
+                "$.data[].certificate.issuer.commonName": [
+                    "string"
+                ],
+                "$.data[].certificate.issuer.organizationName": [
+                    "string"
+                ],
+                "$.data[].certificate.issuer_text": [
+                    "string"
+                ],
+                "$.data[].certificate.key_algorithm": [
+                    "missing"
+                ],
+                "$.data[].certificate.modulus": [
+                    "null"
+                ],
+                "$.data[].certificate.modulus_length": [
+                    "null"
+                ],
+                "$.data[].certificate.not_after": [
+                    "int"
+                ],
+                "$.data[].certificate.not_before": [
+                    "int"
+                ],
+                "$.data[].certificate.signature_algorithm": [
+                    "string"
+                ],
+                "$.data[].certificate.subject.commonName": [
+                    "string"
+                ],
+                "$.data[].certificate.subject_text": [
+                    "string"
+                ],
+                "$.data[].certificate.validation_type": [
+                    "string"
+                ],
+                "$.data[].certificate_text": [
+                    "string"
+                ],
+                "$.data[].docroot": [
+                    "string"
+                ],
+                "$.data[].domains": [
+                    "list"
+                ],
+                "$.data[].domains[]": [
+                    "string"
+                ],
+                "$.data[].fqdns": [
+                    "list"
+                ],
+                "$.data[].fqdns[]": [
+                    "string"
+                ],
+                "$.data[].ip": [
+                    "string"
+                ],
+                "$.data[].is_primary_on_ip": [
+                    "int"
+                ],
+                "$.data[].mail_sni_status": [
+                    "int"
+                ],
+                "$.data[].needs_sni": [
+                    "int"
+                ],
+                "$.data[].servername": [
+                    "string"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.*": [
+                    "int"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "list"
+                ],
+                "$[]": [
+                    "object"
+                ],
+                "$[].certificate": [
+                    "object"
+                ],
+                "$[].certificate.auto_ssl_provider": [
+                    "string"
+                ],
+                "$[].certificate.auto_ssl_provider_display_name": [
+                    "string"
+                ],
+                "$[].certificate.domains": [
+                    "list"
+                ],
+                "$[].certificate.domains[]": [
+                    "string"
+                ],
+                "$[].certificate.ecdsa_curve_name": [
+                    "missing"
+                ],
+                "$[].certificate.ecdsa_public": [
+                    "missing"
+                ],
+                "$[].certificate.id": [
+                    "string"
+                ],
+                "$[].certificate.is_autossl": [
+                    "int"
+                ],
+                "$[].certificate.is_self_signed": [
+                    "int"
+                ],
+                "$[].certificate.issuer.commonName": [
+                    "string"
+                ],
+                "$[].certificate.issuer.organizationName": [
+                    "string"
+                ],
+                "$[].certificate.issuer_text": [
+                    "string"
+                ],
+                "$[].certificate.key_algorithm": [
+                    "missing"
+                ],
+                "$[].certificate.modulus": [
+                    "null"
+                ],
+                "$[].certificate.modulus_length": [
+                    "null"
+                ],
+                "$[].certificate.not_after": [
+                    "int"
+                ],
+                "$[].certificate.not_before": [
+                    "int"
+                ],
+                "$[].certificate.signature_algorithm": [
+                    "string"
+                ],
+                "$[].certificate.subject.commonName": [
+                    "string"
+                ],
+                "$[].certificate.subject_text": [
+                    "string"
+                ],
+                "$[].certificate.validation_type": [
+                    "string"
+                ],
+                "$[].certificate_text": [
+                    "string"
+                ],
+                "$[].docroot": [
+                    "string"
+                ],
+                "$[].domains": [
+                    "list"
+                ],
+                "$[].domains[]": [
+                    "string"
+                ],
+                "$[].fqdns": [
+                    "list"
+                ],
+                "$[].fqdns[]": [
+                    "string"
+                ],
+                "$[].ip": [
+                    "string"
+                ],
+                "$[].is_primary_on_ip": [
+                    "int"
+                ],
+                "$[].mail_sni_status": [
+                    "int"
+                ],
+                "$[].needs_sni": [
+                    "int"
+                ],
+                "$[].servername": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:SSL/installed_hosts",
+            "variant": "uapi:SSL/installed_hosts#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:18Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "af4897020a85d48afbdb6f8a211dc541e68ac462cfa59aa270c92f3c5f847b57",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "list"
+                ],
+                "$.data.uapi.data[]": [
+                    "object"
+                ],
+                "$.data.uapi.data[].certificate": [
+                    "object"
+                ],
+                "$.data.uapi.data[].certificate.auto_ssl_provider": [
+                    "string"
+                ],
+                "$.data.uapi.data[].certificate.auto_ssl_provider_display_name": [
+                    "string"
+                ],
+                "$.data.uapi.data[].certificate.domains": [
+                    "list"
+                ],
+                "$.data.uapi.data[].certificate.domains[]": [
+                    "string"
+                ],
+                "$.data.uapi.data[].certificate.ecdsa_curve_name": [
+                    "missing"
+                ],
+                "$.data.uapi.data[].certificate.ecdsa_public": [
+                    "missing"
+                ],
+                "$.data.uapi.data[].certificate.id": [
+                    "string"
+                ],
+                "$.data.uapi.data[].certificate.is_autossl": [
+                    "int"
+                ],
+                "$.data.uapi.data[].certificate.is_self_signed": [
+                    "int"
+                ],
+                "$.data.uapi.data[].certificate.issuer.commonName": [
+                    "string"
+                ],
+                "$.data.uapi.data[].certificate.issuer.organizationName": [
+                    "string"
+                ],
+                "$.data.uapi.data[].certificate.issuer_text": [
+                    "string"
+                ],
+                "$.data.uapi.data[].certificate.key_algorithm": [
+                    "missing"
+                ],
+                "$.data.uapi.data[].certificate.modulus": [
+                    "null"
+                ],
+                "$.data.uapi.data[].certificate.modulus_length": [
+                    "null"
+                ],
+                "$.data.uapi.data[].certificate.not_after": [
+                    "int"
+                ],
+                "$.data.uapi.data[].certificate.not_before": [
+                    "int"
+                ],
+                "$.data.uapi.data[].certificate.signature_algorithm": [
+                    "string"
+                ],
+                "$.data.uapi.data[].certificate.subject.commonName": [
+                    "string"
+                ],
+                "$.data.uapi.data[].certificate.subject_text": [
+                    "string"
+                ],
+                "$.data.uapi.data[].certificate.validation_type": [
+                    "string"
+                ],
+                "$.data.uapi.data[].certificate_text": [
+                    "string"
+                ],
+                "$.data.uapi.data[].docroot": [
+                    "string"
+                ],
+                "$.data.uapi.data[].domains": [
+                    "list"
+                ],
+                "$.data.uapi.data[].domains[]": [
+                    "string"
+                ],
+                "$.data.uapi.data[].fqdns": [
+                    "list"
+                ],
+                "$.data.uapi.data[].fqdns[]": [
+                    "string"
+                ],
+                "$.data.uapi.data[].ip": [
+                    "string"
+                ],
+                "$.data.uapi.data[].is_primary_on_ip": [
+                    "int"
+                ],
+                "$.data.uapi.data[].mail_sni_status": [
+                    "int"
+                ],
+                "$.data.uapi.data[].needs_sni": [
+                    "int"
+                ],
+                "$.data.uapi.data[].servername": [
+                    "string"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "object"
+                ],
+                "$.data.uapi.metadata.*": [
+                    "int"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "list"
+                ],
+                "$[]": [
+                    "object"
+                ],
+                "$[].certificate": [
+                    "object"
+                ],
+                "$[].certificate.auto_ssl_provider": [
+                    "string"
+                ],
+                "$[].certificate.auto_ssl_provider_display_name": [
+                    "string"
+                ],
+                "$[].certificate.domains": [
+                    "list"
+                ],
+                "$[].certificate.domains[]": [
+                    "string"
+                ],
+                "$[].certificate.ecdsa_curve_name": [
+                    "missing"
+                ],
+                "$[].certificate.ecdsa_public": [
+                    "missing"
+                ],
+                "$[].certificate.id": [
+                    "string"
+                ],
+                "$[].certificate.is_autossl": [
+                    "int"
+                ],
+                "$[].certificate.is_self_signed": [
+                    "int"
+                ],
+                "$[].certificate.issuer.commonName": [
+                    "string"
+                ],
+                "$[].certificate.issuer.organizationName": [
+                    "string"
+                ],
+                "$[].certificate.issuer_text": [
+                    "string"
+                ],
+                "$[].certificate.key_algorithm": [
+                    "missing"
+                ],
+                "$[].certificate.modulus": [
+                    "null"
+                ],
+                "$[].certificate.modulus_length": [
+                    "null"
+                ],
+                "$[].certificate.not_after": [
+                    "int"
+                ],
+                "$[].certificate.not_before": [
+                    "int"
+                ],
+                "$[].certificate.signature_algorithm": [
+                    "string"
+                ],
+                "$[].certificate.subject.commonName": [
+                    "string"
+                ],
+                "$[].certificate.subject_text": [
+                    "string"
+                ],
+                "$[].certificate.validation_type": [
+                    "string"
+                ],
+                "$[].certificate_text": [
+                    "string"
+                ],
+                "$[].docroot": [
+                    "string"
+                ],
+                "$[].domains": [
+                    "list"
+                ],
+                "$[].domains[]": [
+                    "string"
+                ],
+                "$[].fqdns": [
+                    "list"
+                ],
+                "$[].fqdns[]": [
+                    "string"
+                ],
+                "$[].ip": [
+                    "string"
+                ],
+                "$[].is_primary_on_ip": [
+                    "int"
+                ],
+                "$[].mail_sni_status": [
+                    "int"
+                ],
+                "$[].needs_sni": [
+                    "int"
+                ],
+                "$[].servername": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:SSL/get_autossl_excluded_domains",
+            "variant": "uapi:SSL/get_autossl_excluded_domains#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:18Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "b147d057e11d6521c5c875587d67498861519a76419b396a4a632205bdc600c2",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "empty-list"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.*": [
+                    "int"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "empty-list"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:SSL/get_autossl_excluded_domains",
+            "variant": "uapi:SSL/get_autossl_excluded_domains#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:18Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "b147d057e11d6521c5c875587d67498861519a76419b396a4a632205bdc600c2",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "empty-list"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "object"
+                ],
+                "$.data.uapi.metadata.*": [
+                    "int"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "empty-list"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:SSL/get_autossl_problems",
+            "variant": "uapi:SSL/get_autossl_problems#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:18Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "d54470d40e15524f51fc0d638f51f459f6b04f8739c35f41f0106579b397647b",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "empty-list"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.*": [
+                    "int"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "empty-list"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:SSL/get_autossl_problems",
+            "variant": "uapi:SSL/get_autossl_problems#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:19Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "d54470d40e15524f51fc0d638f51f459f6b04f8739c35f41f0106579b397647b",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "empty-list"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "object"
+                ],
+                "$.data.uapi.metadata.*": [
+                    "int"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "empty-list"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:SSL/get_autossl_renewal_status",
+            "variant": "uapi:SSL/get_autossl_renewal_status#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:19Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "46d5e87fea45ef5c7c0235489d67a7cc38c0f3dca3b182ca685bfef2dc9c00f8",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.has_problems": [
+                    "int"
+                ],
+                "$.data.is_active": [
+                    "int"
+                ],
+                "$.data.is_excluded": [
+                    "int"
+                ],
+                "$.data.will_renew": [
+                    "int"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "empty-object"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.has_problems": [
+                    "int"
+                ],
+                "$.is_active": [
+                    "int"
+                ],
+                "$.is_excluded": [
+                    "int"
+                ],
+                "$.will_renew": [
+                    "int"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:SSL/get_autossl_renewal_status",
+            "variant": "uapi:SSL/get_autossl_renewal_status#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:20Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "46d5e87fea45ef5c7c0235489d67a7cc38c0f3dca3b182ca685bfef2dc9c00f8",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "object"
+                ],
+                "$.data.uapi.data.has_problems": [
+                    "int"
+                ],
+                "$.data.uapi.data.is_active": [
+                    "int"
+                ],
+                "$.data.uapi.data.is_excluded": [
+                    "int"
+                ],
+                "$.data.uapi.data.will_renew": [
+                    "int"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "empty-object"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.has_problems": [
+                    "int"
+                ],
+                "$.is_active": [
+                    "int"
+                ],
+                "$.is_excluded": [
+                    "int"
+                ],
+                "$.will_renew": [
+                    "int"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:SSL/is_autossl_check_in_progress",
+            "variant": "uapi:SSL/is_autossl_check_in_progress#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:20Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "50ce83f90dce390531efe6ec52fa257b3669f927a6c0d0e8913b25ad8837d8b6",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "int"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "empty-object"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "int"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:SSL/is_autossl_check_in_progress",
+            "variant": "uapi:SSL/is_autossl_check_in_progress#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:20Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "50ce83f90dce390531efe6ec52fa257b3669f927a6c0d0e8913b25ad8837d8b6",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "int"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "empty-object"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "int"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:SSL/can_ssl_redirect",
+            "variant": "uapi:SSL/can_ssl_redirect#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:21Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "e19ed95f1fa220d474535d621fc786d3503dec7108085da58a9dbd40178249a0",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "int"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "list"
+                ],
+                "$.messages[]": [
+                    "string"
+                ],
+                "$.metadata": [
+                    "empty-object"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "int"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:SSL/can_ssl_redirect",
+            "variant": "uapi:SSL/can_ssl_redirect#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:21Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "e19ed95f1fa220d474535d621fc786d3503dec7108085da58a9dbd40178249a0",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "int"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "list"
+                ],
+                "$.data.uapi.messages[]": [
+                    "string"
+                ],
+                "$.data.uapi.metadata": [
+                    "empty-object"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "int"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:Quota/get_quota_info",
+            "variant": "uapi:Quota/get_quota_info#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:21Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "ea69d2fea2af74321ae26f81f23feeaf85b75ec54f35543d24ac8dc2df12758a",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.*": [
+                    "int"
+                ],
+                "$.data.inode_limit": [
+                    "numeric-string"
+                ],
+                "$.data.inodes_remain": [
+                    "numeric-string"
+                ],
+                "$.data.inodes_used": [
+                    "int"
+                ],
+                "$.data.megabyte_limit": [
+                    "numeric-string"
+                ],
+                "$.data.megabytes_remain": [
+                    "numeric-string"
+                ],
+                "$.data.megabytes_used": [
+                    "float"
+                ],
+                "$.data.under_inode_limit": [
+                    "numeric-string"
+                ],
+                "$.data.under_megabyte_limit": [
+                    "numeric-string"
+                ],
+                "$.data.under_quota_overall": [
+                    "numeric-string"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "empty-object"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.*": [
+                    "int"
+                ],
+                "$.inode_limit": [
+                    "numeric-string"
+                ],
+                "$.inodes_remain": [
+                    "numeric-string"
+                ],
+                "$.inodes_used": [
+                    "int"
+                ],
+                "$.megabyte_limit": [
+                    "numeric-string"
+                ],
+                "$.megabytes_remain": [
+                    "numeric-string"
+                ],
+                "$.megabytes_used": [
+                    "float"
+                ],
+                "$.under_inode_limit": [
+                    "numeric-string"
+                ],
+                "$.under_megabyte_limit": [
+                    "numeric-string"
+                ],
+                "$.under_quota_overall": [
+                    "numeric-string"
+                ]
+            },
+            "discrepancies": [
+                {
+                    "path": "$.*",
+                    "kind": "unknown_field"
+                }
+            ]
+        },
+        {
+            "operation": "uapi:Quota/get_quota_info",
+            "variant": "uapi:Quota/get_quota_info#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:22Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "ea69d2fea2af74321ae26f81f23feeaf85b75ec54f35543d24ac8dc2df12758a",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "object"
+                ],
+                "$.data.uapi.data.*": [
+                    "int"
+                ],
+                "$.data.uapi.data.inode_limit": [
+                    "numeric-string"
+                ],
+                "$.data.uapi.data.inodes_remain": [
+                    "numeric-string"
+                ],
+                "$.data.uapi.data.inodes_used": [
+                    "int"
+                ],
+                "$.data.uapi.data.megabyte_limit": [
+                    "numeric-string"
+                ],
+                "$.data.uapi.data.megabytes_remain": [
+                    "numeric-string"
+                ],
+                "$.data.uapi.data.megabytes_used": [
+                    "float"
+                ],
+                "$.data.uapi.data.under_inode_limit": [
+                    "numeric-string"
+                ],
+                "$.data.uapi.data.under_megabyte_limit": [
+                    "numeric-string"
+                ],
+                "$.data.uapi.data.under_quota_overall": [
+                    "numeric-string"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "empty-object"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.*": [
+                    "int"
+                ],
+                "$.inode_limit": [
+                    "numeric-string"
+                ],
+                "$.inodes_remain": [
+                    "numeric-string"
+                ],
+                "$.inodes_used": [
+                    "int"
+                ],
+                "$.megabyte_limit": [
+                    "numeric-string"
+                ],
+                "$.megabytes_remain": [
+                    "numeric-string"
+                ],
+                "$.megabytes_used": [
+                    "float"
+                ],
+                "$.under_inode_limit": [
+                    "numeric-string"
+                ],
+                "$.under_megabyte_limit": [
+                    "numeric-string"
+                ],
+                "$.under_quota_overall": [
+                    "numeric-string"
+                ]
+            },
+            "discrepancies": [
+                {
+                    "path": "$.*",
+                    "kind": "unknown_field"
+                }
+            ]
+        },
+        {
+            "operation": "uapi:Quota/get_local_quota_info",
+            "variant": "uapi:Quota/get_local_quota_info#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:22Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "574316d21bab2b8be6ecfd703449e3769f1d5e3dee75baf71e99b3484ed91b2f",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.byte_limit": [
+                    "null"
+                ],
+                "$.data.bytes_used": [
+                    "numeric-string"
+                ],
+                "$.data.inode_limit": [
+                    "null"
+                ],
+                "$.data.inodes_used": [
+                    "int"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "empty-object"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.byte_limit": [
+                    "null"
+                ],
+                "$.bytes_used": [
+                    "numeric-string"
+                ],
+                "$.inode_limit": [
+                    "null"
+                ],
+                "$.inodes_used": [
+                    "int"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:Quota/get_local_quota_info",
+            "variant": "uapi:Quota/get_local_quota_info#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:22Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "574316d21bab2b8be6ecfd703449e3769f1d5e3dee75baf71e99b3484ed91b2f",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "object"
+                ],
+                "$.data.uapi.data.byte_limit": [
+                    "null"
+                ],
+                "$.data.uapi.data.bytes_used": [
+                    "int"
+                ],
+                "$.data.uapi.data.inode_limit": [
+                    "null"
+                ],
+                "$.data.uapi.data.inodes_used": [
+                    "int"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "empty-object"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.byte_limit": [
+                    "null"
+                ],
+                "$.bytes_used": [
+                    "int"
+                ],
+                "$.inode_limit": [
+                    "null"
+                ],
+                "$.inodes_used": [
+                    "int"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:Mysql/list_databases",
+            "variant": "uapi:Mysql/list_databases#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:22Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "8a84ac55ab562bb3f4da4f53773b5336c9cb727ff9a00ccfa847fd78644e17fb",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "list"
+                ],
+                "$.data[]": [
+                    "object"
+                ],
+                "$.data[].database": [
+                    "string"
+                ],
+                "$.data[].disk_usage": [
+                    "int"
+                ],
+                "$.data[].users": [
+                    "empty-list",
+                    "list"
+                ],
+                "$.data[].users[]": [
+                    "string"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.*": [
+                    "int"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "list"
+                ],
+                "$[]": [
+                    "object"
+                ],
+                "$[].database": [
+                    "string"
+                ],
+                "$[].disk_usage": [
+                    "int"
+                ],
+                "$[].users": [
+                    "empty-list",
+                    "list"
+                ],
+                "$[].users[]": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:Mysql/list_databases",
+            "variant": "uapi:Mysql/list_databases#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:23Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "8a84ac55ab562bb3f4da4f53773b5336c9cb727ff9a00ccfa847fd78644e17fb",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "list"
+                ],
+                "$.data.uapi.data[]": [
+                    "object"
+                ],
+                "$.data.uapi.data[].database": [
+                    "string"
+                ],
+                "$.data.uapi.data[].disk_usage": [
+                    "int"
+                ],
+                "$.data.uapi.data[].users": [
+                    "empty-list",
+                    "list"
+                ],
+                "$.data.uapi.data[].users[]": [
+                    "string"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "object"
+                ],
+                "$.data.uapi.metadata.*": [
+                    "int"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "list"
+                ],
+                "$[]": [
+                    "object"
+                ],
+                "$[].database": [
+                    "string"
+                ],
+                "$[].disk_usage": [
+                    "int"
+                ],
+                "$[].users": [
+                    "empty-list",
+                    "list"
+                ],
+                "$[].users[]": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:Mysql/list_users",
+            "variant": "uapi:Mysql/list_users#GET",
+            "route": "direct-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:23Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "796b56b1b6479728031532c7f34e880c1404f14cc071909f60d5c468bc248d5f",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "list"
+                ],
+                "$.data[]": [
+                    "object"
+                ],
+                "$.data[].databases": [
+                    "empty-list",
+                    "list"
+                ],
+                "$.data[].databases[]": [
+                    "string"
+                ],
+                "$.data[].shortuser": [
+                    "string"
+                ],
+                "$.data[].user": [
+                    "string"
+                ],
+                "$.errors": [
+                    "null"
+                ],
+                "$.messages": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.*": [
+                    "int"
+                ],
+                "$.result": [
+                    "missing"
+                ],
+                "$.status": [
+                    "int"
+                ],
+                "$.warnings": [
+                    "null"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "list"
+                ],
+                "$[]": [
+                    "object"
+                ],
+                "$[].databases": [
+                    "empty-list",
+                    "list"
+                ],
+                "$[].databases[]": [
+                    "string"
+                ],
+                "$[].shortuser": [
+                    "string"
+                ],
+                "$[].user": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        },
+        {
+            "operation": "uapi:Mysql/list_users",
+            "variant": "uapi:Mysql/list_users#GET",
+            "route": "bridged-uapi",
+            "method": "GET",
+            "server_version": "11.138.0.15",
+            "observed_at": "2026-10-17T06:55:23Z",
+            "revision": "294c59ca710bd9beee0b2ddfe900b85613120112",
+            "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+            "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+            "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+            "overlay_sha256": "f5af95df614fe3f0d8a71e30c675b18e490ccc9ddd028c1aaeedf2b6e7251796",
+            "effective_contract_sha256": "796b56b1b6479728031532c7f34e880c1404f14cc071909f60d5c468bc248d5f",
+            "http_status": 200,
+            "api_outcome": "success",
+            "payload_validation": "passed",
+            "probe_outcome": "passed",
+            "failure_kind": null,
+            "response_paths": {
+                "$": [
+                    "object"
+                ],
+                "$.data": [
+                    "object"
+                ],
+                "$.data.uapi": [
+                    "object"
+                ],
+                "$.data.uapi.data": [
+                    "list"
+                ],
+                "$.data.uapi.data[]": [
+                    "object"
+                ],
+                "$.data.uapi.data[].databases": [
+                    "empty-list",
+                    "list"
+                ],
+                "$.data.uapi.data[].databases[]": [
+                    "string"
+                ],
+                "$.data.uapi.data[].shortuser": [
+                    "string"
+                ],
+                "$.data.uapi.data[].user": [
+                    "string"
+                ],
+                "$.data.uapi.errors": [
+                    "null"
+                ],
+                "$.data.uapi.messages": [
+                    "null"
+                ],
+                "$.data.uapi.metadata": [
+                    "object"
+                ],
+                "$.data.uapi.metadata.*": [
+                    "int"
+                ],
+                "$.data.uapi.status": [
+                    "int"
+                ],
+                "$.data.uapi.warnings": [
+                    "null"
+                ],
+                "$.metadata": [
+                    "object"
+                ],
+                "$.metadata.command": [
+                    "string"
+                ],
+                "$.metadata.reason": [
+                    "string"
+                ],
+                "$.metadata.result": [
+                    "int"
+                ],
+                "$.metadata.version": [
+                    "int"
+                ]
+            },
+            "payload_paths": {
+                "$": [
+                    "list"
+                ],
+                "$[]": [
+                    "object"
+                ],
+                "$[].databases": [
+                    "empty-list",
+                    "list"
+                ],
+                "$[].databases[]": [
+                    "string"
+                ],
+                "$[].shortuser": [
+                    "string"
+                ],
+                "$[].user": [
+                    "string"
+                ]
+            },
+            "discrepancies": []
+        }
+    ],
+    "discrepancy_review": {
+        "policy": "quota-structural-observations-v1",
+        "tracking": "whm-api-client-8x0.4.3.1",
+        "evidence": "docs/api/evidence/2026-10-16-quota-inventory.json",
+        "evidence_sha256": "5f65d66acc36673ee37be1b4e024dad3ac725e5313d45c208abb489d5c9f6811",
+        "status": "passed",
+        "acknowledged": [
+            "quota-total-direct-11.138.0.15",
+            "quota-total-bridge-11.138.0.15"
+        ],
+        "unexpected": [],
+        "stale": []
+    },
+    "mysql_fixture": {
+        "recipe": "mysql-npr-linked-unlinked-v1",
+        "status": "passed",
+        "setup": "passed",
+        "capture": "passed",
+        "expectations": "passed",
+        "cleanup": "passed",
+        "failures": [],
+        "resources": {
+            "linked_database": {
+                "creation": "confirmed",
+                "cleanup": "confirmed_absent"
+            },
+            "unlinked_database": {
+                "creation": "confirmed",
+                "cleanup": "confirmed_absent"
+            },
+            "linked_user": {
+                "creation": "confirmed",
+                "cleanup": "confirmed_absent"
+            },
+            "unlinked_user": {
+                "creation": "confirmed",
+                "cleanup": "confirmed_absent"
+            }
+        }
+    }
+}

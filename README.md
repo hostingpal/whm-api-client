@@ -554,11 +554,14 @@ offline suite. It covers WHM version/load and account/domain/PHP inventory, plus
 UAPI domain/PHP/Email/SSL/MySQL inventory and quotas through both UAPI routes.
 Account-list and summary probes target `npr` explicitly;
 the PHP handler probe uses the reviewed `type: 'home'` argument, and AutoSSL renewal
-status targets `npr.rs`. The [saved PR20 evidence](docs/api/evidence/2026-10-16-discrepancy-policy.json)
+status targets `npr.rs`. The [saved populated MySQL run](docs/api/evidence/2026-10-17-mysql-populated.json)
 passes with **2 acknowledged, 0 unexpected and 0 stale discrepancies**; it is not
 discrepancy-free. Unknown Quota field contracts remain open under
-`whm-api-client-8x0.4.3.1`. MySQL lists were empty, so their row fields remain
-unobserved. See the
+`whm-api-client-8x0.4.3.1`. The opted-in MySQL fixture observes all documented
+database/user row fields, integer `disk_usage`, and populated and empty nested
+lists through both routes on cPanel `11.138.0.15`; cleanup confirmed all four
+temporary resources absent. Other versions and remote/disabled-role MySQL
+configurations remain unobserved. See the
 [delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
 Real HostingPal consumer feedback can proceed against the current client before
 full API coverage or a release. Any public prerelease is a separate decision with

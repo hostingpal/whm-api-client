@@ -11,8 +11,12 @@ contains 74 operations in 13 groups. The
 43 route-specific probes across 25 operations, including account/domain/PHP,
 Email, SSL/AutoSSL, Quota and MySQL inventory. Its discrepancy review passes with
 2 acknowledged Quota observations, 0 unexpected and 0 stale; their field contracts
-remain unresolved under `8x0.4.3.1`. Empty MySQL lists do not establish row-field
-evidence. The consumer exercise and further coverage remain unfinished. The
+remain unresolved under `8x0.4.3.1`. That checkpoint's empty MySQL lists did not
+establish row-field evidence. The subsequent
+[2026-10-17 fixture run](../../api/evidence/2026-10-17-mysql-populated.json)
+observes all documented MySQL row fields and populated/empty nested lists on both
+routes, with confirmed cleanup and no contract correction. The consumer exercise
+and further coverage remain unfinished. The
 approved correction cycle below gates the next expansion pilot.
 Decision record: `whm-api-client-8x0.10`. This design supersedes the
 "typed core plus generic calls / lean pattern" scaling decision
