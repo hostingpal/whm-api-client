@@ -130,7 +130,8 @@ quota behavior are outside this recipe.
 Each run binds account creation to a random contact-email marker held only in
 memory. Account reconciliation requires that marker before token work or account
 deletion, so a concurrent run cannot adopt another run's account. Preflight and
-cleanup check the exact account and primary-domain inventories, the manual-domain
+cleanup select exact account and primary-domain identities from the full account
+inventory, then check the manual-domain
 inventory, and DNS zones. The upstream manual-domain inventory excludes automatic
 service domains; these checks do not claim a complete service-domain inventory.
 

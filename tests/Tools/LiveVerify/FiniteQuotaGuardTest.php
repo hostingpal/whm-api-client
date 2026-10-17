@@ -58,11 +58,8 @@ final class FiniteQuotaGuardTest extends TestCase
     public static function approvedRequests(): iterable
     {
         yield 'version' => [self::request('GET', self::WHM . 'version?api.version=1')];
-        yield 'account identity' => [self::request('GET', self::WHM
-            . 'listaccts?api.version=1&search=wqfinite&searchtype=user&searchmethod=exact&want=user%2Cdomain%2Cemail')];
-        yield 'domain identity' => [self::request('GET', self::WHM
-            . 'listaccts?api.version=1&search=wqfinite.example.com'
-            . '&searchtype=domain&searchmethod=exact&want=user%2Cdomain%2Cemail')];
+        yield 'account inventory' => [self::request('GET', self::WHM
+            . 'listaccts?api.version=1&want=user%2Cdomain%2Cemail')];
         yield 'zones' => [self::request('GET', self::WHM . 'listzones?api.version=1')];
         yield 'manual domains' => [self::request('GET', self::WHM . 'get_domain_info?api.version=1')];
         yield 'create account' => [self::request(
@@ -140,6 +137,10 @@ final class FiniteQuotaGuardTest extends TestCase
             yield $case => [self::request('POST', self::WHM . 'createacct?api.version=1', $body)];
         }
         yield 'mutation GET' => [self::request('GET', self::WHM . 'removeacct?api.version=1&username=wqfinite')];
+        yield 'filtered account lookup' => [self::request('GET', self::WHM
+            . 'listaccts?api.version=1&search=wqfinite&searchtype=user&searchmethod=exact&want=user%2Cdomain%2Cemail')];
+        yield 'extra account columns' => [self::request('GET', self::WHM
+            . 'listaccts?api.version=1&want=user%2Cdomain%2Cemail%2Cowner')];
         yield 'read POST' => [self::request('POST', self::DIRECT . 'get_quota_info', '', true)];
         yield 'read body' => [self::request('GET', self::DIRECT . 'get_quota_info', 'user=other', true)];
         yield 'keep DNS' => [self::request(

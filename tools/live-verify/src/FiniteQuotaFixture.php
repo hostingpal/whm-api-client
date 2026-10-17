@@ -177,7 +177,8 @@ final class FiniteQuotaFixture
      */
     private function accountExists(): bool
     {
-        $rows = $this->accounts('user');
+        $rows = array_values(array_filter($this->accounts(), static fn (stdClass $row): bool =>
+            $row->user === FiniteQuotaGuard::ACCOUNT));
         if ($rows === []) {
             return false;
         }
@@ -198,30 +199,28 @@ final class FiniteQuotaFixture
      */
     private function domainExists(): bool
     {
-        $accounts = $this->accounts('domain');
+        $accounts = $this->accounts();
         $this->whm->call('get_domain_info', [], RequestMethod::Get);
         $payload = $this->rawPayload(false);
         $rows = self::identityRows($payload instanceof stdClass ? ($payload->domains ?? null) : null, 'domain', 'user');
 
-        return $accounts !== [] || in_array(FiniteQuotaGuard::DOMAIN, array_column($rows, 'domain'), true);
+        return in_array(FiniteQuotaGuard::DOMAIN, array_column($accounts, 'domain'), true)
+            || in_array(FiniteQuotaGuard::DOMAIN, array_column($rows, 'domain'), true);
     }
 
-    /** @return list<stdClass> */
-    private function accounts(string $searchType): array
+    /**
+     * Validate every row before exact local filtering; failed or null filtered lookups cannot prove absence.
+     *
+     * @return list<stdClass>
+     */
+    private function accounts(): array
     {
-        $search = $searchType === 'user' ? FiniteQuotaGuard::ACCOUNT : FiniteQuotaGuard::DOMAIN;
         $this->whm->call('listaccts', [
-            'search' => $search, 'searchtype' => $searchType, 'searchmethod' => 'exact', 'want' => 'user,domain,email',
+            'want' => 'user,domain,email',
         ], RequestMethod::Get);
         $payload = $this->rawPayload(false);
-        $rows = self::identityRows($payload instanceof stdClass ? ($payload->acct ?? null) : null, 'user', 'domain');
-        foreach ($rows as $row) {
-            if ($row->{$searchType} !== $search) {
-                throw new RuntimeException('Finite quota inventory did not respect the identity filter.');
-            }
-        }
 
-        return $rows;
+        return self::identityRows($payload instanceof stdClass ? ($payload->acct ?? null) : null, 'user', 'domain');
     }
 
     /** @phpstan-impure */

@@ -61,8 +61,6 @@ final class FiniteQuotaServer implements ClientInterface
                 throw new LogicException('Synthetic bridge request is malformed.');
             }
             $function = $query['cpanel_module'] . '/' . $query['cpanel_function'];
-        } elseif ($function === 'listaccts') {
-            $function .= '_' . ($query['searchtype'] === 'user' ? 'user' : 'domain');
         } elseif (str_contains($path, '/execute/Quota/')) {
             $function = 'direct:Quota/' . $function;
         }
@@ -124,8 +122,11 @@ final class FiniteQuotaServer implements ClientInterface
         }
         $data = match ($function) {
             'version' => ['version' => '11.138.0.15'],
-            'listaccts_user', 'listaccts_domain' => ['acct' => $this->account
-                ? [['user' => 'wqfinite', 'domain' => 'wqfinite.example.com', 'email' => $this->contactEmail]] : []],
+            'listaccts' => ['acct' => array_merge([
+                ['user' => 'existing', 'domain' => 'existing.example', 'email' => 'private-existing@example.com'],
+                ['user' => 'wqfiniteextra', 'domain' => 'wqfinite.example.com.other'],
+            ], $this->account
+                ? [['user' => 'wqfinite', 'domain' => 'wqfinite.example.com', 'email' => $this->contactEmail]] : [])],
             'listzones' => ['zone' => $this->zone
                 ? [['domain' => 'wqfinite.example.com', 'zonefile' => 'private.db']] : []],
             'get_domain_info' => ['domains' => $this->account

@@ -936,3 +936,25 @@ in the runner documentation. Positive `disk_usage` remains a separate nonblockin
 evidence follow-up under `whm-api-client-8x0.2.7`. The user also deferred the real
 HostingPal consumer exercise beyond this pilot; that decision adds no consumer
 evidence and preserves the remaining correction-cycle gates.
+
+### Runtime observations: 2026-10-17 finite-Quota preflight
+
+Tracking: `whm-api-client-8x0.3.1`. The
+[first finite-Quota attempt](evidence/2026-10-17-finite-quota-preflight.json)
+records revision `c81036e62aa89d3c1bc4b9bb79e145f609ef8e22` on cPanel
+`11.138.0.15`. All 43 baseline probes passed, with the unchanged assessment
+reporting **2 acknowledged, 0 unexpected, 0 stale**. The separate finite scenario
+stopped during preflight: neither account nor token creation was attempted,
+cleanup was not required, and no finite-Quota observations were made. The command
+exited **1**; this artifact is not finite-limit evidence.
+
+Five subsequent guarded read-only diagnostic requests identified the recipe
+problem without retaining identities, raw responses or upstream error messages.
+An absent exact-user `listaccts` search returned an API error; an absent
+exact-domain search succeeded with `data: null`. Full account inventory returned
+a usable record list, while manual-domain and DNS-zone inventories also returned
+usable lists with the designated target absent. The fixture therefore selects
+exact identities locally from the full account inventory. API errors, null
+payloads and malformed identity lists still fail closed. This changes only the
+development recipe; it does not widen a generated contract or add a compatibility
+correction. The original failed artifact remains unchanged.

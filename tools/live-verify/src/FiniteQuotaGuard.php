@@ -94,10 +94,7 @@ final class FiniteQuotaGuard implements ClientInterface
         $direct = str_starts_with($uri, self::DIRECT);
         $approved = $request->getMethod() === 'GET' && (string) $request->getBody() === '' && in_array($uri, [
             self::WHM . 'version?api.version=1',
-            self::WHM . 'listaccts?api.version=1&search=wqfinite&searchtype=user'
-                . '&searchmethod=exact&want=user%2Cdomain%2Cemail',
-            self::WHM . 'listaccts?api.version=1&search=wqfinite.example.com'
-                . '&searchtype=domain&searchmethod=exact&want=user%2Cdomain%2Cemail',
+            self::WHM . 'listaccts?api.version=1&want=user%2Cdomain%2Cemail',
             self::WHM . 'listzones?api.version=1',
             self::WHM . 'get_domain_info?api.version=1',
             self::BRIDGE . 'Tokens&cpanel.function=list',

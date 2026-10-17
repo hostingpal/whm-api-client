@@ -113,9 +113,9 @@ final class FiniteQuotaFixtureTest extends TestCase
     /** @return iterable<string, array{string, string}> */
     public static function preflightFailures(): iterable
     {
-        yield 'existing account' => ['listaccts_user:1',
+        yield 'existing account' => ['listaccts:1',
             '{"acct":[{"user":"wqfinite","domain":"wqfinite.example.com"}]}'];
-        yield 'domain owned elsewhere' => ['listaccts_domain:1',
+        yield 'domain owned elsewhere' => ['listaccts:2',
             '{"acct":[{"user":"other","domain":"wqfinite.example.com"}]}'];
         yield 'existing zone' => ['listzones:1', '{"zone":[{"domain":"wqfinite.example.com"}]}'];
         yield 'addon domain elsewhere' => ['get_domain_info:1',
@@ -124,13 +124,37 @@ final class FiniteQuotaFixtureTest extends TestCase
         yield 'manual domains missing owner' => ['get_domain_info:1', '{"domains":[{"domain":"other.test"}]}'];
         yield 'manual domains duplicate' => ['get_domain_info:1',
             '{"domains":[{"domain":"other.test","user":"other"},{"domain":"other.test","user":"other"}]}'];
-        yield 'object not account list' => ['listaccts_user:1', '{"acct":{}}'];
-        yield 'missing account domain' => ['listaccts_user:1', '{"acct":[{"user":"wqfinite"}]}'];
-        yield 'wrong search identity' => ['listaccts_user:1', '{"acct":[{"user":"other","domain":"other.test"}]}'];
+        yield 'object not account list' => ['listaccts:1', '{"acct":{}}'];
+        yield 'null account payload' => ['listaccts:1', 'null'];
+        yield 'null account list' => ['listaccts:1', '{"acct":null}'];
+        yield 'duplicate unrelated account' => ['listaccts:1',
+            '{"acct":[{"user":"other","domain":"other.test"},{"user":"other","domain":"also.test"}]}'];
+        yield 'missing account domain' => ['listaccts:1', '{"acct":[{"user":"wqfinite"}]}'];
+        yield 'unrelated missing domain' => ['listaccts:1', '{"acct":[{"user":"other"}]}'];
         yield 'object not zone list' => ['listzones:1', '{"zone":{}}'];
         yield 'missing zone identity' => ['listzones:1', '{"zone":[{}]}'];
         yield 'duplicate zone identity' => ['listzones:1',
             '{"zone":[{"domain":"other.test"},{"domain":"other.test"}]}'];
+    }
+
+    #[DataProvider('inventoryRequestFailures')]
+    public function testFailedFullAccountInventoryIsNeverTreatedAsAbsence(string $mode): void
+    {
+        $http = new FiniteQuotaServer();
+        $http->failures['listaccts:1'] = $mode;
+        $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(self::capture());
+        self::assertSame('failed', $report['fixture']['setup']);
+        self::assertSame('not_required', $report['fixture']['cleanup']);
+        self::assertSame([], $http->mutations);
+        self::assertCount(1, $http->requests);
+        self::assertPrivate($report);
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function inventoryRequestFailures(): iterable
+    {
+        yield 'API error' => ['api_before'];
+        yield 'transport failure' => ['throw_before'];
     }
 
     #[DataProvider('creationFailures')]
@@ -162,7 +186,7 @@ final class FiniteQuotaFixtureTest extends TestCase
     {
         $http = new FiniteQuotaServer();
         $http->failures['createacct:1'] = 'throw_after';
-        $http->overrides['listaccts_user:2'] = '{"acct":[{"user":"wqfinite","domain":"other.test"}]}';
+        $http->overrides['listaccts:3'] = '{"acct":[{"user":"wqfinite","domain":"other.test"}]}';
         $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(self::capture());
         self::assertTrue($http->account);
         self::assertArrayNotHasKey('removeacct', $http->counts);
@@ -229,7 +253,7 @@ final class FiniteQuotaFixtureTest extends TestCase
     public function testUnconfirmedAccountAtCleanupCannotReportTokenCleanupUnneeded(): void
     {
         $http = new FiniteQuotaServer();
-        $http->overrides['listaccts_user:3'] = '{"acct":[{}]}';
+        $http->overrides['listaccts:4'] = '{"acct":[{}]}';
         $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(self::capture());
         self::assertSame('unconfirmed', $report['fixture']['resources']['token']['cleanup']);
         self::assertSame('unconfirmed', $report['fixture']['resources']['account']['cleanup']);
@@ -257,7 +281,7 @@ final class FiniteQuotaFixtureTest extends TestCase
     public function testMissingMalformedOrForeignOwnershipMarkerRefusesAllCleanupMutations(string $fields): void
     {
         $http = new FiniteQuotaServer();
-        $http->overrides['listaccts_user:3'] = '{"acct":[{"user":"wqfinite",'
+        $http->overrides['listaccts:4'] = '{"acct":[{"user":"wqfinite",'
             . '"domain":"wqfinite.example.com"' . $fields . '}]}';
         $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(self::capture());
         self::assertTrue($http->account);
@@ -279,7 +303,7 @@ final class FiniteQuotaFixtureTest extends TestCase
     public function testOwnershipIsRecheckedBeforeRemovingTheAccountAfterTokenCleanup(): void
     {
         $http = new FiniteQuotaServer();
-        $http->overrides['listaccts_user:5'] = '{"acct":[{"user":"wqfinite",'
+        $http->overrides['listaccts:6'] = '{"acct":[{"user":"wqfinite",'
             . '"domain":"wqfinite.example.com","email":"private-foreign@example.com"}]}';
         $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(self::capture());
         self::assertSame(1, $http->counts['Tokens/revoke']);
@@ -299,7 +323,7 @@ final class FiniteQuotaFixtureTest extends TestCase
         self::assertSame('failed', $report['fixture']['status']);
         self::assertSame(1, $http->counts['removeacct']);
         self::assertSame(1, $http->counts['Tokens/revoke']);
-        self::assertSame(2, $http->counts['listaccts_domain']);
+        self::assertSame(8, $http->counts['listaccts']);
         self::assertSame(2, $http->counts['listzones']);
         self::assertFalse($http->account);
         self::assertPrivate($report);
@@ -308,8 +332,8 @@ final class FiniteQuotaFixtureTest extends TestCase
     /** @return iterable<string, array{string, string}> */
     public static function finalInventoryFailures(): iterable
     {
-        yield 'account' => ['listaccts_user:6', '{"acct":{}}'];
-        yield 'main domain' => ['listaccts_domain:2', '{"acct":[{}]}'];
+        yield 'account' => ['listaccts:7', '{"acct":{}}'];
+        yield 'main domain' => ['listaccts:8', '{"acct":[{}]}'];
         yield 'manual domain' => ['get_domain_info:2', '{"domains":[{}]}'];
         yield 'zone' => ['listzones:2', '{"zone":null}'];
         yield 'token' => ['Tokens/list:4', '{}'];
@@ -324,7 +348,7 @@ final class FiniteQuotaFixtureTest extends TestCase
         self::assertSame('failed', $report['fixture']['cleanup']);
         self::assertSame('failed', $report['fixture']['status']);
         self::assertSame(1, $http->counts['removeacct']);
-        self::assertSame(2, $http->counts['listaccts_domain']);
+        self::assertSame(8, $http->counts['listaccts']);
         self::assertSame(2, $http->counts['listzones']);
         self::assertSame(2, $http->counts['get_domain_info']);
         self::assertSame(1, $http->counts[substr($step, 0, -2)]);
