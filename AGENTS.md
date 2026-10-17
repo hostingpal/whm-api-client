@@ -337,6 +337,14 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   [populated MySQL artifact](docs/api/evidence/2026-10-17-mysql-populated.json)
   observes all documented row fields and integer `disk_usage` on `11.138.0.15`.
   Generic fixture setup/cleanup POSTs do not add generated endpoint coverage.
+- The optional `--finite-quota-fixture` mode requires both live opt-ins and exact
+  `WHM_API_LIVE_ACCOUNT=wqfinite` / `WHM_API_LIVE_DOMAIN=wqfinite.example.com`.
+  It captures five separate observations on a disposable finite-quota account,
+  then verifies token, account, domain and zone cleanup. Its `finite_quota`
+  assessment accepts no discrepancies and never inherits baseline acknowledgments.
+  The [finite-Quota artifact](docs/api/evidence/2026-10-17-finite-quota.json) passes
+  finite expectations and cleanup but exits 1 for two unacknowledged unknown-field
+  observations. This establishes no exhausted-quota or finite-inode behavior.
 - Capture evidence from the same raw HTTP response before normalization and
   unknown-field removal. Preserve the response delivered to the client; never
   replay an operation to recover evidence. Persist only sanitized structural

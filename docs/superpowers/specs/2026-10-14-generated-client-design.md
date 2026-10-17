@@ -15,7 +15,11 @@ remain unresolved under `8x0.4.3.1`. That checkpoint's empty MySQL lists did not
 establish row-field evidence. The subsequent
 [2026-10-17 fixture run](../../api/evidence/2026-10-17-mysql-populated.json)
 observes all documented MySQL row fields and populated/empty nested lists on both
-routes, with confirmed cleanup and no contract correction. The consumer exercise
+routes, with confirmed cleanup and no contract correction. The separate
+[finite-Quota scenario](../../api/evidence/2026-10-17-finite-quota.json) adds five
+observations with successful finite-limit checks and cleanup; its command exits
+1 for two unacknowledged unknown-field observations, without reusing baseline
+acknowledgments or changing the Quota contract. The consumer exercise
 is deferred by the user as of 2026-10-17; further coverage remains unfinished. The
 approved correction cycle below gates the next expansion pilot.
 Decision record: `whm-api-client-8x0.10`. This design supersedes the
