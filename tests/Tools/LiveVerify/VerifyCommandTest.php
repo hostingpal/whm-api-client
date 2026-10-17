@@ -70,6 +70,97 @@ final class VerifyCommandTest extends TestCase
         self::assertFileDoesNotExist($output);
     }
 
+    public function testMysqlFixtureRequiresSeparateMutationOptInBeforeAnySetup(): void
+    {
+        $root = $this->fixtureHarness();
+        [$status, , $stderr] = self::executeCli(
+            ['--mysql-fixture', '--output=' . $root . '/observed.json'],
+            self::fixtureEnvironment(),
+            $root,
+        );
+
+        self::assertSame(1, $status);
+        self::assertStringNotContainsString(self::SECRET, $stderr);
+        self::assertFileDoesNotExist($root . '/fixture-cleaned');
+        self::assertFileDoesNotExist($root . '/runner-invoked');
+        self::assertFileDoesNotExist($root . '/observed.json');
+    }
+
+    #[DataProvider('mysqlFixtureOutcomes')]
+    public function testMysqlFixturePersistsAfterCleanupAndControlsExit(string $case, string $expected, int $exit): void
+    {
+        $root = $this->fixtureHarness();
+        $output = $root . '/observed.json';
+        [$status, $stdout, $stderr] = self::executeCli(
+            ['--output=' . $output, '--mysql-fixture'],
+            array_replace(self::fixtureEnvironment($case), ['WHM_API_LIVE_MUTATIONS' => '1']),
+            $root,
+        );
+
+        self::assertSame($exit, $status);
+        self::assertSame('', $stderr);
+        self::assertFileExists($root . '/runner-invoked');
+        self::assertFileExists($root . '/fixture-cleaned');
+        self::assertSame('before-output', file_get_contents($root . '/fixture-cleaned'));
+        $document = json_decode((string) file_get_contents($output), true, 512, JSON_THROW_ON_ERROR);
+        self::assertIsArray($document);
+        self::assertIsArray($document['mysql_fixture']);
+        self::assertSame($expected, $document['mysql_fixture']['status']);
+        self::assertStringContainsString('MySQL fixture: ' . $expected, $stdout);
+        self::assertStringNotContainsString(self::SECRET, $stdout . $stderr . (string) file_get_contents($output));
+    }
+
+    /** @return iterable<string, array{string, string, int}> */
+    public static function mysqlFixtureOutcomes(): iterable
+    {
+        yield 'success' => ['passed', 'passed', 0];
+        yield 'cleanup failure despite passing probes' => ['mysql-cleanup-failure', 'failed', 1];
+        yield 'capture failure still cleans' => ['mysql-capture-failure', 'failed', 1];
+    }
+
+    public function testMysqlFixtureCleanupCompletesBeforeOutputWriteFailure(): void
+    {
+        $root = $this->fixtureHarness();
+        [$status, , $stderr] = self::executeCli(
+            ['--mysql-fixture', '--output=' . $root . '/observed.json'],
+            array_replace(self::fixtureEnvironment('mysql-output-failure'), ['WHM_API_LIVE_MUTATIONS' => '1']),
+            $root,
+        );
+
+        self::assertSame(1, $status);
+        self::assertFileExists($root . '/fixture-cleaned');
+        self::assertStringNotContainsString(self::SECRET, $stderr);
+        self::assertSame([], glob($root . '/.live-verify-*'));
+    }
+
+    public function testMutationEnvironmentAloneDoesNotEnableMysqlFixture(): void
+    {
+        $root = $this->fixtureHarness();
+        [$status, $stdout] = self::executeCli(
+            ['--output=' . $root . '/observed.json'],
+            array_replace(self::fixtureEnvironment(), ['WHM_API_LIVE_MUTATIONS' => '1']),
+            $root,
+        );
+
+        self::assertSame(0, $status);
+        self::assertFileDoesNotExist($root . '/fixture-cleaned');
+        self::assertStringNotContainsString('MySQL fixture:', $stdout);
+    }
+
+    public function testDuplicateFixtureFlagFailsBeforeSetup(): void
+    {
+        $root = $this->fixtureHarness();
+        [$status] = self::executeCli(
+            ['--mysql-fixture', '--mysql-fixture', '--output=' . $root . '/observed.json'],
+            array_replace(self::fixtureEnvironment(), ['WHM_API_LIVE_MUTATIONS' => '1']),
+            $root,
+        );
+
+        self::assertSame(1, $status);
+        self::assertFileDoesNotExist($root . '/fixture-cleaned');
+        self::assertFileDoesNotExist($root . '/runner-invoked');
+    }
+
     public function testUnknownFlagsNeverEchoTheirPrivateContents(): void
     {
         [$status, $stdout, $stderr] = self::executeCli(['--private=' . self::SECRET]);
@@ -554,7 +645,29 @@ final class DiscrepancyPolicy
         return $review;
     }
 }
-final class CurlClient {}
+final class CurlClient
+{
+    public function __construct(bool $allowFormPost = false) {}
+}
+final class MysqlFixture
+{
+    public function __construct(object $client, string $token, string $suffix) {}
+    public function run(array $probes, \Closure $capture): array
+    {
+        $root = dirname(__DIR__);
+        $records = $capture($probes);
+        $case = getenv('CLI_FIXTURE_CASE');
+        $timing = file_exists($root . '/observed.json') ? 'too-late' : 'before-output';
+        file_put_contents($root . '/fixture-cleaned', $timing);
+        if ($case === 'mysql-output-failure') {
+            mkdir($root . '/observed.json');
+        }
+        return ['probes' => $records, 'mysql_fixture' => [
+            'recipe' => 'mysql-npr-linked-unlinked-v1',
+            'status' => in_array($case, ['mysql-cleanup-failure', 'mysql-capture-failure'], true) ? 'failed' : 'passed',
+        ]];
+    }
+}
 final class EvidenceRunner
 {
     public function __construct(object $client, array $context) {}

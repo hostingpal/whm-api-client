@@ -31,14 +31,23 @@ $prepareEvidenceOutput = static function (#[SensitiveParameter] string $output):
     return $temporary;
 };
 
-// Run only the reviewed read-only recipes, with sanitized atomic evidence output.
+// Run reviewed probes, optionally bracketed by the explicitly opted-in MySQL fixture.
 $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($prepareEvidenceOutput): int {
     $temporary = null;
     try {
         if ($arguments === ['--help']) {
-            fwrite(STDOUT, "Usage: php tools/live-verify/verify.php --output=PATH\n");
+            fwrite(STDOUT, "Usage: php tools/live-verify/verify.php [--mysql-fixture] --output=PATH\n");
 
             return 0;
+        }
+        $mysqlFixture = in_array('--mysql-fixture', $arguments, true);
+        if ($mysqlFixture) {
+            $position = array_search('--mysql-fixture', $arguments, true);
+            unset($arguments[$position]);
+            $arguments = array_values($arguments);
+            if (getenv('WHM_API_LIVE_MUTATIONS') !== '1') {
+                throw new LogicException('MySQL fixtures require explicit mutation opt-in.');
+            }
         }
         $argument = count($arguments) === 1 ? $arguments[0] : null;
         if (
@@ -70,10 +79,30 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
         $policy->assertOutputAllowed($output);
         $probes = ProbeCatalog::load($root);
         $temporary = $prepareEvidenceOutput($output);
-        $records = (new EvidenceRunner(new CurlClient(), $context))->run($probes, $optIn, $tokens);
+        $capture = new EvidenceRunner(new CurlClient(), $context);
+        $fixtureReport = null;
+        if ($mysqlFixture) {
+            $fixture = new MysqlFixture(
+                new CurlClient(allowFormPost: true),
+                $tokens['cpanel'],
+                bin2hex(random_bytes(3)),
+            );
+            $result = $fixture->run(
+                $probes,
+                static fn (array $selected): array => $capture->run($selected, $optIn, $tokens),
+            );
+            $records = $result['probes'];
+            $fixtureReport = $result['mysql_fixture'];
+        } else {
+            $records = $capture->run($probes, $optIn, $tokens);
+        }
         $review = $policy->assess($records);
+        $document = ['schema_version' => 2, 'probes' => $records, 'discrepancy_review' => $review];
+        if ($fixtureReport !== null) {
+            $document['mysql_fixture'] = $fixtureReport;
+        }
         $json = json_encode(
-            ['schema_version' => 2, 'probes' => $records, 'discrepancy_review' => $review],
+            $document,
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
         ) . "\n";
         if (@file_put_contents($temporary, $json) !== strlen($json) || !@rename($temporary, $output)) {
@@ -191,7 +220,13 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
                 : $label . ' (' . $unexpectedReasons[$reason] . ')') . "\n");
         }
 
-        return $review['status'] === 'passed' ? 0 : 1;
+        if ($fixtureReport !== null) {
+            fwrite(STDOUT, 'MySQL fixture: ' . ($fixtureReport['status'] === 'passed' ? 'passed' : 'failed') . "\n");
+        }
+
+        $fixturePassed = $fixtureReport === null || $fixtureReport['status'] === 'passed';
+
+        return $review['status'] === 'passed' && $fixturePassed ? 0 : 1;
     } catch (Throwable $error) {
         $kind = match (true) {
             $error instanceof JsonException => 'serialization_failure',

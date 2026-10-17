@@ -11,8 +11,12 @@ contains 74 operations in 13 groups. The
 43 route-specific probes across 25 operations, including account/domain/PHP,
 Email, SSL/AutoSSL, Quota and MySQL inventory. Its discrepancy review passes with
 2 acknowledged Quota observations, 0 unexpected and 0 stale; their field contracts
-remain unresolved under `8x0.4.3.1`. Empty MySQL lists do not establish row-field
-evidence. The consumer exercise and further coverage remain unfinished. The
+remain unresolved under `8x0.4.3.1`. That checkpoint's empty MySQL lists did not
+establish row-field evidence. The subsequent
+[2026-10-17 fixture run](../../api/evidence/2026-10-17-mysql-populated.json)
+observes all documented MySQL row fields and populated/empty nested lists on both
+routes, with confirmed cleanup and no contract correction. The consumer exercise
+is deferred by the user as of 2026-10-17; further coverage remains unfinished. The
 approved correction cycle below gates the next expansion pilot.
 Decision record: `whm-api-client-8x0.10`. This design supersedes the
 "typed core plus generic calls / lean pattern" scaling decision
@@ -459,9 +463,10 @@ The resumed delivery sequence is tracked under `whm-api-client-8x0.10`:
 1. Correct support claims and stale progress (`8x0.1.17`). Current execution
    supports GET and form-encoded POST. The pinned inventory includes 13 JSON and
    9 multipart operations whose body formats remain unsupported.
-2. Exercise the real HostingPal account/domain inventory workflow (`8x0.10.3`).
-   Record the actual consumer integration and client revision; a synthetic demo
-   does not satisfy this task. Missing consumer access is an explicit blocker.
+2. The real HostingPal account/domain inventory workflow (`8x0.10.3`) is deferred
+   indefinitely by the user on 2026-10-17, beyond this bounded pilot. On resumption,
+   record the actual consumer integration and client revision; a synthetic demo
+   does not satisfy this task. No consumer validation is claimed by the deferral.
 3. Observe nonempty MySQL records through both routes (`8x0.2.4`), then finite
    Quota limits and cleanup (`8x0.3.1`). These evidence tasks may proceed if
    consumer access is blocked, under the standing test-account authorization.
@@ -470,8 +475,12 @@ The resumed delivery sequence is tracked under `whm-api-client-8x0.10`:
    touchpoints and review effort. Add only machinery justified by these tasks.
 5. Implement selected JSON (`8x0.1.18`) or multipart (`8x0.1.19`) support when an
    identified useful operation requires it, with explicit route/body contracts.
-6. Deliver one coherent expansion pilot (`8x0.4.5`), gated on the consumer,
-   MySQL, finite-Quota and plumbing tasks. JSON/multipart dependencies are
+6. Deliver one coherent expansion pilot (`8x0.4.5`), gated on the MySQL,
+   finite-Quota and plumbing tasks. The user's 2026-10-17 deferral and instruction
+   to continue other work removes only the consumer prerequisite for this pilot;
+   real consumer feedback before full rollout remains outstanding. Select scope
+   from concrete library/test-account needs while consumer findings are absent.
+   JSON/multipart dependencies are
    conditional on its chosen operations. Record blockers without bypassing them.
 
 Keep one PR at a time. Address Opus's review comments and obtain substantive

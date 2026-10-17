@@ -882,3 +882,57 @@ aliases, privacy and CLI exit behavior. These synthetic and saved-artifact tests
 are distinct from the explicitly opted-in test-server run above. The policy is
 development tooling; it adds no endpoint coverage or runtime dependency to the
 core package.
+
+### Runtime observations: 2026-10-17 populated MySQL inventory
+
+Tracking: `whm-api-client-8x0.2.4`. The
+[populated MySQL evidence](evidence/2026-10-17-mysql-populated.json) records
+revision `294c59ca710bd9beee0b2ddfe900b85613120112` on cPanel `11.138.0.15`.
+The explicitly opted-in fixture created two databases and two database users
+on the designated `npr` account, linking one pair with `SELECT` privileges and
+leaving the other pair unlinked. No tables or WordPress installation were needed
+to exercise these inventory contracts.
+
+Both direct and WHM-bridged GET routes observed `database`, integer `disk_usage`,
+and `users` in database records, plus `databases`, `shortuser`, and `user` in user
+records. Each nested list field had both populated and empty-list observations.
+The same response supplied the generated result and sanitized fingerprint;
+in-memory fixture assertions confirmed the exact created records and their
+relationships without retaining resource names or values. No MySQL discrepancy
+or compatibility correction was needed. This run does not establish positive
+disk usage, other server versions, remote MySQL, or disabled-role behavior.
+
+All 43 probes across 25 operations passed HTTP/API/payload/probe checks. The
+unchanged discrepancy policy reports **2 acknowledged, 0 unexpected, 0 stale**;
+the two unresolved Quota observations remain visible. The command exited **0**.
+Generated coverage remains 74 operations in 13 groups. Setup and cleanup used
+five generic form-POST functions from the pinned MySQL source; these calls do not
+establish new typed coverage or change the GET probe catalog.
+
+The separate `mysql_fixture` report records successful setup, capture,
+expectations, and cleanup. All four resources have confirmed creation and
+confirmed absence after cleanup. Exact guards require both live opt-ins and
+bind the account, operations, names, and arguments; preexisting names prevent
+setup. Offline tests cover setup/capture/deletion failures, uncertain creation
+and deletion outcomes, continued cleanup, refused unrelated requests, and
+output failure after cleanup. No mutation is retried. The live run verifies the
+successful lifecycle; failure cleanup paths are independently tested offline.
+
+Implementation effort before external review: ten manually authored tool/test/doc
+files, 1,679 added and 21 removed lines in the fixture commit, including two
+fixture classes and one test-only stateful server. The suite gained 118 test
+cases (3,289 total, 23,667 assertions). Two internal review passes found no
+remaining issues; the first full gate caught a test-helper file-layout error,
+which was corrected before the passing full gates and this single live run.
+Artifact and current-progress documentation are a separate commit. This records
+the plumbing cost for the bounded reduction pilot rather than introducing a
+general fixture framework.
+
+External review of `abd9b1f49d7b3d8e1dbaa9bef84e767f6e0a7d2e` independently
+passed the offline gates, recomputed the evidence hashes, and reran the default
+read-only command. Its four MySQL lists were empty again, corroborating cleanup.
+The review suggested manual recovery guidance for failed cleanup, now included
+in the runner documentation. Positive `disk_usage` remains a separate nonblocking
+evidence follow-up under `whm-api-client-8x0.2.7`. The user also deferred the real
+HostingPal consumer exercise beyond this pilot; that decision adds no consumer
+evidence and preserves the remaining correction-cycle gates.
