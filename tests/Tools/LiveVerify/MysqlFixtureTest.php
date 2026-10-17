@@ -50,7 +50,26 @@ final class MysqlFixtureTest extends TestCase
         self::assertSame('passed', $report['mysql_fixture']['status']);
         self::assertSame('passed', $report['mysql_fixture']['cleanup']);
         self::assertSame([], $report['mysql_fixture']['failures']);
-        self::assertCount(5, $report['probes']);
+        self::assertCount(7, $report['probes']);
+        self::assertSame('mysql-npr-linked-unlinked-v2', $report['mysql_fixture']['recipe']);
+        self::assertSame([
+            ['GET', 'https://test.oblak.host:2083/execute/Mysql/get_privileges_on_database'
+                . '?database=npr_wva1b2c3d&user=npr_wva1b2c3u', 'cpanel npr:private-cpanel-token', ''],
+            ['GET', 'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                . '&cpanel.module=Mysql&cpanel.function=get_privileges_on_database'
+                . '&database=npr_wva1b2c3d&user=npr_wva1b2c3u', 'whm root:private-whm-token', ''],
+        ], $http->privilegeRequests);
+        foreach ([5 => 'direct-uapi', 6 => 'bridged-uapi'] as $index => $route) {
+            $record = $report['probes'][$index];
+            self::assertSame('uapi:Mysql/get_privileges_on_database', $record['operation']);
+            self::assertSame('uapi:Mysql/get_privileges_on_database#GET', $record['variant']);
+            self::assertSame($route, $record['route']);
+            self::assertSame('GET', $record['method']);
+            self::assertSame('passed', $record['probe_outcome']);
+            self::assertSame(['$' => ['list'], '$[]' => ['string']], $record['payload_paths']);
+            self::assertSame([], $record['discrepancies']);
+            self::assertSame('11.138.0.15', $record['server_version']);
+        }
         self::assertSame(['existing_database' => []], $http->databases);
         self::assertSame(['existing_user' => []], $http->users);
         self::assertSame(['npr_wva1b2c3v', 'npr_wva1b2c3u', 'npr_wva1b2c3e', 'npr_wva1b2c3d'], $http->deleted);
@@ -392,7 +411,7 @@ final class MysqlFixtureTest extends TestCase
         $report = (self::fixture($http))->run(
             $original,
             static function (array $wrapped) use ($original, $capture): array {
-                self::assertCount(43, $wrapped);
+                self::assertCount(49, $wrapped);
                 foreach ($original as $index => $probe) {
                     if (!str_starts_with($probe->operation, 'uapi:Mysql/')) {
                         self::assertSame($probe, $wrapped[$index]);
@@ -436,7 +455,84 @@ final class MysqlFixtureTest extends TestCase
     private static function probes(): array
     {
         return array_values(array_filter(ProbeCatalog::load(dirname(__DIR__, 3)), static fn (Probe $probe): bool =>
-            $probe->operation === 'whm1:version' || str_starts_with($probe->operation, 'uapi:Mysql/')));
+            in_array($probe->operation, ['whm1:version', 'uapi:Mysql/list_databases', 'uapi:Mysql/list_users'], true)));
+    }
+
+    #[DataProvider('privilegeFailures')]
+    public function testPrivilegeReadbackFailurePreservesEvidenceAndCleansBothRoutes(
+        string $route,
+        ?string $payload,
+        string $failure,
+        string $expectedKind,
+    ): void {
+        $http = new MysqlFixtureServer();
+        $step = ($route === 'bridged-uapi' ? 'bridge:' : '') . 'get_privileges_on_database:1';
+        if ($payload !== null) {
+            $http->overrides[$step] = $payload;
+        }
+        if ($failure !== '') {
+            $http->failures[$step] = $failure;
+        }
+        $report = self::fixture($http)->run(self::probes(), self::capture($http));
+        self::assertSame('failed', $report['mysql_fixture']['status']);
+        self::assertSame('failed', $report['mysql_fixture']['expectations']);
+        self::assertSame('passed', $report['mysql_fixture']['cleanup']);
+        self::assertSame([], $http->databases);
+        self::assertSame([], $http->users);
+        self::assertSame(1, $http->counts['get_privileges_on_database']);
+        self::assertSame(1, $http->counts['bridge:get_privileges_on_database']);
+        $record = $report['probes'][$route === 'direct-uapi' ? 5 : 6];
+        self::assertSame($expectedKind, $record['failure_kind']);
+        self::assertSame('failed', $record['probe_outcome']);
+        if ($failure === '') {
+            self::assertSame('success', $record['api_outcome']);
+            self::assertSame($expectedKind === 'payload_mismatch' ? 'failed' : 'passed', $record['payload_validation']);
+            self::assertNotSame([], $record['payload_paths']);
+        }
+        self::assertPrivate($report, $http);
+    }
+
+    /** @return iterable<string, array{string, ?string, string, string}> */
+    public static function privilegeFailures(): iterable
+    {
+        foreach (['direct-uapi', 'bridged-uapi'] as $route) {
+            yield $route . ' no grant' => [$route, '[]', '', 'fixture_expectation_failed'];
+            yield $route . ' extra grant' => [$route, '["SELECT","UPDATE"]', '', 'fixture_expectation_failed'];
+            yield $route . ' wrong type' => [$route, '[null]', '', 'payload_mismatch'];
+            yield $route . ' API failure' => [$route, null, 'api_before', 'api_failure'];
+            yield $route . ' transport failure' => [$route, null, 'throw_before', 'request_failure'];
+        }
+    }
+
+    #[DataProvider('recordSetChanges')]
+    public function testMissingOrDuplicatePrivilegeEvidenceFailsEvenAfterSuccessfulRequests(bool $duplicate): void
+    {
+        $http = new MysqlFixtureServer();
+        $capture = self::capture($http);
+        $report = self::fixture($http)->run(
+            self::probes(),
+            static function (array $probes) use ($capture, $duplicate): array {
+                $records = $capture($probes);
+                if ($duplicate) {
+                    $records[] = $records[count($records) - 1];
+                } else {
+                    array_pop($records);
+                }
+
+                return $records;
+            },
+        );
+        self::assertSame('failed', $report['mysql_fixture']['expectations']);
+        self::assertSame('passed', $report['mysql_fixture']['cleanup']);
+        self::assertSame([], $http->databases);
+        self::assertSame([], $http->users);
+    }
+
+    /** @return iterable<string, array{bool}> */
+    public static function recordSetChanges(): iterable
+    {
+        yield 'missing bridge' => [false];
+        yield 'duplicate bridge' => [true];
     }
 
     /** @return Closure(list<Probe>): list<Record> */

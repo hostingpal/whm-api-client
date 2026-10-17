@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 13 typed groups cover 79 reviewed operations:
+and cPanel UAPI surface. The 13 typed groups cover 82 reviewed operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -156,6 +156,11 @@ upstream problem text are payload data; evidence keeps only their structural typ
 row fields remain optional and nested user/database lists preserve empty lists.
 Both operations are disabled when the MySQL/MariaDB role is disabled and remote
 MySQL is not configured.
+`getPrivilegesOnDatabase(database, user)` returns a string list (empty when no
+privileges are assigned); `getRestrictions()` returns optional name-length limits
+and an optional nullable prefix; `getServerInformation()` returns optional host,
+integer `is_remote` and version fields. These reads have the same role caveat.
+Keep omitted fields distinct from a null prefix and do not infer a closed privilege enum.
 The same group generates `createDatabase()`, `createUser()`,
 `setPrivilegesOnDatabase()`, `deleteUser()` and `deleteDatabase()` as form POST.
 Privilege assignment replaces existing privileges. Mutation results are nullable
@@ -324,8 +329,8 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
 ## Generated-client delivery
 
 - Follow the [current delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
-  The development-only runner in `tools/live-verify/` captures 43 reviewed
-  read-only route-specific probes across 25 operations through the generated
+  The development-only runner in `tools/live-verify/` captures 47 reviewed
+  read-only route-specific probes across 27 operations through the generated
   client; run it explicitly
   with `WHM_API_LIVE=1 composer live:verify -- --output=docs/api/evidence/read-only.json`.
   It requires committed code and persists sanitized structure only. Catalog entries
@@ -351,6 +356,10 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   The [generated mutation artifact](docs/api/evidence/2026-10-17-mysql-mutations.json)
   records all ten POSTs passing with explicit null payloads on `11.138.0.15`,
   zero mutation discrepancies, and all four resources confirmed absent afterward.
+  The current v2 fixture recipe additionally appends two exact run-bound
+  `get_privileges_on_database` GETs to the read observations and requires exactly
+  the assigned `SELECT` result through both routes. It reuses the same resources
+  and cleanup; API readback is not evidence of SQL permission enforcement.
 - The optional `--finite-quota-fixture` mode requires both live opt-ins and exact
   `WHM_API_LIVE_ACCOUNT=wqfinite` / `WHM_API_LIVE_DOMAIN=wqfinite.example.com`.
   It captures five separate observations on a disposable finite-quota account,

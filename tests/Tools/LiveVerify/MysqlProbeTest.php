@@ -50,6 +50,17 @@ final class MysqlProbeTest extends TestCase
     public static function payloads(): iterable
     {
         $cases = [
+            ['get_restrictions', '{"max_database_name_length":64,"max_username_length":32,"prefix":"private_"}', [
+                '$' => ['object'], '$.max_database_name_length' => ['int'],
+                '$.max_username_length' => ['int'], '$.prefix' => ['string'],
+            ]],
+            ['get_restrictions', '{"prefix":null}', [
+                '$' => ['object'], '$.max_database_name_length' => ['missing'],
+                '$.max_username_length' => ['missing'], '$.prefix' => ['null'],
+            ]],
+            ['get_server_information', '{"host":"private.example.test","is_remote":0,"version":"private-version"}', [
+                '$' => ['object'], '$.host' => ['string'], '$.is_remote' => ['int'], '$.version' => ['string'],
+            ]],
             ['list_databases', '[{"database":"private_database","disk_usage":457891,'
                 . '"users":["private_dbuser","private_otheruser"]}]', [
                     '$' => ['list'], '$[]' => ['object'], '$[].database' => ['string'],
@@ -90,9 +101,11 @@ final class MysqlProbeTest extends TestCase
     public function testUnknownMysqlKeysRemainWildcardedBeforeTypedFieldRemoval(string $operation, string $route): void
     {
         $http = new Client();
+        $list = in_array($operation, ['list_databases', 'list_users'], true);
+        $payload = '{"private-account":{"private.example.test":{"database":"private_database"}}}';
         $http->addResponse(new Response(200, [], self::envelope(
             $route,
-            '[{"private-account":{"private.example.test":{"database":"private_database"}}}]',
+            $list ? '[' . $payload . ']' : $payload,
         )));
         $reviewed = self::probe($operation, $route);
         $normalized = null;
@@ -112,14 +125,15 @@ final class MysqlProbeTest extends TestCase
         $records = self::capture($http, $probe);
 
         self::assertRequest($http, $operation, $route);
-        self::assertSame([[]], $normalized);
+        self::assertSame($list ? [[]] : [], $normalized);
         self::assertSame('passed', $records[0]['payload_validation']);
         self::assertSame('passed', $records[0]['probe_outcome']);
-        self::assertSame([['path' => '$[].*', 'kind' => 'unknown_field']], $records[0]['discrepancies']);
-        self::assertSame(['object'], $records[0]['payload_paths']['$[].*']);
-        self::assertSame(['object'], $records[0]['payload_paths']['$[].*.*']);
-        self::assertSame(['string'], $records[0]['payload_paths']['$[].*.*.*']);
-        self::assertArrayNotHasKey('$[].*.*.database', $records[0]['payload_paths']);
+        $path = $list ? '$[].*' : '$.*';
+        self::assertSame([['path' => $path, 'kind' => 'unknown_field']], $records[0]['discrepancies']);
+        self::assertSame(['object'], $records[0]['payload_paths'][$path]);
+        self::assertSame(['object'], $records[0]['payload_paths'][$path . '.*']);
+        self::assertSame(['string'], $records[0]['payload_paths'][$path . '.*.*']);
+        self::assertArrayNotHasKey($path . '.*.database', $records[0]['payload_paths']);
         self::assertPrivateValuesAbsent($records);
     }
 
@@ -170,6 +184,10 @@ final class MysqlProbeTest extends TestCase
     public static function malformedPayloads(): iterable
     {
         $cases = [
+            ['get_restrictions', '{"max_username_length":"32"}', '$.max_username_length', 'numeric-string'],
+            ['get_restrictions', '{"prefix":42}', '$.prefix', 'int'],
+            ['get_server_information', '{"host":null}', '$.host', 'null'],
+            ['get_server_information', '{"is_remote":"0"}', '$.is_remote', 'numeric-string'],
             ['list_databases', '[{"disk_usage":"457891"}]', '$[].disk_usage', 'numeric-string'],
             ['list_databases', '[{"users":[{"private_dbuser":"private_database"}]}]', '$[].users[]', 'object'],
             ['list_databases', '[{"database":null}]', '$[].database', 'null'],
@@ -219,6 +237,10 @@ final class MysqlProbeTest extends TestCase
         yield 'databases bridge' => ['list_databases', 'bridged-uapi'];
         yield 'users direct' => ['list_users', 'direct-uapi'];
         yield 'users bridge' => ['list_users', 'bridged-uapi'];
+        yield 'restrictions direct' => ['get_restrictions', 'direct-uapi'];
+        yield 'restrictions bridge' => ['get_restrictions', 'bridged-uapi'];
+        yield 'server info direct' => ['get_server_information', 'direct-uapi'];
+        yield 'server info bridge' => ['get_server_information', 'bridged-uapi'];
     }
 
     private static function probe(string $operation, string $route): Probe

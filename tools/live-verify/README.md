@@ -1,7 +1,7 @@
 # Live contract evidence
 
 This development-only PHP command exercises the generated client on the approved
-test server. Its default read-only mode performs 43 GET requests across 25 operations, with exact route
+test server. Its default read-only mode performs 47 GET requests across 27 operations, with exact route
 and argument guards, verified TLS, redirects
 disabled, and no retries. The core package has no dependency on this tool.
 
@@ -11,7 +11,7 @@ disabled, and no retries. The core package has no dependency on this tool.
 | Direct and WHM-bridged UAPI, account `npr` | `DomainInfo/list_domains`, `DomainInfo/primary_domain`, `LangPHP/php_get_installed_versions`, `LangPHP/php_get_domain_handler(type: 'home')`, `Email/list_pops`, `Email/list_mail_domains`, `Email/list_domain_forwarders`, `Email/count_pops` |
 | Direct and WHM-bridged UAPI, account `npr` | `SSL/installed_hosts`, `SSL/get_autossl_excluded_domains`, `SSL/get_autossl_problems`, `SSL/get_autossl_renewal_status(domain: 'npr.rs')`, `SSL/is_autossl_check_in_progress`, `SSL/can_ssl_redirect` |
 | Direct and WHM-bridged UAPI, account `npr` | `Quota/get_quota_info`, `Quota/get_local_quota_info` |
-| Direct and WHM-bridged UAPI, account `npr` | `Mysql/list_databases`, `Mysql/list_users` |
+| Direct and WHM-bridged UAPI, account `npr` | `Mysql/list_databases`, `Mysql/list_users`, `Mysql/get_restrictions`, `Mysql/get_server_information` |
 
 Unlisted optional arguments are omitted. The Email probes observe default
 behavior; explicit flags, filters and selection behavior are covered separately
@@ -33,13 +33,17 @@ Ordinary Composer checks remain offline; this command is never part of CI.
 MySQL inventory recipes take no arguments and only list the selected account's
 databases and database users. Evidence retains structural types, not database or
 user names. Empty lists provide no observations of item fields.
+The two provisioning metadata reads also take no arguments. Their optional fields
+remain optional, and a null database prefix remains distinct from an omitted one.
+Hostnames, database-server versions and prefixes are retained only as structural types.
 
 ### Nonempty MySQL fixture
 
 The separate `--mysql-fixture` mode temporarily creates two databases and two
 database users on the designated `npr` account, with one pair linked by `SELECT`
-privileges and one unlinked pair. It runs the same 43 probes, including both
-direct and WHM-bridged MySQL inventory, then removes only its own exact resources
+privileges and one unlinked pair. The `mysql-npr-linked-unlinked-v2` recipe runs
+the 47 catalog probes plus two `get_privileges_on_database` GETs bound to the
+linked pair, for 49 read observations across 28 operations. It then removes only its own exact resources
 and verifies their absence. It requires an additional mutation opt-in:
 
 ```sh
@@ -62,6 +66,11 @@ The four MySQL probes must observe the created records, documented fields,
 linked nested lists and unlinked empty lists in their original responses. Positive
 disk usage is not required. Setup/cleanup inventory reads reconcile resource
 ownership; they do not replace or replay a probe to recover its evidence.
+The two privilege reads must each return exactly `["SELECT"]`; missing, additional
+or duplicate observations fail the fixture. Each URI and generated callback binds
+the run's exact database/user names through the existing GET-only request guard.
+Original API, payload and discrepancy outcomes remain recorded when that fixture
+expectation fails. This verifies API-reported privileges, not SQL enforcement.
 An uncertain mutation outcome is reconciled without retrying the mutation.
 Cleanup continues for other owned resources after a failure and requires confirmed
 absence before reporting success. Preexisting resources are never removed.
@@ -125,7 +134,7 @@ the exact requested expiry, accepting its observed decimal-string representation
 as well as the documented integer. The token and any raw response data remain
 in memory. Exact guards restrict every request to this recipe and its targets.
 
-The existing 43 baseline probes and their discrepancy policy remain unchanged.
+The 47 baseline catalog probes use their existing discrepancy policy.
 Five additional observations—one WHM version request for provenance, plus both
 Quota operations on both routes—are stored under `finite_quota`, with the fixed
 scenario `finite-quota-disposable-v1` and a separate assessment. Historical `npr`

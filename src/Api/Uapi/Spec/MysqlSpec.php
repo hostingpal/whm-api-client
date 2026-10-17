@@ -60,6 +60,50 @@ final class MysqlSpec
         'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
     ];
 
+    public const GET_PRIVILEGES_ON_DATABASE = [
+        'function' => 'get_privileges_on_database',
+        'module' => 'Mysql',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'database' => ['name' => 'database', 'encoding' => 'scalar'],
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'list', 'items' => ['type' => 'string']],
+    ];
+
+    public const GET_RESTRICTIONS = [
+        'function' => 'get_restrictions',
+        'module' => 'Mysql',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'max_database_name_length' => ['type' => 'int'],
+                'max_username_length' => ['type' => 'int'],
+                'prefix' => ['type' => 'string', 'nullable' => true],
+            ],
+        ],
+    ];
+
+    public const GET_SERVER_INFORMATION = [
+        'function' => 'get_server_information',
+        'module' => 'Mysql',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'host' => ['type' => 'string'],
+                'is_remote' => ['type' => 'flag'],
+                'version' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
     public const LIST_DATABASES = [
         'function' => 'list_databases',
         'module' => 'Mysql',
