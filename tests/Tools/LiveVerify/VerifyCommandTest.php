@@ -171,6 +171,151 @@ final class VerifyCommandTest extends TestCase
         self::assertStringNotContainsString(self::SECRET, $stderr);
     }
 
+    /** @param array<string, string> $override */
+    #[DataProvider('invalidFiniteQuotaConfiguration')]
+    public function testFiniteQuotaRefusesInvalidConfigurationBeforeBaselineOrFixture(array $override): void
+    {
+        $root = $this->fixtureHarness();
+        [$status, , $stderr] = self::executeCli(
+            ['--finite-quota-fixture', '--output=' . $root . '/observed.json'],
+            array_replace(self::finiteQuotaEnvironment(), $override),
+            $root,
+        );
+
+        self::assertSame(1, $status);
+        self::assertFileDoesNotExist($root . '/runner-invoked');
+        self::assertFileDoesNotExist($root . '/finite-cleaned');
+        self::assertFileDoesNotExist($root . '/observed.json');
+        self::assertStringNotContainsString(self::SECRET, $stderr);
+    }
+
+    /** @return iterable<string, array{array<string, string>}> */
+    public static function invalidFiniteQuotaConfiguration(): iterable
+    {
+        yield 'mutation opt-in absent' => [['WHM_API_LIVE_MUTATIONS' => '']];
+        yield 'account absent' => [['WHM_API_LIVE_ACCOUNT' => '']];
+        yield 'existing designated account still wrong recipe' => [['WHM_API_LIVE_ACCOUNT' => 'npr']];
+        yield 'domain absent' => [['WHM_API_LIVE_DOMAIN' => '']];
+        yield 'unrelated private domain' => [['WHM_API_LIVE_DOMAIN' => self::SECRET]];
+    }
+
+    #[DataProvider('finiteQuotaOutcomes')]
+    public function testFiniteQuotaKeepsBaselineAssessmentSeparateAndCleansBeforeWriting(
+        string $case,
+        string $fixtureStatus,
+        string $finiteStatus,
+        int $exit,
+    ): void {
+        $root = $this->fixtureHarness();
+        [$status, $stdout, $stderr] = self::executeCli(
+            ['--finite-quota-fixture', '--output=' . $root . '/observed.json'],
+            self::finiteQuotaEnvironment($case),
+            $root,
+        );
+
+        self::assertSame($exit, $status);
+        self::assertSame('', $stderr);
+        self::assertSame('before-output', file_get_contents($root . '/finite-cleaned'));
+        $json = (string) file_get_contents($root . '/observed.json');
+        $document = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        self::assertIsArray($document);
+        self::assertSame($document['probes'], json_decode(
+            (string) file_get_contents($root . '/assessed-probes.json'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        ));
+        self::assertIsArray($document['finite_quota']);
+        self::assertIsArray($document['finite_quota']['fixture']);
+        self::assertIsArray($document['finite_quota']['discrepancy_review']);
+        self::assertSame('finite-quota-disposable-v1', $document['finite_quota']['scenario']);
+        self::assertSame('disposable-test-account', $document['finite_quota']['target_role']);
+        self::assertSame($fixtureStatus, $document['finite_quota']['fixture']['status']);
+        self::assertSame($finiteStatus, $document['finite_quota']['discrepancy_review']['status']);
+        self::assertArrayNotHasKey('mysql_fixture', $document);
+        self::assertStringContainsString('Finite Quota fixture: ' . $fixtureStatus, $stdout);
+        self::assertStringContainsString('Finite Quota discrepancy review: ' . $finiteStatus, $stdout);
+        self::assertStringNotContainsString(self::SECRET, $json . $stdout . $stderr);
+    }
+
+    /** @return iterable<string, array{string, string, string, int}> */
+    public static function finiteQuotaOutcomes(): iterable
+    {
+        yield 'all pass' => ['passed', 'passed', 'passed', 0];
+        yield 'cleanup failure' => ['quota-cleanup-failure', 'failed', 'passed', 1];
+        yield 'finite discrepancies' => ['quota-discrepancy', 'passed', 'failed', 1];
+        yield 'capture failure' => ['quota-capture-failure', 'failed', 'failed', 1];
+        yield 'baseline discrepancies' => ['discrepancy', 'passed', 'passed', 1];
+    }
+
+    public function testFiniteQuotaCleanupCompletesBeforeOutputWriteFailure(): void
+    {
+        $root = $this->fixtureHarness();
+        [$status, , $stderr] = self::executeCli(
+            ['--finite-quota-fixture', '--output=' . $root . '/observed.json'],
+            self::finiteQuotaEnvironment('quota-output-failure'),
+            $root,
+        );
+
+        self::assertSame(1, $status);
+        self::assertSame('before-output', file_get_contents($root . '/finite-cleaned'));
+        self::assertSame([], glob($root . '/.live-verify-*'));
+        self::assertStringNotContainsString(self::SECRET, $stderr);
+    }
+
+    /** @param list<string> $flags */
+    #[DataProvider('conflictingFixtureFlags')]
+    public function testConflictingFixtureModesRefuseBeforeAnyRequests(array $flags): void
+    {
+        $root = $this->fixtureHarness();
+        [$status] = self::executeCli(
+            [...$flags, '--output=' . $root . '/observed.json'],
+            self::finiteQuotaEnvironment(),
+            $root,
+        );
+
+        self::assertSame(1, $status);
+        self::assertFileDoesNotExist($root . '/runner-invoked');
+        self::assertFileDoesNotExist($root . '/fixture-cleaned');
+        self::assertFileDoesNotExist($root . '/finite-cleaned');
+    }
+
+    /** @return iterable<string, array{list<string>}> */
+    public static function conflictingFixtureFlags(): iterable
+    {
+        yield 'two mutation recipes' => [['--mysql-fixture', '--finite-quota-fixture']];
+        yield 'duplicate finite recipe' => [['--finite-quota-fixture', '--finite-quota-fixture']];
+    }
+
+    public function testFiniteQuotaEnvironmentWithoutFlagKeepsDefaultReadOnly(): void
+    {
+        $root = $this->fixtureHarness();
+        [$status, $stdout] = self::executeCli(
+            ['--output=' . $root . '/observed.json'],
+            self::finiteQuotaEnvironment(),
+            $root,
+        );
+
+        self::assertSame(0, $status);
+        self::assertFileDoesNotExist($root . '/finite-cleaned');
+        self::assertStringNotContainsString('Finite Quota', $stdout);
+    }
+
+    public function testFiniteQuotaUnavailableCatalogPreventsAllNetworkAndSetup(): void
+    {
+        $root = $this->fixtureHarness();
+        [$status] = self::executeCli(
+            ['--finite-quota-fixture', '--output=' . $root . '/observed.json'],
+            self::finiteQuotaEnvironment('quota-unavailable-catalog'),
+            $root,
+        );
+
+        self::assertSame(1, $status);
+        self::assertFileDoesNotExist($root . '/runner-invoked');
+        self::assertFileDoesNotExist($root . '/finite-cleaned');
+        self::assertFileDoesNotExist($root . '/observed.json');
+    }
+
     public function testFixtureHarnessWritesPrivateJsonAndCreatesParentDirectory(): void
     {
         $root = $this->fixtureHarness();
@@ -591,7 +736,11 @@ final class RepositoryContext
 }
 final class ProbeCatalog
 {
-    public static function load(string $root): array { return []; }
+    public static function load(string $root): array
+    {
+        return getenv('CLI_FIXTURE_CASE') === 'quota-unavailable-catalog'
+            ? [(object) ['unavailable' => 'unsupported']] : [];
+    }
 }
 final class DiscrepancyPolicy
 {
@@ -696,6 +845,48 @@ final class EvidenceRunner
         ]];
     }
 }
+final class FiniteQuotaEvidence
+{
+    public function __construct(object $client, array $context) {}
+    public function run(array $probes, string $whmToken, string $cpanelToken): array
+    {
+        return [
+            'probes' => [['operation' => 'uapi:Quota/get_quota_info', 'route' => 'direct-uapi']],
+            'expectations' => 'passed',
+            'unit_relationships' => ['direct-uapi' => 'binary-mib', 'bridged-uapi' => 'binary-mib'],
+            'discrepancy_review' => [
+                'status' => in_array(getenv('CLI_FIXTURE_CASE'), [
+                    'quota-discrepancy', 'quota-capture-failure',
+                ], true) ? 'failed' : 'passed',
+                'acknowledged' => [],
+            ],
+        ];
+    }
+}
+final class FiniteQuotaFixture
+{
+    public function __construct(object $client, string $token) {}
+    public function run(\Closure $capture): array
+    {
+        $root = dirname(__DIR__);
+        $case = getenv('CLI_FIXTURE_CASE');
+        $result = $capture(new CurlClient(), getenv('CLI_PRIVATE_MARKER'));
+        $timing = file_exists($root . '/observed.json') ? 'too-late' : 'before-output';
+        file_put_contents($root . '/finite-cleaned', $timing);
+        if ($case === 'quota-output-failure') {
+            mkdir($root . '/observed.json');
+        }
+        unset($result['expectations']);
+        return [
+            'scenario' => 'finite-quota-disposable-v1',
+            'target_role' => 'disposable-test-account',
+            ...$result,
+            'fixture' => ['status' => in_array($case, [
+                'quota-cleanup-failure', 'quota-capture-failure',
+            ], true) ? 'failed' : 'passed'],
+        ];
+    }
+}
 FIXTURE);
 
         return $root;
@@ -711,6 +902,16 @@ FIXTURE);
             'CLI_FIXTURE_CASE' => $case,
             'CLI_PRIVATE_MARKER' => self::SECRET,
         ];
+    }
+
+    /** @return array<string, string> */
+    private static function finiteQuotaEnvironment(string $case = 'passed'): array
+    {
+        return array_replace(self::fixtureEnvironment($case), [
+            'WHM_API_LIVE_MUTATIONS' => '1',
+            'WHM_API_LIVE_ACCOUNT' => 'wqfinite',
+            'WHM_API_LIVE_DOMAIN' => 'wqfinite.example.com',
+        ]);
     }
 
     /**

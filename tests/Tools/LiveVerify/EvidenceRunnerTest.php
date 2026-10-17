@@ -17,6 +17,24 @@ final class EvidenceRunnerTest extends TestCase
 {
     private const ROOT = __DIR__ . '/../../..';
 
+    public function testExplicitDirectUsernameBindsOnlyDirectAuthentication(): void
+    {
+        $http = new Client();
+        $http->addResponse(new Response(200, [], '{"status":1,"data":{}}'));
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":{}}}}'));
+
+        $records = (new EvidenceRunner($http, self::context(), 'wqfinite'))->run(
+            array_slice(ProbeCatalog::load(self::ROOT), 2, 2),
+            '1',
+            ['whm' => 'synthetic-whm', 'cpanel' => 'synthetic-cpanel'],
+        );
+
+        self::assertSame(['passed', 'passed'], array_column($records, 'probe_outcome'));
+        self::assertSame('cpanel wqfinite:synthetic-cpanel', $http->getRequests()[0]->getHeaderLine('Authorization'));
+        self::assertSame('whm root:synthetic-whm', $http->getRequests()[1]->getHeaderLine('Authorization'));
+        self::assertStringContainsString('cpanel.user=npr&', (string) $http->getRequests()[1]->getUri());
+    }
+
     public function testReviewedProbesUseGeneratedClientAndRawSameResponse(): void
     {
         $http = new Client();
