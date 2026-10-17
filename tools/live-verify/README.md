@@ -241,3 +241,28 @@ and offline request/response tests; editing an overlay cannot authorize arbitrar
 network calls. The MySQL and finite-Quota fixtures above are separately guarded; general
 fixture orchestration, broad discovery and automated overlay edits remain outside
 this implementation.
+
+### MySQL probe plumbing pilot
+
+`ProbeCatalog::parameterlessUapiPair()` binds one explicit generated-method callback
+to direct UAPI and the fixed `npr` WHM bridge, in that order. Only the two MySQL
+inventory operations use it. Module/function names remain code-owned, and both
+probes pass through the existing strict recipe checks. It accepts no operation
+arguments; payload expectations stay in the independently authored tests.
+
+The pilot (`whm-api-client-8x0.10.4`, baseline `7247113`) measures:
+
+| Manual catalog work for the two operations | Before | After |
+| --- | ---: | ---: |
+| Operation declarations / spec references / generated callbacks | 4 each | 2 each |
+| Operation declaration lines | 34 | 14 |
+| URI constructions | 4 at call sites | 2 in the shared helper |
+| Catalog files to edit | 1 | 1 |
+
+The helper costs 40 lines plus one separator and one import: the catalog grows
+by 22 lines overall. Review now covers two operation bindings and one shared
+routing implementation. The unchanged MySQL API, MySQL probe and catalog suites
+retain 277 cases with 3,303 assertions, including literal request and payload
+oracles. This reduces repeated per-operation edits, but does not demonstrate net
+line savings or measured review-time savings. Wider adoption remains a separate
+decision after this bounded pilot is reviewed.
