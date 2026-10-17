@@ -18,7 +18,7 @@ use stdClass;
 use Throwable;
 
 /**
- * Temporarily populate the designated npr account for the existing generated MySQL inventory probes.
+ * Temporarily populate the designated npr account for generated MySQL inventory and privilege reads.
  *
  * Only two databases and two users belong to this run. Their initial absence must be confirmed;
  * attempted creation is reconciled before deletion, including failed requests. Cleanup always
@@ -26,6 +26,7 @@ use Throwable;
  * identities, passwords, inventory values and upstream messages remain in memory. This fixture
  * creates no tables. Generated mutations are captured once on their assigned direct or bridged
  * route; generic identity reads remain independent of typed payload validation for cleanup.
+ * Two run-bound GETs read back the linked pair's assigned SELECT privilege through both routes.
  *
  * @phpstan-import-type Record from EvidenceRunner
  * @phpstan-import-type Context from EvidenceRunner
@@ -38,7 +39,7 @@ use Throwable;
  *     cleanup: 'not_required'|'confirmed_absent'|'present'|'unconfirmed'
  * }
  * @phpstan-type Report array{
- *     recipe: 'mysql-npr-linked-unlinked-v1', status: 'passed'|'failed',
+ *     recipe: 'mysql-npr-linked-unlinked-v2', status: 'passed'|'failed',
  *     setup: 'passed'|'failed'|'not_started', capture: 'passed'|'failed'|'not_run',
  *     expectations: 'passed'|'failed'|'not_run', cleanup: 'passed'|'failed'|'not_required',
  *     failures: list<string>, resources: array{
@@ -106,9 +107,10 @@ final class MysqlFixture
     }
 
     /**
-     * Create fixtures, capture the unchanged catalog, then clean up before returning sanitized outcomes.
+     * Create fixtures, capture the catalog plus two owned privilege reads, then verify cleanup.
      *
-     * The capture callback receives every supplied probe. Four MySQL callbacks additionally retain
+     * The capture callback receives every supplied probe and two exact run-bound privilege GETs.
+     * Four inventory and two privilege callbacks additionally retain
      * their generated results in memory; expectations are checked after capture, so API and typed
      * payload outcomes and same-response evidence remain intact. No exception text enters the report.
      * Each instance is single-use. Failed setup skips capture but still reconciles attempted resources.
@@ -133,6 +135,7 @@ final class MysqlFixture
         $observed = [];
         $wrapped = [];
         $identities = [];
+        $probes = [...$probes, ...$this->privilegeProbes()];
         foreach ($probes as $probe) {
             if ($probe->unavailable !== null) {
                 $report['failures'][] = 'configuration_failure';
@@ -159,7 +162,7 @@ final class MysqlFixture
                 $probe->unavailable,
             );
         }
-        if (count(array_unique($identities)) !== 4 || count($identities) !== 4) {
+        if (count(array_unique($identities)) !== 6 || count($identities) !== 6) {
             $report['failures'][] = 'configuration_failure';
 
             return ['probes' => [], 'mysql_fixture' => $report, 'mysql_mutations' => []];
@@ -184,6 +187,39 @@ final class MysqlFixture
         }
 
         return ['probes' => $records, 'mysql_fixture' => $report, 'mysql_mutations' => $this->mutations];
+    }
+
+    /**
+     * Bind readback to this run's linked resources; EvidenceRunner enforces each exact GET URI.
+     *
+     * Calls execute only after setup succeeds, before cleanup. Names and privileges stay in memory;
+     * the runner persists structural types, while expectations() checks the assigned SELECT value.
+     * This checks the API-reported assignment, not SQL permission enforcement.
+     *
+     * @return list<Probe>
+     */
+    private function privilegeProbes(): array
+    {
+        $database = $this->names['linked_database'];
+        $user = $this->names['linked_user'];
+        $query = 'database=' . $database . '&user=' . $user;
+        $probes = [];
+        foreach (['direct-uapi', 'bridged-uapi'] as $route) {
+            $uri = $route === 'direct-uapi'
+                ? 'https://test.oblak.host:2083/execute/Mysql/get_privileges_on_database?' . $query
+                : 'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                    . '&cpanel.module=Mysql&cpanel.function=get_privileges_on_database&' . $query;
+            $probes[] = new Probe(
+                'uapi:Mysql/get_privileges_on_database',
+                $route,
+                MysqlSpec::GET_PRIVILEGES_ON_DATABASE,
+                $uri,
+                static fn (#[SensitiveParameter] Client $client): mixed => $client->uapi('npr')->mysql()
+                    ->getPrivilegesOnDatabase(database: $database, user: $user),
+            );
+        }
+
+        return $probes;
     }
 
     /** @param Report $report */
@@ -357,7 +393,7 @@ final class MysqlFixture
                 $record['probe_outcome'] !== 'passed'
                 || !$this->expectedResult(
                     $observed[$identity] ?? null,
-                    $record['operation'] === 'uapi:Mysql/list_databases',
+                    $record['operation'],
                 )
             ) {
                 $report['expectations'] = 'failed';
@@ -367,7 +403,7 @@ final class MysqlFixture
                 }
             }
         }
-        if (count($seen) !== 4 || count(array_unique($seen)) !== 4) {
+        if (count($seen) !== 6 || count(array_unique($seen)) !== 6) {
             $report['expectations'] = 'failed';
         }
         if ($report['expectations'] === 'failed') {
@@ -376,11 +412,15 @@ final class MysqlFixture
     }
 
     /** Check only fixture-owned records; unrelated inventory values remain outside fixture expectations. */
-    private function expectedResult(#[SensitiveParameter] mixed $result, bool $databases): bool
+    private function expectedResult(#[SensitiveParameter] mixed $result, string $operation): bool
     {
+        if ($operation === 'uapi:Mysql/get_privileges_on_database') {
+            return $result === ['SELECT'];
+        }
         if (!is_array($result) || !array_is_list($result)) {
             return false;
         }
+        $databases = $operation === 'uapi:Mysql/list_databases';
         $identity = $databases ? 'database' : 'user';
         $nested = $databases ? 'users' : 'databases';
         $linked = $this->names[$databases ? 'linked_database' : 'linked_user'];
@@ -413,7 +453,9 @@ final class MysqlFixture
 
     private static function isMysql(string $operation, string $route): bool
     {
-        return in_array($operation, ['uapi:Mysql/list_databases', 'uapi:Mysql/list_users'], true)
+        return in_array($operation, [
+            'uapi:Mysql/list_databases', 'uapi:Mysql/list_users', 'uapi:Mysql/get_privileges_on_database',
+        ], true)
             && in_array($route, ['direct-uapi', 'bridged-uapi'], true);
     }
 
@@ -423,7 +465,7 @@ final class MysqlFixture
         $resource = ['creation' => 'not_attempted', 'cleanup' => 'not_required'];
 
         return [
-            'recipe' => 'mysql-npr-linked-unlinked-v1', 'status' => 'failed', 'setup' => 'not_started',
+            'recipe' => 'mysql-npr-linked-unlinked-v2', 'status' => 'failed', 'setup' => 'not_started',
             'capture' => 'not_run', 'expectations' => 'not_run', 'cleanup' => 'not_required', 'failures' => [],
             'resources' => [
                 'linked_database' => $resource, 'unlinked_database' => $resource,

@@ -1142,3 +1142,56 @@ checks passed. Two cross-component internal reviews and the primary review
 covered capture/cleanup/guards and evidence assessment; source inspection
 corrected the initial empty-object assumption, and review added the existing
 empty-map compatibility case. Elapsed review time was not measured.
+
+### MySQL provisioning reads: 2026-10-17
+
+The owner approved the next bounded batch under `whm-api-client-8x0.4.6`:
+`get_privileges_on_database`, `get_restrictions` and `get_server_information`.
+All three pinned variants are read-only GETs. The first two are available from
+cPanel 11.44; server information starts at cPanel 54. They retain the documented
+MySQL-role/remote-configuration caveat. Privileges remain a string list, including
+an empty list when none are assigned. Restrictions preserve optional integer
+length fields and an optional nullable prefix. Server information preserves
+optional string host/version fields and integer `is_remote` (`0|1`). No runtime,
+generator, request encoding or compatibility policy changed.
+
+The [provisioning artifact](evidence/2026-10-17-mysql-provisioning.json), SHA-256
+`fb3581fb858647356d7d815e7560dd4b307a0c2558e373102c9ec8c3e1d28155`,
+records one opted-in fixture run at code
+`b1f83d003f444fac05b9b7bdc3ed6ac3e1ea6c4b` on cPanel `11.138.0.15`.
+Its 49 read observations comprise the 47-probe catalog across 27 operations and
+two fixture-bound privilege reads. All six new operation/route observations
+passed HTTP 200, API outcome, generated validation and fixture expectations,
+with no new discrepancies or wire corrections. Both restrictions responses
+contained integer length fields and a string prefix. Both server-information
+responses contained string host/version fields and an integer remote flag.
+The privilege responses were nonempty string lists; the v2 fixture separately
+required exactly the assigned `SELECT` value through each route. Only structural
+types are saved, not those payload values or resource identities.
+
+The fixture reused the same two databases and two users, with the same ten
+generated mutation POST observations; all ten passed with explicit null payloads
+and no mutation discrepancies. All four creations and all four cleanup absences
+were confirmed. The read assessment retained **2 acknowledged, 0 unexpected,
+0 stale** Quota findings, and the command exited **0**. Source/map/generator/
+overlay/effective-contract hashes were rechecked, both assessments reproduced,
+and all 1,270 structural paths were checked against static contract/envelope keys
+and wildcard masking. No operation was replayed to recover evidence.
+
+This verifies API-reported privilege assignment, not SQL permission enforcement.
+Empty live privilege lists, other grants, disabled or omitted prefixes,
+remote/disabled-role configurations, other cPanel versions and positive database
+disk usage remain unobserved. General minimum/format enforcement remains outside
+this batch under the existing runtime policy. HostingPal integration stays deferred.
+
+The code commit changed 18 files: 11 manually authored overlay/implementation/test
+files (475 added / 24 removed lines), three generated files (143 / 2), and four
+documentation files (39 / 13). Manual implementation/overlay work accounts for
+127 / 10 lines; seven test files account for 348 / 14. The existing test helper
+and probe-pair helper were reused unchanged; no new shared helper, guard class,
+assessment class or fixture resource was added. These three reads differ in scope
+from PR25's five mutations, so these figures are not a per-operation speedup.
+The suite gained 264 cases and reached **4,015 tests / 31,055 assertions**. Required
+Composer and offline API-map gates passed. A separate local review of the code
+commit found no issues and ran 400 focused tests / 5,253 assertions. External
+review rounds and findings are tracked in Beads; human review time is not instrumented.

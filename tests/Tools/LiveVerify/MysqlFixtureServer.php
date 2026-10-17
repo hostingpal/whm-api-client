@@ -42,6 +42,9 @@ final class MysqlFixtureServer implements ClientInterface
     /** @var array<string, string> */
     public array $overrides = [];
 
+    /** @var list<array{string, string, string, string}> */
+    public array $privilegeRequests = [];
+
     public function sendRequest(RequestInterface $request): ResponseInterface
     {
         $bridge = str_contains((string) $request->getUri(), 'uapi_cpanel');
@@ -118,6 +121,18 @@ final class MysqlFixtureServer implements ClientInterface
             foreach ($this->users as $user => $databases) {
                 $data[] = ['user' => $user, 'shortuser' => substr($user, 4), 'databases' => $databases];
             }
+        } elseif ($function === 'get_restrictions') {
+            $data = ['max_database_name_length' => 64, 'max_username_length' => 32, 'prefix' => 'npr_'];
+        } elseif ($function === 'get_server_information') {
+            $data = ['host' => 'localhost', 'is_remote' => 0, 'version' => '8.0.36'];
+        } elseif ($function === 'get_privileges_on_database') {
+            $this->privilegeRequests[] = [
+                $request->getMethod(), (string) $request->getUri(),
+                $request->getHeaderLine('Authorization'), (string) $request->getBody(),
+            ];
+            $data = ($query['database'] ?? null) === 'npr_wva1b2c3d'
+                && ($query['user'] ?? null) === 'npr_wva1b2c3u'
+                && ($this->databases['npr_wva1b2c3d'] ?? null) === ['npr_wva1b2c3u'] ? ['SELECT'] : [];
         }
 
         return self::response($this->overrides[$step] ?? json_encode($data, JSON_THROW_ON_ERROR), $bridge, true);

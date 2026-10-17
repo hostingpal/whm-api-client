@@ -191,6 +191,13 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
             'uapi:Mysql/list_databases|bridged-uapi' => 'uapi:Mysql/list_databases bridged-uapi',
             'uapi:Mysql/list_users|direct-uapi' => 'uapi:Mysql/list_users direct-uapi',
             'uapi:Mysql/list_users|bridged-uapi' => 'uapi:Mysql/list_users bridged-uapi',
+            'uapi:Mysql/get_restrictions|direct-uapi' => 'uapi:Mysql/get_restrictions direct-uapi',
+            'uapi:Mysql/get_restrictions|bridged-uapi' => 'uapi:Mysql/get_restrictions bridged-uapi',
+            'uapi:Mysql/get_server_information|direct-uapi' => 'uapi:Mysql/get_server_information direct-uapi',
+            'uapi:Mysql/get_server_information|bridged-uapi' => 'uapi:Mysql/get_server_information bridged-uapi',
+            'uapi:Mysql/get_privileges_on_database|direct-uapi' => 'uapi:Mysql/get_privileges_on_database direct-uapi',
+            'uapi:Mysql/get_privileges_on_database|bridged-uapi'
+                => 'uapi:Mysql/get_privileges_on_database bridged-uapi',
             'whm1:listaccts|whm' => 'whm1:listaccts whm',
             'whm1:accountsummary|whm' => 'whm1:accountsummary whm',
             'whm1:get_domain_info|whm' => 'whm1:get_domain_info whm',

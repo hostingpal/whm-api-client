@@ -23,6 +23,17 @@ use SensitiveParameter;
  * @phpstan-type CreateUserResult array<array-key, mixed>|null
  * @phpstan-type DeleteDatabaseResult array<array-key, mixed>|null
  * @phpstan-type DeleteUserResult array<array-key, mixed>|null
+ * @phpstan-type GetPrivilegesOnDatabaseResult list<string>
+ * @phpstan-type GetRestrictionsResult array{
+ *     max_database_name_length?: int,
+ *     max_username_length?: int,
+ *     prefix?: string|null,
+ * }
+ * @phpstan-type GetServerInformationResult array{
+ *     host?: string,
+ *     is_remote?: 0|1,
+ *     version?: string,
+ * }
  * @phpstan-type ListDatabasesResult list<array{
  *     database?: string,
  *     disk_usage?: int,
@@ -186,6 +197,92 @@ final readonly class Mysql
     {
         /** @var DeleteUserResult $result Validated against MysqlSpec::DELETE_USER. */
         $result = ($this->run)(MysqlSpec::DELETE_USER, ['name' => $name]);
+
+        return $result;
+    }
+
+    /**
+     * Return MySQL user privileges.
+     *
+     * This function lists a MySQL® database user's privileges.
+     *
+     * Documented: Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: Returns the database user's privileges as a list of strings; the list is empty when the user has no
+     * privileges on that database. If database prefixing is enabled, the user argument must include the account prefix
+     * and underscore. The documented privilege examples do not define a closed enum.
+     *
+     * API-map identity: uapi:Mysql/get_privileges_on_database#GET (wire name get_privileges_on_database).
+     *
+     * @param string $database The database name.
+     * @param string $user The database user's name.
+     * @return GetPrivilegesOnDatabaseResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-get_privileges_on_database
+     */
+    public function getPrivilegesOnDatabase(string $database, string $user): array
+    {
+        /** @var GetPrivilegesOnDatabaseResult $result Validated against MysqlSpec::GET_PRIVILEGES_ON_DATABASE. */
+        $result = ($this->run)(MysqlSpec::GET_PRIVILEGES_ON_DATABASE, ['database' => $database, 'user' => $user]);
+
+        return $result;
+    }
+
+    /**
+     * Return MySQL name length restrictions.
+     *
+     * This function lists a MySQL® database's name, username length restrictions, and database prefix.
+     *
+     * Documented: Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: Returns account database-name and username length limits and the database prefix. prefix is null when
+     * database prefixing is disabled. All result fields are optional; omission remains distinct from an explicit null
+     * prefix.
+     *
+     * API-map identity: uapi:Mysql/get_restrictions#GET (wire name get_restrictions).
+     *
+     * @return GetRestrictionsResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-get_restrictions
+     */
+    public function getRestrictions(): array
+    {
+        /** @var GetRestrictionsResult $result Validated against MysqlSpec::GET_RESTRICTIONS. */
+        $result = ($this->run)(MysqlSpec::GET_RESTRICTIONS, []);
+
+        return $result;
+    }
+
+    /**
+     * Return MySQL server host information and version.
+     *
+     * This function returns information about the account's MySQL® host.
+     *
+     * Documented: Available in cPanel 54 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: Returns the account database host and database-server version. is_remote remains an integer: 1 for
+     * remote, 0 for local. All result fields are optional; host and version strings are preserved without interpreting
+     * them.
+     *
+     * API-map identity: uapi:Mysql/get_server_information#GET (wire name get_server_information).
+     *
+     * @return GetServerInformationResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-information/mysql-get_server_information
+     */
+    public function getServerInformation(): array
+    {
+        /** @var GetServerInformationResult $result Validated against MysqlSpec::GET_SERVER_INFORMATION. */
+        $result = ($this->run)(MysqlSpec::GET_SERVER_INFORMATION, []);
 
         return $result;
     }

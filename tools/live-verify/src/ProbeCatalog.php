@@ -390,6 +390,20 @@ final class ProbeCatalog
                 MysqlSpec::LIST_USERS,
                 static fn (UapiClient $account): mixed => $account->mysql()->listUsers(),
             ),
+            ...self::parameterlessUapiPair(
+                $mysql,
+                'Mysql',
+                'get_restrictions',
+                MysqlSpec::GET_RESTRICTIONS,
+                static fn (UapiClient $account): mixed => $account->mysql()->getRestrictions(),
+            ),
+            ...self::parameterlessUapiPair(
+                $mysql,
+                'Mysql',
+                'get_server_information',
+                MysqlSpec::GET_SERVER_INFORMATION,
+                static fn (UapiClient $account): mixed => $account->mysql()->getServerInformation(),
+            ),
         ];
     }
 

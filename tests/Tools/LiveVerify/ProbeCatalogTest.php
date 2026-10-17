@@ -13,19 +13,23 @@ use PHPUnit\Framework\TestCase;
 
 final class ProbeCatalogTest extends TestCase
 {
-    public function testCatalogContainsExactlyFourReviewedMysqlProbes(): void
+    public function testCatalogContainsExactlyEightReviewedMysqlProbes(): void
     {
         $probes = array_values(array_filter(
             ProbeCatalog::load(dirname(__DIR__, 3)),
             static fn (Probe $probe): bool => str_starts_with($probe->operation, 'uapi:Mysql/'),
         ));
 
-        self::assertCount(4, $probes);
+        self::assertCount(8, $probes);
         self::assertSame([
             ['uapi:Mysql/list_databases', 'direct-uapi', null],
             ['uapi:Mysql/list_databases', 'bridged-uapi', null],
             ['uapi:Mysql/list_users', 'direct-uapi', null],
             ['uapi:Mysql/list_users', 'bridged-uapi', null],
+            ['uapi:Mysql/get_restrictions', 'direct-uapi', null],
+            ['uapi:Mysql/get_restrictions', 'bridged-uapi', null],
+            ['uapi:Mysql/get_server_information', 'direct-uapi', null],
+            ['uapi:Mysql/get_server_information', 'bridged-uapi', null],
         ], array_map(static fn (Probe $probe): array => [
             $probe->operation, $probe->route, $probe->unavailable,
         ], $probes));
@@ -186,7 +190,7 @@ final class ProbeCatalogTest extends TestCase
      */
     public static function changedInventoryArguments(): iterable
     {
-        foreach (['list_databases', 'list_users'] as $function) {
+        foreach (['list_databases', 'list_users', 'get_restrictions', 'get_server_information'] as $function) {
             $operation = 'uapi:Mysql/' . $function;
             yield $function . ' unexpected account' => ['uapi/Mysql.json', $operation, ['user' => 'other']];
             yield $function . ' unexpected bridge account' => ['uapi/Mysql.json', $operation, [

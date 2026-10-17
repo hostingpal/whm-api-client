@@ -179,6 +179,60 @@
           "note": "The pinned /Mysql/delete_database GET variant has x-readonly=false and x-rollback=none. The generated-client request policy sends mutations and secret-bearing parameters as form POST, keeping operation parameters out of access-log query strings. The pinned nullable object result has no properties or additionalProperties restriction, so its fields remain opaque and preserved; no omitted-payload compatibility is added."
         }
       ]
+    },
+    "uapi:Mysql/get_privileges_on_database": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the database user's privileges as a list of strings; the list is empty when the user has no privileges on that database. If database prefixing is enabled, the user argument must include the account prefix and underscore. The documented privilege examples do not define a closed enum."
+        }
+      ]
+    },
+    "uapi:Mysql/get_restrictions": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns account database-name and username length limits and the database prefix. prefix is null when database prefixing is disabled. All result fields are optional; omission remains distinct from an explicit null prefix."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:Mysql/get_server_information": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the account database host and database-server version. is_remote remains an integer: 1 for remote, 0 for local. All result fields are optional; host and version strings are preserved without interpreting them."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
     }
   }
 }

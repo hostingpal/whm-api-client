@@ -400,6 +400,11 @@ final class VerifyCommandTest extends TestCase
         yield 'bridged database inventory' => ['uapi:Mysql/list_databases', 'bridged-uapi'];
         yield 'direct database user inventory' => ['uapi:Mysql/list_users', 'direct-uapi'];
         yield 'bridged database user inventory' => ['uapi:Mysql/list_users', 'bridged-uapi'];
+        foreach (['get_restrictions', 'get_server_information', 'get_privileges_on_database'] as $function) {
+            foreach (['direct-uapi', 'bridged-uapi'] as $route) {
+                yield $function . ' ' . $route => ['uapi:Mysql/' . $function, $route];
+            }
+        }
         yield 'direct total quota' => ['uapi:Quota/get_quota_info', 'direct-uapi'];
         yield 'bridged total quota' => ['uapi:Quota/get_quota_info', 'bridged-uapi'];
         yield 'direct local quota' => ['uapi:Quota/get_local_quota_info', 'direct-uapi'];

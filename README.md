@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 13 generated typed groups cover 79 reviewed operations (see
+The 13 generated typed groups cover 82 reviewed operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -163,6 +163,10 @@ $underQuota = $quota['under_quota_overall'] ?? null; // 0|1, or absent.
 // MySQL inventory belongs to the selected cPanel account (cPanel 82+).
 $databases = $account->mysql()->listDatabases(); // database, disk_usage (bytes), users
 $databaseUsers = $account->mysql()->listUsers(); // user, shortuser, databases
+$restrictions = $account->mysql()->getRestrictions(); // Length limits and optional nullable prefix.
+$databaseServer = $account->mysql()->getServerInformation(); // host, is_remote (0|1), version
+$privileges = $account->mysql()->getPrivilegesOnDatabase(database: 'npr_app', user: 'npr_appuser');
+// Privileges are a list of strings; no assigned privileges produces an empty list.
 ```
 
 A zero `inode_limit` or `megabyte_limit` means unlimited or disabled quotas.
@@ -232,7 +236,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->langPhp()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetDomainHandler()`, `phpGetImpactedDomains()` |
 | `uapi()->features()` | `listFeatures()` |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
-| `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()` |
+| `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
 
 UAPI groups operate on the selected cPanel account through either credential route.
@@ -555,11 +559,15 @@ from the pinned documentation, and caveats it lacks are recorded as overlay note
 The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
 
 The [live evidence runner](tools/live-verify/README.md) captures the same raw
-response before normalization and field filtering for 43 reviewed route-specific
-probes across 25 operations. It saves sanitized structural evidence with revision
+response before normalization and field filtering for 47 reviewed route-specific
+probes across 27 operations. It saves sanitized structural evidence with revision
 and contract hashes, while independent regression expectations remain in the
 offline suite. It covers WHM version/load and account/domain/PHP inventory, plus
 UAPI domain/PHP/Email/SSL/MySQL inventory and quotas through both UAPI routes.
+The MySQL catalog includes account naming restrictions and database-server information.
+The optional MySQL fixture adds two account-bound privilege GETs after assigning
+`SELECT`, checking the API-reported assignment through both routes before cleanup.
+This does not test SQL permission enforcement.
 Account-list and summary probes target `npr` explicitly;
 the PHP handler probe uses the reviewed `type: 'home'` argument, and AutoSSL renewal
 status targets `npr.rs`. The [saved populated MySQL run](docs/api/evidence/2026-10-17-mysql-populated.json)
@@ -577,6 +585,11 @@ section. All ten POST observations returned explicit null and passed without
 mutation discrepancies; cleanup confirmed all four resources absent. The earlier
 populated-inventory artifact does not establish this mutation coverage. Opaque
 object results and optional prefix/privilege variants remain offline-tested only.
+The [provisioning readback run](docs/api/evidence/2026-10-17-mysql-provisioning.json)
+adds restrictions, database-server information and exact `SELECT` readback through
+both routes. All 49 reads and ten fixture mutations passed, and cleanup confirmed
+all four resources absent. Empty privilege lists and disabled prefixes remain
+offline-tested only; the same two Quota acknowledgments remain visible.
 The separate [finite-Quota scenario](docs/api/evidence/2026-10-17-finite-quota.json)
 adds five observations on a disposable account. Both Quota operations passed
 finite-limit checks through both routes, and token/account/domain/zone cleanup
