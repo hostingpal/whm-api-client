@@ -571,10 +571,12 @@ lists through both routes on cPanel `11.138.0.15`; cleanup confirmed all four
 temporary resources absent. Other versions and remote/disabled-role MySQL
 configurations remain unobserved. See the
 [delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
-The current fixture also captures its five generated mutations through both
-routes in a separate `mysql_mutations` section. Its assessment requires ten
-successful POST observations without discrepancies and verified cleanup; the
-earlier populated-inventory artifact does not establish this mutation coverage.
+The [generated mutation run](docs/api/evidence/2026-10-17-mysql-mutations.json)
+captures five operations through both routes in a separate `mysql_mutations`
+section. All ten POST observations returned explicit null and passed without
+mutation discrepancies; cleanup confirmed all four resources absent. The earlier
+populated-inventory artifact does not establish this mutation coverage. Opaque
+object results and optional prefix/privilege variants remain offline-tested only.
 The separate [finite-Quota scenario](docs/api/evidence/2026-10-17-finite-quota.json)
 adds five observations on a disposable account. Both Quota operations passed
 finite-limit checks through both routes, and token/account/domain/zone cleanup

@@ -348,6 +348,9 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   creation/deletion bridged, and an explicit SELECT assignment through each route.
   The second assignment establishes execution/response coverage, not an independent
   privilege change. Its strict assessment accepts no discrepancies or missing calls.
+  The [generated mutation artifact](docs/api/evidence/2026-10-17-mysql-mutations.json)
+  records all ten POSTs passing with explicit null payloads on `11.138.0.15`,
+  zero mutation discrepancies, and all four resources confirmed absent afterward.
 - The optional `--finite-quota-fixture` mode requires both live opt-ins and exact
   `WHM_API_LIVE_ACCOUNT=wqfinite` / `WHM_API_LIVE_DOMAIN=wqfinite.example.com`.
   It captures five separate observations on a disposable finite-quota account,

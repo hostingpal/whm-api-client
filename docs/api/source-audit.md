@@ -1099,3 +1099,46 @@ and the existing gate compares exact structural observations rather than these
 names. This inspection does not establish the names or counts in historical
 masked artifacts, including the finite-account scenario. No historical evidence,
 acknowledgment or finite-scenario exit policy is changed.
+
+### Runtime observations: 2026-10-17 generated MySQL mutations
+
+The [mutation workflow artifact](evidence/2026-10-17-mysql-mutations.json), SHA-256
+`7d9eb21a6d2abf085784e468016d6669f1c5ff54ab307f2e1ee28f15fb32c97c`,
+records one opted-in fixture invocation at committed code
+`487c30ec726b5548fc4a9b210427e1bd5e6c9d36` on cPanel `11.138.0.15`.
+All ten mutation observations passed HTTP 200, API outcome, generated payload
+validation and probe execution. Each of the five functions was observed through
+direct UAPI and the WHM bridge using actual POST with pinned source variant
+`#GET`. Every mutation returned explicit `null`; opaque object contents and
+empty-map compatibility remain offline-tested only. No compatibility correction
+was needed, and the separate mutation assessment has zero discrepancies.
+
+All 43 baseline observations also passed, with **2 acknowledged, 0 unexpected,
+0 stale** Quota findings. Both MySQL inventories again observed the populated
+linked and unlinked records through both routes. The fixture confirmed all four
+creations and independently confirmed all four resources absent during cleanup.
+Setup, capture, inventory expectations and cleanup passed, and the command exited
+**0**. No mutation was retried. Evidence contains structural paths/types and fixed
+lifecycle labels, not resource names, credentials or response values other than
+the reviewed server version.
+
+This establishes the stated account, version and routes. Explicit `prefixSize`,
+omitted/empty privilege arguments, other privilege sets, database contents,
+positive disk usage, SQL permission enforcement, other server versions and
+remote/disabled-role behavior remain unobserved. The second `SELECT` assignment
+was deliberately idempotent, so its success does not independently demonstrate a
+privilege change. Real HostingPal consumer validation remains deferred.
+
+Before external review, the code commit touched 18 manually authored overlay,
+implementation and test files (1,558 added / 196 removed lines), three generated
+files (254 / 2), and four documentation files (124 / 10). The saved artifact and
+this runtime addendum are separate. Unlike the earlier finite-Quota fixture's
+12 manual tool/test/runner-documentation files and 2,400 / 12 lines, this batch
+reuses a lifecycle and delivers five generated operations; these counts describe
+different scopes and do not establish a general per-operation cost. The offline
+suite gained 295 cases, reaching **3,751 tests / 28,216 assertions**. Required
+Composer validation, formatting, static analysis, tests and offline API-map
+checks passed. Two cross-component internal reviews and the primary review
+covered capture/cleanup/guards and evidence assessment; source inspection
+corrected the initial empty-object assumption, and review added the existing
+empty-map compatibility case. Elapsed review time was not measured.
