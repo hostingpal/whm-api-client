@@ -34,9 +34,16 @@ use Throwable;
  */
 final readonly class EvidenceRunner
 {
-    /** @param Context $context */
-    public function __construct(private ClientInterface $http, private array $context)
-    {
+    /**
+     * Bind direct authentication explicitly for a designated fixture; the baseline remains npr.
+     *
+     * @param Context $context
+     */
+    public function __construct(
+        private ClientInterface $http,
+        private array $context,
+        private string $directUsername = 'npr',
+    ) {
     }
 
     /**
@@ -72,7 +79,7 @@ final readonly class EvidenceRunner
                 'host' => 'test.oblak.host',
                 'port' => $direct ? 2083 : 2087,
                 'authType' => $direct ? 'cpanel' : 'whm',
-                'username' => $direct ? 'npr' : 'root',
+                'username' => $direct ? $this->directUsername : 'root',
                 'token' => $tokens[$direct ? 'cpanel' : 'whm'],
             ], new HttpTransport($capture, $factory, $factory));
             try {

@@ -563,6 +563,12 @@ lists through both routes on cPanel `11.138.0.15`; cleanup confirmed all four
 temporary resources absent. Other versions and remote/disabled-role MySQL
 configurations remain unobserved. See the
 [delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
+The separate [finite-Quota scenario](docs/api/evidence/2026-10-17-finite-quota.json)
+adds five observations on a disposable account. Both Quota operations passed
+finite-limit checks through both routes, and token/account/domain/zone cleanup
+was confirmed. Its command exited **1** because two unknown-field observations
+remain unacknowledged in that scenario; the baseline acknowledgments do not apply.
+Exhausted-quota enforcement and finite inode limits remain unobserved.
 Real HostingPal consumer integration testing is deferred by the user as of
 2026-10-17; no consumer validation is claimed. It can resume against the current
 client before full API coverage or a release. Any public prerelease is a separate decision with

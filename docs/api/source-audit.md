@@ -763,8 +763,9 @@ synthetic tests cover the documented and accepted wire forms, zero/fractional
 values, omission/null distinctions, conversion failures, all three envelope
 forms, routing/authentication, account isolation, metadata failures and unknown
 key privacy. The fixtures are authored independently of generated specs and do
-not contain live quota values. Distributed accounts, quota enforcement changes,
-finite-limit scenarios and other server versions have not been live-tested.
+not contain live quota values. At that point, distributed accounts, quota
+enforcement changes, finite-limit scenarios and other server versions had not
+been live-tested. The later finite-limit scenario is recorded below.
 
 
 [Corrected-contract evidence](evidence/2026-10-16-quota-inventory.json) records
@@ -936,3 +937,109 @@ in the runner documentation. Positive `disk_usage` remains a separate nonblockin
 evidence follow-up under `whm-api-client-8x0.2.7`. The user also deferred the real
 HostingPal consumer exercise beyond this pilot; that decision adds no consumer
 evidence and preserves the remaining correction-cycle gates.
+
+### Runtime observations: 2026-10-17 finite-Quota preflight
+
+Tracking: `whm-api-client-8x0.3.1`. The
+[first finite-Quota attempt](evidence/2026-10-17-finite-quota-preflight.json)
+records revision `c81036e62aa89d3c1bc4b9bb79e145f609ef8e22` on cPanel
+`11.138.0.15`. All 43 baseline probes passed, with the unchanged assessment
+reporting **2 acknowledged, 0 unexpected, 0 stale**. The separate finite scenario
+stopped during preflight: neither account nor token creation was attempted,
+cleanup was not required, and no finite-Quota observations were made. The command
+exited **1**; this artifact is not finite-limit evidence.
+
+Five subsequent guarded read-only diagnostic requests identified the recipe
+problem without retaining identities, raw responses or upstream error messages.
+An absent exact-user `listaccts` search returned an API error; an absent
+exact-domain search succeeded with `data: null`. Full account inventory returned
+a usable record list, while manual-domain and DNS-zone inventories also returned
+usable lists with the designated target absent. The fixture therefore selects
+exact identities locally from the full account inventory. API errors, null
+payloads and malformed identity lists still fail closed. This changes only the
+development recipe; it does not widen a generated contract or add a compatibility
+correction. The original failed artifact remains unchanged.
+
+### Runtime observations: 2026-10-17 finite-Quota token setup
+
+The [second runner attempt](evidence/2026-10-17-finite-quota-token-setup.json)
+records revision `15fba470a4eb38966d5dccb21202f40ebdd47e7d` on the same cPanel version. All 43
+baseline probes again passed with two acknowledged Quota discrepancies. Finite
+setup failed before capture; cleanup reconciled the created account and token,
+revoked the token, removed the account, and confirmed account, domain and zone
+absence. The command exited **1** and establishes no finite-limit observations.
+
+A separate diagnostic invocation used the unchanged committed fixture and its
+exact guards, with a reviewed lazy observer on the original token responses. It
+confirmed successful token creation, a usable string token, integer `readonly`
+equal to the requested flag, and a string `expires_at` exactly matching the
+requested decimal timestamp. No credential, timestamp value, account marker or
+upstream error text was retained. Token revocation and account/domain/zone
+cleanup again succeeded. This diagnostic made no finite-Quota requests.
+
+The pinned `Tokens/list` schema specifies an integer-or-null expiry. The fixture
+accepts the exact requested integer or its exact decimal-string representation,
+while preserving strict integer read-only flags and rejecting altered expiry
+values, whitespace, leading zeros, exponents and floats. This is a documented
+fixture compatibility decision, not generated Tokens coverage or a core schema
+change. Independently authored regression expectations cover the boundary.
+
+### Runtime observations: 2026-10-17 finite Quota limits
+
+The [finite-Quota evidence](evidence/2026-10-17-finite-quota.json) records
+revision `20cb951c94bb6c6fe9c5f3544e104c63557bd434` on cPanel `11.138.0.15`.
+The guarded fixture created the explicitly designated disposable account with
+64 MB configured disk quota, then used a temporary read-only account token for
+direct UAPI and the WHM control credential for the account-bound bridge. Both
+`Quota/get_quota_info` and `Quota/get_local_quota_info` passed HTTP, API, generated
+payload and independent finite-expectation checks on both GET routes. The
+separate scenario contains those four observations and its own WHM version probe.
+
+Both total responses exposed integer `megabyte_limit`, floating-point usage and
+remaining-space fields, numeric-string inode limit/remaining fields, integer
+inode usage, and numeric-string `under_*` flags. Existing evidenced conversions
+accepted these representations. In-memory assertions verified the configured
+finite disk limit, nonnegative usage below the limit, positive remaining space
+within the limit, and coherent under-limit flags. Local responses exposed integer
+`byte_limit` on both routes, numeric-string direct `bytes_used` and integer bridged
+`bytes_used`, integer inode usage, and null local inode limits. No generated Quota
+contract or compatibility correction changed.
+
+The fixed `unit_relationships` labels are `binary-mib` for both routes: each
+observed local byte limit matched the configured quota multiplied by 1024 squared.
+This records a relationship for this run, not a universal MB conversion. Usage
+from separate requests was not compared; exact floating-point sum/rounding,
+finite inode limits, exhausted quota, write rejection at a limit, distributed
+allocation and other versions remain unobserved. Saved payload fingerprints
+contain structural types only, without quota values or resource identities.
+
+All 43 baseline probes also passed, and their unchanged policy reports
+**2 acknowledged, 0 unexpected, 0 stale**. The finite scenario's separate policy
+reports **0 acknowledged and 2 unacknowledged discrepancies**, one `unknown_field`
+at `$.*` with masked integer type in each total response. Accordingly the full
+command exited **1**, despite successful finite expectations and cleanup. No
+baseline acknowledgment was reused for the disposable account. These observations
+neither identify unknown keys/counts nor resolve their contracts; the existing
+`whm-api-client-8x0.4.3.1` / [issue #18](https://github.com/hostingpal/whm-api-client/issues/18)
+remains open. No discrepancy was removed, acknowledged or automatically corrected.
+
+The fixture report confirms setup, capture, expectations and cleanup. Account and
+token creation were confirmed, the exact token was revoked and independently
+observed absent, and the owned account was removed with DNS retention disabled.
+Separate account, manual-domain and zone inventories confirmed absence. A random
+contact-email marker guarded ownership before token work and deletion; no
+mutation was retried. Automatic service domains are outside the upstream manual
+domain inventory. The live sequence comprised three normal runner invocations
+and one diagnostic fixture invocation: the first created nothing, and all three
+that created resources confirmed cleanup. Failed runner artifacts remain saved.
+
+Implementation effort before external review: twelve manually authored tool,
+test and runner-documentation files, with a net diff of 2,400 added and 12 removed
+lines, plus this audit, current-progress documentation and the three captured
+artifacts. The suite gained 167 cases (3,456 total, 24,836 assertions). The initial internal review resolved
+manual-domain inventory, token capability/reporting and concurrent-run ownership
+issues; two focused follow-up reviews checked the observed inventory and expiry
+adaptations. The final independent focused run passed 249 cases / 2,325 assertions.
+Full formatting, static analysis, tests and offline API-map checks passed. This
+records the concrete recipe and review cost for the subsequent bounded plumbing
+pilot; it introduces no general fixture framework or new generated operations.

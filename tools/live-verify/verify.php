@@ -31,23 +31,35 @@ $prepareEvidenceOutput = static function (#[SensitiveParameter] string $output):
     return $temporary;
 };
 
-// Run reviewed probes, optionally bracketed by the explicitly opted-in MySQL fixture.
+// Run reviewed probes and at most one explicitly opted-in fixture recipe.
 $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($prepareEvidenceOutput): int {
     $temporary = null;
     try {
         if ($arguments === ['--help']) {
-            fwrite(STDOUT, "Usage: php tools/live-verify/verify.php [--mysql-fixture] --output=PATH\n");
+            fwrite(STDOUT, "Usage: php tools/live-verify/verify.php "
+                . "[--mysql-fixture|--finite-quota-fixture] --output=PATH\n");
 
             return 0;
         }
         $mysqlFixture = in_array('--mysql-fixture', $arguments, true);
-        if ($mysqlFixture) {
-            $position = array_search('--mysql-fixture', $arguments, true);
+        $finiteQuotaFixture = in_array('--finite-quota-fixture', $arguments, true);
+        if ($mysqlFixture && $finiteQuotaFixture) {
+            throw new LogicException('Only one fixture recipe may run at a time.');
+        }
+        if ($mysqlFixture || $finiteQuotaFixture) {
+            $position = array_search($mysqlFixture ? '--mysql-fixture' : '--finite-quota-fixture', $arguments, true);
             unset($arguments[$position]);
             $arguments = array_values($arguments);
             if (getenv('WHM_API_LIVE_MUTATIONS') !== '1') {
-                throw new LogicException('MySQL fixtures require explicit mutation opt-in.');
+                throw new LogicException('Fixtures require explicit mutation opt-in.');
             }
+        }
+        if (
+            $finiteQuotaFixture
+            && (getenv('WHM_API_LIVE_ACCOUNT') !== 'wqfinite'
+                || getenv('WHM_API_LIVE_DOMAIN') !== 'wqfinite.example.com')
+        ) {
+            throw new LogicException('Finite Quota requires its exact disposable account and domain.');
         }
         $argument = count($arguments) === 1 ? $arguments[0] : null;
         if (
@@ -78,6 +90,11 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
         $policy = DiscrepancyPolicy::load($root);
         $policy->assertOutputAllowed($output);
         $probes = ProbeCatalog::load($root);
+        foreach ($probes as $probe) {
+            if ($finiteQuotaFixture && $probe->unavailable !== null) {
+                throw new LogicException('Finite Quota requires an available reviewed baseline catalog.');
+            }
+        }
         $temporary = $prepareEvidenceOutput($output);
         $capture = new EvidenceRunner(new CurlClient(), $context);
         $fixtureReport = null;
@@ -97,9 +114,20 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
             $records = $capture->run($probes, $optIn, $tokens);
         }
         $review = $policy->assess($records);
+        $finiteQuota = null;
+        if ($finiteQuotaFixture) {
+            $fixture = new FiniteQuotaFixture(new CurlClient(allowFormPost: true), $tokens['whm']);
+            $finiteQuota = $fixture->run(
+                static fn (#[SensitiveParameter] $http, #[SensitiveParameter] string $token): array =>
+                    (new FiniteQuotaEvidence($http, $context))->run($probes, $tokens['whm'], $token),
+            );
+        }
         $document = ['schema_version' => 2, 'probes' => $records, 'discrepancy_review' => $review];
         if ($fixtureReport !== null) {
             $document['mysql_fixture'] = $fixtureReport;
+        }
+        if ($finiteQuota !== null) {
+            $document['finite_quota'] = $finiteQuota;
         }
         $json = json_encode(
             $document,
@@ -225,8 +253,16 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
         }
 
         $fixturePassed = $fixtureReport === null || $fixtureReport['status'] === 'passed';
+        $finitePassed = true;
+        if ($finiteQuota !== null) {
+            $lifecycleStatus = $finiteQuota['fixture']['status'] === 'passed' ? 'passed' : 'failed';
+            $assessmentStatus = $finiteQuota['discrepancy_review']['status'] === 'passed' ? 'passed' : 'failed';
+            fwrite(STDOUT, 'Finite Quota fixture: ' . $lifecycleStatus . "\n");
+            fwrite(STDOUT, 'Finite Quota discrepancy review: ' . $assessmentStatus . "\n");
+            $finitePassed = $lifecycleStatus === 'passed' && $assessmentStatus === 'passed';
+        }
 
-        return $review['status'] === 'passed' && $fixturePassed ? 0 : 1;
+        return $review['status'] === 'passed' && $fixturePassed && $finitePassed ? 0 : 1;
     } catch (Throwable $error) {
         $kind = match (true) {
             $error instanceof JsonException => 'serialization_failure',

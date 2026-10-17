@@ -86,6 +86,68 @@ by the development evidence policy described below. Their field contracts remain
 unresolved in `whm-api-client-8x0.4.3.1`; acknowledgment does not add them to typed
 results or remove their discrepancy records.
 
+### Finite Quota fixture
+
+The separate `--finite-quota-fixture` mode uses only the disposable account
+`wqfinite` and domain `wqfinite.example.com` on the approved test server. Both
+must be explicitly selected, with both live opt-ins:
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+  WHM_API_LIVE_ACCOUNT=wqfinite WHM_API_LIVE_DOMAIN=wqfinite.example.com \
+  composer live:verify -- --finite-quota-fixture \
+  --output=docs/api/evidence/finite-quota.json
+```
+
+The account, domain and DNS zone must be absent before creation. The recipe
+creates an account with a finite 64 MB disk quota, no shell or dedicated IP,
+and no plan override or forced DNS replacement. Through the WHM bridge it
+creates a temporary read-only cPanel token with a one-hour expiration; token
+expiration does not replace cleanup. Setup confirms integer `readonly: 1` and
+the exact requested expiry, accepting its observed decimal-string representation
+as well as the documented integer. The token and any raw response data remain
+in memory. Exact guards restrict every request to this recipe and its targets.
+
+The existing 43 baseline probes and their discrepancy policy remain unchanged.
+Five additional observations—one WHM version request for provenance, plus both
+Quota operations on both routes—are stored under `finite_quota`, with the fixed
+scenario `finite-quota-disposable-v1` and a separate assessment. Historical `npr`
+acknowledgments never apply to that section. Its initial assessment accepts no
+discrepancies: unresolved unknown fields remain visible and cause exit 1 even
+when the lifecycle and finite-limit checks pass. No policy is widened
+automatically. The two fixture modes cannot be combined in one invocation.
+
+Finite checks retain the original generated results only in memory. They require
+observed positive total and local limits, nonnegative usage, and coherent
+remaining-space and under-limit flags within each response. They do not compare
+usage across requests or invent exact floating-point rounding rules. Fixed
+`unit_relationships` labels describe how observed local limits relate to the
+configured quota; they establish no universal MB conversion. Null or zero local
+limits do not count as finite evidence. A positive difference is recorded as
+`other`; it cannot establish an exact configured-limit match or distinguish a
+delayed update from distributed allocation. The runner does not retry or change
+server quota settings to make a check pass. Finite inode limits and exhausted
+quota behavior are outside this recipe.
+
+Each run binds account creation to a random contact-email marker held only in
+memory. Account reconciliation requires that marker before token work or account
+deletion, so a concurrent run cannot adopt another run's account. Preflight and
+cleanup select exact account and primary-domain identities from the full account
+inventory, then check the manual-domain
+inventory, and DNS zones. The upstream manual-domain inventory excludes automatic
+service domains; these checks do not claim a complete service-domain inventory.
+
+Cleanup reconciles uncertain creations before removing anything, revokes the
+exact temporary token, and continues account cleanup if token cleanup fails.
+It removes the run-created account with DNS retention disabled and independently
+checks account, domain and DNS-zone absence. No mutation is retried. Evidence is
+written only after cleanup; `finite_quota.fixture` reports each outcome using
+fixed labels without credentials, names or raw values. Exit 0 requires the
+baseline assessment, finite assessment and fixture lifecycle all to pass.
+If cleanup remains unconfirmed, inspect the explicitly selected test account and
+domain privately and confirm ownership before manual recovery. A rerun refuses
+preexisting resources and is not a cleanup mechanism.
+
 ## Capture and privacy
 
 The transport observes the same response as the client. Its stream decorator
@@ -176,6 +238,6 @@ only `phase: read-only`, the exact arguments reviewed for that operation,
 `expected: success`, and the exact reviewed route list. The code catalog binds each recipe to its generated method
 and exact permitted request. New operations require both a reviewed catalog entry
 and offline request/response tests; editing an overlay cannot authorize arbitrary
-network calls. The single MySQL fixture above is separately guarded; general
+network calls. The MySQL and finite-Quota fixtures above are separately guarded; general
 fixture orchestration, broad discovery and automated overlay edits remain outside
 this implementation.
