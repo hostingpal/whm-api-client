@@ -250,6 +250,45 @@ final class FiniteQuotaFixtureTest extends TestCase
         yield 'string expiration' => ['expires_at', '12345'];
     }
 
+    public function testExactDecimalExpiryStringAllowsCaptureAndConfirmedCleanup(): void
+    {
+        $http = new FiniteQuotaServer();
+        $http->expirationWireValue = static fn (int $expected): string => (string) $expected;
+        $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(self::capture());
+        self::assertSame('passed', $report['fixture']['status']);
+        self::assertSame('passed', $report['fixture']['capture']);
+        self::assertSame('passed', $report['fixture']['cleanup']);
+        self::assertSame(1, $http->counts['direct:Quota/get_quota_info']);
+        self::assertSame('confirmed_absent', $report['fixture']['resources']['token']['cleanup']);
+        self::assertPrivate($report);
+    }
+
+    /** @param Closure(int): mixed $wireValue */
+    #[DataProvider('noncanonicalExpiryValues')]
+    public function testEquivalentNumericExpiryFormatsRemainRejected(Closure $wireValue): void
+    {
+        $http = new FiniteQuotaServer();
+        $http->expirationWireValue = $wireValue;
+        $report = (new FiniteQuotaFixture($http, 'private-whm-token'))->run(self::capture());
+        self::assertSame('failed', $report['fixture']['setup']);
+        self::assertSame('not_run', $report['fixture']['capture']);
+        self::assertSame('passed', $report['fixture']['cleanup']);
+        self::assertArrayNotHasKey('direct:Quota/get_quota_info', $http->counts);
+        self::assertFalse($http->account);
+    }
+
+    /** @return iterable<string, array{Closure(int): mixed}> */
+    public static function noncanonicalExpiryValues(): iterable
+    {
+        yield 'leading zero' => [static fn (int $expected): string => '0' . $expected];
+        yield 'leading whitespace' => [static fn (int $expected): string => ' ' . $expected];
+        yield 'trailing whitespace' => [static fn (int $expected): string => $expected . ' '];
+        yield 'exponent' => [static fn (int $expected): string => $expected . 'e0'];
+        yield 'decimal string' => [static fn (int $expected): string => $expected . '.0'];
+        yield 'float' => [static fn (int $expected): float => (float) $expected];
+        yield 'different decimal string' => [static fn (int $expected): string => (string) ($expected + 1)];
+    }
+
     public function testUnconfirmedAccountAtCleanupCannotReportTokenCleanupUnneeded(): void
     {
         $http = new FiniteQuotaServer();

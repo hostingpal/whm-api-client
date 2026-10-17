@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
 
+use Closure;
 use LogicException;
 use Nyholm\Psr7\Response;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -30,6 +31,9 @@ final class FiniteQuotaServer implements ClientInterface
 
     /** @var array<string, mixed> Synthetic optional token fields, independently configurable for setup validation. */
     public array $tokenFields = [];
+
+    /** @var (Closure(int): mixed)|null */
+    public ?Closure $expirationWireValue = null;
 
     private int $expiresAt = 0;
 
@@ -132,7 +136,9 @@ final class FiniteQuotaServer implements ClientInterface
             'get_domain_info' => ['domains' => $this->account
                 ? [['domain' => 'wqfinite.example.com', 'user' => 'wqfinite']] : []],
             'Tokens/list' => array_map(fn (string $name): array => array_replace([
-                'name' => $name, 'readonly' => 1, 'expires_at' => $this->expiresAt,
+                'name' => $name, 'readonly' => 1,
+                'expires_at' => $this->expirationWireValue === null
+                    ? $this->expiresAt : ($this->expirationWireValue)($this->expiresAt),
             ], $this->tokenFields), $this->tokens),
             'Tokens/create_full_access' => ['token' => 'private-fixture-token', 'create_time' => 1790000000],
             'Tokens/revoke' => 1,
@@ -146,7 +152,7 @@ final class FiniteQuotaServer implements ClientInterface
             ],
             default => null,
         };
-        $payload = $this->overrides[$step] ?? json_encode($data, JSON_THROW_ON_ERROR);
+        $payload = $this->overrides[$step] ?? json_encode($data, JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION);
         if (str_starts_with($function, 'direct:')) {
             return new Response(200, [], '{"status":1,"data":' . $payload . '}');
         }

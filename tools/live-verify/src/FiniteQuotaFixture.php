@@ -242,14 +242,23 @@ final class FiniteQuotaFixture
         return in_array(FiniteQuotaGuard::TOKEN_NAME, array_column($rows, 'name'), true);
     }
 
-    /** Confirm requested capabilities once during setup; cleanup needs usable identities only. */
+    /**
+     * Confirm requested capabilities once during setup; cleanup needs usable identities only.
+     *
+     * The reviewed token-setup response returned expires_at as the exact requested decimal string.
+     * Accept that fixture-specific wire form without numeric coercion; readonly remains integer 1.
+     */
     private function confirmTokenCapabilities(): void
     {
         $this->account->call('Tokens', 'list', [], RequestMethod::Get);
         $rows = self::identityRows($this->rawPayload(true), 'name');
         foreach ($rows as $row) {
             if ($row->name === FiniteQuotaGuard::TOKEN_NAME) {
-                if (($row->readonly ?? null) === 1 && ($row->expires_at ?? null) === $this->expiresAt) {
+                $expiresAt = $row->expires_at ?? null;
+                if (
+                    ($row->readonly ?? null) === 1
+                    && ($expiresAt === $this->expiresAt || $expiresAt === (string) $this->expiresAt)
+                ) {
                     return;
                 }
                 break;

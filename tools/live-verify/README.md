@@ -103,7 +103,9 @@ The account, domain and DNS zone must be absent before creation. The recipe
 creates an account with a finite 64 MB disk quota, no shell or dedicated IP,
 and no plan override or forced DNS replacement. Through the WHM bridge it
 creates a temporary read-only cPanel token with a one-hour expiration; token
-expiration does not replace cleanup. The token and any raw response data remain
+expiration does not replace cleanup. Setup confirms integer `readonly: 1` and
+the exact requested expiry, accepting its observed decimal-string representation
+as well as the documented integer. The token and any raw response data remain
 in memory. Exact guards restrict every request to this recipe and its targets.
 
 The existing 43 baseline probes and their discrepancy policy remain unchanged.

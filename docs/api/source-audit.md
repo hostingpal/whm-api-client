@@ -958,3 +958,27 @@ exact identities locally from the full account inventory. API errors, null
 payloads and malformed identity lists still fail closed. This changes only the
 development recipe; it does not widen a generated contract or add a compatibility
 correction. The original failed artifact remains unchanged.
+
+### Runtime observations: 2026-10-17 finite-Quota token setup
+
+The [second runner attempt](evidence/2026-10-17-finite-quota-token-setup.json)
+records revision `15fba470a4eb38966d5dccb21202f40ebdd47e7d` on the same cPanel version. All 43
+baseline probes again passed with two acknowledged Quota discrepancies. Finite
+setup failed before capture; cleanup reconciled the created account and token,
+revoked the token, removed the account, and confirmed account, domain and zone
+absence. The command exited **1** and establishes no finite-limit observations.
+
+A separate diagnostic invocation used the unchanged committed fixture and its
+exact guards, with a reviewed lazy observer on the original token responses. It
+confirmed successful token creation, a usable string token, integer `readonly`
+equal to the requested flag, and a string `expires_at` exactly matching the
+requested decimal timestamp. No credential, timestamp value, account marker or
+upstream error text was retained. Token revocation and account/domain/zone
+cleanup again succeeded. This diagnostic made no finite-Quota requests.
+
+The pinned `Tokens/list` schema specifies an integer-or-null expiry. The fixture
+accepts the exact requested integer or its exact decimal-string representation,
+while preserving strict integer read-only flags and rejecting altered expiry
+values, whitespace, leading zeros, exponents and floats. This is a documented
+fixture compatibility decision, not generated Tokens coverage or a core schema
+change. Independently authored regression expectations cover the boundary.
