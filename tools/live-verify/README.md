@@ -1,7 +1,7 @@
 # Live contract evidence
 
 This development-only PHP command exercises the generated client on the approved
-test server. It performs 43 GET requests across 25 operations, with exact route
+test server. Its default read-only mode performs 43 GET requests across 25 operations, with exact route
 and argument guards, verified TLS, redirects
 disabled, and no retries. The core package has no dependency on this tool.
 
@@ -33,6 +33,42 @@ Ordinary Composer checks remain offline; this command is never part of CI.
 MySQL inventory recipes take no arguments and only list the selected account's
 databases and database users. Evidence retains structural types, not database or
 user names. Empty lists provide no observations of item fields.
+
+### Nonempty MySQL fixture
+
+The separate `--mysql-fixture` mode temporarily creates two databases and two
+database users on the designated `npr` account, with one pair linked by `SELECT`
+privileges and one unlinked pair. It runs the same 43 probes, including both
+direct and WHM-bridged MySQL inventory, then removes only its own exact resources
+and verifies their absence. It requires an additional mutation opt-in:
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 composer live:verify -- \
+  --mysql-fixture --output=docs/api/evidence/mysql-populated.json
+```
+
+The recipe uses the existing cPanel token for `npr`; it never creates or deletes
+the cPanel account. Proposed resource names must be absent before any mutation.
+Setup and cleanup use generic UAPI form POST calls for the pinned
+`Mysql/create_database`, `create_user`, `set_privileges_on_database`,
+`delete_user` and `delete_database` contracts. These are fixture operations, not
+new generated coverage. Passwords and resource names remain in memory. Exact
+operation, account, name and argument guards reject unrelated requests.
+
+The four MySQL probes must observe the created records, documented fields,
+linked nested lists and unlinked empty lists in their original responses. Positive
+disk usage is not required. Setup/cleanup inventory reads reconcile resource
+ownership; they do not replace or replay a probe to recover its evidence.
+An uncertain mutation outcome is reconciled without retrying the mutation.
+Cleanup continues for other owned resources after a failure and requires confirmed
+absence before reporting success. Preexisting resources are never removed.
+
+Evidence is written after cleanup and includes a separate `mysql_fixture` report
+with fixed lifecycle outcomes, without names, passwords or upstream error text.
+Exit 0 requires both the ordinary discrepancy assessment and fixture report to
+pass. A failed setup, missing fixture record or unconfirmed cleanup exits 1 and
+remains visible in the report. The default read-only command is unchanged even
+when mutation opt-in is present without `--mysql-fixture`.
 
 Quota recipes take no arguments and read account totals in MB and local usage in
 bytes. They do not compare values from separate requests: usage may change and
@@ -133,5 +169,6 @@ only `phase: read-only`, the exact arguments reviewed for that operation,
 `expected: success`, and the exact reviewed route list. The code catalog binds each recipe to its generated method
 and exact permitted request. New operations require both a reviewed catalog entry
 and offline request/response tests; editing an overlay cannot authorize arbitrary
-network calls. Mutation fixtures, broad discovery and automated overlay edits are
-outside this implementation.
+network calls. The single MySQL fixture above is separately guarded; general
+fixture orchestration, broad discovery and automated overlay edits remain outside
+this implementation.

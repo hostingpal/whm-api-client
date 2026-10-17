@@ -16,17 +16,24 @@ use SensitiveParameter;
 use Throwable;
 
 /**
- * Development-only, single-attempt GET transport for the designated test server.
+ * Development-only, single-attempt transport for the designated test server.
  *
  * Every send requires WHM_API_LIVE=1 and PHP cURL. TLS peer/host verification is
  * mandatory, redirects are disabled, and connect/total timeouts are 10/30 seconds.
- * RequestGuard supplies the narrower operation/account/argument restriction.
+ * GET is the default; explicitly enabled form POST also requires
+ * WHM_API_LIVE_MUTATIONS=1. RequestGuard or a fixture-specific guard supplies the
+ * narrower operation/account/argument restriction.
  * Response status, headers and body are retained; transport failures expose only
  * a fixed diagnostic, with no raw URL, headers, payload or chained cURL cause.
  */
 final readonly class CurlClient implements ClientInterface
 {
-    /** Execute one opted-in, bounded HTTPS GET without retries. */
+    /** Enable form POST only for fixture clients protected by their own exact request guard. */
+    public function __construct(private bool $allowFormPost = false)
+    {
+    }
+
+    /** Execute one opted-in, bounded HTTPS GET or authorized form POST without retries. */
     public function sendRequest(#[SensitiveParameter] RequestInterface $request): ResponseInterface
     {
         if (getenv('WHM_API_LIVE') !== '1') {
@@ -34,14 +41,20 @@ final readonly class CurlClient implements ClientInterface
         }
 
         $uri = $request->getUri();
+        $method = $request->getMethod();
+        $requestBody = (string) $request->getBody();
+        $formPost = $method === 'POST'
+            && $this->allowFormPost
+            && getenv('WHM_API_LIVE_MUTATIONS') === '1'
+            && $request->getHeaderLine('Content-Type') === 'application/x-www-form-urlencoded';
         if (
-            $request->getMethod() !== 'GET'
+            ($method !== 'GET' && !$formPost)
             || $uri->getScheme() !== 'https'
             || $uri->getHost() !== 'test.oblak.host'
             || !in_array($uri->getPort(), [2083, 2087], true)
             || $uri->getUserInfo() !== ''
             || $uri->getFragment() !== ''
-            || (string) $request->getBody() !== ''
+            || ($method === 'GET' && $requestBody !== '')
         ) {
             throw new LogicException('Request outside the live transport boundary.');
         }
@@ -58,19 +71,22 @@ final readonly class CurlClient implements ClientInterface
         $protocol = '1.1';
         $reason = '';
         try {
-            $configured = curl_setopt_array($curl, [
+            $requestHeaders = [
+                'Authorization: ' . $request->getHeaderLine('Authorization'),
+                'Accept: application/json',
+            ];
+            if ($formPost) {
+                $requestHeaders[] = 'Content-Type: application/x-www-form-urlencoded';
+            }
+            $options = [
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_HTTPGET => true,
                 CURLOPT_FOLLOWLOCATION => false,
                 CURLOPT_SSL_VERIFYPEER => true,
                 CURLOPT_SSL_VERIFYHOST => 2,
                 CURLOPT_CONNECTTIMEOUT => 10,
                 CURLOPT_TIMEOUT => 30,
                 CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
-                CURLOPT_HTTPHEADER => [
-                    'Authorization: ' . $request->getHeaderLine('Authorization'),
-                    'Accept: application/json',
-                ],
+                CURLOPT_HTTPHEADER => $requestHeaders,
                 CURLOPT_HEADERFUNCTION => static function (
                     #[SensitiveParameter] CurlHandle $handle,
                     #[SensitiveParameter] string $line,
@@ -92,7 +108,14 @@ final readonly class CurlClient implements ClientInterface
 
                     return strlen($line);
                 },
-            ]);
+            ];
+            if ($formPost) {
+                $options[CURLOPT_POST] = true;
+                $options[CURLOPT_POSTFIELDS] = $requestBody;
+            } else {
+                $options[CURLOPT_HTTPGET] = true;
+            }
+            $configured = curl_setopt_array($curl, $options);
             if (!$configured) {
                 throw self::failure();
             }
