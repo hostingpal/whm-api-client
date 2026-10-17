@@ -15,6 +15,7 @@ use HostingPal\WhmApiClient\Api\Whm\Spec\AccountsSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\WebServerSpec;
 use HostingPal\WhmApiClient\Client;
+use HostingPal\WhmApiClient\UapiClient;
 use JsonException;
 use RuntimeException;
 
@@ -375,39 +376,60 @@ final class ProbeCatalog
                 . '&cpanel.module=Quota&cpanel.function=get_local_quota_info',
                 static fn (Client $client): mixed => $client->uapi('npr')->quota()->getLocalQuotaInfo(),
             ),
-            self::probe(
+            ...self::parameterlessUapiPair(
                 $mysql,
-                'uapi:Mysql/list_databases',
-                'direct-uapi',
+                'Mysql',
+                'list_databases',
                 MysqlSpec::LIST_DATABASES,
-                'https://test.oblak.host:2083/execute/Mysql/list_databases',
-                static fn (Client $client): mixed => $client->uapi()->mysql()->listDatabases(),
+                static fn (UapiClient $account): mixed => $account->mysql()->listDatabases(),
             ),
-            self::probe(
+            ...self::parameterlessUapiPair(
                 $mysql,
-                'uapi:Mysql/list_databases',
-                'bridged-uapi',
-                MysqlSpec::LIST_DATABASES,
-                'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
-                . '&cpanel.module=Mysql&cpanel.function=list_databases',
-                static fn (Client $client): mixed => $client->uapi('npr')->mysql()->listDatabases(),
+                'Mysql',
+                'list_users',
+                MysqlSpec::LIST_USERS,
+                static fn (UapiClient $account): mixed => $account->mysql()->listUsers(),
             ),
+        ];
+    }
+
+    /**
+     * Bind one reviewed parameterless call to the authenticated direct account and the fixed npr bridge.
+     *
+     * Module, function and callback are code-owned; overlay recipes still pass through probe() unchanged.
+     * This development-only pilot shares routing mechanics, never endpoint expectations or argument encoding.
+     *
+     * @param array<mixed> $overlay
+     * @param array<mixed> $spec
+     * @param Closure(UapiClient): mixed $invoke
+     * @return array{Probe, Probe} Direct probe first, then the WHM bridge.
+     */
+    private static function parameterlessUapiPair(
+        array $overlay,
+        string $module,
+        string $function,
+        array $spec,
+        Closure $invoke,
+    ): array {
+        $operation = 'uapi:' . $module . '/' . $function;
+
+        return [
             self::probe(
-                $mysql,
-                'uapi:Mysql/list_users',
+                $overlay,
+                $operation,
                 'direct-uapi',
-                MysqlSpec::LIST_USERS,
-                'https://test.oblak.host:2083/execute/Mysql/list_users',
-                static fn (Client $client): mixed => $client->uapi()->mysql()->listUsers(),
+                $spec,
+                'https://test.oblak.host:2083/execute/' . $module . '/' . $function,
+                static fn (Client $client): mixed => $invoke($client->uapi()),
             ),
             self::probe(
-                $mysql,
-                'uapi:Mysql/list_users',
+                $overlay,
+                $operation,
                 'bridged-uapi',
-                MysqlSpec::LIST_USERS,
+                $spec,
                 'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
-                . '&cpanel.module=Mysql&cpanel.function=list_users',
-                static fn (Client $client): mixed => $client->uapi('npr')->mysql()->listUsers(),
+                . '&cpanel.module=' . $module . '&cpanel.function=' . $function,
+                static fn (Client $client): mixed => $invoke($client->uapi('npr')),
             ),
         ];
     }
