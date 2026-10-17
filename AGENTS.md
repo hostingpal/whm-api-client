@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 13 typed groups cover 74 reviewed operations:
+and cPanel UAPI surface. The 13 typed groups cover 79 reviewed operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -156,6 +156,12 @@ upstream problem text are payload data; evidence keeps only their structural typ
 row fields remain optional and nested user/database lists preserve empty lists.
 Both operations are disabled when the MySQL/MariaDB role is disabled and remote
 MySQL is not configured.
+The same group generates `createDatabase()`, `createUser()`,
+`setPrivilegesOnDatabase()`, `deleteUser()` and `deleteDatabase()` as form POST.
+Privilege assignment replaces existing privileges. Mutation results are nullable
+objects with no pinned field schema: preserve opaque object fields, explicit null
+and the distinction from an absent payload. Do not invent a field contract or
+weaken validation to void. Keep password arguments sensitive.
 `uapi()->quota()` exposes account quota totals in MB and local usage in bytes.
 Preserve zero/unlimited/disabled semantics, optional fields and integer status flags;
 local byte limits can lag updates and distributed totals differ from local usage.
@@ -336,7 +342,15 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   routes, and verifies exact-resource cleanup before writing evidence. The
   [populated MySQL artifact](docs/api/evidence/2026-10-17-mysql-populated.json)
   observes all documented row fields and integer `disk_usage` on `11.138.0.15`.
-  Generic fixture setup/cleanup POSTs do not add generated endpoint coverage.
+  That historical run used generic POSTs and establishes no generated mutation
+  coverage. The current fixture captures ten generated mutation calls separately
+  under `mysql_mutations`: linked resource creation/deletion direct, unlinked
+  creation/deletion bridged, and an explicit SELECT assignment through each route.
+  The second assignment establishes execution/response coverage, not an independent
+  privilege change. Its strict assessment accepts no discrepancies or missing calls.
+  The [generated mutation artifact](docs/api/evidence/2026-10-17-mysql-mutations.json)
+  records all ten POSTs passing with explicit null payloads on `11.138.0.15`,
+  zero mutation discrepancies, and all four resources confirmed absent afterward.
 - The optional `--finite-quota-fixture` mode requires both live opt-ins and exact
   `WHM_API_LIVE_ACCOUNT=wqfinite` / `WHM_API_LIVE_DOMAIN=wqfinite.example.com`.
   It captures five separate observations on a disposable finite-quota account,
@@ -363,6 +377,12 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   gate with acknowledgments does not mean discrepancy-free evidence. Wildcards
   cannot identify unknown key names or counts. Policy changes require review;
   unknown Quota field contracts remain tracked in `8x0.4.3.1`.
+  On 2026-10-17 the owner accepted the observed integer extras
+  `backup_warning_threshold_pct` and `under_backup_threshold` as expected,
+  undocumented and nonblocking. Their semantics remain unknown and they stay out
+  of typed results. The fresh name inspection covers `npr` through both routes on
+  `11.138.0.15`; it does not identify keys in older masked artifacts. Existing
+  fingerprint masking and exact structural acknowledgment checks remain unchanged.
 - Grow evidence tooling alongside useful module slices. Record batch effort and
   discrepancies in Beads. Consumer feedback needs neither full parity, a release
   tag nor the separate Laravel package; publication remains a separate decision.

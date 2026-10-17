@@ -3,11 +3,12 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 13 generated typed groups cover 74 reviewed operations (see
+The 13 generated typed groups cover 79 reviewed operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
-features, Email inventory, SSL/AutoSSL inventory, disk quotas and MySQL inventory.
+features, Email inventory, SSL/AutoSSL inventory, disk quotas and MySQL inventory,
+database/user creation, privilege assignment and deletion.
 Generic `call()` methods provide GET and form-encoded POST access without a typed
 group, subject to the operation's parameter, route and envelope requirements.
 JSON and multipart request bodies are not supported. The library provides token
@@ -181,6 +182,13 @@ in [the evidence audit](docs/api/source-audit.md#runtime-observations-2026-10-16
 MySQL inventory returns lists of records with optional wire-key fields; empty
 lists and zero disk usage are preserved. These operations are unavailable when
 the MySQL/MariaDB role is disabled and remote MySQL is not configured.
+The same group provides `createDatabase()`, `createUser()`,
+`setPrivilegesOnDatabase()`, `deleteUser()` and `deleteDatabase()` for the selected
+account. They use form POST; passwords stay in the request body. Privilege
+assignment replaces the user's current database privileges, and deletion removes
+the named resource. The pinned mutation responses are nullable objects with no
+documented field schema: `null` stays `null`, while object fields are preserved
+as an opaque array. An absent response payload remains a contract mismatch.
 
 Results are arrays keyed by the upstream wire names (`$domains['main_domain'] ?? null`).
 Omitted fields are absent keys (use `array_key_exists()` or `??`) and an explicit
@@ -224,7 +232,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->langPhp()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetDomainHandler()`, `phpGetImpactedDomains()` |
 | `uapi()->features()` | `listFeatures()` |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
-| `uapi()->mysql()` | `listDatabases()`, `listUsers()` |
+| `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
 
 UAPI groups operate on the selected cPanel account through either credential route.
@@ -563,6 +571,12 @@ lists through both routes on cPanel `11.138.0.15`; cleanup confirmed all four
 temporary resources absent. Other versions and remote/disabled-role MySQL
 configurations remain unobserved. See the
 [delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
+The [generated mutation run](docs/api/evidence/2026-10-17-mysql-mutations.json)
+captures five operations through both routes in a separate `mysql_mutations`
+section. All ten POST observations returned explicit null and passed without
+mutation discrepancies; cleanup confirmed all four resources absent. The earlier
+populated-inventory artifact does not establish this mutation coverage. Opaque
+object results and optional prefix/privilege variants remain offline-tested only.
 The separate [finite-Quota scenario](docs/api/evidence/2026-10-17-finite-quota.json)
 adds five observations on a disposable account. Both Quota operations passed
 finite-limit checks through both routes, and token/account/domain/zone cleanup

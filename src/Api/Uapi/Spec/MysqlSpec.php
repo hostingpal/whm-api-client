@@ -13,6 +13,53 @@ namespace HostingPal\WhmApiClient\Api\Uapi\Spec;
  */
 final class MysqlSpec
 {
+    public const CREATE_DATABASE = [
+        'function' => 'create_database',
+        'module' => 'Mysql',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+            'prefixSize' => ['name' => 'prefix-size', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const CREATE_USER = [
+        'function' => 'create_user',
+        'module' => 'Mysql',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+            'password' => ['name' => 'password', 'encoding' => 'scalar'],
+            'prefixSize' => ['name' => 'prefix-size', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const DELETE_DATABASE = [
+        'function' => 'delete_database',
+        'module' => 'Mysql',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const DELETE_USER = [
+        'function' => 'delete_user',
+        'module' => 'Mysql',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
     public const LIST_DATABASES = [
         'function' => 'list_databases',
         'module' => 'Mysql',
@@ -49,5 +96,18 @@ final class MysqlSpec
                 ],
             ],
         ],
+    ];
+
+    public const SET_PRIVILEGES_ON_DATABASE = [
+        'function' => 'set_privileges_on_database',
+        'module' => 'Mysql',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'database' => ['name' => 'database', 'encoding' => 'scalar'],
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'privileges' => ['name' => 'privileges', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
     ];
 }

@@ -31,6 +31,15 @@ final class CaptureClient implements ClientInterface
     {
     }
 
+    /** Clear a previous lifecycle stage even when the next callback fails before sending a request. */
+    public function clear(): void
+    {
+        $this->attempt = null;
+        $this->rawBody = null;
+        $this->httpStatus = null;
+        $this->method = null;
+    }
+
     /** Send once; reset prior capture even if the underlying request fails. */
     public function sendRequest(#[SensitiveParameter] RequestInterface $request): ResponseInterface
     {

@@ -98,11 +98,13 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
         $temporary = $prepareEvidenceOutput($output);
         $capture = new EvidenceRunner(new CurlClient(), $context);
         $fixtureReport = null;
+        $mysqlMutations = null;
         if ($mysqlFixture) {
             $fixture = new MysqlFixture(
                 new CurlClient(allowFormPost: true),
-                $tokens['cpanel'],
+                $tokens,
                 bin2hex(random_bytes(3)),
+                $context,
             );
             $result = $fixture->run(
                 $probes,
@@ -110,6 +112,7 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
             );
             $records = $result['probes'];
             $fixtureReport = $result['mysql_fixture'];
+            $mysqlMutations = MysqlMutationEvidence::finish($result['mysql_mutations'], $records);
         } else {
             $records = $capture->run($probes, $optIn, $tokens);
         }
@@ -125,6 +128,7 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
         $document = ['schema_version' => 2, 'probes' => $records, 'discrepancy_review' => $review];
         if ($fixtureReport !== null) {
             $document['mysql_fixture'] = $fixtureReport;
+            $document['mysql_mutations'] = $mysqlMutations;
         }
         if ($finiteQuota !== null) {
             $document['finite_quota'] = $finiteQuota;
@@ -253,6 +257,11 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
         }
 
         $fixturePassed = $fixtureReport === null || $fixtureReport['status'] === 'passed';
+        if ($mysqlMutations !== null) {
+            $mutationPassed = $mysqlMutations['discrepancy_review']['status'] === 'passed';
+            fwrite(STDOUT, 'MySQL mutation evidence: ' . ($mutationPassed ? 'passed' : 'failed') . "\n");
+            $fixturePassed = $fixturePassed && $mutationPassed;
+        }
         $finitePassed = true;
         if ($finiteQuota !== null) {
             $lifecycleStatus = $finiteQuota['fixture']['status'] === 'passed' ? 'passed' : 'failed';

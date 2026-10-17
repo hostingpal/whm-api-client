@@ -49,10 +49,13 @@ WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 composer live:verify -- \
 
 The recipe uses the existing cPanel token for `npr`; it never creates or deletes
 the cPanel account. Proposed resource names must be absent before any mutation.
-Setup and cleanup use generic UAPI form POST calls for the pinned
+Setup and cleanup use generated UAPI form POST calls for the pinned
 `Mysql/create_database`, `create_user`, `set_privileges_on_database`,
-`delete_user` and `delete_database` contracts. These are fixture operations, not
-new generated coverage. Passwords and resource names remain in memory. Exact
+`delete_user` and `delete_database` contracts. The linked database/user pair is
+created and deleted directly; the unlinked pair uses the WHM bridge. The linked
+pair receives explicit `SELECT` privileges once through each route. This second
+assignment verifies bridge execution and response handling, not a second observed
+privilege change. Passwords and resource names remain in memory. Exact
 operation, account, name and argument guards reject unrelated requests.
 
 The four MySQL probes must observe the created records, documented fields,
@@ -65,8 +68,17 @@ absence before reporting success. Preexisting resources are never removed.
 
 Evidence is written after cleanup and includes a separate `mysql_fixture` report
 with fixed lifecycle outcomes, without names, passwords or upstream error text.
-Exit 0 requires both the ordinary discrepancy assessment and fixture report to
-pass. A failed setup, missing fixture record or unconfirmed cleanup exits 1 and
+The `mysql_mutations` section retains ten original-response observations: five
+operations through both routes, including deletion during cleanup. Pinned source
+variants remain `#GET`; the actual method is `POST`. Successful responses may be
+null or opaque objects because the upstream schemas declare no object fields.
+All object keys are masked recursively in evidence. A payload mismatch after an
+accepted mutation remains recorded before cleanup; the mutation is never retried.
+The version and shared provenance are checked against the same run's baseline.
+
+Exit 0 requires the baseline assessment, mutation assessment and fixture report to
+pass. Mutation assessment accepts no discrepancies and rejects missing, duplicate
+or unsuccessful calls. A failed setup, missing fixture record or unconfirmed cleanup exits 1 and
 remains visible in the report. The default read-only command is unchanged even
 when mutation opt-in is present without `--mysql-fixture`.
 
@@ -85,6 +97,11 @@ reported as `$.*` discrepancies. Two exact structural observations are acknowled
 by the development evidence policy described below. Their field contracts remain
 unresolved in `whm-api-client-8x0.4.3.1`; acknowledgment does not add them to typed
 results or remove their discrepancy records.
+The owner accepts the freshly observed integer keys `backup_warning_threshold_pct`
+and `under_backup_threshold` as expected extras with unknown semantics. This
+decision allows the correction cycle to continue; saved evidence still masks
+their names, and the gate still compares structural observations rather than
+checking those exact keys. No historical artifact is relabeled.
 
 ### Finite Quota fixture
 
@@ -266,3 +283,15 @@ retain 277 cases with 3,303 assertions, including literal request and payload
 oracles. This reduces repeated per-operation edits, but does not demonstrate net
 line savings or measured review-time savings. Wider adoption remains a separate
 decision after this bounded pilot is reviewed.
+
+The expansion's bounded test-helper pilot (`whm-api-client-8x0.4.5.1`) shares
+client setup, envelopes and request assertions in `tests/Support/MysqlTestSupport`.
+Only MySQL inventory and mutation endpoint tests use it; their expected payloads,
+wire parameters and route URIs remain independently authored in each suite.
+The inventory file shrinks from 373 to 334 lines with its 196 cases and 1,752
+assertions unchanged. The new mutation suite is 258 lines; a constructed copy
+with duplicated original mechanics is 294 lines. Including the 67-line helper,
+the equivalent combined comparison is 667 versus 659 lines. This avoids three
+repeated mechanics and saves eight lines in that comparison, while adding a
+shared helper to review. No elapsed review-time saving or broader adoption is
+claimed. Wrong authentication and prefix encoding still fail independent tests.

@@ -44,6 +44,141 @@
         ],
         "expected": "success"
       }
+    },
+    "uapi:Mysql/create_database": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "prefixSize selects the documented prefix-size value 8 or 16; omission leaves the server default 16 in effect."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response declares a nullable object without a field schema. Null remains null; object fields are preserved as opaque data without assigning them meanings. An omitted data member is not accepted as null. The client's existing empty-map compatibility also accepts an empty JSON list as an empty array; nonempty lists are rejected. This is not a newly observed wire variant."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-17",
+          "note": "The pinned /Mysql/create_database GET variant has x-readonly=false and x-rollback=none. The generated-client request policy sends mutations and secret-bearing parameters as form POST, keeping operation parameters out of access-log query strings. The pinned nullable object result has no properties or additionalProperties restriction, so its fields remain opaque and preserved; no omitted-payload compatibility is added."
+        }
+      ],
+      "params": {
+        "prefix-size": {
+          "php": "prefixSize"
+        }
+      }
+    },
+    "uapi:Mysql/create_user": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Database username length and prefix limits depend on the database server version. prefixSize selects the documented prefix-size value 8 or 16; omission leaves the server default 16 in effect."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response declares a nullable object without a field schema. Null remains null; object fields are preserved as opaque data without assigning them meanings. An omitted data member is not accepted as null. The client's existing empty-map compatibility also accepts an empty JSON list as an empty array; nonempty lists are rejected. This is not a newly observed wire variant."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-17",
+          "note": "The pinned /Mysql/create_user GET variant has x-readonly=false and x-rollback=none. The generated-client request policy sends mutations and secret-bearing parameters as form POST, keeping operation parameters out of access-log query strings. The pinned nullable object result has no properties or additionalProperties restriction, so its fields remain opaque and preserved; no omitted-payload compatibility is added."
+        }
+      ],
+      "params": {
+        "prefix-size": {
+          "php": "prefixSize"
+        }
+      }
+    },
+    "uapi:Mysql/set_privileges_on_database": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "The privileges list replaces the existing privilege list. Pass ALL PRIVILEGES or a comma-separated string, not a PHP array. If database prefixing is enabled, database and user must include the account prefix and underscore. The pinned documentation specifies no default for omitted privileges."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response declares a nullable object without a field schema. Null remains null; object fields are preserved as opaque data without assigning them meanings. An omitted data member is not accepted as null. The client's existing empty-map compatibility also accepts an empty JSON list as an empty array; nonempty lists are rejected. This is not a newly observed wire variant."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-17",
+          "note": "The pinned /Mysql/set_privileges_on_database GET variant has x-readonly=false and x-rollback=none. The generated-client request policy sends mutations and secret-bearing parameters as form POST, keeping operation parameters out of access-log query strings. The pinned nullable object result has no properties or additionalProperties restriction, so its fields remain opaque and preserved; no omitted-payload compatibility is added."
+        }
+      ]
+    },
+    "uapi:Mysql/delete_user": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the named MySQL user in this cPanel account. The pinned operation declares no rollback; verify the target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response declares a nullable object without a field schema. Null remains null; object fields are preserved as opaque data without assigning them meanings. An omitted data member is not accepted as null. The client's existing empty-map compatibility also accepts an empty JSON list as an empty array; nonempty lists are rejected. This is not a newly observed wire variant."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-17",
+          "note": "The pinned /Mysql/delete_user GET variant has x-readonly=false and x-rollback=none. The generated-client request policy sends mutations and secret-bearing parameters as form POST, keeping operation parameters out of access-log query strings. The pinned nullable object result has no properties or additionalProperties restriction, so its fields remain opaque and preserved; no omitted-payload compatibility is added."
+        }
+      ]
+    },
+    "uapi:Mysql/delete_database": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the named MySQL database in this cPanel account. The pinned operation declares no rollback; verify the target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response declares a nullable object without a field schema. Null remains null; object fields are preserved as opaque data without assigning them meanings. An omitted data member is not accepted as null. The client's existing empty-map compatibility also accepts an empty JSON list as an empty array; nonempty lists are rejected. This is not a newly observed wire variant."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-17",
+          "note": "The pinned /Mysql/delete_database GET variant has x-readonly=false and x-rollback=none. The generated-client request policy sends mutations and secret-bearing parameters as form POST, keeping operation parameters out of access-log query strings. The pinned nullable object result has no properties or additionalProperties restriction, so its fields remain opaque and preserved; no omitted-payload compatibility is added."
+        }
+      ]
     }
   }
 }

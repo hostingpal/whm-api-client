@@ -107,6 +107,13 @@ final class VerifyCommandTest extends TestCase
         self::assertIsArray($document['mysql_fixture']);
         self::assertSame($expected, $document['mysql_fixture']['status']);
         self::assertStringContainsString('MySQL fixture: ' . $expected, $stdout);
+        self::assertIsArray($document['mysql_mutations']);
+        self::assertSame([
+            ['operation' => 'uapi:Mysql/create_database', 'method' => 'POST', 'route' => 'direct-uapi'],
+        ], $document['mysql_mutations']['probes']);
+        $mutationStatus = $case === 'mysql-mutation-failure' ? 'failed' : 'passed';
+        self::assertStringContainsString('MySQL mutation evidence: ' . $mutationStatus, $stdout);
+        self::assertSame('before-output', file_get_contents($root . '/mutations-assessed'));
         self::assertStringNotContainsString(self::SECRET, $stdout . $stderr . (string) file_get_contents($output));
     }
 
@@ -116,6 +123,9 @@ final class VerifyCommandTest extends TestCase
         yield 'success' => ['passed', 'passed', 0];
         yield 'cleanup failure despite passing probes' => ['mysql-cleanup-failure', 'failed', 1];
         yield 'capture failure still cleans' => ['mysql-capture-failure', 'failed', 1];
+        yield 'mutation assessment failure despite cleanup and baseline passing' => [
+            'mysql-mutation-failure', 'passed', 1,
+        ];
     }
 
     public function testMysqlFixtureCleanupCompletesBeforeOutputWriteFailure(): void
@@ -800,7 +810,7 @@ final class CurlClient
 }
 final class MysqlFixture
 {
-    public function __construct(object $client, string $token, string $suffix) {}
+    public function __construct(object $client, array $tokens, string $suffix, array $context) {}
     public function run(array $probes, \Closure $capture): array
     {
         $root = dirname(__DIR__);
@@ -811,9 +821,26 @@ final class MysqlFixture
         if ($case === 'mysql-output-failure') {
             mkdir($root . '/observed.json');
         }
-        return ['probes' => $records, 'mysql_fixture' => [
+        return ['probes' => $records, 'mysql_mutations' => [
+            ['operation' => 'uapi:Mysql/create_database', 'method' => 'POST', 'route' => 'direct-uapi'],
+        ], 'mysql_fixture' => [
             'recipe' => 'mysql-npr-linked-unlinked-v1',
             'status' => in_array($case, ['mysql-cleanup-failure', 'mysql-capture-failure'], true) ? 'failed' : 'passed',
+        ]];
+    }
+}
+final class MysqlMutationEvidence
+{
+    public static function finish(array $records, array $baseline): array
+    {
+        $root = dirname(__DIR__);
+        if (!file_exists($root . '/fixture-cleaned') || $baseline === []) {
+            throw new \RuntimeException(getenv('CLI_PRIVATE_MARKER'));
+        }
+        $timing = file_exists($root . '/observed.json') ? 'too-late' : 'before-output';
+        file_put_contents($root . '/mutations-assessed', $timing);
+        return ['probes' => $records, 'discrepancy_review' => [
+            'status' => getenv('CLI_FIXTURE_CASE') === 'mysql-mutation-failure' ? 'failed' : 'passed',
         ]];
     }
 }

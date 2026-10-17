@@ -17,7 +17,7 @@ use stdClass;
 use Throwable;
 
 /**
- * Run the bounded read-only catalog through real generated methods, persisting only structural evidence.
+ * Capture reviewed generated calls, persisting only structural evidence from each original response.
  *
  * @phpstan-type Context array{
  *     revision: string, source_hashes: array{whm1: string, uapi: string}, map_sha256: string,
@@ -82,40 +82,8 @@ final readonly class EvidenceRunner
                 'username' => $direct ? $this->directUsername : 'root',
                 'token' => $tokens[$direct ? 'cpanel' : 'whm'],
             ], new HttpTransport($capture, $factory, $factory));
-            try {
-                $result = ($probe->invoke)($client);
-                $record['api_outcome'] = 'success';
-                $record['payload_validation'] = 'passed';
-                $record['probe_outcome'] = 'passed';
-                if ($probe->operation === 'whm1:version') {
-                    if (is_string($result) && preg_match('/\A[0-9]+(?:\.[0-9]+){1,4}\z/', $result) === 1) {
-                        $version = $result;
-                    } else {
-                        $record['probe_outcome'] = 'failed';
-                        $record['failure_kind'] = 'unusable_server_version';
-                    }
-                }
-            } catch (Throwable $error) {
-                $record['probe_outcome'] = 'failed';
-                $record['failure_kind'] = match (true) {
-                    $error instanceof PayloadMismatchException => 'payload_mismatch',
-                    $error instanceof ApiErrorException => 'api_failure',
-                    $error instanceof ApiException => 'request_failure',
-                    default => 'probe_failure',
-                };
-                if ($error instanceof PayloadMismatchException) {
-                    $record['api_outcome'] = $error->outcomeConfirmed ? 'success' : 'unavailable';
-                    $record['payload_validation'] = 'failed';
-                } elseif ($error instanceof ApiErrorException) {
-                    $record['api_outcome'] = 'failure';
-                }
-            }
-            $record['method'] = $capture->method();
-            $record['http_status'] = $capture->httpStatus();
-            $raw = $capture->rawBody();
-            if ($raw !== null) {
-                $this->observe($record, $raw, $probe);
-            }
+            $record = $this->capture($probe, $capture, $client);
+            $version = $record['server_version'] ?? $version;
             $records[] = $record;
         }
         foreach ($records as &$record) {
@@ -123,6 +91,67 @@ final readonly class EvidenceRunner
         }
 
         return $records;
+    }
+
+    /**
+     * Invoke one lifecycle stage and retain its original response, including accepted-outcome payload failures.
+     *
+     * The caller must supply a client using this capture transport and its own exact request guard. The baseline
+     * run() retains its GET-only RequestGuard; mutation fixtures own their opt-ins, account and body guards.
+     * Clear prior capture before invocation, never retry, and return failure records for the fixture to retain
+     * before deciding whether to continue cleanup. Server version is established separately by a version probe.
+     *
+     * @return Record
+     */
+    public function capture(
+        #[SensitiveParameter] Probe $probe,
+        #[SensitiveParameter] CaptureClient $capture,
+        #[SensitiveParameter] Client $client,
+    ): array {
+        $capture->clear();
+        $record = $this->record($probe);
+        if ($probe->unavailable !== null) {
+            $record['probe_outcome'] = $probe->unavailable;
+            $record['failure_kind'] = $probe->unavailable === 'unsupported' ? 'unsupported_recipe' : 'missing_recipe';
+
+            return $record;
+        }
+        try {
+            $result = ($probe->invoke)($client);
+            $record['api_outcome'] = 'success';
+            $record['payload_validation'] = 'passed';
+            $record['probe_outcome'] = 'passed';
+            if ($probe->operation === 'whm1:version') {
+                if (is_string($result) && preg_match('/\A[0-9]+(?:\.[0-9]+){1,4}\z/', $result) === 1) {
+                    $record['server_version'] = $result;
+                } else {
+                    $record['probe_outcome'] = 'failed';
+                    $record['failure_kind'] = 'unusable_server_version';
+                }
+            }
+        } catch (Throwable $error) {
+            $record['probe_outcome'] = 'failed';
+            $record['failure_kind'] = match (true) {
+                $error instanceof PayloadMismatchException => 'payload_mismatch',
+                $error instanceof ApiErrorException => 'api_failure',
+                $error instanceof ApiException => 'request_failure',
+                default => 'probe_failure',
+            };
+            if ($error instanceof PayloadMismatchException) {
+                $record['api_outcome'] = $error->outcomeConfirmed ? 'success' : 'unavailable';
+                $record['payload_validation'] = 'failed';
+            } elseif ($error instanceof ApiErrorException) {
+                $record['api_outcome'] = 'failure';
+            }
+        }
+        $record['method'] = $capture->method();
+        $record['http_status'] = $capture->httpStatus();
+        $raw = $capture->rawBody();
+        if ($raw !== null) {
+            $this->observe($record, $raw, $probe);
+        }
+
+        return $record;
     }
 
     /** @return Record */

@@ -60,7 +60,7 @@ final class MysqlFixtureServer implements ClientInterface
             self::failTransport();
         }
         if ($failure === 'api_before') {
-            return self::response('null', false, false);
+            return self::response('null', $bridge, false);
         }
         if ($function === 'version') {
             return new Response(200, [], '{"metadata":{"result":1},"data":{"version":"11.138.0.15"}}');
@@ -105,7 +105,7 @@ final class MysqlFixtureServer implements ClientInterface
             self::failTransport();
         }
         if ($failure === 'api_after') {
-            return self::response('null', false, false);
+            return self::response('null', $bridge, false);
         }
         $data = null;
         if ($function === 'list_databases') {
