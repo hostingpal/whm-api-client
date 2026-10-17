@@ -585,6 +585,11 @@ section. All ten POST observations returned explicit null and passed without
 mutation discrepancies; cleanup confirmed all four resources absent. The earlier
 populated-inventory artifact does not establish this mutation coverage. Opaque
 object results and optional prefix/privilege variants remain offline-tested only.
+The [provisioning readback run](docs/api/evidence/2026-10-17-mysql-provisioning.json)
+adds restrictions, database-server information and exact `SELECT` readback through
+both routes. All 49 reads and ten fixture mutations passed, and cleanup confirmed
+all four resources absent. Empty privilege lists and disabled prefixes remain
+offline-tested only; the same two Quota acknowledgments remain visible.
 The separate [finite-Quota scenario](docs/api/evidence/2026-10-17-finite-quota.json)
 adds five observations on a disposable account. Both Quota operations passed
 finite-limit checks through both routes, and token/account/domain/zone cleanup

@@ -44,3 +44,20 @@ scoped to the exact contracts, revisions and routes recorded in each file.
   discrepancies and reports a separate assessment: 2 acknowledged, 0 unexpected,
   0 stale. The command exited 0. This establishes the reviewed policy's behavior,
   not discrepancy-free evidence or knowledge of masked key identities/counts.
+
+- [Populated MySQL inventory](2026-10-17-mysql-populated.json): 43 read probes,
+  including populated database/user records through both routes; four temporary
+  resources confirmed absent after cleanup. The two Quota acknowledgments remain.
+- [Finite Quota](2026-10-17-finite-quota.json): 43 baseline probes plus five
+  separate finite-account observations. Finite expectations and cleanup pass;
+  two unacknowledged unknown-field observations keep that scenario's exit code 1.
+- [Generated MySQL mutations](2026-10-17-mysql-mutations.json): 43 reads plus ten
+  generated POST observations through both routes, all mutation payloads null,
+  with verified cleanup and no mutation discrepancies.
+- [MySQL provisioning reads](2026-10-17-mysql-provisioning.json): 49 reads across
+  28 operations plus ten mutation observations at `b1f83d0` on `11.138.0.15`.
+  The new restrictions, server-information and fixture-bound privilege reads pass
+  on both routes, with exact `SELECT` readback checked in memory. All four resources
+  are confirmed absent; exit 0 retains the two Quota acknowledgments and no new
+  discrepancies. Empty privilege lists, disabled prefixes, SQL enforcement and
+  alternate server configurations remain unobserved.
