@@ -70,6 +70,13 @@ pass. A failed setup, missing fixture record or unconfirmed cleanup exits 1 and
 remains visible in the report. The default read-only command is unchanged even
 when mutation opt-in is present without `--mysql-fixture`.
 
+If cleanup reports `present` or `unconfirmed`, inspect the `npr` account's MySQL
+inventory privately in cPanel. Fixture candidates follow `npr_wv<6 lowercase hex>d`
+and `e` for databases, and `npr_wv<6 lowercase hex>u` and `v` for users, sharing
+one suffix per run. Confirm ownership before manually removing exact resources;
+the pattern alone is not proof and must not be used for bulk deletion. A new
+runner invocation uses new names and does not recover a previous run's leftovers.
+
 Quota recipes take no arguments and read account totals in MB and local usage in
 bytes. They do not compare values from separate requests: usage may change and
 distributed account totals can differ. Only field paths and types are retained,

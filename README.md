@@ -563,8 +563,9 @@ lists through both routes on cPanel `11.138.0.15`; cleanup confirmed all four
 temporary resources absent. Other versions and remote/disabled-role MySQL
 configurations remain unobserved. See the
 [delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
-Real HostingPal consumer feedback can proceed against the current client before
-full API coverage or a release. Any public prerelease is a separate decision with
+Real HostingPal consumer integration testing is deferred by the user as of
+2026-10-17; no consumer validation is claimed. It can resume against the current
+client before full API coverage or a release. Any public prerelease is a separate decision with
 an explicit coverage and compatibility statement.
 
 The development lockfile resolves dependencies against PHP 8.3. Runtime

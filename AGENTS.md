@@ -327,7 +327,9 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   handler, plus the `npr.rs` domain for AutoSSL renewal. Account/domain/PHP evidence
   (`8x0.2.3`), expanded Email inventory (`8x0.4.1`), the SSL slice (`8x0.4.2`),
   Quota (`8x0.4.3`) and MySQL inventory (`8x0.4.4`) build on the initial slices;
-  consumer feedback (`8x0.10.3`) remains independent.
+  consumer feedback (`8x0.10.3`) is deferred by the user as of 2026-10-17.
+  That deferral removes only the consumer prerequisite for the bounded expansion
+  pilot; MySQL, finite-Quota, plumbing and current-head review gates remain.
 - The optional `--mysql-fixture` runner mode additionally requires
   `WHM_API_LIVE_MUTATIONS=1`. It creates two databases and two database users on
   the designated `npr` account, checks linked/unlinked inventory through both

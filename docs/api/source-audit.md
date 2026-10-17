@@ -927,3 +927,12 @@ which was corrected before the passing full gates and this single live run.
 Artifact and current-progress documentation are a separate commit. This records
 the plumbing cost for the bounded reduction pilot rather than introducing a
 general fixture framework.
+
+External review of `abd9b1f49d7b3d8e1dbaa9bef84e767f6e0a7d2e` independently
+passed the offline gates, recomputed the evidence hashes, and reran the default
+read-only command. Its four MySQL lists were empty again, corroborating cleanup.
+The review suggested manual recovery guidance for failed cleanup, now included
+in the runner documentation. Positive `disk_usage` remains a separate nonblocking
+evidence follow-up under `whm-api-client-8x0.2.7`. The user also deferred the real
+HostingPal consumer exercise beyond this pilot; that decision adds no consumer
+evidence and preserves the remaining correction-cycle gates.
