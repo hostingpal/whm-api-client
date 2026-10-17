@@ -28,10 +28,15 @@ source hashes, reference diagnostics, extension distributions, and operation
 pointers. These measurements inspect the source graph without expanding
 references; they are not runtime observations.
 
-The existing PHP `HttpTransport::send` is infrastructure, so implemented API
-operation coverage is currently zero. Earlier Beads observations of server
-11.138.0.15 and 675 advertised WHM functions are historical runtime evidence;
-this audit made no server calls and does not reproduce those counts.
+At the initial 2026-10-13 source audit, PHP `HttpTransport::send` was infrastructure
+and implemented API operation coverage was zero. That source audit made no server
+calls; the earlier observation of 675 advertised WHM functions is historical.
+At the PR20 checkpoint on 2026-10-16, [generated coverage](coverage.md) records
+74 operations in 13 groups, and the [saved evidence](evidence/2026-10-16-discrepancy-policy.json)
+covers 43 route-specific probes across 25 operations on cPanel 11.138.0.15.
+It passes with 2 acknowledged Quota discrepancies, 0 unexpected and 0 stale;
+the unknown field contracts remain unresolved under `whm-api-client-8x0.4.3.1`.
+Generated coverage, offline expectations and live observations are separate claims.
 
 ## Authentication and family boundaries
 
@@ -83,6 +88,12 @@ nullability belong to each HTTP variant. The specifications include JSON,
 form-urlencoded, and multipart bodies, as well as POST operations whose
 parameters are declared in the query. GET is not evidence of read-only
 behavior: 363 WHM GET operations explicitly have `x-readonly: false`.
+
+The PHP client currently supports GET queries and form-encoded POST bodies.
+The inventory's 13 JSON body operations (8 WHM, 5 UAPI) and 9 multipart body
+operations (1 WHM, 8 UAPI) remain unsupported. Selected implementations are
+tracked under `whm-api-client-8x0.1.18` and `whm-api-client-8x0.1.19`;
+generic `call()` does not supply these body formats.
 
 WHM generally requires `api.version=1`; the JSON request schemas for
 `batch_create_cphulk_records` and `personalization_set` also describe an
@@ -666,7 +677,7 @@ WHM-bridged UAPI for account `npr`; renewal status explicitly targets `npr.rs`.
 The renewal operation requires cPanel 134 or later. Independent endpoint fixtures
 cover optional and nullable certificate fields, literal dotted keys, integer
 flags, domain encoding, empty lists, failures, metadata and account isolation.
-The generated surface now contains 70 operations in 11 groups.
+That slice brought the generated surface to 70 operations in 11 groups.
 
 [SSL inventory evidence](evidence/2026-10-16-ssl-inventory.json) records revision
 `a5aacbf8e342c443a210792f22b76698be93ca40`, actual methods/routes and source, map,
@@ -741,7 +752,9 @@ Quota records from that run, with each record and its provenance unchanged:
 - Both account-total responses included unreviewed integer-valued fields,
   represented only by `$.*`. This does not establish their names or exact count.
   The client removes them under its existing unknown-field behavior; the evidence
-  runner continues to report `unknown_field` and exits nonzero. Follow-up
+  runner reported `unknown_field` and exited nonzero in the initial and
+  corrected-contract Quota runs. PR20 adds exact acknowledgments while preserving
+  these observations, as recorded in the discrepancy-policy section below. Follow-up
   `whm-api-client-8x0.4.3.1` tracks their review. No names or fields are guessed,
   and no discrepancy is silently suppressed.
 
@@ -821,8 +834,9 @@ The full command exited **1** because the two known Quota account-total
 operation, variant, route, HTTP method, server version, path, kind and masked
 path type (`int`). No new discrepancy was present. The wildcard still does not
 establish unknown key names or counts; this comparison does not claim that the
-underlying unknown fields are identical. Detection and exit policy are unchanged
-and remain tracked in [issue #18](https://github.com/hostingpal/whm-api-client/issues/18).
+underlying unknown fields are identical. Detection and exit policy were unchanged
+for that run; the subsequent PR20 policy is recorded below. Unknown field
+contracts remain tracked in [issue #18](https://github.com/hostingpal/whm-api-client/issues/18).
 
 All 43 effective-spec hashes match the current catalog. The artifact retains
 the actual code revision and input hashes. It stores structural paths/types

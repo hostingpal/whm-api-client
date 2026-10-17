@@ -3,15 +3,16 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The generated typed groups cover 74 reviewed operations (see
+The 13 generated typed groups cover 74 reviewed operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
 features, Email inventory, SSL/AutoSSL inventory, disk quotas and MySQL inventory.
-Generic `call()` methods reach every other documented WHM API 1 and UAPI function. The library
-provides token authentication, direct and WHM-routed UAPI, GET and form-encoded
-POST execution, typed array payloads, API exceptions, and per-client response
-metadata over a PSR HTTP transport.
+Generic `call()` methods provide GET and form-encoded POST access without a typed
+group, subject to the operation's parameter, route and envelope requirements.
+JSON and multipart request bodies are not supported. The library provides token
+authentication, direct and WHM-routed UAPI, typed array payloads, API exceptions,
+and per-client response metadata over a PSR HTTP transport.
 
 The [agreed PHP client interface](docs/superpowers/specs/2026-10-13-php-client-design.md)
 uses `whm()` and `uapi(?string $user = null)`, with typed resource groups
@@ -333,9 +334,18 @@ to the pinned integer; see the
 
 ### Generic calls
 
-Every documented WHM API 1 and UAPI function is reachable without a typed group,
-through the same authentication, routing, encoding, envelope handling, metadata
-and exceptions:
+Use `call()` for functions whose parameters fit the supported GET query or
+form-encoded POST representation, through the same authentication, routing,
+envelope handling, metadata and exceptions. The caller must check the operation's
+documented method, body format, route and outcome semantics; generic access does
+not establish typed coverage or verification of that operation.
+
+The [pinned request-body inventory](docs/api/source-inventory.json) includes 13
+JSON operations (8 WHM, 5 UAPI) and 9 multipart operations (1 WHM, 8 UAPI).
+These body formats remain unsupported by both typed and generic calls. Selected
+operation support is tracked under `whm-api-client-8x0.1.18` (JSON) and
+`whm-api-client-8x0.1.19` (multipart); complete execution-contract coverage remains
+open under `whm-api-client-8x0.1`.
 
 ```php
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
@@ -537,13 +547,18 @@ from the pinned documentation, and caveats it lacks are recorded as overlay note
 The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
 
 The [live evidence runner](tools/live-verify/README.md) captures the same raw
-response before normalization and field filtering for 39 reviewed route-specific
-probes. It saves sanitized structural evidence with revision and contract hashes,
-while independent regression expectations remain in the offline suite. It covers
-WHM version/load, account/domain/PHP inventory, and UAPI domain/PHP/Email/SSL inventory and quotas
-through both UAPI routes. Account-list and summary probes target `npr` explicitly;
+response before normalization and field filtering for 43 reviewed route-specific
+probes across 25 operations. It saves sanitized structural evidence with revision
+and contract hashes, while independent regression expectations remain in the
+offline suite. It covers WHM version/load and account/domain/PHP inventory, plus
+UAPI domain/PHP/Email/SSL/MySQL inventory and quotas through both UAPI routes.
+Account-list and summary probes target `npr` explicitly;
 the PHP handler probe uses the reviewed `type: 'home'` argument, and AutoSSL renewal
-status targets `npr.rs`. See the
+status targets `npr.rs`. The [saved PR20 evidence](docs/api/evidence/2026-10-16-discrepancy-policy.json)
+passes with **2 acknowledged, 0 unexpected and 0 stale discrepancies**; it is not
+discrepancy-free. Unknown Quota field contracts remain open under
+`whm-api-client-8x0.4.3.1`. MySQL lists were empty, so their row fields remain
+unobserved. See the
 [delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
 Real HostingPal consumer feedback can proceed against the current client before
 full API coverage or a release. Any public prerelease is a separate decision with

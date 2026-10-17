@@ -133,8 +133,8 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. Typed groups cover 74 reviewed operations: the read-only
-server, domain, PHP and feature inventory, the WHM account lifecycle
+and cPanel UAPI surface. The 13 typed groups cover 74 reviewed operations:
+read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
 read-only DNS slice (14 WHM functions in the `whm()->dns()` group plus 7 UAPI `DNS`
@@ -159,8 +159,13 @@ MySQL is not configured.
 `uapi()->quota()` exposes account quota totals in MB and local usage in bytes.
 Preserve zero/unlimited/disabled semantics, optional fields and integer status flags;
 local byte limits can lag updates and distributed totals differ from local usage.
-`whm()->call()` and `uapi()->call()` reach every other documented function
-generically. The 2026-10-13 spec's
+`whm()->call()` and `uapi()->call()` provide generic GET and form-encoded POST
+access for operations compatible with the parameter representation, route and
+envelope handling. They do not support JSON or multipart request bodies. The
+pinned inventory includes 13 JSON operations (8 WHM, 5 UAPI) and 9 multipart
+operations (1 WHM, 8 UAPI); selected implementations remain open under
+`whm-api-client-8x0.1.18` and `whm-api-client-8x0.1.19`. Generic access is not
+typed or live-verified coverage. The 2026-10-13 spec's
 [scaling decision (typed core plus generic calls)](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls)
 is superseded: its hand-written-group decision is replaced by the generated-client
 design (bead `whm-api-client-8x0.10`).
@@ -242,8 +247,10 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
 - `whm()->call()` and `uapi()->call()` are generic escape hatches: POST by default
   (GET only when passed explicitly), metadata cleared before name and parameter
   validation, reserved fields removed from caller parameters, `CallResult` with the payload
-  converted to arrays and no schema. They are an escape hatch, not coverage;
-  typed coverage comes from generation.
+  converted to arrays and no schema. They support GET queries and form-encoded
+  POST bodies only, with operation-specific parameter, route and envelope limits;
+  JSON and multipart bodies remain unsupported on all routes. They are an escape
+  hatch, not coverage; typed coverage comes from generation.
 - Each attempt clears old response metadata. A usable envelope records an
   immutable snapshot before API or payload errors. `ResponseMetadata::$whm`
   retains raw WHM metadata; `$uapi` retains the UAPI result envelope without `data`.
@@ -312,7 +319,8 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
 
 - Follow the [current delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
   The development-only runner in `tools/live-verify/` captures 43 reviewed
-  read-only route-specific probes through the generated client; run it explicitly
+  read-only route-specific probes across 25 operations through the generated
+  client; run it explicitly
   with `WHM_API_LIVE=1 composer live:verify -- --output=docs/api/evidence/read-only.json`.
   It requires committed code and persists sanitized structure only. Catalog entries
   bind exact arguments, including the `npr` account filters and `type: 'home'` PHP
