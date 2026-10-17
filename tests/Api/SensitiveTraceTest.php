@@ -177,6 +177,30 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
+    #[DataProvider('mysqlRoutes')]
+    public function testMysqlWritePayloadFailuresKeepPasswordsOutOfTraceArguments(bool $direct): void
+    {
+        [$client, $http] = self::client($direct);
+        $http->addResponse(new Response(200, [], $direct
+            ? '{"status":1,"data":false}'
+            : '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":false}}}'));
+
+        try {
+            $client->uapi($direct ? null : 'npr')->mysql()->createUser('npr_writer', self::SECRET);
+            self::fail('Expected an invalid payload after the confirmed MySQL write.');
+        } catch (InvalidResponseException $exception) {
+            self::assertCount(1, $http->getRequests());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    /** @return iterable<string, array{bool}> */
+    public static function mysqlRoutes(): iterable
+    {
+        yield 'direct' => [true];
+        yield 'bridged' => [false];
+    }
+
     /**
      * @param 'whm'|'direct'|'bridged' $route
      * @param Closure(Client): mixed $call
@@ -231,6 +255,16 @@ final class SensitiveTraceTest extends TestCase
     /** @return iterable<string, array{'whm'|'direct'|'bridged', Closure(Client): mixed}> */
     private static function secretCalls(): iterable
     {
+        yield 'direct MySQL create user' => [
+            'direct',
+            static fn (Client $client): mixed =>
+                $client->uapi()->mysql()->createUser(name: 'npr_writer', password: self::SECRET),
+        ];
+        yield 'bridged MySQL create user' => [
+            'bridged',
+            static fn (Client $client): mixed =>
+                $client->uapi('npr')->mysql()->createUser(name: 'npr_writer', password: self::SECRET),
+        ];
         yield 'WHM passwd' => [
             'whm',
             static fn (Client $client): mixed => $client->whm()->accounts()->changePassword('bob', self::SECRET),

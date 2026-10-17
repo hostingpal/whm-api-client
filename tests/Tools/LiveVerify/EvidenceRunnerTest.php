@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
 
+use HostingPal\WhmApiClient\Api\Whm\Spec\AccountsSpec;
+use HostingPal\WhmApiClient\Client as ApiClient;
+use HostingPal\WhmApiClient\Http\HttpTransport;
+use HostingPal\WhmApiClient\Tools\LiveVerify\CaptureClient;
 use HostingPal\WhmApiClient\Tools\LiveVerify\EvidenceRunner;
+use HostingPal\WhmApiClient\Tools\LiveVerify\Probe;
 use HostingPal\WhmApiClient\Tools\LiveVerify\ProbeCatalog;
 use Http\Mock\Client;
+use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -16,6 +22,74 @@ use RuntimeException;
 final class EvidenceRunnerTest extends TestCase
 {
     private const ROOT = __DIR__ . '/../../..';
+
+    #[DataProvider('mutationResponses')]
+    public function testLifecycleCaptureKeepsOriginalPostOutcomeWithoutReplay(
+        string $body,
+        string $outcome,
+        ?string $failure,
+    ): void {
+        $http = new Client();
+        $http->addResponse(new Response(200, [], $body));
+        $capture = new CaptureClient($http);
+        $factory = new Psr17Factory();
+        $client = new ApiClient([
+            'host' => 'test.oblak.host', 'authType' => 'whm', 'username' => 'root', 'token' => 'private-token',
+        ], new HttpTransport($capture, $factory, $factory));
+        $probe = new Probe(
+            'whm1:passwd',
+            'whm',
+            AccountsSpec::PASSWD,
+            'https://test.oblak.host:2087/json-api/passwd?api.version=1',
+            static fn (ApiClient $api): mixed =>
+                $api->whm()->accounts()->changePassword(user: 'private-user', password: 'private-password'),
+        );
+        $record = (new EvidenceRunner($http, self::context()))->capture($probe, $capture, $client);
+
+        self::assertCount(1, $http->getRequests());
+        self::assertSame('POST', $record['method']);
+        self::assertSame('whm1:passwd#GET', $record['variant']);
+        self::assertSame(200, $record['http_status']);
+        self::assertSame($outcome, $record['api_outcome']);
+        self::assertSame($failure, $record['failure_kind']);
+        self::assertSame($failure === null ? 'passed' : 'failed', $record['probe_outcome']);
+        self::assertSame($body, $capture->rawBody());
+        if ($failure === 'payload_mismatch') {
+            self::assertSame('failed', $record['payload_validation']);
+            self::assertSame([['path' => '$', 'kind' => 'type_mismatch']], $record['discrepancies']);
+        }
+        $privateValues = ['private-token', 'private-user', 'private-password', 'private-error', 'private-payload'];
+        foreach ($privateValues as $private) {
+            self::assertStringNotContainsString($private, json_encode($record, JSON_THROW_ON_ERROR));
+        }
+
+        $localFailure = new Probe(
+            $probe->operation,
+            $probe->route,
+            $probe->spec,
+            $probe->uri,
+            static fn (ApiClient $api): mixed => throw new RuntimeException('private-error'),
+        );
+        $failed = (new EvidenceRunner($http, self::context()))->capture($localFailure, $capture, $client);
+        self::assertCount(1, $http->getRequests());
+        self::assertNull($failed['method']);
+        self::assertNull($failed['http_status']);
+        self::assertSame([], $failed['response_paths']);
+        self::assertSame([], $failed['payload_paths']);
+        self::assertSame('probe_failure', $failed['failure_kind']);
+    }
+
+    /** @return iterable<string, array{string, string, string|null}> */
+    public static function mutationResponses(): iterable
+    {
+        yield 'success' => ['{"metadata":{"result":1},"data":null}', 'success', null];
+        yield 'accepted mutation with malformed payload' => [
+            '{"metadata":{"result":1},"data":"private-payload"}', 'success', 'payload_mismatch',
+        ];
+        yield 'api failure' => [
+            '{"metadata":{"result":0,"reason":"private-error"}}', 'failure', 'api_failure',
+        ];
+    }
 
     public function testExplicitDirectUsernameBindsOnlyDirectAuthentication(): void
     {

@@ -5,19 +5,16 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tests\Api;
 
 use HostingPal\WhmApiClient\Api\Uapi\Mysql;
-use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\HttpException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
-use HostingPal\WhmApiClient\Http\HttpTransport;
+use HostingPal\WhmApiClient\Tests\Support\MysqlTestSupport;
 use Http\Mock\Client as MockClient;
 use InvalidArgumentException;
 use LogicException;
-use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\RequestInterface;
 
 /**
  * @phpstan-type Database array{database?: string, disk_usage?: int, users?: list<string>}
@@ -27,7 +24,7 @@ final class UapiMysqlTest extends TestCase
 {
     public function testMysqlInventoryDefaultsToTheAuthenticatedCpanelAccount(): void
     {
-        [$client, $http] = self::client('direct');
+        [$client, $http] = MysqlTestSupport::client('direct');
         $http->addResponse(new Response(200, [], '{"result":{"status":1,"data":[]}}'));
 
         self::assertSame([], $client->uapi()->mysql()->listDatabases());
@@ -37,7 +34,7 @@ final class UapiMysqlTest extends TestCase
 
     public function testMysqlSelectorBindsTheAccountWithoutIo(): void
     {
-        [$client, $http] = self::client('bridge');
+        [$client, $http] = MysqlTestSupport::client('bridge');
         $account = $client->uapi('exampleuser');
 
         self::assertSame($account->mysql(), $account->mysql());
@@ -54,9 +51,9 @@ final class UapiMysqlTest extends TestCase
         string $payload,
         array $expected,
     ): void {
-        [$client, $http] = self::client($route);
+        [$client, $http] = MysqlTestSupport::client($route);
         $account = $client->uapi('exampleuser');
-        $http->addResponse(new Response(200, [], self::envelope($route, $function, $payload)));
+        $http->addResponse(new Response(200, [], MysqlTestSupport::envelope($route, $function, $payload)));
 
         self::assertSame($expected, self::invoke($account->mysql(), $function));
 
@@ -124,12 +121,12 @@ final class UapiMysqlTest extends TestCase
         string $function,
         ?string $payload,
     ): void {
-        [$client, $http] = self::client($route);
+        [$client, $http] = MysqlTestSupport::client($route);
         $account = $client->uapi('exampleuser');
-        $http->addResponse(new Response(200, [], self::envelope($route, $function, '[]')));
+        $http->addResponse(new Response(200, [], MysqlTestSupport::envelope($route, $function, '[]')));
         self::invoke($account->mysql(), $function);
         $previous = $account->responseMeta();
-        $http->addResponse(new Response(200, [], self::envelope($route, $function, $payload)));
+        $http->addResponse(new Response(200, [], MysqlTestSupport::envelope($route, $function, $payload)));
 
         try {
             self::invoke($account->mysql(), $function);
@@ -183,12 +180,12 @@ final class UapiMysqlTest extends TestCase
     #[DataProvider('operations')]
     public function testApiAndHttpFailuresReplaceMysqlMetadataWithoutRetrying(string $route, string $function): void
     {
-        [$client, $http] = self::client($route);
+        [$client, $http] = MysqlTestSupport::client($route);
         $account = $client->uapi('exampleuser');
-        $http->addResponse(new Response(200, [], self::envelope($route, $function, '[]')));
+        $http->addResponse(new Response(200, [], MysqlTestSupport::envelope($route, $function, '[]')));
         self::invoke($account->mysql(), $function);
         $successful = $account->responseMeta();
-        $http->addResponse(new Response(200, [], self::envelope($route, $function, null, 0)));
+        $http->addResponse(new Response(200, [], MysqlTestSupport::envelope($route, $function, null, 0)));
 
         try {
             self::invoke($account->mysql(), $function);
@@ -216,10 +213,10 @@ final class UapiMysqlTest extends TestCase
 
     public function testBridgedMysqlInventoriesKeepAccountsAndMetadataIsolated(): void
     {
-        [$client, $http] = self::client('bridge');
+        [$client, $http] = MysqlTestSupport::client('bridge');
         $first = $client->uapi('exampleuser');
         $second = $client->uapi('other');
-        $http->addResponse(new Response(200, [], self::envelope(
+        $http->addResponse(new Response(200, [], MysqlTestSupport::envelope(
             'bridge',
             'list_databases',
             '[{"database":"exampleuser_main"}]',
@@ -228,7 +225,7 @@ final class UapiMysqlTest extends TestCase
         self::assertRequest($http, 'bridge', 'list_databases');
         $firstMetadata = $first->responseMeta();
         self::assertNull($second->responseMeta());
-        $http->addResponse(new Response(200, [], self::envelope(
+        $http->addResponse(new Response(200, [], MysqlTestSupport::envelope(
             'bridge',
             'list_users',
             '[{"user":"other_writer"}]',
@@ -245,7 +242,7 @@ final class UapiMysqlTest extends TestCase
 
     public function testWhmMysqlInventoryDoesNotAssumeRootIsACpanelAccount(): void
     {
-        [$client, $http] = self::client('bridge');
+        [$client, $http] = MysqlTestSupport::client('bridge');
 
         try {
             $client->uapi()->mysql()->listDatabases();
@@ -257,8 +254,8 @@ final class UapiMysqlTest extends TestCase
 
     public function testWhmMysqlInventoryUsesTheConfiguredCpanelAccount(): void
     {
-        [$client, $http] = self::client('bridge', 'configured');
-        $http->addResponse(new Response(200, [], self::envelope('bridge', 'list_users', '[]')));
+        [$client, $http] = MysqlTestSupport::client('bridge', 'configured');
+        $http->addResponse(new Response(200, [], MysqlTestSupport::envelope('bridge', 'list_users', '[]')));
 
         self::assertSame([], $client->uapi()->mysql()->listUsers());
 
@@ -269,9 +266,9 @@ final class UapiMysqlTest extends TestCase
     #[DataProvider('mysqlFunctions')]
     public function testOuterWhmFailureTakesPrecedenceOverInnerMysqlSuccess(string $function): void
     {
-        [$client, $http] = self::client('bridge');
+        [$client, $http] = MysqlTestSupport::client('bridge');
         $account = $client->uapi('exampleuser');
-        $http->addResponse(new Response(200, [], self::envelope('bridge', $function, '[]')));
+        $http->addResponse(new Response(200, [], MysqlTestSupport::envelope('bridge', $function, '[]')));
         self::invoke($account->mysql(), $function);
         $previous = $account->responseMeta();
         $http->addResponse(new Response(200, [], '{"metadata":{"result":0,"reason":"Synthetic denied"},'
@@ -323,51 +320,15 @@ final class UapiMysqlTest extends TestCase
         string $function,
         string $account = 'exampleuser',
     ): void {
-        $request = $http->getLastRequest();
-        self::assertInstanceOf(RequestInterface::class, $request);
-        self::assertSame(
+        MysqlTestSupport::assertRequest(
+            $http,
+            'GET',
             $route === 'bridge'
                 ? 'https://api.example.test:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=' . $account
                     . '&cpanel.module=Mysql&cpanel.function=' . $function
                 : 'https://api.example.test:2083/execute/Mysql/' . $function,
-            (string) $request->getUri(),
-        );
-        self::assertSame('GET', $request->getMethod());
-        self::assertSame('', (string) $request->getBody());
-        self::assertSame(
+            '',
             $route === 'bridge' ? 'whm root:fixture-token' : 'cpanel exampleuser:fixture-token',
-            $request->getHeaderLine('Authorization'),
         );
-    }
-
-    private static function envelope(string $route, string $function, ?string $payload, int $status = 1): string
-    {
-        $result = '{"status":' . $status . ($payload === null ? '' : ',"data":' . $payload)
-            . ',"errors":' . ($status === 1 ? 'null' : '["Synthetic MySQL failure"]')
-            . ',"messages":null,"warnings":["Synthetic MySQL notice"],"metadata":{"transformed":1}}';
-
-        return match ($route) {
-            'bridge' => '{"metadata":{"result":1},"data":{"uapi":' . $result . '}}',
-            'bare' => $result,
-            default => '{"apiversion":3,"module":"Mysql","func":"' . $function . '","result":' . $result . '}',
-        };
-    }
-
-    /** @return array{Client, MockClient} */
-    private static function client(string $route, ?string $defaultCpanelUser = null): array
-    {
-        $factory = new Psr17Factory();
-        $http = new MockClient($factory);
-        $options = [
-            'host' => 'api.example.test',
-            'authType' => $route === 'bridge' ? 'whm' : 'cpanel',
-            'username' => $route === 'bridge' ? 'root' : 'exampleuser',
-            'token' => 'fixture-token',
-        ];
-        if ($defaultCpanelUser !== null) {
-            $options['defaultCpanelUser'] = $defaultCpanelUser;
-        }
-
-        return [new Client($options, new HttpTransport($http, $factory, $factory)), $http];
     }
 }

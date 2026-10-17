@@ -7,7 +7,7 @@ namespace HostingPal\WhmApiClient\Tools\LiveVerify;
 use Closure;
 use HostingPal\WhmApiClient\Client;
 
-/** A reviewed generated method and its exact read-only request boundary. */
+/** A reviewed generated method and its route; the catalog or lifecycle owns the exact request guard. */
 final readonly class Probe
 {
     /**

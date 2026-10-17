@@ -1043,3 +1043,59 @@ adaptations. The final independent focused run passed 249 cases / 2,325 assertio
 Full formatting, static analysis, tests and offline API-map checks passed. This
 records the concrete recipe and review cost for the subsequent bounded plumbing
 pilot; it introduces no general fixture framework or new generated operations.
+
+### Reviewed slice: 2026-10-17 MySQL database and user mutations
+
+The bounded expansion selects five functions already needed by the populated
+fixture: `Mysql/create_database`, `create_user`, `set_privileges_on_database`,
+`delete_user` and `delete_database`. Each pinned `#GET` variant is marked mutating;
+the generated methods use form POST under the existing request policy. No JSON
+or multipart body support is required. Generation produces 79 operations in the
+same 13 groups without changing the runtime or generator.
+
+The source declares nullable object results without properties or an
+`additionalProperties` restriction. These are opaque object boundaries, not
+empty-object contracts: preserve their fields without assigning undocumented
+meanings. Existing empty-map compatibility also accepts an empty JSON list;
+nonempty lists, scalars and an omitted `data` member remain mismatches. No new
+omitted-payload correction or return-type narrowing is introduced. Optional
+`prefix-size` and `privileges` remain omitted unless supplied. Privilege assignment
+replaces existing privileges; the fixture explicitly sends `SELECT`.
+
+The fixture reuses its four account-prefixed resources. Linked database/user
+creation and deletion use direct UAPI, unlinked creation and deletion use the
+WHM bridge, and the linked pair receives one deliberately planned `SELECT`
+assignment through each route. The second assignment establishes execution and
+response coverage, not an independently demonstrated privilege change. Ten
+mutation responses are captured at their original execution, including deletion
+during cleanup. A failed response validation is recorded before reconciliation;
+no mutation is retried to obtain a successful response or complete evidence.
+Baseline inventory observations and their Quota acknowledgments stay separate.
+
+The test-mechanics pilot shares client construction, envelope construction and
+low-level request assertions between the existing MySQL inventory suite and the
+new mutation suite. Endpoint arguments, expected URIs/bodies and payloads remain
+literal, independently authored expectations. The original inventory suite keeps
+196 cases and 1,752 assertions. Its file shrinks from 373 to 334 lines; the shared
+helper costs 67 lines. For comparison, a self-contained copy of the new mutation
+suite with the original mechanics would require 294 lines, versus 258 using the
+helper. This constructed duplication comparison totals 667 versus 659 lines,
+an eight-line saving; it is not a claim that the new mutation suite existed before
+the batch. Review now includes one helper and two suites, with no measured
+elapsed review-time saving. Other module helpers are unchanged.
+
+### Quota disposition: 2026-10-17 expected undocumented fields
+
+A separately authorized read-only inspection of `Quota/get_quota_info` on `npr`
+identified `backup_warning_threshold_pct` and `under_backup_threshold`, both
+integers through direct UAPI and the WHM bridge on `11.138.0.15`. No field values
+were printed or saved. The owner accepts these as expected extras with unknown
+semantics and permits the correction cycle to continue. Their requiredness,
+allowed values, meaning and version coverage remain unresolved under
+`whm-api-client-8x0.4.3.1`.
+
+Typed Quota returns remain documented-only. Evidence still masks unreviewed keys,
+and the existing gate compares exact structural observations rather than these
+names. This inspection does not establish the names or counts in historical
+masked artifacts, including the finite-account scenario. No historical evidence,
+acknowledgment or finite-scenario exit policy is changed.
