@@ -126,7 +126,7 @@ final class BoxTrapperSpec
                 'enable_auto_whitelist' => ['type' => 'flag'],
                 'from_addresses' => ['type' => 'string'],
                 'from_name' => ['type' => 'string'],
-                'queue_days' => ['type' => 'int'],
+                'queue_days' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'spam_score' => ['type' => 'number'],
                 'whitelist_by_association' => ['type' => 'flag'],
             ],

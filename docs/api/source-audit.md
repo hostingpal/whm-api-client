@@ -2446,3 +2446,14 @@ The structural artifact does not establish exact numeric spellings or values;
 synthetic precision/bounds tests remain separate. Known fields and sibling
 contracts stay strict. Two PTR nested null unknown-field observations remain
 untyped and unacknowledged under `8x0.2.23`.
+
+The corrected read-only capture at `a063db0` passes all 19 API/payload checks;
+strict assessment remains failed for the two PTR unknown-field observations.
+At the same revision, the first BoxTrapper fixture captures 23 observations
+(15 GET, 8 POST): all API outcomes succeed and both configuration reads fail only
+on numeric-string `queue_days`. Both temporary mailboxes are confirmed cleaned.
+The original artifact SHA-256 is
+`5f931b1c478b3ab1c5e8dabf9fcc78381a57aa70a7204bffe0c428f99125ae29`.
+Only `get_configuration.queue_days` gains the existing canonical integer-string
+normalization; no boolean flags or sibling field contracts change. The first
+capture does not establish rule round trips or later-phase behavior.

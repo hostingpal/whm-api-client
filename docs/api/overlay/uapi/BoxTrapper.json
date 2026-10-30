@@ -167,6 +167,35 @@
         {
           "kind": "documented",
           "text": "Configuration fields are optional; flags remain integers and spam_score remains numeric. from_addresses is a comma-separated string. queue_days can be zero on reads while writes document a minimum of one."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, queue_days arrived as a numeric string through both direct and bridged UAPI. This field accepts canonical integer strings within PHP integer bounds and normalizes them to int. Omission stays absent; null and other scalar formats are rejected. The structural artifact does not identify the exact string grammar or value. Flags and all other fields keep their existing contracts."
+        }
+      ],
+      "response": {
+        "queue_days": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "The original BoxTrapper/get_configuration GET responses through direct-uapi and bridged-uapi at revision a063db053896b28e662ad3c8be6396888781d198 recorded $.queue_days as numeric-string, while the pinned source declares integer. Both HTTP 200/API outcomes succeeded and payload validation failed at this field. Immutable failed artifact SHA-256 5f931b1c478b3ab1c5e8dabf9fcc78381a57aa70a7204bffe0c428f99125ae29 contains 23 original observations (15 GET, 8 POST), with both owned mailboxes confirmed cleaned. Opt in only this optional nonnullable field to the existing canonical PHP-integer-bounded numeric-string conversion and normalize to int. The structural evidence does not establish the exact string grammar, value or cause of wire variation. Preserve omitted fields and all sibling types; decimal, exponent, whitespace, noncanonical and overflowing strings remain rejected.",
+              "fingerprint": "docs/api/evidence/2026-10-30-boxtrapper-section.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "The original BoxTrapper/get_configuration GET responses through direct-uapi and bridged-uapi at revision a063db053896b28e662ad3c8be6396888781d198 recorded $.queue_days as numeric-string, while the pinned source declares integer. Both HTTP 200/API outcomes succeeded and payload validation failed at this field. Immutable failed artifact SHA-256 5f931b1c478b3ab1c5e8dabf9fcc78381a57aa70a7204bffe0c428f99125ae29 contains 23 original observations (15 GET, 8 POST), with both owned mailboxes confirmed cleaned. Opt in only this optional nonnullable field to the existing canonical PHP-integer-bounded numeric-string conversion and normalize to int. The structural evidence does not establish the exact string grammar, value or cause of wire variation. Preserve omitted fields and all sibling types; decimal, exponent, whitespace, noncanonical and overflowing strings remain rejected.",
+          "fingerprint": "docs/api/evidence/2026-10-30-boxtrapper-section.json"
         }
       ]
     },

@@ -345,6 +345,98 @@ final class UapiBoxTrapperTest extends TestCase
         yield 'bridge' => ['bridge'];
     }
 
+    /** @return iterable<string,array{string,string,int}> */
+    public static function configurationQueueDays(): iterable
+    {
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (
+                [
+                    '0' => 0, '1' => 1, '"0"' => 0, '"1"' => 1, '"14"' => 14, '"-1"' => -1,
+                    '"' . PHP_INT_MAX . '"' => PHP_INT_MAX, '"' . PHP_INT_MIN . '"' => PHP_INT_MIN,
+                ] as $wire => $value
+            ) {
+                yield $route . ' ' . $wire => [$route, (string) $wire, $value];
+            }
+        }
+    }
+
+    #[DataProvider('configurationQueueDays')]
+    public function testConfigurationQueueDaysNormalizesOnlyCanonicalBoundedIntegerStrings(
+        string $route,
+        string $wire,
+        int $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('exampleuser');
+        $http->addResponse(new Response(200, [], self::envelope($route, '{"queue_days":' . $wire . '}')));
+        self::assertSame(['queue_days' => $expected], $account->boxTrapper()->getConfiguration('user@example.com'));
+        self::assertRequest($http, $route, 'get_configuration', 'GET', 'email=user%40example.com');
+        self::assertSame(1, $account->responseMeta()?->uapiStatus());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string,array{string,string}> */
+    public static function invalidConfigurationQueueDays(): iterable
+    {
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (
+                [
+                    '"1.0"', '"1.5"', '"1e2"', '"+1"', '"-0"', '"01"', '"-01"', '" 1"', '"1 "',
+                    '"1\\n"', '""', '"days"', '"' . PHP_INT_MAX . '0"', '"' . PHP_INT_MIN . '0"',
+                    'null', 'false', 'true', '1.0', '[]', '{}',
+                ] as $wire
+            ) {
+                yield $route . ' ' . $wire => [$route, $wire];
+            }
+        }
+    }
+
+    #[DataProvider('invalidConfigurationQueueDays')]
+    public function testConfigurationQueueDaysRejectsOtherFormatsAndOverflow(string $route, string $wire): void
+    {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('exampleuser');
+        $http->addResponse(new Response(200, [], self::envelope($route, '{"queue_days":' . $wire . '}')));
+        try {
+            $account->boxTrapper()->getConfiguration('user@example.com');
+            self::fail('Noncanonical or noninteger queue_days was accepted.');
+        } catch (PayloadMismatchException $error) {
+            self::assertTrue($error->outcomeConfirmed);
+            self::assertSame($account->responseMeta(), $error->metadata);
+            self::assertSame(1, $error->metadata?->uapiStatus());
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string,array{string}> */
+    public static function unchangedConfigurationFields(): iterable
+    {
+        yield 'automatic whitelist flag' => ['"enable_auto_whitelist":"0"'];
+        yield 'association flag' => ['"whitelist_by_association":"0"'];
+        yield 'spam score numeric string' => ['"spam_score":"2.5"'];
+        yield 'from addresses integer' => ['"from_addresses":0'];
+        yield 'from name null' => ['"from_name":null'];
+    }
+
+    #[DataProvider('unchangedConfigurationFields')]
+    public function testQueueDaysCorrectionDoesNotBroadenSiblingFields(string $sibling): void
+    {
+        [$client, $http] = self::client('direct');
+        $http->addResponse(new Response(200, [], self::envelope('direct', '{"queue_days":"1",' . $sibling . '}')));
+        $this->expectException(PayloadMismatchException::class);
+        $client->uapi('exampleuser')->boxTrapper()->getConfiguration('user@example.com');
+    }
+
+    public function testOmittedQueueDaysRemainsAbsent(): void
+    {
+        [$client, $http] = self::client('direct');
+        $http->addResponse(new Response(200, [], self::envelope('direct', '{"enable_auto_whitelist":0}')));
+        self::assertSame(
+            ['enable_auto_whitelist' => 0],
+            $client->uapi('exampleuser')->boxTrapper()->getConfiguration('user@example.com'),
+        );
+    }
+
     public function testOuterWhmFailureStillRejectsSuccessfulInnerMutation(): void
     {
         [$client, $http] = self::client('bridge');

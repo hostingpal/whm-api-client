@@ -312,6 +312,11 @@ final readonly class BoxTrapper
      * from_addresses is a comma-separated string. queue_days can be zero on reads while writes document a minimum of
      * one.
      *
+     * Observed: On cPanel 11.138.0.19, queue_days arrived as a numeric string through both direct and bridged UAPI.
+     * This field accepts canonical integer strings within PHP integer bounds and normalizes them to int. Omission stays
+     * absent; null and other scalar formats are rejected. The structural artifact does not identify the exact string
+     * grammar or value. Flags and all other fields keep their existing contracts.
+     *
      * API-map identity: uapi:BoxTrapper/get_configuration#GET (wire name get_configuration).
      *
      * @param string $email The account's email address.

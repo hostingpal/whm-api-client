@@ -224,3 +224,14 @@ contracts. Two PTR observations also contain an unreviewed null field at
 `$[].ptr_records[].*`. The artifact remains unchanged; field compatibility and
 unknown-field investigation are separate. Follow-up `8x0.2.23` owns the remaining
 live work and unresolved PTR structure.
+
+The [corrected mail-protection capture](2026-10-30-mail-protection-corrected.json)
+at `a063db0` passes all 19 HTTP/API/payload checks on `11.138.0.19`. Strict status
+remains failed only for the two masked PTR unknown-field observations; no
+acknowledgment or unknown-field schema was added. All requests were GET.
+
+The [initial BoxTrapper fixture](2026-10-30-boxtrapper-section.json) at the same
+revision records 23 observations (15 GET, 8 POST), all API outcomes successful.
+Both configuration reads fail payload validation because `queue_days` is a
+numeric string. Each route aborts before rule setters and later reads. Both fresh
+mailboxes are confirmed cleaned; the failed 45-phase assessment is preserved.
