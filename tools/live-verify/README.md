@@ -37,6 +37,66 @@ The two provisioning metadata reads also take no arguments. Their optional field
 remain optional, and a null database prefix remains distinct from an omitted one.
 Hostnames, database-server versions and prefixes are retained only as structural types.
 
+### Complete FTP section fixture
+
+`ftp-section.php` is a standalone opt-in recipe for the generated Ftp group. It
+requires committed effective inputs, both tokens, and the designated account and
+domain. It does not change the default 47-probe catalog or its Quota policy.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/ftp-section.php --output=docs/api/evidence/ftp-section-new.json
+```
+
+Use a new output filename. The command records sanitized structure from each
+original response and refuses to overwrite an existing artifact. The strict
+assessment requires all 41 ordered phase observations: WHM version and 20 phases
+per UAPI route, covering 16 Ftp functions. It accepts no discrepancy acknowledgments.
+
+The [2026-10-30 corrected-contract capture](../../docs/api/evidence/2026-10-30-ftp-section-corrected.json)
+passed all 41 API/payload/expectation observations and both cleanups, but exits 1
+because both disk inventories have undocumented string fields at `$[].*`.
+The strict assessment remains failed; `8x0.2.11` tracks that contract investigation.
+The [initial capture](../../docs/api/evidence/2026-10-30-ftp-section.json) separately
+preserves the finite-integer quota mismatch that justified `getQuota(): int|string`.
+
+Each route uses an independent random FTP username. The recipe checks absence,
+creates that user, checks its inventory/existence/unlimited quota, updates its
+password and home-directory spelling, sets a 17 MB quota, reads back the quota
+and disk inventory, deletes the user, and confirms absence. The `.` and `./`
+home arguments refer to the existing cPanel home directory; cleanup always sends
+`destroy=false`, so it never deletes directory contents. This proves the home
+setter's execution and readback, not a change in filesystem isolation. Quota and
+password results do not establish FTP authentication or transfer enforcement.
+
+The guard permits only the exact phase, method, URI, credentials, headers and
+body once. Failed or uncertain creation never establishes ownership, even if a
+matching account later appears. A confirmed successful API creation can be
+cleaned up after a payload mismatch. Cleanup never retries a mutation, and a
+successful delete still requires an independent inventory confirming absence.
+
+If publication fails after the complete report is written, the command keeps its
+0600 temporary file and prints its path on stderr. Retain that file as the
+sanitized failure artifact. When a resource is `uncertain`, inspect the
+designated account privately and identify this run's
+`wftp`-prefixed account before manual recovery; the prefix alone does not prove
+ownership. An uncertain creation stays uncertain even if the final inventory is
+empty, because the server may finish creating it afterward. Raw responses,
+passwords and actual resource identities remain out of the artifact. Do not rerun the fixture to recover the original response or
+reuse a previous run's account. API outages and failed cleanup require private
+inspection; a failed assessment is not a successful verification.
+
+`kill_session`, `set_anonymous_ftp`, `set_anonymous_ftp_incoming` and
+`set_welcome_message` are generated and offline-tested but deliberately unobserved
+in this recipe (follow-up `whm-api-client-8x0.2.10`). It neither opens FTP sessions
+nor changes account-wide settings.
+Inventory captures use `include_acct_types=sub`; the report declares
+`sub_rows_only`, and main, anonymous and log-access rows are outside the saved
+artifact evidence. Empty session responses provide no evidence about session
+row fields. Disabled FTP roles, other daemons and other versions remain
+separate evidence cases.
+
 ### Nonempty MySQL fixture
 
 The separate `--mysql-fixture` mode temporarily creates two databases and two

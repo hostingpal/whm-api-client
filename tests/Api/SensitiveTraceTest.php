@@ -263,6 +263,56 @@ final class SensitiveTraceTest extends TestCase
         yield 'HTTP failure' => [true, 500, '{"status":1,"data":' . $data . '}', HttpException::class];
     }
 
+    /**
+     * @param 'direct'|'bridged' $route
+     * @param Closure(Client): mixed $call
+     */
+    #[DataProvider('ftpSecretCalls')]
+    public function testFtpWritePayloadFailuresKeepPasswordsAndHashesOutOfTraceArguments(
+        string $route,
+        Closure $call,
+    ): void {
+        [$client, $http] = self::client($route === 'direct');
+        $http->addResponse(new Response(200, [], $route === 'direct'
+            ? '{"status":1,"data":false}'
+            : '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":false}}}'));
+
+        try {
+            $call($client);
+            self::fail('Expected an invalid payload after the confirmed FTP write.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertTrue($exception->outcomeConfirmed);
+            self::assertCount(1, $http->getRequests());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    /** @return iterable<string, array{'direct'|'bridged', Closure(Client): mixed}> */
+    public static function ftpSecretCalls(): iterable
+    {
+        foreach (['direct', 'bridged'] as $route) {
+            yield $route . ' FTP add password' => [
+                $route,
+                static fn (Client $client): mixed => $client->uapi($route === 'direct' ? null : 'npr')->ftp()->addFtp(
+                    user: 'writer',
+                    password: self::SECRET,
+                ),
+            ];
+            yield $route . ' FTP add password hash' => [
+                $route,
+                static fn (Client $client): mixed => $client->uapi($route === 'direct' ? null : 'npr')->ftp()->addFtp(
+                    user: 'writer',
+                    passHash: self::SECRET,
+                ),
+            ];
+            yield $route . ' FTP change password' => [
+                $route,
+                static fn (Client $client): mixed =>
+                    $client->uapi($route === 'direct' ? null : 'npr')->ftp()->changePassword('writer', self::SECRET),
+            ];
+        }
+    }
+
     /** @return iterable<string, array{bool}> */
     public static function mysqlRoutes(): iterable
     {
@@ -324,6 +374,8 @@ final class SensitiveTraceTest extends TestCase
     /** @return iterable<string, array{'whm'|'direct'|'bridged', Closure(Client): mixed}> */
     private static function secretCalls(): iterable
     {
+        yield from self::ftpSecretCalls();
+
         yield 'direct MySQL create user' => [
             'direct',
             static fn (Client $client): mixed =>

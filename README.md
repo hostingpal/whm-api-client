@@ -3,12 +3,12 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 13 generated typed groups cover 97 documented operations (see
+The 14 generated typed groups cover 117 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
 features, Email inventory, SSL/AutoSSL inventory, disk quotas and the complete
-pinned MySQL section.
+pinned MySQL and FTP sections.
 Generic `call()` methods provide GET and form-encoded POST access without a typed
 group, subject to the operation's parameter, route and envelope requirements.
 JSON and multipart request bodies are not supported. The library provides token
@@ -160,6 +160,13 @@ $quota = $account->quota()->getQuotaInfo(); // Disk fields in MB.
 $localQuota = $account->quota()->getLocalQuotaInfo(); // Disk fields in bytes.
 $underQuota = $quota['under_quota_overall'] ?? null; // 0|1, or absent.
 
+// FTP account inventory, daemon capabilities and quota values.
+$ftp = $account->ftp();
+$ftpAccounts = $ftp->listFtp(includeAcctTypes: 'sub');
+$ftpDiskUsage = $ftp->listFtpWithDisk(includeAcctTypes: 'main|sub');
+$ftpDaemon = $ftp->getFtpDaemonInfo(); // cPanel 54+; enabled and supports flags are 0|1.
+$ftpQuota = $ftp->getQuota(account: 'deploy', domain: 'example.com'); // int|string
+
 // MySQL inventory belongs to the selected cPanel account (cPanel 82+).
 $databases = $account->mysql()->listDatabases(); // database, disk_usage (bytes), users
 $databaseUsers = $account->mysql()->listUsers(); // user, shortuser, databases
@@ -224,6 +231,43 @@ user, password, host and string-port fields. An absent payload remains a contrac
 mismatch. Method PHPDoc documents each version
 floor, role requirement and result shape.
 
+The FTP group covers all 20 pinned functions, including account creation/deletion,
+password changes, home directories, quotas, sessions, anonymous-access settings and
+the account welcome message. Mutation methods use form POST. `addFtp()` accepts
+`password` or `passHash`, which map to `pass` and `pass_hash`; the server forbids
+using both. Omitted options retain upstream defaults: new usernames lose dots by
+default, quotas default to unlimited, the domain defaults to the cPanel
+account's primary domain, and an omitted `homedir` defaults to a directory with
+the same name as the FTP account. `getQuota()` preserves documented strings and
+observed finite integers; inventory disk amounts are decimal strings in MB, and `_diskquota` uses `0.00` for unlimited while
+`diskquota` uses `unlimited`. Optional fields and explicit `htmldir: null` stay distinct.
+
+```php
+$ftp->addFtp(user: 'deploy', password: $ftpPassword, domain: 'example.com',
+    homedir: 'public_html', quota: 100, disallowdot: false);
+$ftp->changePassword(user: 'deploy', password: $newFtpPassword, domain: 'example.com');
+$ftp->setQuota(user: 'deploy', domain: 'example.com', quota: 250);
+$ftp->deleteFtp(user: 'deploy', destroy: false, domain: 'example.com');
+```
+
+The [FTP live audit](docs/api/source-audit.md#complete-ftp-section-2026-10-30)
+records 16 functions on both routes, successful API/payload checks and confirmed
+cleanup. Its strict evidence assessment still flags undocumented string fields
+in both disk-inventory observations; those fields stay outside typed results.
+The saved artifact observes only `sub` inventory rows; main, anonymous and
+log-access rows are outside its captured evidence. Four settings/session functions
+remain live-unobserved.
+
+`deleteFtp(destroy: true)` also deletes the FTP home directory; choose the target
+carefully. `killSession()` defaults to stopping **all** FTP sessions for the
+cPanel account when `login` is omitted. Anonymous access/transfer settings apply
+to the selected cPanel account. `ftpExists()` returns a nullable opaque payload
+on success and raises `ApiErrorException` when the account does not exist; it is
+not a boolean check. Most FTP operations require the FTP role and cPanel 11.42+;
+`getFtpDaemonInfo()` and `setHomedir()` require cPanel 54+. Nullable mutation
+payloads preserve opaque object fields and explicit null, and an absent payload
+remains a contract mismatch.
+
 Results are arrays keyed by the upstream wire names (`$domains['main_domain'] ?? null`).
 Omitted fields are absent keys (use `array_key_exists()` or `??`) and an explicit
 upstream `null` stays `null`. Values that vary on real servers are normalized to the
@@ -266,6 +310,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->langPhp()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetDomainHandler()`, `phpGetImpactedDomains()` |
 | `uapi()->features()` | `listFeatures()` |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
+| `uapi()->ftp()` | `addFtp()`, `allowsAnonymousFtp()`, `allowsAnonymousFtpIncoming()`, `changePassword()`, `deleteFtp()`, `ftpExists()`, `getFtpDaemonInfo()`, `getPort()`, `getQuota()`, `getWelcomeMessage()`, `killSession()`, `listFtp()`, `listFtpWithDisk()`, `listSessions()`, `serverName()`, `setAnonymousFtp()`, `setAnonymousFtpIncoming()`, `setHomedir()`, `setQuota()`, `setWelcomeMessage()` |
 | `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()`, `addHost()`, `addHostNote()`, `checkDatabase()`, `deleteHost()`, `dumpDatabaseSchema()`, `getHostNotes()`, `listRoutines()`, `locateServer()`, `renameDatabase()`, `renameUser()`, `repairDatabase()`, `revokeAccessToDatabase()`, `setPassword()`, `setupDbAndUser()`, `updatePrivileges()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
 

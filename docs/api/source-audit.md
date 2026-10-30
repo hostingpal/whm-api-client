@@ -1305,3 +1305,123 @@ and documentation. Evidence and this runtime addendum are separate. Two review
 passes were used (contract audit, then whole-branch review); the first led to
 source-caveat documentation and the returned-secret regression, and the second
 found no remaining issue. No measured review-time saving is claimed.
+
+
+### Complete FTP section: 2026-10-30
+
+The owner requested another coherent API slice in an independent PR while
+keeping the complete MySQL PR separate. Bead `whm-api-client-8x0.4.9` covers all
+20 pinned `Ftp` functions from the unchanged 2026-10-13 cPanel OpenAPI snapshot:
+`add_ftp`, `allows_anonymous_ftp`, `allows_anonymous_ftp_incoming`, `delete_ftp`,
+`ftp_exists`, `get_ftp_daemon_info`, `get_port`, `get_quota`, `get_welcome_message`,
+`kill_session`, `list_ftp`, `list_ftp_with_disk`, `list_sessions`, `passwd`,
+`server_name`, `set_anonymous_ftp`, `set_anonymous_ftp_incoming`, `set_homedir`,
+`set_quota` and `set_welcome_message`.
+
+All nine mutations execute as form POST; the eleven read operations use GET.
+`passwd` is exposed as `changePassword(user, password, domain)`; `pass` and
+`pass_hash` map to sensitive `password` and `passHash` arguments. Optional
+parameters preserve omission, explicit false, empty strings and zero. The API
+forbids sending both password forms, leaves domains defaulted to the cPanel
+primary domain, and defaults new usernames to dot removal. These are upstream
+semantics rather than new local cross-parameter validation.
+
+The overlay preserves FTP-role caveats and version floors: cPanel 54 for
+`get_ftp_daemon_info` and `set_homedir`, 11.42 for the other operations. Inventory
+row fields remain optional; disk amounts remain decimal strings in MB, with
+`_diskquota` using `0.00` for unlimited and `diskquota` using `unlimited`.
+`get_quota` is a string payload. `htmldir` may be explicitly null. Sessions keep
+their documented optional fields and integer PID. `ftp_exists` is a nullable
+object success or an API error, not a boolean result. Opaque nullable object
+results retain explicit null and unknown object fields but reject an absent
+payload. `add_ftp` has a literal `[null]` enum in the pinned schema: its generated
+nullable-object shape follows the established general-enum policy, not exact
+JSON Schema validation or a claim of documented non-null data.
+
+The account-changing defaults are rendered in generated PHPDoc: `destroy=true`
+also deletes the FTP home directory, omitted `add_ftp` homedir defaults to a
+directory with the same name as the FTP account, `kill_session` without a login
+targets all account sessions, and omitted quota settings can remove the quota. Both anonymous
+access switches apply to the selected cPanel account. No generated source was
+edited by hand and no shared runtime or generator policy was changed.
+
+The separate section verifier is scoped to `npr` / `npr.rs`, with both live
+opt-ins and committed source inputs. It exercises a run-owned FTP user through
+each UAPI route. Home-directory arguments `.` and `./` refer to the existing
+cPanel home; cleanup always supplies `destroy=false`. The directory call can
+establish execution/readback, not a change in filesystem isolation. Failed or
+uncertain creation never authorizes deleting a possibly unrelated user.
+Account-wide anonymous settings, the welcome-message setter and session killing
+are deliberately unobserved live in this recipe (follow-up `8x0.2.10`). FTP authentication, active
+session rows, populated disk usage and another daemon/version remain separate
+from API execution evidence. Runtime results are recorded below only after an
+explicit capture; default PHP and API-map gates remain offline.
+
+
+The first committed-code capture at
+`dd82a734095977fae6f8a2f3a0b1fabf226f1004` on cPanel `11.138.0.19`
+failed strictly on the finite-quota read through both routes: the original
+payload was a JSON integer, while the pinned contract declares a string.
+Unlimited quotas were strings. The [original artifact](evidence/2026-10-30-ftp-section.json),
+SHA-256 `55b0184b8581fb288c0bb0016b4ce36ffce119b262f831edabe777c285a65da8`,
+preserves both type mismatches and the failed assessment. It contains 39
+observations; disk inventory phases were not reached. Both temporary FTP users
+were independently confirmed absent after cleanup. All 540 structural paths,
+provenance and assessment were audited without recording payload values or replaying requests.
+
+A correction limited to `Ftp/get_quota` retains the documented string form and
+observed integer form as `int|string`. An evidence-bound root union expresses
+this in the existing type grammar; no generic validator or generator behavior
+changes. Floats, booleans, null, lists and objects remain invalid. Independently
+authored endpoint tests reproduced the integer mismatch on all three envelope
+forms; the full fixture regression reproduced it before the correction. Fixture
+readback requires the assigned finite quota as exactly integer `17` or string
+`17`, separately from the initial `unlimited` value. The initial discrepancy is
+not waived or rewritten, and new live evidence must bind the corrected revision.
+
+
+The second capture at `cd7bdb6a57bc6fe40dc0442d9c49c956cdfabe90` is saved as
+[the corrected-contract artifact](evidence/2026-10-30-ftp-section-corrected.json),
+SHA-256 `5bf7067e69efb996a31fb6c4b0a30f5a63402f4f8c5c88c81b11db73f4f4e94a`.
+All **41 observations** passed HTTP, API outcome, generated payload validation and
+fixture expectations on `11.138.0.19`: 16 Ftp functions through both routes plus
+WHM version. Both temporary users were independently confirmed absent; neither
+run removed directory contents. The original-response finite quotas were integers,
+and the populated disk inventories contained the documented row fields.
+
+The command still exited **1**: each disk-inventory observation has an
+`unknown_field` discrepancy at `$[].*` with string type. Those are two route
+observations, not evidence of exactly two field names or any particular names.
+The strict assessment remains **failed** with `unacknowledged_discrepancy`.
+No acknowledgment or undocumented typed field was added; `8x0.2.11` tracks the
+contract investigation. The typed client discards unknown fields by its existing
+policy, so API/payload success and evidence-assessment failure remain separate.
+The artifact's 634 structural paths, provenance, effective hashes and assessment
+were independently audited; no credentials, live usernames or response values
+were persisted. No third mutation run was performed merely to clear this finding.
+
+Both saved captures restrict inventory to `include_acct_types=sub`; the
+corrected artifact observes only `sub` rows. Main, anonymous and log-access rows
+are outside its captured evidence. The fixture report declares `sub_rows_only`
+for this recipe; the immutable artifacts are unchanged.
+
+The [external review of head `fc96ecd12506fb489b8bb98bda8b39b065350363`](https://github.com/hostingpal/whm-api-client/pull/28)
+reported a separate read-only, unfiltered diagnostic through both UAPI routes.
+`listFtp()` and `listFtpWithDisk()` passed typed validation for main, log-access
+and anonymous rows; no sub rows remained. That diagnostic is not bound to an
+evidence artifact. Its undocumented disk-inventory keys were `type` and `user`,
+both strings; this does not identify the masked unknown keys in the artifact's
+sub rows. The strict artifact assessment stays failed, without an acknowledgment
+or new typed field. The reviewer considers this finding nonblocking for merge;
+`8x0.2.11` remains open. No live rerun was performed for these review fixes.
+
+Before the first capture, the code commit changed 22 files: 18 manual files
+(2,623 additions / 4 removals) and four generated files (1,037 / 1). The evidence,
+quota correction and this addendum are additional work. A fresh independent
+whole-branch review of `dd82a734` found no actionable issue and independently ran
+767 tests / 6,142 assertions. The evidence-driven quota correction then passed
+its observed RED-to-GREEN endpoint and fixture regressions, full **4,745 tests /
+36,992 assertions**, formatting, maximum-level PHPStan and offline API-map checks.
+No shared runtime or generator change was needed. External current-head review,
+the unknown-field decision, and the four deliberately unobserved live functions
+remain distinct from these implementation and execution results.
