@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 15 generated typed groups cover 279 documented operations (see
+The 18 generated typed groups cover 289 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -313,6 +313,9 @@ An empty live list does not verify the types of records it never returned.
 
 | Handle and accessor | Methods |
 | --- | --- |
+| `uapi()->directoryIndexes()` | Directory indexing reads and configuration (3). |
+| `uapi()->directoryPrivacy()` | Password-protection state and directory user management (6). |
+| `uapi()->directoryProtection()` | Leech-protection directory inventory (1). |
 | `uapi()->domainInfo()` | All 5 operations: `domainsData()`, `singleDomainData()`, `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
 | `uapi()->langPhp()` | All 11 operations: installed/default/vhost PHP versions, domain handlers and impacted domains, INI paths/basic directives/content reads, and `phpIniSetUserBasicDirectives()`, `phpIniSetUserContent()`, `phpSetVhostVersions()` |
 | `uapi()->features()` | All 5 operations: `getFeatureMetadata()`, `hasFeature()`, `hasFeaturesLike()`, `listFeatures()`, `listFeaturesLike()` |
@@ -345,6 +348,19 @@ result: 1 means enabled; 0 with no errors means absent or disabled. Nonempty
 `responseMeta()->uapiErrors()` means the call failed, not that the feature is disabled.
 This typed method requires integer status 0 or 1 and accepts 0 as an access result.
 Outer WHM bridge failures still throw.
+
+The directory groups cover all ten pinned functions, available from cPanel 88.
+Six reads use GET and four mutations use form POST. Directory paths retain their
+documented absolute or account-home-relative meaning and are forwarded unchanged.
+Password-protection state belongs to DirectoryPrivacy; DirectoryProtection reports
+leech protection. A successful unprotected-directory result has payload flag 0;
+that does not make UAPI status 0 a success.
+
+`configureDirectoryProtection(dir, enabled, authname)` can omit `authname` when
+disabling protection, following the source's conditional requirement. Supply a
+realm name when enabling it. `addUser()` keeps its password sensitive throughout
+the request. User mutations preserve nullable opaque results and reject an absent
+payload; all documented directory fields retain omission and null distinctions.
 
 `uapi()->dns()->fetchCpanelGeneratedDomains()` requires cPanel 120 and preserves
 trailing dots; `lookup()` returns textual lines or explicit `null`.

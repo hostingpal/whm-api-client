@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 15 typed groups cover 279 documented operations:
+and cPanel UAPI surface. The 18 typed groups cover 289 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -305,6 +305,19 @@ reads and normalized countPops() through both routes. Strict review remains fail
 unchanged. Empty-string userdirprotect remains documentation/offline coverage because
 the live field is omitted. Three PHP setters and their INI write/read round trip
 remain offline-only; follow-up 8x0.2.17 owns the remaining live work.
+The directory groups cover all ten pinned functions, available from cPanel 88.
+Six reads use GET and four mutations use form POST. Directory paths retain their
+documented absolute or account-home-relative meaning and are forwarded unchanged.
+Password-protection state belongs to DirectoryPrivacy; DirectoryProtection reports
+leech protection. A successful unprotected-directory result has payload flag 0;
+that does not make UAPI status 0 a success.
+
+`configureDirectoryProtection(dir, enabled, authname)` can omit `authname` when
+disabling protection, following the source's conditional requirement. Supply a
+realm name when enabling it. `addUser()` keeps its password sensitive throughout
+the request. User mutations preserve nullable opaque results and reject an absent
+payload; all documented directory fields retain omission and null distinctions.
+
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.

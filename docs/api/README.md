@@ -1,7 +1,7 @@
 # Official API documentation inputs
 
 The source audit for Beads `whm-api-client-gwi.1` covers **WHM API 1** and
-**cPanel UAPI**. The PHP package implements typed groups for 279 documented operations
+**cPanel UAPI**. The PHP package implements typed groups for 289 documented operations
 plus generic calls; these documents pin the contracts and do not by themselves
 establish endpoint implementation or live-test coverage. Coverage is generated:
 [coverage.md](coverage.md) lists generated groups and exclusions, and live

@@ -2192,3 +2192,34 @@ account label. The new file was created with mode0600 and no capture temporary
 files remain. Pre-capture code passed Composer validation/check (**11,094 tests /
 75,675 assertions**), offline API-map checks and Go tests/vet. Only evidence and
 documentation follow this capture; no additional live request was made.
+
+
+## 2026-10-30 directory-access section
+
+This independent slice adds 10 generated operations to master a91cb0d,
+bringing its branch to 289 typed operations across 18 groups. Pinned source
+snapshots remain unchanged. Independent literal fixtures exercise wrapped direct,
+bare direct and WHM-bridged calls through the real generated contracts. The source
+has field examples but no full response examples for these operations; assembled
+fixtures are identified accordingly. No engine or generator behavior changed.
+
+The directory groups cover all ten pinned functions, available from cPanel 88.
+Six reads use GET and four mutations use form POST. Directory paths retain their
+documented absolute or account-home-relative meaning and are forwarded unchanged.
+Password-protection state belongs to DirectoryPrivacy; DirectoryProtection reports
+leech protection. A successful unprotected-directory result has payload flag 0;
+that does not make UAPI status 0 a success.
+
+`configureDirectoryProtection(dir, enabled, authname)` can omit `authname` when
+disabling protection, following the source's conditional requirement. Supply a
+realm name when enabling it. `addUser()` keeps its password sensitive throughout
+the request. User mutations preserve nullable opaque results and reject an absent
+payload; all documented directory fields retain omission and null distinctions.
+
+The reviewed read-only catalog has 13 exact GET probes: WHM version and all
+6 read operations through both UAPI routes on npr/npr.rs. Shared command
+infrastructure reuses EvidenceRunner, its exact-URI GET guard and structural
+sanitization without repeating the historical baseline. The strict assessment
+requires the complete ordered catalog, matching provenance and zero discrepancies.
+All 4 mutations remain offline-only in this slice; read observations cannot
+establish their effects. Live capture outcomes are recorded separately.
