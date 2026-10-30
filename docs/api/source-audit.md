@@ -1560,7 +1560,8 @@ is complete; optional short/failed temporary-write recovery remains
 
 This slice adds 13 generated methods: both remaining DomainInfo operations, four
 Features operations and seven LangPHP operations. The three modules now contain
-5, 5 and 11 methods respectively; branch coverage is 95 operations in 13 groups.
+5, 5 and 11 methods respectively. With the reviewed MySQL, FTP and PostgreSQL
+sections integrated, coverage is 144 operations across 15 groups.
 Pinned snapshots are unchanged. Overlay evidence identifies the domain list/hash
 container discrepancies, quoted domain flags, the PHP vhost list/single-record
 alternatives and malformed phpversion_source schema. The INI content setter's
@@ -1640,7 +1641,7 @@ The first PR's final offline gates pass 4,310 tests and 33,655 assertions, plus
 maximum PHPStan, PHPCS and offline API-map/source/generation verification. The
 three PHP setters remain offline-only; no mutation ran in any of these captures.
 
-### Review corrections awaiting final-head read-only capture
+### Review corrections and integrated read-only capture
 
 The pinned `domains_data` hash and list examples include empty-string
 `userdirprotect`. Independent copies now exercise both full examples through all
@@ -1668,7 +1669,41 @@ and both resources remained `not_started`. No count value, main-account inclusio
 or cause is inferred.
 
 The three existing DomainInfo/Features/LangPHP artifacts remain unchanged. Their
-contract hashes describe their original revisions. Final evidence requires merging
-the reviewed PR28 and PR29 changes from `master`, regenerating, committing that
-integrated head, and running the read-only catalog once into a new artifact path.
-No new live capture or PHP mutation was run for these review corrections.
+contract hashes describe their original revisions. The reviewed MySQL, FTP and
+PostgreSQL sections were integrated with a normal merge of `master`, preserving
+all prior source/specs, trace safeguards and immutable evidence. Regeneration
+produces **144 operations across 15 groups**.
+
+At committed integrated code `27abfe6de3626e321a2a806d126d9b7f2f20fcc1`, one
+[reviewed read-only capture](evidence/2026-10-30-domain-features-php-reviewed.json)
+ran the exact 67-probe catalog once on `11.138.0.19`. Artifact SHA-256:
+`f9ba559c0496b88c0c98082435f3e76235e2b8459ebe01d229127cfa2d3e50a8`.
+All 67 requests were GET and HTTP 200; API outcome, payload validation and probe
+outcome pass across 37 operations (7 WHM, 30 direct UAPI and 30 bridged UAPI
+observations). Both count_pops payloads were numeric strings and normalize under
+the reviewed correction. No PHP mutation or other write was executed.
+
+The command correctly exits 1 because strict discrepancy review remains failed:
+zero acknowledged, ten unexpected observations and two stale historical Quota
+acknowledgments. Those observations contain twelve unknown-field entries: two
+Quota entries, two domains_data entries, four single_domain_data entries, two
+basic-directive entries and two INI-path entries. No discrepancy was waived or
+removed and no operation was replayed to clear findings. The DomainInfo/INI
+unknown fields and PHP mutation behavior remain tracked in `8x0.2.17`; the
+existing Quota follow-up and exact acknowledgment policy remain unchanged.
+
+An independent audit checked all 1,794 structural path/type entries, exact catalog
+identities/order/routes/methods, all 67 effective-contract hashes and pinned
+source/map/generator/overlay provenance. Credentials and designated account,
+domain, host and IP values are absent. Every historical evidence JSON from both
+parents remains byte-identical. The test account omitted userdirprotect on both
+operations/routes, so the empty-string compatibility is documentation and offline
+fixture coverage, not a newly observed live value. `has_feature` payloads were integers;
+their meaning and the specific feature-state value are not persisted. Three PHP
+setters, the INI write/read round trip and alternate server configurations remain
+unobserved.
+
+Before capture, Composer validation and the complete PHP gate passed **6,390 tests
+and 51,705 assertions**, including PHPCS and maximum PHPStan. Offline API-map,
+schema-copy/currentness checks, complete Go tests and Go vet also passed.
+External current-head PR review remains the merge gate.

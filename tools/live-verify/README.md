@@ -497,3 +497,15 @@ alternative's static field names, and wildcard unknown descendants. They do not
 select an alternative, accept a payload, or change the primary opaque union
 fingerprint, probe outcome, or discrepancy gate. They cannot recover field names
 from older masked artifacts; further diagnosis requires a new reviewed run.
+
+## Reviewed DomainInfo, Features and LangPHP read-only capture
+
+The [reviewed integrated capture](../../docs/api/evidence/2026-10-30-domain-features-php-reviewed.json)
+ran the exact 67-probe GET-only catalog once at committed code `27abfe6` after
+normal integration of the reviewed MySQL, FTP and PostgreSQL sections. All 67
+HTTP/API/payload observations pass on `11.138.0.19`, including both mailbox counts.
+The command exits 1 for strict review: 12 unknown-field entries across 10
+unexpected observations, zero acknowledgments and two stale Quota acknowledgments.
+Historical artifacts remain unchanged; findings are not waived or retried away.
+This run includes no PHP mutation. INI write/read behavior and the omitted
+empty-string userdirprotect variant retain their offline/documentation limits.

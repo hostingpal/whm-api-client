@@ -379,11 +379,14 @@ on newly created tables. The earlier
 remains unchanged. Before the successful capture, the reviewer installed
 PostgreSQL 13.23 at the owner's request and enabled its role and monitored service.
 
-The [completed-module read capture](docs/api/evidence/2026-10-30-domain-features-php-corrected.json)
-observed all ten new reads through both routes on cPanel 11.138.0.19. All 67 catalog
-API/payload checks passed, while strict discrepancy review remains failed for
-unknown fields and stale historical Quota acknowledgments. PHP setters remain
-offline-tested only; see the [source audit](docs/api/source-audit.md).
+The [reviewed integrated capture](docs/api/evidence/2026-10-30-domain-features-php-reviewed.json)
+at `27abfe6` observed all ten new reads through both routes on cPanel 11.138.0.19.
+All 67 GET-only catalog API/payload checks pass, including both normalized mailbox
+counts. Strict review remains failed: 12 unknown-field entries across 10 observations,
+zero acknowledgments and two stale Quota acknowledgments. No mutation ran.
+The empty-string `userdirprotect` variant remains documentation/offline coverage
+because the live responses omit that field. PHP setters and the INI write/read
+round trip remain offline-only; see the [source audit](docs/api/source-audit.md).
 
 The DNS methods are read-only (GET):
 

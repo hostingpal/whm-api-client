@@ -104,9 +104,19 @@ scoped to the exact contracts, revisions and routes recorded in each file.
 - [Corrected DomainInfo/Features/LangPHP capture](2026-10-30-domain-features-php-corrected.json):
   67 API/payload checks pass at `7b172f3`; strict assessment still fails for eight
   unknown-field observations and two stale Quota acknowledgments. This historical
-  capture does not establish the later reviewed domain contracts; a final-head
-  capture remains required after stack integration. PHP setters remain offline-only.
+  capture does not establish the later reviewed domain contracts; the separate
+  reviewed capture below covers the integrated code. PHP setters remain offline-only.
 - [Email preflight count discrepancy](2026-10-30-email-section-quota-corrected.json):
   immutable artifact imported with the narrow `countPops()` correction from `8533e95`.
   All 17 requests were GET, mailbox-count payloads were numeric strings through
   both UAPI routes, and no fixture resource was started. Its failures are preserved.
+
+- [Reviewed integrated DomainInfo/Features/LangPHP capture](2026-10-30-domain-features-php-reviewed.json):
+  one 67-probe GET-only run across 37 operations at
+  `27abfe6de3626e321a2a806d126d9b7f2f20fcc1` on `11.138.0.19`, after the
+  MySQL/FTP/PostgreSQL sections were merged. All HTTP/API/payload checks pass,
+  including both mailbox counts. Strict assessment remains failed with 12
+  unknown-field entries across 10 unexpected observations, zero acknowledgments
+  and two stale Quota acknowledgments. No mutation ran; PHP setters and the
+  omitted empty-string userdirprotect variant remain offline/documentation coverage.
+  SHA-256: `f9ba559c0496b88c0c98082435f3e76235e2b8459ebe01d229127cfa2d3e50a8`.
