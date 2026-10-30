@@ -296,3 +296,12 @@ listing alternative remains offline coverage. No file content, mutation,
 filesystem permission enforcement or charset round trip is established. Follow-up
 `8x0.2.24` remains open. Earlier failure captures stay unchanged. Final SHA-256:
 `946ba0512be318c20b51616a4ede7346e069ae1150f97b44c43ee03ea217bf8f`.
+
+The [Fileman review capture](2026-10-30-fileman-review-final.json) at
+`06001e0cab782c7bd46d7d0d1f659b0c3f7ebc7d` on `11.138.0.19` passes all seven GETs
+and strict assessment with zero discrepancies. Both routes observe an empty-string
+size for the selected existing zero-byte file; exact identity and zero-marker
+checks pass for its information and directory listing. No content was read and
+no resource was created or changed. Root-owned uid/gid forms are separate reviewer
+evidence. Earlier captures remain immutable. SHA-256:
+`dfc4899b5e88df167ee361a081f5e682b54f20dd5005603023184ad98057993d`.

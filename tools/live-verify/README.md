@@ -900,3 +900,9 @@ Use a new output path and preserve every prior artifact, including failures. The
 read-only capture establishes no content, permission-enforcement or filesystem
 mutation coverage, and cannot establish root-owned metadata variants unless such
 a row is actually observed.
+
+The [committed review capture](../../docs/api/evidence/2026-10-30-fileman-review-final.json)
+at `06001e0` on `11.138.0.19` passes all seven GETs, both-route identity/zero checks
+and strict assessment with zero discrepancies. Both information responses contain
+the preserved empty-string size. No content was read or resource changed. Earlier
+captures remain unchanged; do not repeat the run just for handoff.

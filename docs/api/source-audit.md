@@ -2722,3 +2722,24 @@ generation gate. Independent review of the seven-GET zero-byte catalog confirmed
 exact URI/account confinement, metadata identity/zero assertions, privacy and
 unchanged shared helpers. No new live outcome is inferred from these offline
 checks; the committed-code final capture is recorded separately.
+
+### Final integrated Fileman review capture
+
+The immutable [review capture](evidence/2026-10-30-fileman-review-final.json) binds
+`06001e0cab782c7bd46d7d0d1f659b0c3f7ebc7d` on `11.138.0.19`, SHA-256
+`dfc4899b5e88df167ee361a081f5e682b54f20dd5005603023184ad98057993d`.
+All seven GET observations pass HTTP 200, API outcomes, payload validation,
+probe expectations and strict assessment with zero discrepancies. They cover WHM
+version plus autocomplete, the existing selected zero-byte file's information
+and its mail-directory listing through both routes. Information responses expose
+`size` as an empty string through both routes. The recipe verifies exact file
+identity and the zero marker in each information/list response without persisting
+the selected path. No file content was read and no resource was created or changed.
+
+This capture observes three of the thirteen generated Fileman functions through
+both routes. It establishes no new filesystem mutation or permission-enforcement
+coverage. Root-owned uid/gid forms remain supported by the reviewer's separate
+observations, not inferred from ordinary owner fields here. Every earlier JSON
+artifact from both merged parents is byte-identical, including failed captures.
+The evidence commit changes only documentation/artifacts; executable code and
+effective contracts remain those of the captured revision.

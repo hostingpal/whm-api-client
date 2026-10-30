@@ -447,6 +447,14 @@ operations through both routes; the other ten methods remain offline-tested.
 No existing file content was read and no mutation ran. Follow-up `8x0.2.24`
 owns their live verification; multipart upload remains under `8x0.1.19`.
 
+The [PR37 review capture](docs/api/evidence/2026-10-30-fileman-review-final.json)
+at `06001e0cab782c7bd46d7d0d1f659b0c3f7ebc7d` on `11.138.0.19` passes all seven
+GET observations with zero discrepancies. Both routes return an empty-string
+size for the selected existing zero-byte file; information and directory checks
+confirm its identity and zero marker. No content was read and no resource was
+created or changed. The root-owned uid/gid variants remain supported by Claude's
+separate report. Earlier artifacts stay immutable.
+
 The Mime group covers all 14 pinned functions: six reads use GET and eight
 mutations use form POST. No domain selector is documented for hotlink
 configuration. MIME deletion targets the MIME type, while handler deletion
