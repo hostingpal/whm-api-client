@@ -93,7 +93,7 @@ use SensitiveParameter;
  *     'subject.commonName_ip'?: string,
  * }
  * @phpstan-type FetchCertificatesForFqdnsResult list<array{
- *     cab?: string,
+ *     cab?: string|null,
  *     created?: int,
  *     crt?: string,
  *     domain_is_configured?: 0|1,
@@ -116,8 +116,8 @@ use SensitiveParameter;
  *     signature_algorithm?: string,
  *     'subject.commonName'?: string,
  *     subject_text?: string,
- *     validation_type?: string,
- *     verify_error?: string,
+ *     validation_type?: string|null,
+ *     verify_error?: string|null,
  * }>
  * @phpstan-type FetchKeyAndCabundleForCertificateResult array{
  *     cab?: string,
@@ -826,6 +826,11 @@ final readonly class Ssl
      * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
      * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
      * operation-specific live coverage.
+     *
+     * Observed: This operation preserves explicit null for cab, validation_type and verify_error, independently of
+     * omitted fields. validation_type null is documented in pinned prose; cab/verify_error null|string is observed on
+     * both routes on cPanel 11.138.0.19. No meaning is inferred for null cab/verify_error and other endpoints retain
+     * their own contracts.
      *
      * API-map identity: uapi:SSL/fetch_certificates_for_fqdns#GET (wire name fetch_certificates_for_fqdns).
      *

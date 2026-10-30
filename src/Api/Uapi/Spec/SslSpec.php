@@ -231,7 +231,7 @@ final class SslSpec
             'items' => [
                 'type' => 'object',
                 'fields' => [
-                    'cab' => ['type' => 'string'],
+                    'cab' => ['type' => 'string', 'nullable' => true],
                     'created' => ['type' => 'int', 'accept' => ['numeric-string']],
                     'crt' => ['type' => 'string'],
                     'domain_is_configured' => ['type' => 'flag'],
@@ -254,8 +254,8 @@ final class SslSpec
                     'signature_algorithm' => ['type' => 'string'],
                     'subject.commonName' => ['type' => 'string'],
                     'subject_text' => ['type' => 'string'],
-                    'validation_type' => ['type' => 'string'],
-                    'verify_error' => ['type' => 'string'],
+                    'validation_type' => ['type' => 'string', 'nullable' => true],
+                    'verify_error' => ['type' => 'string', 'nullable' => true],
                 ],
             ],
         ],

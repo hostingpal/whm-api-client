@@ -572,6 +572,10 @@
         {
           "kind": "observed",
           "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
+        },
+        {
+          "kind": "observed",
+          "text": "This operation preserves explicit null for cab, validation_type and verify_error, independently of omitted fields. validation_type null is documented in pinned prose; cab/verify_error null|string is observed on both routes on cPanel 11.138.0.19. No meaning is inferred for null cab/verify_error and other endpoints retain their own contracts."
         }
       ],
       "response": {
@@ -650,6 +654,39 @@
               "note": "Reviewed SSL record-family compatibility for uapi:SSL/fetch_certificates_for_fqdns field [].not_before. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
             }
           ]
+        },
+        "[].cab": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Original same-response capture docs/api/evidence/2026-10-30-ssl-section-reviewed.json SHA-256 bd1e409a5608fff3ab4be889b84ce83743188548ec154f24e19601e9c7ad9aef at revision d159935d8da99062ef6527952ff1f6b1c5274dbd records $[].cab as null|string on both direct-uapi and bridged-uapi form POST calls (pinned source variant #GET), with HTTP 200/API success but typed payload mismatches. The pinned field is an optional nonnullable string. Accept explicit null only at this operation/path while preserving strings and omission; the structural artifact establishes no contents or null meaning. No other cab or verify_error endpoint is widened and no failure/discrepancy is waived."
+            }
+          ]
+        },
+        "[].validation_type": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned cpanel.openapi.json.gz source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /SSL/fetch_certificates_for_fqdns GET result.data.items.properties.validation_type: the description explicitly lists null when the system could not parse and determine the certificate validation type, although its type:string schema omits nullable:true. Preserve that documented explicit null and the existing optional string field, matching the sibling certificate validation_type contracts. Do not infer a closed enum."
+            }
+          ]
+        },
+        "[].verify_error": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Original same-response capture docs/api/evidence/2026-10-30-ssl-section-reviewed.json SHA-256 bd1e409a5608fff3ab4be889b84ce83743188548ec154f24e19601e9c7ad9aef at revision d159935d8da99062ef6527952ff1f6b1c5274dbd records $[].verify_error as null|string on both direct-uapi and bridged-uapi form POST calls (pinned source variant #GET), with HTTP 200/API success but typed payload mismatches. The pinned field is an optional nonnullable string. Accept explicit null only at this operation/path while preserving strings and omission; the structural artifact establishes no contents or null meaning. No other cab or verify_error endpoint is widened and no failure/discrepancy is waived."
+            }
+          ]
         }
       },
       "evidence": [
@@ -658,6 +695,12 @@
           "version": "11.138.0.19",
           "date": "2026-10-30",
           "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/fetch_certificates_for_fqdns."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The three FQDN certificate nullable-field corrections are scoped independently: validation_type follows explicit pinned null prose; cab and verify_error follow the immutable same-response null|string observations bound in their per-field evidence. Preserve optionality, strings and every other schema rule."
         }
       ]
     },

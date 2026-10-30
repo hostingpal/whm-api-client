@@ -470,6 +470,9 @@ and `verify_error` fields against pinned string schemas. All API outcomes pass;
 generated keys remain `not_started`. Follow-up `8x0.4.11.3.4` tracks the narrow
 contract corrections and outstanding generated-key evidence. The failed artifact
 and existing unknown-field findings remain unwaived.
+The three nullable-field corrections are implemented with independent offline
+fixtures; corrected FQDN-certificate and generated-key live coverage still awaits
+review and a separately authorized capture.
 
 Certificate deletion/installation, account-wide AutoSSL and redirect changes take
 effect immediately. Live verification is bounded to fresh owned fixture material,

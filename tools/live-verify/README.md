@@ -620,7 +620,10 @@ pass; both `fetch_certificates_for_fqdns` phases fail typed validation for null
 `cab`, `validation_type` and `verify_error`, so neither generated-key phase starts.
 The four uploaded resources are cleaned, while generated-key states remain
 `not_started`. The failed result is preserved under `8x0.4.11.3.4`; it does not
-establish generated-key execution or six-resource cleanup. The historical v1
+establish generated-key execution or six-resource cleanup. The three narrow
+nullable-field corrections are independently offline-tested; the preserved failed
+capture still binds its original pre-correction contract. Corrected live behavior
+and generated-key coverage await review and a separate authorized capture. The historical v1
 artifact retains its original 23 observations unchanged. Reports keep
 structural paths and provenance from `EvidenceRunner`, separate semantic
 expectations and resource states, and no private key, certificate, resource ID or

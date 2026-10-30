@@ -276,6 +276,11 @@ resources are cleaned; generatedkeys stay not_started. Preserve the failed
 2026-10-30-ssl-section-reviewed.json and track the three narrow corrections plus
 outstanding generate_key coverage in8x0.4.11.3.4. Existingfourunknownobservations
 remain unwaived under2.19; do not silently promote failed evidence.
+The follow-up implements nullable:true only for fetch_certificates_for_fqdns
+cab, validation_type and verify_error. validation_type follows explicit pinned
+null prose; cab/verify_error follow the immutable failed artifact. Preserve each
+optional string field as string|null; do not widen sibling endpoints. These
+corrections are offline-tested, and another live capture requires review.
 
 DomainInfo (5), Features (5), and LangPHP (11) cover their complete pinned modules.
 Domain details preserve list/hash alternatives, documented quoted flag variants

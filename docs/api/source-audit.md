@@ -2103,3 +2103,34 @@ was written with mode0600 and no capture temporary files remain. The three narro
 nullable-field corrections, external review and outstanding generation evidence
 are tracked in open `whm-api-client-8x0.4.11.3.4`; this artifact remains immutable.
 The optional install_ssl DCV map stays omitted under `8x0.2.16`.
+
+
+### Narrow FQDN certificate nullability correction
+
+Open follow-up `whm-api-client-8x0.4.11.3.4` adds `nullable:true` at exactly
+`fetch_certificates_for_fqdns` result fields `cab`, `validation_type` and
+`verify_error`. The validation_type correction follows the pinned prose's explicit
+null case despite its missing schema flag. The cab/verify_error corrections bind
+the original direct and bridged observations in the immutable 27-response artifact,
+including its code revision, method, source variant, hash and null|string types.
+No null meaning is assigned to cab/verify_error. All three fields remain optional
+strings with explicit null separate from omission; every sibling operation keeps
+its existing cab/verify_error semantics and every other SSL field is unchanged.
+
+Independent fixtures cover strings, empty strings, null and omission on wrapped,
+bare and bridged UAPI. The nine null cases first fail; all 75 focused acceptance
+and rejection cases then pass, including wrong boolean/integer/float/array values.
+An independent spec comparison verifies exactly three nullable flags and no other
+operation, type, optionality or constraint changes. Historical artifacts remain
+byte-identical and the failed capture is not reassessed as successful under a new
+contract. No additional live request was made. Review, corrected FQDN evidence
+and the unexecuted generated-key phases remain outstanding on the open follow-up.
+
+
+The narrow correction passes Composer validation/check (**11,094 tests /
+75,675 assertions**), offline API-map checks, full Go tests and vet. The focused
+75-case nullability suite passes 150 assertions. A separate field-spec audit
+confirms exactly the three nullable flags and all other SSL rules unchanged;
+non-SSL generated groups/specs retain the approved master contracts. External
+review and a separately authorized committed-code capture remain pending; no
+additional live request follows this correction in this stage.

@@ -115,6 +115,60 @@ final class UapiSslRecordCompatibilityTest extends TestCase
         }
     }
 
+    /** @param list<array<string,mixed>> $payload */
+    #[DataProvider('fqdnCertificateNullability')]
+    public function testFqdnCertificateStringsNullsAndOmissionRemainDistinct(string $route, array $payload): void
+    {
+        [$client, $http] = self::client($route, $payload);
+        try {
+            $actual = $client->uapi('npr')->ssl()->fetchCertificatesForFqdns('npr.rs');
+        } catch (PayloadMismatchException) {
+            self::fail('Documented/observed null is distinct from missing data or an invalid field type.');
+        }
+        self::assertSame($payload, $actual);
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string,array{string,list<array<string,mixed>>}> */
+    public static function fqdnCertificateNullability(): iterable
+    {
+        foreach (['wrapped', 'bare', 'bridged'] as $route) {
+            foreach (['cab', 'validation_type', 'verify_error'] as $field) {
+                foreach ([null, 'fixture text', ''] as $i => $value) {
+                    yield "$route $field value $i" => [$route, [[$field => $value]]];
+                }
+            }
+            yield "$route omitted fields" => [$route, [[]]];
+        }
+    }
+
+    #[DataProvider('invalidFqdnCertificateFields')]
+    public function testFqdnCertificateNullableFieldsStillRejectNonStrings(
+        string $route,
+        string $field,
+        mixed $value,
+    ): void {
+        [$client, $http] = self::client($route, [[$field => $value]]);
+        $this->expectException(PayloadMismatchException::class);
+        try {
+            $client->uapi('npr')->ssl()->fetchCertificatesForFqdns('npr.rs');
+        } finally {
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
+    /** @return iterable<string,array{string,string,mixed}> */
+    public static function invalidFqdnCertificateFields(): iterable
+    {
+        foreach (['wrapped', 'bare', 'bridged'] as $route) {
+            foreach (['cab', 'validation_type', 'verify_error'] as $field) {
+                foreach ([true, 0, 1.5, [], ['fixture text']] as $i => $value) {
+                    yield "$route $field invalid $i" => [$route, $field, $value];
+                }
+            }
+        }
+    }
+
     /** Record locations and arguments are independent of generator/spec output.
      * @return list<array{string,array<string,mixed>,string,list<string>}>
      */
