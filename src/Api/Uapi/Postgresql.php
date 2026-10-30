@@ -94,6 +94,8 @@ final readonly class Postgresql
      * Documented: The pinned result is a nullable integer with no documented meaning for the integer value. Preserve
      * zero and null; do not treat the result as a boolean, object, user identifier or omitted payload.
      *
+     * Documented: The name must include the account prefix when database prefixing is enabled.
+     *
      * API-map identity: uapi:Postgresql/create_user#GET (wire name create_user).
      *
      * @param string $name The database user's name.

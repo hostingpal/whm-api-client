@@ -1232,3 +1232,12 @@ in `EnvelopeReader::read()` traces; that response argument is now sensitive too.
 Regressions check the presence of response objects directly, including
 resource-backed streams, for malformed status and failed inner/outer outcomes.
 Payload access and validation behavior are unchanged.
+
+
+Independent whole-branch review at `94e62b90e3f5e2b790de563a6990dd23926a4973`
+found no blocking correctness or safety issue and passed 773 focused tests /
+8,841 assertions with exception arguments enabled. Its minor documentation
+finding restored the pinned account-prefix requirement for `createUser()` through
+an overlay note and regeneration. Failed or short temporary-file writes remain
+a resilience limitation; completed-report publication failures preserve a protected
+recovery file. No live operation is replayed to recover evidence.
