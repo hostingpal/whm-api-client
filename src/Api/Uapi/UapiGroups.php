@@ -13,9 +13,15 @@ namespace HostingPal\WhmApiClient\Api\Uapi;
  */
 trait UapiGroups
 {
+    private ?AddonDomain $addonDomainGroup = null;
+
     private ?Dns $dnsGroup = null;
 
+    private ?Domain $domainGroup = null;
+
     private ?DomainInfo $domainInfoGroup = null;
+
+    private ?DomainLookup $domainLookupGroup = null;
 
     private ?Email $emailGroup = null;
 
@@ -27,11 +33,27 @@ trait UapiGroups
 
     private ?Mysql $mysqlGroup = null;
 
+    private ?Park $parkGroup = null;
+
     private ?Postgresql $postgresqlGroup = null;
 
     private ?Quota $quotaGroup = null;
 
     private ?Ssl $sslGroup = null;
+
+    private ?SubDomain $subDomainGroup = null;
+
+    private ?WebVhosts $webVhostsGroup = null;
+
+    /**
+     * Select the AddonDomain operations without making a request.
+     *
+     * The AddonDomain module for UAPI.
+     */
+    public function addonDomain(): AddonDomain
+    {
+        return $this->addonDomainGroup ??= new AddonDomain($this->run(...));
+    }
 
     /**
      * Select the DNS operations without making a request.
@@ -44,6 +66,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the Domain operations without making a request.
+     *
+     * The Domain module for UAPI.
+     */
+    public function domain(): Domain
+    {
+        return $this->domainGroup ??= new Domain($this->run(...));
+    }
+
+    /**
      * Select the DomainInfo operations without making a request.
      *
      * The DomainInfo module for UAPI.
@@ -51,6 +83,16 @@ trait UapiGroups
     public function domainInfo(): DomainInfo
     {
         return $this->domainInfoGroup ??= new DomainInfo($this->run(...));
+    }
+
+    /**
+     * Select the DomainLookup operations without making a request.
+     *
+     * The DomainLookup module for UAPI.
+     */
+    public function domainLookup(): DomainLookup
+    {
+        return $this->domainLookupGroup ??= new DomainLookup($this->run(...));
     }
 
     /**
@@ -104,6 +146,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the Park operations without making a request.
+     *
+     * The Park module for UAPI.
+     */
+    public function park(): Park
+    {
+        return $this->parkGroup ??= new Park($this->run(...));
+    }
+
+    /**
      * Select the Postgresql operations without making a request.
      *
      * The Postgresql module for UAPI.
@@ -131,5 +183,25 @@ trait UapiGroups
     public function ssl(): Ssl
     {
         return $this->sslGroup ??= new Ssl($this->run(...));
+    }
+
+    /**
+     * Select the SubDomain operations without making a request.
+     *
+     * The SubDomain module for UAPI.
+     */
+    public function subDomain(): SubDomain
+    {
+        return $this->subDomainGroup ??= new SubDomain($this->run(...));
+    }
+
+    /**
+     * Select the WebVhosts operations without making a request.
+     *
+     * The WebVhosts module for UAPI.
+     */
+    public function webVhosts(): WebVhosts
+    {
+        return $this->webVhostsGroup ??= new WebVhosts($this->run(...));
     }
 }

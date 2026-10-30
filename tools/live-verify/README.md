@@ -639,3 +639,33 @@ unknown-field discrepancy or unconfirmed cleanup makes the report fail. A failed
 preflight remains failed evidence, not a successful skip. The pinned `upload_key` body-field contradiction remains documented. The final
 2026-10-30 fixture at 64d5266 observed successful use of the key field through
 both routes on 11.138.0.19; this does not amend the pinned source.
+
+## domain-management read-only section
+
+The standalone `domain-management.php` entrypoint executes its fixed reviewed catalog:
+WHM version followed by both UAPI routes for all 13 selected read operations
+(27 GET observations). It requires committed source, tools, overlays and pinned
+inputs, both test tokens and exact account/domain opt-ins:
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/domain-management.php \
+  --output=docs/api/evidence/domain-management-new.json
+```
+
+The shared command binds `test.oblak.host`, direct cPanel user `npr` and the WHM
+bridge target `npr`. The existing exact-URI GET guard rejects other requests before
+HTTP dispatch. It captures each original response once and stores structural
+paths/types only. Strict assessment requires every ordered observation to pass
+HTTP, API, payload and provenance checks with zero discrepancies; it inherits no
+acknowledgments from historical baseline evidence. All 9 mutations remain
+offline-only. Empty read results establish no populated row-field behavior.
+
+Use a new output path. The command reserves a protected 0600 temporary file before
+network I/O and publishes the completed report with a new-only atomic link. If a
+destination race or unsupported link prevents publication, the complete protected
+report remains at the JSON-encoded recovery path printed to stderr. Partial or
+failed initial writes remain covered by follow-up `8x0.2.13`.
+
+Recorded capture: [2026-10-30 domain-management](../../docs/api/evidence/2026-10-30-domain-management.json).
+All 27 GET observations passed HTTP, API, payload and probe checks. Strict assessment remains failed for two masked integer unknown-field observations at `$[].*` in `WebVhosts/list_ssl_capable_domains`, one per route. No acknowledgment or new typed field was added. Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants remain offline-only, as do all nine mutations. See `8x0.2.20`.
