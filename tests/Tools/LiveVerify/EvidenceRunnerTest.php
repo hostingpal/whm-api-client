@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
 
+use HostingPal\WhmApiClient\Api\Uapi\Spec\SslSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\AccountsSpec;
 use HostingPal\WhmApiClient\Client as ApiClient;
 use HostingPal\WhmApiClient\Http\HttpTransport;
@@ -12,6 +13,7 @@ use HostingPal\WhmApiClient\Tools\LiveVerify\EvidenceRunner;
 use HostingPal\WhmApiClient\Tools\LiveVerify\Probe;
 use HostingPal\WhmApiClient\Tools\LiveVerify\ProbeCatalog;
 use Http\Mock\Client;
+use LogicException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -77,6 +79,41 @@ final class EvidenceRunnerTest extends TestCase
         self::assertSame([], $failed['response_paths']);
         self::assertSame([], $failed['payload_paths']);
         self::assertSame('probe_failure', $failed['failure_kind']);
+    }
+
+    public function testExplicitPostSourceVariantSurvivesFailureBeforeAnyRequest(): void
+    {
+        $http = new Client();
+        $capture = new CaptureClient($http);
+        $factory = new Psr17Factory();
+        $client = new ApiClient([
+            'host' => 'test.oblak.host', 'authType' => 'cpanel', 'username' => 'npr', 'token' => 'private-token',
+        ], new HttpTransport($capture, $factory, $factory));
+        $probe = new Probe(
+            'uapi:SSL/upload_key',
+            'direct-uapi',
+            SslSpec::UPLOAD_KEY,
+            'https://test.oblak.host:2083/execute/SSL/upload_key',
+            static fn (ApiClient $api): mixed => throw new RuntimeException('fixture failure'),
+            sourceVariant: 'uapi:SSL/upload_key#POST',
+        );
+        $record = (new EvidenceRunner($http, self::context()))->capture($probe, $capture, $client);
+        self::assertSame('uapi:SSL/upload_key#POST', $record['variant']);
+        self::assertNull($record['method']);
+        self::assertSame([], $http->getRequests());
+    }
+
+    public function testSourceVariantCannotNameAnotherOperation(): void
+    {
+        $this->expectException(LogicException::class);
+        new Probe(
+            'uapi:SSL/upload_key',
+            'direct-uapi',
+            SslSpec::UPLOAD_KEY,
+            'https://test.oblak.host:2083/execute/SSL/upload_key',
+            static fn (ApiClient $api): mixed => null,
+            sourceVariant: 'uapi:SSL/upload_cert#POST',
+        );
     }
 
     /** @return iterable<string, array{string, string, string|null}> */

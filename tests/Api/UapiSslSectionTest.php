@@ -701,6 +701,76 @@ final class UapiSslSectionTest extends TestCase
         }
     }
 
+    /** @param list<array<string, int|string|null>> $expected */
+    #[DataProvider('inventoryWireVariants')]
+    public function testObservedInventoryVariants(string $route, string $method, string $payload, array $expected): void
+    {
+        [$client, $http] = self::client($route);
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        self::assertSame($expected, $client->uapi('exampleuser')->ssl()->{$method}());
+    }
+
+    /** @return iterable<string, array{string, string, string, list<array<string, int|string|null>>}> */
+    public static function inventoryWireVariants(): iterable
+    {
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (
+                ['listKeys' => ['created', 'modulus_length'],
+                'listCerts' => ['created', 'not_after', 'not_before', 'modulus_length']] as $method => $fields
+            ) {
+                foreach ($fields as $field) {
+                    yield "$route $method $field"
+                        => [$route, $method, '[{"' . $field . '":"2048"}]', [[$field => 2048]]];
+                }
+                yield "$route $method nullable modulus"
+                    => [$route, $method, '[{"modulus_length":null},{}]', [['modulus_length' => null], []]];
+            }
+            foreach ([0, 1] as $flag) {
+                yield "$route exact string flag $flag"
+                    => [$route, 'listCerts', '[{"is_self_signed":"' . $flag . '"}]', [['is_self_signed' => $flag]]];
+            }
+            yield "$route literal dotted nullable field" => [$route, 'listCerts',
+                '[{"issuer.organizationName":null},{"issuer.organizationName":"Fixture Organization"},{}]',
+                [['issuer.organizationName' => null], ['issuer.organizationName' => 'Fixture Organization'], []]];
+        }
+    }
+
+    #[DataProvider('invalidInventoryVariants')]
+    public function testInventoryCorrectionsRemainNarrow(string $route, string $method, string $payload): void
+    {
+        [$client, $http] = self::client($route);
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        $this->expectException(PayloadMismatchException::class);
+        $client->uapi('exampleuser')->ssl()->{$method}();
+    }
+
+    /** @return iterable<string, array{string, string, string}> */
+    public static function invalidInventoryVariants(): iterable
+    {
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (
+                ['listKeys' => ['created', 'modulus_length'],
+                'listCerts' => ['created', 'not_after', 'not_before', 'modulus_length']] as $method => $fields
+            ) {
+                foreach ($fields as $field) {
+                    foreach (['"1.5"', '"1e3"', '"invalid"', 'true', '"999999999999999999999999"'] as $value) {
+                        yield "$route $method $field $value"
+                            => [$route, $method, '[{"' . $field . '":' . $value . '}]'];
+                    }
+                    if ($field !== 'modulus_length') {
+                        yield "$route $method $field null" => [$route, $method, '[{"' . $field . '":null}]'];
+                    }
+                }
+            }
+            foreach (['"2"', '"01"', '"1.0"', 'true', 'null'] as $value) {
+                yield "$route invalid flag $value" => [$route, 'listCerts', '[{"is_self_signed":' . $value . '}]'];
+            }
+            yield "$route organization remains string" => [$route, 'listCerts', '[{"issuer.organizationName":12}]'];
+            yield "$route unrelated flag unchanged" => [$route, 'listCerts', '[{"domain_is_configured":"1"}]'];
+            yield "$route unrelated issuer unchanged" => [$route, 'listCerts', '[{"issuer.commonName":null}]'];
+        }
+    }
+
     private static function envelope(string $route, string $payload): string
     {
         $result = '{"status":1,"data":' . $payload . ',"errors":null,"warnings":null}';

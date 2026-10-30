@@ -115,7 +115,11 @@ Operation entries (all keys optional):
   evidence. `probe` is stored, not read by the generator.
 - `response`: corrections keyed by payload path. A path is dot-separated field
   names; `[]` steps into list items and `{}` into map values, as in `acct`,
-  `acct[]`, `data{}` or `acct[].uid`; the empty path is invalid. Keys: `type`
+  `acct[]`, `data{}` or `acct[].uid`; the empty path is invalid. A backslash escapes
+  a literal dot in a field name: `[].issuer\.organizationName` addresses the
+  literal `issuer.organizationName` key, while `[].issuer.organizationName`
+  addresses nested fields. JSON writes that backslash as `\\`; trailing and
+  other escape sequences are rejected. Keys: `type`
   (a scalar type; keeps nullability), `accept` (added to the variants the
   schema already implies: `numeric-string` for int and
   number, `int-flag`/`string-flag` for bool, `string-flag`/`bool` for flag),

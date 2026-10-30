@@ -316,7 +316,7 @@ use SensitiveParameter;
  *     id?: string,
  *     is_self_signed?: 0|1,
  *     'issuer.commonName'?: string,
- *     'issuer.organizationName'?: string,
+ *     'issuer.organizationName'?: string|null,
  *     issuer_text?: string,
  *     key_algorithm?: string,
  *     modulus?: string|null,
@@ -1401,6 +1401,11 @@ final readonly class Ssl
      * Documented: Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables
      * this operation.
      *
+     * Observed: On cPanel 11.138.0.19, inventory created, not_before, not_after and modulus_length values arrived as
+     * numeric strings and are normalized to integers. Exact string is_self_signed flags normalize to 0|1. The literal
+     * issuer.organizationName field also accepts observed null; it is distinct from an omitted field. These corrections
+     * are limited to this inventory operation.
+     *
      * API-map identity: uapi:SSL/list_certs#GET (wire name list_certs).
      *
      * @return ListCertsResult
@@ -1454,6 +1459,9 @@ final readonly class Ssl
      *
      * Documented: Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables
      * this operation.
+     *
+     * Observed: On cPanel 11.138.0.19, inventory created and modulus_length values arrived as numeric strings and are
+     * normalized to integers. Existing nullable modulus_length and optional fields retain null and omission.
      *
      * API-map identity: uapi:SSL/list_keys#GET (wire name list_keys).
      *

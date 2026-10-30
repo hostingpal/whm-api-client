@@ -462,6 +462,96 @@
         {
           "kind": "documented",
           "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, inventory created, not_before, not_after and modulus_length values arrived as numeric strings and are normalized to integers. Exact string is_self_signed flags normalize to 0|1. The literal issuer.organizationName field also accepts observed null; it is distinct from an omitted field. These corrections are limited to this inventory operation."
+        }
+      ],
+      "response": {
+        "[].created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Both direct-uapi and bridged-uapi GET observations on test.oblak.host at revision 4a3c988c019abda03d552e8be819685643215641; docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd. Pinned /SSL/list_certs GET result.data.items.properties[created] is an integer; original response structural types include numeric-string. Normalize canonical in-range integer strings, retaining pinned nullability and omission rules."
+            }
+          ]
+        },
+        "[].not_after": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Both direct-uapi and bridged-uapi GET observations on test.oblak.host at revision 4a3c988c019abda03d552e8be819685643215641; docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd. Pinned /SSL/list_certs GET result.data.items.properties[not_after] is an integer; original response structural types include numeric-string. Normalize canonical in-range integer strings, retaining pinned nullability and omission rules."
+            }
+          ]
+        },
+        "[].not_before": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Both direct-uapi and bridged-uapi GET observations on test.oblak.host at revision 4a3c988c019abda03d552e8be819685643215641; docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd. Pinned /SSL/list_certs GET result.data.items.properties[not_before] is an integer; original response structural types include numeric-string. Normalize canonical in-range integer strings, retaining pinned nullability and omission rules."
+            }
+          ]
+        },
+        "[].modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Both direct-uapi and bridged-uapi GET observations on test.oblak.host at revision 4a3c988c019abda03d552e8be819685643215641; docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd. Pinned /SSL/list_certs GET result.data.items.properties[modulus_length] is an integer nullable for non-RSA keys; original response structural types include numeric-string. Normalize canonical in-range integer strings, retaining pinned nullability and omission rules."
+            }
+          ]
+        },
+        "[].is_self_signed": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Both direct-uapi and bridged-uapi GET observations on test.oblak.host at revision 4a3c988c019abda03d552e8be819685643215641; docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd. Pinned /SSL/list_certs GET result.data.items.properties[is_self_signed] is an integer 0/1 flag; original response structural type is numeric-string. Admit only exact string flags 0/1 and normalize to integers; other numeric strings remain invalid."
+            }
+          ]
+        },
+        "[].issuer\\.organizationName": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Both direct-uapi and bridged-uapi GET observations on test.oblak.host at revision 4a3c988c019abda03d552e8be819685643215641; docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd. Pinned /SSL/list_certs GET result.data.items.properties[issuer.organizationName] is a literal dotted string key; original response structural types include null and string. Preserve explicit null independently of omission."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Both direct-uapi and bridged-uapi GET observations on test.oblak.host at revision 4a3c988c019abda03d552e8be819685643215641; docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd. Pinned /SSL/list_certs GET result.data.items.properties[created] is an integer; original response structural types include numeric-string. Normalize canonical in-range integer strings, retaining pinned nullability and omission rules."
         }
       ]
     },
@@ -486,6 +576,46 @@
         {
           "kind": "documented",
           "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, inventory created and modulus_length values arrived as numeric strings and are normalized to integers. Existing nullable modulus_length and optional fields retain null and omission."
+        }
+      ],
+      "response": {
+        "[].created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Both direct-uapi and bridged-uapi GET observations on test.oblak.host at revision 4a3c988c019abda03d552e8be819685643215641; docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd. Pinned /SSL/list_keys GET result.data.items.properties[created] is an integer; original response structural types include numeric-string. Normalize canonical in-range integer strings, retaining pinned nullability and omission rules."
+            }
+          ]
+        },
+        "[].modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Both direct-uapi and bridged-uapi GET observations on test.oblak.host at revision 4a3c988c019abda03d552e8be819685643215641; docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd. Pinned /SSL/list_keys GET result.data.items.properties[modulus_length] is an integer nullable for non-RSA keys; original response structural types include numeric-string. Normalize canonical in-range integer strings, retaining pinned nullability and omission rules."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Both direct-uapi and bridged-uapi GET observations on test.oblak.host at revision 4a3c988c019abda03d552e8be819685643215641; docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd. Pinned /SSL/list_keys GET result.data.items.properties[created] is an integer; original response structural types include numeric-string. Normalize canonical in-range integer strings, retaining pinned nullability and omission rules."
         }
       ]
     },
