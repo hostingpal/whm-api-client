@@ -1,0 +1,1593 @@
+{
+    "schema_version": 1,
+    "read_only_section": {
+        "recipe": "directory-access-v1",
+        "status": "passed",
+        "probes": [
+            {
+                "operation": "whm1:version",
+                "variant": "whm1:version#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T19:15:56Z",
+                "revision": "e3aa06b4bb693010ebd1df0709f4247b52022e72",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "74487860fa5cab1b45cfd17e44ac7c731d0b4f2a8d86ae442893403bbd844b0e",
+                "effective_contract_sha256": "a3b55069b379516f20fcf82f959226d68b68ac515a7e55c0bde8842d39effd60",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.version": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.version": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DirectoryIndexes/get_indexing",
+                "variant": "uapi:DirectoryIndexes/get_indexing#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T19:15:56Z",
+                "revision": "e3aa06b4bb693010ebd1df0709f4247b52022e72",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "74487860fa5cab1b45cfd17e44ac7c731d0b4f2a8d86ae442893403bbd844b0e",
+                "effective_contract_sha256": "f240caf41f48a4a74733729df626a733dbbf4635a78984f690b3dc1a4dcabd08",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DirectoryIndexes/get_indexing",
+                "variant": "uapi:DirectoryIndexes/get_indexing#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T19:15:56Z",
+                "revision": "e3aa06b4bb693010ebd1df0709f4247b52022e72",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "74487860fa5cab1b45cfd17e44ac7c731d0b4f2a8d86ae442893403bbd844b0e",
+                "effective_contract_sha256": "f240caf41f48a4a74733729df626a733dbbf4635a78984f690b3dc1a4dcabd08",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DirectoryIndexes/list_directories",
+                "variant": "uapi:DirectoryIndexes/list_directories#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T19:15:57Z",
+                "revision": "e3aa06b4bb693010ebd1df0709f4247b52022e72",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "74487860fa5cab1b45cfd17e44ac7c731d0b4f2a8d86ae442893403bbd844b0e",
+                "effective_contract_sha256": "b1758c251cc38d9f330a4c72b9a3e24bfeb2492a68abd419f04448d584294a9c",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.children": [
+                        "list"
+                    ],
+                    "$.data.children[]": [
+                        "object"
+                    ],
+                    "$.data.children[].path": [
+                        "string"
+                    ],
+                    "$.data.children[].state": [
+                        "object"
+                    ],
+                    "$.data.children[].state.index_type": [
+                        "string"
+                    ],
+                    "$.data.current": [
+                        "object"
+                    ],
+                    "$.data.current.path": [
+                        "string"
+                    ],
+                    "$.data.current.state": [
+                        "object"
+                    ],
+                    "$.data.current.state.index_type": [
+                        "string"
+                    ],
+                    "$.data.home": [
+                        "object"
+                    ],
+                    "$.data.home.path": [
+                        "string"
+                    ],
+                    "$.data.home.state": [
+                        "object"
+                    ],
+                    "$.data.home.state.index_type": [
+                        "string"
+                    ],
+                    "$.data.parent": [
+                        "object"
+                    ],
+                    "$.data.parent.path": [
+                        "string"
+                    ],
+                    "$.data.parent.state": [
+                        "object"
+                    ],
+                    "$.data.parent.state.index_type": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.children": [
+                        "list"
+                    ],
+                    "$.children[]": [
+                        "object"
+                    ],
+                    "$.children[].path": [
+                        "string"
+                    ],
+                    "$.children[].state": [
+                        "object"
+                    ],
+                    "$.children[].state.index_type": [
+                        "string"
+                    ],
+                    "$.current": [
+                        "object"
+                    ],
+                    "$.current.path": [
+                        "string"
+                    ],
+                    "$.current.state": [
+                        "object"
+                    ],
+                    "$.current.state.index_type": [
+                        "string"
+                    ],
+                    "$.home": [
+                        "object"
+                    ],
+                    "$.home.path": [
+                        "string"
+                    ],
+                    "$.home.state": [
+                        "object"
+                    ],
+                    "$.home.state.index_type": [
+                        "string"
+                    ],
+                    "$.parent": [
+                        "object"
+                    ],
+                    "$.parent.path": [
+                        "string"
+                    ],
+                    "$.parent.state": [
+                        "object"
+                    ],
+                    "$.parent.state.index_type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DirectoryIndexes/list_directories",
+                "variant": "uapi:DirectoryIndexes/list_directories#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T19:15:57Z",
+                "revision": "e3aa06b4bb693010ebd1df0709f4247b52022e72",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "74487860fa5cab1b45cfd17e44ac7c731d0b4f2a8d86ae442893403bbd844b0e",
+                "effective_contract_sha256": "b1758c251cc38d9f330a4c72b9a3e24bfeb2492a68abd419f04448d584294a9c",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.children": [
+                        "list"
+                    ],
+                    "$.data.uapi.data.children[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.children[].path": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.children[].state": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.children[].state.index_type": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.current": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.current.path": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.current.state": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.current.state.index_type": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.home": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.home.path": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.home.state": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.home.state.index_type": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.parent": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.parent.path": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.parent.state": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.parent.state.index_type": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.children": [
+                        "list"
+                    ],
+                    "$.children[]": [
+                        "object"
+                    ],
+                    "$.children[].path": [
+                        "string"
+                    ],
+                    "$.children[].state": [
+                        "object"
+                    ],
+                    "$.children[].state.index_type": [
+                        "string"
+                    ],
+                    "$.current": [
+                        "object"
+                    ],
+                    "$.current.path": [
+                        "string"
+                    ],
+                    "$.current.state": [
+                        "object"
+                    ],
+                    "$.current.state.index_type": [
+                        "string"
+                    ],
+                    "$.home": [
+                        "object"
+                    ],
+                    "$.home.path": [
+                        "string"
+                    ],
+                    "$.home.state": [
+                        "object"
+                    ],
+                    "$.home.state.index_type": [
+                        "string"
+                    ],
+                    "$.parent": [
+                        "object"
+                    ],
+                    "$.parent.path": [
+                        "string"
+                    ],
+                    "$.parent.state": [
+                        "object"
+                    ],
+                    "$.parent.state.index_type": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DirectoryPrivacy/is_directory_protected",
+                "variant": "uapi:DirectoryPrivacy/is_directory_protected#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T19:15:57Z",
+                "revision": "e3aa06b4bb693010ebd1df0709f4247b52022e72",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "74487860fa5cab1b45cfd17e44ac7c731d0b4f2a8d86ae442893403bbd844b0e",
+                "effective_contract_sha256": "c48c7f967887c7a2d7709edd039c0ef5d74e5c12dccf0a823da89ac9dbab806c",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.data.auth_type": [
+                        "string"
+                    ],
+                    "$.data.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.data.protected": [
+                        "int"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.auth_type": [
+                        "string"
+                    ],
+                    "$.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.protected": [
+                        "int"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DirectoryPrivacy/is_directory_protected",
+                "variant": "uapi:DirectoryPrivacy/is_directory_protected#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T19:15:58Z",
+                "revision": "e3aa06b4bb693010ebd1df0709f4247b52022e72",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "74487860fa5cab1b45cfd17e44ac7c731d0b4f2a8d86ae442893403bbd844b0e",
+                "effective_contract_sha256": "c48c7f967887c7a2d7709edd039c0ef5d74e5c12dccf0a823da89ac9dbab806c",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.data.uapi.data.auth_type": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.data.uapi.data.protected": [
+                        "int"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.auth_type": [
+                        "string"
+                    ],
+                    "$.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.protected": [
+                        "int"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DirectoryPrivacy/list_directories",
+                "variant": "uapi:DirectoryPrivacy/list_directories#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T19:15:58Z",
+                "revision": "e3aa06b4bb693010ebd1df0709f4247b52022e72",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "74487860fa5cab1b45cfd17e44ac7c731d0b4f2a8d86ae442893403bbd844b0e",
+                "effective_contract_sha256": "55743e8966a48e2dee9db084f28f434c9fed5e53d3d52ca222ce6725226b919d",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.children": [
+                        "list"
+                    ],
+                    "$.data.children[]": [
+                        "object"
+                    ],
+                    "$.data.children[].path": [
+                        "string"
+                    ],
+                    "$.data.children[].state": [
+                        "object"
+                    ],
+                    "$.data.children[].state.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.data.children[].state.auth_type": [
+                        "string"
+                    ],
+                    "$.data.children[].state.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.data.children[].state.protected": [
+                        "int"
+                    ],
+                    "$.data.current": [
+                        "object"
+                    ],
+                    "$.data.current.path": [
+                        "string"
+                    ],
+                    "$.data.current.state": [
+                        "object"
+                    ],
+                    "$.data.current.state.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.data.current.state.auth_type": [
+                        "string"
+                    ],
+                    "$.data.current.state.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.data.current.state.protected": [
+                        "int"
+                    ],
+                    "$.data.home": [
+                        "object"
+                    ],
+                    "$.data.home.path": [
+                        "string"
+                    ],
+                    "$.data.home.state": [
+                        "object"
+                    ],
+                    "$.data.home.state.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.data.home.state.auth_type": [
+                        "string"
+                    ],
+                    "$.data.home.state.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.data.home.state.protected": [
+                        "int"
+                    ],
+                    "$.data.parent": [
+                        "object"
+                    ],
+                    "$.data.parent.path": [
+                        "string"
+                    ],
+                    "$.data.parent.state": [
+                        "object"
+                    ],
+                    "$.data.parent.state.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.data.parent.state.auth_type": [
+                        "string"
+                    ],
+                    "$.data.parent.state.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.data.parent.state.protected": [
+                        "int"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.children": [
+                        "list"
+                    ],
+                    "$.children[]": [
+                        "object"
+                    ],
+                    "$.children[].path": [
+                        "string"
+                    ],
+                    "$.children[].state": [
+                        "object"
+                    ],
+                    "$.children[].state.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.children[].state.auth_type": [
+                        "string"
+                    ],
+                    "$.children[].state.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.children[].state.protected": [
+                        "int"
+                    ],
+                    "$.current": [
+                        "object"
+                    ],
+                    "$.current.path": [
+                        "string"
+                    ],
+                    "$.current.state": [
+                        "object"
+                    ],
+                    "$.current.state.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.current.state.auth_type": [
+                        "string"
+                    ],
+                    "$.current.state.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.current.state.protected": [
+                        "int"
+                    ],
+                    "$.home": [
+                        "object"
+                    ],
+                    "$.home.path": [
+                        "string"
+                    ],
+                    "$.home.state": [
+                        "object"
+                    ],
+                    "$.home.state.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.home.state.auth_type": [
+                        "string"
+                    ],
+                    "$.home.state.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.home.state.protected": [
+                        "int"
+                    ],
+                    "$.parent": [
+                        "object"
+                    ],
+                    "$.parent.path": [
+                        "string"
+                    ],
+                    "$.parent.state": [
+                        "object"
+                    ],
+                    "$.parent.state.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.parent.state.auth_type": [
+                        "string"
+                    ],
+                    "$.parent.state.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.parent.state.protected": [
+                        "int"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DirectoryPrivacy/list_directories",
+                "variant": "uapi:DirectoryPrivacy/list_directories#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T19:15:58Z",
+                "revision": "e3aa06b4bb693010ebd1df0709f4247b52022e72",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "74487860fa5cab1b45cfd17e44ac7c731d0b4f2a8d86ae442893403bbd844b0e",
+                "effective_contract_sha256": "55743e8966a48e2dee9db084f28f434c9fed5e53d3d52ca222ce6725226b919d",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.children": [
+                        "list"
+                    ],
+                    "$.data.uapi.data.children[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.children[].path": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.children[].state": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.children[].state.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.data.uapi.data.children[].state.auth_type": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.children[].state.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.data.uapi.data.children[].state.protected": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.current": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.current.path": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.current.state": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.current.state.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.data.uapi.data.current.state.auth_type": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.current.state.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.data.uapi.data.current.state.protected": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.home": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.home.path": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.home.state": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.home.state.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.data.uapi.data.home.state.auth_type": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.home.state.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.data.uapi.data.home.state.protected": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.parent": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.parent.path": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.parent.state": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.parent.state.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.data.uapi.data.parent.state.auth_type": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.parent.state.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.data.uapi.data.parent.state.protected": [
+                        "int"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.children": [
+                        "list"
+                    ],
+                    "$.children[]": [
+                        "object"
+                    ],
+                    "$.children[].path": [
+                        "string"
+                    ],
+                    "$.children[].state": [
+                        "object"
+                    ],
+                    "$.children[].state.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.children[].state.auth_type": [
+                        "string"
+                    ],
+                    "$.children[].state.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.children[].state.protected": [
+                        "int"
+                    ],
+                    "$.current": [
+                        "object"
+                    ],
+                    "$.current.path": [
+                        "string"
+                    ],
+                    "$.current.state": [
+                        "object"
+                    ],
+                    "$.current.state.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.current.state.auth_type": [
+                        "string"
+                    ],
+                    "$.current.state.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.current.state.protected": [
+                        "int"
+                    ],
+                    "$.home": [
+                        "object"
+                    ],
+                    "$.home.path": [
+                        "string"
+                    ],
+                    "$.home.state": [
+                        "object"
+                    ],
+                    "$.home.state.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.home.state.auth_type": [
+                        "string"
+                    ],
+                    "$.home.state.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.home.state.protected": [
+                        "int"
+                    ],
+                    "$.parent": [
+                        "object"
+                    ],
+                    "$.parent.path": [
+                        "string"
+                    ],
+                    "$.parent.state": [
+                        "object"
+                    ],
+                    "$.parent.state.auth_name": [
+                        "empty-string"
+                    ],
+                    "$.parent.state.auth_type": [
+                        "string"
+                    ],
+                    "$.parent.state.passwd_file": [
+                        "empty-string"
+                    ],
+                    "$.parent.state.protected": [
+                        "int"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DirectoryPrivacy/list_users",
+                "variant": "uapi:DirectoryPrivacy/list_users#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T19:15:58Z",
+                "revision": "e3aa06b4bb693010ebd1df0709f4247b52022e72",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "74487860fa5cab1b45cfd17e44ac7c731d0b4f2a8d86ae442893403bbd844b0e",
+                "effective_contract_sha256": "635e560b1295dc0f3831e04349c6b28748c1541d2d53465ab9fa0805aa096bd5",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "empty-list"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DirectoryPrivacy/list_users",
+                "variant": "uapi:DirectoryPrivacy/list_users#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T19:15:59Z",
+                "revision": "e3aa06b4bb693010ebd1df0709f4247b52022e72",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "74487860fa5cab1b45cfd17e44ac7c731d0b4f2a8d86ae442893403bbd844b0e",
+                "effective_contract_sha256": "635e560b1295dc0f3831e04349c6b28748c1541d2d53465ab9fa0805aa096bd5",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "empty-list"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DirectoryProtection/list_directories",
+                "variant": "uapi:DirectoryProtection/list_directories#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T19:15:59Z",
+                "revision": "e3aa06b4bb693010ebd1df0709f4247b52022e72",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "74487860fa5cab1b45cfd17e44ac7c731d0b4f2a8d86ae442893403bbd844b0e",
+                "effective_contract_sha256": "2b9e09620a5168ee63426a5dca89b295a64b4fcc3e8d10895ae07c389b169903",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.children": [
+                        "list"
+                    ],
+                    "$.data.children[]": [
+                        "object"
+                    ],
+                    "$.data.children[].path": [
+                        "string"
+                    ],
+                    "$.data.children[].state": [
+                        "object"
+                    ],
+                    "$.data.children[].state.has_leech_protection": [
+                        "int"
+                    ],
+                    "$.data.current": [
+                        "object"
+                    ],
+                    "$.data.current.path": [
+                        "string"
+                    ],
+                    "$.data.current.state": [
+                        "object"
+                    ],
+                    "$.data.current.state.has_leech_protection": [
+                        "int"
+                    ],
+                    "$.data.home": [
+                        "object"
+                    ],
+                    "$.data.home.path": [
+                        "string"
+                    ],
+                    "$.data.home.state": [
+                        "object"
+                    ],
+                    "$.data.home.state.has_leech_protection": [
+                        "int"
+                    ],
+                    "$.data.parent": [
+                        "object"
+                    ],
+                    "$.data.parent.path": [
+                        "string"
+                    ],
+                    "$.data.parent.state": [
+                        "object"
+                    ],
+                    "$.data.parent.state.has_leech_protection": [
+                        "int"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.children": [
+                        "list"
+                    ],
+                    "$.children[]": [
+                        "object"
+                    ],
+                    "$.children[].path": [
+                        "string"
+                    ],
+                    "$.children[].state": [
+                        "object"
+                    ],
+                    "$.children[].state.has_leech_protection": [
+                        "int"
+                    ],
+                    "$.current": [
+                        "object"
+                    ],
+                    "$.current.path": [
+                        "string"
+                    ],
+                    "$.current.state": [
+                        "object"
+                    ],
+                    "$.current.state.has_leech_protection": [
+                        "int"
+                    ],
+                    "$.home": [
+                        "object"
+                    ],
+                    "$.home.path": [
+                        "string"
+                    ],
+                    "$.home.state": [
+                        "object"
+                    ],
+                    "$.home.state.has_leech_protection": [
+                        "int"
+                    ],
+                    "$.parent": [
+                        "object"
+                    ],
+                    "$.parent.path": [
+                        "string"
+                    ],
+                    "$.parent.state": [
+                        "object"
+                    ],
+                    "$.parent.state.has_leech_protection": [
+                        "int"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:DirectoryProtection/list_directories",
+                "variant": "uapi:DirectoryProtection/list_directories#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T19:15:59Z",
+                "revision": "e3aa06b4bb693010ebd1df0709f4247b52022e72",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "74487860fa5cab1b45cfd17e44ac7c731d0b4f2a8d86ae442893403bbd844b0e",
+                "effective_contract_sha256": "2b9e09620a5168ee63426a5dca89b295a64b4fcc3e8d10895ae07c389b169903",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.children": [
+                        "list"
+                    ],
+                    "$.data.uapi.data.children[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.children[].path": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.children[].state": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.children[].state.has_leech_protection": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.current": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.current.path": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.current.state": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.current.state.has_leech_protection": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.home": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.home.path": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.home.state": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.home.state.has_leech_protection": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.parent": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.parent.path": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.parent.state": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.parent.state.has_leech_protection": [
+                        "int"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.children": [
+                        "list"
+                    ],
+                    "$.children[]": [
+                        "object"
+                    ],
+                    "$.children[].path": [
+                        "string"
+                    ],
+                    "$.children[].state": [
+                        "object"
+                    ],
+                    "$.children[].state.has_leech_protection": [
+                        "int"
+                    ],
+                    "$.current": [
+                        "object"
+                    ],
+                    "$.current.path": [
+                        "string"
+                    ],
+                    "$.current.state": [
+                        "object"
+                    ],
+                    "$.current.state.has_leech_protection": [
+                        "int"
+                    ],
+                    "$.home": [
+                        "object"
+                    ],
+                    "$.home.path": [
+                        "string"
+                    ],
+                    "$.home.state": [
+                        "object"
+                    ],
+                    "$.home.state.has_leech_protection": [
+                        "int"
+                    ],
+                    "$.parent": [
+                        "object"
+                    ],
+                    "$.parent.path": [
+                        "string"
+                    ],
+                    "$.parent.state": [
+                        "object"
+                    ],
+                    "$.parent.state.has_leech_protection": [
+                        "int"
+                    ]
+                },
+                "discrepancies": []
+            }
+        ]
+    }
+}

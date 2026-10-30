@@ -197,3 +197,6 @@ No discrepancy is waived under `8x0.2.19`. Earlier failed artifacts stay unchang
 This storage recipe establishes no TLS installation/serving/trust or AutoSSL
 issuance/renewal behavior. SHA-256:
 `1a42e7a3c920b70eb91ef2f26f7f40aed8209693b8e850f56e594a2620d382d5`.
+
+- [directory-access section](2026-10-30-directory-access.json), at `e3aa06b` on
+  `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment. Directory lists had populated structural fields, while the privacy-user list was empty. No indexing, password-protection or leech-protection setting changed. Four mutations and HTTP enforcement remain unverified. Follow-up `8x0.2.22` remains open.

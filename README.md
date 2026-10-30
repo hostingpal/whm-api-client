@@ -950,3 +950,7 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+The [directory-access read-only capture](docs/api/evidence/2026-10-30-directory-access.json)
+records reviewed GET checks on cPanel `11.138.0.19`. All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment.
+Directory lists had populated structural fields, while the privacy-user list was empty. No indexing, password-protection or leech-protection setting changed. Four mutations and HTTP enforcement remain unverified.

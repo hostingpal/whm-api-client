@@ -318,6 +318,8 @@ realm name when enabling it. `addUser()` keeps its password sensitive throughout
 the request. User mutations preserve nullable opaque results and reject an absent
 payload; all documented directory fields retain omission and null distinctions.
 
+The 2026-10-30 directory-access capture at `e3aa06b` on `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment.
+Directory lists had populated structural fields, while the privacy-user list was empty. No indexing, password-protection or leech-protection setting changed. Four mutations and HTTP enforcement remain unverified. Follow-up `8x0.2.22` remains open.
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.

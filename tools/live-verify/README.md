@@ -666,3 +666,6 @@ network I/O and publishes the completed report with a new-only atomic link. If a
 destination race or unsupported link prevents publication, the complete protected
 report remains at the JSON-encoded recovery path printed to stderr. Partial or
 failed initial writes remain covered by follow-up `8x0.2.13`.
+
+Recorded capture: [2026-10-30 directory-access](../../docs/api/evidence/2026-10-30-directory-access.json).
+All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment. Directory lists had populated structural fields, while the privacy-user list was empty. No indexing, password-protection or leech-protection setting changed. Four mutations and HTTP enforcement remain unverified. See `8x0.2.22`.

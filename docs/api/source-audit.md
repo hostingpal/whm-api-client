@@ -2223,3 +2223,7 @@ sanitization without repeating the historical baseline. The strict assessment
 requires the complete ordered catalog, matching provenance and zero discrepancies.
 All 4 mutations remain offline-only in this slice; read observations cannot
 establish their effects. Live capture outcomes are recorded separately.
+
+The [2026-10-30 directory-access capture](evidence/2026-10-30-directory-access.json)
+at `e3aa06b` on cPanel `11.138.0.19` records the reviewed catalog. All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment.
+Directory lists had populated structural fields, while the privacy-user list was empty. No indexing, password-protection or leech-protection setting changed. Four mutations and HTTP enforcement remain unverified. Follow-up `8x0.2.22` owns the remaining live/contract work.
