@@ -18,6 +18,245 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  * according to the configured credentials, with a single attempt and no retries. The handle clears responseMeta()
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
+ * @phpstan-type DomainsDataResult array{
+ *     addon_domains?: list<array{
+ *         all_aliases_valid?: 0|1,
+ *         can_https_redirect?: 0|1,
+ *         customlog?: array{
+ *             format?: string,
+ *             target?: string,
+ *         }|list<array{
+ *             format?: string,
+ *             target?: string,
+ *         }>,
+ *         documentroot?: string,
+ *         domain?: string,
+ *         group?: string,
+ *         hascgi?: 0|1,
+ *         homedir?: string,
+ *         ifmodulemodsuphpc?: array{
+ *             group?: string,
+ *         },
+ *         ip?: string,
+ *         ipv6?: string|null,
+ *         is_https_redirecting?: 0|1,
+ *         is_temporary?: 0|1,
+ *         no_cache_update?: 0|1,
+ *         options?: string,
+ *         owner?: string,
+ *         parked_capable_of_https_redirects?: list<string>,
+ *         parked_with_https_redirects?: list<string>,
+ *         port?: int,
+ *         scriptalias?: array{
+ *             path?: string,
+ *             url?: string,
+ *         }|list<array{
+ *             path?: string,
+ *             url?: string,
+ *         }>,
+ *         serveradmin?: string,
+ *         serveralias?: string,
+ *         servername?: string,
+ *         type?: string,
+ *         usecanonicalname?: string,
+ *         user?: string,
+ *         userdirprotect?: ''|0|1,
+ *     }>,
+ *     main_domain?: array{
+ *         all_aliases_valid?: 0|1,
+ *         can_https_redirect?: 0|1,
+ *         customlog?: array{
+ *             format?: string,
+ *             target?: string,
+ *         }|list<array{
+ *             format?: string,
+ *             target?: string,
+ *         }>,
+ *         documentroot?: string,
+ *         domain?: string,
+ *         group?: string,
+ *         hascgi?: 0|1,
+ *         homedir?: string,
+ *         ifmodulemodsuphpc?: array{
+ *             group?: string,
+ *         },
+ *         ip?: string,
+ *         ipv6?: string|null,
+ *         is_https_redirecting?: 0|1,
+ *         is_temporary?: 0|1,
+ *         no_cache_update?: 0|1,
+ *         options?: string,
+ *         owner?: string,
+ *         parked_capable_of_https_redirects?: list<string>,
+ *         parked_with_https_redirects?: list<string>,
+ *         port?: int,
+ *         scriptalias?: array{
+ *             path?: string,
+ *             url?: string,
+ *         }|list<array{
+ *             path?: string,
+ *             url?: string,
+ *         }>,
+ *         serveradmin?: string,
+ *         serveralias?: string,
+ *         servername?: string,
+ *         type?: string,
+ *         usecanonicalname?: string,
+ *         user?: string,
+ *         userdirprotect?: ''|0|1,
+ *     }|list<array{
+ *         all_aliases_valid?: 0|1,
+ *         can_https_redirect?: 0|1,
+ *         customlog?: array{
+ *             format?: string,
+ *             target?: string,
+ *         }|list<array{
+ *             format?: string,
+ *             target?: string,
+ *         }>,
+ *         documentroot?: string,
+ *         domain?: string,
+ *         group?: string,
+ *         hascgi?: 0|1,
+ *         homedir?: string,
+ *         ifmodulemodsuphpc?: array{
+ *             group?: string,
+ *         },
+ *         ip?: string,
+ *         ipv6?: string|null,
+ *         is_https_redirecting?: 0|1,
+ *         is_temporary?: 0|1,
+ *         no_cache_update?: 0|1,
+ *         options?: string,
+ *         owner?: string,
+ *         parked_capable_of_https_redirects?: list<string>,
+ *         parked_with_https_redirects?: list<string>,
+ *         port?: int,
+ *         scriptalias?: array{
+ *             path?: string,
+ *             url?: string,
+ *         }|list<array{
+ *             path?: string,
+ *             url?: string,
+ *         }>,
+ *         serveradmin?: string,
+ *         serveralias?: string,
+ *         servername?: string,
+ *         type?: string,
+ *         usecanonicalname?: string,
+ *         user?: string,
+ *         userdirprotect?: ''|0|1,
+ *     }>,
+ *     parked_capable_of_https_redirects?: list<string>,
+ *     parked_domains?: list<string|array{
+ *         all_aliases_valid?: 0|1,
+ *         can_https_redirect?: 0|1,
+ *         documentroot?: string,
+ *         domain?: string,
+ *         group?: string,
+ *         hascgi?: 0|1,
+ *         homedir?: string,
+ *         ip?: string,
+ *         ipv6?: string|null,
+ *         is_https_redirecting?: 0|1,
+ *         is_temporary?: 0|1,
+ *         no_cache_update?: 0|1,
+ *         owner?: string,
+ *         serveradmin?: string,
+ *         serveralias?: string,
+ *         servername?: string,
+ *         type?: string,
+ *         usecanonicalname?: string,
+ *         user?: string,
+ *         userdirprotect?: ''|0|1,
+ *     }>,
+ *     parked_with_https_redirects?: list<string>,
+ *     sub_domains?: list<array{
+ *         all_aliases_valid?: 0|1,
+ *         can_https_redirect?: 0|1,
+ *         customlog?: array{
+ *             format?: string,
+ *             target?: string,
+ *         }|list<array{
+ *             format?: string,
+ *             target?: string,
+ *         }>,
+ *         documentroot?: string,
+ *         domain?: string,
+ *         group?: string,
+ *         hascgi?: 0|1,
+ *         homedir?: string,
+ *         ifmodulemodsuphpc?: array{
+ *             group?: string,
+ *         },
+ *         ip?: string,
+ *         ipv6?: string|null,
+ *         is_https_redirecting?: 0|1,
+ *         is_temporary?: 0|1,
+ *         no_cache_update?: 0|1,
+ *         options?: string,
+ *         owner?: string,
+ *         parked_capable_of_https_redirects?: list<string>,
+ *         parked_with_https_redirects?: list<string>,
+ *         port?: int,
+ *         scriptalias?: array{
+ *             path?: string,
+ *             url?: string,
+ *         }|list<array{
+ *             path?: string,
+ *             url?: string,
+ *         }>,
+ *         serveradmin?: string,
+ *         serveralias?: string,
+ *         servername?: string,
+ *         type?: string,
+ *         usecanonicalname?: string,
+ *         user?: string,
+ *         userdirprotect?: ''|0|1,
+ *     }>,
+ * }|list<array{
+ *     all_aliases_valid?: 0|1,
+ *     can_https_redirect?: 0|1,
+ *     customlog?: array{
+ *         format?: string,
+ *         target?: string,
+ *     }|list<array{
+ *         format?: string,
+ *         target?: string,
+ *     }>,
+ *     documentroot?: string,
+ *     domain?: string,
+ *     group?: string,
+ *     hascgi?: 0|1,
+ *     homedir?: string,
+ *     ifmodulemodsuphpc?: array{
+ *         group?: string,
+ *     },
+ *     ip?: string,
+ *     ipv6?: string|null,
+ *     is_https_redirecting?: 0|1,
+ *     is_temporary?: 0|1,
+ *     no_cache_update?: 0|1,
+ *     options?: string,
+ *     owner?: string,
+ *     parked_capable_of_https_redirects?: list<string>,
+ *     parked_with_https_redirects?: list<string>,
+ *     port?: int,
+ *     scriptalias?: array{
+ *         path?: string,
+ *         url?: string,
+ *     }|list<array{
+ *         path?: string,
+ *         url?: string,
+ *     }>,
+ *     serveradmin?: string,
+ *     serveralias?: string,
+ *     servername?: string,
+ *     type?: string,
+ *     usecanonicalname?: string,
+ *     user?: string,
+ *     userdirprotect?: ''|0|1,
+ * }>
  * @phpstan-type ListDomainsResult array{
  *     addon_domains?: list<string>,
  *     is_temporary?: array<array-key, 0|1>,
@@ -26,6 +265,46 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     sub_domains?: list<string>,
  * }
  * @phpstan-type MainDomainBuiltinSubdomainAliasesResult list<string>
+ * @phpstan-type SingleDomainDataResult array{
+ *     all_aliases_valid?: 0|1,
+ *     can_https_redirect?: 0|1,
+ *     customlog?: array{
+ *         domain?: string,
+ *         target?: string,
+ *     }|list<array{
+ *         domain?: string,
+ *         target?: string,
+ *     }>,
+ *     documentroot?: string,
+ *     domain?: string,
+ *     group?: string,
+ *     hascgi?: 0|1,
+ *     homedir?: string,
+ *     ifmodulemodsuphpc?: array{
+ *         group?: string,
+ *     },
+ *     ip?: string,
+ *     is_https_redirecting?: 0|1,
+ *     is_temporary?: 0|1,
+ *     options?: string,
+ *     owner?: string,
+ *     phpopenbasedirprotect?: 0|1,
+ *     port?: int,
+ *     scriptalias?: array{
+ *         path?: string,
+ *         url?: string,
+ *     }|list<array{
+ *         path?: string,
+ *         url?: string,
+ *     }>,
+ *     serveradmin?: string,
+ *     serveralias?: string,
+ *     servername?: string,
+ *     type?: string,
+ *     usecanonicalname?: string,
+ *     user?: string,
+ *     userdirprotect?: ''|0|1,
+ * }
  */
 final readonly class DomainInfo
 {
@@ -37,6 +316,46 @@ final readonly class DomainInfo
      */
     public function __construct(private Closure $run)
     {
+    }
+
+    /**
+     * Return all domains' hosting configuration.
+     *
+     * This function lists user data for the cPanel account's domains.
+     *
+     * Documented: Returns a hash of domain-type containers or a list according to format. User-data files can omit any
+     * documented field. Explicit null IPv6 remains null. Pinned prose/schema and examples disagree on several
+     * containers; the effective shape preserves the documented hash/list variants and example log/alias lists.
+     *
+     * Documented: Quoted 0/1 domain flags and port values normalize to integers. The documented empty-string
+     * userdirprotect value stays an empty string, distinct from 0; other nonflag strings remain invalid. Shared flag
+     * fields use the same wire compatibility across record kinds and singleDomainData().
+     *
+     * API-map identity: uapi:DomainInfo/domains_data#GET (wire name domains_data).
+     *
+     * @param 'hash'|'list'|null $format The function's return format. Null omits it.
+     * @param bool|null $hideTemporaryDomains Whether to hide temporary domains from the response arrays. Null omits it.
+     * @param bool|null $returnHttpsRedirectsStatus Whether to return the secure redirect status of the addon domains.
+     *     Null omits it.
+     * @return DomainsDataResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-information/domaininfo-domains_data
+     */
+    public function domainsData(
+        ?string $format = null,
+        ?bool $hideTemporaryDomains = null,
+        ?bool $returnHttpsRedirectsStatus = null,
+    ): array {
+        /** @var DomainsDataResult $result Validated against DomainInfoSpec::DOMAINS_DATA. */
+        $result = ($this->run)(DomainInfoSpec::DOMAINS_DATA, [
+            'format' => $format,
+            'hideTemporaryDomains' => $hideTemporaryDomains,
+            'returnHttpsRedirectsStatus' => $returnHttpsRedirectsStatus,
+        ]);
+
+        return $result;
     }
 
     /**
@@ -108,6 +427,53 @@ final readonly class DomainInfo
     {
         /** @var string|null $result Validated against DomainInfoSpec::PRIMARY_DOMAIN. */
         $result = ($this->run)(DomainInfoSpec::PRIMARY_DOMAIN, ['hideTemporaryDomains' => $hideTemporaryDomains]);
+
+        return $result;
+    }
+
+    /**
+     * Return domain's hosting configuration.
+     *
+     * This function lists user data for a domain.
+     *
+     * Documented: Only query an account-owned main, addon or subdomain; aliases have no user-data file and must be
+     * queried through their associated main or addon domain. Any documented result field may be omitted.
+     *
+     * Documented: The pinned parameter name is return_https_redirect_status (singular redirect); some return
+     * descriptions incorrectly use return_https_redirects_status. The request uses the declared singular parameter.
+     * Hiding a requested temporary domain causes an API error.
+     *
+     * Observed: Observed customlog and scriptalias may be lists as well as the pinned objects. Quoted 0/1 hascgi and
+     * phpopenbasedirprotect flags normalize to integers, as do lossless integer port strings. Unknown fields remain
+     * outside the contract.
+     *
+     * Documented: Shared domain flags accept the quoted 0/1 forms documented by the domains_data examples. The
+     * userdirprotect empty-string variant is preserved without mapping it to 0; other nonflag strings remain invalid.
+     * Optional fields remain omitted when absent.
+     *
+     * API-map identity: uapi:DomainInfo/single_domain_data#GET (wire name single_domain_data).
+     *
+     * @param string $domain The domain on the cPanel account.
+     * @param bool|null $hideTemporaryDomains Whether to hide temporary domains from the returned values. Null omits it.
+     * @param bool|null $returnHttpsRedirectStatus Whether to return the secure redirect status of the addon domains.
+     *     Null omits it.
+     * @return SingleDomainDataResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-information/domaininfo-single_domain_data
+     */
+    public function singleDomainData(
+        string $domain,
+        ?bool $hideTemporaryDomains = null,
+        ?bool $returnHttpsRedirectStatus = null,
+    ): array {
+        /** @var SingleDomainDataResult $result Validated against DomainInfoSpec::SINGLE_DOMAIN_DATA. */
+        $result = ($this->run)(DomainInfoSpec::SINGLE_DOMAIN_DATA, [
+            'domain' => $domain,
+            'hideTemporaryDomains' => $hideTemporaryDomains,
+            'returnHttpsRedirectStatus' => $returnHttpsRedirectStatus,
+        ]);
 
         return $result;
     }

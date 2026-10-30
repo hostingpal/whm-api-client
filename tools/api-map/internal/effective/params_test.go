@@ -1,6 +1,7 @@
 package effective
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 
@@ -96,6 +97,77 @@ func TestBuildRequiresDecisionsForCompositeParameters(t *testing.T) {
 	for _, p := range groupByClass(t, result, "Accounts").Operations[0].Params {
 		if p.Wire == "host" && p.PHPType != "string" {
 			t.Errorf("host typed %s", p.PHPType)
+		}
+	}
+}
+
+func TestBuildParameterRequiredOverridePreservesAbsenceAndFalse(t *testing.T) {
+	for _, c := range []struct {
+		name, wire, setting string
+		want                bool
+	}{
+		{"absent required", "username", `{}`, true},
+		{"absent optional", "password", `{}`, false},
+		{"false", "username", `{"required":false}`, false},
+		{"true", "password", `{"required":true}`, true},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			set := fixtureOverlay("listed")
+			op := set.Files[1].Operations["whm1:createacct"]
+			var param overlay.Param
+			if err := json.Unmarshal([]byte(c.setting), &param); err != nil {
+				t.Fatal(err)
+			}
+			op.Params = map[string]overlay.Param{c.wire: param}
+			op.Evidence = evidence()
+			set.Files[1].Operations["whm1:createacct"] = op
+			result, joined := buildProblems(t, fixtureMap(t), set)
+			if joined != "" {
+				t.Fatal(joined)
+			}
+			for _, p := range groupByClass(t, result, "Accounts").Operations[0].Params {
+				if p.Wire == c.wire {
+					if p.Required != c.want {
+						t.Fatalf("%s required = %v, want %v", c.wire, p.Required, c.want)
+					}
+					return
+				}
+			}
+			t.Fatal("parameter missing")
+		})
+	}
+}
+
+func TestBuildCanSuppressOnlyEnumDocumentation(t *testing.T) {
+	for _, c := range []struct{ setting, want string }{
+		{`{}`, "'default'|'custom'"},
+		{`{"enum_doc":true}`, "'default'|'custom'"},
+		{`{"enum_doc":false}`, "string"},
+	} {
+		set := fixtureOverlay("listed")
+		op := set.Files[1].Operations["whm1:createacct"]
+		var param overlay.Param
+		if err := json.Unmarshal([]byte(c.setting), &param); err != nil {
+			t.Fatal(err)
+		}
+		op.Params = map[string]overlay.Param{"plan": param}
+		op.Evidence = evidence()
+		set.Files[1].Operations["whm1:createacct"] = op
+		result, joined := buildProblems(t, fixtureMap(t), set)
+		if joined != "" {
+			t.Fatal(joined)
+		}
+		found := false
+		for _, p := range groupByClass(t, result, "Accounts").Operations[0].Params {
+			if p.Wire == "plan" {
+				found = true
+				if p.DocType != c.want || p.PHPType != "string" || p.Encoding != "scalar" || p.Required {
+					t.Fatalf("%s: unexpected argument contract %+v", c.setting, p)
+				}
+			}
+		}
+		if !found {
+			t.Fatal("missing plan")
 		}
 	}
 }

@@ -1,7 +1,7 @@
 # Live contract evidence
 
 This development-only PHP command exercises the generated client on the approved
-test server. Its default read-only mode performs 47 GET requests across 27 operations, with exact route
+test server. Its default read-only mode performs 67 GET requests across 37 operations, with exact route
 and argument guards, verified TLS, redirects
 disabled, and no retries. The core package has no dependency on this tool.
 
@@ -12,6 +12,14 @@ disabled, and no retries. The core package has no dependency on this tool.
 | Direct and WHM-bridged UAPI, account `npr` | `SSL/installed_hosts`, `SSL/get_autossl_excluded_domains`, `SSL/get_autossl_problems`, `SSL/get_autossl_renewal_status(domain: 'npr.rs')`, `SSL/is_autossl_check_in_progress`, `SSL/can_ssl_redirect` |
 | Direct and WHM-bridged UAPI, account `npr` | `Quota/get_quota_info`, `Quota/get_local_quota_info` |
 | Direct and WHM-bridged UAPI, account `npr` | `Mysql/list_databases`, `Mysql/list_users`, `Mysql/get_restrictions`, `Mysql/get_server_information` |
+
+The completed DomainInfo, Features and LangPHP modules add both routes for
+`domains_data(format: hash, hide_temporary_domains: 0, return_https_redirects_status: 0)`,
+`single_domain_data(domain: npr.rs, hide_temporary_domains: 0, return_https_redirect_status: 0)`,
+`get_feature_metadata`, `has_feature(name: autossl)`, `has_features_like(pattern: mail, is_regex: 0)`,
+`list_features_like(pattern: mail, is_regex: 0)`, `php_get_vhost_versions`,
+`php_ini_get_user_basic_directives(type: home)`, `php_ini_get_user_content(type: home)`,
+and `php_ini_get_user_paths`. INI text remains in memory and is captured only as its structural type.
 
 Unlisted optional arguments are omitted. The Email probes observe default
 behavior; explicit flags, filters and selection behavior are covered separately
@@ -102,8 +110,8 @@ separate evidence cases.
 The separate `--mysql-fixture` mode temporarily creates two databases and two
 database users on the designated `npr` account, with one pair linked by `SELECT`
 privileges and one unlinked pair. The `mysql-npr-linked-unlinked-v2` recipe runs
-the 47 catalog probes plus two `get_privileges_on_database` GETs bound to the
-linked pair, for 49 read observations across 28 operations. It then removes only its own exact resources
+the 67 catalog probes plus two `get_privileges_on_database` GETs bound to the
+linked pair, for 69 read observations across 38 operations. It then removes only its own exact resources
 and verifies their absence. It requires an additional mutation opt-in:
 
 ```sh
@@ -194,7 +202,7 @@ the exact requested expiry, accepting its observed decimal-string representation
 as well as the documented integer. The token and any raw response data remain
 in memory. Exact guards restrict every request to this recipe and its targets.
 
-The 47 baseline catalog probes use their existing discrepancy policy.
+The 67 baseline catalog probes use their existing discrepancy policy.
 Five additional observations—one WHM version request for provenance, plus both
 Quota operations on both routes—are stored under `finite_quota`, with the fixed
 scenario `finite-quota-disposable-v1` and a separate assessment. Historical `npr`
@@ -330,11 +338,12 @@ this implementation.
 
 ### MySQL probe plumbing pilot
 
-`ProbeCatalog::parameterlessUapiPair()` binds one explicit generated-method callback
-to direct UAPI and the fixed `npr` WHM bridge, in that order. Only the two MySQL
-inventory operations use it. Module/function names remain code-owned, and both
-probes pass through the existing strict recipe checks. It accepts no operation
-arguments; payload expectations stay in the independently authored tests.
+`ProbeCatalog::readOnlyUapiPair()` binds one explicit generated-method callback
+to direct UAPI and the fixed `npr` WHM bridge, in that order. The original pilot
+covered two MySQL inventory operations; the helper also binds reviewed arguments
+for later read slices. Module/function names and exact argument values remain
+code-owned, and both probes pass through the strict recipe checks. Payload
+expectations stay in independently authored tests.
 
 The pilot (`whm-api-client-8x0.10.4`, baseline `7247113`) measures:
 
@@ -478,3 +487,25 @@ server change, not part of this lifecycle recipe.
 
 A short or failed initial temporary-file write has no complete recovery file;
 that separate resilience improvement is tracked in `whm-api-client-8x0.2.13`.
+
+When a present payload fails every alternative of its effective root union, the
+record also includes optional `payload_alternatives`. Each entry identifies the
+zero-based alternative `index`, its `sha256` (SHA-256 of the JSON-encoded checked
+type spec), and a separate structural `paths`/`discrepancies` analysis. These
+candidate analyses use the same original response, expose only that checked
+alternative's static field names, and wildcard unknown descendants. They do not
+select an alternative, accept a payload, or change the primary opaque union
+fingerprint, probe outcome, or discrepancy gate. They cannot recover field names
+from older masked artifacts; further diagnosis requires a new reviewed run.
+
+## Reviewed DomainInfo, Features and LangPHP read-only capture
+
+The [reviewed integrated capture](../../docs/api/evidence/2026-10-30-domain-features-php-reviewed.json)
+ran the exact 67-probe GET-only catalog once at committed code `27abfe6` after
+normal integration of the reviewed MySQL, FTP and PostgreSQL sections. All 67
+HTTP/API/payload observations pass on `11.138.0.19`, including both mailbox counts.
+The command exits 1 for strict review: 12 unknown-field entries across 10
+unexpected observations, zero acknowledgments and two stale Quota acknowledgments.
+Historical artifacts remain unchanged; findings are not waived or retried away.
+This run includes no PHP mutation. INI write/read behavior and the omitted
+empty-string userdirprotect variant retain their offline/documentation limits.

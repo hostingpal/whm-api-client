@@ -19,7 +19,7 @@ final class EmailSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [],
-        'returns' => ['type' => 'int'],
+        'returns' => ['type' => 'int', 'accept' => ['numeric-string']],
     ];
 
     public const LIST_DOMAIN_FORWARDERS = [

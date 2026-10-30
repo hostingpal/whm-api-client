@@ -73,7 +73,10 @@ final class OperationRunner
      * which returns null and ignores any payload. A missing key is a generator
      * defect. When a payload is declared, an omitted data member is invalid; a
      * nullable spec accepts only an explicit null. An "optional" spec instead
-     * returns null for an omitted or null data member without validating it. An
+     * returns null for an omitted or null data member without validating it. Typed
+     * unchecked UAPI operations still require integer 0/1 status before these
+     * result rules; an invalid status raises InvalidResponseException with the
+     * captured metadata, outside payload mismatch classification. An
      * unwrapped field must be present in the validated object.
      *
      * The response reaching this point already passed the envelope checks and the
@@ -84,12 +87,19 @@ final class OperationRunner
      * retaining the explicit unvalidated payload on PayloadMismatchException.
      *
      * @param array<mixed> $spec
+     * @throws InvalidResponseException If a typed unchecked UAPI status is not integer 0 or 1.
      * @throws PayloadMismatchException If the payload does not satisfy the spec.
      * @throws LogicException If the spec is malformed.
      */
     public static function result(array $spec, #[SensitiveParameter] ApiResponse $response): mixed
     {
         $returns = self::returns($spec);
+        if (OperationSpec::outcome($spec) === OutcomePolicy::Unchecked && isset($spec['module'])) {
+            $status = $response->metadata->uapiStatus();
+            if ($status !== 0 && $status !== 1) {
+                throw new InvalidResponseException('Missing or invalid UAPI outcome.', $response->metadata);
+            }
+        }
         if ($returns === null) {
             return null;
         }

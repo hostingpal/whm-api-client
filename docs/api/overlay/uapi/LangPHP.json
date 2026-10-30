@@ -3,14 +3,433 @@
   "family": "uapi",
   "group": "LangPHP",
   "operations": {
-    "uapi:LangPHP/php_get_domain_handler": {"unwrap": "php_handler", "probe": {"phase": "read-only", "arguments": {"type": "home"}, "routes": ["direct-uapi", "bridged-uapi"], "expected": "success"}, "notes": [{"kind": "documented", "text": "Requires EasyApache 4 and the WebServer role."}]},
-    "uapi:LangPHP/php_get_impacted_domains": {
-      "params": {"domain": {"php": "domains", "encoding": "repeat"}},
-      "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-15", "note": "The pinned domain description says the parameter can be passed multiple times; the list is sent as repeated domain keys (docs/api/source-audit.md, PHP and feature inventory observations)."}],
-      "unwrap": "domains",
-      "notes": [{"kind": "documented", "text": "Requires EasyApache 4 and the WebServer role."}]
+    "uapi:LangPHP/php_get_domain_handler": {
+      "unwrap": "php_handler",
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "type": "home"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires EasyApache 4 and the WebServer role."
+        }
+      ]
     },
-    "uapi:LangPHP/php_get_installed_versions": {"unwrap": "versions", "probe": {"phase": "read-only", "arguments": {}, "routes": ["direct-uapi", "bridged-uapi"], "expected": "success"}, "notes": [{"kind": "documented", "text": "Applies to EasyApache 4 systems and is disabled when the WebServer role is disabled."}]},
-    "uapi:LangPHP/php_get_system_default_version": {"unwrap": "version", "notes": [{"kind": "documented", "text": "Disabling the WebServer role disables this operation."}]}
+    "uapi:LangPHP/php_get_impacted_domains": {
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-15",
+          "note": "The pinned domain description says the parameter can be passed multiple times; the list is sent as repeated domain keys (docs/api/source-audit.md, PHP and feature inventory observations)."
+        }
+      ],
+      "unwrap": "domains",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires EasyApache 4 and the WebServer role."
+        }
+      ]
+    },
+    "uapi:LangPHP/php_get_installed_versions": {
+      "unwrap": "versions",
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Applies to EasyApache 4 systems and is disabled when the WebServer role is disabled."
+        }
+      ]
+    },
+    "uapi:LangPHP/php_get_system_default_version": {
+      "unwrap": "version",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Disabling the WebServer role disables this operation."
+        }
+      ]
+    },
+    "uapi:LangPHP/php_get_vhost_versions": {
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "account": {
+                      "type": "string"
+                    },
+                    "account_owner": {
+                      "type": "string"
+                    },
+                    "documentroot": {
+                      "type": "string"
+                    },
+                    "homedir": {
+                      "type": "string"
+                    },
+                    "main_domain": {
+                      "type": "flag"
+                    },
+                    "php_fpm": {
+                      "type": "flag"
+                    },
+                    "php_fpm_pool_parms": {
+                      "type": "object",
+                      "fields": {
+                        "pm_max_children": {
+                          "type": "int"
+                        },
+                        "pm_max_requests": {
+                          "type": "int"
+                        },
+                        "pm_process_idle_timeout": {
+                          "type": "int"
+                        }
+                      }
+                    },
+                    "phpversion_source": {
+                      "type": "union",
+                      "anyOf": [
+                        {
+                          "type": "list",
+                          "items": {
+                            "type": "object",
+                            "fields": {
+                              "domain": {
+                                "type": "string"
+                              },
+                              "system_default": {
+                                "type": "flag"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "fields": {
+                            "domain": {
+                              "type": "string"
+                            },
+                            "system_default": {
+                              "type": "flag"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "version": {
+                      "type": "string"
+                    },
+                    "vhost": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "fields": {
+                  "account": {
+                    "type": "string"
+                  },
+                  "account_owner": {
+                    "type": "string"
+                  },
+                  "documentroot": {
+                    "type": "string"
+                  },
+                  "homedir": {
+                    "type": "string"
+                  },
+                  "main_domain": {
+                    "type": "flag"
+                  },
+                  "php_fpm": {
+                    "type": "flag"
+                  },
+                  "php_fpm_pool_parms": {
+                    "type": "object",
+                    "fields": {
+                      "pm_max_children": {
+                        "type": "int"
+                      },
+                      "pm_max_requests": {
+                        "type": "int"
+                      },
+                      "pm_process_idle_timeout": {
+                        "type": "int"
+                      }
+                    }
+                  },
+                  "phpversion_source": {
+                    "type": "union",
+                    "anyOf": [
+                      {
+                        "type": "list",
+                        "items": {
+                          "type": "object",
+                          "fields": {
+                            "domain": {
+                              "type": "string"
+                            },
+                            "system_default": {
+                              "type": "flag"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "fields": {
+                          "domain": {
+                            "type": "string"
+                          },
+                          "system_default": {
+                            "type": "flag"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "version": {
+                    "type": "string"
+                  },
+                  "vhost": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned /LangPHP/php_get_vhost_versions responses/200/content/application~1json/schema/properties/result/properties/data has type=array and items properties, while its description says it returns a single object when using vhost. Preserve both precise shapes. phpversion_source is retained as the declared list of optional domain/system_default objects; its stray properties sibling is not used to invent an object variant."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php-compatibility.json",
+              "note": "Both direct/bridged GET records at a07f4f7, artifact SHA-256 ae83e8afa8f3296342c76c225d08b09d4e417e35fc2569f975a8f094b411eced, diagnose the list alternative mismatch precisely at $[].phpversion_source with observed object type. Retain the pinned domain/system_default fields for both list items and object form. No masked key identity or new field is inferred; original failed fingerprints and alternative hashes remain unchanged."
+            }
+          ]
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires EasyApache 4 and the WebServer role; INI operations additionally require MultiPHP enabled. Requests act through the selected account."
+        },
+        {
+          "kind": "documented",
+          "text": "Without vhost the documented result is a virtual-host list; with vhost the prose also documents a single object. Flags remain integer 0/1, row fields are optional, and phpversion_source retains the declared list plus the observed object form with the same pinned fields. No closed PHP package-name enum is imposed."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 phpversion_source is also an object. Preserve that alternative alongside the pinned list; unknown fields are not inferred from masked diagnostics."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": [],
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php-compatibility.json",
+          "note": "Both direct/bridged GET records at a07f4f7, artifact SHA-256 ae83e8afa8f3296342c76c225d08b09d4e417e35fc2569f975a8f094b411eced, diagnose the list alternative mismatch precisely at $[].phpversion_source with observed object type. Retain the pinned domain/system_default fields for both list items and object form. No masked key identity or new field is inferred; original failed fingerprints and alternative hashes remain unchanged."
+        }
+      ]
+    },
+    "uapi:LangPHP/php_ini_get_user_basic_directives": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires EasyApache 4 and the WebServer role; INI operations additionally require MultiPHP enabled. Requests act through the selected account."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "type": "home"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:LangPHP/php_ini_get_user_content": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires EasyApache 4 and the WebServer role; INI operations additionally require MultiPHP enabled. Requests act through the selected account."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns raw INI text in the optional content field. Treat the text as account payload data, potentially containing secrets; no INI parsing or extra URL decoding is performed."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "type": "home"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:LangPHP/php_ini_get_user_paths": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires EasyApache 4 and the WebServer role; INI operations additionally require MultiPHP enabled. Requests act through the selected account."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": [],
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:LangPHP/php_ini_set_user_basic_directives": {
+      "method": "POST",
+      "params": {
+        "directive": {
+          "php": "directives",
+          "encoding": "numbered",
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /LangPHP/php_ini_set_user_basic_directives has x-readonly=false and x-rollback=none. parameters/0 documents directive:<value> strings and incremented directive-1/directive-2 names. Use the shared numbered encoding (directive, directive-1, ...) and form POST; directive values may contain secrets. responses/200/content/application~1json/schema/properties/result/properties/data is the unconstrained schema {}, so preserve any present JSON value rather than inventing null-only or void semantics."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires EasyApache 4 and the WebServer role; INI operations additionally require MultiPHP enabled. Requests act through the selected account."
+        },
+        {
+          "kind": "documented",
+          "text": "Values use directive:value strings. Multiple values use directive, directive-1, and so on. Directive values are sensitive and are form encoded in POST; the operation declares no rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned data schema is unconstrained: preserve any present JSON payload, including null, false, zero or opaque objects. An absent data member is a mismatch; this method does not discard the response."
+        }
+      ]
+    },
+    "uapi:LangPHP/php_ini_set_user_content": {
+      "method": "POST",
+      "params": {
+        "content": {
+          "sensitive": true
+        },
+        "type": {
+          "enum_doc": false
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /LangPHP/php_ini_set_user_content has x-readonly=false and x-rollback=none. Its content string replaces account INI content and may contain secrets, requiring form POST. parameters/1/schema/enum says host/vhost while its description says home/vhost; retain a string input without silently correcting the enum or choosing a server default. The data schema is a nullable object although the prose says always null; retain nullable opaque object validation."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires EasyApache 4 and the WebServer role; INI operations additionally require MultiPHP enabled. Requests act through the selected account."
+        },
+        {
+          "kind": "documented",
+          "text": "Replaces the selected INI content; there is no rollback. The client form-encodes the supplied content once. The pinned example is percent-encoded, and the server write/read round trip remains unverified. The content argument is sensitive; empty text is sent rather than omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned type description says home/vhost while its enum says host/vhost. This discrepancy is not silently resolved; the method forwards the supplied string. With type=vhost, supply vhost."
+        },
+        {
+          "kind": "documented",
+          "text": "The response prose says always null, but its schema permits a nullable object. Preserve null or opaque object fields; absent data remains a mismatch."
+        }
+      ]
+    },
+    "uapi:LangPHP/php_set_vhost_versions": {
+      "method": "POST",
+      "params": {
+        "vhost": {
+          "php": "vhosts",
+          "encoding": "repeat"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /LangPHP/php_set_vhost_versions has x-readonly=false and x-rollback=none. parameters/1 documents duplicate or incremented vhost parameters. Use duplicate vhost keys for multiple values with the shared repeat encoder and send all operation fields as form POST."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires EasyApache 4 and the WebServer role. Changes the PHP version for the supplied account-owned virtual hosts; the operation declares no rollback. Duplicate vhost keys encode the vhosts list. The optional vhosts result field lists changed virtual hosts; no version package-name enum is inferred."
+        }
+      ]
+    }
   }
 }

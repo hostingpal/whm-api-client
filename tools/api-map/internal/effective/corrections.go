@@ -253,7 +253,7 @@ var acceptable = map[string]map[string]bool{
 	"int":    {"numeric-string": true},
 	"number": {"numeric-string": true},
 	"bool":   {"int-flag": true, "string-flag": true},
-	"flag":   {"string-flag": true, "bool": true},
+	"flag":   {"string-flag": true, "bool": true, "empty-string": true},
 }
 
 // checkAccept rejects accept tokens the spec's type does not admit and

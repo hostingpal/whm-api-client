@@ -9,6 +9,7 @@ use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
+use LogicException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Client\ClientInterface;
 use RuntimeException;
@@ -23,13 +24,17 @@ use Throwable;
  *     revision: string, source_hashes: array{whm1: string, uapi: string}, map_sha256: string,
  *     generator_tree: string, overlay_sha256: string
  * }
+ * @phpstan-type Alternative array{
+ *     index: int, sha256: string, paths: array<string, list<string>>,
+ *     discrepancies: list<array{path: string, kind: string}>
+ * }
  * @phpstan-type Record array{
  *     operation: string, variant: string, route: string, method: string|null, server_version: string|null,
  *     observed_at: string, revision: string, source_sha256: string, map_sha256: string, generator_tree: string,
  *     overlay_sha256: string, effective_contract_sha256: string, http_status: int|null,
  *     api_outcome: string, payload_validation: string, probe_outcome: string, failure_kind: string|null,
  *     response_paths: array<string, list<string>>, payload_paths: array<string, list<string>>,
- *     discrepancies: list<array{path: string, kind: string}>
+ *     discrepancies: list<array{path: string, kind: string}>, payload_alternatives?: list<Alternative>
  * }
  */
 final readonly class EvidenceRunner
@@ -210,6 +215,28 @@ final readonly class EvidenceRunner
         $analysis = Fingerprint::analyze($payload, $present, $type);
         $record['payload_paths'] = $analysis['paths'];
         $record['discrepancies'] = $record['api_outcome'] === 'success' ? $analysis['discrepancies'] : [];
+        // The primary union analysis stays opaque when no alternative validates. Candidate diagnostics
+        // only expose static names in each already-checked alternative; they never select or accept one.
+        if (
+            $present && ($type['type'] ?? null) === 'union'
+            && $analysis['discrepancies'] === [['path' => '$', 'kind' => 'type_mismatch']]
+        ) {
+            $alternatives = $type['anyOf'] ?? null;
+            if (!is_array($alternatives)) {
+                throw new LogicException('Missing checked union alternatives.');
+            }
+            $record['payload_alternatives'] = [];
+            foreach ($alternatives as $index => $alternative) {
+                if (!is_int($index) || !is_array($alternative)) {
+                    throw new LogicException('Invalid checked union alternative.');
+                }
+                $record['payload_alternatives'][] = [
+                    'index' => $index,
+                    'sha256' => hash('sha256', json_encode($alternative, JSON_THROW_ON_ERROR)),
+                    ...Fingerprint::analyze($payload, true, $alternative),
+                ];
+            }
+        }
         $record['response_paths'] = Fingerprint::analyze($document, true, self::envelopeType($probe, $type))['paths'];
     }
 

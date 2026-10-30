@@ -18,7 +18,17 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  * according to the configured credentials, with a single attempt and no retries. The handle clears responseMeta()
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
+ * @phpstan-type GetFeatureMetadataResult list<array{
+ *     id?: string,
+ *     is_plugin?: 0|1,
+ *     name?: string,
+ * }>
+ * @phpstan-type HasFeatureResult array<array-key, mixed>|int|null
+ * @phpstan-type HasFeaturesLikeResult array{
+ *     has_matching_features?: 0|1,
+ * }|null
  * @phpstan-type ListFeaturesResult array<array-key, 0|1>
+ * @phpstan-type ListFeaturesLikeResult list<string>|null
  */
 final readonly class Features
 {
@@ -30,6 +40,91 @@ final readonly class Features
      */
     public function __construct(private Closure $run)
     {
+    }
+
+    /**
+     * Return cPanel account's features' metadata.
+     *
+     * This function lists the details of a cPanel account's available feature lists.
+     *
+     * Documented: Lists this account's available feature metadata; id, name and integer is_plugin fields may be
+     * omitted. Third-party feature IDs are not a closed enumeration.
+     *
+     * Observed: Observed quoted 0/1 is_plugin values normalize to integer flags; other numeric strings remain invalid.
+     *
+     * API-map identity: uapi:Features/get_feature_metadata#GET (wire name get_feature_metadata).
+     *
+     * @return GetFeatureMetadataResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/cpanel-features/features-get_feature_metadata
+     */
+    public function getFeatureMetadata(): array
+    {
+        /** @var GetFeatureMetadataResult $result Validated against FeaturesSpec::GET_FEATURE_METADATA. */
+        $result = ($this->run)(FeaturesSpec::GET_FEATURE_METADATA, []);
+
+        return $result;
+    }
+
+    /**
+     * Validate cPanel account's feature access.
+     *
+     * This function checks whether a cPanel account has access to a feature.
+     *
+     * Documented: This operation uses UAPI status as the feature-access result: inspect responseMeta()->uapiStatus()
+     * after the call (1 means enabled; 0 with no errors means absent or disabled). Status must be integer 0 or 1.
+     * Nonempty errors means the call failed, not that the feature is disabled; inspect responseMeta()->uapiErrors()
+     * alongside status. A UAPI status of 0 is accepted; an outer WHM bridge failure still throws.
+     *
+     * Documented: The pinned data schema is a nullable opaque object, with null in the documented access examples.
+     * Preserve explicit null and object fields; absent data is a payload mismatch. No boolean payload is invented.
+     *
+     * Observed: Observed data may also be an integer of unspecified meaning. Preserve the integer without inferring a
+     * closed flag enum or converting numeric strings; the feature-access result remains UAPI status.
+     *
+     * API-map identity: uapi:Features/has_feature#GET (wire name has_feature).
+     *
+     * @param string $name The feature's name.
+     * @return HasFeatureResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the envelope was accepted but the payload differs from the contract;
+     *     the outcome is not checked.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/cpanel-features/features-has_feature
+     */
+    public function hasFeature(string $name): array|int|null
+    {
+        /** @var HasFeatureResult $result Validated against FeaturesSpec::HAS_FEATURE. */
+        $result = ($this->run)(FeaturesSpec::HAS_FEATURE, ['name' => $name]);
+
+        return $result;
+    }
+
+    /**
+     * Return whether queried features are enabled.
+     *
+     * This function allows you to search for cPanel account features and determine whether those features are enabled.
+     *
+     * Documented: Only enabled matching features count. has_matching_features remains an optional integer 0/1 flag; the
+     * entire result may be null. Omitted isRegex preserves the server default; false is sent explicitly as 0.
+     *
+     * API-map identity: uapi:Features/has_features_like#GET (wire name has_features_like).
+     *
+     * @param string $pattern The feature's name that you wish to search.
+     * @param bool|null $isRegex Whether the `pattern` parameter's value is a regular expression. Null omits it.
+     * @return HasFeaturesLikeResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/cpanel-features/features-has_features_like
+     */
+    public function hasFeaturesLike(string $pattern, ?bool $isRegex = null): ?array
+    {
+        /** @var HasFeaturesLikeResult $result Validated against FeaturesSpec::HAS_FEATURES_LIKE. */
+        $result = ($this->run)(FeaturesSpec::HAS_FEATURES_LIKE, ['pattern' => $pattern, 'isRegex' => $isRegex]);
+
+        return $result;
     }
 
     /**
@@ -49,6 +144,33 @@ final readonly class Features
     {
         /** @var ListFeaturesResult $result Validated against FeaturesSpec::LIST_FEATURES. */
         $result = ($this->run)(FeaturesSpec::LIST_FEATURES, []);
+
+        return $result;
+    }
+
+    /**
+     * Return queried cPanel account features.
+     *
+     * This function allows you to search for enabled cPanel account features and lists those features in the returned
+     * payload.
+     *
+     * Documented: Returns only enabled feature names that match the pattern. Preserve the distinct null and empty-list
+     * results; omission of isRegex leaves the default in effect, while false sends 0.
+     *
+     * API-map identity: uapi:Features/list_features_like#GET (wire name list_features_like).
+     *
+     * @param string $pattern The feature's name that you wish to search.
+     * @param bool|null $isRegex Whether the `pattern` parameter's value is a regular expression. Null omits it.
+     * @return ListFeaturesLikeResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/cpanel-features/features-list_features_like
+     */
+    public function listFeaturesLike(string $pattern, ?bool $isRegex = null): ?array
+    {
+        /** @var ListFeaturesLikeResult $result Validated against FeaturesSpec::LIST_FEATURES_LIKE. */
+        $result = ($this->run)(FeaturesSpec::LIST_FEATURES_LIKE, ['pattern' => $pattern, 'isRegex' => $isRegex]);
 
         return $result;
     }

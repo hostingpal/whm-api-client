@@ -13,6 +13,60 @@ namespace HostingPal\WhmApiClient\Api\Uapi\Spec;
  */
 final class FeaturesSpec
 {
+    public const GET_FEATURE_METADATA = [
+        'function' => 'get_feature_metadata',
+        'module' => 'Features',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'id' => ['type' => 'string'],
+                    'is_plugin' => ['type' => 'flag', 'accept' => ['string-flag']],
+                    'name' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const HAS_FEATURE = [
+        'function' => 'has_feature',
+        'module' => 'Features',
+        'method' => 'GET',
+        'outcome' => 'unchecked',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'union',
+            'anyOf' => [
+                ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+                ['type' => 'int'],
+            ],
+        ],
+    ];
+
+    public const HAS_FEATURES_LIKE = [
+        'function' => 'has_features_like',
+        'module' => 'Features',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'pattern' => ['name' => 'pattern', 'encoding' => 'scalar'],
+            'isRegex' => ['name' => 'is_regex', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'nullable' => true,
+            'fields' => [
+                'has_matching_features' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
     public const LIST_FEATURES = [
         'function' => 'list_features',
         'module' => 'Features',
@@ -20,5 +74,17 @@ final class FeaturesSpec
         'outcome' => 'flag',
         'params' => [],
         'returns' => ['type' => 'map', 'values' => ['type' => 'flag']],
+    ];
+
+    public const LIST_FEATURES_LIKE = [
+        'function' => 'list_features_like',
+        'module' => 'Features',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'pattern' => ['name' => 'pattern', 'encoding' => 'scalar'],
+            'isRegex' => ['name' => 'is_regex', 'encoding' => 'bool'],
+        ],
+        'returns' => ['type' => 'list', 'nullable' => true, 'items' => ['type' => 'string']],
     ];
 }

@@ -1554,3 +1554,156 @@ new artifact was written with mode 0600, and no capture temporary files remain.
 No operation was replayed or retried. Live follow-up `whm-api-client-8x0.2.14`
 is complete; optional short/failed temporary-write recovery remains
 `whm-api-client-8x0.2.13`.
+
+
+## 2026-10-30 complete DomainInfo, Features and LangPHP contracts
+
+This slice adds 13 generated methods: both remaining DomainInfo operations, four
+Features operations and seven LangPHP operations. The three modules now contain
+5, 5 and 11 methods respectively. With the reviewed MySQL, FTP and PostgreSQL
+sections integrated, coverage is 144 operations across 15 groups.
+Pinned snapshots are unchanged. Overlay evidence identifies the domain list/hash
+container discrepancies, quoted domain flags, the PHP vhost list/single-record
+alternatives and malformed phpversion_source schema. The INI content setter's
+host/home conflict remains visible; no unsupported enum or empty-string flag
+coercion is inferred.
+
+Features/has_feature's pinned examples use UAPI status 0 for absent/disabled access,
+so that operation declares unchecked UAPI outcome semantics and retains its
+nullable object payload. The WHM bridge still checks its outer result. Independent
+fixtures cover literal requests and populated, omitted, null, empty, false and zero
+responses through wrapped direct, bare direct and bridged envelopes. Response-trace
+regressions demonstrate that both raw HTTP responses and decoded payloads must be
+sensitive even when a read returns a secret. The generated INI setter parameters
+are also sensitive. The first stack commit adds evidence-required parameter
+requiredness corrections for prose-documented alternatives used by subsequent
+Email and SSL slices.
+
+The reviewed read-only catalog adds 20 probes across the ten new read operations,
+binding npr/npr.rs, domain hash output, home INI scope and fixed feature searches.
+It now contains 67 probes across 37 operations. This is a runnable recipe count;
+live outcomes are recorded separately. The three LangPHP mutations are offline
+contract coverage until a dedicated reversible configuration fixture is observed.
+
+
+### Initial runtime observations and compatibility corrections
+
+The [initial 67-probe artifact](evidence/2026-10-30-domain-features-php.json)
+records c79ed1d on cPanel 11.138.0.19, SHA-256
+`d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f`.
+It contains 59 passed probes and eight payload failures, with all original structural
+observations retained. No mutation ran. The CLI subsequently failed while printing
+an absent static label, after the evidence file had already been saved; label
+coverage now has an independent regression test.
+
+Observed single-domain customlog/scriptalias lists extend their pinned object
+forms without inventing item fields. Documented flags admit bounded quoted 0/1,
+and integer ports admit lossless numeric strings. Feature metadata also returned
+quoted flags; has_feature returned an integer rather than its documented nullable
+object. That integer is preserved without guessing its meaning or turning it into
+a boolean. The root PHP-version union failure did not identify its offending field:
+its original fingerprint correctly masks all keys, so no correction was inferred.
+
+A failed root union can now additionally record analyses of its checked alternatives,
+identified by index and contract hash, from the same original response. These
+supplemental structural diagnostics retain unknown-key masking and never alter the
+primary fingerprint, runtime validation or discrepancy gate. They do not recover or
+rewrite the first artifact. Unknown domain and INI fields remain unresolved under
+8x0.2.17, as do the three PHP mutations' live behavior.
+
+
+The [compatibility run](evidence/2026-10-30-domain-features-php-compatibility.json)
+at a07f4f7 retained 67 GET observations on 11.138.0.19: 65 passed and the two PHP
+vhost probes still failed. Its SHA-256 is
+`ae83e8afa8f3296342c76c225d08b09d4e417e35fc2569f975a8f094b411eced`.
+The new candidate analysis identifies only `$[].phpversion_source` as the list
+alternative's type mismatch, with an observed object. A narrow correction now
+preserves both the pinned list and that object form using the same documented
+optional fields. No unknown key name or value is inferred. The strict evidence
+assessment remains failed for original mismatches and unacknowledged extras;
+this historical artifact is not rewritten after correcting the contract.
+
+
+### Corrected read-only verification
+
+The [corrected run](evidence/2026-10-30-domain-features-php-corrected.json) at
+7b172f3 on 11.138.0.19 records all 67 API/payload probes passing, including all 20
+new route-specific reads. Artifact SHA-256:
+`50a569139cc932442be93960c322d1afb408164537ef9668a98402651156c2e4`.
+The strict discrepancy assessment still fails: eight DomainInfo/INI observations
+contain unknown fields, and two Quota observations no longer match their historical
+11.138.0.15 acknowledgments. Both old Quota acknowledgments remain stale; no new
+acknowledgment was introduced. The single-domain customlog list also exposes a
+masked extra field. These successful payload calls are not discrepancy-free
+contract evidence. All three artifacts and their original outcomes remain intact.
+
+The first PR's final offline gates pass 4,310 tests and 33,655 assertions, plus
+maximum PHPStan, PHPCS and offline API-map/source/generation verification. The
+three PHP setters remain offline-only; no mutation ran in any of these captures.
+
+### Review corrections and integrated read-only capture
+
+The pinned `domains_data` hash and list examples include empty-string
+`userdirprotect`. Independent copies now exercise both full examples through all
+three envelope forms. The effective domain contracts preserve that exact empty
+string, retain integer and quoted 0/1 flags, and align shared fields across both
+operations and all record kinds. Empty strings carry no invented disabled meaning;
+whitespace and other nonflag strings remain invalid. This is documentation-bound
+compatibility, not a newly observed value on the test account.
+
+Typed unchecked UAPI results now require integer status 0 or 1 before void, optional
+or payload processing. Invalid status raises `InvalidResponseException` with the
+captured current metadata; generic `call()` semantics and outer WHM checks remain
+unchanged. `hasFeature()` callers must inspect errors alongside status: nonempty
+errors describes a failed call, not a disabled feature. INI content `type` uses
+plain string PHPDoc while the host/home discrepancy remains unresolved; content is
+form-encoded once by the client and the server write/read round trip is unverified.
+
+The narrow `countPops()` correction from `8533e95` is included here without the
+expanded Email group. It preserves integer results and normalizes canonical
+PHP-integer-bounded strings. The referenced immutable
+[Email preflight artifact](evidence/2026-10-30-email-section-quota-corrected.json)
+has SHA-256 `c3b795074558ee25cbeb001d09e002efe55942a32abfaa49bc8de03f97df6f31`;
+both count routes failed their prior integer contract, all 17 requests were GET
+and both resources remained `not_started`. No count value, main-account inclusion
+or cause is inferred.
+
+The three existing DomainInfo/Features/LangPHP artifacts remain unchanged. Their
+contract hashes describe their original revisions. The reviewed MySQL, FTP and
+PostgreSQL sections were integrated with a normal merge of `master`, preserving
+all prior source/specs, trace safeguards and immutable evidence. Regeneration
+produces **144 operations across 15 groups**.
+
+At committed integrated code `27abfe6de3626e321a2a806d126d9b7f2f20fcc1`, one
+[reviewed read-only capture](evidence/2026-10-30-domain-features-php-reviewed.json)
+ran the exact 67-probe catalog once on `11.138.0.19`. Artifact SHA-256:
+`f9ba559c0496b88c0c98082435f3e76235e2b8459ebe01d229127cfa2d3e50a8`.
+All 67 requests were GET and HTTP 200; API outcome, payload validation and probe
+outcome pass across 37 operations (7 WHM, 30 direct UAPI and 30 bridged UAPI
+observations). Both count_pops payloads were numeric strings and normalize under
+the reviewed correction. No PHP mutation or other write was executed.
+
+The command correctly exits 1 because strict discrepancy review remains failed:
+zero acknowledged, ten unexpected observations and two stale historical Quota
+acknowledgments. Those observations contain twelve unknown-field entries: two
+Quota entries, two domains_data entries, four single_domain_data entries, two
+basic-directive entries and two INI-path entries. No discrepancy was waived or
+removed and no operation was replayed to clear findings. The DomainInfo/INI
+unknown fields and PHP mutation behavior remain tracked in `8x0.2.17`; the
+existing Quota follow-up and exact acknowledgment policy remain unchanged.
+
+An independent audit checked all 1,794 structural path/type entries, exact catalog
+identities/order/routes/methods, all 67 effective-contract hashes and pinned
+source/map/generator/overlay provenance. Credentials and designated account,
+domain, host and IP values are absent. Every historical evidence JSON from both
+parents remains byte-identical. The test account omitted userdirprotect on both
+operations/routes, so the empty-string compatibility is documentation and offline
+fixture coverage, not a newly observed live value. `has_feature` payloads were integers;
+their meaning and the specific feature-state value are not persisted. Three PHP
+setters, the INI write/read round trip and alternate server configurations remain
+unobserved.
+
+Before capture, Composer validation and the complete PHP gate passed **6,390 tests
+and 51,705 assertions**, including PHPCS and maximum PHPStan. Offline API-map,
+schema-copy/currentness checks, complete Go tests and Go vet also passed.
+External current-head PR review remains the merge gate.

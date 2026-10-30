@@ -3,8 +3,1335 @@
   "family": "uapi",
   "group": "DomainInfo",
   "operations": {
-    "uapi:DomainInfo/list_domains": {"probe": {"phase": "read-only", "arguments": {}, "routes": ["direct-uapi", "bridged-uapi"], "expected": "success"}},
+    "uapi:DomainInfo/list_domains": {
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
     "uapi:DomainInfo/main_domain_builtin_subdomain_aliases": {},
-    "uapi:DomainInfo/primary_domain": {"unwrap": "primary_domain", "probe": {"phase": "read-only", "arguments": {}, "routes": ["direct-uapi", "bridged-uapi"], "expected": "success"}}
+    "uapi:DomainInfo/primary_domain": {
+      "unwrap": "primary_domain",
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:DomainInfo/domains_data": {
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "object",
+                "fields": {
+                  "addon_domains": {
+                    "type": "list",
+                    "items": {
+                      "type": "object",
+                      "fields": {
+                        "all_aliases_valid": {
+                          "type": "flag",
+                          "accept": [
+                            "string-flag"
+                          ]
+                        },
+                        "can_https_redirect": {
+                          "type": "flag",
+                          "accept": [
+                            "string-flag"
+                          ]
+                        },
+                        "documentroot": {
+                          "type": "string"
+                        },
+                        "domain": {
+                          "type": "string"
+                        },
+                        "group": {
+                          "type": "string"
+                        },
+                        "hascgi": {
+                          "type": "flag",
+                          "accept": [
+                            "string-flag"
+                          ]
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "ip": {
+                          "type": "string"
+                        },
+                        "ipv6": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "is_https_redirecting": {
+                          "type": "flag",
+                          "accept": [
+                            "string-flag"
+                          ]
+                        },
+                        "is_temporary": {
+                          "type": "flag",
+                          "accept": [
+                            "string-flag"
+                          ]
+                        },
+                        "no_cache_update": {
+                          "type": "flag",
+                          "accept": [
+                            "string-flag"
+                          ]
+                        },
+                        "owner": {
+                          "type": "string"
+                        },
+                        "serveradmin": {
+                          "type": "string"
+                        },
+                        "serveralias": {
+                          "type": "string"
+                        },
+                        "servername": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "usecanonicalname": {
+                          "type": "string"
+                        },
+                        "user": {
+                          "type": "string"
+                        },
+                        "userdirprotect": {
+                          "type": "flag",
+                          "accept": [
+                            "string-flag",
+                            "empty-string"
+                          ]
+                        },
+                        "customlog": {
+                          "type": "union",
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "fields": {
+                                "format": {
+                                  "type": "string"
+                                },
+                                "target": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            {
+                              "type": "list",
+                              "items": {
+                                "type": "object",
+                                "fields": {
+                                  "format": {
+                                    "type": "string"
+                                  },
+                                  "target": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "ifmodulemodsuphpc": {
+                          "type": "object",
+                          "fields": {
+                            "group": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "scriptalias": {
+                          "type": "union",
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "fields": {
+                                "path": {
+                                  "type": "string"
+                                },
+                                "url": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            {
+                              "type": "list",
+                              "items": {
+                                "type": "object",
+                                "fields": {
+                                  "path": {
+                                    "type": "string"
+                                  },
+                                  "url": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "options": {
+                          "type": "string"
+                        },
+                        "port": {
+                          "type": "int",
+                          "accept": [
+                            "numeric-string"
+                          ]
+                        },
+                        "parked_capable_of_https_redirects": {
+                          "type": "list",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "parked_with_https_redirects": {
+                          "type": "list",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "main_domain": {
+                    "type": "union",
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "fields": {
+                          "all_aliases_valid": {
+                            "type": "flag",
+                            "accept": [
+                              "string-flag"
+                            ]
+                          },
+                          "can_https_redirect": {
+                            "type": "flag",
+                            "accept": [
+                              "string-flag"
+                            ]
+                          },
+                          "documentroot": {
+                            "type": "string"
+                          },
+                          "domain": {
+                            "type": "string"
+                          },
+                          "group": {
+                            "type": "string"
+                          },
+                          "hascgi": {
+                            "type": "flag",
+                            "accept": [
+                              "string-flag"
+                            ]
+                          },
+                          "homedir": {
+                            "type": "string"
+                          },
+                          "ip": {
+                            "type": "string"
+                          },
+                          "ipv6": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "is_https_redirecting": {
+                            "type": "flag",
+                            "accept": [
+                              "string-flag"
+                            ]
+                          },
+                          "is_temporary": {
+                            "type": "flag",
+                            "accept": [
+                              "string-flag"
+                            ]
+                          },
+                          "no_cache_update": {
+                            "type": "flag",
+                            "accept": [
+                              "string-flag"
+                            ]
+                          },
+                          "owner": {
+                            "type": "string"
+                          },
+                          "serveradmin": {
+                            "type": "string"
+                          },
+                          "serveralias": {
+                            "type": "string"
+                          },
+                          "servername": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "usecanonicalname": {
+                            "type": "string"
+                          },
+                          "user": {
+                            "type": "string"
+                          },
+                          "userdirprotect": {
+                            "type": "flag",
+                            "accept": [
+                              "string-flag",
+                              "empty-string"
+                            ]
+                          },
+                          "customlog": {
+                            "type": "union",
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "fields": {
+                                  "format": {
+                                    "type": "string"
+                                  },
+                                  "target": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              {
+                                "type": "list",
+                                "items": {
+                                  "type": "object",
+                                  "fields": {
+                                    "format": {
+                                      "type": "string"
+                                    },
+                                    "target": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "ifmodulemodsuphpc": {
+                            "type": "object",
+                            "fields": {
+                              "group": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "scriptalias": {
+                            "type": "union",
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "fields": {
+                                  "path": {
+                                    "type": "string"
+                                  },
+                                  "url": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              {
+                                "type": "list",
+                                "items": {
+                                  "type": "object",
+                                  "fields": {
+                                    "path": {
+                                      "type": "string"
+                                    },
+                                    "url": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "options": {
+                            "type": "string"
+                          },
+                          "port": {
+                            "type": "int",
+                            "accept": [
+                              "numeric-string"
+                            ]
+                          },
+                          "parked_capable_of_https_redirects": {
+                            "type": "list",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "parked_with_https_redirects": {
+                            "type": "list",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "list",
+                        "items": {
+                          "type": "object",
+                          "fields": {
+                            "all_aliases_valid": {
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
+                            },
+                            "can_https_redirect": {
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
+                            },
+                            "documentroot": {
+                              "type": "string"
+                            },
+                            "domain": {
+                              "type": "string"
+                            },
+                            "group": {
+                              "type": "string"
+                            },
+                            "hascgi": {
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
+                            },
+                            "homedir": {
+                              "type": "string"
+                            },
+                            "ip": {
+                              "type": "string"
+                            },
+                            "ipv6": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "is_https_redirecting": {
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
+                            },
+                            "is_temporary": {
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
+                            },
+                            "no_cache_update": {
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
+                            },
+                            "owner": {
+                              "type": "string"
+                            },
+                            "serveradmin": {
+                              "type": "string"
+                            },
+                            "serveralias": {
+                              "type": "string"
+                            },
+                            "servername": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string"
+                            },
+                            "usecanonicalname": {
+                              "type": "string"
+                            },
+                            "user": {
+                              "type": "string"
+                            },
+                            "userdirprotect": {
+                              "type": "flag",
+                              "accept": [
+                                "string-flag",
+                                "empty-string"
+                              ]
+                            },
+                            "customlog": {
+                              "type": "union",
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "fields": {
+                                    "format": {
+                                      "type": "string"
+                                    },
+                                    "target": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "list",
+                                  "items": {
+                                    "type": "object",
+                                    "fields": {
+                                      "format": {
+                                        "type": "string"
+                                      },
+                                      "target": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "ifmodulemodsuphpc": {
+                              "type": "object",
+                              "fields": {
+                                "group": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            "scriptalias": {
+                              "type": "union",
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "fields": {
+                                    "path": {
+                                      "type": "string"
+                                    },
+                                    "url": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "list",
+                                  "items": {
+                                    "type": "object",
+                                    "fields": {
+                                      "path": {
+                                        "type": "string"
+                                      },
+                                      "url": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "options": {
+                              "type": "string"
+                            },
+                            "port": {
+                              "type": "int",
+                              "accept": [
+                                "numeric-string"
+                              ]
+                            },
+                            "parked_capable_of_https_redirects": {
+                              "type": "list",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "parked_with_https_redirects": {
+                              "type": "list",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "parked_domains": {
+                    "type": "list",
+                    "items": {
+                      "type": "union",
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "object",
+                          "fields": {
+                            "all_aliases_valid": {
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
+                            },
+                            "can_https_redirect": {
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
+                            },
+                            "documentroot": {
+                              "type": "string"
+                            },
+                            "domain": {
+                              "type": "string"
+                            },
+                            "group": {
+                              "type": "string"
+                            },
+                            "hascgi": {
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
+                            },
+                            "homedir": {
+                              "type": "string"
+                            },
+                            "ip": {
+                              "type": "string"
+                            },
+                            "ipv6": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "is_https_redirecting": {
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
+                            },
+                            "is_temporary": {
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
+                            },
+                            "no_cache_update": {
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
+                            },
+                            "owner": {
+                              "type": "string"
+                            },
+                            "serveradmin": {
+                              "type": "string"
+                            },
+                            "serveralias": {
+                              "type": "string"
+                            },
+                            "servername": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string"
+                            },
+                            "usecanonicalname": {
+                              "type": "string"
+                            },
+                            "user": {
+                              "type": "string"
+                            },
+                            "userdirprotect": {
+                              "type": "flag",
+                              "accept": [
+                                "string-flag",
+                                "empty-string"
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "sub_domains": {
+                    "type": "list",
+                    "items": {
+                      "type": "object",
+                      "fields": {
+                        "all_aliases_valid": {
+                          "type": "flag",
+                          "accept": [
+                            "string-flag"
+                          ]
+                        },
+                        "can_https_redirect": {
+                          "type": "flag",
+                          "accept": [
+                            "string-flag"
+                          ]
+                        },
+                        "documentroot": {
+                          "type": "string"
+                        },
+                        "domain": {
+                          "type": "string"
+                        },
+                        "group": {
+                          "type": "string"
+                        },
+                        "hascgi": {
+                          "type": "flag",
+                          "accept": [
+                            "string-flag"
+                          ]
+                        },
+                        "homedir": {
+                          "type": "string"
+                        },
+                        "ip": {
+                          "type": "string"
+                        },
+                        "ipv6": {
+                          "type": "string",
+                          "nullable": true
+                        },
+                        "is_https_redirecting": {
+                          "type": "flag",
+                          "accept": [
+                            "string-flag"
+                          ]
+                        },
+                        "is_temporary": {
+                          "type": "flag",
+                          "accept": [
+                            "string-flag"
+                          ]
+                        },
+                        "no_cache_update": {
+                          "type": "flag",
+                          "accept": [
+                            "string-flag"
+                          ]
+                        },
+                        "owner": {
+                          "type": "string"
+                        },
+                        "serveradmin": {
+                          "type": "string"
+                        },
+                        "serveralias": {
+                          "type": "string"
+                        },
+                        "servername": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "usecanonicalname": {
+                          "type": "string"
+                        },
+                        "user": {
+                          "type": "string"
+                        },
+                        "userdirprotect": {
+                          "type": "flag",
+                          "accept": [
+                            "string-flag",
+                            "empty-string"
+                          ]
+                        },
+                        "customlog": {
+                          "type": "union",
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "fields": {
+                                "format": {
+                                  "type": "string"
+                                },
+                                "target": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            {
+                              "type": "list",
+                              "items": {
+                                "type": "object",
+                                "fields": {
+                                  "format": {
+                                    "type": "string"
+                                  },
+                                  "target": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "ifmodulemodsuphpc": {
+                          "type": "object",
+                          "fields": {
+                            "group": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "scriptalias": {
+                          "type": "union",
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "fields": {
+                                "path": {
+                                  "type": "string"
+                                },
+                                "url": {
+                                  "type": "string"
+                                }
+                              }
+                            },
+                            {
+                              "type": "list",
+                              "items": {
+                                "type": "object",
+                                "fields": {
+                                  "path": {
+                                    "type": "string"
+                                  },
+                                  "url": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "options": {
+                          "type": "string"
+                        },
+                        "port": {
+                          "type": "int",
+                          "accept": [
+                            "numeric-string"
+                          ]
+                        },
+                        "parked_capable_of_https_redirects": {
+                          "type": "list",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "parked_with_https_redirects": {
+                          "type": "list",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "parked_capable_of_https_redirects": {
+                    "type": "list",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "parked_with_https_redirects": {
+                    "type": "list",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "all_aliases_valid": {
+                      "type": "flag",
+                      "accept": [
+                        "string-flag"
+                      ]
+                    },
+                    "can_https_redirect": {
+                      "type": "flag",
+                      "accept": [
+                        "string-flag"
+                      ]
+                    },
+                    "documentroot": {
+                      "type": "string"
+                    },
+                    "domain": {
+                      "type": "string"
+                    },
+                    "group": {
+                      "type": "string"
+                    },
+                    "hascgi": {
+                      "type": "flag",
+                      "accept": [
+                        "string-flag"
+                      ]
+                    },
+                    "homedir": {
+                      "type": "string"
+                    },
+                    "ip": {
+                      "type": "string"
+                    },
+                    "ipv6": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "is_https_redirecting": {
+                      "type": "flag",
+                      "accept": [
+                        "string-flag"
+                      ]
+                    },
+                    "is_temporary": {
+                      "type": "flag",
+                      "accept": [
+                        "string-flag"
+                      ]
+                    },
+                    "no_cache_update": {
+                      "type": "flag",
+                      "accept": [
+                        "string-flag"
+                      ]
+                    },
+                    "owner": {
+                      "type": "string"
+                    },
+                    "serveradmin": {
+                      "type": "string"
+                    },
+                    "serveralias": {
+                      "type": "string"
+                    },
+                    "servername": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "usecanonicalname": {
+                      "type": "string"
+                    },
+                    "user": {
+                      "type": "string"
+                    },
+                    "userdirprotect": {
+                      "type": "flag",
+                      "accept": [
+                        "string-flag",
+                        "empty-string"
+                      ]
+                    },
+                    "customlog": {
+                      "type": "union",
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "fields": {
+                            "format": {
+                              "type": "string"
+                            },
+                            "target": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        {
+                          "type": "list",
+                          "items": {
+                            "type": "object",
+                            "fields": {
+                              "format": {
+                                "type": "string"
+                              },
+                              "target": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "ifmodulemodsuphpc": {
+                      "type": "object",
+                      "fields": {
+                        "group": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "scriptalias": {
+                      "type": "union",
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "fields": {
+                            "path": {
+                              "type": "string"
+                            },
+                            "url": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        {
+                          "type": "list",
+                          "items": {
+                            "type": "object",
+                            "fields": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "url": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "options": {
+                      "type": "string"
+                    },
+                    "port": {
+                      "type": "int",
+                      "accept": [
+                        "numeric-string"
+                      ]
+                    },
+                    "parked_capable_of_https_redirects": {
+                      "type": "list",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "parked_with_https_redirects": {
+                      "type": "list",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "The pinned /DomainInfo/domains_data responses/200/content/application~1json/schema/properties/result/properties/data oneOf references HashOutput and ListOutput. ListOutput omits the array container, whereas parameter format=list and examples/list/value/data explicitly contain a list. HashOutput main_domain describes items while examples/hash/value/data/addon_domains/2/main_domain is an object. The effective contract retains both documented containers and the explicit example object. Components Contents and MainDomainContents supply optional row fields; list examples additionally supply options, numeric-string port, string flags, customlog/scriptalias lists, and separate parked redirect name lists. Parked domain names also occur as strings in the hash example. These are pinned documentation discrepancies, not live observations."
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
+            }
+          ]
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Returns a hash of domain-type containers or a list according to format. User-data files can omit any documented field. Explicit null IPv6 remains null. Pinned prose/schema and examples disagree on several containers; the effective shape preserves the documented hash/list variants and example log/alias lists."
+        },
+        {
+          "kind": "documented",
+          "text": "Quoted 0/1 domain flags and port values normalize to integers. The documented empty-string userdirprotect value stays an empty string, distinct from 0; other nonflag strings remain invalid. Shared flag fields use the same wire compatibility across record kinds and singleDomainData()."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "format": "hash",
+          "hide_temporary_domains": "0",
+          "return_https_redirects_status": "0"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:DomainInfo/single_domain_data": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Only query an account-owned main, addon or subdomain; aliases have no user-data file and must be queried through their associated main or addon domain. Any documented result field may be omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned parameter name is return_https_redirect_status (singular redirect); some return descriptions incorrectly use return_https_redirects_status. The request uses the declared singular parameter. Hiding a requested temporary domain causes an API error."
+        },
+        {
+          "kind": "observed",
+          "text": "Observed customlog and scriptalias may be lists as well as the pinned objects. Quoted 0/1 hascgi and phpopenbasedirprotect flags normalize to integers, as do lossless integer port strings. Unknown fields remain outside the contract."
+        },
+        {
+          "kind": "documented",
+          "text": "Shared domain flags accept the quoted 0/1 forms documented by the domains_data examples. The userdirprotect empty-string variant is preserved without mapping it to 0; other nonflag strings remain invalid. Optional fields remain omitted when absent."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "domain": "npr.rs",
+          "hide_temporary_domains": "0",
+          "return_https_redirect_status": "0"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      },
+      "response": {
+        "customlog": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "object",
+                "fields": {
+                  "domain": {
+                    "type": "string"
+                  },
+                  "target": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "domain": {
+                      "type": "string"
+                    },
+                    "target": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Observed customlog as a list of objects. Preserve the pinned single_domain_data object fields as both object and list items; masked item keys cannot justify extra fields. The separate pinned domains_data examples also contain customlog lists, but do not redefine this operation's item keys. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
+              "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+            }
+          ]
+        },
+        "scriptalias": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "object",
+                "fields": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Observed scriptalias as a list of objects. Preserve the pinned single_domain_data object fields as both object and list items; masked item keys cannot justify extra fields. The separate pinned domains_data examples also contain scriptalias lists, but do not redefine this operation's item keys. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
+              "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+            }
+          ]
+        },
+        "hascgi": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Observed hascgi as numeric-string. The pinned field is an integer 0/1 flag, so accept only quoted 0 or 1 and normalize to the pinned integer contract; other numeric strings remain invalid. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
+              "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+            }
+          ]
+        },
+        "phpopenbasedirprotect": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Observed phpopenbasedirprotect as numeric-string. The pinned field is an integer 0/1 flag, so accept only quoted 0 or 1 and normalize to the pinned integer contract; other numeric strings remain invalid. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
+              "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+            }
+          ]
+        },
+        "port": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Observed port as numeric-string. Preserve the pinned integer port contract and existing bounds; accept only lossless integer conversion, not fractional values. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
+              "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+            }
+          ]
+        },
+        "all_aliases_valid": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
+            }
+          ]
+        },
+        "can_https_redirect": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
+            }
+          ]
+        },
+        "is_https_redirecting": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
+            }
+          ]
+        },
+        "is_temporary": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
+            }
+          ]
+        },
+        "userdirprotect": {
+          "accept": [
+            "string-flag",
+            "empty-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Observed customlog as a list of objects. Preserve the pinned single_domain_data object fields as both object and list items; masked item keys cannot justify extra fields. The separate pinned domains_data examples also contain customlog lists, but do not redefine this operation's item keys. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
+          "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
+        }
+      ]
+    }
   }
 }

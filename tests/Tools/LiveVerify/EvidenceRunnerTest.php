@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
 
+use HostingPal\WhmApiClient\Api\Uapi\Spec\LangPhpSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\AccountsSpec;
 use HostingPal\WhmApiClient\Client as ApiClient;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\Tools\LiveVerify\CaptureClient;
+use HostingPal\WhmApiClient\Tools\LiveVerify\DiscrepancyPolicy;
 use HostingPal\WhmApiClient\Tools\LiveVerify\EvidenceRunner;
 use HostingPal\WhmApiClient\Tools\LiveVerify\Probe;
 use HostingPal\WhmApiClient\Tools\LiveVerify\ProbeCatalog;
@@ -22,6 +24,81 @@ use RuntimeException;
 final class EvidenceRunnerTest extends TestCase
 {
     private const ROOT = __DIR__ . '/../../..';
+
+    public function testFailedRootUnionAddsCheckedAlternativeDiagnosticsWithoutReplayOrUnmasking(): void
+    {
+        $http = new Client();
+        $http->addResponse(new Response(200, [], '{"status":1,"data":[{'
+            . '"php_fpm":"private-value",'
+            . '"private-key":{"phpversion_source":"private-value"}}]}'));
+        $probes = array_values(array_filter(
+            ProbeCatalog::load(self::ROOT),
+            static fn (Probe $probe): bool => $probe->operation === 'uapi:LangPHP/php_get_vhost_versions'
+                && $probe->route === 'direct-uapi',
+        ));
+        $records = (new EvidenceRunner($http, self::context()))->run(
+            $probes,
+            '1',
+            ['whm' => 'synthetic-whm', 'cpanel' => 'synthetic-cpanel'],
+        );
+        self::assertCount(1, $http->getRequests());
+        self::assertCount(1, $records);
+        $record = $records[0];
+        self::assertSame('failed', $record['probe_outcome']);
+        self::assertSame('payload_mismatch', $record['failure_kind']);
+        self::assertSame('failed', $record['payload_validation']);
+        self::assertSame([['path' => '$', 'kind' => 'type_mismatch']], $record['discrepancies']);
+        self::assertSame([
+            '$' => ['list'], '$[]' => ['object'], '$[].*' => ['object', 'string'],
+            '$[].*.*' => ['string'],
+        ], $record['payload_paths']);
+        self::assertArrayHasKey('payload_alternatives', $record);
+        $alternatives = $record['payload_alternatives'] ?? [];
+        self::assertCount(2, $alternatives);
+        [$list, $object] = $alternatives;
+        self::assertSame(0, $list['index']);
+        self::assertSame(1, $object['index']);
+        foreach ($alternatives as $index => $alternative) {
+            self::assertSame(hash('sha256', json_encode(
+                LangPhpSpec::PHP_GET_VHOST_VERSIONS['returns']['anyOf'][$index],
+                JSON_THROW_ON_ERROR,
+            )), $alternative['sha256']);
+        }
+        self::assertSame([
+            ['path' => '$[].*', 'kind' => 'unknown_field'],
+            ['path' => '$[].php_fpm', 'kind' => 'type_mismatch'],
+        ], $list['discrepancies']);
+        self::assertSame(['string'], $list['paths']['$[].php_fpm']);
+        self::assertSame(['string'], $list['paths']['$[].*.*']);
+        self::assertArrayNotHasKey('$[].*.phpversion_source', $list['paths']);
+        self::assertSame($record['payload_paths'], $object['paths']);
+        self::assertSame([['path' => '$', 'kind' => 'type_mismatch']], $object['discrepancies']);
+        self::assertStringNotContainsString('private-', json_encode($record, JSON_THROW_ON_ERROR));
+        $policy = DiscrepancyPolicy::load(self::ROOT);
+        $review = $policy->assess([$record]);
+        self::assertSame('failed', $review['status']);
+        unset($record['payload_alternatives']);
+        self::assertSame($review, $policy->assess([$record]));
+    }
+
+    public function testSuccessfulRootUnionDoesNotAddCandidateDiagnostics(): void
+    {
+        $http = new Client();
+        $http->addResponse(new Response(200, [], '{"status":1,"data":[]}'));
+        $probes = array_values(array_filter(
+            ProbeCatalog::load(self::ROOT),
+            static fn (Probe $probe): bool => $probe->operation === 'uapi:LangPHP/php_get_vhost_versions'
+                && $probe->route === 'direct-uapi',
+        ));
+        $record = (new EvidenceRunner($http, self::context()))->run(
+            $probes,
+            '1',
+            ['whm' => 'synthetic-whm', 'cpanel' => 'synthetic-cpanel'],
+        )[0];
+        self::assertCount(1, $http->getRequests());
+        self::assertSame('passed', $record['probe_outcome']);
+        self::assertArrayNotHasKey('payload_alternatives', $record);
+    }
 
     #[DataProvider('mutationResponses')]
     public function testLifecycleCaptureKeepsOriginalPostOutcomeWithoutReplay(
