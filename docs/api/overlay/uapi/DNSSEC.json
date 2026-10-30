@@ -1,0 +1,699 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "DNSSEC",
+  "operations": {
+    "uapi:DNSSEC/activate_zone_key": {
+      "method": "POST",
+      "order": [
+        "domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 84; operates on the selected account. Disabling the DNS role disables this operation. The client performs no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI envelope status. An API-success response can still report success=0 and an error string; inspect the payload. Omitted fields stay absent, empty strings stay empty, and null or absent data is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "The response key_id is documented as a string and is preserved unchanged, even though the request key_id is an integer identifier."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/activate_zone_key declares x-readonly=false; use POST. The source snapshot's decompressed SHA-256 is 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/activate_zone_key parameter key_id describes an identifier, not private key bytes: The security key's ID. Keep this argument non-sensitive; key_data and returned private-key material retain their sensitive boundaries."
+        }
+      ],
+      "params": {
+        "key_id": {
+          "sensitive": false
+        }
+      }
+    },
+    "uapi:DNSSEC/add_zone_key": {
+      "method": "POST",
+      "order": [
+        "domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 84; operates on the selected account. Disabling the DNS role disables this operation. The client performs no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI envelope status. An API-success response can still report success=0 and an error string; inspect the payload. Omitted fields stay absent, empty strings stay empty, and null or absent data is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting active retains the documented default of 1. Omitting key_size retains the algorithm/key-type-specific server default: RSA-family KSK 2048/ZSK 1024, algorithm 13 uses 256, and algorithm 14 uses 384 bits. Explicit false remains 0. Add the DS records to the registrar after enabling DNSSEC. Keys cannot be modified in place; the source requires disabling/deleting and re-creating a key to change it."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/add_zone_key declares x-readonly=false; use POST. The source snapshot's decompressed SHA-256 is 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/add_zone_key parameter key_type describes a key configuration value, not private key bytes: The type of key to add. Keep this argument non-sensitive; key_data and returned private-key material retain their sensitive boundaries."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/add_zone_key parameter active is a 0/1 integer switch. Expose it as bool and encode true as 1 and false as 0; omitted optional switches retain their server defaults."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/add_zone_key parameter key_size describes a key configuration value, not private key bytes: The key's size, in bits. Keep this argument non-sensitive; key_data and returned private-key material retain their sensitive boundaries."
+        }
+      ],
+      "params": {
+        "key_type": {
+          "sensitive": false
+        },
+        "active": {
+          "encoding": "bool"
+        },
+        "key_size": {
+          "sensitive": false
+        }
+      }
+    },
+    "uapi:DNSSEC/deactivate_zone_key": {
+      "method": "POST",
+      "order": [
+        "domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 84; operates on the selected account. Disabling the DNS role disables this operation. The client performs no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI envelope status. An API-success response can still report success=0 and an error string; inspect the payload. Omitted fields stay absent, empty strings stay empty, and null or absent data is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "The response key_id is documented as a string and is preserved unchanged, even though the request key_id is an integer identifier."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/deactivate_zone_key declares x-readonly=false; use POST. The source snapshot's decompressed SHA-256 is 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/deactivate_zone_key parameter key_id describes an identifier, not private key bytes: The security key's ID. Keep this argument non-sensitive; key_data and returned private-key material retain their sensitive boundaries."
+        }
+      ],
+      "params": {
+        "key_id": {
+          "sensitive": false
+        }
+      }
+    },
+    "uapi:DNSSEC/disable_dnssec": {
+      "method": "POST",
+      "order": [
+        "domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 60; operates on the selected account. Disabling the DNS role disables this operation. The client performs no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "This interface accepts one domain string. The pinned prose also documents domain-0/domain-1/domain-2, but that zero-based family is not exposed by this signature; no list encoding or delimiter is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling DNSSEC is irreversible and loses associated keys; the previous state can only be retrieved from a full backup. Remove the DNS/DS records at the registrar when disabling DNSSEC. The disabled map reports an integer 0/1 result for each domain, independent of envelope success."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/disable_dnssec declares x-readonly=false; use POST. The source snapshot's decompressed SHA-256 is 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ],
+      "response": {
+        "disabled": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "flag"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /DNSSEC/disable_dnssec data.disabled incorrectly places additionalProperties under properties. Its description explicitly states that each return name is the domain parameter value, and its example is disabled:{example.com:1}. Replace only disabled with a dynamic string-keyed map of integer 0/1 flags; preserve disabled optionality. This is a schema-placement correction, not a literal additionalProperties API field or a nullable result."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:DNSSEC/enable_dnssec": {
+      "method": "POST",
+      "order": [
+        "domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 60; operates on the selected account. Disabling the DNS role disables this operation. The client performs no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "This interface accepts one domain string. The pinned prose also documents domain-0/domain-1/domain-2, but that zero-based family is not exposed by this signature; no list encoding or delimiter is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "After enabling DNSSEC, add the DNS/DS records at the registrar. Security keys cannot be modified in place; the source requires disabling/deleting and re-creating keys to change them."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted options retain server defaults: active=1, algo_num=8, key_setup=classic, nsec3_narrow=1, nsec3_opt_out=0 and use_nsec3=1. Current nsec3_iterations defaults to 0; cPanel 132 and earlier use 7. In cPanel 132 and later nsec3_salt accepts '-' and omission means no salt; cPanel 130 and earlier default to a random 64-bit salt. use_nsec3=false selects NSEC and the server ignores other NSEC3 settings. Explicit false, zero and empty string are sent without being omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "The enabled map is keyed by domain and preserves optional enabled, new_key_id and nsec_version. Its per-domain flag is distinct from envelope success. Only new_key_id also accepts a lossless canonical integer string, as the pinned example quotes it; it normalizes to int. Other integer contracts are unchanged."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/enable_dnssec declares x-readonly=false; use POST. The source snapshot's decompressed SHA-256 is 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/enable_dnssec parameter active is a 0/1 integer switch. Expose it as bool and encode true as 1 and false as 0; omitted optional switches retain their server defaults."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/enable_dnssec parameter key_setup describes a key configuration value, not private key bytes: The manner in which the system creates the security key. Keep this argument non-sensitive; key_data and returned private-key material retain their sensitive boundaries."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/enable_dnssec parameter nsec3_narrow is a 0/1 integer switch. Expose it as bool and encode true as 1 and false as 0; omitted optional switches retain their server defaults."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/enable_dnssec parameter nsec3_opt_out is a 0/1 integer switch. Expose it as bool and encode true as 1 and false as 0; omitted optional switches retain their server defaults."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/enable_dnssec parameter use_nsec3 is a 0/1 integer switch. Expose it as bool and encode true as 1 and false as 0; omitted optional switches retain their server defaults."
+        }
+      ],
+      "params": {
+        "active": {
+          "encoding": "bool"
+        },
+        "key_setup": {
+          "sensitive": false
+        },
+        "nsec3_narrow": {
+          "encoding": "bool"
+        },
+        "nsec3_opt_out": {
+          "encoding": "bool"
+        },
+        "use_nsec3": {
+          "encoding": "bool"
+        }
+      },
+      "response": {
+        "enabled": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "object",
+              "fields": {
+                "enabled": {
+                  "type": "flag"
+                },
+                "new_key_id": {
+                  "type": "int",
+                  "accept": [
+                    "numeric-string"
+                  ]
+                },
+                "nsec_version": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /DNSSEC/enable_dnssec data.enabled incorrectly places additionalProperties under properties. Its prose and domain-keyed example establish a map of objects. Preserve all three optional fields enabled, new_key_id and nsec_version. The same example quotes new_key_id as '1' despite the integer schema; accept only lossless canonical integer strings for that field and normalize to int. The flag stays integer 0/1, and no other integer field is widened. Preserve optional enabled and reject null values."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:DNSSEC/export_zone_dnskey": {
+      "method": "GET",
+      "order": [
+        "domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 88; operates on the selected account. Disabling the DNS role disables this operation. The client performs no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI envelope status. An API-success response can still report success=0 and an error string; inspect the payload. Omitted fields stay absent, empty strings stay empty, and null or absent data is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns public DNSKEY record text and an integer identifier. This is the documented read-only key export and uses GET; it does not export the private key."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/export_zone_dnskey declares x-readonly=true; use GET. The source snapshot's decompressed SHA-256 is 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/export_zone_dnskey parameter key_id describes an identifier, not private key bytes: The DNSSEC record's ID. Keep this argument non-sensitive; key_data and returned private-key material retain their sensitive boundaries."
+        }
+      ],
+      "params": {
+        "key_id": {
+          "sensitive": false
+        }
+      }
+    },
+    "uapi:DNSSEC/export_zone_key": {
+      "method": "POST",
+      "order": [
+        "domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 84; operates on the selected account. Disabling the DNS role disables this operation. The client performs no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI envelope status. An API-success response can still report success=0 and an error string; inspect the payload. Omitted fields stay absent, empty strings stay empty, and null or absent data is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "Exports private key material in key_content. The source classifies this operation as non-read-only, so it uses form POST. The returned private data remains sensitive payload data and is not included in response metadata or exception stack arguments."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/export_zone_key declares x-readonly=false; use POST. The source snapshot's decompressed SHA-256 is 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/export_zone_key parameter key_id describes an identifier, not private key bytes: The security key's ID. Keep this argument non-sensitive; key_data and returned private-key material retain their sensitive boundaries."
+        }
+      ],
+      "params": {
+        "key_id": {
+          "sensitive": false
+        }
+      }
+    },
+    "uapi:DNSSEC/fetch_ds_records": {
+      "method": "GET",
+      "order": [
+        "domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 82; operates on the selected account. Disabling the DNS role disables this operation. The client performs no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "This interface accepts one domain string. The pinned prose also documents domain-0/domain-1/domain-2, but that zero-based family is not exposed by this signature; no list encoding or delimiter is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The result is a domain-keyed map. Each optional keys map is keyed by the key tag, while optional nsec_details is its sibling. The pinned example incorrectly places nsec_details inside keys; the explicit schema and NSEC description define the sibling placement, which this contract retains. The example's misplaced shape is not evidence of another supported tree."
+        },
+        {
+          "kind": "documented",
+          "text": "All key, digest and NSEC fields retain optional presence. Keys may include sensitive privatekey text; treat the full result as sensitive. NSEC semantics may return only nsec_version. Only the exact example-backed algo_num, created, nsec3_hash_algo_num and nsec3_iterations fields accept lossless canonical integer strings, normalizing to int. nsec3_opt_out also accepts exact quoted 0/1; other flags and integer fields remain strict. These are documentation-derived compatibilities, not live observations."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/fetch_ds_records declares x-readonly=true; use GET. The source snapshot's decompressed SHA-256 is 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "object",
+              "fields": {
+                "keys": {
+                  "type": "map",
+                  "values": {
+                    "type": "object",
+                    "fields": {
+                      "active": {
+                        "type": "flag"
+                      },
+                      "algo_desc": {
+                        "type": "string"
+                      },
+                      "algo_num": {
+                        "type": "int",
+                        "accept": [
+                          "numeric-string"
+                        ]
+                      },
+                      "algo_tag": {
+                        "type": "string"
+                      },
+                      "bits": {
+                        "type": "int"
+                      },
+                      "created": {
+                        "type": "int",
+                        "accept": [
+                          "numeric-string"
+                        ]
+                      },
+                      "digests": {
+                        "type": "list",
+                        "items": {
+                          "type": "object",
+                          "fields": {
+                            "algo_desc": {
+                              "type": "string"
+                            },
+                            "algo_num": {
+                              "type": "int"
+                            },
+                            "digest": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      "flags": {
+                        "type": "int"
+                      },
+                      "key_id": {
+                        "type": "int"
+                      },
+                      "key_tag": {
+                        "type": "int"
+                      },
+                      "key_type": {
+                        "type": "string"
+                      },
+                      "privatekey": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "nsec_details": {
+                  "type": "object",
+                  "fields": {
+                    "nsec3_hash_algo_desc": {
+                      "type": "string"
+                    },
+                    "nsec3_hash_algo_num": {
+                      "type": "int",
+                      "accept": [
+                        "numeric-string"
+                      ]
+                    },
+                    "nsec3_iterations": {
+                      "type": "int",
+                      "accept": [
+                        "numeric-string"
+                      ]
+                    },
+                    "nsec3_narrow": {
+                      "type": "flag"
+                    },
+                    "nsec3_opt_out": {
+                      "type": "flag",
+                      "accept": [
+                        "string-flag"
+                      ]
+                    },
+                    "nsec3_salt": {
+                      "type": "string"
+                    },
+                    "nsec_version": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /DNSSEC/fetch_ds_records data.properties.additionalProperties and its keys.properties.additionalProperties are misplaced map declarations. Their descriptions explicitly say return names are the domain and key_tag, and the example uses those names. Replace only this root with the equivalent two dynamic maps, retaining every declared key/digest/NSEC field and all optional presence. nsec_details is a sibling of keys in the schema; preserve that placement despite the inconsistent example nesting. The example specifically quotes key algo_num and created, and NSEC nsec3_hash_algo_num, nsec3_iterations and nsec3_opt_out. Normalize lossless canonical integer strings only on the first four fields; accept only exact quoted 0/1 on nsec3_opt_out. Keep active, bits, flags, key_id, key_tag, digest algo_num and nsec3_narrow strict. privatekey remains an optional string with sensitive payload handling; no private material is included in evidence or fixtures. No live observation is claimed."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:DNSSEC/import_zone_key": {
+      "method": "POST",
+      "order": [
+        "domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 84; operates on the selected account. Disabling the DNS role disables this operation. The client performs no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI envelope status. An API-success response can still report success=0 and an error string; inspect the payload. Omitted fields stay absent, empty strings stay empty, and null or absent data is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "Pass the raw private security-key data returned by pdnsutil export-zone-key. key_data is sensitive and form-encoded exactly once; no pre-encoding is required. new_key_id is a documented string and is preserved unchanged."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/import_zone_key declares x-readonly=false; use POST. The source snapshot's decompressed SHA-256 is 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/import_zone_key parameter key_type describes a key configuration value, not private key bytes: The security key's type. Keep this argument non-sensitive; key_data and returned private-key material retain their sensitive boundaries."
+        }
+      ],
+      "params": {
+        "key_data": {
+          "sensitive": true
+        },
+        "key_type": {
+          "sensitive": false
+        }
+      }
+    },
+    "uapi:DNSSEC/remove_zone_key": {
+      "method": "POST",
+      "order": [
+        "domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 84; operates on the selected account. Disabling the DNS role disables this operation. The client performs no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Payload success is an optional integer 0/1 flag for the requested key, separate from the UAPI envelope status. An API-success response can still report success=0 and an error string; inspect the payload. Omitted fields stay absent, empty strings stay empty, and null or absent data is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the named security key. The response key_id is documented as a string and is preserved unchanged; the request key_id is an integer identifier."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/remove_zone_key declares x-readonly=false; use POST. The source snapshot's decompressed SHA-256 is 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/remove_zone_key parameter key_id describes an identifier, not private key bytes: The security key's ID. Keep this argument non-sensitive; key_data and returned private-key material retain their sensitive boundaries."
+        }
+      ],
+      "params": {
+        "key_id": {
+          "sensitive": false
+        }
+      }
+    },
+    "uapi:DNSSEC/set_nsec3": {
+      "method": "POST",
+      "order": [
+        "domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 60; operates on the selected account. Disabling the DNS role disables this operation. The client performs no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Configures NSEC3 semantics. nsec3_iterations=0 remains zero; nsec3_narrow and nsec3_opt_out use bool inputs encoded as 0/1. Only select opt-out when records for all delegations are required, per the pinned description. cPanel 132 and later accepts nsec3_salt='-' to indicate no salt. The optional enabled map contains per-domain integer 0/1 results separate from envelope status."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/set_nsec3 declares x-readonly=false; use POST. The source snapshot's decompressed SHA-256 is 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/set_nsec3 parameter nsec3_narrow is a 0/1 integer switch. Expose it as bool and encode true as 1 and false as 0; omitted optional switches retain their server defaults."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/set_nsec3 parameter nsec3_opt_out is a 0/1 integer switch. Expose it as bool and encode true as 1 and false as 0; omitted optional switches retain their server defaults."
+        }
+      ],
+      "params": {
+        "nsec3_narrow": {
+          "encoding": "bool"
+        },
+        "nsec3_opt_out": {
+          "encoding": "bool"
+        }
+      }
+    },
+    "uapi:DNSSEC/unset_nsec3": {
+      "method": "POST",
+      "order": [
+        "domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 60; operates on the selected account. Disabling the DNS role disables this operation. The client performs no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Switches the domain from NSEC3 to NSEC semantics. The optional disabled map contains per-domain integer 0/1 results separate from envelope status; omitted fields remain absent."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /DNSSEC/unset_nsec3 declares x-readonly=false; use POST. The source snapshot's decompressed SHA-256 is 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ],
+      "response": {
+        "disabled": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "flag"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /DNSSEC/unset_nsec3 data.disabled incorrectly places additionalProperties under properties. Its description explicitly states that each return name is the domain parameter value, and its example is disabled:{example.com:1}. Replace only disabled with a dynamic string-keyed map of integer 0/1 flags; preserve disabled optionality. This is a schema-placement correction, not a literal additionalProperties API field or a nullable result."
+            }
+          ]
+        }
+      }
+    }
+  }
+}

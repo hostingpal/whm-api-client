@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 30 generated typed groups cover 385 documented operations (see
+The 32 generated typed groups cover 402 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -376,6 +376,32 @@ retried or rolled back by the client.
 object fields; an absent payload is a mismatch. WebVhosts preserves optional and
 nullable proxy-subdomain lists. `listSslCapableDomains()` does not invent a domain
 argument from inconsistent upstream prose.
+
+The DNSSEC and Dynamic DNS groups cover all seventeen pinned functions.
+`dnssec()` exposes key lifecycle, DNSKEY/private-key export, DS records and NSEC
+settings; `dynamicDns()` exposes creation, inventory, ID replacement, description
+updates and deletion. DNSKEY/DS reads and Dynamic DNS inventory use GET; the other
+fourteen methods use form POST, including private-key export.
+
+DNSSEC requires the DNS role and retains each method's version and registrar
+requirements. Disabling DNSSEC destroys its keys and requires registrar record
+removal; the client provides no retry or rollback. Dynamic domain/key maps retain
+their returned keys, optional fields and per-domain results separately from the
+API envelope. Single-domain calls use the documented `domain` argument; the
+`domain-0`/`domain-1` family remains tracked under `8x0.1.21`.
+
+Imported key material and Dynamic DNS input IDs are sensitive parameters.
+`fetchDsRecords()` may return private-key material, and Dynamic DNS IDs form part
+of update URLs; treat those result values as sensitive and do not fetch update
+URLs while inspecting inventory. `recreate()` replaces the DDNS identifier.
+`setDescription()` returns no payload. Deletion's source `number` enum `[0, 1]` becomes an integer `0|1` flag under
+the existing generator; zero means the identifier did not exist for deletion.
+Omitted timestamps and explicit null `last_update_time` remain distinct.
+
+The live catalog reads only DS records for `npr.rs`, Dynamic DNS inventory for
+`npr`, and WHM version. It makes no key, registrar, DNS-record or DDNS changes.
+Unobserved live variants remain tracked under `8x0.2.26`; API responses alone do
+not establish DNS propagation or DNSSEC validation by resolvers.
 
 The directory groups cover all ten pinned functions, available from cPanel 88.
 Six reads use GET and four mutations use form POST. Directory paths are forwarded

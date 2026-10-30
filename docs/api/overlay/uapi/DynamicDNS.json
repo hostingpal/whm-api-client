@@ -1,0 +1,194 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "DynamicDNS",
+  "accessor": "dynamicDns",
+  "class": "DynamicDns",
+  "operations": {
+    "uapi:DynamicDNS/create": {
+      "name": "create",
+      "method": "POST",
+      "order": [
+        "domain",
+        "description"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82. This function creates a Dynamic DNS (DDNS) domain.\n\n**Important:**\n\nWhen you disable the [_DNS_ role](https://go.cpanel.net/serverroles), the system disables this function."
+        },
+        {
+          "kind": "documented",
+          "text": "The fully-qualified domain name is required. Omit description to leave the server default in effect; an explicit empty string remains a supplied description. The created_time and id response fields are optional; a missing payload or null is invalid."
+        },
+        {
+          "kind": "documented",
+          "text": "The returned ID is capability data: the pinned list operation states that it forms part of the URL used to update the domain IP address. Preserve it as payload data and do not fetch or invoke the update URL."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Mutations use form POST; the client performs no retry or automatic rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DynamicDNS/create GET declares x-readonly=false and x-rollback=none. Use form POST for this mutation and preserve the documented parameter names and requiredness."
+        }
+      ]
+    },
+    "uapi:DynamicDNS/delete": {
+      "name": "delete",
+      "method": "POST",
+      "params": {
+        "id": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82. This function deletes an existing Dynamic DNS (DDNS) domain.\n\n**Important:**\n\nWhen you disable the [_DNS_ role](https://go.cpanel.net/serverroles), the system disables this function."
+        },
+        {
+          "kind": "documented",
+          "text": "The deleted response field is optional. Its source declares a number with enum 0 and 1, which the existing generator represents as a strict integer 0|1 flag, not a boolean. Zero means no DDNS domain with this ID existed; one means it existed and is now deleted. A successful deleted=0 is not a UAPI failure; UAPI status=0 still fails. No float, string or boolean conversion is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The ID forms part of the domain address-update URL and is sensitive. Send it only in the form body. A missing or null response payload is invalid; omitted deleted stays omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Mutations use form POST; the client performs no retry or automatic rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DynamicDNS/delete GET declares x-readonly=false and x-rollback=none. Use form POST for this mutation and preserve the documented parameter names and requiredness."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DynamicDNS/list GET responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/id states that the DDNS ID goes into the URL the client uses to update the domain IP address resolution. Mark the corresponding id input sensitive and keep it in the POST form body."
+        }
+      ]
+    },
+    "uapi:DynamicDNS/list": {
+      "name": "listDomains",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82. This function lists the user’s Dynamic DNS (DDNS) domains.\n\n**Important:**\n\nWhen you disable the [_DNS_ role](https://go.cpanel.net/serverroles), the system disables this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the selected account DDNS domains. Every row field is optional. Preserve empty inventories, absent fields, empty descriptions, empty last_run_times lists, and explicit null last_update_time distinctly. Creation, run and update times remain integers; no numeric-string compatibility is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "last_run_times changes every time the web call runs, even if the IP address does not change. last_update_time changes only when the IP address resolution changes. The ID goes into the URL used to update the domain IP address; treat returned IDs as capability data, not links to fetch."
+        }
+      ]
+    },
+    "uapi:DynamicDNS/recreate": {
+      "name": "recreate",
+      "method": "POST",
+      "params": {
+        "id": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82. This function gives a new, randomly-generated ID to an existing Dynamic DNS (DDNS) domain.\n\n**Important:**\n\nWhen you disable the [_DNS_ role](https://go.cpanel.net/serverroles), the system disables this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Assigns a new random ID to the existing DDNS domain. Because the ID forms part of the address-update URL, this changes that URL identifier. The supplied ID is sensitive and remains in the form body; the returned replacement ID is capability data and must not be fetched."
+        },
+        {
+          "kind": "documented",
+          "text": "The response id is optional. Preserve omission; a missing payload or explicit null is invalid. The client does not retry or roll back this identifier rotation."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Mutations use form POST; the client performs no retry or automatic rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DynamicDNS/recreate GET declares x-readonly=false and x-rollback=none. Use form POST for this mutation and preserve the documented parameter names and requiredness."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DynamicDNS/list GET responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/id states that the DDNS ID goes into the URL the client uses to update the domain IP address resolution. Mark the corresponding id input sensitive and keep it in the POST form body."
+        }
+      ]
+    },
+    "uapi:DynamicDNS/set_description": {
+      "name": "setDescription",
+      "method": "POST",
+      "order": [
+        "id",
+        "description"
+      ],
+      "void": true,
+      "params": {
+        "id": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82. This function sets the description on a user’s Dynamic DNS (DDNS) domain.\n\n**Important:**\n\nWhen you disable the [_DNS_ role](https://go.cpanel.net/serverroles), the system disables this function."
+        },
+        {
+          "kind": "documented",
+          "text": "The DDNS ID and description are required. An empty description is sent explicitly. The ID forms part of the domain address-update URL, so it is sensitive and stays in the form body."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response envelope declares no data property or payload schema. This operation returns void and relies on the UAPI outcome; an outer WHM failure is still checked."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Mutations use form POST; the client performs no retry or automatic rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DynamicDNS/set_description GET declares x-readonly=false and x-rollback=none. Use form POST for this mutation and preserve the documented parameter names and requiredness."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DynamicDNS/list GET responses/200/content/application~1json/schema/properties/result/properties/data/items/properties/id states that the DDNS ID goes into the URL the client uses to update the domain IP address resolution. Mark the corresponding id input sensitive and keep it in the POST form body."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DynamicDNS/set_description GET responses/200/content/application~1json/schema/properties/result/properties contains no data property or payload schema. Expose void and inspect the envelope outcome instead of inventing a response shape."
+        }
+      ]
+    }
+  }
+}
