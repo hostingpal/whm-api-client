@@ -401,10 +401,16 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   privilege-enforcement claims. Failed preflight remains failed evidence, not a skip.
   The 2026-10-30 artifact at `6539db7` on `11.138.0.19` records seven GETs:
   WHM version passed; all six PostgreSQL reads returned HTTP 200 with API failures.
-  No mutation ran and all resources remain not_started. All fourteen successful
-  payloads/lifecycle behavior remain offline-only; follow-up `8x0.2.14` requires
-  establishing test-service availability before a fresh reviewed fixture run.
-  Optional short/failed temporary-write recovery is tracked in `8x0.2.13`.
+  No mutation ran and all resources remain not_started in that immutable artifact.
+  After the reviewer's owner-requested PostgreSQL 13.23 installation and role/service
+  enablement, the separate `2026-10-30-postgresql-section-enabled.json` capture at
+  `61a9f3e` on the same cPanel version passes all 57 observations (33 GET, 24 POST)
+  for all 14 functions through both routes. Strict assessment passes with zero
+  discrepancies; both databases and both users are cleaned, with every original
+  and renamed identity confirmed absent. Mutation payloads are explicit null;
+  non-null alternatives remain offline-only. This closes live follow-up `8x0.2.14`.
+  Keep SQL enforcement/login and new-table grant synchronization unclaimed.
+  Optional short/failed temporary-write recovery remains tracked in `8x0.2.13`.
 - The optional `--mysql-fixture` runner mode additionally requires
   `WHM_API_LIVE_MUTATIONS=1`. It creates two databases and two database users on
   the designated `npr` account, checks linked/unlinked inventory through both

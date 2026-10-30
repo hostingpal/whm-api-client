@@ -344,11 +344,19 @@ database deletion requires cPanel 54+, and the other operations require 11.42+.
 Disabling the PostgreSQL role disables all fourteen operations.
 
 All fourteen PostgreSQL methods have offline contract coverage. The
-[committed live preflight](docs/api/evidence/2026-10-30-postgresql-section.json)
-on cPanel `11.138.0.19` returned API failures for all three reads through both
-routes. The guarded recipe stopped before mutations; successful PostgreSQL
-payloads and lifecycle behavior remain live-unverified. Follow-up
-`whm-api-client-8x0.2.14` tracks verification when the test service is available.
+[committed lifecycle capture](docs/api/evidence/2026-10-30-postgresql-section-enabled.json)
+at `61a9f3e` on cPanel `11.138.0.19` passes 57 observations (33 GET, 24 POST),
+covering all fourteen functions through direct and bridged UAPI. Its strict
+assessment passes with zero discrepancies; both databases and both users are
+confirmed absent after cleanup, including their original and renamed identities.
+The run observes empty/populated inventories, restrictions, grants/revocation,
+renames, password changes and account-wide privilege synchronization. All mutation
+payloads are explicit null. Non-null mutation payloads remain offline-tested.
+API readback does not establish SQL privilege enforcement, SQL login or grants
+on newly created tables. The earlier
+[failed service preflight](docs/api/evidence/2026-10-30-postgresql-section.json)
+remains unchanged. Before the successful capture, the reviewer installed
+PostgreSQL 13.23 at the owner's request and enabled its role and monitored service.
 
 The DNS methods are read-only (GET):
 

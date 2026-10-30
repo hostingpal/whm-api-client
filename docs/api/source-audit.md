@@ -1486,10 +1486,10 @@ was attempted and no resource was created; there is no cleanup claim.
 The strict assessment remains **failed** because the reads failed and the
 planned full-lifecycle sequence is incomplete. Payload validation and fixture expectations for the failed
 reads were not checked. Zero recorded discrepancies does not establish successful
-PostgreSQL behavior. All fourteen successful payload contracts and mutation
-behavior remain offline-tested only. Service/account availability and a future
-successful fixture run are tracked in `whm-api-client-8x0.2.14`; the failed
-artifact is preserved without a waiver or replay to recover evidence.
+PostgreSQL behavior. At that capture, successful payload contracts and mutation
+behavior remained offline-tested only. The failed artifact is preserved without
+a waiver or replay to recover evidence; the later enabled-service run below
+provides separate successful observations for `whm-api-client-8x0.2.14`.
 
 The artifact's assessment, operation/route/method identities, pinned source hashes,
 effective contracts, map/generator/overlay hashes and revision were independently
@@ -1500,3 +1500,57 @@ resource names or upstream error text were persisted. The complete code passed
 `composer api-map:check`. The optional failed-temporary-write resilience follow-up
 is `whm-api-client-8x0.2.13`; atomic completed-report publication failure recovery
 is tested in this slice.
+
+
+### Runtime observations: 2026-10-30 enabled PostgreSQL section
+
+Before this capture, the reviewer performed an owner-requested server change:
+PostgreSQL 13.23 was installed on CloudLinux 9.8 / cPanel `11.138.0.19`, and the
+Postgres role and PostgreSQL service were enabled, running and monitored. The
+reviewer confirmed the disabled role caused the earlier preflight failures.
+That installation is background to this account-scoped recipe; it was not a
+client change or an action performed by the capture.
+
+Approved MySQL PR27 and FTP PR28 were merged into this branch through master,
+without rebasing. Regeneration produces **131 operations across 15 groups**.
+The integrated code at `61a9f3eb6dbc480625861bb41ef629a36d05129a` passed
+`composer validate`, `composer check` (**5,961 tests / 48,438 assertions**) and
+`composer api-map:check` before being committed/pushed and captured once.
+The combined trace suite preserves the MySQL, FTP and PostgreSQL cases, including
+all five reviewed outcome-echo paths; `EnvelopeReader::outcome()` marks both raw
+outcome and metadata sensitive. Its explicit exception metadata and mismatch
+payload APIs remain unchanged. The body-aware PSR search and unmarked-body
+control are retained once, and all **162 tests / 878 assertions** pass.
+
+The [enabled-service PostgreSQL artifact](evidence/2026-10-30-postgresql-section-enabled.json),
+SHA-256 `a1de9a3458f7b721f2263dbd1f88ce619df61eca42c3d820d8b6844f16b4de45`,
+contains **57 passing observations: 33 GET and 24 POST** on `11.138.0.19`.
+All fourteen functions execute successfully on direct and WHM-bridged UAPI,
+with HTTP 200, successful API/payload outcomes, independently checked fixture
+expectations, zero discrepancies and a passing strict assessment. Both databases
+and both users are `cleaned`, with original, renamed and final identities
+confirmed absent by the final same-run inventories. The failed preflight artifact
+and every historical MySQL/FTP artifact remain byte-identical.
+
+The run observes empty and populated database/user inventories, integer byte
+`disk_usage`, empty and populated linked-user lists, integer name-length limits
+and a string prefix. Grant/revoke readbacks, database/user renames, password
+updates and account-wide privilege synchronization pass. Every mutation returns
+explicit null, including `create_user`; non-null integer/opaque mutation
+payloads and unobserved optional-field variants remain offline-tested only.
+The empty-inventory preflight and the inventory before `update_privileges()`
+bind that account-wide operation to the run's owned resources. API execution and
+readback establish neither SQL privilege enforcement nor SQL login, and no table
+is created to establish new-table grant synchronization.
+
+The audit independently recomputes generated-spec method/contract hashes and
+source/map/generator/overlay/revision provenance, then rechecks all phase identities,
+order and the strict assessment without changing original observations. All
+820 structural path/type entries contain reviewed static paths or masked opaque
+metadata paths. Configured credentials, response-derived account/domain/host
+values, resource identities, password material and upstream error text are absent.
+The fixed public recipe identifier retains its documented account label. The
+new artifact was written with mode 0600, and no capture temporary files remain.
+No operation was replayed or retried. Live follow-up `whm-api-client-8x0.2.14`
+is complete; optional short/failed temporary-write recovery remains
+`whm-api-client-8x0.2.13`.

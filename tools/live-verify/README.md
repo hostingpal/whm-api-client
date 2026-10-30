@@ -462,6 +462,19 @@ The [2026-10-30 PostgreSQL capture](../../docs/api/evidence/2026-10-30-postgresq
 is **failed preflight evidence**: the WHM version check passed, but all six
 PostgreSQL reads returned API failures. The lifecycle stopped before writes, and
 all resources are `not_started`. It establishes no successful PostgreSQL payload
-or mutation coverage. See `whm-api-client-8x0.2.14` before scheduling a new run.
+or mutation coverage and stays unchanged.
+
+After the reviewer's owner-requested PostgreSQL 13.23 installation, the separate
+[enabled-service lifecycle](../../docs/api/evidence/2026-10-30-postgresql-section-enabled.json)
+was captured once at committed integrated code `61a9f3e` on cPanel `11.138.0.19`.
+All 57 observations (33 GET, 24 POST) pass across all 14 functions on both routes,
+with zero discrepancies and a passing strict assessment. Both databases and both
+users are cleaned, and original/renamed identities are confirmed absent. All
+mutation payloads are explicit null; non-null payload alternatives remain covered
+by offline fixtures. This run closes `whm-api-client-8x0.2.14`. It establishes
+API execution and readback, with the SQL authentication/enforcement and new-table
+grant-synchronization limits above. The installation was an earlier owner-requested
+server change, not part of this lifecycle recipe.
+
 A short or failed initial temporary-file write has no complete recovery file;
 that separate resilience improvement is tracked in `whm-api-client-8x0.2.13`.
