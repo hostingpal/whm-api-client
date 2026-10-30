@@ -62,17 +62,24 @@ scoped to the exact contracts, revisions and routes recorded in each file.
   discrepancies. Empty privilege lists, disabled prefixes, SQL enforcement and
   alternate server configurations remain unobserved.
 
+- [Initial DomainInfo/Features/LangPHP capture](2026-10-30-domain-features-php.json):
+  67 GET probes at `c79ed1d` on `11.138.0.19`; 59 pass and eight payload mismatches
+  remain in this immutable evidence. No mutations ran.
+- [DomainInfo/Features/LangPHP compatibility capture](2026-10-30-domain-features-php-compatibility.json):
+  67 GET probes at `a07f4f7`, with 65 passing and two PHP-version payload mismatches.
+  Same-response candidate diagnostics isolate the documented source-container discrepancy.
+- [Corrected DomainInfo/Features/LangPHP capture](2026-10-30-domain-features-php-corrected.json):
+  67 API/payload checks pass at `7b172f3`; strict assessment still fails for eight
+  unknown-field observations and two stale Quota acknowledgments. This historical
+  capture does not establish the later reviewed domain contracts; a final-head
+  capture remains required after stack integration. PHP setters remain offline-only.
+- [Email preflight count discrepancy](2026-10-30-email-section-quota-corrected.json):
+  immutable artifact imported with the narrow `countPops()` correction from `8533e95`.
+  All 17 requests were GET, mailbox-count payloads were numeric strings through
+  both UAPI routes, and no fixture resource was started. Its failures are preserved.
 
-## Complete DomainInfo, Features, LangPHP and Email slices (2026-10-30)
 
-The three DomainInfo/Features/LangPHP captures retain initial failures, narrowed
-compatibility corrections and the final 67 successful API/payload observations:
-[initial](2026-10-30-domain-features-php.json),
-[compatibility](2026-10-30-domain-features-php-compatibility.json), and
-[corrected](2026-10-30-domain-features-php-corrected.json).
-The final strict assessment still fails on unknown fields and stale Quota
-acknowledgments; PHP setters remain unobserved. See the source audit and follow-up
-8x0.2.17 for exact scope.
+## Complete Email slice (2026-10-30)
 
 Email captures preserve each step without rewriting failed evidence:
 [preflight](2026-10-30-email-section.json),

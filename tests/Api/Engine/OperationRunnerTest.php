@@ -58,6 +58,30 @@ final class OperationRunnerTest extends TestCase
         self::assertSame(['primary_domain' => 'example.test'], $result);
     }
 
+    #[DataProvider('uncheckedEmptyResults')]
+    public function testTypedUncheckedStatusIsRequiredBeforeVoidAndOptionalResults(bool $optional): void
+    {
+        $spec = ['outcome' => 'unchecked', 'returns' => $optional ? ['type' => 'string'] : null] + self::SPEC;
+        if ($optional) {
+            $spec['optional'] = true;
+        }
+        $metadata = new ResponseMetadata(200, null, ['status' => '1']);
+        try {
+            OperationRunner::result($spec, new ApiResponse(null, $metadata, false));
+            self::fail('Typed UAPI cannot bypass status validation with an empty result.');
+        } catch (InvalidResponseException $error) {
+            self::assertNotInstanceOf(PayloadMismatchException::class, $error);
+            self::assertSame($metadata, $error->metadata);
+        }
+    }
+
+    /** @return iterable<string, array{bool}> */
+    public static function uncheckedEmptyResults(): iterable
+    {
+        yield 'void' => [false];
+        yield 'optional' => [true];
+    }
+
     public function testUnwrapReturnsTheSelectedField(): void
     {
         $spec = self::SPEC + ['unwrap' => 'primary_domain'];
@@ -129,7 +153,7 @@ final class OperationRunnerTest extends TestCase
         try {
             OperationRunner::result(
                 ['outcome' => 'unchecked'] + self::SPEC,
-                self::response((object) ['primary_domain' => 1]),
+                new ApiResponse((object) ['primary_domain' => 1], new ResponseMetadata(200, null, ['status' => 0])),
             );
             self::fail('Expected a payload mismatch.');
         } catch (PayloadMismatchException $exception) {
@@ -281,6 +305,9 @@ final class OperationRunnerTest extends TestCase
         yield 'variant the type cannot accept' => [
             self::returning(['type' => 'string', 'accept' => ['numeric-string']]),
         ];
+        yield 'empty string only belongs to flag' => [
+            self::returning(['type' => 'string', 'accept' => ['empty-string']]),
+        ];
         yield 'unknown accepted variant' => [self::returning(['type' => 'int', 'accept' => ['hex-string']])];
         yield 'preserve on a non-number' => [self::returning(['type' => 'int', 'preserve' => true])];
         yield 'unwrap of a nullable object' => [
@@ -330,7 +357,7 @@ final class OperationRunnerTest extends TestCase
             ['returns' => self::object(['0' => ['type' => 'int', 'accept' => ['numeric-string']]], ['0'])] + self::SPEC,
             ['returns' => ['type' => 'number', 'accept' => ['numeric-string'], 'preserve' => true]] + self::SPEC,
             ['returns' => ['type' => 'union', 'nullable' => true, 'anyOf' => [
-                ['type' => 'flag', 'accept' => ['string-flag', 'bool']],
+                ['type' => 'flag', 'accept' => ['string-flag', 'bool', 'empty-string']],
                 ['type' => 'bool', 'accept' => ['int-flag', 'string-flag']],
                 ['type' => 'map', 'values' => ['type' => 'mixed']],
             ]]] + self::SPEC,

@@ -244,17 +244,23 @@ UAPI groups operate on the selected cPanel account through either credential rou
 DomainInfo, Features and LangPHP expose every function in their pinned modules.
 `domainsData(format: 'hash')` returns grouped domain records; `format: 'list'`
 returns a record list. Domain details retain optional fields and explicit nulls.
+Shared domain flags accept integer and quoted 0/1; documented empty-string
+`userdirprotect` stays `''`, distinct from 0.
 `phpGetVhostVersions()` returns a list, or a single record when `vhost` is supplied.
 INI setters and PHP version changes use form POST. INI content and directives are
 sensitive parameters; retain a configuration backup before overwriting content.
 The content setter's pinned enum says `host|vhost` while its prose says `home|vhost`;
-this contradiction is documented, with no invented validation or default.
+this contradiction remains open, so its argument has plain `string` PHPDoc.
+The client form-encodes supplied content once; the pinned example is percent-encoded
+and the server write/read round trip remains unverified.
 
 `features()->hasFeature(name: 'autossl')` preserves its nullable object or observed
 integer payload; the integer's meaning is unspecified.
 Read `$account->responseMeta()?->uapiStatus()` immediately afterward for the access
-result: 1 means enabled; 0 means absent or disabled. This method accepts UAPI status
-0 because it carries the access result. Outer WHM bridge failures still throw.
+result: 1 means enabled; 0 with no errors means absent or disabled. Nonempty
+`responseMeta()->uapiErrors()` means the call failed, not that the feature is disabled.
+This typed method requires integer status 0 or 1 and accepts 0 as an access result.
+Outer WHM bridge failures still throw.
 
 `uapi()->dns()->fetchCpanelGeneratedDomains()` requires cPanel 120 and preserves
 trailing dots; `lookup()` returns textual lines or explicit `null`.
@@ -460,7 +466,7 @@ envelope without `data`, including any supplied status, errors, messages,
 warnings, and metadata. Nested JSON metadata objects are represented as arrays. Bridged calls
 retain both maps and check both outcomes; outer WHM success alone is insufficient.
 Most typed operations declare `OutcomePolicy::Flag`. The documented exception is
-`features()->hasFeature()`, which uses unchecked UAPI status for its access result.
+`features()->hasFeature()`, which accepts integer status 0 or 1 for its access result.
 Generic calls may also choose `OutcomePolicy::Unchecked` (see above).
 
 Typed accessors read the documented envelope fields without coercion:

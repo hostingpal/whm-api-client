@@ -120,7 +120,8 @@
                         "userdirprotect": {
                           "type": "flag",
                           "accept": [
-                            "string-flag"
+                            "string-flag",
+                            "empty-string"
                           ]
                         },
                         "customlog": {
@@ -300,7 +301,8 @@
                           "userdirprotect": {
                             "type": "flag",
                             "accept": [
-                              "string-flag"
+                              "string-flag",
+                              "empty-string"
                             ]
                           },
                           "customlog": {
@@ -478,7 +480,8 @@
                             "userdirprotect": {
                               "type": "flag",
                               "accept": [
-                                "string-flag"
+                                "string-flag",
+                                "empty-string"
                               ]
                             },
                             "customlog": {
@@ -587,10 +590,16 @@
                           "type": "object",
                           "fields": {
                             "all_aliases_valid": {
-                              "type": "flag"
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
                             },
                             "can_https_redirect": {
-                              "type": "flag"
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
                             },
                             "documentroot": {
                               "type": "string"
@@ -602,7 +611,10 @@
                               "type": "string"
                             },
                             "hascgi": {
-                              "type": "flag"
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
                             },
                             "homedir": {
                               "type": "string"
@@ -615,7 +627,10 @@
                               "nullable": true
                             },
                             "is_https_redirecting": {
-                              "type": "flag"
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
                             },
                             "is_temporary": {
                               "type": "flag",
@@ -624,7 +639,10 @@
                               ]
                             },
                             "no_cache_update": {
-                              "type": "flag"
+                              "type": "flag",
+                              "accept": [
+                                "string-flag"
+                              ]
                             },
                             "owner": {
                               "type": "string"
@@ -648,7 +666,11 @@
                               "type": "string"
                             },
                             "userdirprotect": {
-                              "type": "flag"
+                              "type": "flag",
+                              "accept": [
+                                "string-flag",
+                                "empty-string"
+                              ]
                             }
                           }
                         }
@@ -739,7 +761,8 @@
                         "userdirprotect": {
                           "type": "flag",
                           "accept": [
-                            "string-flag"
+                            "string-flag",
+                            "empty-string"
                           ]
                         },
                         "customlog": {
@@ -932,7 +955,8 @@
                     "userdirprotect": {
                       "type": "flag",
                       "accept": [
-                        "string-flag"
+                        "string-flag",
+                        "empty-string"
                       ]
                     },
                     "customlog": {
@@ -1035,6 +1059,12 @@
               "version": "pinned 2026-10-13",
               "date": "2026-10-30",
               "note": "The pinned /DomainInfo/domains_data responses/200/content/application~1json/schema/properties/result/properties/data oneOf references HashOutput and ListOutput. ListOutput omits the array container, whereas parameter format=list and examples/list/value/data explicitly contain a list. HashOutput main_domain describes items while examples/hash/value/data/addon_domains/2/main_domain is an object. The effective contract retains both documented containers and the explicit example object. Components Contents and MainDomainContents supply optional row fields; list examples additionally supply options, numeric-string port, string flags, customlog/scriptalias lists, and separate parked redirect name lists. Parked domain names also occur as strings in the hash example. These are pinned documentation discrepancies, not live observations."
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
             }
           ]
         }
@@ -1046,7 +1076,7 @@
         },
         {
           "kind": "documented",
-          "text": "Quoted 0/1 flags and port values in the pinned list example normalize to integers. Empty-string flag examples remain a documentation discrepancy; this contract does not accept arbitrary flag strings."
+          "text": "Quoted 0/1 domain flags and port values normalize to integers. The documented empty-string userdirprotect value stays an empty string, distinct from 0; other nonflag strings remain invalid. Shared flag fields use the same wire compatibility across record kinds and singleDomainData()."
         }
       ],
       "probe": {
@@ -1076,6 +1106,10 @@
         {
           "kind": "observed",
           "text": "Observed customlog and scriptalias may be lists as well as the pinned objects. Quoted 0/1 hascgi and phpopenbasedirprotect flags normalize to integers, as do lossless integer port strings. Unknown fields remain outside the contract."
+        },
+        {
+          "kind": "documented",
+          "text": "Shared domain flags accept the quoted 0/1 forms documented by the domains_data examples. The userdirprotect empty-string variant is preserved without mapping it to 0; other nonflag strings remain invalid. Optional fields remain omitted when absent."
         }
       ],
       "probe": {
@@ -1215,6 +1249,72 @@
               "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
             }
           ]
+        },
+        "all_aliases_valid": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
+            }
+          ]
+        },
+        "can_https_redirect": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
+            }
+          ]
+        },
+        "is_https_redirecting": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
+            }
+          ]
+        },
+        "is_temporary": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
+            }
+          ]
+        },
+        "userdirprotect": {
+          "accept": [
+            "string-flag",
+            "empty-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
+            }
+          ]
         }
       },
       "evidence": [
@@ -1224,6 +1324,12 @@
           "date": "2026-10-30",
           "note": "Observed customlog as a list of objects. Preserve the pinned single_domain_data object fields as both object and list items; masked item keys cannot justify extra fields. The separate pinned domains_data examples also contain customlog lists, but do not redefine this operation's item keys. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
           "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /DomainInfo/domains_data GET responses/200/content/application~1json/examples/hash and /list document quoted 0/1 for shared domain flags and an exact empty string for userdirprotect. Preserve only that empty string without assigning disabled semantics; other nonflag strings remain invalid. Apply shared field wire compatibility across addon, main, parked, subdomain and list record kinds and single_domain_data, whose corresponding documented flags share their meanings. Independently copied examples are tests/Fixtures/DomainInfo/domains-data-hash.json and domains-data-list.json; source snapshots are unchanged."
         }
       ]
     }

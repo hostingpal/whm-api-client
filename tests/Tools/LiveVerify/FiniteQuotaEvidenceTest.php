@@ -58,7 +58,7 @@ final class FiniteQuotaEvidenceTest extends TestCase
 
         $result = (new FiniteQuotaEvidence($http, self::context()))->run($catalog, 'private-whm', 'private-cpanel');
 
-        self::assertGreaterThan(5, count($catalog));
+        self::assertCount(67, $catalog);
         self::assertSame('passed', $result['expectations']);
         self::assertSame(
             ['direct-uapi' => 'binary-mib', 'bridged-uapi' => 'binary-mib'],

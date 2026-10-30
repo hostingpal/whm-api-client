@@ -1281,6 +1281,39 @@ The first PR's final offline gates pass 4,310 tests and 33,655 assertions, plus
 maximum PHPStan, PHPCS and offline API-map/source/generation verification. The
 three PHP setters remain offline-only; no mutation ran in any of these captures.
 
+### Review corrections awaiting final-head read-only capture
+
+The pinned `domains_data` hash and list examples include empty-string
+`userdirprotect`. Independent copies now exercise both full examples through all
+three envelope forms. The effective domain contracts preserve that exact empty
+string, retain integer and quoted 0/1 flags, and align shared fields across both
+operations and all record kinds. Empty strings carry no invented disabled meaning;
+whitespace and other nonflag strings remain invalid. This is documentation-bound
+compatibility, not a newly observed value on the test account.
+
+Typed unchecked UAPI results now require integer status 0 or 1 before void, optional
+or payload processing. Invalid status raises `InvalidResponseException` with the
+captured current metadata; generic `call()` semantics and outer WHM checks remain
+unchanged. `hasFeature()` callers must inspect errors alongside status: nonempty
+errors describes a failed call, not a disabled feature. INI content `type` uses
+plain string PHPDoc while the host/home discrepancy remains unresolved; content is
+form-encoded once by the client and the server write/read round trip is unverified.
+
+The narrow `countPops()` correction from `8533e95` is included here without the
+expanded Email group. It preserves integer results and normalizes canonical
+PHP-integer-bounded strings. The referenced immutable
+[Email preflight artifact](evidence/2026-10-30-email-section-quota-corrected.json)
+has SHA-256 `c3b795074558ee25cbeb001d09e002efe55942a32abfaa49bc8de03f97df6f31`;
+both count routes failed their prior integer contract, all 17 requests were GET
+and both resources remained `not_started`. No count value, main-account inclusion
+or cause is inferred.
+
+The three existing DomainInfo/Features/LangPHP artifacts remain unchanged. Their
+contract hashes describe their original revisions. Final evidence requires merging
+the reviewed PR28 and PR29 changes from `master`, regenerating, committing that
+integrated head, and running the read-only catalog once into a new artifact path.
+No new live capture or PHP mutation was run for these review corrections.
+
 
 ## 2026-10-30 complete Email contracts
 

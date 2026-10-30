@@ -19,11 +19,14 @@ use stdClass;
  * Read WHM and UAPI envelopes and apply the request's declared outcome policy.
  *
  * The integer 0/1 outcome rule (OutcomePolicy::Flag) is the documented envelope
- * convention of the pinned contracts and is what every typed operation group
- * declares; OutcomePolicy::Unchecked records metadata without interpreting the
+ * convention of the pinned contracts used by most typed operations.
+ * OutcomePolicy::Unchecked records metadata without interpreting the
  * operation's outcome, for operations whose status carries payload semantics. On
  * the WHM bridge, Unchecked waives only the UAPI status: the outer WHM result is
  * checked under both policies because it reports whether the UAPI call ran.
+ * Typed UAPI operations additionally validate integer 0/1 status in OperationRunner,
+ * even when that status carries feature state. Generic Unchecked calls retain
+ * caller-interpreted status semantics.
  * JSON objects remain distinct from lists until an endpoint validates its payload.
  * Metadata is opaque JSON copied into arrays, with payload data excluded.
  * Direct UAPI accepts the pinned result wrapper and the bare result observed

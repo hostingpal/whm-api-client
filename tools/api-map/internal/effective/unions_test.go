@@ -56,3 +56,17 @@ func TestSpecForMergesListAndMapBranches(t *testing.T) {
 		t.Fatalf("merged list items: %v", kinds)
 	}
 }
+
+func TestFlagEmptyStringIsAnExplicitPreservedVariant(t *testing.T) {
+	root := &TypeSpec{Type: "object", Fields: []Field{{Name: "f", Spec: TypeSpec{Type: "flag"}}}}
+	if err := applyCorrection(root, "f", overlay.Correction{Accept: []string{"empty-string"}, Evidence: evidence()}); err != nil {
+		t.Fatal(err)
+	}
+	if len(root.Fields[0].Spec.Accept) != 1 || root.Fields[0].Spec.Accept[0] != "empty-string" || root.Fields[0].Spec.Type != "flag" {
+		t.Fatalf("unexpected flag %+v", root)
+	}
+	root = &TypeSpec{Type: "object", Fields: []Field{{Name: "f", Spec: TypeSpec{Type: "string"}}}}
+	if err := applyCorrection(root, "f", overlay.Correction{Accept: []string{"empty-string"}, Evidence: evidence()}); err == nil {
+		t.Fatal("empty-string accepted on nonflag")
+	}
+}

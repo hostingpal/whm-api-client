@@ -74,8 +74,9 @@ final readonly class Features
      * This function checks whether a cPanel account has access to a feature.
      *
      * Documented: This operation uses UAPI status as the feature-access result: inspect responseMeta()->uapiStatus()
-     * after the call (1 means enabled; 0 means absent or disabled). A UAPI status of 0 is accepted; an outer WHM bridge
-     * failure still throws.
+     * after the call (1 means enabled; 0 with no errors means absent or disabled). Status must be integer 0 or 1.
+     * Nonempty errors means the call failed, not that the feature is disabled; inspect responseMeta()->uapiErrors()
+     * alongside status. A UAPI status of 0 is accepted; an outer WHM bridge failure still throws.
      *
      * Documented: The pinned data schema is a nullable opaque object, with null in the documented access examples.
      * Preserve explicit null and object fields; absent data is a payload mismatch. No boolean payload is invented.

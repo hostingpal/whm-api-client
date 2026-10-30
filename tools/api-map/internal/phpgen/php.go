@@ -4,6 +4,7 @@ package phpgen
 
 import (
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/hostingpal/whm-api-client/tools/api-map/internal/effective"
@@ -102,6 +103,9 @@ func baseShape(spec effective.TypeSpec, indent string) string {
 	case "bool":
 		return "bool"
 	case "flag":
+		if slices.Contains(spec.Accept, "empty-string") {
+			return "''|0|1"
+		}
 		return "0|1"
 	case "list":
 		return "list<" + shape(*spec.Items, indent) + ">"
@@ -162,7 +166,12 @@ func nativeParts(spec effective.TypeSpec) ([]string, bool, bool) {
 	switch spec.Type {
 	case "string":
 		return []string{"string"}, spec.Nullable, false
-	case "int", "flag":
+	case "int":
+		return []string{"int"}, spec.Nullable, false
+	case "flag":
+		if slices.Contains(spec.Accept, "empty-string") {
+			return []string{"int", "string"}, spec.Nullable, false
+		}
 		return []string{"int"}, spec.Nullable, false
 	case "number":
 		types := []string{"int", "float"}
