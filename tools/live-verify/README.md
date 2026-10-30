@@ -278,11 +278,12 @@ this implementation.
 
 ### MySQL probe plumbing pilot
 
-`ProbeCatalog::parameterlessUapiPair()` binds one explicit generated-method callback
-to direct UAPI and the fixed `npr` WHM bridge, in that order. Only the two MySQL
-inventory operations use it. Module/function names remain code-owned, and both
-probes pass through the existing strict recipe checks. It accepts no operation
-arguments; payload expectations stay in the independently authored tests.
+`ProbeCatalog::readOnlyUapiPair()` binds one explicit generated-method callback
+to direct UAPI and the fixed `npr` WHM bridge, in that order. The original pilot
+covered two MySQL inventory operations; the helper also binds reviewed arguments
+for later read slices. Module/function names and exact argument values remain
+code-owned, and both probes pass through the strict recipe checks. Payload
+expectations stay in independently authored tests.
 
 The pilot (`whm-api-client-8x0.10.4`, baseline `7247113`) measures:
 

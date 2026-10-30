@@ -376,6 +376,9 @@
       "params": {
         "content": {
           "sensitive": true
+        },
+        "type": {
+          "enum_doc": false
         }
       },
       "evidence": [
@@ -393,7 +396,7 @@
         },
         {
           "kind": "documented",
-          "text": "Replaces the selected INI content; there is no rollback. Pass raw INI text, which is form encoded once. The content argument is sensitive; empty text is sent rather than omitted."
+          "text": "Replaces the selected INI content; there is no rollback. The client form-encodes the supplied content once. The pinned example is percent-encoded, and the server write/read round trip remains unverified. The content argument is sensitive; empty text is sent rather than omitted."
         },
         {
           "kind": "documented",

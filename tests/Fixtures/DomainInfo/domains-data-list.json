@@ -1,0 +1,153 @@
+{
+  "data": [
+    {
+      "all_aliases_valid": "0",
+      "can_https_redirect": "0",
+      "customlog": [
+        {
+          "format": "combined",
+          "target": "/usr/local/apache/domlogs/example.com"
+        },
+        {
+          "format": "\"%{%s}t %I .\\n%{%s}t %O .\"",
+          "target": "/usr/local/apache/domlogs/example.com-bytes_log"
+        }
+      ],
+      "documentroot": "/home/user/public_html",
+      "domain": "example.com",
+      "group": "user",
+      "hascgi": "1",
+      "homedir": "/home/user",
+      "ifmodulemodsuphpc": {
+        "group": "user"
+      },
+      "ip": "192.168.0.128",
+      "is_https_redirecting": "0",
+      "is_temporary": "0",
+      "options": "ExecCGI Includes",
+      "owner": "root",
+      "port": "80",
+      "scriptalias": [
+        {
+          "path": "/home/user/public_html/cgi-bin",
+          "url": "/cgi-bin/"
+        },
+        {
+          "path": "/home/user/public_html/cgi-bin/",
+          "url": "/cgi-bin/"
+        }
+      ],
+      "serveradmin": "webmaster@example.com",
+      "serveralias": "parkeddomain.com www.parkeddomain.com www.example.com",
+      "servername": "example.com",
+      "type": "main_domain",
+      "usecanonicalname": "Off",
+      "user": "user",
+      "userdirprotect": "1"
+    },
+    {
+      "parked_with_https_redirects": [
+        "parkeddomain.com"
+      ]
+    },
+    {
+      "parked_capable_of_https_redirects": [
+        "zippy.nugs.test"
+      ]
+    },
+    {
+      "all_aliases_valid": "0",
+      "can_https_redirect": "0",
+      "documentroot": "/home/user/public_html/seconddomain.com",
+      "domain": "seconddomain.com",
+      "group": "user",
+      "hascgi": "1",
+      "homedir": "/home/user",
+      "ip": "192.168.0.128",
+      "ipv6": null,
+      "is_https_redirecting": "0",
+      "is_temporary": "0",
+      "no_cache_update": "0",
+      "owner": "root",
+      "serveradmin": "webmaster@seconddomain.example.com",
+      "serveralias": "seconddomain.com www.seconddomain.com www.seconddomain.example.com",
+      "servername": "seconddomain.example.com",
+      "type": "addon_domain",
+      "usecanonicalname": "Off",
+      "user": "user",
+      "userdirprotect": ""
+    },
+    {
+      "all_aliases_valid": "0",
+      "can_https_redirect": "0",
+      "documentroot": "/home/user/public_html/subdomain",
+      "domain": "exampledomain.com",
+      "group": "user",
+      "hascgi": "1",
+      "homedir": "/home/user",
+      "ip": "192.168.0.128",
+      "ipv6": null,
+      "is_https_redirecting": "0",
+      "is_temporary": "0",
+      "no_cache_update": "0",
+      "owner": "root",
+      "serveradmin": "webmaster@subdomain.example.com",
+      "serveralias": "exampledomain.com www.exampledomain.com www.subdomain.example.com",
+      "servername": "subdomain.example.com",
+      "type": "addon_domain",
+      "usecanonicalname": "Off",
+      "user": "user",
+      "userdirprotect": ""
+    },
+    {
+      "all_aliases_valid": "0",
+      "can_https_redirect": "0",
+      "documentroot": "/home/user/addondomain/home/dir",
+      "domain": "addondomain.com",
+      "group": "user",
+      "hascgi": "1",
+      "homedir": "/home/user",
+      "ip": "192.168.0.128",
+      "ipv6": null,
+      "is_https_redirecting": "0",
+      "is_temporary": "0",
+      "no_cache_update": "0",
+      "owner": "root",
+      "serveradmin": "webmaster@subdomain.example.com",
+      "serveralias": "addondomain.com www.addondomain.com www.subdomain.example.com",
+      "servername": "subdomain.example.com",
+      "type": "addon_domain",
+      "usecanonicalname": "Off",
+      "user": "user",
+      "userdirprotect": ""
+    },
+    {
+      "all_aliases_valid": "0",
+      "can_https_redirect": "0",
+      "documentroot": "/home/user/public_html/sub",
+      "domain": "sub.example.com",
+      "group": "user",
+      "hascgi": "1",
+      "homedir": "/home/user",
+      "ip": "192.168.0.128",
+      "ipv6": null,
+      "is_https_redirecting": "0",
+      "is_temporary": "0",
+      "no_cache_update": "0",
+      "owner": "root",
+      "serveradmin": "webmaster@sub.example.com",
+      "serveralias": "www.sub.example.com",
+      "servername": "sub.example.com",
+      "type": "sub_domain",
+      "usecanonicalname": "Off",
+      "user": "user",
+      "userdirprotect": ""
+    }
+  ],
+  "errors": null,
+  "messages": null,
+  "metadata": {
+    "transformed": 1
+  },
+  "status": 1
+}

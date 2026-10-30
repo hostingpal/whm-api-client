@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tests\Api;
 
 use Closure;
+use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
+use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\UapiClient;
@@ -260,6 +262,11 @@ final class DomainFeaturesPhpSectionTest extends TestCase
                 $u->langPhp()->phpIniSetUserContent(content: '', type: 'host'),
             'POST', 'content=&type=host', '{}', [],
         ];
+        yield 'php home scope remains a caller string despite the enum conflict' => [
+            'LangPHP', 'php_ini_set_user_content', static fn (UapiClient $u): ?array =>
+                $u->langPhp()->phpIniSetUserContent(content: '%5BPHP%5D', type: 'home'),
+            'POST', 'content=%255BPHP%255D&type=home', 'null', null,
+        ];
         yield 'php nullable opaque content result' => [
             'LangPHP', 'php_ini_set_user_content', static fn (UapiClient $u): ?array =>
                 $u->langPhp()->phpIniSetUserContent(content: 'x=0', type: 'host'),
@@ -293,6 +300,92 @@ final class DomainFeaturesPhpSectionTest extends TestCase
                 . '"data":{"uapi":{"status":0,"data":null}}}'));
             $this->expectException(ApiErrorException::class);
             $account->features()->hasFeature(name: 'disabled');
+        }
+    }
+
+    #[DataProvider('malformedFeatureStatuses')]
+    public function testTypedFeatureStatusMustBeAnIntegerFlagWithCurrentMetadata(string $route, string $members): void
+    {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope($route, 'null')));
+        $account->features()->hasFeature('enabled');
+        $previous = $account->responseMeta();
+        $result = '{' . $members . '"data":null,"errors":["current error"]}';
+        $body = match ($route) {
+            'wrapped' => '{"result":' . $result . '}',
+            'bridge' => '{"metadata":{"result":1},"data":{"uapi":' . $result . '}}',
+            default => $result,
+        };
+        $http->addResponse(new Response(200, [], $body));
+        try {
+            $account->features()->hasFeature('disabled');
+            self::fail('Typed feature status must be exactly integer 0 or 1.');
+        } catch (InvalidResponseException $error) {
+            self::assertNotInstanceOf(PayloadMismatchException::class, $error);
+            self::assertSame($account->responseMeta(), $error->metadata);
+            self::assertNotSame($previous, $error->metadata);
+            if ($route !== 'bare' || $members !== '') {
+                self::assertNotNull($error->metadata);
+                self::assertSame(['current error'], $error->metadata->uapiErrors());
+            } else {
+                self::assertNull($error->metadata);
+            }
+        }
+        self::assertCount(2, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function malformedFeatureStatuses(): iterable
+    {
+        foreach (['wrapped', 'bare', 'bridge'] as $route) {
+            foreach (
+                ['', '"status":null,', '"status":"1",', '"status":"0",',
+                '"status":2,', '"status":true,', '"status":{},'] as $index => $members
+            ) {
+                yield $route . ' status ' . $index => [$route, $members];
+            }
+        }
+    }
+
+    #[DataProvider('routes')]
+    public function testStatusZeroErrorsRemainExplicitFailureMetadata(string $route): void
+    {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], str_replace(
+            '"errors":null',
+            '"errors":["feature lookup failed"]',
+            self::envelope($route, 'null', 0),
+        )));
+        self::assertNull($account->features()->hasFeature('lookup'));
+        $metadata = $account->responseMeta();
+        self::assertNotNull($metadata);
+        self::assertSame(0, $metadata->uapiStatus());
+        self::assertSame(['feature lookup failed'], $metadata->uapiErrors());
+    }
+
+    #[DataProvider('routes')]
+    public function testGenericUncheckedRetainsItsCallerInterpretedStatusSemantics(string $route): void
+    {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], str_replace(
+            '"status":1',
+            '"status":"1"',
+            self::envelope($route, 'null'),
+        )));
+        self::assertNull($account->call('Features', 'has_feature', outcome: OutcomePolicy::Unchecked)->data);
+        $metadata = $account->responseMeta();
+        self::assertNotNull($metadata);
+        self::assertNull($metadata->uapiStatus());
+        self::assertSame('1', $metadata->uapi['status'] ?? null);
+        if ($route !== 'bare') {
+            $http->addResponse(new Response(200, [], str_replace('"status":1,', '', self::envelope($route, 'null'))));
+            self::assertNull($account->call('Features', 'has_feature', outcome: OutcomePolicy::Unchecked)->data);
+            $metadata = $account->responseMeta();
+            self::assertNotNull($metadata);
+            self::assertNull($metadata->uapiStatus());
         }
     }
 

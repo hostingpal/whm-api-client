@@ -181,10 +181,13 @@ typed or live-verified coverage. The 2026-10-13 spec's
 is superseded: its hand-written-group decision is replaced by the generated-client
 design (bead `whm-api-client-8x0.10`).
 DomainInfo (5), Features (5), and LangPHP (11) cover their complete pinned modules.
-Domain details preserve list/hash alternatives and documented quoted flag variants.
+Domain details preserve list/hash alternatives, documented quoted flag variants
+and exact empty-string userdirprotect values without mapping them to 0.
 PHP vhost versions preserve list/single-record variants. INI writes and PHP version
 changes use POST; INI content/directive inputs are sensitive. The content setter has
-an unresolved pinned host/home enum-versus-prose discrepancy. Features/has_feature
+an unresolved pinned host/home enum-versus-prose discrepancy and plain string
+PHPDoc. The client form-encodes supplied content once; the server write/read round
+trip remains unverified. Features/has_feature
 returns nullable opaque data or an observed integer of unspecified meaning and
 uses UAPI status as the feature result; inspect
 responseMeta()->uapiStatus(), while retaining outer WHM failure checks. Response
@@ -269,7 +272,9 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   server records query strings in its access log. Mutations and any operation with
   a secret-bearing parameter must use POST. `OutcomePolicy::Flag` (the documented
   `metadata.result`/`status` 1/0 rule) is the default typed policy; Features/has_feature
-  uses unchecked UAPI status because 0 means absent/disabled and 1 enabled;
+  uses unchecked UAPI status: integer 0 with no errors means absent/disabled and
+  integer 1 means enabled. Nonempty errors means a failed call; inspect both.
+  Typed unchecked UAPI still requires integer 0 or 1 before payload handling;
   `OutcomePolicy::Unchecked` records the envelope for operations whose status
   carries payload semantics; on the WHM bridge it waives only the UAPI status, and
   the outer WHM result is checked under both policies. Both require a usable envelope.

@@ -376,8 +376,9 @@ final readonly class LangPhp
      * Documented: Requires EasyApache 4 and the WebServer role; INI operations additionally require MultiPHP enabled.
      * Requests act through the selected account.
      *
-     * Documented: Replaces the selected INI content; there is no rollback. Pass raw INI text, which is form encoded
-     * once. The content argument is sensitive; empty text is sent rather than omitted.
+     * Documented: Replaces the selected INI content; there is no rollback. The client form-encodes the supplied content
+     * once. The pinned example is percent-encoded, and the server write/read round trip remains unverified. The content
+     * argument is sensitive; empty text is sent rather than omitted.
      *
      * Documented: The pinned type description says home/vhost while its enum says host/vhost. This discrepancy is not
      * silently resolved; the method forwards the supplied string. With type=vhost, supply vhost.
@@ -388,7 +389,7 @@ final readonly class LangPhp
      * API-map identity: uapi:LangPHP/php_ini_set_user_content#GET (wire name php_ini_set_user_content).
      *
      * @param string $content The content of the `php.ini` file to change.
-     * @param 'host'|'vhost' $type The type of `php.ini` file.
+     * @param string $type The type of `php.ini` file.
      * @param string|null $vhost The name of a virtual host. Null omits it.
      * @return PhpIniSetUserContentResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.

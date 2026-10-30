@@ -68,6 +68,8 @@ func TestLoadRejectsSchemaViolations(t *testing.T) {
 		"missing evidence": strings.Replace(validWHM, `"evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-14", "note": "uid returned as a decimal string"}]`, `"evidence": []`, 1),
 		"duplicate key":    strings.Replace(validWHM, `"group": "Accounts",`, `"group": "Accounts", "group": "Accounts",`, 1),
 		"case variant":     strings.Replace(validWHM, `"accessor"`, `"ACCESSOR"`, 1),
+		"enum doc string":  strings.Replace(validWHM, `"name": "listAccounts",`, `"name": "listAccounts", "params":{"search":{"enum_doc":"false"}},`, 1),
+		"enum doc null":    strings.Replace(validWHM, `"name": "listAccounts",`, `"name": "listAccounts", "params":{"search":{"enum_doc":null}},`, 1),
 		"bad method name":  strings.Replace(validWHM, `"listAccounts"`, `"ListAccounts"`, 1),
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -152,6 +154,7 @@ func TestValidateRequiresEvidenceForBehaviourOverrides(t *testing.T) {
 		"optional payload": {`"optional_payload": true`, "whm1:listaccts: optional_payload needs evidence"},
 		"sensitive false":  {`"params": {"search": {"sensitive": false}}`, "whm1:listaccts: sensitive false on parameter search needs evidence"},
 		"encoding":         {`"params": {"search": {"encoding": "repeat"}}`, "whm1:listaccts: encoding on parameter search needs evidence"},
+		"enum doc false":   {`"params": {"search": {"enum_doc": false}}`, "whm1:listaccts: enum_doc false on parameter search needs evidence"},
 		"required false":   {`"params": {"search": {"required": false}}`, "whm1:listaccts: required on parameter search needs evidence"},
 		"required true":    {`"params": {"search": {"required": true}}`, "whm1:listaccts: required on parameter search needs evidence"},
 		"variant":          {`"variant": "POST"`, "whm1:listaccts: variant needs evidence"},

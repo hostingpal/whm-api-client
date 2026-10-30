@@ -41,6 +41,9 @@ final class UapiEmailInventoryTest extends TestCase
                 [['forward' => 'target.test']]],
             'zero count' => ['count_pops', '0', 0],
             'nonzero count' => ['count_pops', '7', 7],
+            'zero string count' => ['count_pops', '"0"', 0],
+            'nonzero string count' => ['count_pops', '"7"', 7],
+            'largest canonical integer string count' => ['count_pops', '"' . PHP_INT_MAX . '"', PHP_INT_MAX],
         ];
         foreach (['direct', 'bare', 'bridge'] as $route) {
             foreach ($cases as $name => [$operation, $payload, $expected]) {
@@ -151,7 +154,10 @@ final class UapiEmailInventoryTest extends TestCase
                 '[{"select":null}]', '[{"select":"1"}]', '[{"select":true}]'],
             'list_domain_forwarders' => [null, 'null', '{}', '[null]', '[{"dest":null}]',
                 '[{"forward":null}]', '[{"dest":1}]', '[{"forward":false}]'],
-            'count_pops' => [null, 'null', '[]', '{}', '"0"', 'false', '0.5'],
+            'count_pops' => [
+                null, 'null', '[]', '{}', 'false', 'true', '0.5', '"0.5"', '"1e2"', '" 7"', '"7 "',
+                '"07"', '"+7"', '"unlimited"', '""', '"' . PHP_INT_MAX . '0"',
+            ],
         ];
         foreach (['direct', 'bare', 'bridge'] as $route) {
             foreach ($cases as $operation => $payloads) {
