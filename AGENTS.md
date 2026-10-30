@@ -349,6 +349,13 @@ The live catalog reads only DS records for `npr.rs`, Dynamic DNS inventory for
 Unobserved live variants remain tracked under `8x0.2.26`; API responses alone do
 not establish DNS propagation or DNSSEC validation by resolvers.
 
+
+The [DNS security capture](docs/api/evidence/2026-10-31-dns-security.json) at
+`372df78` on `11.138.0.19` passes all five GET observations and strict assessment
+with zero discrepancies. DS detail objects and the DDNS inventory are empty;
+populated fields and the other fifteen methods remain offline coverage. No DNS,
+key, registrar or DDNS state changed. Follow-up `8x0.2.26` remains open.
+
 The directory groups cover all ten pinned functions, available from cPanel 88.
 Six reads use GET and four mutations use form POST. Directory paths are forwarded
 unchanged. Only `DirectoryProtection/list_directories` documents paths relative to

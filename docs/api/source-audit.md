@@ -2781,3 +2781,17 @@ literal field named `additionalProperties`. The fetch-DS example also places
 formal sibling location remains the contract. Reviewed quoted-number examples
 support only the individually annotated fields. All other field types retain
 the source boundary.
+
+### DNS inventory capture
+
+The immutable [DNS security capture](evidence/2026-10-31-dns-security.json) at
+`372df7834484b8ff696d677e764f3b114a1ed2ac` on `11.138.0.19` passes all five GET
+observations: WHM version and both `DNSSEC/fetch_ds_records` and `DynamicDNS/list`
+through direct UAPI and the WHM bridge. HTTP/API/payload/probe checks and strict
+assessment pass with zero discrepancies. The DS result contains an empty object
+for the selected domain, with `keys` and `nsec_details` absent; DDNS inventory is
+an empty list. This establishes neither populated key/DDNS row schemas nor the
+example-based quoted-number variants. No key, record, registrar or application
+state changed, and no update URL was fetched. The other fifteen methods remain
+offline-tested; follow-up `8x0.2.26` retains their live work. SHA-256:
+`70811e4a21e6be51745f22738020410062ad98cc756539265ea8003c576c73e6`.
