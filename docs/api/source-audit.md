@@ -1262,3 +1262,21 @@ preserves both the pinned list and that object form using the same documented
 optional fields. No unknown key name or value is inferred. The strict evidence
 assessment remains failed for original mismatches and unacknowledged extras;
 this historical artifact is not rewritten after correcting the contract.
+
+
+### Corrected read-only verification
+
+The [corrected run](evidence/2026-10-30-domain-features-php-corrected.json) at
+7b172f3 on 11.138.0.19 records all 67 API/payload probes passing, including all 20
+new route-specific reads. Artifact SHA-256:
+`50a569139cc932442be93960c322d1afb408164537ef9668a98402651156c2e4`.
+The strict discrepancy assessment still fails: eight DomainInfo/INI observations
+contain unknown fields, and two Quota observations no longer match their historical
+11.138.0.15 acknowledgments. Both old Quota acknowledgments remain stale; no new
+acknowledgment was introduced. The single-domain customlog list also exposes a
+masked extra field. These successful payload calls are not discrepancy-free
+contract evidence. All three artifacts and their original outcomes remain intact.
+
+The first PR's final offline gates pass 4,310 tests and 33,655 assertions, plus
+maximum PHPStan, PHPCS and offline API-map/source/generation verification. The
+three PHP setters remain offline-only; no mutation ran in any of these captures.

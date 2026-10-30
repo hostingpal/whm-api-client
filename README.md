@@ -258,6 +258,12 @@ result: 1 means enabled; 0 means absent or disabled. This method accepts UAPI st
 `uapi()->dns()->fetchCpanelGeneratedDomains()` requires cPanel 120 and preserves
 trailing dots; `lookup()` returns textual lines or explicit `null`.
 
+The [completed-module read capture](docs/api/evidence/2026-10-30-domain-features-php-corrected.json)
+observed all ten new reads through both routes on cPanel 11.138.0.19. All 67 catalog
+API/payload checks passed, while strict discrepancy review remains failed for
+unknown fields and stale historical Quota acknowledgments. PHP setters remain
+offline-tested only; see the [source audit](docs/api/source-audit.md).
+
 The DNS methods are read-only (GET):
 
 ```php
