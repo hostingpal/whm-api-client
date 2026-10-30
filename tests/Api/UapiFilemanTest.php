@@ -281,6 +281,55 @@ final class UapiFilemanTest extends TestCase
     }
 
     /** @param FileCall $call */
+    #[DataProvider('inventoryRepresentations')]
+    public function testInventoryRepresentationCompatibility(
+        string $route,
+        Closure $call,
+        string $payload,
+        mixed $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        self::assertSame($expected, $call($account->fileman()));
+        self::assertSame(1, $account->responseMeta()?->uapiStatus());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, FileCall, string, mixed}> */
+    public static function inventoryRepresentations(): iterable
+    {
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            $information = static fn (Fileman $f): mixed => $f->getFileInformation('private/a.txt');
+            foreach ([0, 33152] as $mode) {
+                yield "$route integer mode $mode" => [
+                    $route, $information, '{"mode":' . $mode . '}', ['mode' => $mode],
+                ];
+            }
+            foreach (['0600', '0', '755', ''] as $mode) {
+                yield "$route preserved nicemode $mode" => [
+                    $route, $information, '{"nicemode":"' . $mode . '"}', ['nicemode' => $mode],
+                ];
+            }
+            foreach (['0' => 0, '4096' => 4096] as $wire => $expected) {
+                yield "$route normalized size $wire" => [
+                    $route, $information, '{"size":"' . $wire . '"}', ['size' => $expected],
+                ];
+            }
+            $row = self::informationRow();
+            $row['isparent'] = 0;
+            ksort($row);
+            $list = static fn (Fileman $f): mixed => $f->listFiles('private');
+            yield "$route flat list retains pinned fields" => [
+                $route, $list, json_encode([$row, []], JSON_THROW_ON_ERROR), [$row, []],
+            ];
+            yield "$route flat singleton preserves optional fields" => [
+                $route, $list, '[{"file":"a.txt","size":0,"future":true}]', [['file' => 'a.txt', 'size' => 0]],
+            ];
+        }
+    }
+
+    /** @param FileCall $call */
     #[DataProvider('payloadBoundaries')]
     public function testPayloadPresenceAndTypesRetainTheConfirmedOutcome(
         string $route,
@@ -325,6 +374,8 @@ final class UapiFilemanTest extends TestCase
                 }
                 if ($function === 'autocompletedir') {
                     array_push($invalid, '{}', '[null]', '[{"file":1}]', '[{"file":null}]');
+                } elseif ($function === 'list_files') {
+                    $invalid[] = '[null]';
                 } else {
                     $invalid[] = '[{}]';
                 }
@@ -358,24 +409,38 @@ final class UapiFilemanTest extends TestCase
         if ($function !== 'get_file_information' && $function !== 'list_files') {
             return;
         }
-        $contexts = $function === 'list_files' ? ['dirs', 'files'] : [''];
+        $contexts = $function === 'list_files' ? ['dirs', 'files', 'flat'] : [''];
         foreach ($contexts as $context) {
             foreach (self::informationRow() as $field => $value) {
                 $badValues = is_int($value) ? ['null', '"0"', 'true', '[]'] : ['null', '0', 'true', '[]'];
+                if ($function === 'get_file_information' && in_array($field, ['mode', 'nicemode'], true)) {
+                    $badValues = ['null', 'true', '[]', '1.5'];
+                }
+                if ($function === 'get_file_information' && $field === 'size') {
+                    $badValues = ['null', 'true', '[]', '"00"', '"1.0"', '"+1"', '" 1"',
+                        '"9223372036854775808"'];
+                }
                 if (in_array($field, ['exists', 'isleaf', 'read', 'write'], true)) {
                     array_push($badValues, '2', '-1', '1.0');
                 }
                 foreach ($badValues as $bad) {
                     $row = '{"' . $field . '":' . $bad . '}';
-                    yield $context === '' ? $row : '{"' . $context . '":[' . $row . ']}';
+                    yield match ($context) {
+                        '' => $row,
+                        'flat' => '[' . $row . ']',
+                        default => '{"' . $context . '":[' . $row . ']}',
+                    };
                 }
             }
-            if ($context !== '') {
+            if ($context !== '' && $context !== 'flat') {
                 foreach (['null', '{}', '[null]'] as $bad) {
                     yield '{"' . $context . '":' . $bad . '}';
                 }
+            }
+            if ($context !== '') {
                 foreach (['null', '"0"', 'true', '2'] as $bad) {
-                    yield '{"' . $context . '":[{"isparent":' . $bad . '}]}';
+                    $row = '{"isparent":' . $bad . '}';
+                    yield $context === 'flat' ? '[' . $row . ']' : '{"' . $context . '":[' . $row . ']}';
                 }
             }
         }

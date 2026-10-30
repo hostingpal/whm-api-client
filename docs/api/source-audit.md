@@ -2422,6 +2422,13 @@ integer `0|1`, and file sizes remain integer bytes. File-content charset fields
 with unspecified schemas stay mixed. `emptyTrash()` preserves nullable opaque
 objects and rejects a missing payload.
 
+Observed file information preserves `mode` and `nicemode` as `int|string`,
+including string spelling, and normalizes `size` only from a lossless canonical
+integer string. String permission values do not establish a numeric format rule.
+Listings preserve both the documented object containing `dirs`/`files` lists and
+the observed flat list. The flat rows use the pinned row schema; the initial
+capture only established their container because field names were masked.
+
 All 13 methods have offline contract tests. The bounded live catalog selects
 three directory inventory reads through both routes, plus WHM version. It reads
 no existing file content and sends no mutations. Content, filesystem lifecycle
@@ -2441,3 +2448,14 @@ wrapped/bare and bridged UAPI, omitted/empty/false options, response type failur
 metadata and sensitive-content traces. The seven-request catalog has a separate
 literal URI oracle and rejects mutation methods before network dispatch. Existing
 runtime, generator and live-runner behavior is unchanged.
+
+The initial [Fileman inventory capture](evidence/2026-10-30-fileman-inventory.json)
+at `5ea0d565bb2eda9d5e03a0df23b5d8d07d1487bf` on `11.138.0.19` records seven
+GETs. All HTTP/API outcomes pass; three payload checks pass and four fail.
+`get_file_information` returns integer `mode` and numeric-string `nicemode` on
+both routes, plus numeric-string `size` on the direct route. `list_files`
+returns a flat list on both routes instead of the pinned object with `dirs` and
+`files` lists. The initial listing rows have wildcarded fields because the
+container did not match; this artifact establishes no named flat-row field types.
+The original failure evidence stays immutable, with SHA-256
+`c4f5b8b3f8930adb168f657a9b679544ad3196286250a00cd9701fe736277491`.

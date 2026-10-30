@@ -213,3 +213,14 @@ issuance/renewal behavior. SHA-256:
 - [Corrected Mime section](2026-10-30-mime-section-corrected.json), at `fdbafb6`
   on `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks with zero discrepancies and a passed strict assessment. The observed null URL fields are preserved. MIME and redirect lists were empty; handler rows were populated. This read-only capture establishes no mutation or HTTP redirect/hotlink enforcement coverage. Separate reviewer mutation and populated-row observations are attributed in the source audit. Initial failure evidence remains immutable.
   Follow-up `8x0.2.21` remains open.
+
+The initial [Fileman inventory capture](2026-10-30-fileman-inventory.json)
+at `5ea0d565bb2eda9d5e03a0df23b5d8d07d1487bf` on `11.138.0.19` records seven
+GETs. All HTTP/API outcomes pass; three payload checks pass and four fail.
+`get_file_information` returns integer `mode` and numeric-string `nicemode` on
+both routes, plus numeric-string `size` on the direct route. `list_files`
+returns a flat list on both routes instead of the pinned object with `dirs` and
+`files` lists. The initial listing rows have wildcarded fields because the
+container did not match; this artifact establishes no named flat-row field types.
+The original failure evidence stays immutable, with SHA-256
+`c4f5b8b3f8930adb168f657a9b679544ad3196286250a00cd9701fe736277491`.

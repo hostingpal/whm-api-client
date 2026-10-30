@@ -51,9 +51,9 @@ use SensitiveParameter;
  *     isleaf?: 0|1,
  *     mimename?: string,
  *     mimetype?: string,
- *     mode?: string,
+ *     mode?: string|int,
  *     mtime?: int,
- *     nicemode?: int,
+ *     nicemode?: int|string,
  *     path?: string,
  *     rawmimename?: string,
  *     rawmimetype?: string,
@@ -112,7 +112,30 @@ use SensitiveParameter;
  *         uid?: int,
  *         write?: 0|1,
  *     }>,
- * }
+ * }|list<array{
+ *     absdir?: string,
+ *     ctime?: int,
+ *     exists?: 0|1,
+ *     file?: string,
+ *     fullpath?: string,
+ *     gid?: int,
+ *     humansize?: string,
+ *     isleaf?: 0|1,
+ *     isparent?: 0|1,
+ *     mimename?: string,
+ *     mimetype?: string,
+ *     mode?: string,
+ *     mtime?: int,
+ *     nicemode?: int,
+ *     path?: string,
+ *     rawmimename?: string,
+ *     rawmimetype?: string,
+ *     read?: 0|1,
+ *     size?: int,
+ *     type?: string,
+ *     uid?: int,
+ *     write?: 0|1,
+ * }>
  * @phpstan-type MoveFileResult array{
  *     dest?: string,
  *     src?: string,
@@ -338,8 +361,13 @@ final readonly class Fileman
      * Documented: Available in cPanel 11.44 and later. Disabling the File Storage role disables this operation.
      *
      * Documented: Optional response fields remain absent when omitted. exists, isleaf, read and write remain integer
-     * 0|1 flags; read and write are returned only when includePermissions is true. size is in bytes; mode is a string
-     * and nicemode is an integer. Paths are forwarded unchanged and no relative-path base is inferred.
+     * 0|1 flags; read and write are returned only when includePermissions is true. size is in bytes. Paths are
+     * forwarded unchanged and no relative-path base is inferred.
+     *
+     * Observed: On cPanel 11.138.0.19, mode was an integer and nicemode a numeric string on both routes; size was a
+     * numeric string directly and an integer through the bridge. mode and nicemode preserve int|string representations,
+     * including original string spelling, without a new string format guarantee. Canonical integer strings for size
+     * normalize losslessly to int; other fields are unchanged.
      *
      * API-map identity: uapi:Fileman/get_file_information#GET (wire name get_file_information).
      *
@@ -393,6 +421,12 @@ final readonly class Fileman
      * Documented: The limit_to_list description refers to a filepath- prefix but the pinned operation declares no
      * indexed filepath- parameters or family encoding. Only the declared limitToList flag is exposed; no indexed inputs
      * are inferred. Omitted options retain server defaults and explicit false is sent as 0.
+     *
+     * Observed: On cPanel 11.138.0.19, listFiles returned a flat list on both routes. The result preserves both the
+     * complete pinned dirs/files object and a flat list with the pinned optional row fields. Applying documented row
+     * fields to the observed list is provisional contract inference: the initial capture masked row keys and
+     * establishes no named row field variants. Listing mode, nicemode and size retain their pinned types until separate
+     * evidence supports any correction.
      *
      * API-map identity: uapi:Fileman/list_files#GET (wire name list_files).
      *

@@ -372,6 +372,13 @@ integer `0|1`, and file sizes remain integer bytes. File-content charset fields
 with unspecified schemas stay mixed. `emptyTrash()` preserves nullable opaque
 objects and rejects a missing payload.
 
+Observed file information preserves `mode` and `nicemode` as `int|string`,
+including string spelling, and normalizes `size` only from a lossless canonical
+integer string. String permission values do not establish a numeric format rule.
+Listings preserve both the documented object containing `dirs`/`files` lists and
+the observed flat list. The flat rows use the pinned row schema; the initial
+capture only established their container because field names were masked.
+
 All 13 methods have offline contract tests. The bounded live catalog selects
 three directory inventory reads through both routes, plus WHM version. It reads
 no existing file content and sends no mutations. Content, filesystem lifecycle

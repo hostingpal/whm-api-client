@@ -134,6 +134,13 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "The pinned /Fileman/get_file_information GET variant declares x-readonly=true. Use GET for this documented read."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Original read-only inventory at 5ea0d565bb2eda9d5e03a0df23b5d8d07d1487bf, artifact SHA-256 c4f5b8b3f8930adb168f657a9b679544ad3196286250a00cd9701fe736277491. Named original response paths establish mode integer and nicemode numeric-string on both routes, plus size numeric-string directly and integer through the bridge. Changes apply only to get_file_information; listing leaves remain pinned.",
+          "fingerprint": "docs/api/evidence/2026-10-30-fileman-inventory.json"
         }
       ],
       "notes": [
@@ -143,9 +150,73 @@
         },
         {
           "kind": "documented",
-          "text": "Optional response fields remain absent when omitted. exists, isleaf, read and write remain integer 0|1 flags; read and write are returned only when includePermissions is true. size is in bytes; mode is a string and nicemode is an integer. Paths are forwarded unchanged and no relative-path base is inferred."
+          "text": "Optional response fields remain absent when omitted. exists, isleaf, read and write remain integer 0|1 flags; read and write are returned only when includePermissions is true. size is in bytes. Paths are forwarded unchanged and no relative-path base is inferred."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, mode was an integer and nicemode a numeric string on both routes; size was a numeric string directly and an integer through the bridge. mode and nicemode preserve int|string representations, including original string spelling, without a new string format guarantee. Canonical integer strings for size normalize losslessly to int; other fields are unchanged."
         }
-      ]
+      ],
+      "response": {
+        "mode": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "int"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Original read-only inventory at 5ea0d565bb2eda9d5e03a0df23b5d8d07d1487bf, artifact SHA-256 c4f5b8b3f8930adb168f657a9b679544ad3196286250a00cd9701fe736277491. get_file_information returned mode as a JSON integer on both direct and bridged UAPI, while the pinned schema declares string. Preserve both representations without coercion or new format/range claims.",
+              "fingerprint": "docs/api/evidence/2026-10-30-fileman-inventory.json"
+            }
+          ]
+        },
+        "nicemode": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Original read-only inventory at 5ea0d565bb2eda9d5e03a0df23b5d8d07d1487bf, artifact SHA-256 c4f5b8b3f8930adb168f657a9b679544ad3196286250a00cd9701fe736277491. get_file_information returned nicemode as a numeric string on both UAPI routes, while the pinned schema declares integer. The explicit string compatibility branch preserves original spelling, including leading zeros, without numeric conversion. Existing grammar cannot constrain that string format without coercion or accepting additional numeric types; this is a representation boundary, not a format/range guarantee.",
+              "fingerprint": "docs/api/evidence/2026-10-30-fileman-inventory.json"
+            }
+          ]
+        },
+        "size": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Original read-only inventory at 5ea0d565bb2eda9d5e03a0df23b5d8d07d1487bf, artifact SHA-256 c4f5b8b3f8930adb168f657a9b679544ad3196286250a00cd9701fe736277491. get_file_information returned size as a numeric string directly and JSON integer through the bridge. Opt this field into the existing lossless bounded canonical integer-string normalization; retain the documented integer form and reject fractional, leading-zero, noncanonical and overflowing strings.",
+              "fingerprint": "docs/api/evidence/2026-10-30-fileman-inventory.json"
+            }
+          ]
+        }
+      }
     },
     "uapi:Fileman/list_files": {
       "method": "GET",
@@ -161,6 +232,13 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "At /paths/~1Fileman~1list_files/get/parameters/9, types is declared as an array but explicitly uses style=pipeDelimited and explode=false; its description requires a pipe-separated list and its item example is file|dir. Use the existing scalar encoding for a caller-supplied pre-serialized filter, consistent with the scalar pipe-delimited Ftp filters. Do not send repeated keys or infer an integer filter meaning from the existing string|int scalar boundary."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Original read-only inventory at 5ea0d565bb2eda9d5e03a0df23b5d8d07d1487bf, artifact SHA-256 c4f5b8b3f8930adb168f657a9b679544ad3196286250a00cd9701fe736277491. The original list_files response root is a list on both routes. Row fields remain masked because the pinned object root failed, so no named listing field or wire variant is established by this capture.",
+          "fingerprint": "docs/api/evidence/2026-10-30-fileman-inventory.json"
         }
       ],
       "notes": [
@@ -179,11 +257,260 @@
         {
           "kind": "documented",
           "text": "The limit_to_list description refers to a filepath- prefix but the pinned operation declares no indexed filepath- parameters or family encoding. Only the declared limitToList flag is exposed; no indexed inputs are inferred. Omitted options retain server defaults and explicit false is sent as 0."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, listFiles returned a flat list on both routes. The result preserves both the complete pinned dirs/files object and a flat list with the pinned optional row fields. Applying documented row fields to the observed list is provisional contract inference: the initial capture masked row keys and establishes no named row field variants. Listing mode, nicemode and size retain their pinned types until separate evidence supports any correction."
         }
       ],
       "params": {
         "types": {
           "encoding": "scalar"
+        }
+      },
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "object",
+                "fields": {
+                  "dirs": {
+                    "type": "list",
+                    "items": {
+                      "type": "object",
+                      "fields": {
+                        "absdir": {
+                          "type": "string"
+                        },
+                        "ctime": {
+                          "type": "int"
+                        },
+                        "exists": {
+                          "type": "flag"
+                        },
+                        "file": {
+                          "type": "string"
+                        },
+                        "fullpath": {
+                          "type": "string"
+                        },
+                        "gid": {
+                          "type": "int"
+                        },
+                        "humansize": {
+                          "type": "string"
+                        },
+                        "isleaf": {
+                          "type": "flag"
+                        },
+                        "isparent": {
+                          "type": "flag"
+                        },
+                        "mimename": {
+                          "type": "string"
+                        },
+                        "mimetype": {
+                          "type": "string"
+                        },
+                        "mode": {
+                          "type": "string"
+                        },
+                        "mtime": {
+                          "type": "int"
+                        },
+                        "nicemode": {
+                          "type": "int"
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "rawmimename": {
+                          "type": "string"
+                        },
+                        "rawmimetype": {
+                          "type": "string"
+                        },
+                        "read": {
+                          "type": "flag"
+                        },
+                        "size": {
+                          "type": "int"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "uid": {
+                          "type": "int"
+                        },
+                        "write": {
+                          "type": "flag"
+                        }
+                      }
+                    }
+                  },
+                  "files": {
+                    "type": "list",
+                    "items": {
+                      "type": "object",
+                      "fields": {
+                        "absdir": {
+                          "type": "string"
+                        },
+                        "ctime": {
+                          "type": "int"
+                        },
+                        "exists": {
+                          "type": "flag"
+                        },
+                        "file": {
+                          "type": "string"
+                        },
+                        "fullpath": {
+                          "type": "string"
+                        },
+                        "gid": {
+                          "type": "int"
+                        },
+                        "humansize": {
+                          "type": "string"
+                        },
+                        "isleaf": {
+                          "type": "flag"
+                        },
+                        "isparent": {
+                          "type": "flag"
+                        },
+                        "mimename": {
+                          "type": "string"
+                        },
+                        "mimetype": {
+                          "type": "string"
+                        },
+                        "mode": {
+                          "type": "string"
+                        },
+                        "mtime": {
+                          "type": "int"
+                        },
+                        "nicemode": {
+                          "type": "int"
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "rawmimename": {
+                          "type": "string"
+                        },
+                        "rawmimetype": {
+                          "type": "string"
+                        },
+                        "read": {
+                          "type": "flag"
+                        },
+                        "size": {
+                          "type": "int"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "uid": {
+                          "type": "int"
+                        },
+                        "write": {
+                          "type": "flag"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "absdir": {
+                      "type": "string"
+                    },
+                    "ctime": {
+                      "type": "int"
+                    },
+                    "exists": {
+                      "type": "flag"
+                    },
+                    "file": {
+                      "type": "string"
+                    },
+                    "fullpath": {
+                      "type": "string"
+                    },
+                    "gid": {
+                      "type": "int"
+                    },
+                    "humansize": {
+                      "type": "string"
+                    },
+                    "isleaf": {
+                      "type": "flag"
+                    },
+                    "isparent": {
+                      "type": "flag"
+                    },
+                    "mimename": {
+                      "type": "string"
+                    },
+                    "mimetype": {
+                      "type": "string"
+                    },
+                    "mode": {
+                      "type": "string"
+                    },
+                    "mtime": {
+                      "type": "int"
+                    },
+                    "nicemode": {
+                      "type": "int"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "rawmimename": {
+                      "type": "string"
+                    },
+                    "rawmimetype": {
+                      "type": "string"
+                    },
+                    "read": {
+                      "type": "flag"
+                    },
+                    "size": {
+                      "type": "int"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "uid": {
+                      "type": "int"
+                    },
+                    "write": {
+                      "type": "flag"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Original read-only inventory at 5ea0d565bb2eda9d5e03a0df23b5d8d07d1487bf, artifact SHA-256 c4f5b8b3f8930adb168f657a9b679544ad3196286250a00cd9701fe736277491. list_files returned a flat list of objects on both UAPI routes instead of the pinned object with dirs/files lists. Preserve the complete pinned object alternative and add a flat list using exactly the existing pinned optional row fields. Initial mismatch masking wildcarded all row keys, so this is explicit provisional inference from documented rows under the observed container, not named live field evidence. Do not transfer get_file_information field compatibility to listing rows.",
+              "fingerprint": "docs/api/evidence/2026-10-30-fileman-inventory.json"
+            }
+          ]
         }
       }
     },
