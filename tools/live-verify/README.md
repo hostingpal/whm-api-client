@@ -322,3 +322,37 @@ alternative's static field names, and wildcard unknown descendants. They do not
 select an alternative, accept a payload, or change the primary opaque union
 fingerprint, probe outcome, or discrepancy gate. They cannot recover field names
 from older masked artifacts; further diagnosis requires a new reviewed run.
+
+## Owned Email mailbox recipe
+
+`php tools/live-verify/email-section.php --output=PATH` requires committed inputs,
+PHP cURL, both test tokens, `WHM_API_LIVE=1`, `WHM_API_LIVE_MUTATIONS=1`,
+`WHM_API_LIVE_ACCOUNT=npr`, and `WHM_API_LIVE_DOMAIN=npr.rs`. The output must be
+new; complete reports survive a publication failure in a protected recovery file.
+
+The recipe performs WHM version and both routes' mailbox/domain/forwarder/MX/quota
+preflight reads, then uses a fresh address for each route. Its 45 planned responses
+cover 16 Email functions: list_pops, count_pops, list_mail_domains,
+list_domain_forwarders, list_forwarders, list_mxs, get_default_email_quota,
+get_max_email_quota, add_pop, get_pop_quota, passwd_pop, verify_password,
+edit_pop_quota, suspend_login, unsuspend_login and delete_pop. It creates a 32 MB
+mailbox with welcome mail disabled, checks its returned identity and inventory,
+changes/verifies the password, changes quota to 64 MB with readback, verifies login
+suspension/unsuspension, deletes the owned mailbox and confirms exact absence.
+
+No welcome message, client-configuration email, forwarding or delivery test is
+sent. Existing mailboxes and account-wide settings are not changed. An uncertain
+creation is never adopted or removed; successful original creation establishes
+ownership even if its payload later fails validation. Every confirmed owned
+mailbox is cleaned on failure, with one deletion attempt and final absence checks.
+The original outcome, typed validation and fixture expectation remain separate.
+The strict report accepts no discrepancy acknowledgments and persists only
+structural response evidence and fixed lifecycle labels, never passwords, email
+addresses or upstream error messages. It does not establish IMAP/SMTP behavior or
+live coverage of all 96 generated Email functions.
+
+For get_pop_quota only, an optional scalar_encoding diagnostic classifies the
+same captured response into five fixed categories: canonical-integer,
+integral-fixed-point, fractional-fixed-point, other-numeric or other. Fixed-point
+labels describe syntax, not bounds or accepted compatibility. No value, length or
+unknown key is retained, and the diagnostic never changes validation or the gate.

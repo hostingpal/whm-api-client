@@ -10,6 +10,7 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Client\ClientInterface;
 use RuntimeException;
 use SensitiveParameter;
+use stdClass;
 use Throwable;
 
 /**
@@ -23,6 +24,8 @@ use Throwable;
  *
  * @phpstan-import-type Context from EvidenceRunner
  * @phpstan-import-type Route from EmailSectionRecipe
+ * @phpstan-type ScalarEncoding 'canonical-integer'|'integral-fixed-point'|'fractional-fixed-point'
+ *     |'other-numeric'|'other'
  * @phpstan-type Observation array{
  *     phase: string, expectation: 'passed'|'failed'|'not_checked',
  *     operation: string, variant: string, route: string, method: string|null, server_version: string|null,
@@ -30,7 +33,7 @@ use Throwable;
  *     overlay_sha256: string, effective_contract_sha256: string, http_status: int|null,
  *     api_outcome: string, payload_validation: string, probe_outcome: string, failure_kind: string|null,
  *     response_paths: array<string, list<string>>, payload_paths: array<string, list<string>>,
- *     discrepancies: list<array{path: string, kind: string}>
+ *     discrepancies: list<array{path: string, kind: string}>, scalar_encoding?: ScalarEncoding
  * }
  * @phpstan-type State 'not_started'|'owned'|'cleaned'|'uncertain'
  * @phpstan-type Report array{
@@ -263,10 +266,66 @@ final class EmailSectionFixture
         } finally {
             $this->guard->clearPending();
         }
+        if ($probe->operation === 'uapi:Email/get_pop_quota') {
+            $raw = $this->capture->rawBody();
+            if ($raw !== null) {
+                $record['scalar_encoding'] = self::quotaScalarEncoding($raw, $probe->route);
+            }
+        }
         $this->records[] = [...$record, 'phase' => $phase,
             'expectation' => $record['probe_outcome'] === 'passed' ? 'passed' : 'not_checked'];
 
         return $result;
+    }
+
+    /**
+     * Diagnose the original quota scalar's encoding using fixed categories, without retaining its value.
+     *
+     * Present direct result wrappers take precedence even when malformed. The classifier does not
+     * normalize, validate, identify a quota amount, or change any primary capture or gate field.
+     * Fixed-point categories describe syntax only, including zero-only versus nonzero fractions;
+     * they establish neither integer bounds nor accepted runtime compatibility. No response is repeated.
+     * Missing raw captures never enter this method or receive a diagnostic field.
+     *
+     * @return ScalarEncoding
+     */
+    private static function quotaScalarEncoding(#[SensitiveParameter] string $raw, string $route): string
+    {
+        try {
+            $document = json_decode($raw, false, 512, JSON_THROW_ON_ERROR);
+        } catch (Throwable) {
+            return 'other';
+        }
+        $envelope = null;
+        if ($document instanceof stdClass) {
+            if ($route === 'direct-uapi') {
+                $envelope = property_exists($document, 'result') ? $document->result
+                    : (property_exists($document, 'status') ? $document : null);
+            } elseif ($route === 'bridged-uapi' && ($document->data ?? null) instanceof stdClass) {
+                $envelope = $document->data->uapi ?? null;
+            }
+        }
+        if (!$envelope instanceof stdClass || !property_exists($envelope, 'data')) {
+            return 'other';
+        }
+        $value = $envelope->data;
+        if (is_int($value)) {
+            return 'canonical-integer';
+        }
+        if (is_float($value)) {
+            return 'other-numeric';
+        }
+        if (!is_string($value)) {
+            return 'other';
+        }
+        if (preg_match('/\A-?(?:0|[1-9][0-9]*)\z/', $value) === 1 && (string) (int) $value === $value) {
+            return 'canonical-integer';
+        }
+        if (preg_match('/\A-?(?:0|[1-9][0-9]*)\.([0-9]+)\z/', $value, $parts) === 1) {
+            return preg_match('/[1-9]/', $parts[1]) === 1 ? 'fractional-fixed-point' : 'integral-fixed-point';
+        }
+
+        return is_numeric($value) ? 'other-numeric' : 'other';
     }
 
     /** @param 'whm'|Route $route */

@@ -1331,3 +1331,19 @@ its required integer arrived as a numeric string. Both owned mailboxes were
 confirmed absent after cleanup. The structural observation establishes the wire
 type, not the expected quota value. Failed phase and discrepancy assessments remain
 unchanged; no artifact is rewritten after a contract correction.
+
+The [quota-corrected preflight](evidence/2026-10-30-email-section-quota-corrected.json)
+at 7300ef5 has SHA-256
+`c3b795074558ee25cbeb001d09e002efe55942a32abfaa49bc8de03f97df6f31`.
+Its 17 GETs stopped at count_pops quoted integers on both routes; no mutation ran.
+That existing method now accepts canonical integer strings within PHP bounds,
+without inferring whether the main account is counted.
+
+The [count-corrected capture](evidence/2026-10-30-email-section-count-corrected.json)
+at 8533e95 has SHA-256
+`c10599b638300486019b137b20e40ae32bacef872d1d4044291d5feb76bc08a0`.
+Its 29 responses again stop at numeric-string get_pop_quota payloads, despite the
+canonical-integer correction. Both created mailboxes were confirmed cleaned up.
+Structural numeric-string evidence alone cannot establish a lossless conversion;
+a separate same-response diagnostic now records fixed format categories only.
+It does not change the typed contract, original failure or strict assessment.
