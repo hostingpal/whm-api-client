@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Bandwidth",
+  "operations": {
+    "uapi:Bandwidth/get_enabled_protocols": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 76 and later. Returns the protocols whose bandwidth the server records; http includes web traffic on ports 80 and 443. This read does not change protocol configuration."
+        }
+      ]
+    },
+    "uapi:Bandwidth/get_retention_periods": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. Each optional interval and retention field is preserved without filling omitted values. The pinned retention schema is an integer with unix_timestamp format; no additional duration conversion or inferred unit is applied."
+        }
+      ]
+    },
+    "uapi:Bandwidth/query": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later; queries the selected account and includes distributed-account bandwidth usage. Omitted domains selects all account domains. UNKNOWN identifies traffic without a specific domain; all non-HTTP traffic is recorded that way."
+        },
+        {
+          "kind": "documented",
+          "text": "grouping, domains and protocols are pre-serialized pipe-separated strings, following the pinned pipeDelimited, explode=false declarations and examples. The client sends each supplied string once without splitting, reordering or adding a parameter-name prefix. grouping is required; optional report bounds, interval, domains, protocols and timezone remain omitted unless supplied. The documented interval default is daily and available data depends on retention."
+        },
+        {
+          "kind": "documented",
+          "text": "The source says grouping must contain domain or protocol, permits at most three values and one time interval, yet also shows a time-only example. Its prose misspells year_month_day_hour_minute as year_month_day_mour_minute while the schema uses the former. These source inconsistencies remain explicit; the client does not validate grouping combinations or infer extra parameter values."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned result schema is a dynamic hierarchy: first-group values are objects, second- and third-group values may be null, and the deepest object has unspecified properties. The prose describes bandwidth bytes, but it does not establish numeric scalar leaves or the exact shape for fewer grouping levels. Preserve opaque deepest values without inventing a numeric contract; live behavior remains separate evidence."
+        }
+      ],
+      "name": "query"
+    }
+  }
+}

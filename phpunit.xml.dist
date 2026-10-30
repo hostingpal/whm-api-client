@@ -9,6 +9,9 @@
          failOnWarning="true"
          failOnDeprecation="true"
          failOnPhpunitDeprecation="true">
+    <php>
+        <ini name="memory_limit" value="512M"/>
+    </php>
     <testsuites>
         <testsuite name="WHM API Client">
             <directory>tests</directory>

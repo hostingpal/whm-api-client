@@ -1,0 +1,127 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Stats",
+  "operations": {
+    "uapi:Stats/get_bandwidth": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. Requires the Bandwidth Stats feature. Returns bandwidth use for the selected account, including distributed cPanel account usage."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting timezone uses the server timezone; supplied Olson timezone text is forwarded unchanged. bytes is integer bandwidth usage in bytes and month_start is an integer Unix timestamp. domain is returned only for http protocol records. The pinned row schema declares every field optional; omitted fields remain absent and zero bytes stays zero."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Stats/get_bandwidth GET declares x-readonly=true; query parameters and the response data schema are inline in cpanel.openapi.json.gz. Preserve the source GET method, requiredness, optional fields and exact scalar types."
+        }
+      ]
+    },
+    "uapi:Stats/get_site_errors": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. domain is required. Omitted log defaults to error (the Apache error_log); suexec selects suexec_log. Omitted maxLines defaults to 300; the documented range is 1 through 5000 lines. maxLines maps to the pinned wire parameter maxlines. Limits and log selection are server-side semantics."
+        },
+        {
+          "kind": "documented",
+          "text": "date is an integer Unix timestamp and entry is the error log text. Both row fields are optional. Returned log text is payload data and does not establish HTTP error behavior."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Stats/get_site_errors GET declares x-readonly=true; query parameters and the response data schema are inline in cpanel.openapi.json.gz. Preserve the source GET method, requiredness, optional fields and exact scalar types."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Stats/get_site_errors parameters/2 names the wire field maxlines and describes the number of lines. Expose the conventional PHP name maxLines while retaining the exact maxlines query name and optional integer schema; no requiredness or encoding change."
+        }
+      ],
+      "params": {
+        "maxlines": {
+          "php": "maxLines"
+        }
+      }
+    },
+    "uapi:Stats/get_stats_daily": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 132 and later. domain is required and must belong to the selected cPanel account. Returns the documented daily AwStats statistics; this read establishes no statistics-generation behavior."
+        },
+        {
+          "kind": "documented",
+          "text": "stats is a non-null object map of daily statistics. The prose describes YYYY-MM-DD keys, while the pinned example uses verbose JavaScript date strings. Keys are preserved unchanged; no date spelling or ordering rule is inferred. Up to 45 days of history are documented, with gaps from the first available statistic through yesterday filled with zeros by the server."
+        },
+        {
+          "kind": "documented",
+          "text": "Daily bandwidth is integer bytes; hits, pages and visits are integer counts. domain, stats and all daily counter fields remain optional according to the schema. Empty maps and explicit zero counters are preserved. No nullable counter or third-party analyzer behavior is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Stats/get_stats_daily GET declares x-readonly=true; query parameters and the response data schema are inline in cpanel.openapi.json.gz. Preserve the source GET method, requiredness, optional fields and exact scalar types."
+        }
+      ]
+    },
+    "uapi:Stats/list_sites": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. engine is required and documents webalizer or analog. The summary and description call these Analog statistics, while the engine parameter also allows webalizer; preserve both documented selectors without inferring another engine. Omitted traffic defaults to http; ftp is also documented."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns statistics-file paths for the selected account. all_domains and ssl are integer 0/1 payload flags: all_domains=1 identifies an all-domain file and ssl=1 identifies SSL-request statistics. Every row field remains optional. Reading these paths does not retrieve their files or establish analyzer report contents."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Stats/list_sites GET declares x-readonly=true; query parameters and the response data schema are inline in cpanel.openapi.json.gz. Preserve the source GET method, requiredness, optional fields and exact scalar types."
+        }
+      ]
+    },
+    "uapi:Stats/list_stats_by_domain": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. domain and engine are required; analog is the only documented engine. Omitted ssl uses the server default 1. Explicit false selects non-SSL requests and is sent as ssl=0; true selects SSL requests and is sent as ssl=1."
+        },
+        {
+          "kind": "documented",
+          "text": "date is an integer Unix timestamp and url identifies the file from which statistics reports are generated. Both fields remain optional. The client returns the file URL without fetching it or inferring report content."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Stats/list_stats_by_domain GET declares x-readonly=true; query parameters and the response data schema are inline in cpanel.openapi.json.gz. Preserve the source GET method, requiredness, optional fields and exact scalar types."
+        }
+      ]
+    }
+  }
+}

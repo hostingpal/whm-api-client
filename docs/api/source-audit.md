@@ -2743,3 +2743,37 @@ observations, not inferred from ordinary owner fields here. Every earlier JSON
 artifact from both merged parents is byte-identical, including failed captures.
 The evidence commit changes only documentation/artifacts; executable code and
 effective contracts remain those of the captured revision.
+
+## Resource and web statistics reads (2026-10-31)
+
+The resource and web statistics slice exposes eleven GET operations across
+`bandwidth()`, `resourceUsage()`, `statsBar()`, `stats()` and `statsManager()`.
+Bandwidth protocols, retention and grouped queries complement resource limits,
+statistics-bar values, domain bandwidth, daily AwStats counters, error logs,
+report-file inventory and analyzer configuration. `StatsManager/save_configuration`
+requires a JSON request body and remains excluded under `8x0.1.18`; generic form
+calls do not provide that transport.
+
+Pipe-separated grouping, domain, protocol and display arguments are supplied as
+strings and encoded once. Omitted options preserve server defaults; explicit
+false flags are sent as zero. Keep bytes, timestamps, per-resource units and
+formatted display strings distinct. Resource `maximum: null` means unlimited;
+zero and omission remain separate. Dynamic domain/date/grouping keys remain keys
+in returned arrays and are wildcarded in structural evidence. The pinned
+Bandwidth query schema describes nested objects with opaque deepest values;
+it does not establish numeric scalar leaves or every grouping-depth variant.
+
+Statistics require the documented features, roles and analyzer availability.
+`getSiteErrors()` returns log text as payload data; report URLs are returned
+without being fetched. Analyzer configuration metadata stays in `responseMeta()`.
+The fixed live catalog targets only `npr`/`npr.rs`, bounds the bandwidth query to
+October 2026 UTC, and limits the error-log read to one entry. No configuration,
+statistics generation or log contents are changed by these reads.
+
+All formal optional fields and dynamic maps are covered by independent literal
+fixtures and exact-wire tests on wrapped/bare direct and bridged UAPI. The
+source's grouping prose and time-only example disagree, and its minute-interval
+name contains a typo; no guessed combination validation is added. StatsBar's
+example-only `langkey` remains unmodeled. Daily-stat key prose and examples also
+differ, so no date-key grammar is enforced. Pinned snapshots and existing
+runtime, generator and evidence policies remain unchanged.

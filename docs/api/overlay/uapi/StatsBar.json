@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "StatsBar",
+  "operations": {
+    "uapi:StatsBar/get_stats": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later; returns statistics for the selected account. display is a required pre-serialized pipe-delimited string, sent once with normal query encoding. Some display values depend on server configuration; no array serialization is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "Optional infinityimg, infinitylang, rowcounter and warninglevel have pinned null defaults and remain omitted when not supplied. warnings=true selects only values exceeding warninglevel, while warnings=false requests all results. warnout=true includes results at 100 percent; false hides them. The client encodes these supplied booleans as integer 1 or 0."
+        },
+        {
+          "kind": "documented",
+          "text": "All result fields are optional. Count and maximum display values, including _count and _max, remain strings with their formatting intact. Result flags remain integer 0 or 1; zeroisunlimited explains whether zero means unlimited or zero for that statistic. condition is returned only when the statistic meets subsystem installation requirements. Preserve units per row rather than assuming one unit across statistics."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned second response example contains langkey without declaring it in the formal item properties. It remains an unmodeled field and is not added to the typed contract from an example alone."
+        }
+      ],
+      "params": {
+        "infinityimg": {
+          "php": "infinityImg"
+        },
+        "infinitylang": {
+          "php": "infinityLang"
+        },
+        "rowcounter": {
+          "php": "rowCounter"
+        },
+        "warninglevel": {
+          "php": "warningLevel"
+        },
+        "warnout": {
+          "php": "warnOut"
+        }
+      }
+    }
+  }
+}

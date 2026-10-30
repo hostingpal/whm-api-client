@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 30 typed groups cover 385 documented operations:
+and cPanel UAPI surface. The 35 typed groups cover 396 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -349,6 +349,30 @@ was an empty string, and the privacy-user list was empty. This capture made no
 indexing, password-protection or leech-protection changes and establishes no
 mutation or HTTP-enforcement coverage. Separate reviewer mutation observations
 are recorded in the source audit; they are not part of this artifact. Follow-up `8x0.2.22` remains open.
+
+The resource and web statistics slice exposes eleven GET operations across
+`bandwidth()`, `resourceUsage()`, `statsBar()`, `stats()` and `statsManager()`.
+Bandwidth protocols, retention and grouped queries complement resource limits,
+statistics-bar values, domain bandwidth, daily AwStats counters, error logs,
+report-file inventory and analyzer configuration. `StatsManager/save_configuration`
+requires a JSON request body and remains excluded under `8x0.1.18`; generic form
+calls do not provide that transport.
+
+Pipe-separated grouping, domain, protocol and display arguments are supplied as
+strings and encoded once. Omitted options preserve server defaults; explicit
+false flags are sent as zero. Keep bytes, timestamps, per-resource units and
+formatted display strings distinct. Resource `maximum: null` means unlimited;
+zero and omission remain separate. Dynamic domain/date/grouping keys remain keys
+in returned arrays and are wildcarded in structural evidence. The pinned
+Bandwidth query schema describes nested objects with opaque deepest values;
+it does not establish numeric scalar leaves or every grouping-depth variant.
+
+Statistics require the documented features, roles and analyzer availability.
+`getSiteErrors()` returns log text as payload data; report URLs are returned
+without being fetched. Analyzer configuration metadata stays in `responseMeta()`.
+The fixed live catalog targets only `npr`/`npr.rs`, bounds the bandwidth query to
+October 2026 UTC, and limits the error-log read to one entry. No configuration,
+statistics generation or log contents are changed by these reads.
 
 The Fileman group implements 13 of 14 pinned functions: directory autocomplete,
 file information, file content and directory listings use GET; content saving,

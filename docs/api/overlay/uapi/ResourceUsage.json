@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "ResourceUsage",
+  "operations": {
+    "uapi:ResourceUsage/get_usages": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70 and later; retrieves resource usage and custom statistics for the selected account. Every row field is optional. maximum=null means an unlimited quota, distinct from maximum=0 and omission; usage remains an integer and no universal resource unit is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "formatter may be null or a string, including a third-party formatter name. Do not infer a closed formatter or resource-id enum. Resource availability depends on server profile and services: filesusage requires the stats-bar File Usage display setting, cachedpostgresdiskusage requires PostgreSQL, mailing_lists requires Mailman, ftp_accounts requires FTP accounts, and mysql_databases requires MySQL."
+        }
+      ]
+    }
+  }
+}

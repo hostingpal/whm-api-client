@@ -906,3 +906,27 @@ at `06001e0` on `11.138.0.19` passes all seven GETs, both-route identity/zero ch
 and strict assessment with zero discrepancies. Both information responses contain
 the preserved empty-string size. No content was read or resource changed. Earlier
 captures remain unchanged; do not repeat the run just for handoff.
+
+## Resource and web statistics
+
+`resource-statistics.php` binds `resource-statistics-v1` to 23 GET observations:
+WHM version and eleven statistics reads through both UAPI routes. All account
+requests target `npr`, and domain requests use `npr.rs`. The Bandwidth query uses
+`domain|protocol`, HTTP only, daily samples, UTC, and fixed timestamps from
+2026-10-01T00:00:00Z to 2026-10-31T00:00:00Z. StatsBar selects bandwidth/disk use
+with both warning flags false; site errors request at most one Apache log entry.
+Webalizer and Analog selectors follow the pinned source, without enabling services.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/resource-statistics.php \
+  --output=docs/api/evidence/resource-statistics-new.json
+```
+
+Both tokens and committed inputs are required. The existing exact-URI GET guard,
+original-response structural sanitizer and new-only protected publication apply.
+Dynamic grouping/date/domain keys remain wildcarded; log text and all other
+payload values are not persisted. Strict assessment accepts no discrepancies or
+historical acknowledgments. No configuration write, report download or analyzer
+execution is performed. Failed capability/schema observations remain failed
+evidence instead of being skipped or waived.
