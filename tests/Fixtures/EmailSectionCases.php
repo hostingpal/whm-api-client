@@ -80,7 +80,7 @@ final class EmailSectionCases
             static fn (Email $email): mixed => $email->addPop('user', 'secret'),
             'POST',
             'email=user&password=secret',
-            '"user@example.test"',
+            '"user+example.test"',
         ];
         yield 'add_spam_filter' => [
             'add_spam_filter',

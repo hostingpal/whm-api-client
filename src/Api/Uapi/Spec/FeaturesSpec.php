@@ -25,7 +25,7 @@ final class FeaturesSpec
                 'type' => 'object',
                 'fields' => [
                     'id' => ['type' => 'string'],
-                    'is_plugin' => ['type' => 'flag'],
+                    'is_plugin' => ['type' => 'flag', 'accept' => ['string-flag']],
                     'name' => ['type' => 'string'],
                 ],
             ],
@@ -40,7 +40,13 @@ final class FeaturesSpec
         'params' => [
             'name' => ['name' => 'name', 'encoding' => 'scalar'],
         ],
-        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+        'returns' => [
+            'type' => 'union',
+            'anyOf' => [
+                ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+                ['type' => 'int'],
+            ],
+        ],
     ];
 
     public const HAS_FEATURES_LIKE = [

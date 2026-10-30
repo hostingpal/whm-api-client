@@ -854,7 +854,7 @@ final class EmailSpec
             'asBytes' => ['name' => 'as_bytes', 'encoding' => 'bool'],
             'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
         ],
-        'returns' => ['type' => 'int'],
+        'returns' => ['type' => 'int', 'accept' => ['numeric-string']],
     ];
 
     public const GET_SPAM_SETTINGS = [
@@ -1170,7 +1170,7 @@ final class EmailSpec
                                 'domain' => ['type' => 'string'],
                                 'entrycount' => ['type' => 'int'],
                                 'mx' => ['type' => 'string'],
-                                'priority' => ['type' => 'int'],
+                                'priority' => ['type' => 'int', 'accept' => ['numeric-string']],
                                 'row' => ['type' => 'string'],
                             ],
                         ],

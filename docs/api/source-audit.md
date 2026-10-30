@@ -1226,6 +1226,113 @@ live outcomes are recorded separately. The three LangPHP mutations are offline
 contract coverage until a dedicated reversible configuration fixture is observed.
 
 
+### Initial runtime observations and compatibility corrections
+
+The [initial 67-probe artifact](evidence/2026-10-30-domain-features-php.json)
+records c79ed1d on cPanel 11.138.0.19, SHA-256
+`d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f`.
+It contains 59 passed probes and eight payload failures, with all original structural
+observations retained. No mutation ran. The CLI subsequently failed while printing
+an absent static label, after the evidence file had already been saved; label
+coverage now has an independent regression test.
+
+Observed single-domain customlog/scriptalias lists extend their pinned object
+forms without inventing item fields. Documented flags admit bounded quoted 0/1,
+and integer ports admit lossless numeric strings. Feature metadata also returned
+quoted flags; has_feature returned an integer rather than its documented nullable
+object. That integer is preserved without guessing its meaning or turning it into
+a boolean. The root PHP-version union failure did not identify its offending field:
+its original fingerprint correctly masks all keys, so no correction was inferred.
+
+A failed root union can now additionally record analyses of its checked alternatives,
+identified by index and contract hash, from the same original response. These
+supplemental structural diagnostics retain unknown-key masking and never alter the
+primary fingerprint, runtime validation or discrepancy gate. They do not recover or
+rewrite the first artifact. Unknown domain and INI fields remain unresolved under
+8x0.2.17, as do the three PHP mutations' live behavior.
+
+
+The [compatibility run](evidence/2026-10-30-domain-features-php-compatibility.json)
+at a07f4f7 retained 67 GET observations on 11.138.0.19: 65 passed and the two PHP
+vhost probes still failed. Its SHA-256 is
+`ae83e8afa8f3296342c76c225d08b09d4e417e35fc2569f975a8f094b411eced`.
+The new candidate analysis identifies only `$[].phpversion_source` as the list
+alternative's type mismatch, with an observed object. A narrow correction now
+preserves both the pinned list and that object form using the same documented
+optional fields. No unknown key name or value is inferred. The strict evidence
+assessment remains failed for original mismatches and unacknowledged extras;
+this historical artifact is not rewritten after correcting the contract.
+
+
+### Corrected read-only verification
+
+The [corrected run](evidence/2026-10-30-domain-features-php-corrected.json) at
+7b172f3 on 11.138.0.19 records all 67 API/payload probes passing, including all 20
+new route-specific reads. Artifact SHA-256:
+`50a569139cc932442be93960c322d1afb408164537ef9668a98402651156c2e4`.
+The strict discrepancy assessment still fails: eight DomainInfo/INI observations
+contain unknown fields, and two Quota observations no longer match their historical
+11.138.0.15 acknowledgments. Both old Quota acknowledgments remain stale; no new
+acknowledgment was introduced. The single-domain customlog list also exposes a
+masked extra field. These successful payload calls are not discrepancy-free
+contract evidence. All three artifacts and their original outcomes remain intact.
+
+The first PR's final offline gates pass 4,310 tests and 33,655 assertions, plus
+maximum PHPStan, PHPCS and offline API-map/source/generation verification. The
+three PHP setters remain offline-only; no mutation ran in any of these captures.
+
+
+## 2026-10-30 complete Email contracts
+
+The second stacked slice adds 92 generated operations, completing all 96 pinned
+Email functions and bringing this branch to 187 typed operations in 13 groups.
+Independent literal fixtures cover wrapped direct, bare direct and WHM-bridged
+requests, optional arguments and payload omission/null/type boundaries. All
+mutations and secret-bearing parameters travel in form POST bodies. The client
+performs one request immediately and does not retry or roll back mutations.
+
+Source-bound corrections permit add_pop password-hash alternatives, preserve
+floating-point MB in list_pops_with_disk, and model manual MX results as dynamic
+maps rather than a property literally named additionalProperties. For trace_delivery,
+merging the finite formal destination fields avoids first-branch optional-object
+validation dropping later documented fields. The recursive routed example remains
+an explicit limitation. terminate_mailbox_sessions documents a WHM-style result
+on its UAPI page; generated UAPI routing is preserved without inventing a second
+route or claiming live envelope compatibility.
+
+Email filter families require new one-based suffix encoding. Reviewed names ending
+in * expand to 1, 2, and so on; they do not use the existing WHM hyphen convention.
+The scalar variant permits integer values only for the documented numeric filter
+comparisons. Independent wire tests reject malformed lists and collisions after
+metadata reset and verify secret redaction. Shared generator and runtime checks
+reject unsupported patterns before any network request.
+
+The standalone mailbox fixture is a separate evidence scope: exact npr/npr.rs,
+fresh owned addresses, welcome messages disabled, no delivery or external recipients,
+strict cleanup, and original-response structural capture. Its actual outcomes and
+unobserved operations are recorded separately from generated coverage.
+
+### Email preflight and quota compatibility observations
+
+The [initial Email artifact](evidence/2026-10-30-email-section.json), captured at
+3ca852b on 11.138.0.19, has SHA-256
+`ab1c60b5d7a5c1d330fe152ee36a5f26995ebfb080d939d118986093a8f467dc`.
+It records 17 preflight GETs: WHM version and seven Email functions passed on both
+routes, while list_mxs rejected quoted integer priority fields. No mailbox was
+created; both resources remain not_started. A narrow correction accepts canonical
+integer strings within PHP bounds at entries[].priority only.
+
+The [next Email capture](evidence/2026-10-30-email-section-corrected.json), at
+57c425d on the same server version, has SHA-256
+`7afe0accaeda48e2c7f26a491c2937f0b0417981d8674f3cb7ab0ce90226f636`.
+Its 29 original responses establish successful preflight, mailbox creation and
+exact cleanup through both routes. Each lifecycle stopped at get_pop_quota because
+its required integer arrived as a numeric string. Both owned mailboxes were
+confirmed absent after cleanup. The structural observation establishes the wire
+type, not the expected quota value. Failed phase and discrepancy assessments remain
+unchanged; no artifact is rewritten after a contract correction.
+
+
 ## 2026-10-30 complete SSL contracts and multipart request support
 
 The third stacked slice adds 43 typed SSL functions, covering all 49 nondeprecated

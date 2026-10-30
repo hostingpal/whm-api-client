@@ -180,6 +180,20 @@ typed or live-verified coverage. The 2026-10-13 spec's
 [scaling decision (typed core plus generic calls)](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls)
 is superseded: its hand-written-group decision is replaced by the generated-client
 design (bead `whm-api-client-8x0.10`).
+The complete Email module exposes 96 pinned functions. Mutations and secret-bearing
+requests use form POST. Preserve password/passwordHash alternatives, receive-mail
+role/default/zero-unlimited caveats, and integer/floating-point quota units. Email
+filter wire families use reviewed suffix-numbered encodings: filter*, action*, dest*,
+match*, opt*, part*, val* become name1/name2; only val* allows integer items. Lists
+must be nonempty/sequential, and expanded wire collisions fail before dispatch.
+The formal trace_delivery destination alternatives are merged without dropping
+fields from later optional-object alternatives; recursive example behavior remains
+unverified. terminate_mailbox_sessions has an upstream envelope discrepancy and
+no documented data payload; never claim successful live compatibility without
+observing it. Live tests must never send welcome/configuration messages or deliver
+mail, and only newly owned fixture mailboxes may be changed or removed.
+
+
 The SSL module exposes all 49 nondeprecated functions. Typed fetch-key/cabundle,
 upload-cert and upload-key calls use reviewed multipart string fields, configured
 by an explicit body: multipart spec. Generic calls remain form-only; JSON and
@@ -198,11 +212,18 @@ Domain details preserve list/hash alternatives and documented quoted flag varian
 PHP vhost versions preserve list/single-record variants. INI writes and PHP version
 changes use POST; INI content/directive inputs are sensitive. The content setter has
 an unresolved pinned host/home enum-versus-prose discrepancy. Features/has_feature
-returns nullable opaque data and uses UAPI status as the feature result; inspect
+returns nullable opaque data or an observed integer of unspecified meaning and
+uses UAPI status as the feature result; inspect
 responseMeta()->uapiStatus(), while retaining outer WHM failure checks. Response
 arguments in EnvelopeReader and OperationRunner remain SensitiveParameter because
 raw or decoded responses may contain secrets. Overlay parameter requiredness can
 be overridden only with evidence; omission retains the pinned requiredness.
+The 2026-10-30 corrected DomainInfo/Features/LangPHP artifact at 7b172f3 on 11.138.0.19
+records all 67 API/payload probes passing, including 20 new reads across both routes.
+Strict review remains failed for eight new Domain/INI unknown-field observations plus
+two Quota observations with stale 11.138.0.15 acknowledgments; do not claim
+discrepancy-free evidence. Three PHP setters remain offline-only; follow-up
+8x0.2.17 owns the remaining live work.
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.

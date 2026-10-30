@@ -23,7 +23,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     is_plugin?: 0|1,
  *     name?: string,
  * }>
- * @phpstan-type HasFeatureResult array<array-key, mixed>|null
+ * @phpstan-type HasFeatureResult array<array-key, mixed>|int|null
  * @phpstan-type HasFeaturesLikeResult array{
  *     has_matching_features?: 0|1,
  * }|null
@@ -49,6 +49,8 @@ final readonly class Features
      *
      * Documented: Lists this account's available feature metadata; id, name and integer is_plugin fields may be
      * omitted. Third-party feature IDs are not a closed enumeration.
+     *
+     * Observed: Observed quoted 0/1 is_plugin values normalize to integer flags; other numeric strings remain invalid.
      *
      * API-map identity: uapi:Features/get_feature_metadata#GET (wire name get_feature_metadata).
      *
@@ -78,6 +80,9 @@ final readonly class Features
      * Documented: The pinned data schema is a nullable opaque object, with null in the documented access examples.
      * Preserve explicit null and object fields; absent data is a payload mismatch. No boolean payload is invented.
      *
+     * Observed: Observed data may also be an integer of unspecified meaning. Preserve the integer without inferring a
+     * closed flag enum or converting numeric strings; the feature-access result remains UAPI status.
+     *
      * API-map identity: uapi:Features/has_feature#GET (wire name has_feature).
      *
      * @param string $name The feature's name.
@@ -87,7 +92,7 @@ final readonly class Features
      *     the outcome is not checked.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/cpanel-features/features-has_feature
      */
-    public function hasFeature(string $name): ?array
+    public function hasFeature(string $name): array|int|null
     {
         /** @var HasFeatureResult $result Validated against FeaturesSpec::HAS_FEATURE. */
         $result = ($this->run)(FeaturesSpec::HAS_FEATURE, ['name' => $name]);

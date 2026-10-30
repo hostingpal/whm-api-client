@@ -571,16 +571,31 @@ final class DomainInfoSpec
                 'all_aliases_valid' => ['type' => 'flag'],
                 'can_https_redirect' => ['type' => 'flag'],
                 'customlog' => [
-                    'type' => 'object',
-                    'fields' => [
-                        'domain' => ['type' => 'string'],
-                        'target' => ['type' => 'string'],
+                    'type' => 'union',
+                    'anyOf' => [
+                        [
+                            'type' => 'object',
+                            'fields' => [
+                                'domain' => ['type' => 'string'],
+                                'target' => ['type' => 'string'],
+                            ],
+                        ],
+                        [
+                            'type' => 'list',
+                            'items' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'domain' => ['type' => 'string'],
+                                    'target' => ['type' => 'string'],
+                                ],
+                            ],
+                        ],
                     ],
                 ],
                 'documentroot' => ['type' => 'string'],
                 'domain' => ['type' => 'string'],
                 'group' => ['type' => 'string'],
-                'hascgi' => ['type' => 'flag'],
+                'hascgi' => ['type' => 'flag', 'accept' => ['string-flag']],
                 'homedir' => ['type' => 'string'],
                 'ifmodulemodsuphpc' => [
                     'type' => 'object',
@@ -593,13 +608,28 @@ final class DomainInfoSpec
                 'is_temporary' => ['type' => 'flag'],
                 'options' => ['type' => 'string'],
                 'owner' => ['type' => 'string'],
-                'phpopenbasedirprotect' => ['type' => 'flag'],
-                'port' => ['type' => 'int'],
+                'phpopenbasedirprotect' => ['type' => 'flag', 'accept' => ['string-flag']],
+                'port' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'scriptalias' => [
-                    'type' => 'object',
-                    'fields' => [
-                        'path' => ['type' => 'string'],
-                        'url' => ['type' => 'string'],
+                    'type' => 'union',
+                    'anyOf' => [
+                        [
+                            'type' => 'object',
+                            'fields' => [
+                                'path' => ['type' => 'string'],
+                                'url' => ['type' => 'string'],
+                            ],
+                        ],
+                        [
+                            'type' => 'list',
+                            'items' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'path' => ['type' => 'string'],
+                                    'url' => ['type' => 'string'],
+                                ],
+                            ],
+                        ],
                     ],
                 ],
                 'serveradmin' => ['type' => 'string'],

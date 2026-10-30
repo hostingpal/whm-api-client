@@ -1528,6 +1528,38 @@
         {
           "kind": "documented",
           "text": "The email account's quota.\n\n**Note:**\n\nThis value's unit of measure depends on the `as_bytes` input parameter's value."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, the MB result (asBytes=false) arrived as a numeric string through both direct and bridged UAPI. Canonical integer strings within PHP integer bounds normalize to int. The unit selection remains unchanged; explicit null, absent data, literal unlimited and noncanonical numeric strings remain rejected."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "int",
+            "accept": [
+              "numeric-string"
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "The original get_pop_quota GET payload root was numeric-string on direct-uapi and bridged-uapi at revision 57c425d14c4b9300cf7ddd75e600f258781c0dbf, with HTTP 200 and successful API outcomes but payload mismatches against the pinned integer result. The immutable artifact SHA256 is 7afe0accaeda48e2c7f26a491c2937f0b0417981d8674f3cb7ab0ce90226f636. Both calls selected as_bytes=0 and both owned mailboxes were subsequently confirmed cleaned. The structural evidence establishes neither the exact string format nor quota value 32; that separate fixture expectation was not checked. Preserve the required nonnullable integer result, adding only the existing canonical PHP-integer-bounded numeric-string conversion. Do not infer literal unlimited, null, omission or other-operation compatibility.",
+              "fingerprint": "docs/api/evidence/2026-10-30-email-section-corrected.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "The original get_pop_quota GET payload root was numeric-string on direct-uapi and bridged-uapi at revision 57c425d14c4b9300cf7ddd75e600f258781c0dbf, with HTTP 200 and successful API outcomes but payload mismatches against the pinned integer result. The immutable artifact SHA256 is 7afe0accaeda48e2c7f26a491c2937f0b0417981d8674f3cb7ab0ce90226f636. Both calls selected as_bytes=0 and both owned mailboxes were subsequently confirmed cleaned. The structural evidence establishes neither the exact string format nor quota value 32; that separate fixture expectation was not checked. Preserve the required nonnullable integer result, adding only the existing canonical PHP-integer-bounded numeric-string conversion. Do not infer literal unlimited, null, omission or other-operation compatibility.",
+          "fingerprint": "docs/api/evidence/2026-10-30-email-section-corrected.json"
         }
       ]
     },
@@ -1709,6 +1741,35 @@
         {
           "kind": "documented",
           "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, entries[].priority arrived as a numeric string through both direct and bridged UAPI. This field accepts canonical integer strings within PHP integer bounds and normalizes them to int; omitted priorities remain absent. Decimal, exponent, whitespace, leading-zero and overflowing strings remain rejected."
+        }
+      ],
+      "response": {
+        "[].entries[].priority": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "The original Email/list_mxs GET responses for direct-uapi and bridged-uapi at revision 3ca852baaf4d42c52c5a460795b3a464c92e85b9 recorded $[].entries[].priority as numeric-string, while the pinned source declares integer. Both API outcomes succeeded and payload validation failed only at this field. The immutable failed artifact has SHA256 ab1c60b5d7a5c1d330fe152ee36a5f26995ebfb080d939d118986093a8f467dc; no mutation ran. Opt in only this field to the existing canonical, PHP-integer-bounded numeric-string conversion, normalizing to int. The structural artifact does not identify the exact string grammar or value; broader numeric formats remain rejected.",
+              "fingerprint": "docs/api/evidence/2026-10-30-email-section.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "The original Email/list_mxs GET responses for direct-uapi and bridged-uapi at revision 3ca852baaf4d42c52c5a460795b3a464c92e85b9 recorded $[].entries[].priority as numeric-string, while the pinned source declares integer. Both API outcomes succeeded and payload validation failed only at this field. The immutable failed artifact has SHA256 ab1c60b5d7a5c1d330fe152ee36a5f26995ebfb080d939d118986093a8f467dc; no mutation ran. Opt in only this field to the existing canonical, PHP-integer-bounded numeric-string conversion, normalizing to int. The structural artifact does not identify the exact string grammar or value; broader numeric formats remain rejected.",
+          "fingerprint": "docs/api/evidence/2026-10-30-email-section.json"
         }
       ]
     },

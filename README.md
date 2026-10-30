@@ -236,6 +236,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->domainInfo()` | All 5 operations: `domainsData()`, `singleDomainData()`, `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
 | `uapi()->langPhp()` | All 11 operations: installed/default/vhost PHP versions, domain handlers and impacted domains, INI paths/basic directives/content reads, and `phpIniSetUserBasicDirectives()`, `phpIniSetUserContent()`, `phpSetVhostVersions()` |
 | `uapi()->features()` | All 5 operations: `getFeatureMetadata()`, `hasFeature()`, `hasFeaturesLike()`, `listFeatures()`, `listFeaturesLike()` |
+| `uapi()->email()` | All 96 pinned functions, including mailbox lifecycle, quotas and suspension, forwarders, filters, MX routing, autoresponders, spam settings and delivery diagnostics; see [generated methods](src/Api/Uapi/Email.php). |
 | `uapi()->ssl()` | All 49 nondeprecated functions, including certificate/key/CSR inventory and lifecycle, installation, AutoSSL, SNI and redirects; see [generated methods](src/Api/Uapi/Ssl.php). |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
 | `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()` |
@@ -251,13 +252,43 @@ sensitive parameters; retain a configuration backup before overwriting content.
 The content setter's pinned enum says `host|vhost` while its prose says `home|vhost`;
 this contradiction is documented, with no invented validation or default.
 
-`features()->hasFeature(name: 'autossl')` preserves its nullable object payload.
+`features()->hasFeature(name: 'autossl')` preserves its nullable object or observed
+integer payload; the integer's meaning is unspecified.
 Read `$account->responseMeta()?->uapiStatus()` immediately afterward for the access
 result: 1 means enabled; 0 means absent or disabled. This method accepts UAPI status
 0 because it carries the access result. Outer WHM bridge failures still throw.
 
 `uapi()->dns()->fetchCpanelGeneratedDomains()` requires cPanel 120 and preserves
 trailing dots; `lookup()` returns textual lines or explicit `null`.
+
+The [completed-module read capture](docs/api/evidence/2026-10-30-domain-features-php-corrected.json)
+observed all ten new reads through both routes on cPanel 11.138.0.19. All 67 catalog
+API/payload checks passed, while strict discrepancy review remains failed for
+unknown fields and stale historical Quota acknowledgments. PHP setters remain
+offline-tested only; see the [source audit](docs/api/source-audit.md).
+
+
+The Email module uses POST for mutations and secret-bearing requests. Passwords,
+password hashes, filter content and other marked inputs remain sensitive throughout
+the library's call stack. `addPop(email: 'demo', password: $password, domain: 'example.com',
+sendWelcomeEmail: false)` suppresses the optional welcome message. Supply either
+`password` or `passwordHash`, never both; account quota and role restrictions still
+apply. Methods that send mail or change account-wide settings execute immediately.
+
+`storeFilter()` and `reorderFilters()` accept nonempty ordered lists for numbered
+filter parameters. The client emits `action1`, `action2`, or `filter1`, `filter2`;
+`values` also accepts integer items for numeric comparisons. Other filter lists
+accept strings. Empty/keyed lists and colliding wire names fail before dispatch.
+Mailbox counts and quota results retain their documented zero/unlimited meanings.
+`listPopsWithDisk()` keeps floating-point MB usage, while opaque mutation payloads
+retain fields and explicit nulls.
+
+Two Email contracts remain limited by the pinned source: `traceDelivery()` preserves
+the formal destination shapes, but deeper recursive routed examples are not a typed
+recursive contract; `terminateMailboxSessions()` documents a WHM-like envelope in
+its UAPI page, so actual UAPI-envelope compatibility remains unverified. Offline
+fixtures cover all functions; live evidence is limited to explicitly recorded calls.
+
 
 The SSL module exposes 49 nondeprecated functions; `check_shared_cert` remains
 excluded upstream. Private keys and PEM inputs are sensitive, and writes use POST.
