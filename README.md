@@ -461,9 +461,15 @@ The owned SSL fixture verifies uploads, fetches and cleanup through both UAPI
 routes. Its 23 responses pass API/payload checks, but four undocumented-field
 observations still fail the strict evidence gate; see the [source audit](docs/api/source-audit.md).
 The expanded recipe adds generated-key creation and certificate-information reads
-on both routes, with six separately owned resources and 31 planned observations.
-It is offline-verified; its committed-head capture follows integration of the
-approved parent branch.
+on both routes, with six resource states and 31 planned observations. Its first
+[integrated-head capture](docs/api/evidence/2026-10-30-ssl-section-reviewed.json)
+at `d159935` stops after 27 responses: `fetchCertInfo()` passes on both routes,
+but `fetchCertificatesForFqdns()` rejects observed null `cab`, `validation_type`
+and `verify_error` fields against pinned string schemas. All API outcomes pass;
+25 payload checks pass and two fail. The four uploaded resources are cleaned;
+generated keys remain `not_started`. Follow-up `8x0.4.11.3.4` tracks the narrow
+contract corrections and outstanding generated-key evidence. The failed artifact
+and existing unknown-field findings remain unwaived.
 
 Certificate deletion/installation, account-wide AutoSSL and redirect changes take
 effect immediately. Live verification is bounded to fresh owned fixture material,

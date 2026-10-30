@@ -2057,3 +2057,49 @@ with every other existing type/nullability key preserved. Historical evidence
 files remain byte-identical. Integration and live capture remain separate pending
 steps, and this offline result does not establish upstream behavior for the
 expanded recipe.
+
+
+### Integrated SSL v2 capture after PR31: 2026-10-30
+
+The approved Email parent was integrated by normal merge at
+`d159935d8da99062ef6527952ff1f6b1c5274dbd`, without rebasing. Regeneration produces
+**279 operations across 15 groups**, retaining all reviewed Email/runtime/schema
+corrections and all historical evidence. Pre-capture Composer validation/check
+(**11,019 tests / 75,525 assertions**), API-map checks, full Go tests and vet pass.
+The reviewed SSL field matrix remains identical after integration.
+
+Exactly one [expanded capture](evidence/2026-10-30-ssl-section-reviewed.json)
+ran at that committed code on `11.138.0.19`, SHA-256
+`bd1e409a5608fff3ab4be889b84ce83743188548ec154f24e19601e9c7ad9aef`.
+It retains **27 original responses (13 GET, 14 POST)**. All 27 HTTP 200/API
+outcomes pass. Twenty-five payload/probe/expectation checks pass; both
+`fetch_certificates_for_fqdns` calls fail typed validation, with expectations
+`not_checked`. Their records are `probes[11]` (direct) and `probes[22]` (bridged).
+Both original payloads report null|string structural types at `$[].cab`,
+`$[].validation_type` and `$[].verify_error`; each path raises `type_mismatch`.
+The pinned three fields are optional nonnullable strings, with no enum. The
+validation_type prose nevertheless documents null, and sibling certificate
+contracts already declare that field nullable. fetch_cert_info's cabundle also
+permits null, while other cab endpoints and installed_host.verify_error retain
+separate pinned semantics; no cross-operation widening is inferred.
+
+Both `fetch_cert_info` phases succeed and the reviewed numeric/flag conversions
+work where exercised. Each lifecycle stops at the FQDN-certificate mismatch
+before key generation. The four uploaded keys/certificates are confirmed cleaned;
+both generated-key states are `not_started`, so neither generated-key execution
+nor six-resource cleanup is established. Four known masked unknown-field
+observations in upload_cert/delete_key remain unwaived under `8x0.2.19`.
+Strict assessment stays **failed**, including incomplete planned phases,
+lifecycle failures and cleanup-request labels from delete_key discrepancies.
+No mutation was retried and no second capture was run to relabel this evidence.
+
+Independent audit checks all 27 effective contracts, request methods/source
+variants, committed source/map/generator/overlay/revision hashes and the original
+strict report. All **1,144 structural path/type entries** and **58 historical
+parent-artifact comparisons** pass. Configured credentials, response-derived
+account/domain/host values, PEM contents and resource identities are absent;
+only the fixed public recipe identifier includes its account label. The artifact
+was written with mode0600 and no capture temporary files remain. The three narrow
+nullable-field corrections, external review and outstanding generation evidence
+are tracked in open `whm-api-client-8x0.4.11.3.4`; this artifact remains immutable.
+The optional install_ssl DCV map stays omitted under `8x0.2.16`.

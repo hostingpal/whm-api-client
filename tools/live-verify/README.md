@@ -613,9 +613,15 @@ trust behavior.
 The expanded v2 recipe plans 31 original observations: version, four initial
 inventories, and thirteen lifecycle/cleanup observations on each route (13 GET,
 18 POST overall). It covers ten SSL functions through both routes and six
-separately owned resources. This expansion is offline-verified; a fresh capture
-from committed integrated code remains pending the parent branch merge. The
-historical v1 artifact retains its original 23 observations unchanged. Reports keep
+separately owned resources. The first
+[integrated v2 capture](../../docs/api/evidence/2026-10-30-ssl-section-reviewed.json)
+at `d159935` retains 27 responses (13 GET, 14 POST). Both `fetch_cert_info` phases
+pass; both `fetch_certificates_for_fqdns` phases fail typed validation for null
+`cab`, `validation_type` and `verify_error`, so neither generated-key phase starts.
+The four uploaded resources are cleaned, while generated-key states remain
+`not_started`. The failed result is preserved under `8x0.4.11.3.4`; it does not
+establish generated-key execution or six-resource cleanup. The historical v1
+artifact retains its original 23 observations unchanged. Reports keep
 structural paths and provenance from `EvidenceRunner`, separate semantic
 expectations and resource states, and no private key, certificate, resource ID or
 arbitrary upstream error text. Any failed observation, expectation, missing stage,

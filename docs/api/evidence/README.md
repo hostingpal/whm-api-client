@@ -168,3 +168,17 @@ It still fails the strict gate for four unknown-field observations in upload_cer
 and delete_key. Three typed multipart operations were exercised through both UAPI
 routes. Installation, service configuration, trust and the remaining operations
 are outside this fixture; follow-up 8x0.2.19 retains that distinction.
+
+
+The [integrated SSL v2 capture](2026-10-30-ssl-section-reviewed.json) at
+`d159935d8da99062ef6527952ff1f6b1c5274dbd` records 27 responses (13 GET, 14 POST)
+on `11.138.0.19`. All HTTP/API outcomes pass; 25 payload/probe/expectation checks
+pass and two FQDN-certificate payload checks fail, leaving their expectations
+unchecked. Each route observes null `cab`, `validation_type` and `verify_error`
+against nonnullable pinned string fields. Both `fetch_cert_info` phases pass.
+Four uploaded resources are cleaned and both generated-key states are
+`not_started`; the 31-phase recipe remains incomplete. The four prior masked
+upload_cert/delete_key unknown-field observations also remain. Strict assessment
+is failed without waivers. The new contract corrections and outstanding generation
+evidence are tracked in `8x0.4.11.3.4`; no operation was repeated to clear the result.
+SHA-256: `bd1e409a5608fff3ab4be889b84ce83743188548ec154f24e19601e9c7ad9aef`.

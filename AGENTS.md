@@ -268,8 +268,14 @@ SSL storage recipe plans 31 observations and six resource states, adding a fresh
 generated key per route plus fetchCertInfo/fetchCertificatesForFqdns. Generated
 ownership requires the original successful validated response, a fresh unique ID,
 matching PEM/public modulus and preflight absence. Lost/malformed generation stays
-uncertain; never infer ownership from later inventories or retry. Final integrated
-committed-code capture remains pending the parent PR merge.
+uncertain; never infer ownership from later inventories or retry. After approved
+Email/master integration, the capture at d159935 stops after27responses: both
+fetch_certificates_for_fqdns reads return API success but reject null cab,
+validation_type and verify_error against pinned string schemas. Allfouruploaded
+resources are cleaned; generatedkeys stay not_started. Preserve the failed
+2026-10-30-ssl-section-reviewed.json and track the three narrow corrections plus
+outstanding generate_key coverage in8x0.4.11.3.4. Existingfourunknownobservations
+remain unwaived under2.19; do not silently promote failed evidence.
 
 DomainInfo (5), Features (5), and LangPHP (11) cover their complete pinned modules.
 Domain details preserve list/hash alternatives, documented quoted flag variants
