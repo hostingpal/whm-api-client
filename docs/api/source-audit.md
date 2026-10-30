@@ -1196,13 +1196,243 @@ Composer and offline API-map gates passed. A separate local review of the code
 commit found no issues and ran 400 focused tests / 5,253 assertions. External
 review rounds and findings are tracked in Beads; human review time is not instrumented.
 
+## Pinned-contract audit: 2026-10-30 complete Mysql section
+
+The owner requested a larger dedicated PR, preferably covering an entire API
+section, and delegated scope selection and development-server testing while away.
+The selected batch completes all 25 functions in the pinned UAPI `Mysql` section:
+15 new methods raise generated coverage from 82 to 97 operations across the same
+13 groups. The source snapshot and map checksum remain unchanged. The complete
+API still has 1,213 nondeprecated functions without generated methods.
+
+The additions are `addHost()`, `addHostNote()`, `checkDatabase()`, `deleteHost()`,
+`dumpDatabaseSchema()`, `getHostNotes()`, `listRoutines()`, `locateServer()`,
+`renameDatabase()`, `renameUser()`, `repairDatabase()`,
+`revokeAccessToDatabase()`, `setPassword()`, `setupDbAndUser()` and
+`updatePrivileges()`. Every pinned mutation, including `check_database`, uses
+form POST; the four new reads use GET. This section needs neither JSON nor
+multipart execution support. Existing group generation and runtime validation
+remain the contract path.
+
+An independent audit compared all 15 additions with the decompressed pinned
+cPanel OpenAPI source (`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`).
+It confirmed parameter mappings and response shapes and found documentation
+caveats dropped by the generator's prose extraction. Overlay notes now preserve
+all version floors and role requirements, database-rename prefix/underscore limits
+and restoration warnings, and database-username limits. The `add_host_note` role
+condition is stricter than the other operations. `setup_db_and_user` starts at
+cPanel 11.116. Parameter ordering puts the original name before the new name and
+the database user before the password.
+
+Mutation result contracts stay distinct: most accept nullable opaque objects;
+`set_password` returns an object with optional `failures`, and
+`setup_db_and_user` returns optional credential fields and a string port.
+Per-host password failures remain payload data; the public method does not
+invent a global envelope rule. Diagnostic table messages and rename warnings
+also require caller inspection. Raw schema text and dynamically keyed host notes
+are preserved as payload data.
+
+The new credential-returning operation exposed an existing trace-privacy gap:
+a successful response with a password and malformed `port` could retain that
+password inside `OperationRunner::result()`'s response argument in `getTrace()`
+when `zend.exception_ignore_args=0`. Independent direct and bridged regressions
+failed before the response was marked `SensitiveParameter` and passed afterward.
+The intentionally explicit, unvalidated `PayloadMismatchException::$payload`
+remains available; the change protects implicit trace arguments. Both routes
+still make exactly one request.
+
+Independent literal endpoint cases cover all 15 additions on direct wrapped,
+direct bare and bridged responses, including exact URI/body/auth, omission,
+explicit empty values, null versus absent data, nested wrong types, integer flags,
+opaque objects, API failures and metadata replacement. Password-input failures
+join the existing sensitive-trace matrix. The generator/specs do not supply the
+expected endpoint results. Generated coverage, offline validation and actual live
+observations are separate claims.
+
+The standalone section recipe is scoped to 21 operations on each UAPI route.
+Four generated/offline-tested operations remain outside its live recipe:
+remote-host add/note/delete lack an authoritative absence check in host notes,
+and random setup needs safe recovery when generated identities are not returned.
+Follow-up `whm-api-client-8x0.2.9` tracks that evidence work. Empty tables/routines,
+API-reported grants and password results do not prove SQL enforcement, SQL login,
+repair of damaged tables or stored-routine behavior. Consumer integration remains
+deferred. The historical baseline and its Quota acknowledgment policy are unchanged.
+
+### Runtime observations: 2026-10-30 Mysql section
+
+One authorized run of the standalone section recipe at code revision
+`b29cecebcd0b44a050017d574a02f3842f2ea430` completed with exit 0 on
+`test.oblak.host`, cPanel `11.138.0.19`. The artifact is
+[`2026-10-30-mysql-section.json`](evidence/2026-10-30-mysql-section.json), SHA-256
+`df7ba98f8233e77583e5070113f95e1536928f917e9f4c748fd922c5fce875c2`.
+
+All 57 observations passed: one WHM version call plus 28 lifecycle phases on each
+UAPI route, covering 42 distinct MySQL operation/route pairs (21 functions).
+The strict assessment found no missing, duplicate, out-of-order, unsuccessful,
+provenance-mismatched or discrepant observations. It uses no acknowledgments.
+The grant/read/revoke/read sequence observed exactly `SELECT` then an empty list
+separately on both routes. Password results, linked inventories, database and
+user rename readbacks, empty checks/repairs/routines and schema payload validation
+passed. The fixture also invoked the account-wide privilege update on the
+designated test account. Both routes' database and user resources are cleaned;
+final inventories establish original and renamed names absent. No raw identities,
+SQL, passwords or arbitrary upstream messages are saved.
+
+Access is revoked before rename and both databases are empty. The rename readbacks
+establish name changes and cleanup only; they do not observe grant or stored-code
+recreation. This limitation also applies to the immutable artifact above. The
+current recipe reports it explicitly; no operation was replayed to update the
+historical evidence.
+
+The artifact's 820 structural paths, all 57 effective-contract hashes, source/map/
+generator/overlay provenance, version binding and complete assessment were audited
+without replaying requests. No new compatibility correction was required. These
+results cover the exact operations, routes, arguments and server version exercised;
+the four excluded live operations and other stated limitations remain explicit.
+
+Before capture, `composer validate`, `composer check` (4,493 tests / 33,833
+assertions), PHPCS, maximum-level PHPStan and `composer api-map:check` passed.
+A fresh whole-branch reviewer independently inspected the exact code revision,
+including all 15 pinned contracts, guards, cleanup, sanitization, provenance and
+credential traces; it reported no actionable findings and independently passed
+521 focused tests / 2,985 assertions. This is an independent local review, not a
+separate-account GitHub approval. Actual external PR approval remains a merge gate.
+
+The code commit changed 22 files: 19 manual files with 2,497 additions / 17
+removals, and three generated files with 718 additions / two removals. That includes
+overlay, runtime trace protection, independent tests, standalone fixture tooling
+and documentation. Evidence and this runtime addendum are separate. Two review
+passes were used (contract audit, then whole-branch review); the first led to
+source-caveat documentation and the returned-secret regression, and the second
+found no remaining issue. No measured review-time saving is claimed.
+
+
+### Complete FTP section: 2026-10-30
+
+The owner requested another coherent API slice in an independent PR while
+keeping the complete MySQL PR separate. Bead `whm-api-client-8x0.4.9` covers all
+20 pinned `Ftp` functions from the unchanged 2026-10-13 cPanel OpenAPI snapshot:
+`add_ftp`, `allows_anonymous_ftp`, `allows_anonymous_ftp_incoming`, `delete_ftp`,
+`ftp_exists`, `get_ftp_daemon_info`, `get_port`, `get_quota`, `get_welcome_message`,
+`kill_session`, `list_ftp`, `list_ftp_with_disk`, `list_sessions`, `passwd`,
+`server_name`, `set_anonymous_ftp`, `set_anonymous_ftp_incoming`, `set_homedir`,
+`set_quota` and `set_welcome_message`.
+
+All nine mutations execute as form POST; the eleven read operations use GET.
+`passwd` is exposed as `changePassword(user, password, domain)`; `pass` and
+`pass_hash` map to sensitive `password` and `passHash` arguments. Optional
+parameters preserve omission, explicit false, empty strings and zero. The API
+forbids sending both password forms, leaves domains defaulted to the cPanel
+primary domain, and defaults new usernames to dot removal. These are upstream
+semantics rather than new local cross-parameter validation.
+
+The overlay preserves FTP-role caveats and version floors: cPanel 54 for
+`get_ftp_daemon_info` and `set_homedir`, 11.42 for the other operations. Inventory
+row fields remain optional; disk amounts remain decimal strings in MB, with
+`_diskquota` using `0.00` for unlimited and `diskquota` using `unlimited`.
+`get_quota` is a string payload. `htmldir` may be explicitly null. Sessions keep
+their documented optional fields and integer PID. `ftp_exists` is a nullable
+object success or an API error, not a boolean result. Opaque nullable object
+results retain explicit null and unknown object fields but reject an absent
+payload. `add_ftp` has a literal `[null]` enum in the pinned schema: its generated
+nullable-object shape follows the established general-enum policy, not exact
+JSON Schema validation or a claim of documented non-null data.
+
+The account-changing defaults are rendered in generated PHPDoc: `destroy=true`
+also deletes the FTP home directory, omitted `add_ftp` homedir defaults to a
+directory with the same name as the FTP account, `kill_session` without a login
+targets all account sessions, and omitted quota settings can remove the quota. Both anonymous
+access switches apply to the selected cPanel account. No generated source was
+edited by hand and no shared runtime or generator policy was changed.
+
+The separate section verifier is scoped to `npr` / `npr.rs`, with both live
+opt-ins and committed source inputs. It exercises a run-owned FTP user through
+each UAPI route. Home-directory arguments `.` and `./` refer to the existing
+cPanel home; cleanup always supplies `destroy=false`. The directory call can
+establish execution/readback, not a change in filesystem isolation. Failed or
+uncertain creation never authorizes deleting a possibly unrelated user.
+Account-wide anonymous settings, the welcome-message setter and session killing
+are deliberately unobserved live in this recipe (follow-up `8x0.2.10`). FTP authentication, active
+session rows, populated disk usage and another daemon/version remain separate
+from API execution evidence. Runtime results are recorded below only after an
+explicit capture; default PHP and API-map gates remain offline.
+
+
+The first committed-code capture at
+`dd82a734095977fae6f8a2f3a0b1fabf226f1004` on cPanel `11.138.0.19`
+failed strictly on the finite-quota read through both routes: the original
+payload was a JSON integer, while the pinned contract declares a string.
+Unlimited quotas were strings. The [original artifact](evidence/2026-10-30-ftp-section.json),
+SHA-256 `55b0184b8581fb288c0bb0016b4ce36ffce119b262f831edabe777c285a65da8`,
+preserves both type mismatches and the failed assessment. It contains 39
+observations; disk inventory phases were not reached. Both temporary FTP users
+were independently confirmed absent after cleanup. All 540 structural paths,
+provenance and assessment were audited without recording payload values or replaying requests.
+
+A correction limited to `Ftp/get_quota` retains the documented string form and
+observed integer form as `int|string`. An evidence-bound root union expresses
+this in the existing type grammar; no generic validator or generator behavior
+changes. Floats, booleans, null, lists and objects remain invalid. Independently
+authored endpoint tests reproduced the integer mismatch on all three envelope
+forms; the full fixture regression reproduced it before the correction. Fixture
+readback requires the assigned finite quota as exactly integer `17` or string
+`17`, separately from the initial `unlimited` value. The initial discrepancy is
+not waived or rewritten, and new live evidence must bind the corrected revision.
+
+
+The second capture at `cd7bdb6a57bc6fe40dc0442d9c49c956cdfabe90` is saved as
+[the corrected-contract artifact](evidence/2026-10-30-ftp-section-corrected.json),
+SHA-256 `5bf7067e69efb996a31fb6c4b0a30f5a63402f4f8c5c88c81b11db73f4f4e94a`.
+All **41 observations** passed HTTP, API outcome, generated payload validation and
+fixture expectations on `11.138.0.19`: 16 Ftp functions through both routes plus
+WHM version. Both temporary users were independently confirmed absent; neither
+run removed directory contents. The original-response finite quotas were integers,
+and the populated disk inventories contained the documented row fields.
+
+The command still exited **1**: each disk-inventory observation has an
+`unknown_field` discrepancy at `$[].*` with string type. Those are two route
+observations, not evidence of exactly two field names or any particular names.
+The strict assessment remains **failed** with `unacknowledged_discrepancy`.
+No acknowledgment or undocumented typed field was added; `8x0.2.11` tracks the
+contract investigation. The typed client discards unknown fields by its existing
+policy, so API/payload success and evidence-assessment failure remain separate.
+The artifact's 634 structural paths, provenance, effective hashes and assessment
+were independently audited; no credentials, live usernames or response values
+were persisted. No third mutation run was performed merely to clear this finding.
+
+Both saved captures restrict inventory to `include_acct_types=sub`; the
+corrected artifact observes only `sub` rows. Main, anonymous and log-access rows
+are outside its captured evidence. The fixture report declares `sub_rows_only`
+for this recipe; the immutable artifacts are unchanged.
+
+The [external review of head `fc96ecd12506fb489b8bb98bda8b39b065350363`](https://github.com/hostingpal/whm-api-client/pull/28)
+reported a separate read-only, unfiltered diagnostic through both UAPI routes.
+`listFtp()` and `listFtpWithDisk()` passed typed validation for main, log-access
+and anonymous rows; no sub rows remained. That diagnostic is not bound to an
+evidence artifact. Its undocumented disk-inventory keys were `type` and `user`,
+both strings; this does not identify the masked unknown keys in the artifact's
+sub rows. The strict artifact assessment stays failed, without an acknowledgment
+or new typed field. The reviewer considers this finding nonblocking for merge;
+`8x0.2.11` remains open. No live rerun was performed for these review fixes.
+
+Before the first capture, the code commit changed 22 files: 18 manual files
+(2,623 additions / 4 removals) and four generated files (1,037 / 1). The evidence,
+quota correction and this addendum are additional work. A fresh independent
+whole-branch review of `dd82a734` found no actionable issue and independently ran
+767 tests / 6,142 assertions. The evidence-driven quota correction then passed
+its observed RED-to-GREEN endpoint and fixture regressions, full **4,745 tests /
+36,992 assertions**, formatting, maximum-level PHPStan and offline API-map checks.
+No shared runtime or generator change was needed. External current-head review,
+the unknown-field decision, and the four deliberately unobserved live functions
+remain distinct from these implementation and execution results.
+
 
 ### Complete PostgreSQL section: 2026-10-30
 
 The owner requested the next complete module under `whm-api-client-8x0.4.10`.
-This independent slice adds all 14 pinned `Postgresql` functions, bringing this
-branch to 96 generated operations across 14 groups. The earlier MySQL and FTP
-section PRs remain separate and are not included in these branch counts.
+This slice adds all 14 pinned `Postgresql` functions. Integrating the approved
+MySQL and FTP sections brings the combined branch to 131 generated operations
+across 15 groups; the module contracts and immutable artifacts remain separate.
 `get_restrictions`, `list_databases` and `list_users` are GETs. The eleven
 mutations declare `x-readonly=false` and `x-rollback=none`; the client sends them
 as form POST. Passwords on creation, rename and password change are sensitive.

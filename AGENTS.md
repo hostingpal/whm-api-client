@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 14 typed groups cover 96 documented operations:
+and cPanel UAPI surface. The 15 typed groups cover 131 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -167,6 +167,27 @@ Privilege assignment replaces existing privileges. Mutation results are nullable
 objects with no pinned field schema: preserve opaque object fields, explicit null
 and the distinction from an absent payload. Do not invent a field contract or
 weaken validation to void. Keep password arguments sensitive.
+The Mysql group covers all 25 pinned operations. Additional methods cover remote
+hosts/notes, table check/repair, schema export, routine listing, host location,
+database/user rename, privilege revocation, password update, random setup and
+account-wide privilege updates. All pinned mutations use form POST, including
+checkDatabase(). Password updates return an object with optional failures, whose
+per-host error records contain error and host. The pinned text does not say whether
+failures can accompany status 1, so inspect both. Error text and hostnames are payload
+data; omitted failures stays omitted. setupDbAndUser() (11.116+)
+returns optional credential fields and a string port; treat its result as sensitive.
+Rename database warnings can report failure to delete the original database or
+grants. Preserve per-method role/version caveats in overlay notes and regenerate.
+`uapi()->ftp()` exposes all 20 pinned Ftp functions for the selected account.
+Mutations use form POST; addFtp password/passHash map to pass/pass_hash and are
+sensitive. Preserve omitted defaults, false/zero, pipe-delimited filters, decimal
+string disk amounts, quota unlimited semantics and optional nullable htmldir.
+getQuota preserves documented strings and observed finite JSON integers as int|string;
+its evidence-bound root union accepts no float/boolean/null coercion.
+ftpExists returns a nullable opaque payload or API error, not a boolean.
+Deleting with destroy=true also deletes the home directory; killSession without
+login stops all account sessions. Anonymous settings are account-scoped. Keep
+role/version caveats and sensitive parameters in the overlay, then regenerate.
 `uapi()->postgresql()` exposes all 14 pinned PostgreSQL functions for the selected
 account: three inventory/restriction GETs and eleven form POST mutations.
 `createUser()` returns a nullable integer with no pinned meaning; other mutations
@@ -350,8 +371,23 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   (`8x0.2.3`), expanded Email inventory (`8x0.4.1`), the SSL slice (`8x0.4.2`),
   Quota (`8x0.4.3`) and MySQL inventory (`8x0.4.4`) build on the initial slices;
   consumer feedback (`8x0.10.3`) is deferred by the user as of 2026-10-17.
-  That deferral removes only the consumer prerequisite for the bounded expansion
-  pilot; MySQL, finite-Quota, plumbing and current-head review gates remain.
+  The correction cycle and bounded pilot completed through PR25, followed by the
+  provisioning reads in PR26. Consumer integration remains deferred. On 2026-10-30
+  the owner authorized the full Mysql section as one larger dedicated PR.
+- The standalone `tools/live-verify/ftp-section.php` recipe requires both live
+  opt-ins, exact `WHM_API_LIVE_ACCOUNT=npr` / `WHM_API_LIVE_DOMAIN=npr.rs`, both
+  tokens and committed inputs. It targets 41 ordered observations across 16 Ftp
+  functions on both UAPI routes plus WHM version, with no discrepancy acknowledgments.
+  Each route owns a fresh FTP user only after confirmed API creation. Cleanup
+  always sends destroy=false and confirms absence. Home arguments . and ./ refer
+  to the existing account home; no directory contents are deleted. Settings and
+  session killing remain offline-only; readback does not prove FTP authentication,
+  transfer-quota enforcement or a change in directory isolation.
+  The corrected-contract 2026-10-30 artifact at cd7bdb6 on 11.138.0.19 passes
+  all 41 API/payload/expectation observations and cleanup, but strict assessment
+  fails on two list_ftp_with_disk unknown-field observations ($[].*, string).
+  Keep their discrepancies; no acknowledgment or typed unknown field was added.
+  The contract investigation is 8x0.2.11; deferred live settings/session work is 8x0.2.10.
 - The standalone `tools/live-verify/postgresql-section.php` recipe covers the full
   PostgreSQL module on exact `npr` / `npr.rs`, with both live opt-ins, both tokens
   and committed inputs. All six inventory/restriction preflight reads across both
@@ -388,6 +424,16 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   `get_privileges_on_database` GETs to the read observations and requires exactly
   the assigned `SELECT` result through both routes. It reuses the same resources
   and cleanup; API readback is not evidence of SQL permission enforcement.
+- The standalone `tools/live-verify/mysql-section.php` recipe requires both live
+  opt-ins, `WHM_API_LIVE_ACCOUNT=npr`, both tokens and committed inputs. Its
+  [2026-10-30 evidence](docs/api/evidence/2026-10-30-mysql-section.json) contains
+  57 passing phase observations across 21 Mysql functions on both UAPI routes
+  plus WHM version on `11.138.0.19`, with zero discrepancies and all original/new
+  resource identities absent after cleanup. Guards are phase-bound and one-shot;
+  failed/uncertain creation or rename never establishes ownership. Four generated
+  operations remain offline-only: remote-host add/note/delete and random setup,
+  tracked under `8x0.2.9`. The recipe uses empty databases and checks API-reported
+  privileges/password outcomes; it does not establish SQL enforcement or login.
 - The optional `--finite-quota-fixture` mode requires both live opt-ins and exact
   `WHM_API_LIVE_ACCOUNT=wqfinite` / `WHM_API_LIVE_DOMAIN=wqfinite.example.com`.
   It captures five separate observations on a disposable finite-quota account,

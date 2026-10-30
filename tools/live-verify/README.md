@@ -37,6 +37,66 @@ The two provisioning metadata reads also take no arguments. Their optional field
 remain optional, and a null database prefix remains distinct from an omitted one.
 Hostnames, database-server versions and prefixes are retained only as structural types.
 
+### Complete FTP section fixture
+
+`ftp-section.php` is a standalone opt-in recipe for the generated Ftp group. It
+requires committed effective inputs, both tokens, and the designated account and
+domain. It does not change the default 47-probe catalog or its Quota policy.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/ftp-section.php --output=docs/api/evidence/ftp-section-new.json
+```
+
+Use a new output filename. The command records sanitized structure from each
+original response and refuses to overwrite an existing artifact. The strict
+assessment requires all 41 ordered phase observations: WHM version and 20 phases
+per UAPI route, covering 16 Ftp functions. It accepts no discrepancy acknowledgments.
+
+The [2026-10-30 corrected-contract capture](../../docs/api/evidence/2026-10-30-ftp-section-corrected.json)
+passed all 41 API/payload/expectation observations and both cleanups, but exits 1
+because both disk inventories have undocumented string fields at `$[].*`.
+The strict assessment remains failed; `8x0.2.11` tracks that contract investigation.
+The [initial capture](../../docs/api/evidence/2026-10-30-ftp-section.json) separately
+preserves the finite-integer quota mismatch that justified `getQuota(): int|string`.
+
+Each route uses an independent random FTP username. The recipe checks absence,
+creates that user, checks its inventory/existence/unlimited quota, updates its
+password and home-directory spelling, sets a 17 MB quota, reads back the quota
+and disk inventory, deletes the user, and confirms absence. The `.` and `./`
+home arguments refer to the existing cPanel home directory; cleanup always sends
+`destroy=false`, so it never deletes directory contents. This proves the home
+setter's execution and readback, not a change in filesystem isolation. Quota and
+password results do not establish FTP authentication or transfer enforcement.
+
+The guard permits only the exact phase, method, URI, credentials, headers and
+body once. Failed or uncertain creation never establishes ownership, even if a
+matching account later appears. A confirmed successful API creation can be
+cleaned up after a payload mismatch. Cleanup never retries a mutation, and a
+successful delete still requires an independent inventory confirming absence.
+
+If publication fails after the complete report is written, the command keeps its
+0600 temporary file and prints its path on stderr. Retain that file as the
+sanitized failure artifact. When a resource is `uncertain`, inspect the
+designated account privately and identify this run's
+`wftp`-prefixed account before manual recovery; the prefix alone does not prove
+ownership. An uncertain creation stays uncertain even if the final inventory is
+empty, because the server may finish creating it afterward. Raw responses,
+passwords and actual resource identities remain out of the artifact. Do not rerun the fixture to recover the original response or
+reuse a previous run's account. API outages and failed cleanup require private
+inspection; a failed assessment is not a successful verification.
+
+`kill_session`, `set_anonymous_ftp`, `set_anonymous_ftp_incoming` and
+`set_welcome_message` are generated and offline-tested but deliberately unobserved
+in this recipe (follow-up `whm-api-client-8x0.2.10`). It neither opens FTP sessions
+nor changes account-wide settings.
+Inventory captures use `include_acct_types=sub`; the report declares
+`sub_rows_only`, and main, anonymous and log-access rows are outside the saved
+artifact evidence. Empty session responses provide no evidence about session
+row fields. Disabled FTP roles, other daemons and other versions remain
+separate evidence cases.
+
 ### Nonempty MySQL fixture
 
 The separate `--mysql-fixture` mode temporarily creates two databases and two
@@ -304,6 +364,57 @@ the equivalent combined comparison is 667 versus 659 lines. This avoids three
 repeated mechanics and saves eight lines in that comparison, while adding a
 shared helper to review. No elapsed review-time saving or broader adoption is
 claimed. Wrong authentication and prefix encoding still fail independent tests.
+
+## Complete Mysql section recipe
+
+The standalone section recipe keeps its phase evidence separate from the historical
+`--mysql-fixture` and the default read-only catalog:
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_ACCOUNT=npr \
+  php tools/live-verify/mysql-section.php --output=docs/api/evidence/mysql-section.json
+```
+
+Both `OBLAK_TEST_WHM_KEY` and `OBLAK_TEST_NPR_KEY` must be exported. Effective source,
+overlay and runner code must be committed. The recipe binds `test.oblak.host` and
+the designated `npr` account, requires all opt-ins on each request, and makes no
+mutation retries. Run only one instance at a time. It captures 21 Mysql
+operations through direct UAPI and the WHM bridge, using separate run-owned
+resources for each route. Grant/revoke reads check API-reported privileges, not
+SQL enforcement; password checks inspect the returned failure list, not SQL login.
+Empty database checks, repairs and routine lists establish no populated table or
+stored-routine behavior. `updatePrivileges()` affects the entire `npr` test account.
+
+Generated coverage includes all 25 pinned Mysql functions. Four are deliberately
+unobserved by this recipe: `add_host`, `add_host_note`, `delete_host` and
+`setup_db_and_user`. Host notes do not prove the absence of an authorized host
+without a note. Random setup needs an ownership-safe recovery path when the
+response containing its generated identities is lost. Offline tests cover these
+contracts; no successful live observation is inferred from them.
+
+The report retains phase identities, sanitized original-response structures,
+request methods, version and contract provenance. Unknown/dynamic keys are masked;
+raw passwords, schema SQL, resource names and upstream error text are not persisted.
+Fixture expectations and cleanup remain distinct from payload/discrepancy results.
+A failed phase remains a failure even if cleanup succeeds. Historical discrepancy
+acknowledgments do not apply to this recipe.
+
+If a run reports uncertain ownership or cleanup, inspect the designated account's
+inventory privately before deciding on recovery. The recipe never adopts a name
+merely because it appeared after a failed creation. An unsuccessful rename retains
+possible original and destination resources; even an accepted rename can leave an
+original name behind, which makes cleanup fail. The `npr_ws` name prefix is only a
+candidate filter, not ownership proof. Neither the report nor a later rerun is
+authorization to delete those candidates. The report deliberately omits exact names;
+resolve uncertainty using private server inspection. Successful final inventories
+must confirm both original and renamed identities absent.
+
+Access is revoked before rename and the databases are empty, so the recipe does
+not observe grant or stored-code recreation. An absent final inventory never
+resolves an uncertain creation or rename; those resources remain `uncertain` and
+require manual review. If publishing a completed report fails, stderr names its
+retained 0600 temporary file. Recover that file privately; do not replay mutations
+to recover evidence.
 
 
 ## Complete PostgreSQL section

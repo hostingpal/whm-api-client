@@ -21,6 +21,8 @@ trait UapiGroups
 
     private ?Features $featuresGroup = null;
 
+    private ?Ftp $ftpGroup = null;
+
     private ?LangPhp $langPhpGroup = null;
 
     private ?Mysql $mysqlGroup = null;
@@ -69,6 +71,16 @@ trait UapiGroups
     public function features(): Features
     {
         return $this->featuresGroup ??= new Features($this->run(...));
+    }
+
+    /**
+     * Select the Ftp operations without making a request.
+     *
+     * The Ftp module for UAPI.
+     */
+    public function ftp(): Ftp
+    {
+        return $this->ftpGroup ??= new Ftp($this->run(...));
     }
 
     /**

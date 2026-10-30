@@ -13,6 +13,50 @@ namespace HostingPal\WhmApiClient\Api\Uapi\Spec;
  */
 final class MysqlSpec
 {
+    public const ADD_HOST = [
+        'function' => 'add_host',
+        'module' => 'Mysql',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'host' => ['name' => 'host', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const ADD_HOST_NOTE = [
+        'function' => 'add_host_note',
+        'module' => 'Mysql',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'host' => ['name' => 'host', 'encoding' => 'scalar'],
+            'note' => ['name' => 'note', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const CHECK_DATABASE = [
+        'function' => 'check_database',
+        'module' => 'Mysql',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'msg_text' => ['type' => 'string'],
+                    'msg_type' => ['type' => 'string'],
+                    'table' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
     public const CREATE_DATABASE = [
         'function' => 'create_database',
         'module' => 'Mysql',
@@ -49,6 +93,17 @@ final class MysqlSpec
         'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
     ];
 
+    public const DELETE_HOST = [
+        'function' => 'delete_host',
+        'module' => 'Mysql',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'host' => ['name' => 'host', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
     public const DELETE_USER = [
         'function' => 'delete_user',
         'module' => 'Mysql',
@@ -58,6 +113,26 @@ final class MysqlSpec
             'name' => ['name' => 'name', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const DUMP_DATABASE_SCHEMA = [
+        'function' => 'dump_database_schema',
+        'module' => 'Mysql',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'dbname' => ['name' => 'dbname', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'string'],
+    ];
+
+    public const GET_HOST_NOTES = [
+        'function' => 'get_host_notes',
+        'module' => 'Mysql',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'map', 'values' => ['type' => 'string']],
     ];
 
     public const GET_PRIVILEGES_ON_DATABASE = [
@@ -123,6 +198,17 @@ final class MysqlSpec
         ],
     ];
 
+    public const LIST_ROUTINES = [
+        'function' => 'list_routines',
+        'module' => 'Mysql',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'databaseUser' => ['name' => 'database_user', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'list', 'items' => ['type' => 'string']],
+    ];
+
     public const LIST_USERS = [
         'function' => 'list_users',
         'module' => 'Mysql',
@@ -142,6 +228,104 @@ final class MysqlSpec
         ],
     ];
 
+    public const LOCATE_SERVER = [
+        'function' => 'locate_server',
+        'module' => 'Mysql',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'is_remote' => ['type' => 'flag'],
+                'remote_host' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const RENAME_DATABASE = [
+        'function' => 'rename_database',
+        'module' => 'Mysql',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'oldName' => ['name' => 'oldname', 'encoding' => 'scalar'],
+            'newName' => ['name' => 'newname', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const RENAME_USER = [
+        'function' => 'rename_user',
+        'module' => 'Mysql',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'oldName' => ['name' => 'oldname', 'encoding' => 'scalar'],
+            'newName' => ['name' => 'newname', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const REPAIR_DATABASE = [
+        'function' => 'repair_database',
+        'module' => 'Mysql',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'msg_text' => ['type' => 'string'],
+                    'msg_type' => ['type' => 'string'],
+                    'table' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const REVOKE_ACCESS_TO_DATABASE = [
+        'function' => 'revoke_access_to_database',
+        'module' => 'Mysql',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'database' => ['name' => 'database', 'encoding' => 'scalar'],
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const SET_PASSWORD = [
+        'function' => 'set_password',
+        'module' => 'Mysql',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'password' => ['name' => 'password', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'failures' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'error' => ['type' => 'string'],
+                            'host' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
     public const SET_PRIVILEGES_ON_DATABASE = [
         'function' => 'set_privileges_on_database',
         'module' => 'Mysql',
@@ -152,6 +336,35 @@ final class MysqlSpec
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
             'privileges' => ['name' => 'privileges', 'encoding' => 'scalar'],
         ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const SETUP_DB_AND_USER = [
+        'function' => 'setup_db_and_user',
+        'module' => 'Mysql',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'prefix' => ['name' => 'prefix', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'database' => ['type' => 'string'],
+                'database_user' => ['type' => 'string'],
+                'database_user_password' => ['type' => 'string'],
+                'hostname' => ['type' => 'string'],
+                'port' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const UPDATE_PRIVILEGES = [
+        'function' => 'update_privileges',
+        'module' => 'Mysql',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
         'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
     ];
 }

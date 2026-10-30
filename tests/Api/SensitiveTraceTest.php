@@ -80,7 +80,7 @@ final class SensitiveTraceTest extends TestCase
 
     public function testTheTraceSearchDetectsUnmarkedResponseBodies(): void
     {
-        $leak = static function (mixed $secret): never {
+        $leak = static function (mixed $response): never {
             throw new RuntimeException('Control failure.');
         };
 
@@ -210,6 +210,110 @@ final class SensitiveTraceTest extends TestCase
             self::assertSecretAbsent($exception);
         }
     }
+
+    #[DataProvider('mysqlRoutes')]
+    public function testReturnedMysqlPasswordIsRetainedOnlyInExplicitPayloadAfterMismatch(bool $direct): void
+    {
+        [$client, $http] = self::client($direct);
+        $result = '{"status":1,"data":{"database_user_password":"' . self::SECRET . '","port":3306}}';
+        $http->addResponse(new Response(200, [], $direct ? $result
+            : '{"metadata":{"result":1},"data":{"uapi":' . $result . '}}'));
+        try {
+            $client->uapi($direct ? null : 'npr')->mysql()->setupDbAndUser(prefix: 'app');
+            self::fail('An integer port must fail the pinned string contract.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertTrue($exception->outcomeConfirmed);
+            self::assertSame(['database_user_password' => self::SECRET, 'port' => 3306], $exception->payload);
+            self::assertCount(1, $http->getRequests());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    /** @param class-string<Throwable> $expected */
+    #[DataProvider('returnedMysqlPasswordFailures')]
+    public function testReturnedMysqlPasswordCannotLeakFromEnvelopeFailures(
+        bool $direct,
+        int $status,
+        string $body,
+        string $expected,
+    ): void {
+        [$client, $http] = self::client($direct);
+        $http->addResponse(new Response($status, [], str_replace('returned-password', self::SECRET, $body)));
+        try {
+            $client->uapi($direct ? null : 'npr')->mysql()->setupDbAndUser(prefix: 'app');
+            self::fail('Expected the returned-password response to fail.');
+        } catch (Throwable $exception) {
+            self::assertInstanceOf($expected, $exception);
+            self::assertCount(1, $http->getRequests());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    /** @return iterable<string, array{bool, int, string, class-string<Throwable>}> */
+    public static function returnedMysqlPasswordFailures(): iterable
+    {
+        $data = '{"database_user_password":"returned-password"}';
+        yield 'string status' => [true, 200, '{"status":"1","data":' . $data . '}', InvalidResponseException::class];
+        yield 'failed status with data' => [true, 200, '{"status":0,"data":' . $data . '}', ApiErrorException::class];
+        yield 'missing status' => [true, 200, '{"data":' . $data . '}', InvalidResponseException::class];
+        yield 'truncated JSON' => [true, 200, '{"data":' . $data, InvalidResponseException::class];
+        yield 'outer WHM failure' => [false, 200,
+            '{"metadata":{"result":0},"data":{"uapi":{"status":1,"data":' . $data . '}}}', ApiErrorException::class];
+        yield 'bridged UAPI failure' => [false, 200,
+            '{"metadata":{"result":1},"data":{"uapi":{"status":0,"data":' . $data . '}}}', ApiErrorException::class];
+        yield 'HTTP failure' => [true, 500, '{"status":1,"data":' . $data . '}', HttpException::class];
+    }
+
+    /**
+     * @param 'direct'|'bridged' $route
+     * @param Closure(Client): mixed $call
+     */
+    #[DataProvider('ftpSecretCalls')]
+    public function testFtpWritePayloadFailuresKeepPasswordsAndHashesOutOfTraceArguments(
+        string $route,
+        Closure $call,
+    ): void {
+        [$client, $http] = self::client($route === 'direct');
+        $http->addResponse(new Response(200, [], $route === 'direct'
+            ? '{"status":1,"data":false}'
+            : '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":false}}}'));
+
+        try {
+            $call($client);
+            self::fail('Expected an invalid payload after the confirmed FTP write.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertTrue($exception->outcomeConfirmed);
+            self::assertCount(1, $http->getRequests());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    /** @return iterable<string, array{'direct'|'bridged', Closure(Client): mixed}> */
+    public static function ftpSecretCalls(): iterable
+    {
+        foreach (['direct', 'bridged'] as $route) {
+            yield $route . ' FTP add password' => [
+                $route,
+                static fn (Client $client): mixed => $client->uapi($route === 'direct' ? null : 'npr')->ftp()->addFtp(
+                    user: 'writer',
+                    password: self::SECRET,
+                ),
+            ];
+            yield $route . ' FTP add password hash' => [
+                $route,
+                static fn (Client $client): mixed => $client->uapi($route === 'direct' ? null : 'npr')->ftp()->addFtp(
+                    user: 'writer',
+                    passHash: self::SECRET,
+                ),
+            ];
+            yield $route . ' FTP change password' => [
+                $route,
+                static fn (Client $client): mixed =>
+                    $client->uapi($route === 'direct' ? null : 'npr')->ftp()->changePassword('writer', self::SECRET),
+            ];
+        }
+    }
+
 
     /**
      * @param 'direct'|'bridged' $route
@@ -393,6 +497,39 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
+    /**
+     * A response can retain the secret in a resource-backed stream that object-property searches cannot read.
+     * Library trace frames must redact the response itself, including responses nested in containers.
+     *
+     * @param array<int, true> $seen
+     */
+    private static function containsResponse(mixed $value, array &$seen): bool
+    {
+        if ($value instanceof SensitiveParameterValue) {
+            return false;
+        }
+        if ($value instanceof ResponseInterface) {
+            return true;
+        }
+        if (is_object($value)) {
+            $id = spl_object_id($value);
+            if (isset($seen[$id])) {
+                return false;
+            }
+            $seen[$id] = true;
+            $value = (array) $value;
+        }
+        if (is_array($value)) {
+            foreach ($value as $item) {
+                if (self::containsResponse($item, $seen)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     /** @return iterable<string, array{bool}> */
     public static function mysqlRoutes(): iterable
     {
@@ -454,6 +591,7 @@ final class SensitiveTraceTest extends TestCase
     /** @return iterable<string, array{'whm'|'direct'|'bridged', Closure(Client): mixed}> */
     private static function secretCalls(): iterable
     {
+        yield from self::ftpSecretCalls();
         yield from self::postgresqlPasswordCalls();
 
         yield 'direct MySQL create user' => [
@@ -465,6 +603,16 @@ final class SensitiveTraceTest extends TestCase
             'bridged',
             static fn (Client $client): mixed =>
                 $client->uapi('npr')->mysql()->createUser(name: 'npr_writer', password: self::SECRET),
+        ];
+        yield 'direct MySQL set password' => [
+            'direct',
+            static fn (Client $client): mixed =>
+                $client->uapi()->mysql()->setPassword(user: 'npr_writer', password: self::SECRET),
+        ];
+        yield 'bridged MySQL set password' => [
+            'bridged',
+            static fn (Client $client): mixed =>
+                $client->uapi('npr')->mysql()->setPassword(user: 'npr_writer', password: self::SECRET),
         ];
         yield 'WHM passwd' => [
             'whm',
@@ -545,39 +693,6 @@ final class SensitiveTraceTest extends TestCase
             self::assertStringNotContainsString(self::SECRET, $current->getTraceAsString());
             self::assertStringNotContainsString(self::SECRET, $current->getMessage());
         }
-    }
-
-    /**
-     * A response can retain the secret in a resource-backed stream that object-property searches cannot read.
-     * Library trace frames must redact the response itself, including responses nested in containers.
-     *
-     * @param array<int, true> $seen
-     */
-    private static function containsResponse(mixed $value, array &$seen): bool
-    {
-        if ($value instanceof SensitiveParameterValue) {
-            return false;
-        }
-        if ($value instanceof ResponseInterface) {
-            return true;
-        }
-        if (is_object($value)) {
-            $id = spl_object_id($value);
-            if (isset($seen[$id])) {
-                return false;
-            }
-            $seen[$id] = true;
-            $value = (array) $value;
-        }
-        if (is_array($value)) {
-            foreach ($value as $item) {
-                if (self::containsResponse($item, $seen)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     /**
