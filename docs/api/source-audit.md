@@ -2397,3 +2397,47 @@ shared read-only assessor, its regression tests and the relocated domain probe
 test come from that approved master. All original evidence artifacts and pinned
 sources remain unchanged. Integration made no live requests or new captures and
 does not extend the historical observations.
+
+## Fileman GET and form slice (2026-10-30)
+
+The Fileman group implements 13 of 14 pinned functions: directory autocomplete,
+file information, file content and directory listings use GET; content saving,
+in-memory transcoding, copy, move, rename, delete, trash, restore and trash purging
+use form POST. `upload_files` requires multipart and cannot use the WHM UAPI
+bridge; it remains excluded under `8x0.1.19`. Generic form calls do not supply
+multipart support.
+
+`copyFile(source, destination)`, `moveFile(source, destination)` and
+`renameFile(source, destination)` keep source first. Content arguments are
+sensitive and form-encoded once. Paths and content are forwarded unchanged;
+charset conversion is performed by the server. Omitting save content creates a
+blank file; `emptyTrash()` defaults to purging the account trash. Preserve each
+method's version, File Storage role, charset and destructive-operation caveats.
+
+`listFiles(types: 'file|dir')` accepts a pre-serialized pipe-delimited filter.
+The existing scalar encoding exposes a native `string|int` boundary without
+establishing integer filter semantics. No undeclared indexed `filepath-` family
+is inferred from `limitToList`. Optional response keys remain absent, flags stay
+integer `0|1`, and file sizes remain integer bytes. File-content charset fields
+with unspecified schemas stay mixed. `emptyTrash()` preserves nullable opaque
+objects and rejects a missing payload.
+
+All 13 methods have offline contract tests. The bounded live catalog selects
+three directory inventory reads through both routes, plus WHM version. It reads
+no existing file content and sends no mutations. Content, filesystem lifecycle
+and transcoding verification remain under `8x0.2.24`; exclusive fixture creation
+must precede overwrite-capable saves.
+
+The unchanged pinned UAPI source SHA-256 is
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+The overlay keeps all declared parameter requiredness and response shapes.
+`list_files.types` has an array schema with `style: pipeDelimited` and
+`explode: false`; caller-prepared scalar encoding follows that wire contract.
+`limit_to_list` mentions indexed paths without declaring their request schema.
+Neither detail justifies inventing a request family or delimiter conversion.
+
+The independent module test uses literal wire and payload oracles across direct
+wrapped/bare and bridged UAPI, omitted/empty/false options, response type failures,
+metadata and sensitive-content traces. The seven-request catalog has a separate
+literal URI oracle and rejects mutation methods before network dispatch. Existing
+runtime, generator and live-runner behavior is unchanged.

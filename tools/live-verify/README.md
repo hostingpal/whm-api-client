@@ -731,3 +731,26 @@ Recorded captures: [initial](../../docs/api/evidence/2026-10-30-mime-section.jso
 and [corrected](../../docs/api/evidence/2026-10-30-mime-section-corrected.json).
 The initial four payload mismatches establish exactly two nullable URL fields;
 the corrected capture preserves their null values. All 13 GET observations passed HTTP, API, payload and probe checks with zero discrepancies and a passed strict assessment. The observed null URL fields are preserved. MIME and redirect lists were empty; handler rows were populated. This read-only capture establishes no mutation or HTTP redirect/hotlink enforcement coverage. Separate reviewer mutation and populated-row observations are attributed in the source audit. See `8x0.2.21`.
+
+## Fileman directory inventory
+
+`fileman-section.php` binds the `fileman-inventory-v1` recipe to seven GETs:
+WHM version, then `autocompletedir`, `get_file_information` and `list_files`
+through both routes. Autocomplete uses the `public` prefix with all three flags
+explicitly false. Information and listings use `public_html`, request MIME and
+permission fields and leaf-directory checks, and omit hidden entries. Listings
+use `types=dir|file`. The account is exactly `npr` on `test.oblak.host`.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/fileman-section.php \
+  --output=docs/api/evidence/fileman-inventory-new.json
+```
+
+Both tokens and committed inputs are required. The unchanged shared command,
+exact-URI GET guard and original-response sanitizer retain structural paths/types
+only. Strict assessment accepts no discrepancies or historical acknowledgments.
+Use a new output path; publication and protected recovery follow the other
+read-only sections. No existing file content is read, and no mutation is sent.
+File content, filesystem lifecycle and transcoding remain under `8x0.2.24`.
+Multipart upload remains under `8x0.1.19` and is not exposed by this catalog.

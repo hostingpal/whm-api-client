@@ -1,0 +1,353 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Fileman",
+  "operations": {
+    "uapi:Fileman/autocompletedir": {
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Fileman/autocompletedir GET variant declares x-readonly=true. Use GET for this documented read."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later. Disabling the File Storage role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Null optional arguments omit the parameters and retain server defaults: dirsonly=0, html=1 and list_all=1. When listAll is true, path must be a full directory path. Completion includes files as well as directories unless dirsOnly is true."
+        }
+      ],
+      "name": "autocompleteDirectory",
+      "params": {
+        "dirsonly": {
+          "php": "dirsOnly"
+        }
+      }
+    },
+    "uapi:Fileman/copy_file": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Fileman/copy_file GET variant declares x-readonly=false. Generated-client policy uses form POST for mutations and sensitive content, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later. Disabling the File Storage role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Copies a file or directory while preserving source permissions and modification time. An existing directory destination receives the source inside it; an existing destination otherwise causes an error. Source is the first public argument and destination the second. The pinned operation declares no rollback."
+        }
+      ],
+      "order": [
+        "source",
+        "destination"
+      ]
+    },
+    "uapi:Fileman/delete_file": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Fileman/delete_file GET variant declares x-readonly=false. Generated-client policy uses form POST for mutations and sensitive content, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later. Disabling the File Storage role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Permanently deletes the selected file or directory, recursively for directories. This cannot be undone; trashFile provides the reversible alternative. The pinned operation declares no rollback."
+        }
+      ]
+    },
+    "uapi:Fileman/empty_trash": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Fileman/empty_trash GET variant declares x-readonly=false. Generated-client policy uses form POST for mutations and sensitive content, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 60 and later. Disabling the File Storage role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Purges the selected account home directory .trash folder. Omitting olderThan uses the server default 0, which purges everything; an explicit 0 has the same destructive meaning. No client rollback is performed."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve explicit null and opaque object fields; an absent data member is rejected."
+        }
+      ]
+    },
+    "uapi:Fileman/get_file_content": {
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Fileman/get_file_content GET variant declares x-readonly=true. Use GET for this documented read."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. Disabling the File Storage role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "JSON strings must be valid UTF-8. The source recommends ISO-8859-1 as fromCharset and UTF-8 as toCharset for non-UTF-8 input. For JSON serialization, the to_charset parameter requires utf-8 or US-ASCII; other output encodings have undefined behavior. Conflicting content and output encodings may cause an extra UTF-8 encoding layer."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted fromCharset defaults to _DETECT_, toCharset to _LOCALE_ and updateHtmlDocumentEncoding to 1. Content is returned as a string; no character-set conversion or file-content decoding is performed by the client. The pinned from_charset and to_charset response schemas are empty and remain mixed; do not infer them from the separately typed from_char and to_char fields."
+        }
+      ]
+    },
+    "uapi:Fileman/get_file_information": {
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Fileman/get_file_information GET variant declares x-readonly=true. Use GET for this documented read."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. Disabling the File Storage role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Optional response fields remain absent when omitted. exists, isleaf, read and write remain integer 0|1 flags; read and write are returned only when includePermissions is true. size is in bytes; mode is a string and nicemode is an integer. Paths are forwarded unchanged and no relative-path base is inferred."
+        }
+      ]
+    },
+    "uapi:Fileman/list_files": {
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Fileman/list_files GET variant declares x-readonly=true. Use GET for this documented read."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "At /paths/~1Fileman~1list_files/get/parameters/9, types is declared as an array but explicitly uses style=pipeDelimited and explode=false; its description requires a pipe-separated list and its item example is file|dir. Use the existing scalar encoding for a caller-supplied pre-serialized filter, consistent with the scalar pipe-delimited Ftp filters. Do not send repeated keys or infer an integer filter meaning from the existing string|int scalar boundary."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. Disabling the File Storage role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Optional response row fields remain absent when omitted. dirs and files are separate lists, preserving empty lists. exists, isleaf, isparent, read and write are integer 0|1 flags. size is in bytes; mode is a string and nicemode is an integer."
+        },
+        {
+          "kind": "documented",
+          "text": "types is a pre-serialized pipe-separated scalar such as file|dir, following the pinned prose and pipeDelimited style with explode=false. The existing scalar encoding has a string|int native boundary and forwards the caller value without delimiter parsing; this does not establish an integer filter meaning. onlyTheseFiles is a comma-separated string. MIME filters cause the server to set include_mime=1 even when includeMime is false."
+        },
+        {
+          "kind": "documented",
+          "text": "The limit_to_list description refers to a filepath- prefix but the pinned operation declares no indexed filepath- parameters or family encoding. Only the declared limitToList flag is exposed; no indexed inputs are inferred. Omitted options retain server defaults and explicit false is sent as 0."
+        }
+      ],
+      "params": {
+        "types": {
+          "encoding": "scalar"
+        }
+      }
+    },
+    "uapi:Fileman/move_file": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Fileman/move_file GET variant declares x-readonly=false. Generated-client policy uses form POST for mutations and sensitive content, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later. Disabling the File Storage role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Moves a file or directory. An existing directory destination receives the source inside it; an existing destination otherwise causes an error. Source is the first public argument and destination the second. The pinned operation declares no rollback."
+        }
+      ],
+      "order": [
+        "source",
+        "destination"
+      ]
+    },
+    "uapi:Fileman/rename_file": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Fileman/rename_file GET variant declares x-readonly=false. Generated-client policy uses form POST for mutations and sensitive content, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later. Disabling the File Storage role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Renames a file or directory within the same directory; use moveFile for a different directory. An existing destination causes an error. Source is the first public argument and destination the second. The pinned rollback classification is clean; the client performs no automatic retry or rollback."
+        }
+      ],
+      "order": [
+        "source",
+        "destination"
+      ]
+    },
+    "uapi:Fileman/restore_from_trash": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Fileman/restore_from_trash GET variant declares x-readonly=false. Generated-client policy uses form POST for mutations and sensitive content, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later. Disabling the File Storage role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Pass the original path of the trashed item, not the trash directory path. The most recent copy is restored if the path was trashed more than once. An existing original path causes an error. The pinned operation declares no rollback."
+        }
+      ]
+    },
+    "uapi:Fileman/save_file_content": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Fileman/save_file_content GET variant declares x-readonly=false. Generated-client policy uses form POST for mutations and sensitive content, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. Disabling the File Storage role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Saves a file using the supplied character encodings. Omitting content creates a blank file. Omitting dir uses the currently authenticated user home directory according to the pinned source; no alternate relative-path base is inferred. Content is sensitive and is form-encoded once in the POST body."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted fallback defaults to 1: save in the default character set if the requested one is unavailable. Explicit false requests an error instead. Omitted source and target character encodings both default to UTF-8."
+        }
+      ],
+      "params": {
+        "content": {
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:Fileman/transcode": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Fileman/transcode GET variant declares x-readonly=false. Generated-client policy uses form POST for mutations and sensitive content, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. Disabling the File Storage role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Converts an in-memory content buffer between character encodings; it does not name or save a file. Content is sensitive and travels in the form POST body. discardIllegal controls discarding invalid characters; transliterate controls conversion of invalid characters, with false requesting an error. Omitted options remain omitted."
+        }
+      ],
+      "name": "transcode",
+      "params": {
+        "content": {
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:Fileman/trash_file": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Fileman/trash_file GET variant declares x-readonly=false. Generated-client policy uses form POST for mutations and sensitive content, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later. Disabling the File Storage role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Moves the selected file or directory to the account trash directory and records its original path for restoreFromTrash. The result contains the resolved original path and the trash leaf when present. The pinned operation declares no rollback."
+        }
+      ]
+    },
+    "uapi:Fileman/upload_files": {
+      "exclude": {
+        "reason": "Requires binary multipart file parts and is explicitly unavailable through WHM uapi_cpanel; outside this GET/form slice. Transport follow-up whm-api-client-8x0.1.19 retains multipart work.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-30",
+            "note": "The pinned /Fileman/upload_files POST description requires multipart/form-data file parts, discards file- query fields and prohibits calling through WHM API 1 uapi_cpanel. The request body declares a required binary file-0 field. Existing typed string multipart does not support file uploads."
+          }
+        ]
+      }
+    }
+  }
+}

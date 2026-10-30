@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 25 typed groups cover 325 documented operations:
+and cPanel UAPI surface. The 26 typed groups cover 338 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -349,6 +349,34 @@ was an empty string, and the privacy-user list was empty. This capture made no
 indexing, password-protection or leech-protection changes and establishes no
 mutation or HTTP-enforcement coverage. Separate reviewer mutation observations
 are recorded in the source audit; they are not part of this artifact. Follow-up `8x0.2.22` remains open.
+
+The Fileman group implements 13 of 14 pinned functions: directory autocomplete,
+file information, file content and directory listings use GET; content saving,
+in-memory transcoding, copy, move, rename, delete, trash, restore and trash purging
+use form POST. `upload_files` requires multipart and cannot use the WHM UAPI
+bridge; it remains excluded under `8x0.1.19`. Generic form calls do not supply
+multipart support.
+
+`copyFile(source, destination)`, `moveFile(source, destination)` and
+`renameFile(source, destination)` keep source first. Content arguments are
+sensitive and form-encoded once. Paths and content are forwarded unchanged;
+charset conversion is performed by the server. Omitting save content creates a
+blank file; `emptyTrash()` defaults to purging the account trash. Preserve each
+method's version, File Storage role, charset and destructive-operation caveats.
+
+`listFiles(types: 'file|dir')` accepts a pre-serialized pipe-delimited filter.
+The existing scalar encoding exposes a native `string|int` boundary without
+establishing integer filter semantics. No undeclared indexed `filepath-` family
+is inferred from `limitToList`. Optional response keys remain absent, flags stay
+integer `0|1`, and file sizes remain integer bytes. File-content charset fields
+with unspecified schemas stay mixed. `emptyTrash()` preserves nullable opaque
+objects and rejects a missing payload.
+
+All 13 methods have offline contract tests. The bounded live catalog selects
+three directory inventory reads through both routes, plus WHM version. It reads
+no existing file content and sends no mutations. Content, filesystem lifecycle
+and transcoding verification remain under `8x0.2.24`; exclusive fixture creation
+must precede overwrite-capable saves.
 
 The Mime group covers all 14 pinned functions: six reads use GET and eight
 mutations use form POST. No domain selector is documented for hotlink
