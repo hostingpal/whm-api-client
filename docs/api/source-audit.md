@@ -1257,3 +1257,45 @@ Follow-up `whm-api-client-8x0.2.9` tracks that evidence work. Empty tables/routi
 API-reported grants and password results do not prove SQL enforcement, SQL login,
 repair of damaged tables or stored-routine behavior. Consumer integration remains
 deferred. The historical baseline and its Quota acknowledgment policy are unchanged.
+
+### Runtime observations: 2026-10-30 Mysql section
+
+One authorized run of the standalone section recipe at code revision
+`b29cecebcd0b44a050017d574a02f3842f2ea430` completed with exit 0 on
+`test.oblak.host`, cPanel `11.138.0.19`. The artifact is
+[`2026-10-30-mysql-section.json`](evidence/2026-10-30-mysql-section.json), SHA-256
+`df7ba98f8233e77583e5070113f95e1536928f917e9f4c748fd922c5fce875c2`.
+
+All 57 observations passed: one WHM version call plus 28 lifecycle phases on each
+UAPI route, covering 42 distinct MySQL operation/route pairs (21 functions).
+The strict assessment found no missing, duplicate, out-of-order, unsuccessful,
+provenance-mismatched or discrepant observations. It uses no acknowledgments.
+The grant/read/revoke/read sequence observed exactly `SELECT` then an empty list
+separately on both routes. Password results, linked inventories, database and
+user rename readbacks, empty checks/repairs/routines and schema payload validation
+passed. The fixture also invoked the account-wide privilege update on the
+designated test account. Both routes' database and user resources are cleaned;
+final inventories establish original and renamed names absent. No raw identities,
+SQL, passwords or arbitrary upstream messages are saved.
+
+The artifact's 820 structural paths, all 57 effective-contract hashes, source/map/
+generator/overlay provenance, version binding and complete assessment were audited
+without replaying requests. No new compatibility correction was required. These
+results cover the exact operations, routes, arguments and server version exercised;
+the four excluded live operations and other stated limitations remain explicit.
+
+Before capture, `composer validate`, `composer check` (4,493 tests / 33,833
+assertions), PHPCS, maximum-level PHPStan and `composer api-map:check` passed.
+A fresh whole-branch reviewer independently inspected the exact code revision,
+including all 15 pinned contracts, guards, cleanup, sanitization, provenance and
+credential traces; it reported no actionable findings and independently passed
+521 focused tests / 2,985 assertions. This is an independent local review, not a
+separate-account GitHub approval. Actual external PR approval remains a merge gate.
+
+The code commit changed 22 files: 19 manual files with 2,497 additions / 17
+removals, and three generated files with 718 additions / two removals. That includes
+overlay, runtime trace protection, independent tests, standalone fixture tooling
+and documentation. Evidence and this runtime addendum are separate. Two review
+passes were used (contract audit, then whole-branch review); the first led to
+source-caveat documentation and the returned-secret regression, and the second
+found no remaining issue. No measured review-time saving is claimed.

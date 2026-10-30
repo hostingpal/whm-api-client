@@ -318,7 +318,7 @@ WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_ACCOUNT=npr \
 Both `OBLAK_TEST_WHM_KEY` and `OBLAK_TEST_NPR_KEY` must be exported. Effective source,
 overlay and runner code must be committed. The recipe binds `test.oblak.host` and
 the designated `npr` account, requires all opt-ins on each request, and makes no
-mutation retries. Run only one instance at a time. Its intended scope is 21 Mysql
+mutation retries. Run only one instance at a time. It captures 21 Mysql
 operations through direct UAPI and the WHM bridge, using separate run-owned
 resources for each route. Grant/revoke reads check API-reported privileges, not
 SQL enforcement; password checks inspect the returned failure list, not SQL login.

@@ -615,8 +615,18 @@ object results and optional prefix/privilege variants remain offline-tested only
 The [provisioning readback run](docs/api/evidence/2026-10-17-mysql-provisioning.json)
 adds restrictions, database-server information and exact `SELECT` readback through
 both routes. All 49 reads and ten fixture mutations passed, and cleanup confirmed
-all four resources absent. Empty privilege lists and disabled prefixes remain
-offline-tested only; the same two Quota acknowledgments remain visible.
+all four resources absent. That artifact does not observe empty privilege lists
+or disabled prefixes; the same two Quota acknowledgments remain visible.
+The [complete-section run](docs/api/evidence/2026-10-30-mysql-section.json)
+adds 57 phase-specific observations on cPanel `11.138.0.19`: one WHM version
+probe plus 21 MySQL operations on each UAPI route, with repeated lifecycle reads.
+All observations pass with zero discrepancies; original and renamed fixture
+identities are confirmed absent afterward. It observes SELECT-to-empty revocation,
+password-result failures checks, renames and empty-database maintenance. The four
+remote-host/random-setup methods remain generated and offline-tested only, with
+safe live ownership/recovery tracked separately. SQL enforcement/authentication,
+populated tables/routines and other server configurations remain unobserved.
+See the [section recipe](tools/live-verify/README.md#complete-mysql-section-recipe).
 The separate [finite-Quota scenario](docs/api/evidence/2026-10-17-finite-quota.json)
 adds five observations on a disposable account. Both Quota operations passed
 finite-limit checks through both routes, and token/account/domain/zone cleanup

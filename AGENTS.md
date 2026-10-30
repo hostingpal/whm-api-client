@@ -370,6 +370,16 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   `get_privileges_on_database` GETs to the read observations and requires exactly
   the assigned `SELECT` result through both routes. It reuses the same resources
   and cleanup; API readback is not evidence of SQL permission enforcement.
+- The standalone `tools/live-verify/mysql-section.php` recipe requires both live
+  opt-ins, `WHM_API_LIVE_ACCOUNT=npr`, both tokens and committed inputs. Its
+  [2026-10-30 evidence](docs/api/evidence/2026-10-30-mysql-section.json) contains
+  57 passing phase observations across 21 Mysql functions on both UAPI routes
+  plus WHM version on `11.138.0.19`, with zero discrepancies and all original/new
+  resource identities absent after cleanup. Guards are phase-bound and one-shot;
+  failed/uncertain creation or rename never establishes ownership. Four generated
+  operations remain offline-only: remote-host add/note/delete and random setup,
+  tracked under `8x0.2.9`. The recipe uses empty databases and checks API-reported
+  privileges/password outcomes; it does not establish SQL enforcement or login.
 - The optional `--finite-quota-fixture` mode requires both live opt-ins and exact
   `WHM_API_LIVE_ACCOUNT=wqfinite` / `WHM_API_LIVE_DOMAIN=wqfinite.example.com`.
   It captures five separate observations on a disposable finite-quota account,
