@@ -1241,3 +1241,32 @@ finding restored the pinned account-prefix requirement for `createUser()` throug
 an overlay note and regeneration. Failed or short temporary-file writes remain
 a resilience limitation; completed-report publication failures preserve a protected
 recovery file. No live operation is replayed to recover evidence.
+
+
+The [PostgreSQL preflight artifact](evidence/2026-10-30-postgresql-section.json),
+SHA-256 `a3fbf7f299cf2a1811ed655524c2eadd076b3a217508997a07eb44d32d28211c`,
+was captured once at revision
+`6539db7103a198a609a0b24aa4c09514b5464f36` on cPanel `11.138.0.19`.
+It records seven GET observations: WHM version passed, while PostgreSQL
+`list_databases`, `list_users` and `get_restrictions` each returned HTTP 200
+with an API failure on both direct and bridged UAPI. The recipe returned exit 1
+with `preflight_failure` and all four resource states `not_started`. No mutation
+was attempted and no resource was created; there is no cleanup claim.
+
+The strict assessment remains **failed** because the reads failed and the
+planned full-lifecycle sequence is incomplete. Payload validation and fixture expectations for the failed
+reads were not checked. Zero recorded discrepancies does not establish successful
+PostgreSQL behavior. All fourteen successful payload contracts and mutation
+behavior remain offline-tested only. Service/account availability and a future
+successful fixture run are tracked in `whm-api-client-8x0.2.14`; the failed
+artifact is preserved without a waiver or replay to recover evidence.
+
+The artifact's assessment, operation/route/method identities, pinned source hashes,
+effective contracts, map/generator/overlay hashes and revision were independently
+recomputed against the committed inputs. All 88 structural path entries contain
+only static envelope/contract paths and type labels; no payload values, passwords,
+resource names or upstream error text were persisted. The complete code passed
+`composer validate`, `composer check` (**4,732 tests / 39,581 assertions**) and
+`composer api-map:check`. The optional failed-temporary-write resilience follow-up
+is `whm-api-client-8x0.2.13`; atomic completed-report publication failure recovery
+is tested in this slice.

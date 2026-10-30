@@ -345,3 +345,12 @@ persisted. The strict assessment accepts no discrepancies or missing phases and
 does not inherit baseline acknowledgments. Offline fixture tests use independently
 authored server responses. API readback does not establish SQL authentication,
 SQL privilege enforcement or privileges on newly created tables.
+
+
+The [2026-10-30 PostgreSQL capture](../../docs/api/evidence/2026-10-30-postgresql-section.json)
+is **failed preflight evidence**: the WHM version check passed, but all six
+PostgreSQL reads returned API failures. The lifecycle stopped before writes, and
+all resources are `not_started`. It establishes no successful PostgreSQL payload
+or mutation coverage. See `whm-api-client-8x0.2.14` before scheduling a new run.
+A short or failed initial temporary-file write has no complete recovery file;
+that separate resilience improvement is tracked in `whm-api-client-8x0.2.13`.

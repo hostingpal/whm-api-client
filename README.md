@@ -269,6 +269,13 @@ Inventory, user deletion and privilege synchronization require cPanel 84+;
 database deletion requires cPanel 54+, and the other operations require 11.42+.
 Disabling the PostgreSQL role disables all fourteen operations.
 
+All fourteen PostgreSQL methods have offline contract coverage. The
+[committed live preflight](docs/api/evidence/2026-10-30-postgresql-section.json)
+on cPanel `11.138.0.19` returned API failures for all three reads through both
+routes. The guarded recipe stopped before mutations; successful PostgreSQL
+payloads and lifecycle behavior remain live-unverified. Follow-up
+`whm-api-client-8x0.2.14` tracks verification when the test service is available.
+
 The DNS methods are read-only (GET):
 
 ```php

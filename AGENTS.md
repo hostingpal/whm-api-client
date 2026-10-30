@@ -363,6 +363,12 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   responses structurally and verify every original/renamed identity absent after
   cleanup. No retries, payload logging, discrepancy acknowledgments or SQL-auth /
   privilege-enforcement claims. Failed preflight remains failed evidence, not a skip.
+  The 2026-10-30 artifact at `6539db7` on `11.138.0.19` records seven GETs:
+  WHM version passed; all six PostgreSQL reads returned HTTP 200 with API failures.
+  No mutation ran and all resources remain not_started. All fourteen successful
+  payloads/lifecycle behavior remain offline-only; follow-up `8x0.2.14` requires
+  establishing test-service availability before a fresh reviewed fixture run.
+  Optional short/failed temporary-write recovery is tracked in `8x0.2.13`.
 - The optional `--mysql-fixture` runner mode additionally requires
   `WHM_API_LIVE_MUTATIONS=1`. It creates two databases and two database users on
   the designated `npr` account, checks linked/unlinked inventory through both
