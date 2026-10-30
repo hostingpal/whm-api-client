@@ -1528,6 +1528,38 @@
         {
           "kind": "documented",
           "text": "The email account's quota.\n\n**Note:**\n\nThis value's unit of measure depends on the `as_bytes` input parameter's value."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, the MB result (asBytes=false) arrived as a numeric string through both direct and bridged UAPI. Canonical integer strings within PHP integer bounds normalize to int. The unit selection remains unchanged; explicit null, absent data, literal unlimited and noncanonical numeric strings remain rejected."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "int",
+            "accept": [
+              "numeric-string"
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "The original get_pop_quota GET payload root was numeric-string on direct-uapi and bridged-uapi at revision 57c425d14c4b9300cf7ddd75e600f258781c0dbf, with HTTP 200 and successful API outcomes but payload mismatches against the pinned integer result. The immutable artifact SHA256 is 7afe0accaeda48e2c7f26a491c2937f0b0417981d8674f3cb7ab0ce90226f636. Both calls selected as_bytes=0 and both owned mailboxes were subsequently confirmed cleaned. The structural evidence establishes neither the exact string format nor quota value 32; that separate fixture expectation was not checked. Preserve the required nonnullable integer result, adding only the existing canonical PHP-integer-bounded numeric-string conversion. Do not infer literal unlimited, null, omission or other-operation compatibility.",
+              "fingerprint": "docs/api/evidence/2026-10-30-email-section-corrected.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "The original get_pop_quota GET payload root was numeric-string on direct-uapi and bridged-uapi at revision 57c425d14c4b9300cf7ddd75e600f258781c0dbf, with HTTP 200 and successful API outcomes but payload mismatches against the pinned integer result. The immutable artifact SHA256 is 7afe0accaeda48e2c7f26a491c2937f0b0417981d8674f3cb7ab0ce90226f636. Both calls selected as_bytes=0 and both owned mailboxes were subsequently confirmed cleaned. The structural evidence establishes neither the exact string format nor quota value 32; that separate fixture expectation was not checked. Preserve the required nonnullable integer result, adding only the existing canonical PHP-integer-bounded numeric-string conversion. Do not infer literal unlimited, null, omission or other-operation compatibility.",
+          "fingerprint": "docs/api/evidence/2026-10-30-email-section-corrected.json"
         }
       ]
     },

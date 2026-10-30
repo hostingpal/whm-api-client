@@ -2311,6 +2311,11 @@ final readonly class Email
      * Documented: The email account's quota. **Note:** This value's unit of measure depends on the `as_bytes` input
      * parameter's value.
      *
+     * Observed: On cPanel 11.138.0.19, the MB result (asBytes=false) arrived as a numeric string through both direct
+     * and bridged UAPI. Canonical integer strings within PHP integer bounds normalize to int. The unit selection
+     * remains unchanged; explicit null, absent data, literal unlimited and noncanonical numeric strings remain
+     * rejected.
+     *
      * API-map identity: uapi:Email/get_pop_quota#GET (wire name get_pop_quota).
      *
      * @param string $email The email account username.

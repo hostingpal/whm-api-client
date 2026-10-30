@@ -1311,3 +1311,23 @@ The standalone mailbox fixture is a separate evidence scope: exact npr/npr.rs,
 fresh owned addresses, welcome messages disabled, no delivery or external recipients,
 strict cleanup, and original-response structural capture. Its actual outcomes and
 unobserved operations are recorded separately from generated coverage.
+
+### Email preflight and quota compatibility observations
+
+The [initial Email artifact](evidence/2026-10-30-email-section.json), captured at
+3ca852b on 11.138.0.19, has SHA-256
+`ab1c60b5d7a5c1d330fe152ee36a5f26995ebfb080d939d118986093a8f467dc`.
+It records 17 preflight GETs: WHM version and seven Email functions passed on both
+routes, while list_mxs rejected quoted integer priority fields. No mailbox was
+created; both resources remain not_started. A narrow correction accepts canonical
+integer strings within PHP bounds at entries[].priority only.
+
+The [next Email capture](evidence/2026-10-30-email-section-corrected.json), at
+57c425d on the same server version, has SHA-256
+`7afe0accaeda48e2c7f26a491c2937f0b0417981d8674f3cb7ab0ce90226f636`.
+Its 29 original responses establish successful preflight, mailbox creation and
+exact cleanup through both routes. Each lifecycle stopped at get_pop_quota because
+its required integer arrived as a numeric string. Both owned mailboxes were
+confirmed absent after cleanup. The structural observation establishes the wire
+type, not the expected quota value. Failed phase and discrepancy assessments remain
+unchanged; no artifact is rewritten after a contract correction.
