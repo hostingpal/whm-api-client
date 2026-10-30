@@ -1195,3 +1195,40 @@ The suite gained 264 cases and reached **4,015 tests / 31,055 assertions**. Requ
 Composer and offline API-map gates passed. A separate local review of the code
 commit found no issues and ran 400 focused tests / 5,253 assertions. External
 review rounds and findings are tracked in Beads; human review time is not instrumented.
+
+
+### Complete PostgreSQL section: 2026-10-30
+
+The owner requested the next complete module under `whm-api-client-8x0.4.10`.
+This independent slice adds all 14 pinned `Postgresql` functions, bringing this
+branch to 96 generated operations across 14 groups. The earlier MySQL and FTP
+section PRs remain separate and are not included in these branch counts.
+`get_restrictions`, `list_databases` and `list_users` are GETs. The eleven
+mutations declare `x-readonly=false` and `x-rollback=none`; the client sends them
+as form POST. Passwords on creation, rename and password change are sensitive.
+
+The pinned source declares `create_user` data as a nullable integer, without
+assigning it a meaning. Other mutations declare nullable objects without field
+schemas. Explicit null and opaque fields are retained; absent data is not
+accepted as null. Existing empty-map compatibility remains unchanged.
+`list_users` returns a string list. Database rows have optional `database`,
+integer byte `disk_usage` and `users` string-list fields. Restriction fields
+are optional; `prefix` is a string and is not documented as nullable.
+No MySQL response contract is reused by inference.
+
+The overlay exposes `oldName`/`newName` for renames and places `user` before
+`password` in `setPassword()`. It records the PostgreSQL-role caveat, version
+requirements, prefix behavior, no-rollback policy, account-wide grant
+synchronization and the password reset required after `rename_user_no_password`.
+The pinned documentation recommends `rename_user`, which accepts a password.
+Inventory, `delete_user` and `update_privileges` require cPanel 84+;
+`delete_database` requires 54+, and other functions require 11.42+.
+Source snapshots, shared validation policies and generator behavior are unchanged.
+A malformed PostgreSQL `create_user` response echoing its input password exposed
+the `ApiResponse` argument of `OperationRunner::result()` in exception traces.
+A regression reproduced it on both routes before adding `SensitiveParameter`
+to that response argument. Envelope failures also retained the raw PSR response
+in `EnvelopeReader::read()` traces; that response argument is now sensitive too.
+Regressions check the presence of response objects directly, including
+resource-backed streams, for malformed status and failed inner/outer outcomes.
+Payload access and validation behavior are unchanged.

@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 13 typed groups cover 82 reviewed operations:
+and cPanel UAPI surface. The 14 typed groups cover 96 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -167,6 +167,17 @@ Privilege assignment replaces existing privileges. Mutation results are nullable
 objects with no pinned field schema: preserve opaque object fields, explicit null
 and the distinction from an absent payload. Do not invent a field contract or
 weaken validation to void. Keep password arguments sensitive.
+`uapi()->postgresql()` exposes all 14 pinned PostgreSQL functions for the selected
+account: three inventory/restriction GETs and eleven form POST mutations.
+`createUser()` returns a nullable integer with no pinned meaning; other mutations
+return nullable opaque objects. Preserve explicit null, opaque fields and absent
+payload distinctions. `listUsers()` is a string list; database row fields are
+optional and `disk_usage` is integer bytes. Restrictions have an optional string
+prefix, not a pinned nullable prefix. Password arguments remain sensitive.
+Rename methods use oldName/newName, with a new password for `renameUser()`;
+`renameUserNoPassword()` requires a subsequent password change per upstream.
+`updatePrivileges()` synchronizes the whole selected account. Preserve no-rollback,
+prefix, PostgreSQL-role and version caveats in the overlay, then regenerate.
 `uapi()->quota()` exposes account quota totals in MB and local usage in bytes.
 Preserve zero/unlimited/disabled semantics, optional fields and integer status flags;
 local byte limits can lag updates and distributed totals differ from local usage.
@@ -341,6 +352,17 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   consumer feedback (`8x0.10.3`) is deferred by the user as of 2026-10-17.
   That deferral removes only the consumer prerequisite for the bounded expansion
   pilot; MySQL, finite-Quota, plumbing and current-head review gates remain.
+- The standalone `tools/live-verify/postgresql-section.php` recipe covers the full
+  PostgreSQL module on exact `npr` / `npr.rs`, with both live opt-ins, both tokens
+  and committed inputs. All six inventory/restriction preflight reads across both
+  routes must pass, and database/user inventories must be empty before creation.
+  Each route owns fresh resources only after confirmed creation; account-wide
+  privilege synchronization requires another inventory bound to those resources.
+  Rename-without-password is immediately followed by a password update. Never adopt
+  uncertain creations or delete ambiguous rename identities. Capture original
+  responses structurally and verify every original/renamed identity absent after
+  cleanup. No retries, payload logging, discrepancy acknowledgments or SQL-auth /
+  privilege-enforcement claims. Failed preflight remains failed evidence, not a skip.
 - The optional `--mysql-fixture` runner mode additionally requires
   `WHM_API_LIVE_MUTATIONS=1`. It creates two databases and two database users on
   the designated `npr` account, checks linked/unlinked inventory through both

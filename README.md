@@ -3,12 +3,13 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 13 generated typed groups cover 82 reviewed operations (see
+The 14 generated typed groups cover 96 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
 features, Email inventory, SSL/AutoSSL inventory, disk quotas and MySQL inventory,
-database/user creation, privilege assignment and deletion.
+database/user creation, privilege assignment and deletion, and the complete
+14-operation PostgreSQL module.
 Generic `call()` methods provide GET and form-encoded POST access without a typed
 group, subject to the operation's parameter, route and envelope requirements.
 JSON and multipart request bodies are not supported. The library provides token
@@ -167,6 +168,12 @@ $restrictions = $account->mysql()->getRestrictions(); // Length limits and optio
 $databaseServer = $account->mysql()->getServerInformation(); // host, is_remote (0|1), version
 $privileges = $account->mysql()->getPrivilegesOnDatabase(database: 'npr_app', user: 'npr_appuser');
 // Privileges are a list of strings; no assigned privileges produces an empty list.
+
+// PostgreSQL belongs to the selected account and requires the PostgreSQL role.
+$postgresql = $account->postgresql();
+$pgDatabases = $postgresql->listDatabases(); // Optional database, disk_usage (bytes), users.
+$pgUsers = $postgresql->listUsers(); // list<string>; cPanel 84+.
+$pgRestrictions = $postgresql->getRestrictions(); // Optional length limits and string prefix.
 ```
 
 A zero `inode_limit` or `megabyte_limit` means unlimited or disabled quotas.
@@ -237,11 +244,30 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->features()` | `listFeatures()` |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
 | `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()` |
+| `uapi()->postgresql()` | `createDatabase()`, `createUser()`, `deleteDatabase()`, `deleteUser()`, `getRestrictions()`, `grantAllPrivileges()`, `listDatabases()`, `listUsers()`, `renameDatabase()`, `renameUser()`, `renameUserNoPassword()`, `revokeAllPrivileges()`, `setPassword()`, `updatePrivileges()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
 
 UAPI groups operate on the selected cPanel account through either credential route.
 `uapi()->dns()->fetchCpanelGeneratedDomains()` requires cPanel 120 and preserves
 trailing dots; `lookup()` returns textual lines or explicit `null`.
+
+PostgreSQL inventory and restrictions use GET; all eleven mutations use form POST.
+`createUser(name, password)` returns the pinned nullable integer without assigning
+meaning to its value. Other mutations return nullable opaque objects; explicit
+null stays null and a missing payload is rejected. Password arguments are sensitive.
+Database row fields are optional; an empty users list stays empty. The restrictions
+prefix is an optional string, and omission remains distinct from an empty string.
+
+Use `renameDatabase(oldName, newName)` and
+`renameUser(oldName, newName, password)` with account-prefixed names when prefixing
+is enabled. `renameUserNoPassword()` requires setting a new password afterward;
+the upstream documentation recommends `renameUser()` instead.
+`updatePrivileges()` synchronizes grants across the selected account after tables
+are created; it is not scoped to one database or user. Deletion, rename and
+privilege mutations declare no rollback. Check the target names before calling.
+Inventory, user deletion and privilege synchronization require cPanel 84+;
+database deletion requires cPanel 54+, and the other operations require 11.42+.
+Disabling the PostgreSQL role disables all fourteen operations.
 
 The DNS methods are read-only (GET):
 

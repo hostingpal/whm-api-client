@@ -25,6 +25,8 @@ trait UapiGroups
 
     private ?Mysql $mysqlGroup = null;
 
+    private ?Postgresql $postgresqlGroup = null;
+
     private ?Quota $quotaGroup = null;
 
     private ?Ssl $sslGroup = null;
@@ -87,6 +89,16 @@ trait UapiGroups
     public function mysql(): Mysql
     {
         return $this->mysqlGroup ??= new Mysql($this->run(...));
+    }
+
+    /**
+     * Select the Postgresql operations without making a request.
+     *
+     * The Postgresql module for UAPI.
+     */
+    public function postgresql(): Postgresql
+    {
+        return $this->postgresqlGroup ??= new Postgresql($this->run(...));
     }
 
     /**

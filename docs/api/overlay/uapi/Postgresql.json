@@ -1,0 +1,368 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Postgresql",
+  "operations": {
+    "uapi:Postgresql/create_database": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the PostgreSQL role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Names must include the account prefix when database prefixing is enabled. This creates a database in the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Postgresql/create_database GET variant declares x-readonly=false and x-rollback=none. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Postgresql/create_user": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the PostgreSQL role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned result is a nullable integer with no documented meaning for the integer value. Preserve zero and null; do not treat the result as a boolean, object, user identifier or omitted payload."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Postgresql/create_user GET variant declares x-readonly=false and x-rollback=none. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:Postgresql/delete_database": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later. Disabling the PostgreSQL role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the named database in the selected cPanel account. The pinned operation declares no rollback; verify the target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Postgresql/delete_database GET variant declares x-readonly=false and x-rollback=none. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Postgresql/delete_user": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. Disabling the PostgreSQL role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the named database user in the selected cPanel account. The pinned operation declares no rollback; verify the target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Postgresql/delete_user GET variant declares x-readonly=false and x-rollback=none. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Postgresql/get_restrictions": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the PostgreSQL role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "All result fields are optional. The prefix field is documented as a string when prefixing is enabled; the pinned contract does not specify a null prefix. Omission remains distinct from an empty string."
+        }
+      ]
+    },
+    "uapi:Postgresql/grant_all_privileges": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the PostgreSQL role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Grants all privileges for the named database to the named user in the selected cPanel account. Both names must include the account prefix when database prefixing is enabled."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Postgresql/grant_all_privileges GET variant declares x-readonly=false and x-rollback=none. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Postgresql/list_databases": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. Disabling the PostgreSQL role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Lists databases in the selected cPanel account. disk_usage is an integer number of bytes; all row fields are optional, and the users list is empty when no users exist on a database."
+        }
+      ]
+    },
+    "uapi:Postgresql/list_users": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. Disabling the PostgreSQL role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the selected cPanel account database usernames as a list of strings, including an empty list when none are returned."
+        }
+      ]
+    },
+    "uapi:Postgresql/rename_database": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the PostgreSQL role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Renames the database in the selected cPanel account. Both oldName and newName must include the account prefix when prefixing is enabled. The pinned operation declares no rollback; verify both names before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Postgresql/rename_database GET variant declares x-readonly=false and x-rollback=none. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ],
+      "params": {
+        "oldname": {
+          "php": "oldName"
+        },
+        "newname": {
+          "php": "newName"
+        }
+      },
+      "order": [
+        "oldname",
+        "newname"
+      ]
+    },
+    "uapi:Postgresql/rename_user": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the PostgreSQL role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Renames the database user in the selected cPanel account and sets its new password. Both names must include the account prefix when prefixing is enabled. The pinned operation declares no rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Postgresql/rename_user GET variant declares x-readonly=false and x-rollback=none. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ],
+      "params": {
+        "oldname": {
+          "php": "oldName"
+        },
+        "newname": {
+          "php": "newName"
+        },
+        "password": {
+          "sensitive": true
+        }
+      },
+      "order": [
+        "oldname",
+        "newname",
+        "password"
+      ]
+    },
+    "uapi:Postgresql/rename_user_no_password": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the PostgreSQL role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "The upstream documentation requires setting a new password after this rename because PostgreSQL stores an MD5 hash that depends on the username. Prefer renameUser(), which accepts the new password in the same call. Both names must include the account prefix when prefixing is enabled; no rollback is declared."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Postgresql/rename_user_no_password GET variant declares x-readonly=false and x-rollback=none. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ],
+      "params": {
+        "oldname": {
+          "php": "oldName"
+        },
+        "newname": {
+          "php": "newName"
+        }
+      },
+      "order": [
+        "oldname",
+        "newname"
+      ]
+    },
+    "uapi:Postgresql/revoke_all_privileges": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the PostgreSQL role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Revokes all privileges for the named database from the named user in the selected cPanel account. Both names must include the account prefix when prefixing is enabled. The pinned operation declares no rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Postgresql/revoke_all_privileges GET variant declares x-readonly=false and x-rollback=none. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Postgresql/set_password": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the PostgreSQL role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes the named PostgreSQL user password in the selected cPanel account. The user name must include the account prefix when prefixing is enabled. The pinned operation declares no rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Postgresql/set_password GET variant declares x-readonly=false and x-rollback=none. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      },
+      "order": [
+        "user",
+        "password"
+      ]
+    },
+    "uapi:Postgresql/update_privileges": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. Disabling the PostgreSQL role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Synchronizes PostgreSQL database-user privileges across the selected cPanel account, not just one database or user. Some PostgreSQL versions require this after new tables are created because they do not support recursive, wildcard or future grants. The pinned operation declares no rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Postgresql/update_privileges GET variant declares x-readonly=false and x-rollback=none. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    }
+  }
+}

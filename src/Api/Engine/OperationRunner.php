@@ -80,12 +80,13 @@ final class OperationRunner
      * outcome policy, so every payload failure raises PayloadMismatchException:
      * outcomeConfirmed is true under the flag policy (the operation took effect)
      * and false when the outcome was not checked. Spec defects stay LogicException.
+     * The response is sensitive because upstream payloads may contain or echo secrets.
      *
      * @param array<mixed> $spec
      * @throws PayloadMismatchException If the payload does not satisfy the spec.
      * @throws LogicException If the spec is malformed.
      */
-    public static function result(array $spec, ApiResponse $response): mixed
+    public static function result(array $spec, #[SensitiveParameter] ApiResponse $response): mixed
     {
         $returns = self::returns($spec);
         if ($returns === null) {

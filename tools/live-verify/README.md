@@ -304,3 +304,44 @@ the equivalent combined comparison is 667 versus 659 lines. This avoids three
 repeated mechanics and saves eight lines in that comparison, while adding a
 shared helper to review. No elapsed review-time saving or broader adoption is
 claimed. Wrong authentication and prefix encoding still fail independent tests.
+
+
+## Complete PostgreSQL section
+
+The separate `postgresql-section.php` command exercises the generated PostgreSQL
+module on the designated `npr` / `npr.rs` test account. It requires committed
+inputs, both tokens, PHP cURL, and both live opt-ins:
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/postgresql-section.php --output=docs/api/evidence/postgresql-section.json
+```
+
+The command writes only a new output file, atomically with mode 0600. If atomic
+publication fails after capture, it preserves the complete protected temporary
+report and prints its JSON-escaped recovery path; do not repeat operations to
+recover evidence. It captures
+WHM version and PostgreSQL database inventory, user inventory and restrictions
+through both UAPI routes before any mutation. Failed preflight or nonempty
+inventories stop the lifecycle and produce failed evidence; a preflight refusal
+never counts as successful mutation or cleanup coverage.
+
+Each route then owns a fresh database and user after confirmed API creation.
+The recipe exercises grants, renames, password changes, account-wide privilege
+synchronization and revocation before deleting its resources and checking all
+original and renamed identities for absence. An inventory check immediately
+before synchronization refuses unrelated databases or users. Renaming without
+a password is followed immediately by setting a new password. Uncertain creation
+is never adopted; ambiguous rename identities are not deleted. An absent inventory
+cannot resolve an uncertain operation that could still complete later; the state
+remains uncertain and subsequent lifecycle work stops. No mutation is
+retried. The transport verifies TLS, disables redirects and has bounded timeouts.
+
+Observations retain exact phase, route, actual method, server version, revision
+and contract hashes. The original response supplies only structural types and
+masked paths; names, passwords, raw payloads and upstream error text are not
+persisted. The strict assessment accepts no discrepancies or missing phases and
+does not inherit baseline acknowledgments. Offline fixture tests use independently
+authored server responses. API readback does not establish SQL authentication,
+SQL privilege enforcement or privileges on newly created tables.
