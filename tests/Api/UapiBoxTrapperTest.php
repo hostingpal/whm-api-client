@@ -437,6 +437,61 @@ final class UapiBoxTrapperTest extends TestCase
         );
     }
 
+    #[DataProvider('routes')]
+    public function testGetLogDateNormalizesCanonicalIntegerString(string $route): void
+    {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('exampleuser');
+        $http->addResponse(new Response(200, [], self::envelope(
+            $route,
+            '{"date":"1556812881","lines":[],"path":""}',
+        )));
+        self::assertSame(
+            ['date' => 1556812881, 'lines' => [], 'path' => ''],
+            $account->boxTrapper()->getLog('user@example.com'),
+        );
+        self::assertRequest($http, $route, 'get_log', 'GET', 'email=user%40example.com');
+        self::assertSame(1, $account->responseMeta()?->uapiStatus());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string,array{string}> */
+    public static function invalidLogFields(): iterable
+    {
+        yield 'date null' => ['{"date":null}'];
+        yield 'date boolean' => ['{"date":false}'];
+        yield 'date fixed point' => ['{"date":"1.0"}'];
+        yield 'date exponent' => ['{"date":"1e2"}'];
+        yield 'date leading zero' => ['{"date":"01"}'];
+        yield 'date overflow' => ['{"date":"' . PHP_INT_MAX . '0"}'];
+        yield 'line remains string' => ['{"date":"0","lines":[0]}'];
+        yield 'path remains nonnullable' => ['{"date":"0","path":null}'];
+    }
+
+    #[DataProvider('invalidLogFields')]
+    public function testGetLogDateCorrectionRetainsStrictFields(string $payload): void
+    {
+        [$client, $http] = self::client('direct');
+        $account = $client->uapi('exampleuser');
+        $http->addResponse(new Response(200, [], self::envelope('direct', $payload)));
+        try {
+            $account->boxTrapper()->getLog('user@example.com');
+            self::fail('Invalid log field was accepted.');
+        } catch (PayloadMismatchException $error) {
+            self::assertTrue($error->outcomeConfirmed);
+            self::assertSame($account->responseMeta(), $error->metadata);
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
+    public function testOmittedLogDateRemainsAbsent(): void
+    {
+        [$client, $http] = self::client('direct');
+        $http->addResponse(new Response(200, [], self::envelope('direct', '{"lines":[],"path":""}')));
+        self::assertSame(['lines' => [], 'path' => ''], $client->uapi('exampleuser')->boxTrapper()
+            ->getLog('user@example.com'));
+    }
+
     public function testOuterWhmFailureStillRejectsSuccessfulInnerMutation(): void
     {
         [$client, $http] = self::client('bridge');

@@ -439,6 +439,12 @@ final readonly class BoxTrapper
      * Documented: Omitted date defaults to the current date. Missing logs return an empty path and empty lines list.
      * Log contents can contain private message information.
      *
+     * Observed: On cPanel 11.138.0.19, the direct UAPI date field arrived as a numeric string, while the bridged UAPI
+     * date field remained a native integer. date accepts canonical integer strings within PHP integer bounds and
+     * normalizes to int; string compatibility on the bridge is offline-tested rather than live-observed. Omission stays
+     * absent, null stays invalid, and lines/path retain their pinned types. The structural capture does not establish
+     * the string grammar or exact timestamp.
+     *
      * API-map identity: uapi:BoxTrapper/get_log#GET (wire name get_log).
      *
      * @param string $email The account's email address.

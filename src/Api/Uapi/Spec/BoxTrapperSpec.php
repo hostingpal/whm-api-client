@@ -179,7 +179,7 @@ final class BoxTrapperSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'date' => ['type' => 'int'],
+                'date' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'lines' => ['type' => 'list', 'items' => ['type' => 'string']],
                 'path' => ['type' => 'string'],
             ],

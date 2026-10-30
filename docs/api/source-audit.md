@@ -2457,3 +2457,13 @@ The original artifact SHA-256 is
 Only `get_configuration.queue_days` gains the existing canonical integer-string
 normalization; no boolean flags or sibling field contracts change. The first
 capture does not establish rule round trips or later-phase behavior.
+
+The next BoxTrapper capture at `da4dddc` contains 43 observations (29 GET,
+14 POST), all API outcomes successful. All configuration/rule/template readbacks
+pass through both routes. Direct `get_log.date` is a numeric string and fails
+payload validation; its bridged counterpart is a native integer and passes.
+The direct route aborts before its queue/final-status reads, while the bridge
+completes. Both mailboxes are confirmed cleaned. Preserve this failed artifact
+(SHA-256 `8c02bb75a38ab17bea72e39dd8c62f79726735bdb81a50ec8b3f29cc77072651`).
+The date field alone gains canonical, PHP-integer-bounded string normalization,
+with no exact date, string spelling or cause inferred from structural evidence.

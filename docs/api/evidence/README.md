@@ -235,3 +235,11 @@ revision records 23 observations (15 GET, 8 POST), all API outcomes successful.
 Both configuration reads fail payload validation because `queue_days` is a
 numeric string. Each route aborts before rule setters and later reads. Both fresh
 mailboxes are confirmed cleaned; the failed 45-phase assessment is preserved.
+
+The [BoxTrapper queue-duration correction capture](2026-10-30-boxtrapper-section-corrected.json)
+at `da4dddc` contains 43 observations (29 GET, 14 POST), all API outcomes
+successful and 42 payload checks passing. Configuration and allow/block/ignore
+rule readbacks pass on both routes. Direct `get_log.date` is a numeric string and
+fails the pinned integer contract; bridged `get_log.date` is a native integer and
+passes. The direct route stops before queue/final-status reads; the bridge
+completes. Both mailboxes are confirmed cleaned. This artifact remains failed.

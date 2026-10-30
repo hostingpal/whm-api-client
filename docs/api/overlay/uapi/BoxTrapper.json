@@ -264,6 +264,35 @@
         {
           "kind": "documented",
           "text": "Omitted date defaults to the current date. Missing logs return an empty path and empty lines list. Log contents can contain private message information."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, the direct UAPI date field arrived as a numeric string, while the bridged UAPI date field remained a native integer. date accepts canonical integer strings within PHP integer bounds and normalizes to int; string compatibility on the bridge is offline-tested rather than live-observed. Omission stays absent, null stays invalid, and lines/path retain their pinned types. The structural capture does not establish the string grammar or exact timestamp."
+        }
+      ],
+      "response": {
+        "date": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "In the immutable corrected BoxTrapper capture at revision da4dddc8afc77eef01a22784d7d63e882ad2d192 on cPanel 11.138.0.19, the direct-uapi get_log GET response reported $.date as numeric-string and a type_mismatch against the pinned integer field. The bridged-uapi get_log GET response reported native int and passed payload validation: numeric-string compatibility is directly observed only on the direct route. Both HTTP 200/API outcomes succeeded. Artifact docs/api/evidence/2026-10-30-boxtrapper-section-corrected.json SHA-256 8c02bb75a38ab17bea72e39dd8c62f79726735bdb81a50ec8b3f29cc77072651 contains 43 original observations (29 GET, 14 POST), with both owned mailboxes confirmed cleaned. Opt in only optional nonnullable get_log.date to the existing canonical PHP-integer-bounded numeric-string conversion, retaining integer output and strict sibling types. Structural evidence establishes neither the exact string grammar nor date value; no decimal, exponent, whitespace or overflow compatibility is inferred.",
+              "fingerprint": "docs/api/evidence/2026-10-30-boxtrapper-section-corrected.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "In the immutable corrected BoxTrapper capture at revision da4dddc8afc77eef01a22784d7d63e882ad2d192 on cPanel 11.138.0.19, the direct-uapi get_log GET response reported $.date as numeric-string and a type_mismatch against the pinned integer field. The bridged-uapi get_log GET response reported native int and passed payload validation: numeric-string compatibility is directly observed only on the direct route. Both HTTP 200/API outcomes succeeded. Artifact docs/api/evidence/2026-10-30-boxtrapper-section-corrected.json SHA-256 8c02bb75a38ab17bea72e39dd8c62f79726735bdb81a50ec8b3f29cc77072651 contains 43 original observations (29 GET, 14 POST), with both owned mailboxes confirmed cleaned. Opt in only optional nonnullable get_log.date to the existing canonical PHP-integer-bounded numeric-string conversion, retaining integer output and strict sibling types. Structural evidence establishes neither the exact string grammar nor date value; no decimal, exponent, whitespace or overflow compatibility is inferred.",
+          "fingerprint": "docs/api/evidence/2026-10-30-boxtrapper-section-corrected.json"
         }
       ]
     },
