@@ -355,7 +355,11 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 			Description: firstSentence(text(decl["description"])),
 		}
 		var composite bool
-		param.PHPType, param.DocType, param.Encoding, composite = paramTypes(spec, b.schemas.enumDoc(p.Locator.SourceID, decl["schema"]))
+		enumDoc := b.schemas.enumDoc(p.Locator.SourceID, decl["schema"])
+		if setting := ov.Params[p.Name].EnumDoc; setting != nil && !*setting {
+			enumDoc = ""
+		}
+		param.PHPType, param.DocType, param.Encoding, composite = paramTypes(spec, enumDoc)
 		param.Sensitive = sensitiveName(p.Name, spec)
 		o := ov.Params[p.Name]
 		if o.Required != nil {

@@ -269,10 +269,10 @@ var scalarTypes = map[string]bool{"string": true, "int": true, "number": true, "
 
 // acceptable lists the wire variants each type admits (src/Response/ShapeValidator.php).
 var acceptable = map[string]map[string]bool{
-	"int":    {"numeric-string": true},
+	"int":    {"numeric-string": true, "integral-fixed-point-string": true},
 	"number": {"numeric-string": true},
 	"bool":   {"int-flag": true, "string-flag": true},
-	"flag":   {"string-flag": true, "bool": true},
+	"flag":   {"string-flag": true, "bool": true, "empty-string": true},
 }
 
 // checkAccept rejects accept tokens the spec's type does not admit and

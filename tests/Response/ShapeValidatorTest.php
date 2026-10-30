@@ -72,6 +72,7 @@ final class ShapeValidatorTest extends TestCase
         yield 'bool from string flag' => ['"0"', ['type' => 'bool', 'accept' => ['string-flag']], false];
         yield 'flag' => ['1', ['type' => 'flag'], 1];
         yield 'flag from string flag' => ['"1"', ['type' => 'flag', 'accept' => ['string-flag']], 1];
+        yield 'flag preserves explicit empty string' => ['""', ['type' => 'flag', 'accept' => ['empty-string']], ''];
         yield 'flag from bool' => ['false', ['type' => 'flag', 'accept' => ['bool']], 0];
         yield 'mixed' => ['{"a":[1,{"b":2}]}', ['type' => 'mixed'], ['a' => [1, ['b' => 2]]]];
         yield 'nullable null' => ['null', ['type' => 'string', 'nullable' => true], null];
@@ -130,6 +131,9 @@ final class ShapeValidatorTest extends TestCase
         ];
         yield 'number string with surrounding space' => ['" 5"', ['type' => 'number', 'accept' => ['numeric-string']]];
         yield 'bool from string without accept' => ['"1"', ['type' => 'bool']];
+        yield 'empty flag string without explicit compatibility' => [
+            '""', ['type' => 'flag', 'accept' => ['string-flag']],
+        ];
         yield 'flag out of range' => ['2', ['type' => 'flag']];
         yield 'flag string without accept' => ['"1"', ['type' => 'flag']];
         yield 'flag bool without accept' => ['true', ['type' => 'flag']];

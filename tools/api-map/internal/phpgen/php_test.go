@@ -46,6 +46,7 @@ func TestShapeQuotesNonIdentifierKeys(t *testing.T) {
 
 func TestShapeCoversEveryType(t *testing.T) {
 	cases := map[string]effective.TypeSpec{
+		"''|0|1":                   {Type: "flag", Accept: []string{"empty-string"}},
 		"list<string>":             {Type: "list", Items: &effective.TypeSpec{Type: "string"}},
 		"array<array-key, 0|1>":    {Type: "map", Values: &effective.TypeSpec{Type: "flag"}},
 		"int|float|numeric-string": {Type: "number", Preserve: true},
@@ -64,6 +65,7 @@ func TestShapeCoversEveryType(t *testing.T) {
 func TestNativeTypes(t *testing.T) {
 	cases := map[string]effective.TypeSpec{
 		"string":           {Type: "string"},
+		"int|string":       {Type: "flag", Accept: []string{"empty-string"}},
 		"?int":             {Type: "int", Nullable: true},
 		"int":              {Type: "flag"},
 		"int|float|string": {Type: "number", Preserve: true},

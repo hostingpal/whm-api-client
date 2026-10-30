@@ -60,7 +60,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *         type?: string,
  *         usecanonicalname?: string,
  *         user?: string,
- *         userdirprotect?: 0|1,
+ *         userdirprotect?: ''|0|1,
  *     }>,
  *     main_domain?: array{
  *         all_aliases_valid?: 0|1,
@@ -103,7 +103,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *         type?: string,
  *         usecanonicalname?: string,
  *         user?: string,
- *         userdirprotect?: 0|1,
+ *         userdirprotect?: ''|0|1,
  *     }|list<array{
  *         all_aliases_valid?: 0|1,
  *         can_https_redirect?: 0|1,
@@ -145,7 +145,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *         type?: string,
  *         usecanonicalname?: string,
  *         user?: string,
- *         userdirprotect?: 0|1,
+ *         userdirprotect?: ''|0|1,
  *     }>,
  *     parked_capable_of_https_redirects?: list<string>,
  *     parked_domains?: list<string|array{
@@ -168,7 +168,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *         type?: string,
  *         usecanonicalname?: string,
  *         user?: string,
- *         userdirprotect?: 0|1,
+ *         userdirprotect?: ''|0|1,
  *     }>,
  *     parked_with_https_redirects?: list<string>,
  *     sub_domains?: list<array{
@@ -212,7 +212,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *         type?: string,
  *         usecanonicalname?: string,
  *         user?: string,
- *         userdirprotect?: 0|1,
+ *         userdirprotect?: ''|0|1,
  *     }>,
  * }|list<array{
  *     all_aliases_valid?: 0|1,
@@ -255,7 +255,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     type?: string,
  *     usecanonicalname?: string,
  *     user?: string,
- *     userdirprotect?: 0|1,
+ *     userdirprotect?: ''|0|1,
  * }>
  * @phpstan-type ListDomainsResult array{
  *     addon_domains?: list<string>,
@@ -303,7 +303,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     type?: string,
  *     usecanonicalname?: string,
  *     user?: string,
- *     userdirprotect?: 0|1,
+ *     userdirprotect?: ''|0|1,
  * }
  */
 final readonly class DomainInfo
@@ -327,8 +327,9 @@ final readonly class DomainInfo
      * documented field. Explicit null IPv6 remains null. Pinned prose/schema and examples disagree on several
      * containers; the effective shape preserves the documented hash/list variants and example log/alias lists.
      *
-     * Documented: Quoted 0/1 flags and port values in the pinned list example normalize to integers. Empty-string flag
-     * examples remain a documentation discrepancy; this contract does not accept arbitrary flag strings.
+     * Documented: Quoted 0/1 domain flags and port values normalize to integers. The documented empty-string
+     * userdirprotect value stays an empty string, distinct from 0; other nonflag strings remain invalid. Shared flag
+     * fields use the same wire compatibility across record kinds and singleDomainData().
      *
      * API-map identity: uapi:DomainInfo/domains_data#GET (wire name domains_data).
      *
@@ -445,6 +446,10 @@ final readonly class DomainInfo
      * Observed: Observed customlog and scriptalias may be lists as well as the pinned objects. Quoted 0/1 hascgi and
      * phpopenbasedirprotect flags normalize to integers, as do lossless integer port strings. Unknown fields remain
      * outside the contract.
+     *
+     * Documented: Shared domain flags accept the quoted 0/1 forms documented by the domains_data examples. The
+     * userdirprotect empty-string variant is preserved without mapping it to 0; other nonflag strings remain invalid.
+     * Optional fields remain omitted when absent.
      *
      * API-map identity: uapi:DomainInfo/single_domain_data#GET (wire name single_domain_data).
      *

@@ -21,6 +21,10 @@ use LogicException;
  * - string: a JSON string, returned unchanged.
  * - int: a JSON integer. "accept" 'numeric-string' also admits a canonical
  *   decimal string (optional minus, no leading zeros, within PHP int range).
+ *   The separate 'integral-fixed-point-string' opt-in admits that same integer
+ *   part followed by a dot and one or more zeros. Its integer part is checked by
+ *   an exact string/int roundtrip; negative zero and overflow fail. Conversion
+ *   strips only the zero fraction, without floats, rounding or precision loss.
  * - number: an int or finite float. "accept" 'numeric-string' also admits a
  *   string of the form [+-]?digits(.digits)?; with "preserve" => true (number
  *   only) the matched string is returned unchanged. Otherwise it is normalized as
@@ -32,7 +36,8 @@ use LogicException;
  * - bool: a JSON boolean. "accept" 'int-flag' admits 0/1 and 'string-flag'
  *   admits "0"/"1"; both normalize to bool.
  * - flag: the integer 0 or 1. "accept" 'string-flag' admits "0"/"1" and 'bool'
- *   admits booleans; both normalize to 0|1.
+ *   admits booleans; both normalize to 0|1. Explicit 'empty-string' admits only
+ *   the exact empty string and preserves it as '', without flag coercion.
  * - mixed: any decoded JSON value, including null, converted to arrays.
  * - list: a JSON array whose elements all match "items" (a type spec).
  * - map: a JSON object whose values all match "values" (a type spec); numeric
@@ -61,7 +66,8 @@ final class ShapeValidator
      *
      * Null is accepted when the spec is nullable, for "mixed", and for a union
      * with a branch that accepts null. Accepted wire variants
-     * listed in the spec's "accept" are normalized to the declared type.
+     * listed in the spec's "accept" normalize to the declared type, except an
+     * explicitly accepted empty string is preserved.
      *
      * @param array<mixed> $type
      * @throws InvalidResponseException If the value does not satisfy the spec.
@@ -235,6 +241,15 @@ final class ShapeValidator
             return (int) $value;
         }
 
+        if (
+            in_array('integral-fixed-point-string', $accept, true)
+            && is_string($value)
+            && preg_match('/\A(-?(?:0|[1-9][0-9]*))\.0+\z/', $value, $parts) === 1
+            && (string) (int) $parts[1] === $parts[1]
+        ) {
+            return (int) $parts[1];
+        }
+
         return $read->fail();
     }
 
@@ -289,12 +304,12 @@ final class ShapeValidator
     }
 
     /**
-     * Normalize an integer flag from its accepted wire variants.
+     * Normalize flag variants while preserving an explicitly accepted empty string.
      *
      * @param list<string> $accept
-     * @return 0|1
+     * @return ''|0|1
      */
-    private static function flag(mixed $value, array $accept, PayloadReader $read): int
+    private static function flag(mixed $value, array $accept, PayloadReader $read): int|string
     {
         if ($value === 0 || $value === 1) {
             return $value;
@@ -302,6 +317,10 @@ final class ShapeValidator
 
         if (in_array('string-flag', $accept, true) && ($value === '0' || $value === '1')) {
             return $value === '1' ? 1 : 0;
+        }
+
+        if (in_array('empty-string', $accept, true) && $value === '') {
+            return '';
         }
 
         if (in_array('bool', $accept, true) && is_bool($value)) {

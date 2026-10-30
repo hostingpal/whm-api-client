@@ -16,6 +16,10 @@
         {
           "kind": "documented",
           "text": "Available in cPanel 82."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, numeric-string count results were observed through both direct and bridged UAPI. Canonical integer strings within PHP integer bounds normalize to int; integer responses remain supported. Explicit null, missing data and noncanonical numeric strings remain rejected. No cause for the wire variation or main-account inclusion is inferred."
         }
       ],
       "probe": {
@@ -26,7 +30,35 @@
           "bridged-uapi"
         ],
         "expected": "success"
-      }
+      },
+      "response": {
+        "": {
+          "replace": {
+            "type": "int",
+            "accept": [
+              "numeric-string"
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "At revision 7300ef501c952c7361594150610ff4fbb4b09da0, both direct-uapi and bridged-uapi count_pops GET responses recorded numeric-string at the payload root, with successful API outcomes and payload mismatch against the pinned integer result. The immutable failed artifact SHA256 is c3b795074558ee25cbeb001d09e002efe55942a32abfaa49bc8de03f97df6f31. All 17 requests were GET; both resources remained not_started. Preserve integer output while adding only existing canonical PHP-integer-bounded numeric-string normalization for this operation. The structural evidence does not establish the exact string grammar, count value, cause of wire variation, or whether the main account is included.",
+              "fingerprint": "docs/api/evidence/2026-10-30-email-section-quota-corrected.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "At revision 7300ef501c952c7361594150610ff4fbb4b09da0, both direct-uapi and bridged-uapi count_pops GET responses recorded numeric-string at the payload root, with successful API outcomes and payload mismatch against the pinned integer result. The immutable failed artifact SHA256 is c3b795074558ee25cbeb001d09e002efe55942a32abfaa49bc8de03f97df6f31. All 17 requests were GET; both resources remained not_started. Preserve integer output while adding only existing canonical PHP-integer-bounded numeric-string normalization for this operation. The structural evidence does not establish the exact string grammar, count value, cause of wire variation, or whether the main account is included.",
+          "fingerprint": "docs/api/evidence/2026-10-30-email-section-quota-corrected.json"
+        }
+      ]
     },
     "uapi:Email/list_domain_forwarders": {
       "notes": [
@@ -1531,7 +1563,11 @@
         },
         {
           "kind": "observed",
-          "text": "On cPanel 11.138.0.19, the MB result (asBytes=false) arrived as a numeric string through both direct and bridged UAPI. Canonical integer strings within PHP integer bounds normalize to int. The unit selection remains unchanged; explicit null, absent data, literal unlimited and noncanonical numeric strings remain rejected."
+          "text": "On cPanel 11.138.0.19, the MB result (asBytes=false) arrived as a numeric string through both direct and bridged UAPI. Canonical integer strings within PHP integer bounds normalize to int. The unit selection remains unchanged; explicit null, absent data and literal unlimited remain rejected."
+        },
+        {
+          "kind": "observed",
+          "text": "The same-response diagnostic subsequently established zero-only fixed-point fractions on both routes. integral-fixed-point-string accepts a canonical signed integer part within PHP integer bounds followed by a dot and one or more zeros. It normalizes losslessly to int without floats or rounding; negative zero, nonzero fractions, exponents, whitespace, plus signs, leading zeros and overflow are rejected."
         }
       ],
       "response": {
@@ -1539,7 +1575,8 @@
           "replace": {
             "type": "int",
             "accept": [
-              "numeric-string"
+              "numeric-string",
+              "integral-fixed-point-string"
             ]
           },
           "evidence": [
@@ -1549,6 +1586,13 @@
               "date": "2026-10-30",
               "note": "The original get_pop_quota GET payload root was numeric-string on direct-uapi and bridged-uapi at revision 57c425d14c4b9300cf7ddd75e600f258781c0dbf, with HTTP 200 and successful API outcomes but payload mismatches against the pinned integer result. The immutable artifact SHA256 is 7afe0accaeda48e2c7f26a491c2937f0b0417981d8674f3cb7ab0ce90226f636. Both calls selected as_bytes=0 and both owned mailboxes were subsequently confirmed cleaned. The structural evidence establishes neither the exact string format nor quota value 32; that separate fixture expectation was not checked. Preserve the required nonnullable integer result, adding only the existing canonical PHP-integer-bounded numeric-string conversion. Do not infer literal unlimited, null, omission or other-operation compatibility.",
               "fingerprint": "docs/api/evidence/2026-10-30-email-section-corrected.json"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "At revision fa887d3b3e381d7ae9165821bd0c254f8ae18b94, the original direct-uapi and bridged-uapi get_pop_quota MB responses retained numeric-string type mismatches and were independently classified integral-fixed-point by the same-response diagnostic. The immutable artifact SHA256 is 1e30c8b3f1472213d325670909acc666a8d7e8eee52f12a708be3d15ddd58f7f; both owned mailboxes were confirmed cleaned. This establishes a strict decimal whole part and zero-only fraction, not a quota amount or integer representability. Opt in only this operation to a signed canonical integer part, dot, and one-or-more zeros, additionally requiring exact PHP integer bounds by string/int roundtrip and rejecting negative zero. Strip the zero fraction without float conversion or rounding; nonzero fractions, exponents, whitespace, plus signs, leading zeros and overflow remain rejected. Canonical integer-string compatibility remains separately declared.",
+              "fingerprint": "docs/api/evidence/2026-10-30-email-section-quota-format.json"
             }
           ]
         }
@@ -1560,6 +1604,13 @@
           "date": "2026-10-30",
           "note": "The original get_pop_quota GET payload root was numeric-string on direct-uapi and bridged-uapi at revision 57c425d14c4b9300cf7ddd75e600f258781c0dbf, with HTTP 200 and successful API outcomes but payload mismatches against the pinned integer result. The immutable artifact SHA256 is 7afe0accaeda48e2c7f26a491c2937f0b0417981d8674f3cb7ab0ce90226f636. Both calls selected as_bytes=0 and both owned mailboxes were subsequently confirmed cleaned. The structural evidence establishes neither the exact string format nor quota value 32; that separate fixture expectation was not checked. Preserve the required nonnullable integer result, adding only the existing canonical PHP-integer-bounded numeric-string conversion. Do not infer literal unlimited, null, omission or other-operation compatibility.",
           "fingerprint": "docs/api/evidence/2026-10-30-email-section-corrected.json"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "At revision fa887d3b3e381d7ae9165821bd0c254f8ae18b94, the original direct-uapi and bridged-uapi get_pop_quota MB responses retained numeric-string type mismatches and were independently classified integral-fixed-point by the same-response diagnostic. The immutable artifact SHA256 is 1e30c8b3f1472213d325670909acc666a8d7e8eee52f12a708be3d15ddd58f7f; both owned mailboxes were confirmed cleaned. This establishes a strict decimal whole part and zero-only fraction, not a quota amount or integer representability. Opt in only this operation to a signed canonical integer part, dot, and one-or-more zeros, additionally requiring exact PHP integer bounds by string/int roundtrip and rejecting negative zero. Strip the zero fraction without float conversion or rounding; nonzero fractions, exponents, whitespace, plus signs, leading zeros and overflow remain rejected. Canonical integer-string compatibility remains separately declared.",
+          "fingerprint": "docs/api/evidence/2026-10-30-email-section-quota-format.json"
         }
       ]
     },

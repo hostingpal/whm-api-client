@@ -246,17 +246,23 @@ UAPI groups operate on the selected cPanel account through either credential rou
 DomainInfo, Features and LangPHP expose every function in their pinned modules.
 `domainsData(format: 'hash')` returns grouped domain records; `format: 'list'`
 returns a record list. Domain details retain optional fields and explicit nulls.
+Shared domain flags accept integer and quoted 0/1; documented empty-string
+`userdirprotect` stays `''`, distinct from 0.
 `phpGetVhostVersions()` returns a list, or a single record when `vhost` is supplied.
 INI setters and PHP version changes use form POST. INI content and directives are
 sensitive parameters; retain a configuration backup before overwriting content.
 The content setter's pinned enum says `host|vhost` while its prose says `home|vhost`;
-this contradiction is documented, with no invented validation or default.
+this contradiction remains open, so its argument has plain `string` PHPDoc.
+The client form-encodes supplied content once; the pinned example is percent-encoded
+and the server write/read round trip remains unverified.
 
 `features()->hasFeature(name: 'autossl')` preserves its nullable object or observed
 integer payload; the integer's meaning is unspecified.
 Read `$account->responseMeta()?->uapiStatus()` immediately afterward for the access
-result: 1 means enabled; 0 means absent or disabled. This method accepts UAPI status
-0 because it carries the access result. Outer WHM bridge failures still throw.
+result: 1 means enabled; 0 with no errors means absent or disabled. Nonempty
+`responseMeta()->uapiErrors()` means the call failed, not that the feature is disabled.
+This typed method requires integer status 0 or 1 and accepts 0 as an access result.
+Outer WHM bridge failures still throw.
 
 `uapi()->dns()->fetchCpanelGeneratedDomains()` requires cPanel 120 and preserves
 trailing dots; `lookup()` returns textual lines or explicit `null`.
@@ -280,6 +286,8 @@ filter parameters. The client emits `action1`, `action2`, or `filter1`, `filter2
 `values` also accepts integer items for numeric comparisons. Other filter lists
 accept strings. Empty/keyed lists and colliding wire names fail before dispatch.
 Mailbox counts and quota results retain their documented zero/unlimited meanings.
+`getPopQuota()` normalizes observed zero-fraction decimal strings to integers
+without floating-point conversion; fractional values and overflow remain errors.
 `listPopsWithDisk()` keeps floating-point MB usage, while opaque mutation payloads
 retain fields and explicit nulls.
 
@@ -288,6 +296,10 @@ the formal destination shapes, but deeper recursive routed examples are not a ty
 recursive contract; `terminateMailboxSessions()` documents a WHM-like envelope in
 its UAPI page, so actual UAPI-envelope compatibility remains unverified. Offline
 fixtures cover all functions; live evidence is limited to explicitly recorded calls.
+The owned mailbox fixture passes 45 observations across 16 Email functions through
+both routes, with zero discrepancies and both temporary mailboxes confirmed
+removed. Password, quota and suspension checks establish API behavior, not SMTP or
+IMAP access; see the [source audit](docs/api/source-audit.md).
 
 
 The SSL module exposes 49 nondeprecated functions; `check_shared_cert` remains
@@ -480,7 +492,7 @@ envelope without `data`, including any supplied status, errors, messages,
 warnings, and metadata. Nested JSON metadata objects are represented as arrays. Bridged calls
 retain both maps and check both outcomes; outer WHM success alone is insufficient.
 Most typed operations declare `OutcomePolicy::Flag`. The documented exception is
-`features()->hasFeature()`, which uses unchecked UAPI status for its access result.
+`features()->hasFeature()`, which accepts integer status 0 or 1 for its access result.
 Generic calls may also choose `OutcomePolicy::Unchecked` (see above).
 
 Typed accessors read the documented envelope fields without coercion:

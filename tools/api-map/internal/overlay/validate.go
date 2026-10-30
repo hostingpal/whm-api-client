@@ -101,7 +101,8 @@ func observedWithoutLive(op Operation) bool {
 
 // missingEvidence reports behaviour-changing settings (variant, request method, outcome
 // check, void result, optional payload, a parameter encoding, which changes
-// the wire request, parameter requiredness, or a parameter declared not sensitive) made without
+// the wire request, parameter requiredness, suppressed enum documentation, or a
+// parameter declared not sensitive) made without
 // operation-level evidence.
 func missingEvidence(id string, op Operation) []string {
 	if len(op.Evidence) > 0 {
@@ -135,6 +136,9 @@ func missingEvidence(id string, op Operation) []string {
 	}
 	sort.Strings(wires)
 	for _, wire := range wires {
+		if enumDoc := op.Params[wire].EnumDoc; enumDoc != nil && !*enumDoc {
+			settings = append(settings, "enum_doc false on parameter "+wire)
+		}
 		if op.Params[wire].Required != nil {
 			settings = append(settings, "required on parameter "+wire)
 		}

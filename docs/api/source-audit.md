@@ -1281,6 +1281,39 @@ The first PR's final offline gates pass 4,310 tests and 33,655 assertions, plus
 maximum PHPStan, PHPCS and offline API-map/source/generation verification. The
 three PHP setters remain offline-only; no mutation ran in any of these captures.
 
+### Review corrections awaiting final-head read-only capture
+
+The pinned `domains_data` hash and list examples include empty-string
+`userdirprotect`. Independent copies now exercise both full examples through all
+three envelope forms. The effective domain contracts preserve that exact empty
+string, retain integer and quoted 0/1 flags, and align shared fields across both
+operations and all record kinds. Empty strings carry no invented disabled meaning;
+whitespace and other nonflag strings remain invalid. This is documentation-bound
+compatibility, not a newly observed value on the test account.
+
+Typed unchecked UAPI results now require integer status 0 or 1 before void, optional
+or payload processing. Invalid status raises `InvalidResponseException` with the
+captured current metadata; generic `call()` semantics and outer WHM checks remain
+unchanged. `hasFeature()` callers must inspect errors alongside status: nonempty
+errors describes a failed call, not a disabled feature. INI content `type` uses
+plain string PHPDoc while the host/home discrepancy remains unresolved; content is
+form-encoded once by the client and the server write/read round trip is unverified.
+
+The narrow `countPops()` correction from `8533e95` is included here without the
+expanded Email group. It preserves integer results and normalizes canonical
+PHP-integer-bounded strings. The referenced immutable
+[Email preflight artifact](evidence/2026-10-30-email-section-quota-corrected.json)
+has SHA-256 `c3b795074558ee25cbeb001d09e002efe55942a32abfaa49bc8de03f97df6f31`;
+both count routes failed their prior integer contract, all 17 requests were GET
+and both resources remained `not_started`. No count value, main-account inclusion
+or cause is inferred.
+
+The three existing DomainInfo/Features/LangPHP artifacts remain unchanged. Their
+contract hashes describe their original revisions. Final evidence requires merging
+the reviewed PR28 and PR29 changes from `master`, regenerating, committing that
+integrated head, and running the read-only catalog once into a new artifact path.
+No new live capture or PHP mutation was run for these review corrections.
+
 
 ## 2026-10-30 complete Email contracts
 
@@ -1332,6 +1365,45 @@ confirmed absent after cleanup. The structural observation establishes the wire
 type, not the expected quota value. Failed phase and discrepancy assessments remain
 unchanged; no artifact is rewritten after a contract correction.
 
+The [quota-corrected preflight](evidence/2026-10-30-email-section-quota-corrected.json)
+at 7300ef5 has SHA-256
+`c3b795074558ee25cbeb001d09e002efe55942a32abfaa49bc8de03f97df6f31`.
+Its 17 GETs stopped at count_pops quoted integers on both routes; no mutation ran.
+That existing method now accepts canonical integer strings within PHP bounds,
+without inferring whether the main account is counted.
+
+The [count-corrected capture](evidence/2026-10-30-email-section-count-corrected.json)
+at 8533e95 has SHA-256
+`c10599b638300486019b137b20e40ae32bacef872d1d4044291d5feb76bc08a0`.
+Its 29 responses again stop at numeric-string get_pop_quota payloads, despite the
+canonical-integer correction. Both created mailboxes were confirmed cleaned up.
+Structural numeric-string evidence alone cannot establish a lossless conversion;
+a separate same-response diagnostic now records fixed format categories only.
+It does not change the typed contract, original failure or strict assessment.
+
+
+The [quota-format diagnostic](evidence/2026-10-30-email-section-quota-format.json)
+at fa887d3 on 11.138.0.19 has SHA-256
+`1e30c8b3f1472213d325670909acc666a8d7e8eee52f12a708be3d15ddd58f7f`.
+Both original get_pop_quota responses contain integral-fixed-point strings: the
+fractional digits are all zero. No numeric value or length is retained. Typed
+validation still fails in this artifact; both created mailboxes were confirmed
+absent after cleanup. Only this evidenced operation receives lossless acceptance
+of zero-fraction fixed-point strings within PHP integer bounds. Fractional values,
+exponents, noncanonical integer parts and overflow remain rejected.
+
+
+The [final owned Email capture](evidence/2026-10-30-email-section-final.json) at
+fd552b2 on 11.138.0.19 has SHA-256
+`d1a8a5e97815a3eb7fe3524e7cea5227754320bc388293c9735f8a6df818cc9d`.
+All 45 planned original responses pass API, typed-payload, fixture-expectation and
+strict discrepancy checks, with zero discrepancies and no failure labels. Sixteen
+Email functions were exercised through direct and bridged UAPI, plus WHM version.
+Both fresh mailboxes were confirmed absent after creation, password verification,
+quota update/readback, login suspension/unsuspension and cleanup. No welcome or
+external delivery message was sent. This verifies API behavior on the recorded
+revision/version, not IMAP/SMTP access or every generated Email method. Follow-up
+8x0.2.18 retains unobserved functions and pinned-source contract gaps.
 
 ## 2026-10-30 complete SSL contracts and multipart request support
 

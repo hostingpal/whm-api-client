@@ -91,7 +91,11 @@ Operation entries (all keys optional):
   patterns such as `MXCHECK-*` must be omitted, and a required parameter cannot
   be omitted (exclude the operation instead). A union of scalar schemas becomes
   the union of their PHP types; an object, map or a union with a list, map or
-  object branch needs an `encoding` (or `omit`).
+  object branch needs an `encoding` (or `omit`). `required` overrides the pinned
+  requiredness, preserving false separately from omission. `enum_doc: false`
+  suppresses only the PHPDoc literal enum in favor of the existing native type;
+  absent or true keeps the pinned enum. It changes neither encoding nor native
+  parameter types and does not resolve disputed upstream values.
 - `order`: wire names moved to the front of the signature in that order;
   required arguments always precede optional ones, so an order that lists an
   optional parameter before a required one, or an omitted parameter, is a problem.
@@ -107,7 +111,8 @@ Operation entries (all keys optional):
   it returns null in that case (other payloads are validated as usual). Needs a
   documented payload and is exclusive with `void`.
 - `evidence`: operation-level evidence, required when the entry sets `variant`, `method`,
-  `outcome`, `void` or `optional_payload`, sets a parameter `encoding` (it
+  `outcome`, `void` or `optional_payload`, changes a parameter `required` setting,
+  suppresses its enum documentation (`enum_doc: false`), sets a parameter `encoding` (it
   changes the wire request), or marks a parameter `"sensitive": false`.
 - `notes`: docblock lines, each `{"kind", "text"}`. Kind `documented` restates
   the pinned documentation and renders as "Documented:"; kind `observed` records
@@ -122,8 +127,10 @@ Operation entries (all keys optional):
   other escape sequences are rejected. Keys: `type`
   (a scalar type; keeps nullability), `accept` (added to the variants the
   schema already implies: `numeric-string` for int and
-  number, `int-flag`/`string-flag` for bool, `string-flag`/`bool` for flag),
-  `nullable`, `preserve` (number only), `required` (object fields only), `add`
+  number, `int-flag`/`string-flag` for bool, `string-flag`/`bool`/`empty-string`
+  for flag). `empty-string` preserves only the exact empty string as `''|0|1`;
+  it does not coerce it to 0 or accept whitespace or other strings. Corrections
+  also support `nullable`, `preserve` (number only), `required` (object fields only), `add`
   (a full type spec declaring an undocumented field) and `replace` (a full type
   spec replacing a documented node entirely, not combined with `type` or `add`).
   Every correction needs evidence. Type specs need their companion keys: list

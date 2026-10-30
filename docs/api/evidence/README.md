@@ -62,6 +62,41 @@ scoped to the exact contracts, revisions and routes recorded in each file.
   discrepancies. Empty privilege lists, disabled prefixes, SQL enforcement and
   alternate server configurations remain unobserved.
 
+- [Initial DomainInfo/Features/LangPHP capture](2026-10-30-domain-features-php.json):
+  67 GET probes at `c79ed1d` on `11.138.0.19`; 59 pass and eight payload mismatches
+  remain in this immutable evidence. No mutations ran.
+- [DomainInfo/Features/LangPHP compatibility capture](2026-10-30-domain-features-php-compatibility.json):
+  67 GET probes at `a07f4f7`, with 65 passing and two PHP-version payload mismatches.
+  Same-response candidate diagnostics isolate the documented source-container discrepancy.
+- [Corrected DomainInfo/Features/LangPHP capture](2026-10-30-domain-features-php-corrected.json):
+  67 API/payload checks pass at `7b172f3`; strict assessment still fails for eight
+  unknown-field observations and two stale Quota acknowledgments. This historical
+  capture does not establish the later reviewed domain contracts; a final-head
+  capture remains required after stack integration. PHP setters remain offline-only.
+- [Email preflight count discrepancy](2026-10-30-email-section-quota-corrected.json):
+  immutable artifact imported with the narrow `countPops()` correction from `8533e95`.
+  All 17 requests were GET, mailbox-count payloads were numeric strings through
+  both UAPI routes, and no fixture resource was started. Its failures are preserved.
+
+
+## Complete Email slice (2026-10-30)
+
+Email captures preserve each step without rewriting failed evidence:
+[preflight](2026-10-30-email-section.json),
+[MX correction](2026-10-30-email-section-corrected.json),
+[quota correction](2026-10-30-email-section-quota-corrected.json),
+[count correction](2026-10-30-email-section-count-corrected.json), and
+[quota format diagnostic](2026-10-30-email-section-quota-format.json).
+The diagnostic records only fixed format categories from the original response.
+All mailboxes created by these runs were confirmed absent after cleanup. Generated
+coverage of 96 functions is distinct from the 16-function owned-mailbox recipe;
+remaining live/source-contract work is tracked under 8x0.2.18.
+
+
+The [final owned Email lifecycle](2026-10-30-email-section-final.json), captured at
+fd552b2 on 11.138.0.19, passes all 45 observations and the strict zero-discrepancy
+assessment. It verifies 16 Email functions through both routes, with two fresh
+mailboxes confirmed cleaned up. All five earlier failed captures remain intact.
 
 ## Complete SSL slice (2026-10-30)
 

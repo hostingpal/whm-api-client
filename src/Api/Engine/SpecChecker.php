@@ -37,10 +37,10 @@ final class SpecChecker
 
     /** Accepted wire variants per type; types not listed accept none. */
     private const ACCEPT = [
-        'int' => ['numeric-string'],
+        'int' => ['numeric-string', 'integral-fixed-point-string'],
         'number' => ['numeric-string'],
         'bool' => ['int-flag', 'string-flag'],
-        'flag' => ['string-flag', 'bool'],
+        'flag' => ['string-flag', 'bool', 'empty-string'],
     ];
 
     private const TYPES = ['string', 'int', 'number', 'bool', 'flag', 'mixed', 'list', 'map', 'object', 'union'];

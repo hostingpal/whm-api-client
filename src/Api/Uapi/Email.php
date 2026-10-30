@@ -1089,6 +1089,11 @@ final readonly class Email
      *
      * Documented: Available in cPanel 82.
      *
+     * Observed: On cPanel 11.138.0.19, numeric-string count results were observed through both direct and bridged UAPI.
+     * Canonical integer strings within PHP integer bounds normalize to int; integer responses remain supported.
+     * Explicit null, missing data and noncanonical numeric strings remain rejected. No cause for the wire variation or
+     * main-account inclusion is inferred.
+     *
      * API-map identity: uapi:Email/count_pops#GET (wire name count_pops).
      *
      * @return int
@@ -2313,8 +2318,12 @@ final readonly class Email
      *
      * Observed: On cPanel 11.138.0.19, the MB result (asBytes=false) arrived as a numeric string through both direct
      * and bridged UAPI. Canonical integer strings within PHP integer bounds normalize to int. The unit selection
-     * remains unchanged; explicit null, absent data, literal unlimited and noncanonical numeric strings remain
-     * rejected.
+     * remains unchanged; explicit null, absent data and literal unlimited remain rejected.
+     *
+     * Observed: The same-response diagnostic subsequently established zero-only fixed-point fractions on both routes.
+     * integral-fixed-point-string accepts a canonical signed integer part within PHP integer bounds followed by a dot
+     * and one or more zeros. It normalizes losslessly to int without floats or rounding; negative zero, nonzero
+     * fractions, exponents, whitespace, plus signs, leading zeros and overflow are rejected.
      *
      * API-map identity: uapi:Email/get_pop_quota#GET (wire name get_pop_quota).
      *
