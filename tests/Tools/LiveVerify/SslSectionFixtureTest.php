@@ -184,6 +184,92 @@ final class SslSectionFixtureTest extends TestCase
         self::assertSame(['existing'], array_keys($server->keys));
     }
 
+    #[DataProvider('identifiedEcdsaInventories')]
+    public function testUnrelatedEcdsaInventoryDoesNotRequireRsaModulus(
+        string $function,
+        string $curve,
+        bool $nullModulus,
+    ): void {
+        $server = new SslSectionServer();
+        $row = ['id' => 'preexisting-ecdsa', 'friendly_name' => 'existing unrelated ECDSA',
+            'key_algorithm' => 'id-ecPublicKey', 'ecdsa_curve_name' => $curve,
+            'ecdsa_public' => '02' . str_repeat('a1', $curve === 'prime256v1' ? 32 : 48)];
+        if ($nullModulus) {
+            $row['modulus'] = null;
+        }
+        $server->existingInventory[$function] = [$row];
+        $report = self::fixture($server)->run();
+        self::assertSame('passed', $report['status']);
+        self::assertSame([$row], $server->existingInventory[$function]);
+        self::assertSame(2, $server->counts['upload_key'] ?? 0);
+        self::assertSame(2, $server->counts['upload_cert'] ?? 0);
+        self::assertSame(2, $server->counts['delete_key'] ?? 0);
+        self::assertSame(2, $server->counts['delete_cert'] ?? 0);
+        self::assertSame([], $server->keys);
+        self::assertSame([], $server->certificates);
+    }
+
+    /** @return iterable<string,array{string,string,bool}> */
+    public static function identifiedEcdsaInventories(): iterable
+    {
+        foreach (['list_keys', 'list_certs'] as $function) {
+            foreach (['prime256v1', 'secp384r1'] as $curve) {
+                foreach ([false, true] as $nullModulus) {
+                    yield "$function $curve " . ($nullModulus ? 'null' : 'omitted')
+                        => [$function, $curve, $nullModulus];
+                }
+            }
+        }
+    }
+
+    /** @param array<string,mixed> $identity */
+    #[DataProvider('unidentifiedInventories')]
+    public function testUnidentifiableInventoryStopsBeforeAllMutations(string $function, array $identity): void
+    {
+        $server = new SslSectionServer();
+        $row = ['id' => 'ambiguous-existing', 'friendly_name' => 'existing unrelated identity', ...$identity];
+        $server->existingInventory[$function] = [$row];
+        $report = self::fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertCount(5, $report['probes']);
+        foreach (
+            ['upload_key', 'upload_cert', 'fetch_key_and_cabundle_for_certificate', 'delete_key', 'delete_cert'] as $op
+        ) {
+            self::assertSame(0, $server->counts[$op] ?? 0);
+        }
+        foreach ($report['resources'] as $resources) {
+            self::assertSame(['key' => 'not_started', 'cert' => 'not_started'], $resources);
+        }
+        self::assertSame([$row], $server->existingInventory[$function]);
+    }
+
+    /** @return iterable<string,array{string,array<string,mixed>}> */
+    public static function unidentifiedInventories(): iterable
+    {
+        $ecdsa = ['key_algorithm' => 'id-ecPublicKey', 'ecdsa_curve_name' => 'prime256v1', 'ecdsa_public' => '02a1'];
+        foreach (['list_keys', 'list_certs'] as $function) {
+            foreach ([false, true] as $nullModulus) {
+                foreach (
+                    [
+                    'unknown algorithm' => [...$ecdsa, 'key_algorithm' => 'unknown'],
+                    'RSA without modulus' => [...$ecdsa, 'key_algorithm' => 'rsaEncryption'],
+                    'missing algorithm' => ['ecdsa_curve_name' => 'prime256v1', 'ecdsa_public' => '02a1'],
+                    'missing curve' => ['key_algorithm' => 'id-ecPublicKey', 'ecdsa_public' => '02a1'],
+                    'unknown curve' => [...$ecdsa, 'ecdsa_curve_name' => 'unknown'],
+                    'empty public point' => [...$ecdsa, 'ecdsa_public' => ''],
+                    'missing public point' => ['key_algorithm' => 'id-ecPublicKey', 'ecdsa_curve_name' => 'prime256v1'],
+                    'nonhex public point' => [...$ecdsa, 'ecdsa_public' => 'not-hex'],
+                    ] as $name => $identity
+                ) {
+                    if ($nullModulus) {
+                        $identity['modulus'] = null;
+                    }
+                    yield "$function $name " . ($nullModulus ? 'null' : 'omitted') => [$function, $identity];
+                }
+            }
+        }
+    }
+
     public function testMissingOptInPreventsAnyRequest(): void
     {
         putenv('WHM_API_LIVE_MUTATIONS=0');

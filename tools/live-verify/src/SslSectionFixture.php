@@ -278,15 +278,27 @@ final class SslSectionFixture
         foreach ($rows as $row) {
             if (
                 !is_array($row) || !is_string($row['id'] ?? null) || $row['id'] === ''
-                || !array_key_exists('modulus', $row) || (!is_string($row['modulus']) && $row['modulus'] !== null)
                 || !is_string($row['friendly_name'] ?? null) || in_array($row['id'], $ids, true)
             ) {
                 $this->expect(false);
                 throw new RuntimeException('SSL inventory identity unavailable.');
             }
+            $modulus = $row['modulus'] ?? null;
+            // Pinned SSL/list_keys and SSL/list_certs identify ECDSA by this exact
+            // algorithm, curve and hexadecimal public point. Missing/null RSA
+            // modulus is safe only with that positive non-RSA identity; absence
+            // alone cannot establish that an existing resource differs from ours.
+            $identifiedEcdsa = ($row['key_algorithm'] ?? null) === 'id-ecPublicKey'
+                && in_array($row['ecdsa_curve_name'] ?? null, ['prime256v1', 'secp384r1'], true)
+                && is_string($row['ecdsa_public'] ?? null)
+                && preg_match('/\A[0-9a-fA-F]+\z/', $row['ecdsa_public']) === 1;
+            if ((!is_string($modulus) && $modulus !== null) || ($modulus === null && !$identifiedEcdsa)) {
+                $this->expect(false);
+                throw new RuntimeException('SSL inventory public identity unavailable.');
+            }
             $ids[] = $row['id'];
-            $result[] = ['id' => $row['id'], 'modulus' => $row['modulus'] === null
-                ? null : SslSectionMaterial::normalize($row['modulus']), 'friendly_name' => $row['friendly_name']];
+            $result[] = ['id' => $row['id'], 'modulus' => $modulus === null
+                ? null : SslSectionMaterial::normalize($modulus), 'friendly_name' => $row['friendly_name']];
         }
         return $result;
     }

@@ -1363,3 +1363,26 @@ route. It never installs certificates or changes existing hosted services. Every
 cleanup target must have confirmed creation and an unambiguous new identity;
 uncertain uploads remain failed evidence and are never adopted from later reads.
 Actual multipart results and resource cleanup are documented after execution.
+
+### SSL inventory preflight observations
+
+The [first SSL capture](evidence/2026-10-30-ssl-section.json) at 4a3c988 on
+11.138.0.19 has SHA-256
+`088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd`.
+Five GET responses were retained: WHM version passed, while list_keys/list_certs
+failed typed validation on both routes. No upload or deletion ran; all resources
+remain not_started. Eight evidenced corrections preserve quoted integer fields,
+quoted self-signed flags and a nullable literal issuer.organizationName value.
+The generator now supports escaped dots in correction paths so this literal wire
+key is targeted without changing any nested field or replacing an entire object.
+
+The [corrected inventory capture](evidence/2026-10-30-ssl-section-corrected.json)
+at a43adae, SHA-256
+`8b83217819c1275503d40c9d4547407794bc4e3a450170643e43fc1a93a63719`,
+passes all five API/payload checks without discrepancies. Fixture preflight still
+fails for existing certificate rows without a modulus; no mutation ran. The
+inventory identity guard now permits omitted/null modulus only when the pinned
+id-ecPublicKey algorithm, a documented curve and nonempty hexadecimal public point
+establish non-RSA identity. Ambiguous RSA/unknown rows fail, including null modulus
+previously admitted without algorithm checks. Independent tests cover both
+inventories and preserve unrelated resources. Failed artifacts remain immutable.

@@ -18,6 +18,8 @@ final class SslSectionServer implements ClientInterface
     public array $keys = [];
     /** @var array<string, array{id: string, modulus: string, pem: string}> */
     public array $certificates = [];
+    /** @var array<string, list<array<string, mixed>>> Unrelated inventory rows never created by this fixture. */
+    public array $existingInventory = ['list_keys' => [], 'list_certs' => []];
     /** @var array<string, int> */
     public array $counts = [];
 
@@ -60,6 +62,7 @@ final class SslSectionServer implements ClientInterface
                 $data = array_values(array_map(static fn (array $row): array => [
                     'id' => $row['id'], 'modulus' => $row['modulus'], 'friendly_name' => 'fixture label',
                 ], $rows));
+                $data = [...$data, ...$this->existingInventory[$function]];
                 if ($this->failure === 'preflight') {
                     $status = 0;
                 }

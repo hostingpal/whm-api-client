@@ -336,7 +336,12 @@ The recipe generates independent RSA-2048 private keys and self-signed npr.rs
 certificates for the two routes, retaining PEM contents only in process memory.
 It captures WHM version and key/certificate inventories through both routes before
 any upload. Comparable IDs, public moduli and friendly names must establish that
-neither fresh resource exists. It uploads each new key and certificate, fetches
+neither fresh resource exists. An absent or null RSA modulus is accepted only
+with the pinned non-RSA identity: `key_algorithm` is `id-ecPublicKey`, the curve
+is `prime256v1` or `secp384r1`, and `ecdsa_public` is nonempty hexadecimal text.
+Ambiguous RSA or unknown identities stop preflight before uploads. This check
+classifies unrelated ECDSA inventory; it does not validate the elliptic-curve
+point cryptographically or adopt that resource. The recipe uploads each new key and certificate, fetches
 the matching key and CA bundle, and deletes only exact IDs confirmed by successful
 original creation responses. Matching public moduli bind returned private keys
 without persisting private material. Payload validation failures still permit
