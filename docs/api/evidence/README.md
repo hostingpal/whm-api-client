@@ -240,3 +240,14 @@ These observations bind the same representation corrections to flat rows only:
 integer strings. The pinned object alternative's `dirs`/`files` row contracts
 remain unchanged. The second artifact stays immutable with SHA-256
 `7bd1db300c24babef264c7bfc445dbc2c1430a82152bdf33665a553428a0726f`.
+
+The [final Fileman inventory capture](2026-10-30-fileman-inventory-final.json)
+at `ec442bdea2fcab033d95a8f10b84afc56df8ec42` on `11.138.0.19` passes all seven GET
+observations: WHM version and all three inventory operations through both UAPI
+routes. HTTP/API/payload/probe checks and strict assessment pass with zero
+discrepancies. Directory information and flat listing rows are populated;
+`isparent` is omitted in the observed listing rows. The documented object-format
+listing alternative remains offline coverage. No file content, mutation,
+filesystem permission enforcement or charset round trip is established. Follow-up
+`8x0.2.24` remains open. Earlier failure captures stay unchanged. Final SHA-256:
+`946ba0512be318c20b51616a4ede7346e069ae1150f97b44c43ee03ea217bf8f`.

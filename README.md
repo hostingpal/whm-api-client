@@ -428,6 +428,13 @@ no existing file content and sends no mutations. Content, filesystem lifecycle
 and transcoding verification remain under `8x0.2.24`; exclusive fixture creation
 must precede overwrite-capable saves.
 
+The [final Fileman inventory capture](docs/api/evidence/2026-10-30-fileman-inventory-final.json)
+at `ec442bd` on `11.138.0.19` passes all seven GET observations
+and strict assessment with zero discrepancies. It covers three inventory
+operations through both routes; the other ten methods remain offline-tested.
+No existing file content was read and no mutation ran. Follow-up `8x0.2.24`
+owns their live verification; multipart upload remains under `8x0.1.19`.
+
 The Mime group covers all 14 pinned functions: six reads use GET and eight
 mutations use form POST. No domain selector is documented for hotlink
 configuration. MIME deletion targets the MIME type, while handler deletion
