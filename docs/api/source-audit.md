@@ -1196,12 +1196,372 @@ Composer and offline API-map gates passed. A separate local review of the code
 commit found no issues and ran 400 focused tests / 5,253 assertions. External
 review rounds and findings are tracked in Beads; human review time is not instrumented.
 
+## Pinned-contract audit: 2026-10-30 complete Mysql section
+
+The owner requested a larger dedicated PR, preferably covering an entire API
+section, and delegated scope selection and development-server testing while away.
+The selected batch completes all 25 functions in the pinned UAPI `Mysql` section:
+15 new methods raise generated coverage from 82 to 97 operations across the same
+13 groups. The source snapshot and map checksum remain unchanged. The complete
+API still has 1,213 nondeprecated functions without generated methods.
+
+The additions are `addHost()`, `addHostNote()`, `checkDatabase()`, `deleteHost()`,
+`dumpDatabaseSchema()`, `getHostNotes()`, `listRoutines()`, `locateServer()`,
+`renameDatabase()`, `renameUser()`, `repairDatabase()`,
+`revokeAccessToDatabase()`, `setPassword()`, `setupDbAndUser()` and
+`updatePrivileges()`. Every pinned mutation, including `check_database`, uses
+form POST; the four new reads use GET. This section needs neither JSON nor
+multipart execution support. Existing group generation and runtime validation
+remain the contract path.
+
+An independent audit compared all 15 additions with the decompressed pinned
+cPanel OpenAPI source (`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`).
+It confirmed parameter mappings and response shapes and found documentation
+caveats dropped by the generator's prose extraction. Overlay notes now preserve
+all version floors and role requirements, database-rename prefix/underscore limits
+and restoration warnings, and database-username limits. The `add_host_note` role
+condition is stricter than the other operations. `setup_db_and_user` starts at
+cPanel 11.116. Parameter ordering puts the original name before the new name and
+the database user before the password.
+
+Mutation result contracts stay distinct: most accept nullable opaque objects;
+`set_password` returns an object with optional `failures`, and
+`setup_db_and_user` returns optional credential fields and a string port.
+Per-host password failures remain payload data; the public method does not
+invent a global envelope rule. Diagnostic table messages and rename warnings
+also require caller inspection. Raw schema text and dynamically keyed host notes
+are preserved as payload data.
+
+The new credential-returning operation exposed an existing trace-privacy gap:
+a successful response with a password and malformed `port` could retain that
+password inside `OperationRunner::result()`'s response argument in `getTrace()`
+when `zend.exception_ignore_args=0`. Independent direct and bridged regressions
+failed before the response was marked `SensitiveParameter` and passed afterward.
+The intentionally explicit, unvalidated `PayloadMismatchException::$payload`
+remains available; the change protects implicit trace arguments. Both routes
+still make exactly one request.
+
+Independent literal endpoint cases cover all 15 additions on direct wrapped,
+direct bare and bridged responses, including exact URI/body/auth, omission,
+explicit empty values, null versus absent data, nested wrong types, integer flags,
+opaque objects, API failures and metadata replacement. Password-input failures
+join the existing sensitive-trace matrix. The generator/specs do not supply the
+expected endpoint results. Generated coverage, offline validation and actual live
+observations are separate claims.
+
+The standalone section recipe is scoped to 21 operations on each UAPI route.
+Four generated/offline-tested operations remain outside its live recipe:
+remote-host add/note/delete lack an authoritative absence check in host notes,
+and random setup needs safe recovery when generated identities are not returned.
+Follow-up `whm-api-client-8x0.2.9` tracks that evidence work. Empty tables/routines,
+API-reported grants and password results do not prove SQL enforcement, SQL login,
+repair of damaged tables or stored-routine behavior. Consumer integration remains
+deferred. The historical baseline and its Quota acknowledgment policy are unchanged.
+
+### Runtime observations: 2026-10-30 Mysql section
+
+One authorized run of the standalone section recipe at code revision
+`b29cecebcd0b44a050017d574a02f3842f2ea430` completed with exit 0 on
+`test.oblak.host`, cPanel `11.138.0.19`. The artifact is
+[`2026-10-30-mysql-section.json`](evidence/2026-10-30-mysql-section.json), SHA-256
+`df7ba98f8233e77583e5070113f95e1536928f917e9f4c748fd922c5fce875c2`.
+
+All 57 observations passed: one WHM version call plus 28 lifecycle phases on each
+UAPI route, covering 42 distinct MySQL operation/route pairs (21 functions).
+The strict assessment found no missing, duplicate, out-of-order, unsuccessful,
+provenance-mismatched or discrepant observations. It uses no acknowledgments.
+The grant/read/revoke/read sequence observed exactly `SELECT` then an empty list
+separately on both routes. Password results, linked inventories, database and
+user rename readbacks, empty checks/repairs/routines and schema payload validation
+passed. The fixture also invoked the account-wide privilege update on the
+designated test account. Both routes' database and user resources are cleaned;
+final inventories establish original and renamed names absent. No raw identities,
+SQL, passwords or arbitrary upstream messages are saved.
+
+Access is revoked before rename and both databases are empty. The rename readbacks
+establish name changes and cleanup only; they do not observe grant or stored-code
+recreation. This limitation also applies to the immutable artifact above. The
+current recipe reports it explicitly; no operation was replayed to update the
+historical evidence.
+
+The artifact's 820 structural paths, all 57 effective-contract hashes, source/map/
+generator/overlay provenance, version binding and complete assessment were audited
+without replaying requests. No new compatibility correction was required. These
+results cover the exact operations, routes, arguments and server version exercised;
+the four excluded live operations and other stated limitations remain explicit.
+
+Before capture, `composer validate`, `composer check` (4,493 tests / 33,833
+assertions), PHPCS, maximum-level PHPStan and `composer api-map:check` passed.
+A fresh whole-branch reviewer independently inspected the exact code revision,
+including all 15 pinned contracts, guards, cleanup, sanitization, provenance and
+credential traces; it reported no actionable findings and independently passed
+521 focused tests / 2,985 assertions. This is an independent local review, not a
+separate-account GitHub approval. Actual external PR approval remains a merge gate.
+
+The code commit changed 22 files: 19 manual files with 2,497 additions / 17
+removals, and three generated files with 718 additions / two removals. That includes
+overlay, runtime trace protection, independent tests, standalone fixture tooling
+and documentation. Evidence and this runtime addendum are separate. Two review
+passes were used (contract audit, then whole-branch review); the first led to
+source-caveat documentation and the returned-secret regression, and the second
+found no remaining issue. No measured review-time saving is claimed.
+
+
+### Complete FTP section: 2026-10-30
+
+The owner requested another coherent API slice in an independent PR while
+keeping the complete MySQL PR separate. Bead `whm-api-client-8x0.4.9` covers all
+20 pinned `Ftp` functions from the unchanged 2026-10-13 cPanel OpenAPI snapshot:
+`add_ftp`, `allows_anonymous_ftp`, `allows_anonymous_ftp_incoming`, `delete_ftp`,
+`ftp_exists`, `get_ftp_daemon_info`, `get_port`, `get_quota`, `get_welcome_message`,
+`kill_session`, `list_ftp`, `list_ftp_with_disk`, `list_sessions`, `passwd`,
+`server_name`, `set_anonymous_ftp`, `set_anonymous_ftp_incoming`, `set_homedir`,
+`set_quota` and `set_welcome_message`.
+
+All nine mutations execute as form POST; the eleven read operations use GET.
+`passwd` is exposed as `changePassword(user, password, domain)`; `pass` and
+`pass_hash` map to sensitive `password` and `passHash` arguments. Optional
+parameters preserve omission, explicit false, empty strings and zero. The API
+forbids sending both password forms, leaves domains defaulted to the cPanel
+primary domain, and defaults new usernames to dot removal. These are upstream
+semantics rather than new local cross-parameter validation.
+
+The overlay preserves FTP-role caveats and version floors: cPanel 54 for
+`get_ftp_daemon_info` and `set_homedir`, 11.42 for the other operations. Inventory
+row fields remain optional; disk amounts remain decimal strings in MB, with
+`_diskquota` using `0.00` for unlimited and `diskquota` using `unlimited`.
+`get_quota` is a string payload. `htmldir` may be explicitly null. Sessions keep
+their documented optional fields and integer PID. `ftp_exists` is a nullable
+object success or an API error, not a boolean result. Opaque nullable object
+results retain explicit null and unknown object fields but reject an absent
+payload. `add_ftp` has a literal `[null]` enum in the pinned schema: its generated
+nullable-object shape follows the established general-enum policy, not exact
+JSON Schema validation or a claim of documented non-null data.
+
+The account-changing defaults are rendered in generated PHPDoc: `destroy=true`
+also deletes the FTP home directory, omitted `add_ftp` homedir defaults to a
+directory with the same name as the FTP account, `kill_session` without a login
+targets all account sessions, and omitted quota settings can remove the quota. Both anonymous
+access switches apply to the selected cPanel account. No generated source was
+edited by hand and no shared runtime or generator policy was changed.
+
+The separate section verifier is scoped to `npr` / `npr.rs`, with both live
+opt-ins and committed source inputs. It exercises a run-owned FTP user through
+each UAPI route. Home-directory arguments `.` and `./` refer to the existing
+cPanel home; cleanup always supplies `destroy=false`. The directory call can
+establish execution/readback, not a change in filesystem isolation. Failed or
+uncertain creation never authorizes deleting a possibly unrelated user.
+Account-wide anonymous settings, the welcome-message setter and session killing
+are deliberately unobserved live in this recipe (follow-up `8x0.2.10`). FTP authentication, active
+session rows, populated disk usage and another daemon/version remain separate
+from API execution evidence. Runtime results are recorded below only after an
+explicit capture; default PHP and API-map gates remain offline.
+
+
+The first committed-code capture at
+`dd82a734095977fae6f8a2f3a0b1fabf226f1004` on cPanel `11.138.0.19`
+failed strictly on the finite-quota read through both routes: the original
+payload was a JSON integer, while the pinned contract declares a string.
+Unlimited quotas were strings. The [original artifact](evidence/2026-10-30-ftp-section.json),
+SHA-256 `55b0184b8581fb288c0bb0016b4ce36ffce119b262f831edabe777c285a65da8`,
+preserves both type mismatches and the failed assessment. It contains 39
+observations; disk inventory phases were not reached. Both temporary FTP users
+were independently confirmed absent after cleanup. All 540 structural paths,
+provenance and assessment were audited without recording payload values or replaying requests.
+
+A correction limited to `Ftp/get_quota` retains the documented string form and
+observed integer form as `int|string`. An evidence-bound root union expresses
+this in the existing type grammar; no generic validator or generator behavior
+changes. Floats, booleans, null, lists and objects remain invalid. Independently
+authored endpoint tests reproduced the integer mismatch on all three envelope
+forms; the full fixture regression reproduced it before the correction. Fixture
+readback requires the assigned finite quota as exactly integer `17` or string
+`17`, separately from the initial `unlimited` value. The initial discrepancy is
+not waived or rewritten, and new live evidence must bind the corrected revision.
+
+
+The second capture at `cd7bdb6a57bc6fe40dc0442d9c49c956cdfabe90` is saved as
+[the corrected-contract artifact](evidence/2026-10-30-ftp-section-corrected.json),
+SHA-256 `5bf7067e69efb996a31fb6c4b0a30f5a63402f4f8c5c88c81b11db73f4f4e94a`.
+All **41 observations** passed HTTP, API outcome, generated payload validation and
+fixture expectations on `11.138.0.19`: 16 Ftp functions through both routes plus
+WHM version. Both temporary users were independently confirmed absent; neither
+run removed directory contents. The original-response finite quotas were integers,
+and the populated disk inventories contained the documented row fields.
+
+The command still exited **1**: each disk-inventory observation has an
+`unknown_field` discrepancy at `$[].*` with string type. Those are two route
+observations, not evidence of exactly two field names or any particular names.
+The strict assessment remains **failed** with `unacknowledged_discrepancy`.
+No acknowledgment or undocumented typed field was added; `8x0.2.11` tracks the
+contract investigation. The typed client discards unknown fields by its existing
+policy, so API/payload success and evidence-assessment failure remain separate.
+The artifact's 634 structural paths, provenance, effective hashes and assessment
+were independently audited; no credentials, live usernames or response values
+were persisted. No third mutation run was performed merely to clear this finding.
+
+Both saved captures restrict inventory to `include_acct_types=sub`; the
+corrected artifact observes only `sub` rows. Main, anonymous and log-access rows
+are outside its captured evidence. The fixture report declares `sub_rows_only`
+for this recipe; the immutable artifacts are unchanged.
+
+The [external review of head `fc96ecd12506fb489b8bb98bda8b39b065350363`](https://github.com/hostingpal/whm-api-client/pull/28)
+reported a separate read-only, unfiltered diagnostic through both UAPI routes.
+`listFtp()` and `listFtpWithDisk()` passed typed validation for main, log-access
+and anonymous rows; no sub rows remained. That diagnostic is not bound to an
+evidence artifact. Its undocumented disk-inventory keys were `type` and `user`,
+both strings; this does not identify the masked unknown keys in the artifact's
+sub rows. The strict artifact assessment stays failed, without an acknowledgment
+or new typed field. The reviewer considers this finding nonblocking for merge;
+`8x0.2.11` remains open. No live rerun was performed for these review fixes.
+
+Before the first capture, the code commit changed 22 files: 18 manual files
+(2,623 additions / 4 removals) and four generated files (1,037 / 1). The evidence,
+quota correction and this addendum are additional work. A fresh independent
+whole-branch review of `dd82a734` found no actionable issue and independently ran
+767 tests / 6,142 assertions. The evidence-driven quota correction then passed
+its observed RED-to-GREEN endpoint and fixture regressions, full **4,745 tests /
+36,992 assertions**, formatting, maximum-level PHPStan and offline API-map checks.
+No shared runtime or generator change was needed. External current-head review,
+the unknown-field decision, and the four deliberately unobserved live functions
+remain distinct from these implementation and execution results.
+
+
+### Complete PostgreSQL section: 2026-10-30
+
+The owner requested the next complete module under `whm-api-client-8x0.4.10`.
+This slice adds all 14 pinned `Postgresql` functions. Integrating the approved
+MySQL and FTP sections brings the combined branch to 131 generated operations
+across 15 groups; the module contracts and immutable artifacts remain separate.
+`get_restrictions`, `list_databases` and `list_users` are GETs. The eleven
+mutations declare `x-readonly=false` and `x-rollback=none`; the client sends them
+as form POST. Passwords on creation, rename and password change are sensitive.
+
+The pinned source declares `create_user` data as a nullable integer, without
+assigning it a meaning. Other mutations declare nullable objects without field
+schemas. Explicit null and opaque fields are retained; absent data is not
+accepted as null. Existing empty-map compatibility remains unchanged.
+`list_users` returns a string list. Database rows have optional `database`,
+integer byte `disk_usage` and `users` string-list fields. Restriction fields
+are optional; `prefix` is a string and is not documented as nullable.
+No MySQL response contract is reused by inference.
+
+The overlay exposes `oldName`/`newName` for renames and places `user` before
+`password` in `setPassword()`. It records the PostgreSQL-role caveat, version
+requirements, prefix behavior, no-rollback policy, account-wide grant
+synchronization and the password reset required after `rename_user_no_password`.
+The pinned documentation recommends `rename_user`, which accepts a password.
+Inventory, `delete_user` and `update_privileges` require cPanel 84+;
+`delete_database` requires 54+, and other functions require 11.42+.
+Source snapshots, shared validation policies and generator behavior are unchanged.
+A malformed PostgreSQL `create_user` response echoing its input password exposed
+the `ApiResponse` argument of `OperationRunner::result()` in exception traces.
+A regression reproduced it on both routes before adding `SensitiveParameter`
+to that response argument. Envelope failures also retained the raw PSR response
+in `EnvelopeReader::read()` traces; that response argument is now sensitive too.
+Regressions check the presence of response objects directly, including
+resource-backed streams, for malformed status and failed inner/outer outcomes.
+Payload access and validation behavior are unchanged.
+
+
+Independent whole-branch review at `94e62b90e3f5e2b790de563a6990dd23926a4973`
+found no blocking correctness or safety issue and passed 773 focused tests /
+8,841 assertions with exception arguments enabled. Its minor documentation
+finding restored the pinned account-prefix requirement for `createUser()` through
+an overlay note and regeneration. Failed or short temporary-file writes remain
+a resilience limitation; completed-report publication failures preserve a protected
+recovery file. No live operation is replayed to recover evidence.
+
+
+The [PostgreSQL preflight artifact](evidence/2026-10-30-postgresql-section.json),
+SHA-256 `a3fbf7f299cf2a1811ed655524c2eadd076b3a217508997a07eb44d32d28211c`,
+was captured once at revision
+`6539db7103a198a609a0b24aa4c09514b5464f36` on cPanel `11.138.0.19`.
+It records seven GET observations: WHM version passed, while PostgreSQL
+`list_databases`, `list_users` and `get_restrictions` each returned HTTP 200
+with an API failure on both direct and bridged UAPI. The recipe returned exit 1
+with `preflight_failure` and all four resource states `not_started`. No mutation
+was attempted and no resource was created; there is no cleanup claim.
+
+The strict assessment remains **failed** because the reads failed and the
+planned full-lifecycle sequence is incomplete. Payload validation and fixture expectations for the failed
+reads were not checked. Zero recorded discrepancies does not establish successful
+PostgreSQL behavior. At that capture, successful payload contracts and mutation
+behavior remained offline-tested only. The failed artifact is preserved without
+a waiver or replay to recover evidence; the later enabled-service run below
+provides separate successful observations for `whm-api-client-8x0.2.14`.
+
+The artifact's assessment, operation/route/method identities, pinned source hashes,
+effective contracts, map/generator/overlay hashes and revision were independently
+recomputed against the committed inputs. All 88 structural path entries contain
+only static envelope/contract paths and type labels; no payload values, passwords,
+resource names or upstream error text were persisted. The complete code passed
+`composer validate`, `composer check` (**4,732 tests / 39,581 assertions**) and
+`composer api-map:check`. The optional failed-temporary-write resilience follow-up
+is `whm-api-client-8x0.2.13`; atomic completed-report publication failure recovery
+is tested in this slice.
+
+
+### Runtime observations: 2026-10-30 enabled PostgreSQL section
+
+Before this capture, the reviewer performed an owner-requested server change:
+PostgreSQL 13.23 was installed on CloudLinux 9.8 / cPanel `11.138.0.19`, and the
+Postgres role and PostgreSQL service were enabled, running and monitored. The
+reviewer confirmed the disabled role caused the earlier preflight failures.
+That installation is background to this account-scoped recipe; it was not a
+client change or an action performed by the capture.
+
+Approved MySQL PR27 and FTP PR28 were merged into this branch through master,
+without rebasing. Regeneration produces **131 operations across 15 groups**.
+The integrated code at `61a9f3eb6dbc480625861bb41ef629a36d05129a` passed
+`composer validate`, `composer check` (**5,961 tests / 48,438 assertions**) and
+`composer api-map:check` before being committed/pushed and captured once.
+The combined trace suite preserves the MySQL, FTP and PostgreSQL cases, including
+all five reviewed outcome-echo paths; `EnvelopeReader::outcome()` marks both raw
+outcome and metadata sensitive. Its explicit exception metadata and mismatch
+payload APIs remain unchanged. The body-aware PSR search and unmarked-body
+control are retained once, and all **162 tests / 878 assertions** pass.
+
+The [enabled-service PostgreSQL artifact](evidence/2026-10-30-postgresql-section-enabled.json),
+SHA-256 `a1de9a3458f7b721f2263dbd1f88ce619df61eca42c3d820d8b6844f16b4de45`,
+contains **57 passing observations: 33 GET and 24 POST** on `11.138.0.19`.
+All fourteen functions execute successfully on direct and WHM-bridged UAPI,
+with HTTP 200, successful API/payload outcomes, independently checked fixture
+expectations, zero discrepancies and a passing strict assessment. Both databases
+and both users are `cleaned`, with original, renamed and final identities
+confirmed absent by the final same-run inventories. The failed preflight artifact
+and every historical MySQL/FTP artifact remain byte-identical.
+
+The run observes empty and populated database/user inventories, integer byte
+`disk_usage`, empty and populated linked-user lists, integer name-length limits
+and a string prefix. Grant/revoke readbacks, database/user renames, password
+updates and account-wide privilege synchronization pass. Every mutation returns
+explicit null, including `create_user`; non-null integer/opaque mutation
+payloads and unobserved optional-field variants remain offline-tested only.
+The empty-inventory preflight and the inventory before `update_privileges()`
+bind that account-wide operation to the run's owned resources. API execution and
+readback establish neither SQL privilege enforcement nor SQL login, and no table
+is created to establish new-table grant synchronization.
+
+The audit independently recomputes generated-spec method/contract hashes and
+source/map/generator/overlay/revision provenance, then rechecks all phase identities,
+order and the strict assessment without changing original observations. All
+820 structural path/type entries contain reviewed static paths or masked opaque
+metadata paths. Configured credentials, response-derived account/domain/host
+values, resource identities, password material and upstream error text are absent.
+The fixed public recipe identifier retains its documented account label. The
+new artifact was written with mode 0600, and no capture temporary files remain.
+No operation was replayed or retried. Live follow-up `whm-api-client-8x0.2.14`
+is complete; optional short/failed temporary-write recovery remains
+`whm-api-client-8x0.2.13`.
+
 
 ## 2026-10-30 complete DomainInfo, Features and LangPHP contracts
 
 This slice adds 13 generated methods: both remaining DomainInfo operations, four
 Features operations and seven LangPHP operations. The three modules now contain
-5, 5 and 11 methods respectively; branch coverage is 95 operations in 13 groups.
+5, 5 and 11 methods respectively. With the reviewed MySQL, FTP and PostgreSQL
+sections integrated, coverage is 144 operations across 15 groups.
 Pinned snapshots are unchanged. Overlay evidence identifies the domain list/hash
 container discrepancies, quoted domain flags, the PHP vhost list/single-record
 alternatives and malformed phpversion_source schema. The INI content setter's
@@ -1281,7 +1641,7 @@ The first PR's final offline gates pass 4,310 tests and 33,655 assertions, plus
 maximum PHPStan, PHPCS and offline API-map/source/generation verification. The
 three PHP setters remain offline-only; no mutation ran in any of these captures.
 
-### Review corrections awaiting final-head read-only capture
+### Review corrections and integrated read-only capture
 
 The pinned `domains_data` hash and list examples include empty-string
 `userdirprotect`. Independent copies now exercise both full examples through all
@@ -1309,10 +1669,44 @@ and both resources remained `not_started`. No count value, main-account inclusio
 or cause is inferred.
 
 The three existing DomainInfo/Features/LangPHP artifacts remain unchanged. Their
-contract hashes describe their original revisions. Final evidence requires merging
-the reviewed PR28 and PR29 changes from `master`, regenerating, committing that
-integrated head, and running the read-only catalog once into a new artifact path.
-No new live capture or PHP mutation was run for these review corrections.
+contract hashes describe their original revisions. The reviewed MySQL, FTP and
+PostgreSQL sections were integrated with a normal merge of `master`, preserving
+all prior source/specs, trace safeguards and immutable evidence. Regeneration
+produces **144 operations across 15 groups**.
+
+At committed integrated code `27abfe6de3626e321a2a806d126d9b7f2f20fcc1`, one
+[reviewed read-only capture](evidence/2026-10-30-domain-features-php-reviewed.json)
+ran the exact 67-probe catalog once on `11.138.0.19`. Artifact SHA-256:
+`f9ba559c0496b88c0c98082435f3e76235e2b8459ebe01d229127cfa2d3e50a8`.
+All 67 requests were GET and HTTP 200; API outcome, payload validation and probe
+outcome pass across 37 operations (7 WHM, 30 direct UAPI and 30 bridged UAPI
+observations). Both count_pops payloads were numeric strings and normalize under
+the reviewed correction. No PHP mutation or other write was executed.
+
+The command correctly exits 1 because strict discrepancy review remains failed:
+zero acknowledged, ten unexpected observations and two stale historical Quota
+acknowledgments. Those observations contain twelve unknown-field entries: two
+Quota entries, two domains_data entries, four single_domain_data entries, two
+basic-directive entries and two INI-path entries. No discrepancy was waived or
+removed and no operation was replayed to clear findings. The DomainInfo/INI
+unknown fields and PHP mutation behavior remain tracked in `8x0.2.17`; the
+existing Quota follow-up and exact acknowledgment policy remain unchanged.
+
+An independent audit checked all 1,794 structural path/type entries, exact catalog
+identities/order/routes/methods, all 67 effective-contract hashes and pinned
+source/map/generator/overlay provenance. Credentials and designated account,
+domain, host and IP values are absent. Every historical evidence JSON from both
+parents remains byte-identical. The test account omitted userdirprotect on both
+operations/routes, so the empty-string compatibility is documentation and offline
+fixture coverage, not a newly observed live value. `has_feature` payloads were integers;
+their meaning and the specific feature-state value are not persisted. Three PHP
+setters, the INI write/read round trip and alternate server configurations remain
+unobserved.
+
+Before capture, Composer validation and the complete PHP gate passed **6,390 tests
+and 51,705 assertions**, including PHPCS and maximum PHPStan. Offline API-map,
+schema-copy/currentness checks, complete Go tests and Go vet also passed.
+External current-head PR review remains the merge gate.
 
 
 ## 2026-10-30 complete Email contracts
@@ -1405,12 +1799,112 @@ external delivery message was sent. This verifies API behavior on the recorded
 revision/version, not IMAP/SMTP access or every generated Email method. Follow-up
 8x0.2.18 retains unobserved functions and pinned-source contract gaps.
 
+
+### Email review corrections and master integration: 2026-10-30
+
+The [review of e461f175](https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667)
+independently observed exact `unlimited` MB quota results on both UAPI routes for
+an unlimited mailbox, with integer `0` in byte units. This is reviewer evidence,
+not an artifact-bound structural capture. `getPopQuota()` now has the precise
+`int|'unlimited'` contract, retaining both existing lossless integer conversions.
+An explicit string-only `literal` constraint represents the one accepted string;
+it is never inferred from enums or applied to other integer results. Independent
+fixtures reject other strings, null, absent payloads, fractions and overflow.
+
+The same review observed list destination forms dropping the pinned `message`
+field. Object and list destinations now retain identical pinned leaf fields,
+including message, aliasfile, command, mailbox, mx, result and type. Independent
+fixtures copy the pinned routed example and leaf examples without reading the
+generated spec. Deeper recursive destinations remain outside this leaf contract.
+The reviewer also observed normal status-1 UAPI envelopes for
+`terminateMailboxSessions()` on both routes; that reviewer-only observation
+resolves the runtime doubt without a runtime change or an artifact-bound claim.
+The pinned metadata-only response remains a source discrepancy under `8x0.2.18`.
+
+A normal master merge preserves the approved MySQL, FTP, PostgreSQL and
+DomainInfo/Features/LangPHP changes, countPops compatibility, earlier immutable
+artifacts and all trace safeguards. Generated coverage is **236 operations across
+15 groups**. The v2 Email recipe keeps the same two owned mailboxes and finite
+32/64 MB checks, then sets quota 0 and asserts exact `unlimited` MB and integer
+zero bytes. Four GET-only traces use only run-bound local recipients. No delivery
+operation is invoked. The revised capture is recorded separately below after
+committed-code verification; no older capture is modified or waived.
+
+
+### Revised Email capture after review
+
+The single revised capture ran at committed integrated code
+`205079c790ad2ed290c00d1656d4cffbe488d21c` on cPanel `11.138.0.19`, saved as
+[2026-10-30-email-section-reviewed.json](evidence/2026-10-30-email-section-reviewed.json),
+SHA-256 `13bc03e54292f382e3ec9062b8a7c148735aaa278e4aeecba1262f638363791b`.
+It contains all **55 original responses**: 39 GET and 16 POST, covering 17 Email
+functions through both UAPI routes plus WHM version. All 55 HTTP 200, API outcome,
+typed-payload and probe checks pass, with **zero discrepancies**. There are
+**54 passed, one failed and zero unchecked fixture expectations**. Both owned
+mailboxes were confirmed cleaned up; each final inventory is an empty list.
+
+All new cases pass on both routes. The `unlimited_quota` phase asserts the exact
+literal `unlimited` in MB units, and `unlimited_bytes` asserts integer `0`; these
+committed expectations provide value checks beyond the artifact's structural
+string/int types. Each run-bound missing-recipient trace observes a list item
+with string `message` and `type`, retained by the corrected typed contract. The
+owned-recipient traces have empty destination lists and establish no item fields.
+No message was sent and no recursive tree or actual delivery is established.
+
+The command exits **1** and the strict assessment remains **failed**, solely for
+`unsuccessful_phase`: direct UAPI `resumed_mailboxes` fails the exact predicate
+`isset($rows[$address]) && ($rows[$address]['suspended_login'] ?? null) === 0`
+after an API-successful `unsuspend_login`. The inventory is a nonempty list with
+string login/email and integer suspension fields. Its structural payload and
+LIST_POPS contract hash are identical to the earlier passing 45-response capture.
+No missing-field/type discrepancy is observed; masked evidence cannot distinguish
+a missing target identity from an incorrect integer flag value or establish a
+cause. This artifact alone does not prove the mailbox remained suspended or imply
+timing, caching or server behavior. Direct cleanup then succeeds, followed by the complete
+bridged lifecycle and cleanup, so all 55 planned phases are present.
+
+This semantic failure remains unwaived and tracked in **`8x0.2.18.1`**. The later
+reviewer investigation below supplies a nonblocking decision without changing the
+artifact or assessment. This fixture was not repeated to clear the failure. Independent
+audit verifies all 914 structural path/type entries, exact phase order and methods,
+55 effective-contract hashes, revision/source/map/generator/overlay provenance,
+strict assessment and cleanup states. Credentials, account/domain/host and run
+identity values are absent. All earlier immutable evidence files are unchanged.
+Pre-capture offline gates passed 7,402 tests / 62,104 assertions, PHPCS, maximum
+PHPStan, Composer validation, full Go tests/vet and the offline API-map check.
+
+
+### Reviewer investigation of stale Email suspension flags
+
+The [review of `851def1`](https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604) separately reproduced stale `list_pops`
+suspension flags on `npr`, while checking the real lock state in the server's
+`shadow` file. Eight back-to-back API-only cycles produced three wrong flags in
+both directions; the stale values persisted after 1.8 seconds and appeared on
+both routes. Sixteen cycles with about a second between writes and server checks
+had no wrong flags. A further sixteen back-to-back cycles caught one stale
+suspended flag after unsuspend while the real lock was open. Server lock state
+was correct at every point checked, and each throwaway mailbox was removed.
+
+The reviewer concluded that the failed readback did not mean `unsuspendLogin()`
+failed and was not a client mutation defect. Same-second `email_accounts.json`
+and `shadow` mtimes support a cache-invalidation explanation, but do not prove
+the mechanism. Reading `listPops()` just after a write can return the prior flag,
+which can remain stale until a later write refreshes the cache. The reviewer
+explicitly marked this finding **nonblocking for PR31**, without waiving it.
+The failed artifact and open follow-up `8x0.2.18.1` remain unchanged in status.
+
+These observations are attributed reviewer evidence, separate from this chat's
+55-response structural capture. Observed overlay notes on `list_pops`,
+`suspend_login` and `unsuspend_login` render the caveat in the generated API docs.
+No runtime spec, recipe timing or captured response changed, and no new live run
+was performed for this documentation correction.
+
 ## 2026-10-30 complete SSL contracts and multipart request support
 
 The third stacked slice adds 43 typed SSL functions, covering all 49 nondeprecated
 functions (check_shared_cert stays excluded). Together with the preceding Email
-and DomainInfo/Features/LangPHP slices, this branch generates 230 operations in
-13 groups. Pinned source snapshots remain unchanged. Independent request and
+and DomainInfo/Features/LangPHP slices and the approved MySQL/FTP/PostgreSQL
+master changes, this branch generates 279 operations in 15 groups. Pinned source snapshots remain unchanged. Independent request and
 payload fixtures cover direct wrapped, direct bare and WHM-bridged execution.
 
 Three source-declared multipart operations now use explicitly reviewed inline

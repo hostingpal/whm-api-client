@@ -5,6 +5,7 @@ package effective
 
 // TypeSpec mirrors the PHP engine's type spec (see src/Response/ShapeValidator.php).
 type TypeSpec struct {
+	Literal  *string
 	Type     string
 	Nullable bool
 	Accept   []string

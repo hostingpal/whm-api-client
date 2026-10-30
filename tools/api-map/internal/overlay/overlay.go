@@ -103,6 +103,7 @@ type Correction struct {
 
 // Spec is the JSON form of a type spec, used to declare undocumented fields.
 type Spec struct {
+	Literal  *string         `json:"literal,omitempty"`
 	Type     string          `json:"type"`
 	Nullable bool            `json:"nullable,omitempty"`
 	Accept   []string        `json:"accept,omitempty"`

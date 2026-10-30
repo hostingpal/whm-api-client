@@ -135,8 +135,8 @@ final class EmailQuotaEncodingTest extends TestCase
         $report = self::runFixture($server, 'wrapped');
         self::assertSame('passed', $report['status']);
         self::assertSame('passed', $report['assessment']['status']);
-        self::assertCount(45, $report['probes']);
-        self::assertCount(45, $server->requests);
+        self::assertCount(55, $report['probes']);
+        self::assertCount(55, $server->requests);
         foreach ($report['probes'] as $record) {
             if ($record['phase'] === 'initial_quota') {
                 self::assertSame('integral-fixed-point', $record['scalar_encoding'] ?? null);
@@ -163,7 +163,8 @@ final class EmailQuotaEncodingTest extends TestCase
                 'operation', 'variant', 'route', 'method', 'server_version', 'observed_at', 'revision',
                 'source_sha256', 'map_sha256', 'generator_tree', 'overlay_sha256', 'effective_contract_sha256',
                 'http_status', 'api_outcome', 'payload_validation', 'probe_outcome', 'failure_kind',
-                'response_paths', 'payload_paths', 'discrepancies', 'phase', 'expectation', 'scalar_encoding',
+                'response_paths', 'payload_paths', 'payload_alternatives', 'discrepancies',
+                'phase', 'expectation', 'scalar_encoding',
             ]));
         }
     }

@@ -45,6 +45,66 @@ The two provisioning metadata reads also take no arguments. Their optional field
 remain optional, and a null database prefix remains distinct from an omitted one.
 Hostnames, database-server versions and prefixes are retained only as structural types.
 
+### Complete FTP section fixture
+
+`ftp-section.php` is a standalone opt-in recipe for the generated Ftp group. It
+requires committed effective inputs, both tokens, and the designated account and
+domain. It does not change the default 47-probe catalog or its Quota policy.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/ftp-section.php --output=docs/api/evidence/ftp-section-new.json
+```
+
+Use a new output filename. The command records sanitized structure from each
+original response and refuses to overwrite an existing artifact. The strict
+assessment requires all 41 ordered phase observations: WHM version and 20 phases
+per UAPI route, covering 16 Ftp functions. It accepts no discrepancy acknowledgments.
+
+The [2026-10-30 corrected-contract capture](../../docs/api/evidence/2026-10-30-ftp-section-corrected.json)
+passed all 41 API/payload/expectation observations and both cleanups, but exits 1
+because both disk inventories have undocumented string fields at `$[].*`.
+The strict assessment remains failed; `8x0.2.11` tracks that contract investigation.
+The [initial capture](../../docs/api/evidence/2026-10-30-ftp-section.json) separately
+preserves the finite-integer quota mismatch that justified `getQuota(): int|string`.
+
+Each route uses an independent random FTP username. The recipe checks absence,
+creates that user, checks its inventory/existence/unlimited quota, updates its
+password and home-directory spelling, sets a 17 MB quota, reads back the quota
+and disk inventory, deletes the user, and confirms absence. The `.` and `./`
+home arguments refer to the existing cPanel home directory; cleanup always sends
+`destroy=false`, so it never deletes directory contents. This proves the home
+setter's execution and readback, not a change in filesystem isolation. Quota and
+password results do not establish FTP authentication or transfer enforcement.
+
+The guard permits only the exact phase, method, URI, credentials, headers and
+body once. Failed or uncertain creation never establishes ownership, even if a
+matching account later appears. A confirmed successful API creation can be
+cleaned up after a payload mismatch. Cleanup never retries a mutation, and a
+successful delete still requires an independent inventory confirming absence.
+
+If publication fails after the complete report is written, the command keeps its
+0600 temporary file and prints its path on stderr. Retain that file as the
+sanitized failure artifact. When a resource is `uncertain`, inspect the
+designated account privately and identify this run's
+`wftp`-prefixed account before manual recovery; the prefix alone does not prove
+ownership. An uncertain creation stays uncertain even if the final inventory is
+empty, because the server may finish creating it afterward. Raw responses,
+passwords and actual resource identities remain out of the artifact. Do not rerun the fixture to recover the original response or
+reuse a previous run's account. API outages and failed cleanup require private
+inspection; a failed assessment is not a successful verification.
+
+`kill_session`, `set_anonymous_ftp`, `set_anonymous_ftp_incoming` and
+`set_welcome_message` are generated and offline-tested but deliberately unobserved
+in this recipe (follow-up `whm-api-client-8x0.2.10`). It neither opens FTP sessions
+nor changes account-wide settings.
+Inventory captures use `include_acct_types=sub`; the report declares
+`sub_rows_only`, and main, anonymous and log-access rows are outside the saved
+artifact evidence. Empty session responses provide no evidence about session
+row fields. Disabled FTP roles, other daemons and other versions remain
+separate evidence cases.
+
 ### Nonempty MySQL fixture
 
 The separate `--mysql-fixture` mode temporarily creates two databases and two
@@ -314,6 +374,120 @@ repeated mechanics and saves eight lines in that comparison, while adding a
 shared helper to review. No elapsed review-time saving or broader adoption is
 claimed. Wrong authentication and prefix encoding still fail independent tests.
 
+## Complete Mysql section recipe
+
+The standalone section recipe keeps its phase evidence separate from the historical
+`--mysql-fixture` and the default read-only catalog:
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_ACCOUNT=npr \
+  php tools/live-verify/mysql-section.php --output=docs/api/evidence/mysql-section.json
+```
+
+Both `OBLAK_TEST_WHM_KEY` and `OBLAK_TEST_NPR_KEY` must be exported. Effective source,
+overlay and runner code must be committed. The recipe binds `test.oblak.host` and
+the designated `npr` account, requires all opt-ins on each request, and makes no
+mutation retries. Run only one instance at a time. It captures 21 Mysql
+operations through direct UAPI and the WHM bridge, using separate run-owned
+resources for each route. Grant/revoke reads check API-reported privileges, not
+SQL enforcement; password checks inspect the returned failure list, not SQL login.
+Empty database checks, repairs and routine lists establish no populated table or
+stored-routine behavior. `updatePrivileges()` affects the entire `npr` test account.
+
+Generated coverage includes all 25 pinned Mysql functions. Four are deliberately
+unobserved by this recipe: `add_host`, `add_host_note`, `delete_host` and
+`setup_db_and_user`. Host notes do not prove the absence of an authorized host
+without a note. Random setup needs an ownership-safe recovery path when the
+response containing its generated identities is lost. Offline tests cover these
+contracts; no successful live observation is inferred from them.
+
+The report retains phase identities, sanitized original-response structures,
+request methods, version and contract provenance. Unknown/dynamic keys are masked;
+raw passwords, schema SQL, resource names and upstream error text are not persisted.
+Fixture expectations and cleanup remain distinct from payload/discrepancy results.
+A failed phase remains a failure even if cleanup succeeds. Historical discrepancy
+acknowledgments do not apply to this recipe.
+
+If a run reports uncertain ownership or cleanup, inspect the designated account's
+inventory privately before deciding on recovery. The recipe never adopts a name
+merely because it appeared after a failed creation. An unsuccessful rename retains
+possible original and destination resources; even an accepted rename can leave an
+original name behind, which makes cleanup fail. The `npr_ws` name prefix is only a
+candidate filter, not ownership proof. Neither the report nor a later rerun is
+authorization to delete those candidates. The report deliberately omits exact names;
+resolve uncertainty using private server inspection. Successful final inventories
+must confirm both original and renamed identities absent.
+
+Access is revoked before rename and the databases are empty, so the recipe does
+not observe grant or stored-code recreation. An absent final inventory never
+resolves an uncertain creation or rename; those resources remain `uncertain` and
+require manual review. If publishing a completed report fails, stderr names its
+retained 0600 temporary file. Recover that file privately; do not replay mutations
+to recover evidence.
+
+
+## Complete PostgreSQL section
+
+The separate `postgresql-section.php` command exercises the generated PostgreSQL
+module on the designated `npr` / `npr.rs` test account. It requires committed
+inputs, both tokens, PHP cURL, and both live opt-ins:
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/postgresql-section.php --output=docs/api/evidence/postgresql-section.json
+```
+
+The command writes only a new output file, atomically with mode 0600. If atomic
+publication fails after capture, it preserves the complete protected temporary
+report and prints its JSON-escaped recovery path; do not repeat operations to
+recover evidence. It captures
+WHM version and PostgreSQL database inventory, user inventory and restrictions
+through both UAPI routes before any mutation. Failed preflight or nonempty
+inventories stop the lifecycle and produce failed evidence; a preflight refusal
+never counts as successful mutation or cleanup coverage.
+
+Each route then owns a fresh database and user after confirmed API creation.
+The recipe exercises grants, renames, password changes, account-wide privilege
+synchronization and revocation before deleting its resources and checking all
+original and renamed identities for absence. An inventory check immediately
+before synchronization refuses unrelated databases or users. Renaming without
+a password is followed immediately by setting a new password. Uncertain creation
+is never adopted; ambiguous rename identities are not deleted. An absent inventory
+cannot resolve an uncertain operation that could still complete later; the state
+remains uncertain and subsequent lifecycle work stops. No mutation is
+retried. The transport verifies TLS, disables redirects and has bounded timeouts.
+
+Observations retain exact phase, route, actual method, server version, revision
+and contract hashes. The original response supplies only structural types and
+masked paths; names, passwords, raw payloads and upstream error text are not
+persisted. The strict assessment accepts no discrepancies or missing phases and
+does not inherit baseline acknowledgments. Offline fixture tests use independently
+authored server responses. API readback does not establish SQL authentication,
+SQL privilege enforcement or privileges on newly created tables.
+
+
+The [2026-10-30 PostgreSQL capture](../../docs/api/evidence/2026-10-30-postgresql-section.json)
+is **failed preflight evidence**: the WHM version check passed, but all six
+PostgreSQL reads returned API failures. The lifecycle stopped before writes, and
+all resources are `not_started`. It establishes no successful PostgreSQL payload
+or mutation coverage and stays unchanged.
+
+After the reviewer's owner-requested PostgreSQL 13.23 installation, the separate
+[enabled-service lifecycle](../../docs/api/evidence/2026-10-30-postgresql-section-enabled.json)
+was captured once at committed integrated code `61a9f3e` on cPanel `11.138.0.19`.
+All 57 observations (33 GET, 24 POST) pass across all 14 functions on both routes,
+with zero discrepancies and a passing strict assessment. Both databases and both
+users are cleaned, and original/renamed identities are confirmed absent. All
+mutation payloads are explicit null; non-null payload alternatives remain covered
+by offline fixtures. This run closes `whm-api-client-8x0.2.14`. It establishes
+API execution and readback, with the SQL authentication/enforcement and new-table
+grant-synchronization limits above. The installation was an earlier owner-requested
+server change, not part of this lifecycle recipe.
+
+A short or failed initial temporary-file write has no complete recovery file;
+that separate resilience improvement is tracked in `whm-api-client-8x0.2.13`.
+
 When a present payload fails every alternative of its effective root union, the
 record also includes optional `payload_alternatives`. Each entry identifies the
 zero-based alternative `index`, its `sha256` (SHA-256 of the JSON-encoded checked
@@ -324,6 +498,18 @@ select an alternative, accept a payload, or change the primary opaque union
 fingerprint, probe outcome, or discrepancy gate. They cannot recover field names
 from older masked artifacts; further diagnosis requires a new reviewed run.
 
+## Reviewed DomainInfo, Features and LangPHP read-only capture
+
+The [reviewed integrated capture](../../docs/api/evidence/2026-10-30-domain-features-php-reviewed.json)
+ran the exact 67-probe GET-only catalog once at committed code `27abfe6` after
+normal integration of the reviewed MySQL, FTP and PostgreSQL sections. All 67
+HTTP/API/payload observations pass on `11.138.0.19`, including both mailbox counts.
+The command exits 1 for strict review: 12 unknown-field entries across 10
+unexpected observations, zero acknowledgments and two stale Quota acknowledgments.
+Historical artifacts remain unchanged; findings are not waived or retried away.
+This run includes no PHP mutation. INI write/read behavior and the omitted
+empty-string userdirprotect variant retain their offline/documentation limits.
+
 ## Owned Email mailbox recipe
 
 `php tools/live-verify/email-section.php --output=PATH` requires committed inputs,
@@ -332,14 +518,18 @@ PHP cURL, both test tokens, `WHM_API_LIVE=1`, `WHM_API_LIVE_MUTATIONS=1`,
 new; complete reports survive a publication failure in a protected recovery file.
 
 The recipe performs WHM version and both routes' mailbox/domain/forwarder/MX/quota
-preflight reads, then uses a fresh address for each route. Its 45 planned responses
-cover 16 Email functions: list_pops, count_pops, list_mail_domains,
+preflight reads, then uses a fresh address for each route. Its v2 recipe has 55 planned responses
+covering 17 Email functions: list_pops, count_pops, list_mail_domains,
 list_domain_forwarders, list_forwarders, list_mxs, get_default_email_quota,
 get_max_email_quota, add_pop, get_pop_quota, passwd_pop, verify_password,
-edit_pop_quota, suspend_login, unsuspend_login and delete_pop. It creates a 32 MB
+edit_pop_quota, trace_delivery, suspend_login, unsuspend_login and delete_pop. It creates a 32 MB
 mailbox with welcome mail disabled, checks its returned identity and inventory,
-changes/verifies the password, changes quota to 64 MB with readback, verifies login
-suspension/unsuspension, deletes the owned mailbox and confirms exact absence.
+changes/verifies the password, changes quota to 64 MB with readback, then sets
+quota 0 and requires exact MB `unlimited` and byte integer `0` through both routes.
+It traces only that run-owned mailbox and a run-bound missing address on npr.rs,
+without sending mail, verifies login suspension/unsuspension, deletes each owned
+mailbox once and confirms exact absence. The same two resources cover finite and
+unlimited quota behavior; no additional mailbox is created.
 
 No welcome message, client-configuration email, forwarding or delivery test is
 sent. Existing mailboxes and account-wide settings are not changed. An uncertain
@@ -357,6 +547,19 @@ same captured response into five fixed categories: canonical-integer,
 integral-fixed-point, fractional-fixed-point, other-numeric or other. Fixed-point
 labels describe syntax, not bounds or accepted compatibility. No value, length or
 unknown key is retained, and the diagnostic never changes validation or the gate.
+
+
+The [reviewed Email v2 capture](../../docs/api/evidence/2026-10-30-email-section-reviewed.json)
+contains all 55 phases on `11.138.0.19` at `205079c`, with all HTTP/API/payload
+checks passing, zero discrepancies and both mailboxes cleaned. The exact unlimited
+MB/byte expectations and both local trace targets pass through both routes.
+Its command exits 1: direct `resumed_mailboxes` fails the combined target-identity /
+zero-suspension predicate, leaving 54 passed, one failed and zero unchecked
+expectations. The masked structure matches the earlier successful capture and
+cannot distinguish the failing value or establish a cause. `8x0.2.18.1` remains
+open and the fixture was not rerun. The later [reviewer investigation](https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604)
+confirmed stale API suspension flags despite correct server lock state and judged
+the finding nonblocking, without waiving it or changing the failed artifact.
 
 ## Owned SSL storage recipe
 

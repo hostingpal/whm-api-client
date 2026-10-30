@@ -41,7 +41,7 @@ final class EmailSectionFixtureTest extends TestCase
         self::assertSame(['unrelated@npr.rs'], array_keys($server->mailboxes));
         self::assertSame(['wema1b2c3d@npr.rs', 'wema1b2c3b@npr.rs'], $server->deleted);
         self::assertSame(['direct-uapi' => 'cleaned', 'bridged-uapi' => 'cleaned'], $report['resources']);
-        self::assertCount(45, $report['probes']);
+        self::assertCount(55, $report['probes']);
         $json = json_encode($report, JSON_THROW_ON_ERROR);
         foreach (['private', 'wema1b2c3', 'unrelated', 'test.oblak.host'] as $secret) {
             self::assertStringNotContainsString($secret, $json);
@@ -61,6 +61,34 @@ final class EmailSectionFixtureTest extends TestCase
                 self::assertStringNotContainsString($body['password'], $json);
             }
         }
+    }
+
+    public function testUnlimitedMailboxUnitsAndLocalTraceAreObservedOnBothRoutes(): void
+    {
+        $server = new EmailSectionServer();
+        $report = $this->fixture($server)->run();
+        self::assertSame('passed', $report['status']);
+        foreach (['direct-uapi', 'bridged-uapi'] as $route) {
+            foreach (['unlimited_quota' => 'string', 'unlimited_bytes' => 'int'] as $phase => $type) {
+                $records = array_values(array_filter($report['probes'], static fn (array $record): bool =>
+                    $record['route'] === $route && $record['phase'] === $phase));
+                self::assertCount(1, $records);
+                self::assertSame('passed', $records[0]['expectation']);
+                self::assertSame(['$' => [$type]], $records[0]['payload_paths']);
+            }
+        }
+        $traces = array_filter($server->requests, static fn ($request): bool =>
+            str_contains((string) $request->getUri(), 'trace_delivery'));
+        self::assertCount(4, $traces);
+        foreach ($traces as $request) {
+            self::assertSame('GET', $request->getMethod());
+            parse_str($request->getUri()->getQuery(), $parameters);
+            self::assertContains($parameters['recipient'] ?? null, [
+                'wema1b2c3d@npr.rs', 'wema1b2c3b@npr.rs',
+                'wema1b2c3d-missing@npr.rs', 'wema1b2c3b-missing@npr.rs',
+            ]);
+        }
+        self::assertSame([], $server->mailboxes);
     }
 
     /** @return iterable<array{string}> */
@@ -177,6 +205,8 @@ final class EmailSectionFixtureTest extends TestCase
     {
         yield 'quota readback mismatch' => ['get_pop_quota/direct/1', '31'];
         yield 'changed quota readback mismatch' => ['get_pop_quota/direct/2', '63'];
+        yield 'unlimited MB must remain the literal' => ['get_pop_quota/direct/3', '0'];
+        yield 'unlimited bytes must be zero' => ['get_pop_quota/direct/4', '1'];
         yield 'password readback rejects new password' => ['verify_password/direct/1', '0'];
         yield 'suspension readback mismatch' => ['list_pops/direct/4',
             '[{"login":"wema1b2c3d@npr.rs","suspended_login":0}]'];

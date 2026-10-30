@@ -82,7 +82,9 @@ Operation entries (all keys optional):
   documentation link.
 - `params`, keyed by wire name: `php` renames the argument (required when the
   derived name is invalid or `this`/`result`), `encoding` is `scalar`, `bool`,
-  `repeat` (repeated keys) or `numbered` (`name`, `name-1`, ...), `sensitive`
+  `repeat` (repeated keys), `numbered` (`name`, `name-1`, ...),
+  `suffix-numbered` (`action*` becomes `action1`, `action2`, ...; string lists),
+  or `suffix-numbered-scalar` (the same suffixes, string or integer items). `sensitive`
   overrides secret detection (names split at separators and case boundaries;
   a parameter the heuristic leaves non-sensitive needs an explicit `sensitive`
   decision when any word of its name is `key` or `signature`, or its pinned
@@ -127,14 +129,18 @@ Operation entries (all keys optional):
   other escape sequences are rejected. Keys: `type`
   (a scalar type; keeps nullability), `accept` (added to the variants the
   schema already implies: `numeric-string` for int and
-  number, `int-flag`/`string-flag` for bool, `string-flag`/`bool`/`empty-string`
+  number, `integral-fixed-point-string` for int only (canonical bounded integer
+  part followed by a dot and zero-only fraction, without float conversion), `int-flag`/`string-flag` for bool, `string-flag`/`bool`/`empty-string`
   for flag). `empty-string` preserves only the exact empty string as `''|0|1`;
   it does not coerce it to 0 or accept whitespace or other strings. Corrections
   also support `nullable`, `preserve` (number only), `required` (object fields only), `add`
   (a full type spec declaring an undocumented field) and `replace` (a full type
   spec replacing a documented node entirely, not combined with `type` or `add`).
   Every correction needs evidence. Type specs need their companion keys: list
-  `items`, map `values`, union `anyOf`, object `fields`. Only `replace` may
+  `items`, map `values`, union `anyOf`, object `fields`. String specs can declare
+  an explicit `literal` string, matching that exact value (including an empty
+  literal); generated PHPStan types retain it. This opt-in constraint is never
+  inferred from upstream enums and is invalid on other types. Only `replace` may
   address the payload root, with the empty path.
 
 The generator reads the pinned schemas as follows. `allOf` merges its parts and

@@ -159,6 +159,10 @@
         {
           "kind": "documented",
           "text": "skip_main: Whether to exclude the cPanel account's main account from the results.\n* `1` \u2014 Exclude the main account.\n* `0` \u2014 Include the main account."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer testing on cPanel 11.138.0.19 found that listPops() immediately after suspendLogin() or unsuspendLogin() can return the previous suspended_login flag on either route. The flag can remain stale until a later write refreshes the cache, even when the server lock state already reflects the successful operation. The same-second mtime-cache explanation is supported, not proven. Evidence: https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604."
         }
       ],
       "probe": {
@@ -169,7 +173,15 @@
           "bridged-uapi"
         ],
         "expected": "success"
-      }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "External reviewer evidence at https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604 for head 851def1ff80ad55f9821b51f169a0d1fe5c456c5: back-to-back writes produced stale list_pops suspension flags in both directions and on both routes. A server-checked mismatch reported a suspended flag after unsuspend while the real shadow lock state was open; writes in separate seconds avoided mismatches in the sampled run. Reviewer judged this a server read-cache behavior, not a client mutation defect, and explicitly nonblocking for PR31. The exact cache mechanism remains supported rather than proven. This is separate reviewer evidence, not values recovered from the immutable failed structural capture; 8x0.2.18.1 stays open and the failed assessment stays unchanged."
+        }
+      ]
     },
     "uapi:Email/account_name": {
       "notes": [
@@ -1563,20 +1575,33 @@
         },
         {
           "kind": "observed",
-          "text": "On cPanel 11.138.0.19, the MB result (asBytes=false) arrived as a numeric string through both direct and bridged UAPI. Canonical integer strings within PHP integer bounds normalize to int. The unit selection remains unchanged; explicit null, absent data and literal unlimited remain rejected."
+          "text": "On cPanel 11.138.0.19, the MB result (asBytes=false) arrived as a numeric string through both direct and bridged UAPI. Canonical integer strings within PHP integer bounds normalize to int. The unit selection remains unchanged; explicit null and absent data remain rejected."
         },
         {
           "kind": "observed",
           "text": "The same-response diagnostic subsequently established zero-only fixed-point fractions on both routes. integral-fixed-point-string accepts a canonical signed integer part within PHP integer bounds followed by a dot and one or more zeros. It normalizes losslessly to int without floats or rounding; negative zero, nonzero fractions, exponents, whitespace, plus signs, leading zeros and overflow are rejected."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer inspection on cPanel 11.138.0.19 observes exact unlimited for an unlimited mailbox in MB units, and integer 0 with asBytes=true, through both UAPI routes. The result is int or the literal unlimited, without inferring other strings."
         }
       ],
       "response": {
         "": {
           "replace": {
-            "type": "int",
-            "accept": [
-              "numeric-string",
-              "integral-fixed-point-string"
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string",
+                  "integral-fixed-point-string"
+                ]
+              },
+              {
+                "type": "string",
+                "literal": "unlimited"
+              }
             ]
           },
           "evidence": [
@@ -1593,6 +1618,13 @@
               "date": "2026-10-30",
               "note": "At revision fa887d3b3e381d7ae9165821bd0c254f8ae18b94, the original direct-uapi and bridged-uapi get_pop_quota MB responses retained numeric-string type mismatches and were independently classified integral-fixed-point by the same-response diagnostic. The immutable artifact SHA256 is 1e30c8b3f1472213d325670909acc666a8d7e8eee52f12a708be3d15ddd58f7f; both owned mailboxes were confirmed cleaned. This establishes a strict decimal whole part and zero-only fraction, not a quota amount or integer representability. Opt in only this operation to a signed canonical integer part, dot, and one-or-more zeros, additionally requiring exact PHP integer bounds by string/int roundtrip and rejecting negative zero. Strip the zero fraction without float conversion or rounding; nonzero fractions, exponents, whitespace, plus signs, leading zeros and overflow remain rejected. Canonical integer-string compatibility remains separately declared.",
               "fingerprint": "docs/api/evidence/2026-10-30-email-section-quota-format.json"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewer live inspection at e461f1756c074c6d26822ee70a5e698045394521 confirms an owned unlimited mailbox returns exact string unlimited in MB units on direct and bridged UAPI; as_bytes=1 returns integer zero. https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667 . This is reviewer evidence, not artifact-bound structural proof. The revised owned-mailbox fixture asserts exact unlimited and integer zero through both routes in one new capture. Only the exact literal is added; arbitrary strings, null, absent payloads and fractional values stay invalid.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667"
             }
           ]
         }
@@ -1611,6 +1643,13 @@
           "date": "2026-10-30",
           "note": "At revision fa887d3b3e381d7ae9165821bd0c254f8ae18b94, the original direct-uapi and bridged-uapi get_pop_quota MB responses retained numeric-string type mismatches and were independently classified integral-fixed-point by the same-response diagnostic. The immutable artifact SHA256 is 1e30c8b3f1472213d325670909acc666a8d7e8eee52f12a708be3d15ddd58f7f; both owned mailboxes were confirmed cleaned. This establishes a strict decimal whole part and zero-only fraction, not a quota amount or integer representability. Opt in only this operation to a signed canonical integer part, dot, and one-or-more zeros, additionally requiring exact PHP integer bounds by string/int roundtrip and rejecting negative zero. Strip the zero fraction without float conversion or rounding; nonzero fractions, exponents, whitespace, plus signs, leading zeros and overflow remain rejected. Canonical integer-string compatibility remains separately declared.",
           "fingerprint": "docs/api/evidence/2026-10-30-email-section-quota-format.json"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Reviewer live inspection at e461f1756c074c6d26822ee70a5e698045394521 confirms an owned unlimited mailbox returns exact string unlimited in MB units on direct and bridged UAPI; as_bytes=1 returns integer zero. https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667 . This is reviewer evidence, not artifact-bound structural proof. The revised owned-mailbox fixture asserts exact unlimited and integer zero through both routes in one new capture. Only the exact literal is added; arbitrary strings, null, absent payloads and fractional values stay invalid.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667"
         }
       ]
     },
@@ -2430,6 +2469,10 @@
         {
           "kind": "documented",
           "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer testing on cPanel 11.138.0.19 found that listPops() immediately after suspendLogin() or unsuspendLogin() can return the previous suspended_login flag on either route. The flag can remain stale until a later write refreshes the cache, even when the server lock state already reflects the successful operation. The same-second mtime-cache explanation is supported, not proven. Evidence: https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604."
         }
       ],
       "method": "POST",
@@ -2439,6 +2482,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "The pinned /Email/suspend_login GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "External reviewer evidence at https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604 for head 851def1ff80ad55f9821b51f169a0d1fe5c456c5: back-to-back writes produced stale list_pops suspension flags in both directions and on both routes. A server-checked mismatch reported a suspended flag after unsuspend while the real shadow lock state was open; writes in separate seconds avoided mismatches in the sampled run. Reviewer judged this a server read-cache behavior, not a client mutation defect, and explicitly nonblocking for PR31. The exact cache mechanism remains supported rather than proven. This is separate reviewer evidence, not values recovered from the immutable failed structural capture; 8x0.2.18.1 stays open and the failed assessment stays unchanged."
         }
       ]
     },
@@ -2483,7 +2532,11 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned response documents a metadata-only envelope resembling WHM and no data payload. The typed method still requires the shared UAPI outcome envelope and returns null; the real envelope has not been live verified."
+          "text": "The pinned response documents a metadata-only envelope resembling WHM and no data payload. The typed method still requires the shared UAPI outcome envelope and returns null."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer live calls on cPanel 11.138.0.19 return the normal UAPI envelope with status 1 on both routes. The metadata-only pinned envelope is a documentation discrepancy; no separate runtime envelope is inferred. This reviewer observation is not bound to an artifact."
         }
       ],
       "method": "POST",
@@ -2493,13 +2546,20 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
-          "note": "The pinned UAPI operation response documents metadata only and no data payload; its metadata fields resemble a WHM envelope. Declare no payload without inferring a new UAPI envelope or changing route handling. A usable UAPI envelope remains required by the runtime; actual operation envelope behavior is unverified."
+          "note": "The pinned UAPI operation response documents metadata only and no data payload; its metadata fields resemble a WHM envelope. Declare no payload without inferring a new UAPI envelope or changing route handling. A usable UAPI envelope remains required by the runtime; the pinned source alone does not establish runtime envelope behavior."
         },
         {
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "The pinned /Email/terminate_mailbox_sessions GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Normal UAPI status-1 envelopes reported on both routes by https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667; the pinned metadata-only envelope remains a source discrepancy tracked under 8x0.2.18. No runtime change.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667"
         }
       ]
     },
@@ -2511,7 +2571,7 @@
         },
         {
           "kind": "documented",
-          "text": "The seven formal destination alternatives preserve their declared optional fields using a merged object shape or remote-delivery list shape. The pinned routed example contains nested destination trees not defined by the formal alternatives; recursive routed behavior remains unverified and is not inferred from that example. Type strings are preserved, without a closed enum or discriminator validation."
+          "text": "Both object and list destination forms preserve the same pinned optional leaf fields, including message and MX lists. Reviewer live inspection observes the list form through both routes. Recursive routed trees remain outside the formal leaf contract; type strings are preserved without enum or discriminator validation."
         }
       ],
       "response": {
@@ -2540,6 +2600,12 @@
                       "message": {
                         "type": "string"
                       },
+                      "mx": {
+                        "type": "list",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
                       "result": {
                         "type": "string"
                       },
@@ -2553,11 +2619,26 @@
                     "items": {
                       "type": "object",
                       "fields": {
+                        "aliasfile": {
+                          "type": "string"
+                        },
+                        "command": {
+                          "type": "string"
+                        },
+                        "mailbox": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
                         "mx": {
                           "type": "list",
                           "items": {
                             "type": "string"
                           }
+                        },
+                        "result": {
+                          "type": "string"
                         },
                         "type": {
                           "type": "string"
@@ -2578,10 +2659,26 @@
               "version": "pinned 2026-10-13",
               "date": "2026-10-30",
               "note": "The pinned trace_deliveryResponseBase and trace_deliveryType combine seven anyOf response branches. Their object properties are all optional, so first-match union selection would erase documented fields from later alternatives. Merge the declared optional string fields across object-shaped destinations, preserving the separate remote-delivery list shape with mx string lists. This retains the pinned structural types without claiming discriminator or exact JSON Schema validation. The routed example nests destinations beyond those formal schemas; no recursive grammar or unpinned nested fields are inferred."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewer live inspection at e461f175 observes list destinations carrying the pinned message field through both routes: https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667 . Apply the pinned leaf fields to both object and list forms so validation retains those diagnostics. This report is not an artifact-bound capture and does not establish recursive destination contracts.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667"
             }
           ]
         }
-      }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Reviewer live inspection at e461f175 observes list destinations carrying the pinned message field through both routes: https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667 . Apply the pinned leaf fields to both object and list forms so validation retains those diagnostics. This report is not an artifact-bound capture and does not establish recursive destination contracts.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667"
+        }
+      ]
     },
     "uapi:Email/trace_filter": {
       "notes": [
@@ -2699,6 +2796,10 @@
         {
           "kind": "documented",
           "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer testing on cPanel 11.138.0.19 found that listPops() immediately after suspendLogin() or unsuspendLogin() can return the previous suspended_login flag on either route. The flag can remain stale until a later write refreshes the cache, even when the server lock state already reflects the successful operation. The same-second mtime-cache explanation is supported, not proven. Evidence: https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604."
         }
       ],
       "method": "POST",
@@ -2708,6 +2809,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "The pinned /Email/unsuspend_login GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "External reviewer evidence at https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604 for head 851def1ff80ad55f9821b51f169a0d1fe5c456c5: back-to-back writes produced stale list_pops suspension flags in both directions and on both routes. A server-checked mismatch reported a suspended flag after unsuspend while the real shadow lock state was open; writes in separate seconds avoided mismatches in the sampled run. Reviewer judged this a server read-cache behavior, not a client mutation defect, and explicitly nonblocking for PR31. The exact cache mechanism remains supported rather than proven. This is separate reviewer evidence, not values recovered from the immutable failed structural capture; 8x0.2.18.1 stays open and the failed assessment stays unchanged."
         }
       ]
     },
