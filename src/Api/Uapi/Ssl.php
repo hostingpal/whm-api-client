@@ -1992,6 +1992,11 @@ final readonly class Ssl
      * Documented: Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables
      * this operation.
      *
+     * Observed: On cPanel 11.138.0.19, direct UAPI returned created, modulus_length, not_after, not_before and
+     * is_self_signed as numeric strings; the WHM bridge returned integers. Canonical integer strings normalize to
+     * integers; is_self_signed accepts only exact string flags 0/1. Existing nullability and omission remain unchanged.
+     * Unknown response fields remain unacknowledged and keep the strict evidence assessment failed.
+     *
      * API-map identity: uapi:SSL/upload_cert#POST (wire name upload_cert).
      *
      * @param string $crt The certificate's contents.

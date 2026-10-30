@@ -777,7 +777,11 @@ final class UapiSslSectionTest extends TestCase
     {
         [$client, $http] = self::client($route);
         $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
-        $arguments = $method === 'uploadKey' ? ['key' => 'offline private fixture'] : ['id' => 'offline-owned'];
+        $arguments = match ($method) {
+            'uploadKey' => ['key' => 'offline private fixture'],
+            'uploadCert' => ['crt' => 'offline certificate fixture'],
+            default => ['id' => 'offline-owned'],
+        };
         self::assertSame($expected, $client->uapi('exampleuser')->ssl()->{$method}(...$arguments));
     }
 
@@ -785,8 +789,8 @@ final class UapiSslSectionTest extends TestCase
     public static function storageWireVariants(): iterable
     {
         foreach (['direct', 'bare', 'bridge'] as $route) {
-            foreach (['uploadKey', 'deleteKey', 'deleteCert'] as $method) {
-                $fields = $method === 'deleteCert'
+            foreach (['uploadKey', 'deleteKey', 'deleteCert', 'uploadCert'] as $method) {
+                $fields = in_array($method, ['deleteCert', 'uploadCert'], true)
                     ? ['created', 'modulus_length', 'not_before', 'not_after'] : ['created', 'modulus_length'];
                 foreach ($fields as $field) {
                     yield "$route $method $field"
@@ -795,9 +799,11 @@ final class UapiSslSectionTest extends TestCase
                 yield "$route $method null and omitted"
                     => [$route, $method, '[{"modulus_length":null},{}]', [['modulus_length' => null], []]];
             }
-            foreach ([0, 1] as $flag) {
-                yield "$route deleteCert flag $flag" => [$route, 'deleteCert',
-                    '[{"is_self_signed":"' . $flag . '"}]', [['is_self_signed' => $flag]]];
+            foreach (['deleteCert', 'uploadCert'] as $method) {
+                foreach ([0, 1] as $flag) {
+                    yield "$route $method flag $flag" => [$route, $method,
+                        '[{"is_self_signed":"' . $flag . '"}]', [['is_self_signed' => $flag]]];
+                }
             }
         }
     }
@@ -807,7 +813,11 @@ final class UapiSslSectionTest extends TestCase
     {
         [$client, $http] = self::client($route);
         $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
-        $arguments = $method === 'uploadKey' ? ['key' => 'offline private fixture'] : ['id' => 'offline-owned'];
+        $arguments = match ($method) {
+            'uploadKey' => ['key' => 'offline private fixture'],
+            'uploadCert' => ['crt' => 'offline certificate fixture'],
+            default => ['id' => 'offline-owned'],
+        };
         $this->expectException(PayloadMismatchException::class);
         $client->uapi('exampleuser')->ssl()->{$method}(...$arguments);
     }
@@ -816,8 +826,8 @@ final class UapiSslSectionTest extends TestCase
     public static function invalidStorageVariants(): iterable
     {
         foreach (['direct', 'bare', 'bridge'] as $route) {
-            foreach (['uploadKey', 'deleteKey', 'deleteCert'] as $method) {
-                $fields = $method === 'deleteCert'
+            foreach (['uploadKey', 'deleteKey', 'deleteCert', 'uploadCert'] as $method) {
+                $fields = in_array($method, ['deleteCert', 'uploadCert'], true)
                     ? ['created', 'modulus_length', 'not_before', 'not_after'] : ['created', 'modulus_length'];
                 foreach ($fields as $field) {
                     foreach (['"1.5"', '"1e3"', '"invalid"', 'true', '"999999999999999999999999"'] as $value) {
@@ -829,11 +839,14 @@ final class UapiSslSectionTest extends TestCase
                     }
                 }
             }
-            foreach (['"2"', '"01"', '"1.0"', 'true', 'null'] as $value) {
-                yield "$route invalid deleteCert flag $value"
-                    => [$route, 'deleteCert', '[{"is_self_signed":' . $value . '}]'];
+            foreach (['deleteCert', 'uploadCert'] as $method) {
+                foreach (['"2"', '"01"', '"1.0"', 'true', 'null'] as $value) {
+                    yield "$route invalid $method flag $value"
+                        => [$route, $method, '[{"is_self_signed":' . $value . '}]'];
+                }
+                yield "$route $method unrelated issuer null"
+                    => [$route, $method, '[{"issuer.organizationName":null}]'];
             }
-            yield "$route unrelated issuer null" => [$route, 'deleteCert', '[{"issuer.organizationName":null}]'];
         }
     }
 

@@ -1039,6 +1039,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "Pinned /SSL/upload_cert POST requestBody declares multipart/form-data with inline string properties. Query declarations repeat the fields; the public signature retains their requiredness and sends the reviewed fields once in the multipart body. Empty JSON x-codeSamples do not establish an alternative request encoding."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "docs/api/evidence/2026-10-30-ssl-section-upload-corrected.json SHA-256 1f38a174a8075059bcd55ccd865061c6be3cab98f052eaf93c2f43e5eb65b2ee; revision 1370c7ba6e78b4cdb68c3983eb7d0a4f240a6b3e. The direct-uapi POST original response on 11.138.0.19 reports upload_cert $[].created as numeric-string; bridged-uapi reports integer. Pinned /SSL/upload_cert POST result.data.items.properties[created] declares integer. Accept canonical in-range integer strings and normalize to integers, retaining pinned nullability and omission rules. Unknown response fields remain unacknowledged; this correction does not establish discrepancy-free evidence."
         }
       ],
       "notes": [
@@ -1049,8 +1055,79 @@
         {
           "kind": "documented",
           "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, direct UAPI returned created, modulus_length, not_after, not_before and is_self_signed as numeric strings; the WHM bridge returned integers. Canonical integer strings normalize to integers; is_self_signed accepts only exact string flags 0/1. Existing nullability and omission remain unchanged. Unknown response fields remain unacknowledged and keep the strict evidence assessment failed."
         }
-      ]
+      ],
+      "response": {
+        "[].created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-ssl-section-upload-corrected.json SHA-256 1f38a174a8075059bcd55ccd865061c6be3cab98f052eaf93c2f43e5eb65b2ee; revision 1370c7ba6e78b4cdb68c3983eb7d0a4f240a6b3e. The direct-uapi POST original response on 11.138.0.19 reports upload_cert $[].created as numeric-string; bridged-uapi reports integer. Pinned /SSL/upload_cert POST result.data.items.properties[created] declares integer. Accept canonical in-range integer strings and normalize to integers, retaining pinned nullability and omission rules. Unknown response fields remain unacknowledged; this correction does not establish discrepancy-free evidence."
+            }
+          ]
+        },
+        "[].modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-ssl-section-upload-corrected.json SHA-256 1f38a174a8075059bcd55ccd865061c6be3cab98f052eaf93c2f43e5eb65b2ee; revision 1370c7ba6e78b4cdb68c3983eb7d0a4f240a6b3e. The direct-uapi POST original response on 11.138.0.19 reports upload_cert $[].modulus_length as numeric-string; bridged-uapi reports integer. Pinned /SSL/upload_cert POST result.data.items.properties[modulus_length] declares integer. Accept canonical in-range integer strings and normalize to integers, retaining pinned nullability and omission rules. Unknown response fields remain unacknowledged; this correction does not establish discrepancy-free evidence."
+            }
+          ]
+        },
+        "[].not_after": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-ssl-section-upload-corrected.json SHA-256 1f38a174a8075059bcd55ccd865061c6be3cab98f052eaf93c2f43e5eb65b2ee; revision 1370c7ba6e78b4cdb68c3983eb7d0a4f240a6b3e. The direct-uapi POST original response on 11.138.0.19 reports upload_cert $[].not_after as numeric-string; bridged-uapi reports integer. Pinned /SSL/upload_cert POST result.data.items.properties[not_after] declares integer. Accept canonical in-range integer strings and normalize to integers, retaining pinned nullability and omission rules. Unknown response fields remain unacknowledged; this correction does not establish discrepancy-free evidence."
+            }
+          ]
+        },
+        "[].not_before": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-ssl-section-upload-corrected.json SHA-256 1f38a174a8075059bcd55ccd865061c6be3cab98f052eaf93c2f43e5eb65b2ee; revision 1370c7ba6e78b4cdb68c3983eb7d0a4f240a6b3e. The direct-uapi POST original response on 11.138.0.19 reports upload_cert $[].not_before as numeric-string; bridged-uapi reports integer. Pinned /SSL/upload_cert POST result.data.items.properties[not_before] declares integer. Accept canonical in-range integer strings and normalize to integers, retaining pinned nullability and omission rules. Unknown response fields remain unacknowledged; this correction does not establish discrepancy-free evidence."
+            }
+          ]
+        },
+        "[].is_self_signed": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-ssl-section-upload-corrected.json SHA-256 1f38a174a8075059bcd55ccd865061c6be3cab98f052eaf93c2f43e5eb65b2ee; revision 1370c7ba6e78b4cdb68c3983eb7d0a4f240a6b3e. The direct-uapi POST original response on 11.138.0.19 reports upload_cert $[].is_self_signed as numeric-string; bridged-uapi reports integer. Pinned /SSL/upload_cert POST result.data.items.properties[is_self_signed] declares integer 0/1. Accept only exact string flags 0/1 and normalize to integers. Unknown response fields remain unacknowledged; this correction does not establish discrepancy-free evidence."
+            }
+          ]
+        }
+      }
     },
     "uapi:SSL/upload_key": {
       "body": "multipart",

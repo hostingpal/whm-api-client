@@ -1402,3 +1402,12 @@ A reviewed upload-only continuation rule permits a valid typed upload with unkno
 extra fields to proceed after its original response proves ownership. Those extras
 remain recorded and fail the strict final assessment. Preflight, inventory, fetch,
 cleanup, uncertain-identity handling and the final zero-discrepancy gate are unchanged.
+
+The [upload-corrected capture](evidence/2026-10-30-ssl-section-upload-corrected.json)
+at 1370c7b, SHA-256
+`1f38a174a8075059bcd55ccd865061c6be3cab98f052eaf93c2f43e5eb65b2ee`,
+records 22 responses and confirms cleanup of all four uploaded resources. The
+bridged multipart fetch now passes. Direct upload_cert exposes quoted versions of
+five documented numeric/flag fields, so only those fields receive the same bounded
+compatibility handling. Unknown upload_cert/delete_key fields remain failures;
+follow-up 8x0.2.19 tracks their contracts and remaining SSL live coverage.
