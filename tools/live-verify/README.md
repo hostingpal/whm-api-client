@@ -640,6 +640,36 @@ preflight remains failed evidence, not a successful skip. The pinned `upload_key
 2026-10-30 fixture at 64d5266 observed successful use of the key field through
 both routes on 11.138.0.19; this does not amend the pinned source.
 
+## domain-management read-only section
+
+The standalone `domain-management.php` entrypoint executes its fixed reviewed catalog:
+WHM version followed by both UAPI routes for all 13 selected read operations
+(27 GET observations). It requires committed source, tools, overlays and pinned
+inputs, both test tokens and exact account/domain opt-ins:
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/domain-management.php \
+  --output=docs/api/evidence/domain-management-new.json
+```
+
+The shared command binds `test.oblak.host`, direct cPanel user `npr` and the WHM
+bridge target `npr`. The existing exact-URI GET guard rejects other requests before
+HTTP dispatch. It captures each original response once and stores structural
+paths/types only. Strict assessment requires every ordered observation to pass
+HTTP, API, payload and provenance checks with zero discrepancies; it inherits no
+acknowledgments from historical baseline evidence. This read-only recipe does not
+exercise the nine mutations. Empty read results establish no populated row-field behavior.
+
+Use a new output path. The command reserves a protected 0600 temporary file before
+network I/O and publishes the completed report with a new-only atomic link. If a
+destination race or unsupported link prevents publication, the complete protected
+report remains at the JSON-encoded recovery path printed to stderr. Partial or
+failed initial writes remain covered by follow-up `8x0.2.13`.
+
+Recorded capture: [2026-10-30 domain-management](../../docs/api/evidence/2026-10-30-domain-management.json).
+All 27 GET observations passed HTTP, API, payload and probe checks. Strict assessment remains failed for two masked integer unknown-field observations at `$[].*` in `WebVhosts/list_ssl_capable_domains`, one per route. No acknowledgment or new typed field was added. Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants are not established by this capture. Separate reviewer evidence for seven mutation methods is recorded in the source audit; rename and temporary-domain conversion remain unobserved. See `8x0.2.20`.
+
 ## directory-access read-only section
 
 The standalone `directory-access.php` entrypoint executes its fixed reviewed catalog:
@@ -658,8 +688,8 @@ bridge target `npr`. The existing exact-URI GET guard rejects other requests bef
 HTTP dispatch. It captures each original response once and stores structural
 paths/types only. Strict assessment requires every ordered observation to pass
 HTTP, API, payload and provenance checks with zero discrepancies; it inherits no
-acknowledgments from historical baseline evidence. All 4 mutations remain
-offline-only. Empty read results establish no populated row-field behavior.
+acknowledgments from historical baseline evidence. This read-only recipe does not
+exercise the four mutations. Empty read results establish no populated row-field behavior.
 
 Use a new output path. The command reserves a protected 0600 temporary file before
 network I/O and publishes the completed report with a new-only atomic link. If a
@@ -668,4 +698,4 @@ report remains at the JSON-encoded recovery path printed to stderr. Partial or
 failed initial writes remain covered by follow-up `8x0.2.13`.
 
 Recorded capture: [2026-10-30 directory-access](../../docs/api/evidence/2026-10-30-directory-access.json).
-All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment. Directory lists had populated structural fields, while the privacy-user list was empty. No indexing, password-protection or leech-protection setting changed. Four mutations and HTTP enforcement remain unverified. See `8x0.2.22`.
+All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment. Directory records were present, but every captured auth_name and passwd_file was an empty string, and the privacy-user list was empty. The capture establishes no mutation or HTTP-enforcement coverage. Separate reviewer mutation observations are attributed in the source audit. See `8x0.2.22`.

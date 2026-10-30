@@ -1,0 +1,179 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "SubDomain",
+  "operations": {
+    "uapi:SubDomain/addsubdomain": {
+      "name": "addSubdomain",
+      "method": "POST",
+      "order": [
+        "domain",
+        "rootdomain",
+        "canoff",
+        "dir",
+        "disallowdot"
+      ],
+      "params": {
+        "rootdomain": {
+          "php": "rootDomain"
+        },
+        "disallowdot": {
+          "php": "disallowDot"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70. This function creates a subdomain.\n\n**Important:**\n\nWhen you disable the [Web Server role](https://go.cpanel.net/serverroles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: The subdomain name to create."
+        },
+        {
+          "kind": "documented",
+          "text": "rootdomain: The domain on which to create the new subdomain.  The domain **must** already exist on the cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "dir: The subdomain's document `root` within the home directory, given as a valid directory path relative to the user's home directory.\n\nThis value defaults to the user's home directory `/public_html/` path.\n\n**Note:**\n\nIf the *Restrict document roots to public_html* value is set to *Off* in WHM's [*Tweak Settings*](https://go.cpanel.net/whmdocsTweakSettings#domains) interface (*WHM >> Home >> Server Configuration >> Tweak Settings*), this parameter defaults to the `/username/` path. For example, the `username` user's subdomain `example` would default to the `/home/username/example` path."
+        },
+        {
+          "kind": "documented",
+          "text": "disallowdot: Whether to remove the dot (`.`) characters from the `domain` value.\n* `1` - Remove dots from the domain.\n* `0` - Do **not** remove dots from the domain."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema: preserve opaque object fields and explicit null; absent data is distinct and invalid."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /SubDomain/addsubdomain GET x-readonly=false and x-rollback=none. Mutations use form POST; preserve the source parameter names and omission semantics."
+        }
+      ]
+    },
+    "uapi:SubDomain/changedocroot": {
+      "name": "changeDocumentRoot",
+      "method": "POST",
+      "order": [
+        "domain",
+        "docroot"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in 11. This function changes the document root for a subdomain or addon domain\nthat the calling cPanel user owns.\n\n**Important:**\n\n- This function does **not** apply to the account's primary domain.\n  Use the WHM API `set_primary_domain_docroot` function to change the document root for a primary domain.\n- The target directory must already exist before you call this function.\n  The function does not create it.\n- This function does **not** move any files. You must ensure that the files\n  exist in the new path when you call this function.\n- Any parked domains (`ServerAlias` entries) on the affected domain will\n  inherit the new document root.\n- AutoSSL HTTP-01 renewals will fail if the new document root is empty\n  or missing at renewal time.\n- To revert a document root change, call this function again with the\n  original path.\n\nWhen you disable the [Web Server role](https://go.cpanel.net/serverroles#roles),\nthe system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "docroot: The new document root as a path relative to the user's home\ndirectory. The target directory **must** already exist, and the path **must** begin with `public_html/` if the\n*Restrict document roots to public_html* value is set to *On* in\nWHM's [*Tweak Settings*](https://go.cpanel.net/TweakSettings-Domains)\ninterface (*WHM >> Home >> Server Configuration >> Tweak Settings*)."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: The full domain name of the subdomain or addon domain whose document root you want to change. The domain must belong to the calling cPanel user."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /SubDomain/changedocroot GET x-readonly=false and x-rollback=none. Mutations use form POST; preserve the source parameter names and omission semantics."
+        }
+      ]
+    },
+    "uapi:SubDomain/delsubdomain": {
+      "name": "deleteSubdomain",
+      "method": "POST",
+      "order": [
+        "domain",
+        "disallowdot"
+      ],
+      "params": {
+        "disallowdot": {
+          "php": "disallowDot"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138. This function removes a subdomain from the cPanel account.\n\n**Important:**\n\n- If any addon domain is parked on the subdomain, the system refuses to\n  remove it and names the addon domains in the `errors` field. Remove\n  those addon domains first with the\n  `AddonDomain::deladdondomain` function.\n- This function does **not** remove the subdomain's document root or the\n  files in it.\n\nWhen you disable the [Web Server role](https://go.cpanel.net/serverroles#roles),\nthe system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: The subdomain to remove. Give this value either as the underscore-separated `subdomain_rootdomain` form that the `SubDomain::listsubdomains` function returns in its `domainkey` field, or as a fully qualified domain name."
+        },
+        {
+          "kind": "documented",
+          "text": "disallowdot: Whether to remove the dot (`.`) characters from the subdomain label in the `domain` value.\n* `1` - Remove dots from the subdomain label.\n* `0` - Do **not** remove dots from the subdomain label."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback."
+        }
+      ],
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /SubDomain/delsubdomain GET x-readonly=false and x-rollback=none. Mutations use form POST; preserve the source parameter names and omission semantics."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /SubDomain/delsubdomain GET responses/200/content/application~1json/schema/properties/data explicitly states: This function does not return data. Check the status field for the outcome, and the messages and errors fields for detail. The data node declares no type or fields; expose null under the documented void contract."
+        }
+      ]
+    },
+    "uapi:SubDomain/getreservedsubdomains": {
+      "name": "getReservedSubdomains",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138. This function lists the subdomain labels that the system reserves, and\nthat an account therefore cannot use to create a subdomain.\n\n**Note:**\n\nThe returned labels are **not** sorted."
+        }
+      ]
+    },
+    "uapi:SubDomain/listsubdomains": {
+      "name": "listSubdomains",
+      "order": [
+        "regex",
+        "return_https_redirect_status"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138. This function lists the subdomains on the cPanel account, including the subdomains that the account's addon domains are parked on."
+        },
+        {
+          "kind": "documented",
+          "text": "regex matches fully qualified subdomain names case-insensitively. An invalid Perl regular expression makes the function fail and reports the error in the errors field."
+        }
+      ]
+    },
+    "uapi:SubDomain/validregex": {
+      "name": "validRegex",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138. This function retrieves the regular expression that the system uses to\nvalidate a subdomain label.\n\n**Note:**\n\nUse this value to validate a subdomain label in an interface before you\ncall the `SubDomain::addsubdomain` function. It does **not** replace the\nserver-side validation that `SubDomain::addsubdomain` performs."
+        }
+      ]
+    }
+  }
+}

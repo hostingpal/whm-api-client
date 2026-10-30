@@ -198,5 +198,8 @@ This storage recipe establishes no TLS installation/serving/trust or AutoSSL
 issuance/renewal behavior. SHA-256:
 `1a42e7a3c920b70eb91ef2f26f7f40aed8209693b8e850f56e594a2620d382d5`.
 
+- [domain-management section](2026-10-30-domain-management.json), at `9db0cad` on
+  `11.138.0.19`: All 27 GET observations passed HTTP, API, payload and probe checks. Strict assessment remains failed for two masked integer unknown-field observations at `$[].*` in `WebVhosts/list_ssl_capable_domains`, one per route. No acknowledgment or new typed field was added. Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants are not established by this capture. Separate reviewer evidence for seven mutation methods is recorded in the source audit; rename and temporary-domain conversion remain unobserved. Follow-up `8x0.2.20` remains open.
+
 - [directory-access section](2026-10-30-directory-access.json), at `e3aa06b` on
-  `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment. Directory lists had populated structural fields, while the privacy-user list was empty. No indexing, password-protection or leech-protection setting changed. Four mutations and HTTP enforcement remain unverified. Follow-up `8x0.2.22` remains open.
+  `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment. Directory records were present, but every captured auth_name and passwd_file was an empty string, and the privacy-user list was empty. This read-only capture establishes no mutation or HTTP-enforcement coverage. Separate reviewer mutation observations are attributed in the source audit. Follow-up `8x0.2.22` remains open.

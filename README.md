@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 18 generated typed groups cover 289 documented operations (see
+The 24 generated typed groups cover 311 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -313,6 +313,12 @@ An empty live list does not verify the types of records it never returned.
 
 | Handle and accessor | Methods |
 | --- | --- |
+| `uapi()->addonDomain()` | Complete addon-domain create, delete and inventory operations (3). |
+| `uapi()->domain()` | Temporary-domain checks, conversion and rename operations (4). |
+| `uapi()->domainLookup()` | Base-domain and document-root lookups (4). |
+| `uapi()->park()` | Domain alias creation, removal and inventory (3). |
+| `uapi()->subDomain()` | Subdomain creation, removal, document roots and validation metadata (6). |
+| `uapi()->webVhosts()` | Account virtual-host and SSL-capability inventories (2). |
 | `uapi()->directoryIndexes()` | Directory indexing reads and configuration (3). |
 | `uapi()->directoryPrivacy()` | Password-protection state and directory user management (6). |
 | `uapi()->directoryProtection()` | Leech-protection directory inventory (1). |
@@ -348,6 +354,21 @@ result: 1 means enabled; 0 with no errors means absent or disabled. Nonempty
 `responseMeta()->uapiErrors()` means the call failed, not that the feature is disabled.
 This typed method requires integer status 0 or 1 and accepts 0 as an access result.
 Outer WHM bridge failures still throw.
+
+The domain-management groups cover all 22 pinned functions. Inventory and lookup
+methods use GET; nine mutations use form POST. Most new domain endpoints require
+cPanel 138; generated PHPDoc records the different floors and role restrictions.
+Names and document roots are forwarded using their documented wire fields. Omitted
+options retain server defaults, while explicit false is sent as 0. Rename and
+conversion operations can change hosted configuration immediately and are not
+retried or rolled back by the client.
+
+`deleteAddonDomain()`, `park()->park()`, `park()->unpark()` and
+`deleteSubdomain()` return void because their source expressly specifies no data.
+`addSubdomain()` instead preserves a nullable opaque object, including unknown
+object fields; an absent payload is a mismatch. WebVhosts preserves optional and
+nullable proxy-subdomain lists. `listSslCapableDomains()` does not invent a domain
+argument from inconsistent upstream prose.
 
 The directory groups cover all ten pinned functions, available from cPanel 88.
 Six reads use GET and four mutations use form POST. Directory paths are forwarded
@@ -879,6 +900,10 @@ Real HostingPal consumer integration testing is deferred by the user as of
 2026-10-17; no consumer validation is claimed. It can resume against the current
 client before full API coverage or a release. Any public prerelease is a separate decision with
 an explicit coverage and compatibility statement.
+
+The [domain-management read-only capture](docs/api/evidence/2026-10-30-domain-management.json)
+records reviewed GET checks on cPanel `11.138.0.19`. All 27 GET observations passed HTTP, API, payload and probe checks. Strict assessment remains failed for two masked integer unknown-field observations at `$[].*` in `WebVhosts/list_ssl_capable_domains`, one per route. No acknowledgment or new typed field was added.
+Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants are not observed by this capture, which makes no mutation requests. A separate [reviewer report](https://github.com/hostingpal/whm-api-client/pull/33#pullrequestreview-5717731712) records seven mutation methods passing through both routes with cleanup; rename and temporary-domain conversion remain unobserved.
 
 The development lockfile resolves dependencies against PHP 8.3. Runtime
 requirements for consumers come from `composer.json`, not this lockfile.

@@ -2194,10 +2194,63 @@ files remain. Pre-capture code passed Composer validation/check (**11,094 tests 
 documentation follow this capture; no additional live request was made.
 
 
+## 2026-10-30 domain-management section
+
+This independent slice adds 22 generated operations to master a91cb0d,
+bringing its branch to 301 typed operations across 21 groups. Pinned source
+snapshots remain unchanged. Independent literal fixtures exercise wrapped direct,
+bare direct and WHM-bridged calls through the real generated contracts. The source
+has field examples but no full response examples for these operations; assembled
+fixtures are identified accordingly. No engine or generator behavior changed.
+
+The domain-management groups cover all 22 pinned functions. Inventory and lookup
+methods use GET; nine mutations use form POST. Most new domain endpoints require
+cPanel 138; generated PHPDoc records the different floors and role restrictions.
+Names and document roots are forwarded using their documented wire fields. Omitted
+options retain server defaults, while explicit false is sent as 0. Rename and
+conversion operations can change hosted configuration immediately and are not
+retried or rolled back by the client.
+
+`deleteAddonDomain()`, `park()->park()`, `park()->unpark()` and
+`deleteSubdomain()` return void because their source expressly specifies no data.
+`addSubdomain()` instead preserves a nullable opaque object, including unknown
+object fields; an absent payload is a mismatch. WebVhosts preserves optional and
+nullable proxy-subdomain lists. `listSslCapableDomains()` does not invent a domain
+argument from inconsistent upstream prose.
+
+The reviewed read-only catalog has 27 exact GET probes: WHM version and all
+13 read operations through both UAPI routes on npr/npr.rs. Shared command
+infrastructure reuses EvidenceRunner, its exact-URI GET guard and structural
+sanitization without repeating the historical baseline. The strict assessment
+requires the complete ordered catalog, matching provenance and zero discrepancies.
+The read-only capture cannot establish mutation effects. Its outcomes and the
+separate reviewer mutation observations are recorded below.
+
+The [2026-10-30 domain-management capture](evidence/2026-10-30-domain-management.json)
+at `9db0cad` on cPanel `11.138.0.19` records the reviewed catalog. All 27 GET observations passed HTTP, API, payload and probe checks. Strict assessment remains failed for two masked integer unknown-field observations at `$[].*` in `WebVhosts/list_ssl_capable_domains`, one per route. No acknowledgment or new typed field was added.
+Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants are not established by this read-only capture. Follow-up `8x0.2.20` owns the remaining live/contract work.
+
+The immutable capture SHA-256 is `c53db4f8a2b1ef00b212b3f0a537c3b646c87590ffee2ac925254540b269b518`.
+Review [5717731712](https://github.com/hostingpal/whm-api-client/pull/33#pullrequestreview-5717731712)
+separately reports successful generated add/delete subdomain, change document root,
+add/delete addon domain and park/unpark calls through both routes, followed by
+resource cleanup and restoration of temporary account-limit changes. This reviewer
+report does not extend the artifact's read-only observations. Rename and temporary
+domain conversion remain unobserved. The two masked WebVhosts findings are
+explicitly nonblocking in that review, remain strict failures and are unwaived.
+
+Review corrections retain all generated operation specs and the original evidence.
+All nine mutations now expose the pinned `x-rollback=none` caveat. Addon deletion
+points callers to `responseMeta()->uapiMessages()` for a retained subdomain;
+SubDomain regex matching is case-insensitive and invalid Perl patterns fail;
+WebVhosts documents the temporary-domain error behavior without adding a selector.
+The shared read-only assessor rejects malformed records and absent or malformed
+structural maps; independent regressions cover the version and UAPI records.
+
 ## 2026-10-30 directory-access section
 
 This independent slice adds 10 generated operations to master a91cb0d,
-bringing its branch to 289 typed operations across 18 groups. Pinned source
+bringing its original branch to 289 typed operations across 18 groups. Pinned source
 snapshots remain unchanged. Independent literal fixtures exercise wrapped direct,
 bare direct and WHM-bridged calls through the real generated contracts. The source
 has field examples but no full response examples for these operations; assembled
@@ -2258,3 +2311,11 @@ artifact; it does not extend the read-only artifact's provenance or establish HT
 authentication enforcement. No live calls or replacement capture were made for
 this correction. The reviewer will recheck the mutation on the final integrated
 head; `8x0.2.22` retains the remaining evidence and contract work.
+
+The directory branch then normally merged the approved PR #33 master commit
+`2b67612fa5feb64e028e077f868e5917be6651be`, bringing the combined generated surface
+to 311 operations across 24 groups. Regeneration preserves every operation spec
+from both parents, including the two configure-response nullable fields. The
+shared read-only assessor and its regression tests come from that approved master
+commit. Both original read-only artifacts remain unchanged; integration made no
+live requests and does not extend their evidence.
