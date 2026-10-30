@@ -45,7 +45,7 @@
       "type": "object",
       "properties": {
         "php": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
-        "encoding": {"enum": ["scalar", "bool", "repeat", "numbered"]},
+        "encoding": {"enum": ["scalar", "bool", "repeat", "numbered", "suffix-numbered", "suffix-numbered-scalar"]},
         "sensitive": {"type": "boolean"},
         "omit": {"type": "boolean"},
         "required": {"type": "boolean"},
@@ -57,8 +57,9 @@
       "type": "object",
       "properties": {
         "type": {"enum": ["string", "int", "number", "bool", "flag", "mixed", "list", "map", "object", "union"]},
+        "literal": {"type": "string"},
         "nullable": {"type": "boolean"},
-        "accept": {"type": "array", "items": {"enum": ["numeric-string", "string-flag", "int-flag", "bool", "empty-string"]}, "uniqueItems": true},
+        "accept": {"type": "array", "items": {"enum": ["numeric-string", "integral-fixed-point-string", "string-flag", "int-flag", "bool", "empty-string"]}, "uniqueItems": true},
         "preserve": {"type": "boolean"},
         "items": {"$ref": "#/$defs/typeSpec"},
         "values": {"$ref": "#/$defs/typeSpec"},
@@ -69,6 +70,7 @@
       "required": ["type"],
       "additionalProperties": false,
       "allOf": [
+        {"if": {"required": ["literal"]}, "then": {"properties": {"type": {"const": "string"}}}},
         {"if": {"properties": {"type": {"const": "list"}}}, "then": {"required": ["items"]}},
         {"if": {"properties": {"type": {"const": "map"}}}, "then": {"required": ["values"]}},
         {"if": {"properties": {"type": {"const": "union"}}}, "then": {"required": ["anyOf"]}},
@@ -79,7 +81,7 @@
       "type": "object",
       "properties": {
         "type": {"enum": ["string", "int", "number", "bool", "flag", "mixed"]},
-        "accept": {"type": "array", "items": {"enum": ["numeric-string", "string-flag", "int-flag", "bool", "empty-string"]}, "uniqueItems": true},
+        "accept": {"type": "array", "items": {"enum": ["numeric-string", "integral-fixed-point-string", "string-flag", "int-flag", "bool", "empty-string"]}, "uniqueItems": true},
         "nullable": {"type": "boolean"},
         "preserve": {"type": "boolean"},
         "required": {"type": "boolean"},

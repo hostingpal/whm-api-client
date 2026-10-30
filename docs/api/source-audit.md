@@ -1707,3 +1707,194 @@ Before capture, Composer validation and the complete PHP gate passed **6,390 tes
 and 51,705 assertions**, including PHPCS and maximum PHPStan. Offline API-map,
 schema-copy/currentness checks, complete Go tests and Go vet also passed.
 External current-head PR review remains the merge gate.
+
+
+## 2026-10-30 complete Email contracts
+
+The second stacked slice adds 92 generated operations, completing all 96 pinned
+Email functions and bringing this branch to 187 typed operations in 13 groups.
+Independent literal fixtures cover wrapped direct, bare direct and WHM-bridged
+requests, optional arguments and payload omission/null/type boundaries. All
+mutations and secret-bearing parameters travel in form POST bodies. The client
+performs one request immediately and does not retry or roll back mutations.
+
+Source-bound corrections permit add_pop password-hash alternatives, preserve
+floating-point MB in list_pops_with_disk, and model manual MX results as dynamic
+maps rather than a property literally named additionalProperties. For trace_delivery,
+merging the finite formal destination fields avoids first-branch optional-object
+validation dropping later documented fields. The recursive routed example remains
+an explicit limitation. terminate_mailbox_sessions documents a WHM-style result
+on its UAPI page; generated UAPI routing is preserved without inventing a second
+route or claiming live envelope compatibility.
+
+Email filter families require new one-based suffix encoding. Reviewed names ending
+in * expand to 1, 2, and so on; they do not use the existing WHM hyphen convention.
+The scalar variant permits integer values only for the documented numeric filter
+comparisons. Independent wire tests reject malformed lists and collisions after
+metadata reset and verify secret redaction. Shared generator and runtime checks
+reject unsupported patterns before any network request.
+
+The standalone mailbox fixture is a separate evidence scope: exact npr/npr.rs,
+fresh owned addresses, welcome messages disabled, no delivery or external recipients,
+strict cleanup, and original-response structural capture. Its actual outcomes and
+unobserved operations are recorded separately from generated coverage.
+
+### Email preflight and quota compatibility observations
+
+The [initial Email artifact](evidence/2026-10-30-email-section.json), captured at
+3ca852b on 11.138.0.19, has SHA-256
+`ab1c60b5d7a5c1d330fe152ee36a5f26995ebfb080d939d118986093a8f467dc`.
+It records 17 preflight GETs: WHM version and seven Email functions passed on both
+routes, while list_mxs rejected quoted integer priority fields. No mailbox was
+created; both resources remain not_started. A narrow correction accepts canonical
+integer strings within PHP bounds at entries[].priority only.
+
+The [next Email capture](evidence/2026-10-30-email-section-corrected.json), at
+57c425d on the same server version, has SHA-256
+`7afe0accaeda48e2c7f26a491c2937f0b0417981d8674f3cb7ab0ce90226f636`.
+Its 29 original responses establish successful preflight, mailbox creation and
+exact cleanup through both routes. Each lifecycle stopped at get_pop_quota because
+its required integer arrived as a numeric string. Both owned mailboxes were
+confirmed absent after cleanup. The structural observation establishes the wire
+type, not the expected quota value. Failed phase and discrepancy assessments remain
+unchanged; no artifact is rewritten after a contract correction.
+
+The [quota-corrected preflight](evidence/2026-10-30-email-section-quota-corrected.json)
+at 7300ef5 has SHA-256
+`c3b795074558ee25cbeb001d09e002efe55942a32abfaa49bc8de03f97df6f31`.
+Its 17 GETs stopped at count_pops quoted integers on both routes; no mutation ran.
+That existing method now accepts canonical integer strings within PHP bounds,
+without inferring whether the main account is counted.
+
+The [count-corrected capture](evidence/2026-10-30-email-section-count-corrected.json)
+at 8533e95 has SHA-256
+`c10599b638300486019b137b20e40ae32bacef872d1d4044291d5feb76bc08a0`.
+Its 29 responses again stop at numeric-string get_pop_quota payloads, despite the
+canonical-integer correction. Both created mailboxes were confirmed cleaned up.
+Structural numeric-string evidence alone cannot establish a lossless conversion;
+a separate same-response diagnostic now records fixed format categories only.
+It does not change the typed contract, original failure or strict assessment.
+
+
+The [quota-format diagnostic](evidence/2026-10-30-email-section-quota-format.json)
+at fa887d3 on 11.138.0.19 has SHA-256
+`1e30c8b3f1472213d325670909acc666a8d7e8eee52f12a708be3d15ddd58f7f`.
+Both original get_pop_quota responses contain integral-fixed-point strings: the
+fractional digits are all zero. No numeric value or length is retained. Typed
+validation still fails in this artifact; both created mailboxes were confirmed
+absent after cleanup. Only this evidenced operation receives lossless acceptance
+of zero-fraction fixed-point strings within PHP integer bounds. Fractional values,
+exponents, noncanonical integer parts and overflow remain rejected.
+
+
+The [final owned Email capture](evidence/2026-10-30-email-section-final.json) at
+fd552b2 on 11.138.0.19 has SHA-256
+`d1a8a5e97815a3eb7fe3524e7cea5227754320bc388293c9735f8a6df818cc9d`.
+All 45 planned original responses pass API, typed-payload, fixture-expectation and
+strict discrepancy checks, with zero discrepancies and no failure labels. Sixteen
+Email functions were exercised through direct and bridged UAPI, plus WHM version.
+Both fresh mailboxes were confirmed absent after creation, password verification,
+quota update/readback, login suspension/unsuspension and cleanup. No welcome or
+external delivery message was sent. This verifies API behavior on the recorded
+revision/version, not IMAP/SMTP access or every generated Email method. Follow-up
+8x0.2.18 retains unobserved functions and pinned-source contract gaps.
+
+
+### Email review corrections and master integration: 2026-10-30
+
+The [review of e461f175](https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667)
+independently observed exact `unlimited` MB quota results on both UAPI routes for
+an unlimited mailbox, with integer `0` in byte units. This is reviewer evidence,
+not an artifact-bound structural capture. `getPopQuota()` now has the precise
+`int|'unlimited'` contract, retaining both existing lossless integer conversions.
+An explicit string-only `literal` constraint represents the one accepted string;
+it is never inferred from enums or applied to other integer results. Independent
+fixtures reject other strings, null, absent payloads, fractions and overflow.
+
+The same review observed list destination forms dropping the pinned `message`
+field. Object and list destinations now retain identical pinned leaf fields,
+including message, aliasfile, command, mailbox, mx, result and type. Independent
+fixtures copy the pinned routed example and leaf examples without reading the
+generated spec. Deeper recursive destinations remain outside this leaf contract.
+The reviewer also observed normal status-1 UAPI envelopes for
+`terminateMailboxSessions()` on both routes; that reviewer-only observation
+resolves the runtime doubt without a runtime change or an artifact-bound claim.
+The pinned metadata-only response remains a source discrepancy under `8x0.2.18`.
+
+A normal master merge preserves the approved MySQL, FTP, PostgreSQL and
+DomainInfo/Features/LangPHP changes, countPops compatibility, earlier immutable
+artifacts and all trace safeguards. Generated coverage is **236 operations across
+15 groups**. The v2 Email recipe keeps the same two owned mailboxes and finite
+32/64 MB checks, then sets quota 0 and asserts exact `unlimited` MB and integer
+zero bytes. Four GET-only traces use only run-bound local recipients. No delivery
+operation is invoked. The revised capture is recorded separately below after
+committed-code verification; no older capture is modified or waived.
+
+
+### Revised Email capture after review
+
+The single revised capture ran at committed integrated code
+`205079c790ad2ed290c00d1656d4cffbe488d21c` on cPanel `11.138.0.19`, saved as
+[2026-10-30-email-section-reviewed.json](evidence/2026-10-30-email-section-reviewed.json),
+SHA-256 `13bc03e54292f382e3ec9062b8a7c148735aaa278e4aeecba1262f638363791b`.
+It contains all **55 original responses**: 39 GET and 16 POST, covering 17 Email
+functions through both UAPI routes plus WHM version. All 55 HTTP 200, API outcome,
+typed-payload and probe checks pass, with **zero discrepancies**. There are
+**54 passed, one failed and zero unchecked fixture expectations**. Both owned
+mailboxes were confirmed cleaned up; each final inventory is an empty list.
+
+All new cases pass on both routes. The `unlimited_quota` phase asserts the exact
+literal `unlimited` in MB units, and `unlimited_bytes` asserts integer `0`; these
+committed expectations provide value checks beyond the artifact's structural
+string/int types. Each run-bound missing-recipient trace observes a list item
+with string `message` and `type`, retained by the corrected typed contract. The
+owned-recipient traces have empty destination lists and establish no item fields.
+No message was sent and no recursive tree or actual delivery is established.
+
+The command exits **1** and the strict assessment remains **failed**, solely for
+`unsuccessful_phase`: direct UAPI `resumed_mailboxes` fails the exact predicate
+`isset($rows[$address]) && ($rows[$address]['suspended_login'] ?? null) === 0`
+after an API-successful `unsuspend_login`. The inventory is a nonempty list with
+string login/email and integer suspension fields. Its structural payload and
+LIST_POPS contract hash are identical to the earlier passing 45-response capture.
+No missing-field/type discrepancy is observed; masked evidence cannot distinguish
+a missing target identity from an incorrect integer flag value or establish a
+cause. This artifact alone does not prove the mailbox remained suspended or imply
+timing, caching or server behavior. Direct cleanup then succeeds, followed by the complete
+bridged lifecycle and cleanup, so all 55 planned phases are present.
+
+This semantic failure remains unwaived and tracked in **`8x0.2.18.1`**. The later
+reviewer investigation below supplies a nonblocking decision without changing the
+artifact or assessment. This fixture was not repeated to clear the failure. Independent
+audit verifies all 914 structural path/type entries, exact phase order and methods,
+55 effective-contract hashes, revision/source/map/generator/overlay provenance,
+strict assessment and cleanup states. Credentials, account/domain/host and run
+identity values are absent. All earlier immutable evidence files are unchanged.
+Pre-capture offline gates passed 7,402 tests / 62,104 assertions, PHPCS, maximum
+PHPStan, Composer validation, full Go tests/vet and the offline API-map check.
+
+
+### Reviewer investigation of stale Email suspension flags
+
+The [review of `851def1`](https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604) separately reproduced stale `list_pops`
+suspension flags on `npr`, while checking the real lock state in the server's
+`shadow` file. Eight back-to-back API-only cycles produced three wrong flags in
+both directions; the stale values persisted after 1.8 seconds and appeared on
+both routes. Sixteen cycles with about a second between writes and server checks
+had no wrong flags. A further sixteen back-to-back cycles caught one stale
+suspended flag after unsuspend while the real lock was open. Server lock state
+was correct at every point checked, and each throwaway mailbox was removed.
+
+The reviewer concluded that the failed readback did not mean `unsuspendLogin()`
+failed and was not a client mutation defect. Same-second `email_accounts.json`
+and `shadow` mtimes support a cache-invalidation explanation, but do not prove
+the mechanism. Reading `listPops()` just after a write can return the prior flag,
+which can remain stale until a later write refreshes the cache. The reviewer
+explicitly marked this finding **nonblocking for PR31**, without waiving it.
+The failed artifact and open follow-up `8x0.2.18.1` remain unchanged in status.
+
+These observations are attributed reviewer evidence, separate from this chat's
+55-response structural capture. Observed overlay notes on `list_pops`,
+`suspend_login` and `unsuspend_login` render the caveat in the generated API docs.
+No runtime spec, recipe timing or captured response changed, and no new live run
+was performed for this documentation correction.

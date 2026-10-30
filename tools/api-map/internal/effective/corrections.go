@@ -250,7 +250,7 @@ var scalarTypes = map[string]bool{"string": true, "int": true, "number": true, "
 
 // acceptable lists the wire variants each type admits (src/Response/ShapeValidator.php).
 var acceptable = map[string]map[string]bool{
-	"int":    {"numeric-string": true},
+	"int":    {"numeric-string": true, "integral-fixed-point-string": true},
 	"number": {"numeric-string": true},
 	"bool":   {"int-flag": true, "string-flag": true},
 	"flag":   {"string-flag": true, "bool": true, "empty-string": true},
@@ -259,6 +259,9 @@ var acceptable = map[string]map[string]bool{
 // checkAccept rejects accept tokens the spec's type does not admit and
 // preserve on anything but number.
 func checkAccept(path string, spec TypeSpec) error {
+	if spec.Literal != nil && spec.Type != "string" {
+		return fmt.Errorf("path %q: literal does not apply to type %q", path, spec.Type)
+	}
 	for _, token := range spec.Accept {
 		if !acceptable[spec.Type][token] {
 			return fmt.Errorf("path %q: accept %q does not apply to type %q", path, token, spec.Type)
@@ -288,7 +291,7 @@ func fromOverlay(path string, s overlay.Spec) (TypeSpec, error) {
 	case s.Type == "object" && s.Fields == nil:
 		return TypeSpec{}, fmt.Errorf("path %q: object needs fields", path)
 	}
-	spec := TypeSpec{Type: s.Type, Nullable: s.Nullable, Accept: s.Accept, Preserve: s.Preserve, Required: s.Required}
+	spec := TypeSpec{Type: s.Type, Literal: s.Literal, Nullable: s.Nullable, Accept: s.Accept, Preserve: s.Preserve, Required: s.Required}
 	if err := checkAccept(path, spec); err != nil {
 		return TypeSpec{}, err
 	}

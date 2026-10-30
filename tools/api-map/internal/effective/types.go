@@ -5,6 +5,7 @@ package effective
 
 // TypeSpec mirrors the PHP engine's type spec (see src/Response/ShapeValidator.php).
 type TypeSpec struct {
+	Literal  *string
 	Type     string
 	Nullable bool
 	Accept   []string
@@ -37,8 +38,8 @@ type Note struct {
 type Param struct {
 	Wire        string
 	PHP         string
-	Encoding    string // scalar, bool, repeat or numbered
-	PHPType     string // native type without nullability: string, int, int|float, bool, array, string|array, string|int
+	Encoding    string // scalar, bool, repeat, numbered or a suffix-numbered encoding
+	PHPType     string // native type without nullability; list encodings include array
 	DocType     string // PHPStan type without nullability
 	Description string
 	Required    bool

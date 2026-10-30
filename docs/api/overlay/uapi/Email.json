@@ -69,6 +69,14 @@
         {
           "kind": "documented",
           "text": "The result preserves the documented wire names: dest is the forwarded domain, and forward is the destination domain."
+        },
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
         }
       ],
       "probe": {
@@ -94,6 +102,26 @@
         {
           "kind": "documented",
           "text": "Omitting select omits the select output field. When select is supplied, the documented select output identifies that domain and defaults to integer 1."
+        },
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function.\n\n**Note:**\n\n  This function **always** returns the account's main domain first.\n\n**Additional Note:**\n\n  By default, temporary domains (*.cpanel.site) are excluded. Use the `return_temporary_domain` parameter to include them."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "add_www: Whether to list `www.` addresses.\n* `1` \u2014 List `www.` addresses.\n* `0` \u2014 Do **not** list `www.` addresses.\nFor example, if you specify `1`, the function's output would include both `example.com` and `www.example.com`. If you specify `0`, the output would include **only** `example.com`."
+        },
+        {
+          "kind": "documented",
+          "text": "include_wildcard: Whether to list wildcard addresses.\n* `1` \u2014 List wildcard addresses.\n* `0` \u2014 Do **not** list wildcard addresses.\nFor example, if you specify `1`, the function's output would include both `example.com` and `*.example.com`. If you specify `0`, the output would include **only** `example.com`."
+        },
+        {
+          "kind": "documented",
+          "text": "return_temporary_domain: Whether to include temporary domains (*.cpanel.site) in the output.\nBy default, temporary domains are excluded."
         }
       ],
       "probe": {
@@ -115,6 +143,26 @@
         {
           "kind": "documented",
           "text": "Omitting noValidate runs the email database validation check; true skips it. Omitting skipMain includes the cPanel account's main account; true excludes it. The regex parameter filters results with a Perl Compatible Regular Expression."
+        },
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "no_validate: Whether to skip the email database's validation check.\n* `1` \u2014 Skip the validation check.\n* `0` \u2014 Run the validation check."
+        },
+        {
+          "kind": "documented",
+          "text": "skip_main: Whether to exclude the cPanel account's main account from the results.\n* `1` \u2014 Exclude the main account.\n* `0` \u2014 Include the main account."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer testing on cPanel 11.138.0.19 found that listPops() immediately after suspendLogin() or unsuspendLogin() can return the previous suspended_login flag on either route. The flag can remain stale until a later write refreshes the cache, even when the server lock state already reflects the successful operation. The same-second mtime-cache explanation is supported, not proven. Evidence: https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604."
         }
       ],
       "probe": {
@@ -125,7 +173,2713 @@
           "bridged-uapi"
         ],
         "expected": "success"
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "External reviewer evidence at https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604 for head 851def1ff80ad55f9821b51f169a0d1fe5c456c5: back-to-back writes produced stale list_pops suspension flags in both directions and on both routes. A server-checked mismatch reported a suspended flag after unsuspend while the real shadow lock state was open; writes in separate seconds avoided mismatches in the sampled run. Reviewer judged this a server read-cache behavior, not a client mutation defect, and explicitly nonblocking for PR31. The exact cache mechanism remains supported rather than proven. This is separate reviewer evidence, not values recovered from the immutable failed structural capture; 8x0.2.18.1 stays open and the failed assessment stays unchanged."
+        }
+      ]
+    },
+    "uapi:Email/account_name": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Note:**\n\n  If you call this function from a Webmail session URL, the system will **only** access data for that email account.\n\n**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "account: The function will return this value in the data return. If you do **not** include this parameter, the function returns `All Mail On The Account` or a blank value.\n* A valid string.\n* An empty value.\n\n**Note:**\n\n The function does **not** validate this parameter's value."
+        }
+      ]
+    },
+    "uapi:Email/add_auto_responder": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "interval: The amount of time, in hours, that the server waits between autoresponder messages to the same address.\n\n**Note:**\n\n  If you specify `0`, the system sends a message for each received email."
+        },
+        {
+          "kind": "documented",
+          "text": "is_html: Whether the body of the autoresponder message begins with an [HTML Content-Type declaration](https://en.wikipedia.org/wiki/Character_encodings_in_HTML#Specifying_the_document.27s_character_encoding).\n* `1` \u2014 Include an HTML content type declaration.\n* `0` \u2014 Do **not** include an HTML content type declaration."
+        },
+        {
+          "kind": "documented",
+          "text": "Configures automatic response messages; enabled responders can send mail."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "body": {
+          "sensitive": true
+        },
+        "subject": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/add_auto_responder GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/add_domain_forwarder": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "destdomain": {
+          "php": "destinationDomain"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/add_domain_forwarder GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/add_forwarder": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the MailReceive role, the system disables this function.\n  For more information, read our [How to Use Server Profiles](https://go.cpanel.net/howtouseserverprofiles)\n  documentation."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "failmsgs: The failure message for the message's sender.\n\n**Note:**\n\n Use this parameter if you used the fail method for the fwdopt parameter."
+        },
+        {
+          "kind": "documented",
+          "text": "fwdemail: The email address to which the system forwards messages.\n\n**Note:**\n\n You must use this parameter if you used the fwd method for the fwdopt parameter. You can pass multiple addresses to this parameter as a comma-separated list."
+        },
+        {
+          "kind": "documented",
+          "text": "fwdsystem: The system user to whom the system forwards messages.\n\n**Note:**\n\n You must use this parameter if you used the system method for the fwdopt parameter."
+        },
+        {
+          "kind": "documented",
+          "text": "pipefwd: The application to which the system pipes messages.\n\n**Note:**\n\n You must use this parameter if you used the pipe method for the fwdopt parameter.\n\n**Important:**\n\n  This parameter requires the FileStorage role. For more information, read our\n  [How to Use Server Profiles](https://go.cpanel.net/howtouseserverprofiles) documentation."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes mail routing; forward, pipe and failure actions have distinct delivery effects."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "fwdopt": {
+          "php": "forwardOption"
+        },
+        "failmsgs": {
+          "php": "failureMessage",
+          "sensitive": true
+        },
+        "fwdemail": {
+          "php": "forwardEmail"
+        },
+        "fwdsystem": {
+          "php": "forwardSystem"
+        },
+        "pipefwd": {
+          "php": "pipeForward",
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/add_forwarder GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/add_list": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "private: Whether the mailing list is private.\n* `1` \u2014 Private.\n* `0` \u2014 Public."
+        },
+        {
+          "kind": "documented",
+          "text": "rebuildonly: Whether to rebuild the mailing list.\n* `1` \u2014 Rebuild the mailing list.\n* `0` \u2014 Do **not** rebuild the mailing list."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "password": {
+          "sensitive": true
+        },
+        "rebuildonly": {
+          "php": "rebuildOnly"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/add_list GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/add_mailman_delegates": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "delegates: A list of the administrators to add.\n\n**Note:**\n\n  Separate multiple email addresses with commas."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/add_mailman_delegates GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/add_mx": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function"
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "priority: The new mail\u00a0exchanger's [priority value](https://go.cpanel.net/whmdocsEditMXEntry).\n\n**Note:**\n\n  It is common practice to set a priority value that is divisible by five."
+        },
+        {
+          "kind": "documented",
+          "text": "alwaysaccept: Whether the mail exchanger accepts all mail for the domain.\n* `1` \u2014 The mail exchanger always accepts mail.\n* `0` \u2014 The mail exchanger does **not** always accept mail."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "alwaysaccept": {
+          "php": "alwaysAccept"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/add_mx GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/add_pop": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  * When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function.\n  * We recommend that you use the UAPI `UserManager::create_user` function to create an email address instead of this function. This function is incompatible with [the *Reset Password* feature](https://go.cpanel.net/resetpassdocs).\n  * You **must** URI-encode values when using the CLI."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares clean rollback; the client performs no automatic rollback or retries."
+        },
+        {
+          "kind": "documented",
+          "text": "email: The email account username or address.\n* A valid email account username. For example, `user` to create `user@example.com`.\n* A valid email address.\n\n**Note:**\n\n  You **cannot** enter `cpanel` as an account name when you create an email account."
+        },
+        {
+          "kind": "documented",
+          "text": "password_hash: The account's password hash.\n\n**Notes:**\n\n  * You can use this parameter instead of the `password` parameter. However, you cannot use both `password` and `password_hash` parameters in the same request.\n  * You can find your server's hash type in the `/etc/sysconfig/authconfig` file."
+        },
+        {
+          "kind": "documented",
+          "text": "quota: The maximum amount of disk space that the new email account may use.\n* A positive integer that represents the maximum amount of disk space, in megabytes (MB).\n* `0` or `unlimited` \u2014 The account possesses unlimited disk space.\n\n**Note:**\n\n  * The positive integer value **cannot** exceed the maximum email quota.\n  * The `0` or `unlimited` value is **only** available to users **without** a maximum email account quota."
+        },
+        {
+          "kind": "documented",
+          "text": "send_welcome_email: Whether to send client configuration instructions to the account.\n* `1` \u2014 Send the instructions.\n* `0` \u2014 Do **not** send the instructions."
+        },
+        {
+          "kind": "documented",
+          "text": "skip_update_db: Whether to skip the update of the email accounts database's cache.\n* `1` \u2014 Skip the update.\n* `0` \u2014 Perform the update."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply either password or passwordHash, never both. The pinned password required marker conflicts with the documented password-hash alternative; the typed method permits either credential choice and leaves server validation in place."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "password": {
+          "sensitive": true,
+          "required": false
+        },
+        "password_hash": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned password schema marks password required, but the password_hash parameter description explicitly states password_hash can replace password and the two cannot be used together. Make password optional to represent the documented hash-only request; the server validates the mutually exclusive credential choice."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/add_pop GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ],
+      "order": [
+        "email",
+        "password",
+        "domain",
+        "password_hash",
+        "quota",
+        "send_welcome_email",
+        "skip_update_db"
+      ]
+    },
+    "uapi:Email/add_spam_filter": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Notes:**\n\n  * To disable spam filtering, use the UAPI `Email::disable_spam_autodelete` fuction.\n  * For more information, read our [Spam Filters](https://go.cpanel.net/cpaneldocsSpamFilters) documentation.\n\n**Important:**\n\n  * When you disable the [*Spam Filter* role](https://go.cpanel.net/serverroles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "account: The email account to apply a spam score threshold value.\n\n**Note:**\n\n  If you do\u00a0**not**\u00a0specify a value, the function applies the new spam score threshold value to\u00a0**all**\u00a0accounts."
+        },
+        {
+          "kind": "documented",
+          "text": "required_score: Set a spam score threshold value.\n\n**Notes:**\n\n  * You **must** specify a value greater than `0`, and lower than the domain owner's spam score threshold value.\n  * You **cannot** enter `0` as a value for this parameter.\n  * You can retrieve the domain owner\u2018s spam score threshold value via the\u00a0`cpuser_spam_auto_delete_score` return from the UAPI\u00a0`Email::get_spam_settings` function.\n  * The default value, `5`, is an aggressive spam score.\n  * The lower the spam score, the more likely that Apache SpamAssassin will label messages as spam and delete them.\n  * Some systems may wish to use a more lenient spam score (for example, `8` or `10`)."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/add_spam_filter GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/browse_mailbox": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles#roles), the system **disables** this function.\n\n**Notes:**\n\n  If you do not use any input parameters, the function returns a list of items in the cPanel account's main mail directory."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "dir: A mail directory name, to limit results to specific directories.\n\n**Note:**\n\n  If you pass the `default` or `mail` values, the function lists information for all mail directories."
+        },
+        {
+          "kind": "documented",
+          "text": "showdotfiles: Whether to include hidden files and directories.\n* `1` \u2014 Include hidden items.\n* `0` \u2014 Do **not** include hidden items."
+        }
+      ],
+      "params": {
+        "showdotfiles": {
+          "php": "showDotFiles"
+        }
       }
+    },
+    "uapi:Email/change_mx": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "priority: The mail\u00a0exchanger's new\u00a0[priority value](https://go.cpanel.net/whmdocsEditMXEntry).\n\n**Note:**\n\n  Common practice sets a priority value divisible by five."
+        },
+        {
+          "kind": "documented",
+          "text": "alwaysaccept: Whether the mail exchanger accepts all mail for the domain.\n* `1` \u2014 The mail exchanger always accepts mail.\n* `0` \u2014 The mail exchanger does **not** always accept mail."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "oldexchanger": {
+          "php": "oldExchanger"
+        },
+        "alwaysaccept": {
+          "php": "alwaysAccept"
+        },
+        "oldpriority": {
+          "php": "oldPriority"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/change_mx GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/check_fastmail": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        }
+      ]
+    },
+    "uapi:Email/count_auto_responders": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82."
+        }
+      ]
+    },
+    "uapi:Email/count_filters": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles) or the [*IP Blocker*](https://go.cpanel.net/whmdocsFeatureManager) feature, the system **disables** this function. For more information, read our [How to Use Server Profiles](https://go.cpanel.net/howtouseserverprofiles) documentation."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82."
+        }
+      ]
+    },
+    "uapi:Email/count_forwarders": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82."
+        }
+      ]
+    },
+    "uapi:Email/count_lists": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82."
+        }
+      ]
+    },
+    "uapi:Email/delete_auto_responder": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/delete_auto_responder GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/delete_domain_forwarder": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/delete_domain_forwarder GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/delete_filter": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "filtername": {
+          "php": "filterName"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/delete_filter GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/delete_forwarder": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "forwarder: The forwarder's destination.\n* A valid email address.\n* A script location.\n* A system account."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/delete_forwarder GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/delete_held_messages": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 74."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/delete_held_messages GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/delete_list": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/delete_list GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/delete_mx": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [DNS role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/delete_mx GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/delete_pop": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares lossy rollback; deleting a mailbox can lose its messages. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "email: The email account username or address.\n* A valid email account username. For example, `user` if the email address is `user@example.com`.\n* A valid email address."
+        },
+        {
+          "kind": "documented",
+          "text": "flags: Whether to remove the mail account's home mail directory. If you do not specify a value, the function removes the mail account's home directory.\n* `passwd` \u2014 Preserve the mail account's home directory.\n* Any other value \u2014 Remove the mail account's home directory."
+        },
+        {
+          "kind": "documented",
+          "text": "skip_quota: Whether to modify the mail account's quota file.\n* `1` \u2014 Do **not** modify.\n* `0` \u2014 Modify."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/delete_pop GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/disable_filter": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "filtername": {
+          "php": "filterName"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/disable_filter GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/disable_mailbox_autocreate": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Note:**\n\n  When you **enable** the UAPI's `Email::enable_mailbox_autocreate` function, the system automatically creates mailboxes. The system creates a new mailbox when it receives an email address in [plus address format](https://en.wikipedia.org/wiki/Email_address#Sub-addressing) and that mailbox does **not** exist. For example, receiving an email from the `user+newmailbox@example.com` address creates the `newmailbox` mailbox if the `newmailbox` mailbox does not exist."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 78."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/disable_mailbox_autocreate GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/disable_spam_assassin": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Spam Filter* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/disable_spam_assassin GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/disable_spam_autodelete": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/disable_spam_autodelete GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/disable_spam_box": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Notes:**\n\n  * This function **requires** that your hosting provider enables Apache SpamAssassin\u2122 on the server.\n  * To **enable** spam box filtering, use the UAPI `Email::enable_spam_box` function.\n  * For more information, read our [Spam Filters](https://go.cpanel.net/cpaneldocsSpamFilters) documentation.\n\n**Important:**\n\n  When you disable the [*Spam Filter* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/disable_spam_box GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/dispatch_client_settings": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 62."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "Calling this operation emails client configuration to the supplied recipient."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/dispatch_client_settings GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/edit_pop_quota": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares clean rollback; the client performs no automatic rollback or retries."
+        },
+        {
+          "kind": "documented",
+          "text": "quota: The maximum amount of disk space that the new email account may use. Defaults to the system value.\n* A positive integer that represents the maximum amount of disk space, in megabytes (MB).\n\n**Note:**\n\nYou **cannot** enter a value that exceeds the maximum email quota.\n* `0` or `unlimited` \u2014 The account possesses unlimited disk space.\n\nIf the email account's quota value is set higher (or unlimited) than\nthe account's max quota, the account's max quota will be applied instead\nof the value entered.\n\n**Note:**\n\nThis value is only available to users without a maximum email account quota."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/edit_pop_quota GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/enable_filter": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "filtername": {
+          "php": "filterName"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/enable_filter GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/enable_mailbox_autocreate": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Note:**\n\n  To disable this functionality, use the UAPI Email::disable_mailbox_autocreate function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 78."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/enable_mailbox_autocreate GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/enable_spam_assassin": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Spam Filter role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/enable_spam_assassin GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/enable_spam_box": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Notes:**\n\n* This function **requires** that your hosting provider enables Apache SpamAssassin on the server.\n* To **disable** spam box filtering, use the UAPI `Email::disable_spam_box` function.\n* For more information, read our [Spam Filters](https://go.cpanel.net/cpaneldocsSpamFilters) documentation.\n\n**Important:**\n\nWhen you disable the [Spam Filter](https://go.cpanel.net/serverroles) role, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/enable_spam_box GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/export_lists": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.114."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/export_lists GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/fetch_charmaps": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        }
+      ]
+    },
+    "uapi:Email/fts_rescan_mailbox": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Note:**\n\nTo enable this function, you **must** install the *IMAP Full-Text Search Indexing (powered by Apache Solr\u2122)* plugin in WHM's [*Manage Plugins*](https://go.cpanel.net/whmdocsManagePlugins) interface (*WHM >> Home >> cPanel >> Manage Plugins*). For more information, read our [install_dovecot_fts script](https://go.cpanel.net/installdovecotftsscript) documentation.\n\n**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system disables this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "account: The email user's account name.\n\n**Note:**\n\nIf you do not enter an email address, the function rescans the default email account."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/fts_rescan_mailbox GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/generate_mailman_otp": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Note:**\n\nThe generated password expires after one use.\n\n**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/generate_mailman_otp GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/get_auto_responder": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        }
+      ]
+    },
+    "uapi:Email/get_charsets": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        }
+      ]
+    },
+    "uapi:Email/get_client_settings": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 62."
+        },
+        {
+          "kind": "documented",
+          "text": "account: The email address for which to send client settings.\n\n**Note:**\n\nThis parameter defaults to the [system default email account](https://go.cpanel.net/systemdefaultemailaccount). "
+        }
+      ]
+    },
+    "uapi:Email/get_default_email_quota": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail](https://go.cpanel.net/serverroles) role, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.48."
+        },
+        {
+          "kind": "documented",
+          "text": "The default email quota in bytes.\n\nThe value will either be:\n* The system's default quota value (32 gigabytes).\n* The account's quota value, if it is less than the system's default value."
+        }
+      ]
+    },
+    "uapi:Email/get_default_email_quota_mib": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail](https://go.cpanel.net/serverroles) role, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.48."
+        },
+        {
+          "kind": "documented",
+          "text": "The default email quota in [mebibytes](https://en.wikipedia.org/wiki/Mebibyte) (MiB).\n\nThe value will either be:\n* The system's default quota value (32 gigabytes).\n* The account's quota value, if it is less than the system's default value."
+        }
+      ]
+    },
+    "uapi:Email/get_disk_usage": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "diskused: The disk space that the email account uses.\n* A positive floating-point value that represents the disk space, used in megabytes (MB).\n* `0` - The account posesses an unlimited disk quota."
+        }
+      ]
+    },
+    "uapi:Email/get_filter": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail](https://go.cpanel.net/serverroles) role, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        }
+      ],
+      "params": {
+        "filtername": {
+          "php": "filterName"
+        }
+      }
+    },
+    "uapi:Email/get_held_message_count": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 74."
+        }
+      ]
+    },
+    "uapi:Email/get_lists_total_disk_usage": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82."
+        },
+        {
+          "kind": "documented",
+          "text": "The total disk usage for the [mailing lists](https://go.cpanel.net/MailingLists) of a cPanel account, in bytes."
+        }
+      ]
+    },
+    "uapi:Email/get_mailbox_autocreate": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Note:**\n\nTo enable or disable this functionality, use the UAPI's `Email::enable_mailbox_autocreate` and `Email::disable_mailbox_autocreate` functions."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 78."
+        }
+      ]
+    },
+    "uapi:Email/get_mailman_delegates": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail](https://go.cpanel.net/serverroles) role, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        }
+      ]
+    },
+    "uapi:Email/get_main_account_disk_usage": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        }
+      ]
+    },
+    "uapi:Email/get_main_account_disk_usage_bytes": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail](https://go.cpanel.net/serverroles) role, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 64."
+        },
+        {
+          "kind": "documented",
+          "text": "The current amount of disk space that the main email account uses, in bytes."
+        }
+      ]
+    },
+    "uapi:Email/get_max_email_quota": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [Receive Mail](https://go.cpanel.net/serverroles) role, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.48."
+        },
+        {
+          "kind": "documented",
+          "text": "The account's maximum email quota, in bytes format. The function will\nreturn one of the following values:\n\n* The system's default maximum quota (4 [Pebibytes](https://en.wikipedia.org/wiki/Pebibyte)).\n* The account's quota value, if it is **less** than the default\nsystem quota value."
+        }
+      ]
+    },
+    "uapi:Email/get_max_email_quota_mib": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/howtouseserverprofiles#roles),\nthe system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.48."
+        },
+        {
+          "kind": "documented",
+          "text": "The account's maximum email account quota size, in Mebibytes (MiB)."
+        }
+      ]
+    },
+    "uapi:Email/get_pop_quota": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail](https://go.cpanel.net/serverroles) role, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "as_bytes: Whether to return the quota as bytes.\n\n* `1` \u2014 Return the quota as bytes.\n* `0` \u2014 Return the quota as megabytes (MB)."
+        },
+        {
+          "kind": "documented",
+          "text": "The email account's quota.\n\n**Note:**\n\nThis value's unit of measure depends on the `as_bytes` input parameter's value."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, the MB result (asBytes=false) arrived as a numeric string through both direct and bridged UAPI. Canonical integer strings within PHP integer bounds normalize to int. The unit selection remains unchanged; explicit null and absent data remain rejected."
+        },
+        {
+          "kind": "observed",
+          "text": "The same-response diagnostic subsequently established zero-only fixed-point fractions on both routes. integral-fixed-point-string accepts a canonical signed integer part within PHP integer bounds followed by a dot and one or more zeros. It normalizes losslessly to int without floats or rounding; negative zero, nonzero fractions, exponents, whitespace, plus signs, leading zeros and overflow are rejected."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer inspection on cPanel 11.138.0.19 observes exact unlimited for an unlimited mailbox in MB units, and integer 0 with asBytes=true, through both UAPI routes. The result is int or the literal unlimited, without inferring other strings."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string",
+                  "integral-fixed-point-string"
+                ]
+              },
+              {
+                "type": "string",
+                "literal": "unlimited"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "The original get_pop_quota GET payload root was numeric-string on direct-uapi and bridged-uapi at revision 57c425d14c4b9300cf7ddd75e600f258781c0dbf, with HTTP 200 and successful API outcomes but payload mismatches against the pinned integer result. The immutable artifact SHA256 is 7afe0accaeda48e2c7f26a491c2937f0b0417981d8674f3cb7ab0ce90226f636. Both calls selected as_bytes=0 and both owned mailboxes were subsequently confirmed cleaned. The structural evidence establishes neither the exact string format nor quota value 32; that separate fixture expectation was not checked. Preserve the required nonnullable integer result, adding only the existing canonical PHP-integer-bounded numeric-string conversion. Do not infer literal unlimited, null, omission or other-operation compatibility.",
+              "fingerprint": "docs/api/evidence/2026-10-30-email-section-corrected.json"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "At revision fa887d3b3e381d7ae9165821bd0c254f8ae18b94, the original direct-uapi and bridged-uapi get_pop_quota MB responses retained numeric-string type mismatches and were independently classified integral-fixed-point by the same-response diagnostic. The immutable artifact SHA256 is 1e30c8b3f1472213d325670909acc666a8d7e8eee52f12a708be3d15ddd58f7f; both owned mailboxes were confirmed cleaned. This establishes a strict decimal whole part and zero-only fraction, not a quota amount or integer representability. Opt in only this operation to a signed canonical integer part, dot, and one-or-more zeros, additionally requiring exact PHP integer bounds by string/int roundtrip and rejecting negative zero. Strip the zero fraction without float conversion or rounding; nonzero fractions, exponents, whitespace, plus signs, leading zeros and overflow remain rejected. Canonical integer-string compatibility remains separately declared.",
+              "fingerprint": "docs/api/evidence/2026-10-30-email-section-quota-format.json"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewer live inspection at e461f1756c074c6d26822ee70a5e698045394521 confirms an owned unlimited mailbox returns exact string unlimited in MB units on direct and bridged UAPI; as_bytes=1 returns integer zero. https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667 . This is reviewer evidence, not artifact-bound structural proof. The revised owned-mailbox fixture asserts exact unlimited and integer zero through both routes in one new capture. Only the exact literal is added; arbitrary strings, null, absent payloads and fractional values stay invalid.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "The original get_pop_quota GET payload root was numeric-string on direct-uapi and bridged-uapi at revision 57c425d14c4b9300cf7ddd75e600f258781c0dbf, with HTTP 200 and successful API outcomes but payload mismatches against the pinned integer result. The immutable artifact SHA256 is 7afe0accaeda48e2c7f26a491c2937f0b0417981d8674f3cb7ab0ce90226f636. Both calls selected as_bytes=0 and both owned mailboxes were subsequently confirmed cleaned. The structural evidence establishes neither the exact string format nor quota value 32; that separate fixture expectation was not checked. Preserve the required nonnullable integer result, adding only the existing canonical PHP-integer-bounded numeric-string conversion. Do not infer literal unlimited, null, omission or other-operation compatibility.",
+          "fingerprint": "docs/api/evidence/2026-10-30-email-section-corrected.json"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "At revision fa887d3b3e381d7ae9165821bd0c254f8ae18b94, the original direct-uapi and bridged-uapi get_pop_quota MB responses retained numeric-string type mismatches and were independently classified integral-fixed-point by the same-response diagnostic. The immutable artifact SHA256 is 1e30c8b3f1472213d325670909acc666a8d7e8eee52f12a708be3d15ddd58f7f; both owned mailboxes were confirmed cleaned. This establishes a strict decimal whole part and zero-only fraction, not a quota amount or integer representability. Opt in only this operation to a signed canonical integer part, dot, and one-or-more zeros, additionally requiring exact PHP integer bounds by string/int roundtrip and rejecting negative zero. Strip the zero fraction without float conversion or rounding; nonzero fractions, exponents, whitespace, plus signs, leading zeros and overflow remain rejected. Canonical integer-string compatibility remains separately declared.",
+          "fingerprint": "docs/api/evidence/2026-10-30-email-section-quota-format.json"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Reviewer live inspection at e461f1756c074c6d26822ee70a5e698045394521 confirms an owned unlimited mailbox returns exact string unlimited in MB units on direct and bridged UAPI; as_bytes=1 returns integer zero. https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667 . This is reviewer evidence, not artifact-bound structural proof. The revised owned-mailbox fixture asserts exact unlimited and integer zero through both routes in one new capture. Only the exact literal is added; arbitrary strings, null, absent payloads and fractional values stay invalid.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667"
+        }
+      ]
+    },
+    "uapi:Email/get_spam_settings": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [SpamFilter role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "account: Retrieve a specific user account's SpamAssassin settings.\n\n**Note:**\n\nIf you do **not** specify this parameter, the function returns the settings for [the default email account](https://go.cpanel.net/DefaultAddress)."
+        }
+      ]
+    },
+    "uapi:Email/get_webmail_settings": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [_Receive Mail_ role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "account: The email account.\n\n**Note:**\n\nIf you do **not** specify a value, the function retrieves settings for the cPanel account's default mail account."
+        }
+      ]
+    },
+    "uapi:Email/has_delegated_mailman_lists": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        }
+      ]
+    },
+    "uapi:Email/has_plaintext_authentication": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 56."
+        }
+      ]
+    },
+    "uapi:Email/hold_outgoing": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Notes:**\n\n* To send all mail from the queue, use the UAPI `Email::release_outgoing` function.\n* To reject outgoing mail and not place mail in a queue, use the UAPI `Email::suspend_outgoing` function.\n* This function does **not** hold local outgoing mail."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/hold_outgoing GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/list_auto_responders": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        }
+      ]
+    },
+    "uapi:Email/list_default_address": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        }
+      ]
+    },
+    "uapi:Email/list_filters": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important**:\n\n  When you disable the [Mail Receive role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        }
+      ]
+    },
+    "uapi:Email/list_filters_backups": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        }
+      ]
+    },
+    "uapi:Email/list_forwarders": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        }
+      ]
+    },
+    "uapi:Email/list_forwarders_backups": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        }
+      ]
+    },
+    "uapi:Email/list_lists": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "[].diskused: The disk space that the mailing list currently uses, measured in megabytes (MB)."
+        }
+      ]
+    },
+    "uapi:Email/list_mxs": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*DNS* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, entries[].priority arrived as a numeric string through both direct and bridged UAPI. This field accepts canonical integer strings within PHP integer bounds and normalizes them to int; omitted priorities remain absent. Decimal, exponent, whitespace, leading-zero and overflowing strings remain rejected."
+        }
+      ],
+      "response": {
+        "[].entries[].priority": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "The original Email/list_mxs GET responses for direct-uapi and bridged-uapi at revision 3ca852baaf4d42c52c5a460795b3a464c92e85b9 recorded $[].entries[].priority as numeric-string, while the pinned source declares integer. Both API outcomes succeeded and payload validation failed only at this field. The immutable failed artifact has SHA256 ab1c60b5d7a5c1d330fe152ee36a5f26995ebfb080d939d118986093a8f467dc; no mutation ran. Opt in only this field to the existing canonical, PHP-integer-bounded numeric-string conversion, normalizing to int. The structural artifact does not identify the exact string grammar or value; broader numeric formats remain rejected.",
+              "fingerprint": "docs/api/evidence/2026-10-30-email-section.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "The original Email/list_mxs GET responses for direct-uapi and bridged-uapi at revision 3ca852baaf4d42c52c5a460795b3a464c92e85b9 recorded $[].entries[].priority as numeric-string, while the pinned source declares integer. Both API outcomes succeeded and payload validation failed only at this field. The immutable failed artifact has SHA256 ab1c60b5d7a5c1d330fe152ee36a5f26995ebfb080d939d118986093a8f467dc; no mutation ran. Opt in only this field to the existing canonical, PHP-integer-bounded numeric-string conversion, normalizing to int. The structural artifact does not identify the exact string grammar or value; broader numeric formats remain rejected.",
+          "fingerprint": "docs/api/evidence/2026-10-30-email-section.json"
+        }
+      ]
+    },
+    "uapi:Email/list_pops_with_disk": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "email: The cPanel user account to query. If you do **not** use this parameter, the function returns the email addresses for **all** cPanel accounts that the user owns.\n\n**Note:**\n\n To retrieve information for a single email address, add the domain parameter. For example, `email=user&domain=example.com` will return information for the email address `user@example.com`."
+        },
+        {
+          "kind": "documented",
+          "text": "get_restrictions: Whether to display restriction status for each of the email addresses.\n* `1` \u2014 Display.\n* `0` \u2014 Do **not** display."
+        },
+        {
+          "kind": "documented",
+          "text": "infinitylang: Whether to return the `\u221e` character for email addresses with an unlimited quota.\n* `1` \u2014 Return the `\u221e` character for unlimited `diskquota` values.\n* `0` \u2014 Return the string `unlimited` for unlimited `diskquota` values.\n\n**Note:**\n\n If you specify `1` for this parameter **and** the `infinityimg` parameter, the function ignores **this** parameter and returns HTML code for unlimited `diskquota` values."
+        },
+        {
+          "kind": "documented",
+          "text": "no_disk: Whether to skip the collection of disk usage information.\n* `1` \u2014 Do **not** collect.\n* `0` \u2014 Collect."
+        },
+        {
+          "kind": "documented",
+          "text": "no_validate: Whether to skip email database validation.\n* `1` \u2014 Skip validation.\n* `0` \u2014 Perform the validation."
+        },
+        {
+          "kind": "documented",
+          "text": "[]._diskquota: The disk quota.\n* A positive value that represents the disk quota, in bytes.\n* `0` - The account possesses an unlimited disk quota."
+        },
+        {
+          "kind": "documented",
+          "text": "[]._diskused: The disk space that the email account uses.\n* A positive value that represents the used disk space, in bytes.\n* `0` - The account possesses an unlimited disk quota."
+        },
+        {
+          "kind": "documented",
+          "text": "[].diskquota: The email account's disk quota.\n* A positive value that represents the email address's quota, in megabytes (MB).\n* `unlimited`, `\u221e`, or HTML code to display an infinity image - The email account has an unlimited quota.\n\n**Note:**\n\n  The `infinityimg` and `infinitylang` parameters determine the unlimited value for this return."
+        },
+        {
+          "kind": "documented",
+          "text": "[].diskused: The disk space that the email account uses.\n* A positive floating-point value that represents the used disk space, in megabytes (MB).\n* `0` - The account possesses an unlimited disk quota."
+        },
+        {
+          "kind": "documented",
+          "text": "[].diskusedpercent: The percentage of disk space that the email account uses.\n* A positive value.\n* `0` - The account has an unlimited disk quota."
+        },
+        {
+          "kind": "documented",
+          "text": "[].diskusedpercent20: The percentage of disk space that the email account uses.\n* A positive value.\n* `0` - The account possesses an unlimited disk quota."
+        },
+        {
+          "kind": "documented",
+          "text": "[].diskusedpercent_float: The floating-point value from which the function derives the `diskusedpercent` return.\n* A floating-point value.\n* `0` - Unlimited or disabled disk quota.\n\n**Note:**\n\n The `diskusedpercent_float` number can contain scientific notation values. For example, `1.20494365692139e-05`."
+        },
+        {
+          "kind": "documented",
+          "text": "[].humandiskquota: The disk quota, in human-readable format.\n* The disk quota and the unit of measure.\n* `None` - The account possesses an unlimited disk quota."
+        },
+        {
+          "kind": "documented",
+          "text": "[].humandiskused: The disk space that the email account uses, in human-readable format.\n* The disk space that the email account uses, a non-breaking space (`\\u00a0`), and the unit of measure.\n* `None` - The account possesses an unlimited disk quota."
+        },
+        {
+          "kind": "documented",
+          "text": "[].txtdiskquota: The email account's disk quota.\n* A positive value that represents the email address's quota, in megabytes (MB).\n* `unlimited` - The email account has an unlimited quota."
+        }
+      ],
+      "params": {
+        "infinityimg": {
+          "php": "infinityImage"
+        },
+        "infinitylang": {
+          "php": "infinityLanguage"
+        },
+        "maxaccounts": {
+          "php": "maxAccounts"
+        }
+      },
+      "response": {
+        "[].diskused": {
+          "type": "number",
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "The pinned list_pops_with_disk diskused field schema says integer, but its description explicitly states a positive floating-point value in MB. Preserve the documented number without truncation; this is a pinned documentation correction, not a live-observed value."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:Email/list_system_filter_info": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\n  When you disable the [*Receive Mail* role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        }
+      ]
+    },
+    "uapi:Email/passwd_list": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [_Receive Mail_](https://go.cpanel.net/serverroles) role, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/passwd_list GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/passwd_pop": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/passwd_pop GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/release_outgoing": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Note:**\n\nTo set Exim to queue all outgoing mail for an email account, use the UAPI `Email::hold_outgoing` function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "Releases held outgoing messages for delivery."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/release_outgoing GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/remove_mailman_delegates": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/remove_mailman_delegates GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/reorder_filters": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [_Receive Mail_ role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "filter*: A mail filter name.\n\nFor each mail filter to reorder, supply a `filter*` parameter, where `*` is a number that represents the filter's order.\n\nFor example, to set `coffee` as the first email filter and `cheesecloth` as the second, set `coffee` as the `filter1` parameter's value, and `cheesecloth` as the value for the `filter2` parameter."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "filter*": {
+          "php": "filters",
+          "encoding": "suffix-numbered"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/reorder_filters GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings. The filter* description explicitly defines filter1 and filter2 in desired execution order; suffix numbering starts at 1 without a hyphen."
+        }
+      ]
+    },
+    "uapi:Email/set_always_accept": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Note:**\n\n  This function **only** affects the cPanel configuration. You **must** configure the mail exchanger's DNS entry separately.\n\n**Important:**\n\nWhen you disable the [DNS role](https://go.cpanel.net/howtouseserverprofiles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "alwaysaccept: The mail exchanger type.\n* `auto` \u2014 Allow cPanel to determine the appropriate role.\n* `local` \u2014 Always accept the domain's mail.\n* `secondary` \u2014 Accept mail until a higher priority mail server is available.\n* `remote` \u2014 Do **not** accept mail.\n\n**Note:**\n\nThis parameter is redundant with the `mxcheck` parameter. Do **not** enter the `mxcheck` and `alwaysaccept`\nparameters at the same time. [Undefined behavior](https://en.wikipedia.org/wiki/Undefined_behavior) may occur if this\nhappens."
+        },
+        {
+          "kind": "documented",
+          "text": "mxcheck: The mail exchanger type.\n* `auto` \u2014 Allow cPanel to determine the appropriate role.\n* `local` \u2014 Always accept the domain's mail.\n* `secondary` \u2014 Accept mail until a higher priority mail server is available.\n* `remote` \u2014 Do **not** accept mail.\n\n**Note:**\n\nThis parameter is redundant with the `alwaysaccept` parameter. Do **not** enter the `mxcheck` and `alwaysaccept`\nparameters at the same time. [Undefined behavior](https://en.wikipedia.org/wiki/Undefined_behavior) may occur if this\nhappens."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "alwaysaccept": {
+          "php": "alwaysAccept"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/set_always_accept GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/set_default_address": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important**:\n\n  When you disable the [Mail Receive role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "fwdopt: The method to use to handle unroutable mail.\n* `fwd` \u2014 Forward messages to the `fwdemail` parameter\u2019s address.\n* `fail` \u2014 Bounce messages back to the sender, and include the `failmsgs` parameter\u2019s failure message.\n* `blackhole` \u2014 Send messages to the `/dev/null/` directory. This method does **not** generate a failure notice.\n* `pipe` \u2014 Pipe mail to the `pipefwd` parameter\u2019s application. This parameter requires the [File Storage role](https://go.cpanel.net/serverroles)."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: The domain whose default email behavior you want to configure.\n\n**Note**:\n\n  This parameter defaults to the cPanel account\u2019s main domain."
+        },
+        {
+          "kind": "documented",
+          "text": "failmsgs: The failure message for the message\u2019s sender.\n\n**Note**:\n\n Use this parameter if you used the `fail` method for the `fwdopt` parameter."
+        },
+        {
+          "kind": "documented",
+          "text": "fwdemail: The email address to which the system forwards messages.\n\n**Note**:\n\n Use this parameter if you used the `fwd` method for the `fwdopt` parameter."
+        },
+        {
+          "kind": "documented",
+          "text": "pipefwd: The application to which the system pipes messages.\n\n**Note**:\n\n  Use this parameter if you used the `pipe` method for the `fwdopt` parameter.\n\n**Important**:\n\n  This parameter requires the [File Storage role](https://go.cpanel.net/serverroles)."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes default delivery routing for unrouteable mail, including forwarding, failure, discard or pipe behavior."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "fwdopt": {
+          "php": "forwardOption"
+        },
+        "failmsgs": {
+          "php": "failureMessage",
+          "sensitive": true
+        },
+        "fwdemail": {
+          "php": "forwardEmail"
+        },
+        "pipefwd": {
+          "php": "pipeForward",
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/set_default_address GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/set_list_privacy_options": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "advertised: Whether the Mailman directory page displays the list.\n* `1` - Display.\n* `0` - Does **not** display."
+        },
+        {
+          "kind": "documented",
+          "text": "archive_private: Whether the mailing list archive is private.\n* `1` - Private.\n* `0` - Public."
+        },
+        {
+          "kind": "documented",
+          "text": "subscribe_policy: The level of control that the mailing list administrator has over new subscribers.\n* `1` - Anyone can subscribe. The system sends a confirmation email.\n* `2` - The administrator **must** approve subscriptions. The system does **not** send a confirmation email.\n* `3` - The administrator **must** approve subscriptions. The system sends a confirmation email."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/set_list_privacy_options GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/set_manual_mx_redirects": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Note:**\n\n  To remove a domain's manual MX redirection, use the UAPI Email `unset_manual_mx_redirect` function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 96."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: The domain for which to add a manual MX redirect entry.\n\n**Note:**\n\n* To add multiple domain entries, increment the parameter. For example, use the `domain`, `domain-1`, and `domain-2` parameters.\n* For multiple domains, you **must** include its corresponding `mx_host` value."
+        },
+        {
+          "kind": "documented",
+          "text": "mx_host: The domain, IPv4, or IPv6 address to redirect the domain value's emails to.\n\n**Note:**\n\n * To add multiple MX hosts, increment the parameter. For example, use the `mx_host`, `mx_host-1`, and `mx_host-2` parameters.\n * For multiple MX hosts, you **must** include its corresponding `domain` value."
+        }
+      ],
+      "method": "POST",
+      "response": {
+        "": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "The pinned /Email/set_manual_mx_redirects data schema places additionalProperties under properties. Its description says this is a list of domains and its field note explicitly says the return name is the domain parameter value. The example uses example.com as the key. Interpret that documented dynamic key as a map of nullable strings, not a literal additionalProperties key."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/set_manual_mx_redirects GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/stats_db_status": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 64."
+        }
+      ]
+    },
+    "uapi:Email/store_filter": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [*Receive Mail* role](https://docs.cpanel.net/knowledge-base/general-systems-administration/how-to-use-server-profiles/#roles), the system **disables** this function.\n\n### Create multiple rules\n\nYou may create up to 4,096 separate sets of conditions in one filter. To do this, append numbers to the parameter names.\n\nTo create a filter with two sets of actions and conditions, use the following parameters:\n  * Assign the information for the first filter rule to the `action1`, `dest1`, `match1`, `opt1`, `part1`, and `val1` parameters.\n  * Assign the information for the second filter rule to the `action2`, `dest2`, `match2`, `opt2`, `part2`, and `val2` parameters.\n\nTo create a filter that uses one set of actions but two sets of conditions, use the following parameters:\n  * Assign the actions to the `action1` and `dest1` parameters.\n  * Assign the first set of conditions to the `match1`, `opt1`, `part1`, and `val1` parameters.\n  * Assign the second set of conditions to the `match2`, `opt2`, `part2`, and `val2` parameters."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "action*: The filter's action.\n\n* `deliver` - Deliver the message to the `dest*` address.\n* `fail` - Force a delivery failure.\n* `finish` - Stop processing the message.\n* `save` - Save the message to the `dest*` file.\n* `pipe` - Pipe the message to the `dest*` application.\n\n**Important:**\n\n* You **must** increment each action. For example, pass the first action as `action1` and the second action as `action2`.\n* This value **requires** the `FileStorage` role. For more information, read our [How to Use Server Profiles](https://docs.cpanel.net/knowledge-base/general-systems-administration/how-to-use-server-profiles) documentation."
+        },
+        {
+          "kind": "documented",
+          "text": "match*: The filter's [match type](http://www.exim.org/exim-html-current/doc/html/spec_html/filter_ch-exim_filter_files.html).\n* If the `val*` parameter is a string, use a string operator.\n* If the `val*` parameter is an integer, use a numeric operator.\n\nString operators:\n\n* `is`\n* `matches`\n* `contains`\n* `does not contain`\n* `begins`\n* `does not begin`\n* `ends`\n* `does not end`\n* `does not match`\n\nNumeric operators:\n\n* `is above`\n* `is not above`\n* `is below`\n* `is not below`\n\n**Important:**\n\n You **must** increment each match type. For example, pass the first match type as `match1` and the second match type as `match2`."
+        },
+        {
+          "kind": "documented",
+          "text": "part*: The email section to query.\n\n * `$h_x-Spam-Bar:` - Match against the message's spam score value, measured in plus(`+`) characters.\n * `$h_x-Spam-Score:` - Match against the message's spam score value.\n * `$h_X-Spam-Status:` - Match against whether the system detected the message as spam.\n * `$h_List-Id:` - Match against the message's `List-ID` header value.\n * `$header_from:` - Match against the `From:` section.\n * `$header_subject:` - Match against the `Subject:` section.\n * `$header_to:` - Match against the `To:` section.\n * `$reply_address:` - Match against the `Reply To:` section.\n * `$message_body:` - Match against the message's body.\n * `$message_headers:` - Match against the message's headers.\n * `foranyaddress $h_to:, $h_cc:` - Match against all message recipients.\n * `not delivered` - Match if the message is not queued for delivery.\n * `error_message` - Match if the incoming message is bounced.\n\n**Important:**\n\nYou **must** increment each section. For example, pass the first section as `part1` and the second section as `part2`.\n\n**Note:**\n\nGenerally, the recipient does **not** receive the `BCC` field in an email's header. For this reason you **cannot** use the `BCC` field in a filter."
+        },
+        {
+          "kind": "documented",
+          "text": "val*: The value to match.\n\n**Important:**\n\nYou **must** increment each value. For example, pass the first value as `val1` and the second value as `val2`."
+        },
+        {
+          "kind": "documented",
+          "text": "dest*: The destination for filtered mail.\n\n**Important:**\n\n * This parameter is **required** if the action value is `deliver`, `save`, or `pipe`.\n * You **must** increment each destination. For example, pass the first destination as `dest1` and the second destination as `dest2`."
+        },
+        {
+          "kind": "documented",
+          "text": "opt*: The connection between multiple conditions.\n\n**Important:**\n\nYou **must** increment each connection. For example, pass the first connection as `opt1` and the second connection as `opt2`."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "action*": {
+          "php": "actions",
+          "encoding": "suffix-numbered"
+        },
+        "filtername": {
+          "php": "filterName"
+        },
+        "match*": {
+          "php": "matches",
+          "encoding": "suffix-numbered"
+        },
+        "part*": {
+          "php": "parts",
+          "encoding": "suffix-numbered"
+        },
+        "val*": {
+          "php": "values",
+          "encoding": "suffix-numbered-scalar",
+          "sensitive": true
+        },
+        "dest*": {
+          "php": "destinations",
+          "encoding": "suffix-numbered",
+          "sensitive": true
+        },
+        "oldfiltername": {
+          "php": "oldFilterName"
+        },
+        "opt*": {
+          "php": "operators",
+          "encoding": "suffix-numbered"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/store_filter GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings. The description and parameter notes explicitly require action1/dest1/match1/opt1/part1/val1 and incrementing suffix numbers for later rules, up to 4096 condition sets. Values permit strings or integers; only val uses the scalar suffix family."
+        }
+      ]
+    },
+    "uapi:Email/suspend_incoming": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Notes:**\n\n* The user can still log in to the email account. To suspend a user's ability to log in to, send mail from, and read their account, use the UAPI `Email::suspend_login` function.\n* Use the UAPI `Email::unsuspend_incoming` function to allow the account to receive email.\n\n**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/suspend_incoming GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/suspend_login": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Notes:**\n\n* When you suspend an account, the user's account still receives email.\n* To suspend incoming email for an account, use the UAPI `Email::suspend_incoming` function.\n* To remove the login suspension for an account, use the UAPI `Email::unsuspend_login` function.\n\n**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer testing on cPanel 11.138.0.19 found that listPops() immediately after suspendLogin() or unsuspendLogin() can return the previous suspended_login flag on either route. The flag can remain stale until a later write refreshes the cache, even when the server lock state already reflects the successful operation. The same-second mtime-cache explanation is supported, not proven. Evidence: https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/suspend_login GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "External reviewer evidence at https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604 for head 851def1ff80ad55f9821b51f169a0d1fe5c456c5: back-to-back writes produced stale list_pops suspension flags in both directions and on both routes. A server-checked mismatch reported a suspended flag after unsuspend while the real shadow lock state was open; writes in separate seconds avoided mismatches in the sampled run. Reviewer judged this a server read-cache behavior, not a client mutation defect, and explicitly nonblocking for PR31. The exact cache mechanism remains supported rather than proven. This is separate reviewer evidence, not values recovered from the immutable failed structural capture; 8x0.2.18.1 stays open and the failed assessment stays unchanged."
+        }
+      ]
+    },
+    "uapi:Email/suspend_outgoing": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Notes:**\n\n* To suspend a user's login credentials and prevent authenticated connections to the email account, use the UAPI `Email::suspend_login` function.\n* To allow an email account to send mail, use the UAPI `Email::unsuspend_outgoing` function.\n* To hold outgoing mail in Exim's queue, use the UAPI `Email::hold_outgoing` function.\n\n**Important:**\n\nWhen you disable the [Send Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/suspend_outgoing GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/terminate_mailbox_sessions": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Note:**\n\nThis function ends connections for every email address, which includes the [default address](https://go.cpanel.net/cpaneldocsDefaultAddress)."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 96."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response documents a metadata-only envelope resembling WHM and no data payload. The typed method still requires the shared UAPI outcome envelope and returns null."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer live calls on cPanel 11.138.0.19 return the normal UAPI envelope with status 1 on both routes. The metadata-only pinned envelope is a documentation discrepancy; no separate runtime envelope is inferred. This reviewer observation is not bound to an artifact."
+        }
+      ],
+      "method": "POST",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned UAPI operation response documents metadata only and no data payload; its metadata fields resemble a WHM envelope. Declare no payload without inferring a new UAPI envelope or changing route handling. A usable UAPI envelope remains required by the runtime; the pinned source alone does not establish runtime envelope behavior."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/terminate_mailbox_sessions GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Normal UAPI status-1 envelopes reported on both routes by https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667; the pinned metadata-only envelope remains a source discrepancy tracked under 8x0.2.18. No runtime change.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667"
+        }
+      ]
+    },
+    "uapi:Email/trace_delivery": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84."
+        },
+        {
+          "kind": "documented",
+          "text": "Both object and list destination forms preserve the same pinned optional leaf fields, including message and MX lists. Reviewer live inspection observes the list form through both routes. Recursive routed trees remain outside the formal leaf contract; type strings are preserved without enum or discriminator validation."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "address": {
+                "type": "string"
+              },
+              "destinations": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "fields": {
+                      "aliasfile": {
+                        "type": "string"
+                      },
+                      "command": {
+                        "type": "string"
+                      },
+                      "mailbox": {
+                        "type": "string"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "mx": {
+                        "type": "list",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "result": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
+                    "type": "list",
+                    "items": {
+                      "type": "object",
+                      "fields": {
+                        "aliasfile": {
+                          "type": "string"
+                        },
+                        "command": {
+                          "type": "string"
+                        },
+                        "mailbox": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "mx": {
+                          "type": "list",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "result": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "type": {
+                "type": "string"
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "The pinned trace_deliveryResponseBase and trace_deliveryType combine seven anyOf response branches. Their object properties are all optional, so first-match union selection would erase documented fields from later alternatives. Merge the declared optional string fields across object-shaped destinations, preserving the separate remote-delivery list shape with mx string lists. This retains the pinned structural types without claiming discriminator or exact JSON Schema validation. The routed example nests destinations beyond those formal schemas; no recursive grammar or unpinned nested fields are inferred."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewer live inspection at e461f175 observes list destinations carrying the pinned message field through both routes: https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667 . Apply the pinned leaf fields to both object and list forms so validation retains those diagnostics. This report is not an artifact-bound capture and does not establish recursive destination contracts.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Reviewer live inspection at e461f175 observes list destinations carrying the pinned message field through both routes: https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667 . Apply the pinned leaf fields to both object and list forms so validation retains those diagnostics. This report is not an artifact-bound capture and does not establish recursive destination contracts.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715145667"
+        }
+      ]
+    },
+    "uapi:Email/trace_filter": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Note:**\n\nIf the domain or account does not contain a filter file, this function will fail.\n\n**Important:**\n\nWhen you disable the [Receive Mail](https://go.cpanel.net/serverroles) role, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "msg": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned trace_filter GET variant accepts msg containing a raw email message. Mark msg sensitive and send it as form POST under the generated-client policy for content-bearing input, avoiding access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/unset_manual_mx_redirects": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Note:**\n\n  To remove a domain's manual MX redirection, use the UAPI Email `unset_manual_mx_redirect` function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 96."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: The domain for which to add a manual MX redirect entry.\n\n**Note:**\n\n* To add multiple domain entries, increment the parameter. For example, use the `domain`, `domain-1`, and `domain-2` parameters.\n* For multiple domains, you **must** include its corresponding `mx_host` value."
+        }
+      ],
+      "method": "POST",
+      "response": {
+        "": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "The pinned /Email/unset_manual_mx_redirects data schema places additionalProperties under properties. Its description says this is a list of domains and its field note explicitly says the return name is the domain parameter value. The example uses example.com as the key. Interpret that documented dynamic key as a map of nullable strings, not a literal additionalProperties key."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/unset_manual_mx_redirects GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/unsuspend_incoming": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/unsuspend_incoming GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/unsuspend_login": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Note:**\n\n* To suspend a user's ability to log in, use the UAPI `Email::suspend_login` function.\n* To suspend incoming email for an account, use the UAPI `Email::suspend_incoming` function.\n\n**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer testing on cPanel 11.138.0.19 found that listPops() immediately after suspendLogin() or unsuspendLogin() can return the previous suspended_login flag on either route. The flag can remain stale until a later write refreshes the cache, even when the server lock state already reflects the successful operation. The same-second mtime-cache explanation is supported, not proven. Evidence: https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/unsuspend_login GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "External reviewer evidence at https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604 for head 851def1ff80ad55f9821b51f169a0d1fe5c456c5: back-to-back writes produced stale list_pops suspension flags in both directions and on both routes. A server-checked mismatch reported a suspended flag after unsuspend while the real shadow lock state was open; writes in separate seconds avoided mismatches in the sampled run. Reviewer judged this a server read-cache behavior, not a client mutation defect, and explicitly nonblocking for PR31. The exact cache mechanism remains supported rather than proven. This is separate reviewer evidence, not values recovered from the immutable failed structural capture; 8x0.2.18.1 stays open and the failed assessment stays unchanged."
+        }
+      ]
+    },
+    "uapi:Email/unsuspend_outgoing": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Note:**\n\nTo suspend an email account and reject all outgoing mail, use the UAPI `Email::suspend_outgoing` function.        "
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "Permits outgoing delivery for the selected mailbox."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON list as an empty array; nonempty lists are rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/unsuspend_outgoing GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Email/verify_password": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "**Important:**\n\nWhen you disable the [Receive Mail role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback. Verify the account and target before calling."
+        }
+      ],
+      "method": "POST",
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Email/verify_password GET variant declares x-readonly=false. The generated-client policy sends mutations as form POST so operation parameters stay out of access-log query strings."
+        }
+      ]
     }
   }
 }

@@ -18,9 +18,15 @@ use LogicException;
  *
  * Grammar: a type spec is an array with a "type" and optional keys.
  *
- * - string: a JSON string, returned unchanged.
+ * - string: a JSON string, returned unchanged. An explicit "literal" string
+ *   constrains it to that exact value; this is an opt-in overlay constraint,
+ *   never inferred from upstream enums.
  * - int: a JSON integer. "accept" 'numeric-string' also admits a canonical
  *   decimal string (optional minus, no leading zeros, within PHP int range).
+ *   The separate 'integral-fixed-point-string' opt-in admits that same integer
+ *   part followed by a dot and one or more zeros. Its integer part is checked by
+ *   an exact string/int roundtrip; negative zero and overflow fail. Conversion
+ *   strips only the zero fraction, without floats, rounding or precision loss.
  * - number: an int or finite float. "accept" 'numeric-string' also admits a
  *   string of the form [+-]?digits(.digits)?; with "preserve" => true (number
  *   only) the matched string is returned unchanged. Otherwise it is normalized as
@@ -78,7 +84,7 @@ final class ShapeValidator
         $accept = self::accept($type);
 
         return match ($type['type'] ?? null) {
-            'string' => $read->string($value),
+            'string' => self::string($value, $type, $read),
             'int' => self::int($value, $accept, $read),
             'number' => self::number($value, $accept, ($type['preserve'] ?? false) === true, $read),
             'bool' => self::bool($value, $accept, $read),
@@ -93,6 +99,22 @@ final class ShapeValidator
             'union' => self::union($value, $type, $read),
             default => throw new LogicException('Unsupported type spec.'),
         };
+    }
+
+    /** @param array<mixed> $type */
+    private static function string(mixed $value, array $type, PayloadReader $read): string
+    {
+        $value = $read->string($value);
+        if (array_key_exists('literal', $type)) {
+            if (!is_string($type['literal'])) {
+                throw new LogicException('Invalid string literal spec.');
+            }
+            if ($value !== $type['literal']) {
+                $read->fail();
+            }
+        }
+
+        return $value;
     }
 
     /**
@@ -235,6 +257,15 @@ final class ShapeValidator
             && (string) (int) $value === $value
         ) {
             return (int) $value;
+        }
+
+        if (
+            in_array('integral-fixed-point-string', $accept, true)
+            && is_string($value)
+            && preg_match('/\A(-?(?:0|[1-9][0-9]*))\.0+\z/', $value, $parts) === 1
+            && (string) (int) $parts[1] === $parts[1]
+        ) {
+            return (int) $parts[1];
         }
 
         return $read->fail();

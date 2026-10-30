@@ -24,8 +24,8 @@ is deferred by the user as of 2026-10-17; further coverage remains unfinished. T
 correction cycle below completed through PR25, followed by the separately approved
 PR26 provisioning reads (82 operations). The owner authorized completing the Mysql,
 FTP and PostgreSQL sections on 2026-10-30; current [generated coverage](../../api/coverage.md)
-is 131 operations across 15 groups, including all 25 pinned Mysql, 20 Ftp and
-14 Postgresql functions. Full API parity remains unfinished.
+is 236 operations across 15 groups, including all 96 pinned Email functions,
+25 Mysql, 20 Ftp, 14 Postgresql and the complete DomainInfo/Features/LangPHP groups. Full API parity remains unfinished.
 Decision record: `whm-api-client-8x0.10`. This design supersedes the
 "typed core plus generic calls / lean pattern" scaling decision
 (`whm-api-client-8x0.7`, recorded in the

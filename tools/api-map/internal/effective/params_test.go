@@ -138,6 +138,57 @@ func TestBuildParameterRequiredOverridePreservesAbsenceAndFalse(t *testing.T) {
 	}
 }
 
+func TestBuildSuffixNumberedParameters(t *testing.T) {
+	for _, c := range []struct{ encoding, php, doc string }{
+		{"suffix-numbered", "string|array", "string|list<string>"},
+		{"suffix-numbered-scalar", "string|int|array", "string|int|list<string|int>"},
+	} {
+		m := fixtureMap(t)
+		addQueryParameter(t, m, "whm1:createacct", "filter*", map[string]any{"type": "string"})
+		set := fixtureOverlay("listed")
+		op := set.Files[1].Operations["whm1:createacct"]
+		op.Params = map[string]overlay.Param{"filter*": {PHP: "filters", Encoding: c.encoding}}
+		op.Evidence = evidence()
+		set.Files[1].Operations["whm1:createacct"] = op
+		result, joined := buildProblems(t, m, set)
+		if joined != "" {
+			t.Fatal(joined)
+		}
+		found := false
+		for _, p := range groupByClass(t, result, "Accounts").Operations[0].Params {
+			if p.Wire == "filter*" {
+				found = true
+				if p.Encoding != c.encoding || p.PHPType != c.php || p.DocType != c.doc {
+					t.Fatalf("incorrect suffix type: %+v", p)
+				}
+			}
+		}
+		if !found {
+			t.Fatal("suffix argument missing")
+		}
+	}
+}
+
+func TestBuildRejectsOverlappingSuffixWireNames(t *testing.T) {
+	for _, wire := range []string{"filter1", "filter12", "filter1*"} {
+		m := fixtureMap(t)
+		addQueryParameter(t, m, "whm1:createacct", "filter*", map[string]any{"type": "string"})
+		addQueryParameter(t, m, "whm1:createacct", wire, map[string]any{"type": "string"})
+		set := fixtureOverlay("listed")
+		op := set.Files[1].Operations["whm1:createacct"]
+		op.Params = map[string]overlay.Param{"filter*": {PHP: "filters", Encoding: "suffix-numbered"}}
+		if strings.HasSuffix(wire, "*") {
+			op.Params[wire] = overlay.Param{PHP: "other", Encoding: "suffix-numbered"}
+		}
+		op.Evidence = evidence()
+		set.Files[1].Operations["whm1:createacct"] = op
+		_, joined := buildProblems(t, m, set)
+		if !strings.Contains(joined, "overlapping wire names") {
+			t.Fatalf("accepted collision %s: %s", wire, joined)
+		}
+	}
+}
+
 func TestBuildCanSuppressOnlyEnumDocumentation(t *testing.T) {
 	for _, c := range []struct{ setting, want string }{
 		{`{}`, "'default'|'custom'"},

@@ -3,11 +3,11 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 15 generated typed groups cover 144 documented operations (see
+The 15 generated typed groups cover 236 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
-features, Email inventory, SSL/AutoSSL inventory, disk quotas and the complete
+features, the complete Email module, SSL/AutoSSL inventory, disk quotas and the complete
 pinned MySQL, FTP and PostgreSQL sections.
 Generic `call()` methods provide GET and form-encoded POST access without a typed
 group, subject to the operation's parameter, route and envelope requirements.
@@ -315,6 +315,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->domainInfo()` | All 5 operations: `domainsData()`, `singleDomainData()`, `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
 | `uapi()->langPhp()` | All 11 operations: installed/default/vhost PHP versions, domain handlers and impacted domains, INI paths/basic directives/content reads, and `phpIniSetUserBasicDirectives()`, `phpIniSetUserContent()`, `phpSetVhostVersions()` |
 | `uapi()->features()` | All 5 operations: `getFeatureMetadata()`, `hasFeature()`, `hasFeaturesLike()`, `listFeatures()`, `listFeaturesLike()` |
+| `uapi()->email()` | All 96 pinned functions, including mailbox lifecycle, quotas and suspension, forwarders, filters, MX routing, autoresponders, spam settings and delivery diagnostics; see [generated methods](src/Api/Uapi/Email.php). |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
 | `uapi()->ftp()` | `addFtp()`, `allowsAnonymousFtp()`, `allowsAnonymousFtpIncoming()`, `changePassword()`, `deleteFtp()`, `ftpExists()`, `getFtpDaemonInfo()`, `getPort()`, `getQuota()`, `getWelcomeMessage()`, `killSession()`, `listFtp()`, `listFtpWithDisk()`, `listSessions()`, `serverName()`, `setAnonymousFtp()`, `setAnonymousFtpIncoming()`, `setHomedir()`, `setQuota()`, `setWelcomeMessage()` |
 | `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()`, `addHost()`, `addHostNote()`, `checkDatabase()`, `deleteHost()`, `dumpDatabaseSchema()`, `getHostNotes()`, `listRoutines()`, `locateServer()`, `renameDatabase()`, `renameUser()`, `repairDatabase()`, `revokeAccessToDatabase()`, `setPassword()`, `setupDbAndUser()`, `updatePrivileges()` |
@@ -387,6 +388,47 @@ zero acknowledgments and two stale Quota acknowledgments. No mutation ran.
 The empty-string `userdirprotect` variant remains documentation/offline coverage
 because the live responses omit that field. PHP setters and the INI write/read
 round trip remain offline-only; see the [source audit](docs/api/source-audit.md).
+
+
+The Email module uses POST for mutations and secret-bearing requests. Passwords,
+password hashes, filter content and other marked inputs remain sensitive throughout
+the library's call stack. `addPop(email: 'demo', password: $password, domain: 'example.com',
+sendWelcomeEmail: false)` suppresses the optional welcome message. Supply either
+`password` or `passwordHash`, never both; account quota and role restrictions still
+apply. Methods that send mail or change account-wide settings execute immediately.
+
+`storeFilter()` and `reorderFilters()` accept nonempty ordered lists for numbered
+filter parameters. The client emits `action1`, `action2`, or `filter1`, `filter2`;
+`values` also accepts integer items for numeric comparisons. Other filter lists
+accept strings. Empty/keyed lists and colliding wire names fail before dispatch.
+Mailbox counts and quota results retain their distinct zero/unlimited meanings.
+`getPopQuota()` returns `int|'unlimited'`. An observed unlimited mailbox returns
+the exact `unlimited` string in MB units and integer `0` with `asBytes: true`.
+Canonical integer strings and `integral-fixed-point-string` wire values with
+zero-only fractions normalize losslessly to integers, without floating-point
+conversion; fractional values, other strings and overflow remain errors.
+`listPopsWithDisk()` keeps floating-point MB usage, while opaque mutation payloads
+retain fields and explicit nulls.
+
+Two Email contracts remain limited by the pinned source: `traceDelivery()` preserves
+the formal destination shapes, but deeper recursive routed examples are not a typed
+recursive contract. The pinned `terminateMailboxSessions()` page shows a WHM-like
+envelope; the reviewer observed normal UAPI envelopes on both routes, as recorded
+in the source audit under `8x0.2.18`. Offline
+fixtures cover all functions; live evidence is limited to explicitly recorded calls.
+The earlier owned-mailbox capture passed 45 observations across 16 Email functions
+through both routes, with zero discrepancies and both temporary mailboxes removed.
+The revised recipe adds unlimited MB/byte readbacks and local delivery traces,
+using the same two run-owned mailboxes and sending no mail.
+The [reviewed v2 capture](docs/api/evidence/2026-10-30-email-section-reviewed.json)
+passes all 55 HTTP/API/payload checks and the new quota/trace expectations, with
+zero discrepancies and both mailboxes cleaned. Its strict assessment fails on
+one direct-route resumption readback expectation, tracked in `8x0.2.18.1`; that
+failure remains unwaived. The reviewer confirmed stale `listPops()` suspension
+flags despite correct server lock state and judged the finding nonblocking.
+Immediately after a write, the previous flag can persist until a later write
+refreshes the cache. Password, quota and suspension checks establish API behavior,
+not SMTP or IMAP access; see the [source audit](docs/api/source-audit.md).
 
 The DNS methods are read-only (GET):
 

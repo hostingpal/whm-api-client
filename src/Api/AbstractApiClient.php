@@ -35,7 +35,7 @@ use SensitiveParameter;
  * sendRequest() records the request it was handed, with its Authorization header
  * and any GET query (see HttpTransport::send()).
  *
- * @phpstan-type Parameters array<string, string|int|list<string>|NumberedList|RepeatedList>
+ * @phpstan-type Parameters array<string, string|int|list<string>|NumberedList|RepeatedList|SuffixNumberedList>
  */
 abstract class AbstractApiClient
 {
@@ -97,6 +97,7 @@ abstract class AbstractApiClient
      * requests are issued, and the injected PSR client must verify TLS and disable
      * redirects itself. List values encode repeated parameters in order, without
      * bracketed names; NumberedList values use WHM's name, name-1, ... convention.
+     * SuffixNumberedList replaces a terminal wildcard with 1, 2, ... in order.
      * Empty or malformed lists fail locally after clearing prior metadata, so
      * operation groups pass caller input through unvalidated.
      *
@@ -211,8 +212,21 @@ abstract class AbstractApiClient
     private static function encode(#[SensitiveParameter] array $parameters): string
     {
         $parts = [];
+        $seen = [];
+        $suffixKeys = [];
         foreach ($parameters as $name => $value) {
-            array_push($parts, ...self::queryValues((string) $name, $value));
+            $suffix = $value instanceof SuffixNumberedList;
+            foreach (self::queryValues((string) $name, $value) as $part) {
+                $key = explode('=', $part, 2)[0];
+                if (($suffix && isset($seen[$key])) || isset($suffixKeys[$key])) {
+                    throw new InvalidArgumentException('Suffix-numbered parameters overlap another wire name.');
+                }
+                $seen[$key] = true;
+                if ($suffix) {
+                    $suffixKeys[$key] = true;
+                }
+                $parts[] = $part;
+            }
         }
 
         return implode('&', $parts);
@@ -222,16 +236,40 @@ abstract class AbstractApiClient
      * Encode scalar, repeated, or numbered values without changing key names.
      *
      * List values and RepeatedList values repeat their literal name; NumberedList
-     * values use WHM's name, name-1, name-2, ... convention. The mixed boundary
+     * values use WHM's name, name-1, name-2, ... convention. SuffixNumberedList
+     * replaces a reviewed terminal wildcard with 1, 2, ...; its scalar variant
+     * also accepts integers. Expanded names must not overlap another parameter.
+     * The mixed boundary
      * validates PHP array contents supplied to typed methods and generic calls.
      * Failure messages may name the parameter but never include its value.
      *
      * @return non-empty-list<string>
-     * @throws InvalidArgumentException If a value is not a string, an integer or a list of strings, or a
-     *     list is empty, keyed, or contains non-strings.
+     * @throws InvalidArgumentException If a value or suffix pattern is unsupported, a list is empty or keyed,
+     *     list entries have unsupported types, or expanded suffix names overlap another parameter.
      */
     private static function queryValues(string $name, #[SensitiveParameter] mixed $value): array
     {
+        if ($value instanceof SuffixNumberedList) {
+            if (preg_match('/^[A-Za-z_][A-Za-z0-9_]*\*$/D', $name) !== 1) {
+                throw new InvalidArgumentException('Suffix-numbered parameters require one terminal wildcard.');
+            }
+            $allowIntegers = $value->allowIntegers;
+            $entries = is_array($value->values) ? $value->values : [$value->values];
+            if (!array_is_list($entries) || $entries === []) {
+                throw new InvalidArgumentException('Suffix-numbered parameters require a nonempty sequential list.');
+            }
+            $parts = [];
+            foreach ($entries as $index => $entry) {
+                if (!is_string($entry) && !($allowIntegers && is_int($entry))) {
+                    throw new InvalidArgumentException('Suffix-numbered parameters contain an unsupported value.');
+                }
+                $key = substr($name, 0, -1) . ($index + 1);
+                $parts[] = rawurlencode($key) . '=' . rawurlencode((string) $entry);
+            }
+
+            return $parts;
+        }
+
         $numbered = $value instanceof NumberedList;
         if ($numbered || $value instanceof RepeatedList) {
             $value = $value->values;

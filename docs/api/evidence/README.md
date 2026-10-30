@@ -120,3 +120,36 @@ scoped to the exact contracts, revisions and routes recorded in each file.
   and two stale Quota acknowledgments. No mutation ran; PHP setters and the
   omitted empty-string userdirprotect variant remain offline/documentation coverage.
   SHA-256: `f9ba559c0496b88c0c98082435f3e76235e2b8459ebe01d229127cfa2d3e50a8`.
+
+## Complete Email slice (2026-10-30)
+
+Email captures preserve each step without rewriting failed evidence:
+[preflight](2026-10-30-email-section.json),
+[MX correction](2026-10-30-email-section-corrected.json),
+[quota correction](2026-10-30-email-section-quota-corrected.json),
+[count correction](2026-10-30-email-section-count-corrected.json), and
+[quota format diagnostic](2026-10-30-email-section-quota-format.json).
+The diagnostic records only fixed format categories from the original response.
+All mailboxes created by these runs were confirmed absent after cleanup. Generated
+coverage of 96 functions is distinct from the 16-function owned-mailbox recipe;
+remaining live/source-contract work is tracked under 8x0.2.18.
+
+
+The [final owned Email lifecycle](2026-10-30-email-section-final.json), captured at
+fd552b2 on 11.138.0.19, passes all 45 observations and the strict zero-discrepancy
+assessment. It verifies 16 Email functions through both routes, with two fresh
+mailboxes confirmed cleaned up. All five earlier failed captures remain intact.
+
+
+The [reviewed Email v2 capture](2026-10-30-email-section-reviewed.json) at
+`205079c790ad2ed290c00d1656d4cffbe488d21c` contains 55 original responses
+(39 GET, 16 POST), all HTTP/API/payload/probe checks passing, zero discrepancies,
+and both owned mailboxes cleaned. Unlimited MB/byte assertions and local trace
+message retention pass on both routes. Its **strict assessment remains failed**:
+54 expectations pass and direct `resumed_mailboxes` fails its combined identity /
+zero-login-suspension predicate. Structure matches the prior passing artifact and
+cannot establish the failing value or cause. This new unwaived result is tracked
+in `8x0.2.18.1`; this fixture was not repeated to clear it. Separate
+[reviewer investigation](https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604) confirmed stale API flags despite correct server
+lock state and judged the finding nonblocking; the artifact remains failed.
+SHA-256: `13bc03e54292f382e3ec9062b8a7c148735aaa278e4aeecba1262f638363791b`.

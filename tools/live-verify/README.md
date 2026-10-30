@@ -509,3 +509,54 @@ unexpected observations, zero acknowledgments and two stale Quota acknowledgment
 Historical artifacts remain unchanged; findings are not waived or retried away.
 This run includes no PHP mutation. INI write/read behavior and the omitted
 empty-string userdirprotect variant retain their offline/documentation limits.
+
+## Owned Email mailbox recipe
+
+`php tools/live-verify/email-section.php --output=PATH` requires committed inputs,
+PHP cURL, both test tokens, `WHM_API_LIVE=1`, `WHM_API_LIVE_MUTATIONS=1`,
+`WHM_API_LIVE_ACCOUNT=npr`, and `WHM_API_LIVE_DOMAIN=npr.rs`. The output must be
+new; complete reports survive a publication failure in a protected recovery file.
+
+The recipe performs WHM version and both routes' mailbox/domain/forwarder/MX/quota
+preflight reads, then uses a fresh address for each route. Its v2 recipe has 55 planned responses
+covering 17 Email functions: list_pops, count_pops, list_mail_domains,
+list_domain_forwarders, list_forwarders, list_mxs, get_default_email_quota,
+get_max_email_quota, add_pop, get_pop_quota, passwd_pop, verify_password,
+edit_pop_quota, trace_delivery, suspend_login, unsuspend_login and delete_pop. It creates a 32 MB
+mailbox with welcome mail disabled, checks its returned identity and inventory,
+changes/verifies the password, changes quota to 64 MB with readback, then sets
+quota 0 and requires exact MB `unlimited` and byte integer `0` through both routes.
+It traces only that run-owned mailbox and a run-bound missing address on npr.rs,
+without sending mail, verifies login suspension/unsuspension, deletes each owned
+mailbox once and confirms exact absence. The same two resources cover finite and
+unlimited quota behavior; no additional mailbox is created.
+
+No welcome message, client-configuration email, forwarding or delivery test is
+sent. Existing mailboxes and account-wide settings are not changed. An uncertain
+creation is never adopted or removed; successful original creation establishes
+ownership even if its payload later fails validation. Every confirmed owned
+mailbox is cleaned on failure, with one deletion attempt and final absence checks.
+The original outcome, typed validation and fixture expectation remain separate.
+The strict report accepts no discrepancy acknowledgments and persists only
+structural response evidence and fixed lifecycle labels, never passwords, email
+addresses or upstream error messages. It does not establish IMAP/SMTP behavior or
+live coverage of all 96 generated Email functions.
+
+For get_pop_quota only, an optional scalar_encoding diagnostic classifies the
+same captured response into five fixed categories: canonical-integer,
+integral-fixed-point, fractional-fixed-point, other-numeric or other. Fixed-point
+labels describe syntax, not bounds or accepted compatibility. No value, length or
+unknown key is retained, and the diagnostic never changes validation or the gate.
+
+
+The [reviewed Email v2 capture](../../docs/api/evidence/2026-10-30-email-section-reviewed.json)
+contains all 55 phases on `11.138.0.19` at `205079c`, with all HTTP/API/payload
+checks passing, zero discrepancies and both mailboxes cleaned. The exact unlimited
+MB/byte expectations and both local trace targets pass through both routes.
+Its command exits 1: direct `resumed_mailboxes` fails the combined target-identity /
+zero-suspension predicate, leaving 54 passed, one failed and zero unchecked
+expectations. The masked structure matches the earlier successful capture and
+cannot distinguish the failing value or establish a cause. `8x0.2.18.1` remains
+open and the fixture was not rerun. The later [reviewer investigation](https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604)
+confirmed stale API suspension flags despite correct server lock state and judged
+the finding nonblocking, without waiving it or changing the failed artifact.
