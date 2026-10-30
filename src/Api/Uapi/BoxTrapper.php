@@ -674,8 +674,9 @@ final readonly class BoxTrapper
      * Documented: Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls
      * retain the supplied selector; do not assume the cPanel target username is a mailbox address.
      *
-     * Documented: Restores the selected template to its system default with no rollback. email remains optional in the
-     * pinned schema but is explicitly required outside Webmail: supply it for direct and bridged API calls.
+     * Documented: Restores the selected template to its system default. email remains optional in the pinned schema but
+     * is explicitly required outside Webmail: supply it for direct and bridged API calls. The pinned source classifies
+     * this operation as clean rollback; the client performs no automatic rollback or retry.
      *
      * Documented: The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit
      * null; an absent data member is a payload mismatch.
@@ -708,9 +709,10 @@ final readonly class BoxTrapper
      * Documented: Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls
      * retain the supplied selector; do not assume the cPanel target username is a mailbox address.
      *
-     * Documented: Changes message handling with no rollback. Required queue_days documents a minimum of one; omitted
-     * spam_score retains current configuration. from_addresses is one comma-separated string. Optional from_name and
-     * spam_score retain omission; explicit zero flags and empty strings are sent.
+     * Documented: Changes message handling. Required queue_days documents a minimum of one; omitted spam_score retains
+     * current configuration. from_addresses is one comma-separated string. Optional from_name and spam_score retain
+     * omission; explicit zero flags and empty strings are sent. The pinned source classifies this operation as clean
+     * rollback; the client performs no automatic rollback or retry.
      *
      * Documented: The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit
      * null; an absent data member is a payload mismatch.
@@ -765,9 +767,10 @@ final readonly class BoxTrapper
      * Documented: Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls
      * retain the supplied selector; do not assume the cPanel target username is a mailbox address.
      *
-     * Documented: Replaces template text with no rollback. Contents must include To: %email%; verify additionally
-     * requires Subject: verify#%msgid%. Contents cannot exceed four KB. The URI-encoding instruction applies to the
-     * CLI: the client form-encodes supplied contents once. Contents are sensitive.
+     * Documented: Replaces template text. Contents must include To: %email%; verify additionally requires Subject:
+     * verify#%msgid%. Contents cannot exceed four KB. The URI-encoding instruction applies to the CLI: the client
+     * form-encodes supplied contents once. Contents are sensitive. The pinned source classifies this operation as clean
+     * rollback; the client performs no automatic rollback or retry.
      *
      * Documented: The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit
      * null; an absent data member is a payload mismatch.
@@ -811,8 +814,8 @@ final readonly class BoxTrapper
      * retain the supplied selector; do not assume the cPanel target username is a mailbox address.
      *
      * Documented: Sets rules that permit matching messages. Upstream permits repeated or incremented rules names; this
-     * client uses repeated rules fields. Rules are sensitive strings with no inferred expression structure. There is no
-     * rollback.
+     * client uses repeated rules fields. Rules are sensitive strings with no inferred expression structure. The pinned
+     * source classifies this operation as clean rollback; the client performs no automatic rollback or retry.
      *
      * Documented: The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit
      * null; an absent data member is a payload mismatch.
@@ -851,8 +854,8 @@ final readonly class BoxTrapper
      * retain the supplied selector; do not assume the cPanel target username is a mailbox address.
      *
      * Documented: Sets rules that delete matching messages and notify their senders. Upstream permits repeated or
-     * incremented rules names; this client uses repeated rules fields. Rules are sensitive strings. There is no
-     * rollback.
+     * incremented rules names; this client uses repeated rules fields. Rules are sensitive strings. The pinned source
+     * classifies this operation as clean rollback; the client performs no automatic rollback or retry.
      *
      * Documented: The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit
      * null; an absent data member is a payload mismatch.
@@ -889,10 +892,11 @@ final readonly class BoxTrapper
      * Documented: Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls
      * retain the supplied selector; do not assume the cPanel target username is a mailbox address.
      *
-     * Documented: Adds forwarding addresses and changes future message handling with no rollback. The pinned forwarder
-     * query array has email-formatted examples but no item type; URL and CLI examples send one scalar forwarder field.
-     * OpenAPI default query form/explode=true supports repeated fields. The client accepts string values and lists,
-     * while multi-address serialization remains unverified live. Forwarding addresses are sensitive.
+     * Documented: Adds forwarding addresses and changes future message handling. The pinned forwarder query array has
+     * email-formatted examples but no item type; URL and CLI examples send one scalar forwarder field. OpenAPI default
+     * query form/explode=true supports repeated fields. The client accepts string values and lists, while multi-address
+     * serialization remains unverified live. Forwarding addresses are sensitive. The pinned source classifies this
+     * operation as clean rollback; the client performs no automatic rollback or retry.
      *
      * Documented: The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit
      * null; an absent data member is a payload mismatch.
@@ -931,8 +935,8 @@ final readonly class BoxTrapper
      * retain the supplied selector; do not assume the cPanel target username is a mailbox address.
      *
      * Documented: Sets rules that delete matching messages without notifying senders. Upstream permits repeated or
-     * incremented rules names; this client uses repeated rules fields. Rules are sensitive strings. There is no
-     * rollback.
+     * incremented rules names; this client uses repeated rules fields. Rules are sensitive strings. The pinned source
+     * classifies this operation as clean rollback; the client performs no automatic rollback or retry.
      *
      * Documented: The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit
      * null; an absent data member is a payload mismatch.

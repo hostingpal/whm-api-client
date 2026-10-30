@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tests\Response;
 
 use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
+use HostingPal\WhmApiClient\Api\Uapi\Spec\SpamAssassinSpec;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
@@ -151,6 +152,32 @@ final class ObjectValuesTest extends TestCase
         );
         self::assertSame(['paths' => ['$' => ['object'], '$.*' => ['object'], '$.*.*' => ['object'],
             '$.*.*.*' => ['null'], '$.known' => ['int']], 'discrepancies' => []], $result);
+    }
+
+    /** @param array<string, mixed> $spec */
+    #[DataProvider('preferenceSpecs')]
+    public function testPreferenceFingerprintAcceptsDeclaredNumericStringsAndMasksOpaqueCustomValues(array $spec): void
+    {
+        $result = Fingerprint::analyze(
+            self::decode('{"required_score":["5.0"],"private-setting":{"private-child":null}}'),
+            true,
+            $spec,
+        );
+        self::assertSame([
+            'paths' => [
+                '$' => ['object'], '$.*' => ['object'], '$.*.*' => ['null'],
+                '$.blacklist_from' => ['missing'], '$.required_score' => ['list'],
+                '$.required_score[]' => ['numeric-string'], '$.score' => ['missing'], '$.whitelist_from' => ['missing'],
+            ],
+            'discrepancies' => [],
+        ], $result);
+    }
+
+    /** @return iterable<string, array{array<string, mixed>}> */
+    public static function preferenceSpecs(): iterable
+    {
+        yield 'read preferences' => [SpamAssassinSpec::GET_USER_PREFERENCES['returns']];
+        yield 'update preferences' => [SpamAssassinSpec::UPDATE_USER_PREFERENCE['returns']];
     }
 
     private static function decode(string $json): mixed

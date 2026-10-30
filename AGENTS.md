@@ -383,7 +383,9 @@ queuefiles, domains, keys, records and rule fields follow documented parameter
 examples/prose; source inconsistencies stay explicit in overlay notes.
 SpamAssassin custom preference fields use an opt-in object values spec: declared
 fields remain strictly typed, while undeclared keys are preserved under the
-values child. Read custom values are mixed; update custom values are string lists.
+values child. Read and update custom values are mixed because both return the
+complete preference object; declared fields remain strict. required_score list
+items preserve observed numeric strings alongside native integers and floats.
 The malformed literal additionalProperties source node is not a returned field.
 Fingerprint every dynamic key as a wildcard, even on type failure. Default object
 specs still discard unreviewed fields. The scalar update preference argument does

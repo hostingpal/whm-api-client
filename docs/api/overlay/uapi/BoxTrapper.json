@@ -460,7 +460,7 @@
         },
         {
           "kind": "documented",
-          "text": "Restores the selected template to its system default with no rollback. email remains optional in the pinned schema but is explicitly required outside Webmail: supply it for direct and bridged API calls."
+          "text": "Restores the selected template to its system default. email remains optional in the pinned schema but is explicitly required outside Webmail: supply it for direct and bridged API calls. The pinned source classifies this operation as clean rollback; the client performs no automatic rollback or retry."
         },
         {
           "kind": "documented",
@@ -472,7 +472,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
-          "note": "Pinned /BoxTrapper/reset_email_template declares x-readonly=false and x-rollback=none; mutations use form POST. "
+          "note": "Pinned /BoxTrapper/reset_email_template declares x-readonly=false and x-rollback=clean; mutations use form POST. "
         }
       ]
     },
@@ -498,7 +498,7 @@
         },
         {
           "kind": "documented",
-          "text": "Changes message handling with no rollback. Required queue_days documents a minimum of one; omitted spam_score retains current configuration. from_addresses is one comma-separated string. Optional from_name and spam_score retain omission; explicit zero flags and empty strings are sent."
+          "text": "Changes message handling. Required queue_days documents a minimum of one; omitted spam_score retains current configuration. from_addresses is one comma-separated string. Optional from_name and spam_score retain omission; explicit zero flags and empty strings are sent. The pinned source classifies this operation as clean rollback; the client performs no automatic rollback or retry."
         },
         {
           "kind": "documented",
@@ -510,7 +510,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
-          "note": "Pinned /BoxTrapper/save_configuration declares x-readonly=false and x-rollback=none; mutations use form POST. "
+          "note": "Pinned /BoxTrapper/save_configuration declares x-readonly=false and x-rollback=clean; mutations use form POST. "
         }
       ]
     },
@@ -537,7 +537,7 @@
         },
         {
           "kind": "documented",
-          "text": "Replaces template text with no rollback. Contents must include To: %email%; verify additionally requires Subject: verify#%msgid%. Contents cannot exceed four KB. The URI-encoding instruction applies to the CLI: the client form-encodes supplied contents once. Contents are sensitive."
+          "text": "Replaces template text. Contents must include To: %email%; verify additionally requires Subject: verify#%msgid%. Contents cannot exceed four KB. The URI-encoding instruction applies to the CLI: the client form-encodes supplied contents once. Contents are sensitive. The pinned source classifies this operation as clean rollback; the client performs no automatic rollback or retry."
         },
         {
           "kind": "documented",
@@ -549,7 +549,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
-          "note": "Pinned /BoxTrapper/save_email_template declares x-readonly=false and x-rollback=none; mutations use form POST. "
+          "note": "Pinned /BoxTrapper/save_email_template declares x-readonly=false and x-rollback=clean; mutations use form POST. "
         }
       ]
     },
@@ -572,7 +572,7 @@
         },
         {
           "kind": "documented",
-          "text": "Sets rules that permit matching messages. Upstream permits repeated or incremented rules names; this client uses repeated rules fields. Rules are sensitive strings with no inferred expression structure. There is no rollback."
+          "text": "Sets rules that permit matching messages. Upstream permits repeated or incremented rules names; this client uses repeated rules fields. Rules are sensitive strings with no inferred expression structure. The pinned source classifies this operation as clean rollback; the client performs no automatic rollback or retry."
         },
         {
           "kind": "documented",
@@ -584,7 +584,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
-          "note": "Pinned /BoxTrapper/set_allowlist declares x-readonly=false and x-rollback=none; mutations use form POST. Parameter descriptions explicitly permit repeated fields; rule descriptions also permit numbered alternatives."
+          "note": "Pinned /BoxTrapper/set_allowlist declares x-readonly=false and x-rollback=clean; mutations use form POST. Parameter descriptions explicitly permit repeated fields; rule descriptions also permit numbered alternatives."
         }
       ]
     },
@@ -607,7 +607,7 @@
         },
         {
           "kind": "documented",
-          "text": "Sets rules that delete matching messages and notify their senders. Upstream permits repeated or incremented rules names; this client uses repeated rules fields. Rules are sensitive strings. There is no rollback."
+          "text": "Sets rules that delete matching messages and notify their senders. Upstream permits repeated or incremented rules names; this client uses repeated rules fields. Rules are sensitive strings. The pinned source classifies this operation as clean rollback; the client performs no automatic rollback or retry."
         },
         {
           "kind": "documented",
@@ -619,7 +619,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
-          "note": "Pinned /BoxTrapper/set_blocklist declares x-readonly=false and x-rollback=none; mutations use form POST. Parameter descriptions explicitly permit repeated fields; rule descriptions also permit numbered alternatives."
+          "note": "Pinned /BoxTrapper/set_blocklist declares x-readonly=false and x-rollback=clean; mutations use form POST. Parameter descriptions explicitly permit repeated fields; rule descriptions also permit numbered alternatives."
         }
       ]
     },
@@ -643,7 +643,7 @@
         },
         {
           "kind": "documented",
-          "text": "Adds forwarding addresses and changes future message handling with no rollback. The pinned forwarder query array has email-formatted examples but no item type; URL and CLI examples send one scalar forwarder field. OpenAPI default query form/explode=true supports repeated fields. The client accepts string values and lists, while multi-address serialization remains unverified live. Forwarding addresses are sensitive."
+          "text": "Adds forwarding addresses and changes future message handling. The pinned forwarder query array has email-formatted examples but no item type; URL and CLI examples send one scalar forwarder field. OpenAPI default query form/explode=true supports repeated fields. The client accepts string values and lists, while multi-address serialization remains unverified live. Forwarding addresses are sensitive. The pinned source classifies this operation as clean rollback; the client performs no automatic rollback or retry."
         },
         {
           "kind": "documented",
@@ -655,7 +655,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
-          "note": "Pinned /BoxTrapper/set_forwarders declares x-readonly=false and x-rollback=none; mutations use form POST. The forwarder query array uses the OpenAPI default form style and explode=true, supporting repeated forwarder fields. Item format=email and string samples support string-valued fields despite missing items.type; multi-address serialization remains unverified live."
+          "note": "Pinned /BoxTrapper/set_forwarders declares x-readonly=false and x-rollback=clean; mutations use form POST. The forwarder query array uses the OpenAPI default form style and explode=true, supporting repeated forwarder fields. Item format=email and string samples support string-valued fields despite missing items.type; multi-address serialization remains unverified live."
         }
       ]
     },
@@ -678,7 +678,7 @@
         },
         {
           "kind": "documented",
-          "text": "Sets rules that delete matching messages without notifying senders. Upstream permits repeated or incremented rules names; this client uses repeated rules fields. Rules are sensitive strings. There is no rollback."
+          "text": "Sets rules that delete matching messages without notifying senders. Upstream permits repeated or incremented rules names; this client uses repeated rules fields. Rules are sensitive strings. The pinned source classifies this operation as clean rollback; the client performs no automatic rollback or retry."
         },
         {
           "kind": "documented",
@@ -690,7 +690,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
-          "note": "Pinned /BoxTrapper/set_ignorelist declares x-readonly=false and x-rollback=none; mutations use form POST. Parameter descriptions explicitly permit repeated fields; rule descriptions also permit numbered alternatives."
+          "note": "Pinned /BoxTrapper/set_ignorelist declares x-readonly=false and x-rollback=clean; mutations use form POST. Parameter descriptions explicitly permit repeated fields; rule descriptions also permit numbered alternatives."
         }
       ]
     },

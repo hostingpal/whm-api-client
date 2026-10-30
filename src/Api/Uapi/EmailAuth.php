@@ -401,6 +401,11 @@ final readonly class EmailAuth
      * Documented: The source declares no rollback. Uses form POST with a single attempt and no automatic retry or
      * rollback. Per-domain integer status 0 or 1 is payload data; inspect it even when the UAPI envelope succeeds.
      *
+     * Observed: During PR36 review on cPanel 11.138.0.19, validate_current_dmarcs returned record=null even though a
+     * local _dmarc TXT record existed; remove_dmarc removed that record. A null validation record does not establish
+     * local-zone absence and is not a safe deletion precondition. The reviewer restored the original record from a
+     * separate zone snapshot.
+     *
      * API-map identity: uapi:EmailAuth/remove_dmarc#GET (wire name remove_dmarc).
      *
      * @param string|list<string>|null $domains The domain from which to remove the DMARC record. Null omits it.
@@ -477,6 +482,11 @@ final readonly class EmailAuth
      *
      * Observed: The 2026-10-30 capture on 11.138.0.19 through direct UAPI and the WHM bridge observed explicit null
      * error, record. Those fields preserve string/null/omission distinctions; other string fields stay nonnullable.
+     *
+     * Observed: During PR36 review on cPanel 11.138.0.19, validate_current_dmarcs returned record=null even though a
+     * local _dmarc TXT record existed; remove_dmarc removed that record. A null validation record does not establish
+     * local-zone absence and is not a safe deletion precondition. The reviewer restored the original record from a
+     * separate zone snapshot.
      *
      * API-map identity: uapi:EmailAuth/validate_current_dmarcs#GET (wire name validate_current_dmarcs).
      *

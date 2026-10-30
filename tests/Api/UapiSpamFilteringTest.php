@@ -134,19 +134,88 @@ final class UapiSpamFilteringTest extends TestCase
         self::assertCount(1, $http->getRequests());
     }
 
-    #[DataProvider('routes')]
-    public function testReadCustomPreferencesHaveNoInventedValueShape(string $route): void
+    /** @param array<string, mixed> $expected */
+    #[DataProvider('preferenceScoreCases')]
+    public function testPreferenceResponsesPreserveScoreTypesAndPresence(
+        string $route,
+        string $function,
+        string $payload,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        $actual = $function === 'get_user_preferences'
+            ? $account->spamAssassin()->getUserPreferences()
+            : $account->spamAssassin()->updateUserPreference(preference: 'required_score', value: '5.0');
+        self::assertSame($expected, $actual);
+        self::assertCount(1, $http->getRequests());
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame($function === 'get_user_preferences' ? 'GET' : 'POST', $request->getMethod());
+        self::assertSame(
+            $function === 'get_user_preferences' ? '' : 'preference=required_score&value=5.0',
+            (string) $request->getBody(),
+        );
+        $metadata = $account->responseMeta();
+        self::assertNotNull($metadata);
+        self::assertSame(1, $metadata->uapiStatus());
+        self::assertSame($route === 'bridge' ? 1 : null, $metadata->whmResult());
+    }
+
+    /** @return iterable<string, array{string, string, string, array<string, mixed>}> */
+    public static function preferenceScoreCases(): iterable
+    {
+        // The first three strings were reported by PR36 review 5719192482; the rest are synthetic boundaries.
+        $cases = [
+            'reviewed fractional string' => ['{"required_score":["5.1"]}', ['required_score' => ['5.1']]],
+            'reviewed integer string' => ['{"required_score":["6"]}', ['required_score' => ['6']]],
+            'reviewed trailing zero' => ['{"required_score":["5.0"]}', ['required_score' => ['5.0']]],
+            'precision and formatting' => [
+                '{"required_score":["0.10000000000000000500","+001.5000","-0.25","0.00"]}',
+                ['required_score' => ['0.10000000000000000500', '+001.5000', '-0.25', '0.00']],
+            ],
+            'JSON numbers' => ['{"required_score":[0,6,5.1,5.0]}', ['required_score' => [0, 6, 5.1, 5.0]]],
+            'empty score list' => ['{"required_score":[]}', ['required_score' => []]],
+            'omitted score list' => ['{"whitelist_from":[]}', ['whitelist_from' => []]],
+        ];
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (['get_user_preferences', 'update_user_preference'] as $function) {
+                foreach ($cases as $name => [$payload, $expected]) {
+                    yield "$route $function $name" => [$route, $function, $payload, $expected];
+                }
+            }
+        }
+    }
+
+    #[DataProvider('preferenceRoutes')]
+    public function testReadAndUpdatePreserveTheSameOpaqueCustomPreferences(string $route, string $function): void
     {
         [$client, $http] = self::client($route);
         $http->addResponse(new Response(200, [], self::envelope(
             $route,
-            '{"required_score":[5.1],"ok_locales":["all"],"custom_setting":{"opaque":null}}',
+            '{"required_score":[5.1],"ok_locales":["all"],"custom_setting":{"opaque":null},'
+                . '"custom_null":null,"custom_empty":[],"custom_number":[1],"custom_scalar":"all",'
+                . '"custom_flag":false}',
         )));
         self::assertSame(
-            ['required_score' => [5.1], 'ok_locales' => ['all'], 'custom_setting' => ['opaque' => null]],
-            $client->uapi('npr')->spamAssassin()->getUserPreferences(),
+            ['required_score' => [5.1], 'ok_locales' => ['all'], 'custom_setting' => ['opaque' => null],
+                'custom_null' => null, 'custom_empty' => [], 'custom_number' => [1], 'custom_scalar' => 'all',
+                'custom_flag' => false],
+            self::invoke($client->uapi('npr'), 'SpamAssassin', $function),
         );
+        self::assertRequest($http, $route, 'SpamAssassin', $function);
         self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function preferenceRoutes(): iterable
+    {
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (['get_user_preferences', 'update_user_preference'] as $function) {
+                yield "$route $function" => [$route, $function];
+            }
+        }
     }
 
     #[DataProvider('invalidCases')]
@@ -181,12 +250,6 @@ final class UapiSpamFilteringTest extends TestCase
             ['SpamAssassin', 'get_symbolic_test_names', '[{"score":"1e3"}]'],
             ['SpamAssassin', 'get_symbolic_test_names', '[{"key":null}]'],
             ['SpamAssassin', 'get_symbolic_test_names', '[{"rule_type":0}]'],
-            ['SpamAssassin', 'get_user_preferences', '{"blacklist_from":[null]}'],
-            ['SpamAssassin', 'get_user_preferences', '{"required_score":["5.1"]}'],
-            ['SpamAssassin', 'update_user_preference', '{"score":[1]}'],
-            ['SpamAssassin', 'update_user_preference', '{"whitelist_from":null}'],
-            ['SpamAssassin', 'update_user_preference', '{"ok_locales":[1]}'],
-            ['SpamAssassin', 'update_user_preference', '{"custom":null}'],
             ['cPGreyList', 'has_greylisting_enabled', '{"enabled":true}'],
             ['cPGreyList', 'has_greylisting_enabled', '{"enabled":2}'],
             ['cPGreyList', 'list_domains', '[{"cPGreyList":{"total_disabled":null}}]'],
@@ -197,6 +260,28 @@ final class UapiSpamFilteringTest extends TestCase
             ['cPGreyList', 'enable_domains', '[{"type":1}]'],
         ];
         foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (['get_user_preferences', 'update_user_preference'] as $function) {
+                foreach (
+                    ['"not-a-score"', '""', '" 5.1"', '"5.1 "', '"1e3"', '"NaN"', '"INF"',
+                        'true', 'false', 'null', '[]', '{}'] as $index => $item
+                ) {
+                    yield "$route $function malformed score $index" => [
+                        $route, 'SpamAssassin', $function, '{"required_score":[' . $item . ']}',
+                    ];
+                }
+                foreach (['null', '"5.1"', '{}'] as $index => $value) {
+                    yield "$route $function nonlist score $index" => [
+                        $route, 'SpamAssassin', $function, '{"required_score":' . $value . '}',
+                    ];
+                }
+                foreach (
+                    ['{"blacklist_from":[null]}', '{"score":[1]}', '{"whitelist_from":null}'] as $index => $payload
+                ) {
+                    yield "$route $function strict declared field $index" => [
+                        $route, 'SpamAssassin', $function, $payload,
+                    ];
+                }
+            }
             foreach ($cases as $index => [$module, $function, $payload]) {
                 yield "$route malformed $index" => [$route, $module, $function, $payload];
             }

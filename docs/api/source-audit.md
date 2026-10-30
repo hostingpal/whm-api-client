@@ -2419,10 +2419,10 @@ is inferred from that source interpretation.
 
 SpamAssassin's update response nests an additionalProperties description under
 properties and omits its array type, while prose and the complete example show
-custom-named string lists. An evidence-backed root replacement retains the four
-known optional fields and adds typed custom values. get_user_preferences permits
-customizations but does not pin their value shape, so its custom values remain
-mixed. The new opt-in object values child preserves those keys without weakening
+custom-named string lists. The example does not establish a general contract
+for every custom preference. Both read and update return the complete preference
+object, so their evidence-backed root replacements retain the same four known
+optional fields and preserve opaque custom values as mixed. The new opt-in object values child preserves those keys without weakening
 known fields; structural evidence masks dynamic keys. Existing closed objects and
 all prior operation specs retain their contracts. Typed scalar preference values
 do not yet implement the separately documented value-0/value-1 family, tracked
@@ -2449,6 +2449,8 @@ untyped and unacknowledged under `8x0.2.23`.
 
 The corrected read-only capture at `a063db0` passes all 19 API/payload checks;
 strict assessment remains failed for the two PTR unknown-field observations.
+Its immutable SHA-256 is
+`6cf42ae1f62f70835a5025174d352801b69b80e9900c85050dce15543e944701`.
 At the same revision, the first BoxTrapper fixture captures 23 observations
 (15 GET, 8 POST): all API outcomes succeed and both configuration reads fail only
 on numeric-string `queue_days`. Both temporary mailboxes are confirmed cleaned.
@@ -2479,10 +2481,55 @@ and empty logs/queues; it establishes no filtering or delivery enforcement.
 Artifact SHA-256:
 `c29304b444fe7fc57eb226ecd5b3a76ff5ccaf9b72440ac0548f5c0372c432ee`.
 
-Final offline gates pass 15,437 tests / 108,555 assertions, PHPCS, maximum PHPStan,
+Initial handoff gates passed 15,437 tests / 108,555 assertions, PHPCS, maximum PHPStan,
 strict Composer validation, Go tests/vet, pinned source/map checks and generation
 reproducibility. Independent contract, integration, correction and structural
 artifact reviews completed. Generated coverage is 372 operations in 29 groups;
 22 of this slice's 47 functions have bounded live observations, with remaining
 live work/PTR unknowns tracked in `8x0.2.23` and indexed preference inputs in
 `8x0.1.20`. Prior artifacts and pinned source snapshots remain unchanged.
+
+### PR36 current-head review corrections
+
+[Claude review 5719192482](https://github.com/hostingpal/whm-api-client/pull/36#pullrequestreview-5719192482)
+assessed `ed1e68c44acc8b97133892f0ce7d068d5db11fab` on cPanel `11.138.0.19`.
+The reviewer observed `required_score` numeric strings in both preference reads
+and updates through direct UAPI and the WHM bridge. The two item contracts now
+use the existing finite numeric-string acceptance with preservation, alongside
+native integers and floats. Independent tests cover exact formatting, precision,
+invalid values and all supported envelopes. Custom preference values remain
+opaque on both operations because updates return the complete preference object.
+These reviewer observations are distinct from the committed structural artifacts.
+
+The reviewer also found a preexisting local `_dmarc` record despite a null DMARC
+validation record. Removal deleted it; the reviewer restored the zone snapshot
+and verified the record separately. Both validation and removal now document
+that null is not a safe absence check. This correction adds no new DMARC calls.
+
+Pinned `x-rollback=clean` classifications are now represented correctly for
+BoxTrapper `save_configuration`, `save_email_template`, `reset_email_template`,
+`set_allowlist`, `set_blocklist`, `set_ignorelist` and `set_forwarders`.
+The client still performs no automatic rollback or retry. Other operations'
+rollback classifications are unchanged.
+
+The largest remaining payload risk is unobserved nested DKIM/SPF
+`records[].reason` nullability. Populated queued-message `time` values and eight
+message actions also remain unobserved. These remain in `8x0.2.23`; no contract
+is widened by speculation. The two masked PTR strict failures remain explicitly
+nonblocking and unwaived under that same follow-up.
+
+The Email and BoxTrapper entrypoints now share `SectionCommand`; their original
+fixtures, guards and recipes remain byte-identical. The new required-score
+fixture uses that command and restricts four nominal POSTs to one changed value
+and one exact restoration through each route. Both routes confirm the full
+original preference set. Original floats, overflowing JSON integers, unsafe
+threshold shapes or disagreeing route snapshots fail before writes. The private
+comparison preserves scalar types and list order and ignores only object-key
+order. Lost-response uncertainty cannot be cleared by later matching reads.
+
+Independent offline review checked request confinement, zero-POST preflight
+failures, distinct restoration, unretried uncertain writes, evidence privacy and
+separate preference/catalog assessments. The integrated correction passes
+15,662 tests / 110,316 assertions, PHPCS, maximum PHPStan, strict Composer
+validation, Go tests/vet and the offline source/map/generation gate. These checks
+do not establish a live outcome for the new recipe; its final capture is separate.

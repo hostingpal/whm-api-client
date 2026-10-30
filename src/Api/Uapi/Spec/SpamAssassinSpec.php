@@ -52,7 +52,10 @@ final class SpamAssassinSpec
             'values' => ['type' => 'mixed'],
             'fields' => [
                 'blacklist_from' => ['type' => 'list', 'items' => ['type' => 'string']],
-                'required_score' => ['type' => 'list', 'items' => ['type' => 'number']],
+                'required_score' => [
+                    'type' => 'list',
+                    'items' => ['type' => 'number', 'accept' => ['numeric-string'], 'preserve' => true],
+                ],
                 'score' => ['type' => 'list', 'items' => ['type' => 'string']],
                 'whitelist_from' => ['type' => 'list', 'items' => ['type' => 'string']],
             ],
@@ -70,10 +73,13 @@ final class SpamAssassinSpec
         ],
         'returns' => [
             'type' => 'object',
-            'values' => ['type' => 'list', 'items' => ['type' => 'string']],
+            'values' => ['type' => 'mixed'],
             'fields' => [
                 'blacklist_from' => ['type' => 'list', 'items' => ['type' => 'string']],
-                'required_score' => ['type' => 'list', 'items' => ['type' => 'number']],
+                'required_score' => [
+                    'type' => 'list',
+                    'items' => ['type' => 'number', 'accept' => ['numeric-string'], 'preserve' => true],
+                ],
                 'score' => ['type' => 'list', 'items' => ['type' => 'string']],
                 'whitelist_from' => ['type' => 'list', 'items' => ['type' => 'string']],
             ],

@@ -101,6 +101,42 @@ discrepancies and both mailboxes cleaned. Initial failed captures remain intact.
 The observations cover 22 of the 47 new functions; other operations and variants
 remain under `whm-api-client-8x0.2.23`.
 
+### Required-score restoration fixture
+
+`spam-preference-section.php` verifies the reviewed `required_score` correction
+on the designated `npr` account. The shared `SectionCommand` handles authorization,
+committed-input checks and protected, new-only publication for this fixture and
+the Email and BoxTrapper entrypoints; each fixture retains its own request guard,
+recipe and cleanup logic.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/spam-preference-section.php --output=docs/api/evidence/spam-preference-new.json
+```
+
+Both routes must first return the same complete preference object. The original
+threshold must be absent or a single numeric string that can be restored exactly.
+Preflight also refuses floating-point values anywhere in the preference tree,
+including oversized JSON integers decoded as floats, because their exact original
+value cannot be established after PHP decoding. This is a fixture boundary; the
+generated API contract is unchanged.
+The fixture sets one different threshold and reads it back through each route,
+then restores the exact original value (or removes only `required_score` when it
+was originally absent). Both routes confirm the complete original preference set
+after restoration, including all unrelated settings. Original values and custom
+key names stay in memory; the artifact contains sanitized structure only.
+
+A dispatched mutation is never repeated. Cleanup sends one distinct restoration
+request even after an accepted-outcome payload failure or transport uncertainty;
+uncertainty remains a failure even if later reads match. Any phase failure halts
+further threshold changes. The nominal capture has 31 observations: two preference
+preflights, ten set/read/restore/confirmation observations, and one final 19-GET
+mail-protection catalog. The threshold phase and restoration are assessed
+separately from strict catalog discrepancies. Known PTR findings remain failures
+and receive no waiver. This recipe does not replay the BoxTrapper mailbox fixture
+or establish filtering or delivery enforcement.
+
 ### Complete FTP section fixture
 
 `ftp-section.php` is a standalone opt-in recipe for the generated Ftp group. It

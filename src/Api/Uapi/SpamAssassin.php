@@ -25,17 +25,17 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  * }>
  * @phpstan-type GetUserPreferencesResult array{
  *     blacklist_from?: list<string>,
- *     required_score?: list<int|float>,
+ *     required_score?: list<int|float|numeric-string>,
  *     score?: list<string>,
  *     whitelist_from?: list<string>,
  *     ...<array-key, mixed>
  * }
  * @phpstan-type UpdateUserPreferenceResult array{
  *     blacklist_from?: list<string>,
- *     required_score?: list<int|float>,
+ *     required_score?: list<int|float|numeric-string>,
  *     score?: list<string>,
  *     whitelist_from?: list<string>,
- *     ...<array-key, list<string>>
+ *     ...<array-key, mixed>
  * }
  */
 final readonly class SpamAssassin
@@ -111,9 +111,17 @@ final readonly class SpamAssassin
      * required_score, score and whitelist_from remain optional lists; empty lists and zero numeric required_score items
      * are preserved. No preference defaults are supplied by the client.
      *
-     * Documented: The pinned prose allows additional custom preferences without specifying their value shape. The four
-     * declared fields keep their strict list types; additional keys and their JSON values are preserved without
-     * inventing a value schema. Omitted fields stay absent and null is distinct from omission.
+     * Documented: The pinned prose allows additional custom preferences without specifying their value shape. Both
+     * preference reads and updates preserve undeclared keys as opaque JSON values under one effective contract. The
+     * four declared fields keep their strict list types and documented or evidenced item types; omitted fields stay
+     * absent and custom null values remain distinct from omission. No particular opaque custom value shape is claimed
+     * as live-observed.
+     *
+     * Observed: On cPanel 11.138.0.19, independent PR36 review observed required_score numeric strings on both direct
+     * UAPI and the WHM bridge for reads and successful updates. Accepted decimal numeric strings are preserved
+     * unchanged, including precision and trailing zeros; JSON integers and floats remain accepted. Arbitrary strings,
+     * booleans, null and containers are rejected as score items. Omitted required_score stays absent and an empty list
+     * stays empty.
      *
      * API-map identity: uapi:SpamAssassin/get_user_preferences#GET (wire name get_user_preferences).
      *
@@ -150,9 +158,17 @@ final readonly class SpamAssassin
      * inferred comma delimiter or alternative numbered serialization.
      *
      * Documented: The pinned return example includes custom preferences such as ok_locales. Its custom-variable
-     * description is misplaced as a properties.additionalProperties member without a type. The effective object keeps
-     * the four named fields strict and preserves undeclared custom keys as string lists, following that description,
-     * its string item schema and the example. It does not infer a literal additionalProperties field.
+     * description and string item hint are misplaced as a properties.additionalProperties member without a type. The
+     * update response echoes the complete preference set, so its effective custom-value contract matches
+     * get_user_preferences: preserve undeclared keys as opaque JSON values while validating the four declared fields
+     * strictly. This reviewed compatibility boundary does not infer a literal additionalProperties field or claim that
+     * synthetic opaque value variants were observed live.
+     *
+     * Observed: On cPanel 11.138.0.19, independent PR36 review observed required_score numeric strings on both direct
+     * UAPI and the WHM bridge for reads and successful updates. Accepted decimal numeric strings are preserved
+     * unchanged, including precision and trailing zeros; JSON integers and floats remain accepted. Arbitrary strings,
+     * booleans, null and containers are rejected as score items. Omitted required_score stays absent and an empty list
+     * stays empty.
      *
      * API-map identity: uapi:SpamAssassin/update_user_preference#GET (wire name update_user_preference).
      *

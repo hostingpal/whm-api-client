@@ -633,15 +633,18 @@ can update the validity cache despite its read-only classification. DMARC method
 require cPanel 124+, and the other EmailAuth methods require 78+.
 
 Observed compatibility preserves nullable DKIM/PTR error fields and DMARC
-error/record fields. PTR IP versions normalize canonical integer strings to
+error/record fields. A null DMARC validation record does not prove that the
+local zone has no DMARC record; see the observed removal caveat in the method
+documentation before deleting records. PTR IP versions normalize canonical integer strings to
 integers. SpamAssassin symbolic scores preserve numeric strings without losing
 precision. These corrections apply only to the evidenced fields; see the
 [source audit](docs/api/source-audit.md) for their pinned and live distinctions.
 
 SpamAssassin preferences keep their four known fields typed while preserving
-custom keys. Custom values in `getUserPreferences()` have no pinned type; the
-update response documents custom string lists. Numeric `required_score` lists
-remain distinct from string-valued preferences. `updateUserPreference()` accepts
+custom keys. Custom values have no general pinned type and remain opaque in
+both reads and updates, which return the complete preference object.
+`required_score` lists accept integers, floats and observed numeric strings;
+strings retain their exact precision and formatting. `updateUserPreference()` accepts
 one scalar `value`; omission removes settings, while empty string and string `0`
 remain explicit values. The documented `value-0`/`value-1` multi-value family is
 not yet represented by the typed signature (`whm-api-client-8x0.1.20`). `clearSpamBox()` deletes all Spam Box
