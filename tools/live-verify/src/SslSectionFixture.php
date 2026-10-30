@@ -171,7 +171,7 @@ final class SslSectionFixture
                 }
             }
             $this->expect($this->resources[$route][$kind] === 'owned');
-            $this->successful();
+            $this->ownedUploadSucceeded($route, $kind);
         }
         $result = $this->call(
             'fetch',
@@ -384,6 +384,36 @@ final class SslSectionFixture
             $current['cert'] = $state;
         }
         $this->resources[$route] = $current;
+    }
+
+    /**
+     * Continue only a typed-success upload whose original response established exact ownership.
+     *
+     * Unknown fields stay in the original observation and still fail report().
+     * This exception never applies to preflight, inventory, fetch or cleanup.
+     *
+     * @param Route $route
+     * @param 'key'|'cert' $kind
+     */
+    private function ownedUploadSucceeded(string $route, string $kind): void
+    {
+        $observation = $this->last();
+        $record = $observation['record'];
+        if (
+            $observation['phase'] !== 'upload_' . $kind || $observation['expectation'] !== 'passed'
+            || $record['operation'] !== 'uapi:SSL/upload_' . $kind || $record['route'] !== $route
+            || $record['variant'] !== 'uapi:SSL/upload_' . $kind . '#POST' || $record['method'] !== 'POST'
+            || $record['api_outcome'] !== 'success' || $record['payload_validation'] !== 'passed'
+            || $record['probe_outcome'] !== 'passed' || $this->resources[$route][$kind] !== 'owned'
+            || !isset($this->owned[$route . ':' . $kind]) || $this->owned[$route . ':' . $kind] === ''
+        ) {
+            throw new RuntimeException('SSL owned upload observation failed.');
+        }
+        foreach ($record['discrepancies'] as $discrepancy) {
+            if ($discrepancy['kind'] !== 'unknown_field') {
+                throw new RuntimeException('SSL owned upload discrepancy prevents continuation.');
+            }
+        }
     }
 
     private function successful(): void

@@ -1386,3 +1386,19 @@ id-ecPublicKey algorithm, a documented curve and nonempty hexadecimal public poi
 establish non-RSA identity. Ambiguous RSA/unknown rows fail, including null modulus
 previously admitted without algorithm checks. Independent tests cover both
 inventories and preserve unrelated resources. Failed artifacts remain immutable.
+
+The [owned-upload capture](evidence/2026-10-30-ssl-section-identity-corrected.json)
+at 079d86b on 11.138.0.19 has SHA-256
+`ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08`.
+It records 19 original responses. Both routes accepted the multipart upload_key
+field named key. Direct upload validation then rejected quoted integer fields;
+the bridged key and certificate uploads passed typed validation, but an unknown
+certificate field stopped the lifecycle before fetch. Delete responses also exposed
+quoted integers/flags and an unknown key field. Every confirmed uploaded resource
+was deleted and its absence verified; the direct certificate was never created.
+
+Corrections target only the observed upload_key, delete_key and delete_cert fields.
+A reviewed upload-only continuation rule permits a valid typed upload with unknown
+extra fields to proceed after its original response proves ownership. Those extras
+remain recorded and fail the strict final assessment. Preflight, inventory, fetch,
+cleanup, uncertain-identity handling and the final zero-discrepancy gate are unchanged.

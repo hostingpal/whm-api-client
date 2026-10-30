@@ -63,6 +63,10 @@ final class SslSectionServer implements ClientInterface
                     'id' => $row['id'], 'modulus' => $row['modulus'], 'friendly_name' => 'fixture label',
                 ], $rows));
                 $data = [...$data, ...$this->existingInventory[$function]];
+                if ($this->failure === 'preflight_unknown') {
+                    $data[] = ['id' => 'unrelated-existing', 'friendly_name' => 'fixture label',
+                        'modulus' => 'deadbeef', 'unreviewed_fixture_field' => 'unpersisted fixture value'];
+                }
                 if ($this->failure === 'preflight') {
                     $status = 0;
                 }
@@ -99,6 +103,12 @@ final class SslSectionServer implements ClientInterface
                 }
                 if ($isKey && $this->failure === 'key_missing_id') {
                     unset($data[0]['id']);
+                }
+                if (in_array($this->failure, ['upload_unknown', 'key_payload_unknown'], true)) {
+                    $data[0]['unreviewed_fixture_field'] = 'unpersisted fixture value';
+                }
+                if ($isKey && $this->failure === 'key_payload_unknown') {
+                    $data[0]['created'] = 'malformed';
                 }
                 if ($isKey && $this->failure === 'key_duplicate') {
                     $data[] = $data[0];

@@ -347,6 +347,12 @@ original creation responses. Matching public moduli bind returned private keys
 without persisting private material. Payload validation failures still permit
 cleanup when the successful original response establishes an unambiguous owned ID;
 failed or ambiguous creation never adopts an ID from a later inventory.
+After an upload proves exact ownership and passes API and typed payload checks,
+unknown response fields alone allow the owned-resource lifecycle to continue to
+fetch and cleanup. The original unknown-field discrepancies remain in evidence,
+and the final strict assessment still fails on every discrepancy. This narrow
+continuation rule does not apply to preflight, other inventories, fetch or cleanup;
+all other upload discrepancies and unsuccessful API/payload checks stop continuation.
 
 The one-shot guard checks exact opt-ins, account, credentials, routing, fields,
 headers and multipart bytes. No request is retried. Each confirmed owned ID gets

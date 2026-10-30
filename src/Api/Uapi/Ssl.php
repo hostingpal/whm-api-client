@@ -546,6 +546,11 @@ final readonly class Ssl
      *
      * Documented: Deletes the certificate from SSL storage only. Use deleteSsl to end domain SSL coverage.
      *
+     * Observed: On cPanel 11.138.0.19, bridged-uapi returned created, modulus_length, not_before, not_after,
+     * is_self_signed as numeric strings. Canonical integer strings normalize to integers; is_self_signed accepts only
+     * exact string flags 0/1. This correction is limited to this operation and retains existing nullability and
+     * omission.
+     *
      * API-map identity: uapi:SSL/delete_cert#GET (wire name delete_cert).
      *
      * @param string|null $friendlyName The certificate's friendly name. Null omits it.
@@ -609,6 +614,10 @@ final readonly class Ssl
      *
      * Documented: Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables
      * this operation.
+     *
+     * Observed: On cPanel 11.138.0.19, direct-uapi and bridged-uapi returned created, modulus_length as numeric
+     * strings. Canonical integer strings normalize to integers. This correction is limited to this operation and
+     * retains existing nullability and omission.
      *
      * API-map identity: uapi:SSL/delete_key#GET (wire name delete_key).
      *
@@ -2012,15 +2021,22 @@ final readonly class Ssl
      * Documented: Sends inline multipart string fields. Request routing supports direct UAPI and the WHM bridge; this
      * construction alone does not establish live operation coverage on either route.
      *
-     * Documented: The pinned multipart field crt contradicts the required key parameter. This method sends key as the
-     * reviewed candidate; successful runtime acceptance is not yet established. The private key input remains
-     * sensitive.
+     * Documented: The pinned multipart field crt contradicts the required key parameter. This method sends key
+     * following the operation-specific parameter definition. The private key input remains sensitive.
      *
      * Documented: Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables
      * this operation.
      *
      * Documented: Requires POST because key contents exceed GET field limits. The upstream documentation excludes
      * cPanel and Webmail session URLs for this operation.
+     *
+     * Observed: On cPanel 11.138.0.19, direct-uapi returned created, modulus_length as numeric strings. Canonical
+     * integer strings normalize to integers. This correction is limited to this operation and retains existing
+     * nullability and omission.
+     *
+     * Observed: On cPanel 11.138.0.19, multipart field key was accepted with API success and fresh-key ownership
+     * confirmation through direct UAPI and the WHM bridge. Both owned keys were cleaned. The direct response had
+     * numeric-string payload discrepancies; this observation does not establish discrepancy-free payload coverage.
      *
      * API-map identity: uapi:SSL/upload_key#POST (wire name upload_key).
      *

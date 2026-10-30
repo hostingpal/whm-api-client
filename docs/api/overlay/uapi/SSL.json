@@ -159,6 +159,85 @@
         {
           "kind": "documented",
           "text": "Deletes the certificate from SSL storage only. Use deleteSsl to end domain SSL coverage."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, bridged-uapi returned created, modulus_length, not_before, not_after, is_self_signed as numeric strings. Canonical integer strings normalize to integers; is_self_signed accepts only exact string flags 0/1. This correction is limited to this operation and retains existing nullability and omission."
+        }
+      ],
+      "response": {
+        "[].created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-ssl-section-identity-corrected.json SHA-256 ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08; revision 079d86bf3eb075f049d6f102b1db1cc9496c08d9. The bridged-uapi POST original response reports delete_cert $[].created as numeric-string, whereas pinned /SSL/delete_cert GET result.data.items.properties[created] declares integer. Accept canonical in-range integer strings and normalize to integers; preserve existing nullability and omission rules."
+            }
+          ]
+        },
+        "[].modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-ssl-section-identity-corrected.json SHA-256 ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08; revision 079d86bf3eb075f049d6f102b1db1cc9496c08d9. The bridged-uapi POST original response reports delete_cert $[].modulus_length as numeric-string, whereas pinned /SSL/delete_cert GET result.data.items.properties[modulus_length] declares integer. Accept canonical in-range integer strings and normalize to integers; preserve existing nullability and omission rules."
+            }
+          ]
+        },
+        "[].not_before": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-ssl-section-identity-corrected.json SHA-256 ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08; revision 079d86bf3eb075f049d6f102b1db1cc9496c08d9. The bridged-uapi POST original response reports delete_cert $[].not_before as numeric-string, whereas pinned /SSL/delete_cert GET result.data.items.properties[not_before] declares integer. Accept canonical in-range integer strings and normalize to integers; preserve existing nullability and omission rules."
+            }
+          ]
+        },
+        "[].not_after": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-ssl-section-identity-corrected.json SHA-256 ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08; revision 079d86bf3eb075f049d6f102b1db1cc9496c08d9. The bridged-uapi POST original response reports delete_cert $[].not_after as numeric-string, whereas pinned /SSL/delete_cert GET result.data.items.properties[not_after] declares integer. Accept canonical in-range integer strings and normalize to integers; preserve existing nullability and omission rules."
+            }
+          ]
+        },
+        "[].is_self_signed": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-ssl-section-identity-corrected.json SHA-256 ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08; revision 079d86bf3eb075f049d6f102b1db1cc9496c08d9. The bridged-uapi POST original response reports delete_cert $[].is_self_signed as numeric-string, whereas pinned /SSL/delete_cert GET result.data.items.properties[is_self_signed] declares integer 0/1. Accept only exact string flags 0/1 and normalize to integers."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "docs/api/evidence/2026-10-30-ssl-section-identity-corrected.json SHA-256 ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08; revision 079d86bf3eb075f049d6f102b1db1cc9496c08d9. The bridged-uapi POST original response reports delete_cert $[].created as numeric-string, whereas pinned /SSL/delete_cert GET result.data.items.properties[created] declares integer. Accept canonical in-range integer strings and normalize to integers; preserve existing nullability and omission rules."
         }
       ]
     },
@@ -191,6 +270,46 @@
         {
           "kind": "documented",
           "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, direct-uapi and bridged-uapi returned created, modulus_length as numeric strings. Canonical integer strings normalize to integers. This correction is limited to this operation and retains existing nullability and omission."
+        }
+      ],
+      "response": {
+        "[].created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-ssl-section-identity-corrected.json SHA-256 ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08; revision 079d86bf3eb075f049d6f102b1db1cc9496c08d9. The direct-uapi and bridged-uapi POST original response reports delete_key $[].created as numeric-string, whereas pinned /SSL/delete_key GET result.data.items.properties[created] declares integer. Accept canonical in-range integer strings and normalize to integers; preserve existing nullability and omission rules."
+            }
+          ]
+        },
+        "[].modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-ssl-section-identity-corrected.json SHA-256 ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08; revision 079d86bf3eb075f049d6f102b1db1cc9496c08d9. The direct-uapi and bridged-uapi POST original response reports delete_key $[].modulus_length as numeric-string, whereas pinned /SSL/delete_key GET result.data.items.properties[modulus_length] declares integer. Accept canonical in-range integer strings and normalize to integers; preserve existing nullability and omission rules."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "docs/api/evidence/2026-10-30-ssl-section-identity-corrected.json SHA-256 ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08; revision 079d86bf3eb075f049d6f102b1db1cc9496c08d9. The direct-uapi and bridged-uapi POST original response reports delete_key $[].created as numeric-string, whereas pinned /SSL/delete_key GET result.data.items.properties[created] declares integer. Accept canonical in-range integer strings and normalize to integers; preserve existing nullability and omission rules."
         }
       ]
     },
@@ -945,7 +1064,19 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
-          "note": "Pinned /SSL/upload_key POST requestBody declares multipart/form-data with inline string properties. Query declarations repeat the fields; the public signature retains their requiredness and sends the reviewed fields once in the multipart body. Empty JSON x-codeSamples do not establish an alternative request encoding. The pinned upload_key query parameter is named key and described as the private key contents, while the multipart schema calls the same pem-private-key field crt. The reviewed candidate resolves the contradictory body field name to key, following the operation-specific parameter definition. This is a documentation-based candidate pending owned-resource live verification, not an observed correction."
+          "note": "Pinned /SSL/upload_key POST requestBody declares multipart/form-data with inline string properties. Query declarations repeat the fields; the public signature retains their requiredness and sends the reviewed fields once in the multipart body. Empty JSON x-codeSamples do not establish an alternative request encoding. The pinned upload_key query parameter is named key and described as the private key contents, while the multipart schema calls the same pem-private-key field crt. The reviewed candidate resolves the contradictory body field name to key, following the operation-specific parameter definition. That source contradiction remains pinned; the separate live evidence records acceptance of the reviewed key body field."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "docs/api/evidence/2026-10-30-ssl-section-identity-corrected.json SHA-256 ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08; revision 079d86bf3eb075f049d6f102b1db1cc9496c08d9. The direct-uapi POST original response reports upload_key $[].created as numeric-string, whereas pinned /SSL/upload_key POST result.data.items.properties[created] declares integer. Accept canonical in-range integer strings and normalize to integers; preserve existing nullability and omission rules."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "docs/api/evidence/2026-10-30-ssl-section-identity-corrected.json SHA-256 ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08; revision 079d86bf3eb075f049d6f102b1db1cc9496c08d9. Both direct-uapi and bridged-uapi accepted multipart field key with API success and original-response ownership confirmation for fresh generated keys. Both created keys were confirmed absent after cleanup. The direct payload failed integer validation; bridged payload passed. This demonstrates request-field acceptance on these routes/version, not discrepancy-free payload coverage or other SSL operation coverage."
         }
       ],
       "notes": [
@@ -955,7 +1086,7 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned multipart field crt contradicts the required key parameter. This method sends key as the reviewed candidate; successful runtime acceptance is not yet established. The private key input remains sensitive."
+          "text": "The pinned multipart field crt contradicts the required key parameter. This method sends key following the operation-specific parameter definition. The private key input remains sensitive."
         },
         {
           "kind": "documented",
@@ -964,10 +1095,46 @@
         {
           "kind": "documented",
           "text": "Requires POST because key contents exceed GET field limits. The upstream documentation excludes cPanel and Webmail session URLs for this operation."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, direct-uapi returned created, modulus_length as numeric strings. Canonical integer strings normalize to integers. This correction is limited to this operation and retains existing nullability and omission."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, multipart field key was accepted with API success and fresh-key ownership confirmation through direct UAPI and the WHM bridge. Both owned keys were cleaned. The direct response had numeric-string payload discrepancies; this observation does not establish discrepancy-free payload coverage."
         }
       ],
       "body_fields": {
         "crt": "key"
+      },
+      "response": {
+        "[].created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-ssl-section-identity-corrected.json SHA-256 ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08; revision 079d86bf3eb075f049d6f102b1db1cc9496c08d9. The direct-uapi POST original response reports upload_key $[].created as numeric-string, whereas pinned /SSL/upload_key POST result.data.items.properties[created] declares integer. Accept canonical in-range integer strings and normalize to integers; preserve existing nullability and omission rules."
+            }
+          ]
+        },
+        "[].modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-ssl-section-identity-corrected.json SHA-256 ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08; revision 079d86bf3eb075f049d6f102b1db1cc9496c08d9. The direct-uapi POST original response reports upload_key $[].modulus_length as numeric-string, whereas pinned /SSL/upload_key POST result.data.items.properties[modulus_length] declares integer. Accept canonical in-range integer strings and normalize to integers; preserve existing nullability and omission rules."
+            }
+          ]
+        }
       }
     },
     "uapi:SSL/install_ssl": {

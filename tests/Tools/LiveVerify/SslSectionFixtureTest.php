@@ -270,6 +270,72 @@ final class SslSectionFixtureTest extends TestCase
         }
     }
 
+    public function testKnownOwnedUploadsContinueWithUnknownFieldsButEvidenceStillFails(): void
+    {
+        $server = new SslSectionServer('upload_unknown');
+        $report = self::fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertCount(23, $report['probes']);
+        self::assertSame(2, $server->counts['fetch_key_and_cabundle_for_certificate'] ?? 0);
+        self::assertSame(2, $server->counts['upload_key'] ?? 0);
+        self::assertSame(2, $server->counts['upload_cert'] ?? 0);
+        self::assertSame(2, $server->counts['delete_key'] ?? 0);
+        self::assertSame(2, $server->counts['delete_cert'] ?? 0);
+        self::assertSame([], $server->keys);
+        self::assertSame([], $server->certificates);
+        $uploads = 0;
+        foreach ($report['probes'] as $probe) {
+            if (in_array($probe['phase'], ['upload_key', 'upload_cert'], true)) {
+                ++$uploads;
+                self::assertSame('passed', $probe['expectation']);
+                self::assertSame('success', $probe['record']['api_outcome']);
+                self::assertSame('passed', $probe['record']['payload_validation']);
+                self::assertSame([['path' => '$[].*', 'kind' => 'unknown_field']], $probe['record']['discrepancies']);
+            }
+        }
+        self::assertSame(4, $uploads);
+        foreach ($report['resources'] as $resources) {
+            self::assertSame(['key' => 'cleaned', 'cert' => 'cleaned'], $resources);
+        }
+        $encoded = json_encode($report, JSON_THROW_ON_ERROR);
+        self::assertStringNotContainsString('unreviewed_fixture_field', $encoded);
+        self::assertStringNotContainsString('unpersisted fixture value', $encoded);
+    }
+
+    public function testPreflightUnknownFieldsStillPreventEveryMutation(): void
+    {
+        $server = new SslSectionServer('preflight_unknown');
+        $report = self::fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertCount(5, $report['probes']);
+        self::assertSame(0, $server->counts['upload_key'] ?? 0);
+        self::assertSame(0, $server->counts['upload_cert'] ?? 0);
+        self::assertSame(0, $server->counts['fetch_key_and_cabundle_for_certificate'] ?? 0);
+        foreach ($report['resources'] as $resources) {
+            self::assertSame(['key' => 'not_started', 'cert' => 'not_started'], $resources);
+        }
+    }
+
+    public function testUnknownFieldsNeverPermitContinuationAfterTypedPayloadFailure(): void
+    {
+        $server = new SslSectionServer('key_payload_unknown');
+        $report = self::fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertSame(2, $server->counts['upload_key'] ?? 0);
+        self::assertSame(0, $server->counts['upload_cert'] ?? 0);
+        self::assertSame(0, $server->counts['fetch_key_and_cabundle_for_certificate'] ?? 0);
+        self::assertSame(2, $server->counts['delete_key'] ?? 0);
+        self::assertSame([], $server->keys);
+        foreach ($report['probes'] as $probe) {
+            if ($probe['phase'] === 'upload_key') {
+                self::assertSame('failed', $probe['record']['payload_validation']);
+                self::assertSame([
+                ['path' => '$[].*', 'kind' => 'unknown_field'],
+                    ['path' => '$[].created', 'kind' => 'type_mismatch']], $probe['record']['discrepancies']);
+            }
+        }
+    }
+
     public function testMissingOptInPreventsAnyRequest(): void
     {
         putenv('WHM_API_LIVE_MUTATIONS=0');
