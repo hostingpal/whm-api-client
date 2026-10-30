@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 15 typed groups cover 279 documented operations:
+and cPanel UAPI surface. The 21 typed groups cover 301 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -305,6 +305,21 @@ reads and normalized countPops() through both routes. Strict review remains fail
 unchanged. Empty-string userdirprotect remains documentation/offline coverage because
 the live field is omitted. Three PHP setters and their INI write/read round trip
 remain offline-only; follow-up 8x0.2.17 owns the remaining live work.
+The domain-management groups cover all 22 pinned functions. Inventory and lookup
+methods use GET; nine mutations use form POST. Most new domain endpoints require
+cPanel 138; generated PHPDoc records the different floors and role restrictions.
+Names and document roots are forwarded using their documented wire fields. Omitted
+options retain server defaults, while explicit false is sent as 0. Rename and
+conversion operations can change hosted configuration immediately and are not
+retried or rolled back by the client.
+
+`deleteAddonDomain()`, `park()->park()`, `park()->unpark()` and
+`deleteSubdomain()` return void because their source expressly specifies no data.
+`addSubdomain()` instead preserves a nullable opaque object, including unknown
+object fields; an absent payload is a mismatch. WebVhosts preserves optional and
+nullable proxy-subdomain lists. `listSslCapableDomains()` does not invent a domain
+argument from inconsistent upstream prose.
+
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.

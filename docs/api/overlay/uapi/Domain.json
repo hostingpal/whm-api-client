@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Domain",
+  "operations": {
+    "uapi:Domain/convert_temporary_to_registered": {
+      "method": "POST",
+      "order": [
+        "domain",
+        "registered",
+        "docroot"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in 130. This function converts a temporary domain into a registered domain and moves its document root files\nto the new document root location.\n\n**Note:**\n\n* For more information about temporary domains, read our [Temporary Domains](https://go.cpanel.net/cp-temporary-domain) documentation.\n* You cannot use this function to convert a cPanel account's main domain."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: A valid temporary domain on the account."
+        },
+        {
+          "kind": "documented",
+          "text": "docroot: The path to the domain's document root directory. If you do not specify a\nvalue, this parameter defaults to the domain's name.\n\n**Note:**\n\nThe function will create a symlink in place of the previous temporary domain's\ndocument root directory. The symlink will point to the registered domain's\ndocument root."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /Domain/convert_temporary_to_registered POST x-readonly=false. Mutations use form POST; preserve the source parameter names and omission semantics."
+        }
+      ]
+    },
+    "uapi:Domain/is_temporary_domain": {
+      "order": [
+        "domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in 130. This function determines whether a domain is temporary.\n\n**Note:**\n\nFor more information about temporary domains, read our [Temporary Domains](https://go.cpanel.net/cp-temporary-domain) documentation."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: A domain on the cPanel account."
+        }
+      ]
+    },
+    "uapi:Domain/rename_domain": {
+      "method": "POST",
+      "order": [
+        "domain",
+        "new_domain",
+        "docroot"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in 138. This function renames a primary domain, addon domain, or alias domain on a\ncPanel account. The system updates all relevant configuration files, document root\npaths, and DNS entries automatically.\n\n**Note:**\n\n* You cannot rename a domain while another rename operation is in progress.\n* You cannot rename the server hostname.\n* The new domain must not already be configured on the account."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: The current domain name to rename."
+        },
+        {
+          "kind": "documented",
+          "text": "docroot: The path to the domain's document root directory. If you do not specify a\nvalue, this parameter defaults to the new domain name."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /Domain/rename_domain POST x-readonly=false. Mutations use form POST; preserve the source parameter names and omission semantics."
+        }
+      ]
+    },
+    "uapi:Domain/temporary_domain_is_disabled": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in 138. This function returns whether the temporary domains feature is\ndisabled by server configuration.\n\n**Note:**\n\nFor more information about temporary domains, read our [Temporary Domains](https://go.cpanel.net/cp-temporary-domain) documentation."
+        }
+      ]
+    }
+  }
+}

@@ -2192,3 +2192,36 @@ account label. The new file was created with mode0600 and no capture temporary
 files remain. Pre-capture code passed Composer validation/check (**11,094 tests /
 75,675 assertions**), offline API-map checks and Go tests/vet. Only evidence and
 documentation follow this capture; no additional live request was made.
+
+
+## 2026-10-30 domain-management section
+
+This independent slice adds 22 generated operations to master a91cb0d,
+bringing its branch to 301 typed operations across 21 groups. Pinned source
+snapshots remain unchanged. Independent literal fixtures exercise wrapped direct,
+bare direct and WHM-bridged calls through the real generated contracts. The source
+has field examples but no full response examples for these operations; assembled
+fixtures are identified accordingly. No engine or generator behavior changed.
+
+The domain-management groups cover all 22 pinned functions. Inventory and lookup
+methods use GET; nine mutations use form POST. Most new domain endpoints require
+cPanel 138; generated PHPDoc records the different floors and role restrictions.
+Names and document roots are forwarded using their documented wire fields. Omitted
+options retain server defaults, while explicit false is sent as 0. Rename and
+conversion operations can change hosted configuration immediately and are not
+retried or rolled back by the client.
+
+`deleteAddonDomain()`, `park()->park()`, `park()->unpark()` and
+`deleteSubdomain()` return void because their source expressly specifies no data.
+`addSubdomain()` instead preserves a nullable opaque object, including unknown
+object fields; an absent payload is a mismatch. WebVhosts preserves optional and
+nullable proxy-subdomain lists. `listSslCapableDomains()` does not invent a domain
+argument from inconsistent upstream prose.
+
+The reviewed read-only catalog has 27 exact GET probes: WHM version and all
+13 read operations through both UAPI routes on npr/npr.rs. Shared command
+infrastructure reuses EvidenceRunner, its exact-URI GET guard and structural
+sanitization without repeating the historical baseline. The strict assessment
+requires the complete ordered catalog, matching provenance and zero discrepancies.
+All 9 mutations remain offline-only in this slice; read observations cannot
+establish their effects. Live capture outcomes are recorded separately.
