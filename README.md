@@ -3,12 +3,12 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 24 generated typed groups cover 311 documented operations (see
+The 25 generated typed groups cover 325 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
-features, the complete Email and SSL modules, disk quotas and the complete
-pinned MySQL, FTP and PostgreSQL sections.
+features, domain management, directory access, the complete Email and SSL modules,
+disk quotas and the complete pinned MySQL, FTP, PostgreSQL and Mime sections.
 Generic `call()` methods provide GET and form-encoded POST access without a typed
 group, subject to the operation's parameter, route and envelope requirements.
 Generic calls do not support JSON or multipart bodies. Three typed SSL methods
@@ -322,6 +322,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->directoryIndexes()` | Directory indexing reads and configuration (3). |
 | `uapi()->directoryPrivacy()` | Password-protection state and directory user management (6). |
 | `uapi()->directoryProtection()` | Leech-protection directory inventory (1). |
+| `uapi()->mime()` | Complete MIME types, handlers, redirects and hotlink configuration (14). |
 | `uapi()->domainInfo()` | All 5 operations: `domainsData()`, `singleDomainData()`, `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
 | `uapi()->langPhp()` | All 11 operations: installed/default/vhost PHP versions, domain handlers and impacted domains, INI paths/basic directives/content reads, and `phpIniSetUserBasicDirectives()`, `phpIniSetUserContent()`, `phpSetVhostVersions()` |
 | `uapi()->features()` | All 5 operations: `getFeatureMetadata()`, `hasFeature()`, `hasFeaturesLike()`, `listFeatures()`, `listFeaturesLike()` |
@@ -389,6 +390,18 @@ the request. User mutations preserve nullable opaque results and reject an absen
 payload. Directory fields retain optional presence; only `auth_name` and
 `auth_type` in the configure response additionally accept explicit null, based on
 the reviewer's successful disable calls. Read-operation field types are unchanged.
+
+The Mime group covers all 14 pinned functions: six reads use GET and eight
+mutations use form POST. No domain selector is documented for hotlink
+configuration. MIME deletion targets the MIME type, while handler deletion
+targets extensions. Redirect filtering, defaults and source/destination behavior
+follow each method's pinned PHPDoc. These calls do not test HTTP redirect delivery.
+
+Mutation results generally preserve nullable opaque objects. The pinned
+`add_handler` and `add_mime` schemas additionally declare a null-only enum; the
+current effective validator keeps their nullable object boundary without enforcing
+that enum. Missing payloads still fail. `deleteHotlink()` has an unspecified data
+schema, so its payload remains mixed rather than acquiring invented fields.
 
 `uapi()->dns()->fetchCpanelGeneratedDomains()` requires cPanel 120 and preserves
 trailing dots; `lookup()` returns textual lines or explicit `null`.
@@ -896,6 +909,20 @@ finite-limit checks through both routes, and token/account/domain/zone cleanup
 was confirmed. Its command exited **1** because two unknown-field observations
 remain unacknowledged in that scenario; the baseline acknowledgments do not apply.
 Exhausted-quota enforcement and finite inode limits remain unobserved.
+
+The [corrected Mime read-only capture](docs/api/evidence/2026-10-30-mime-section-corrected.json)
+records 13 GET observations on cPanel `11.138.0.19`, all passing HTTP, API,
+payload and probe checks with zero discrepancies and a passed strict assessment.
+MIME and redirect lists were empty; handler rows were populated.
+`getRedirect()['url']` and `listHotlinks()['redirect_url']` preserve observed null
+separately from string and omission; their original failed capture is retained.
+A separate [Claude review](https://github.com/hostingpal/whm-api-client/pull/35#pullrequestreview-5717739276)
+of `933e4de` reports successful live checks of all eight mutations and populated
+MIME, handler and redirect rows on `npr` through both routes, with `.htaccess`
+restored to its original SHA-256. These reviewer observations are separate from
+the committed read-only captures and do not establish HTTP redirect delivery or
+hotlink enforcement.
+
 Real HostingPal consumer integration testing is deferred by the user as of
 2026-10-17; no consumer validation is claimed. It can resume against the current
 client before full API coverage or a release. Any public prerelease is a separate decision with

@@ -1,0 +1,404 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Mime",
+  "operations": {
+    "uapi:Mime/add_handler": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned schema declares enum [null] on a nullable object. Existing generated validation preserves the nullable opaque-object boundary, not exact enum validation: preserve explicit null and opaque object fields; an absent data member is rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mime/add_handler GET variant declares x-readonly=false. Generated-client policy sends mutations as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Mime/add_hotlink": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Hotlink protection redirects requests for protected comma-separated extensions when the referrer is not in the newline-separated allowed URLs. allow_null controls empty or null referrers; preserve omission and integer zero."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned result is a nullable object without a field schema: preserve explicit null and opaque object fields; an absent data member is rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mime/add_hotlink GET variant declares x-readonly=false. Generated-client policy sends mutations as form POST to keep operation parameters out of access-log query strings."
+        }
+      ],
+      "order": [
+        "extensions",
+        "redirect_url",
+        "urls",
+        "allow_null"
+      ]
+    },
+    "uapi:Mime/add_mime": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned schema declares enum [null] on a nullable object. Existing generated validation preserves the nullable opaque-object boundary, not exact enum validation: preserve explicit null and opaque object fields; an absent data member is rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mime/add_mime GET variant declares x-readonly=false. Generated-client policy sends mutations as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Mime/add_redirect": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes the selected account domain redirect configuration. Omitted defaults remain server defaults: src /, permanent type, redirect_wildcard 0 and redirect_www 0. redirect_www 2 means with www, 1 without www and 0 both; temp is the request literal."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned result is a nullable object without a field schema: preserve explicit null and opaque object fields; an absent data member is rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mime/add_redirect GET variant declares x-readonly=false. Generated-client policy sends mutations as form POST to keep operation parameters out of access-log query strings."
+        }
+      ],
+      "order": [
+        "domain",
+        "redirect",
+        "redirect_wildcard",
+        "redirect_www",
+        "src",
+        "type"
+      ]
+    },
+    "uapi:Mime/delete_handler": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the handler for the specified extension. Upstream declares no rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned result is a nullable object without a field schema: preserve explicit null and opaque object fields; an absent data member is rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mime/delete_handler GET variant declares x-readonly=false. Generated-client policy sends mutations as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Mime/delete_hotlink": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes hotlink protection; no domain selector is documented. The pinned data schema is empty, so the result stays mixed without inventing a payload contract; an absent data member is rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mime/delete_hotlink GET variant declares x-readonly=false. Generated-client policy sends mutations as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Mime/delete_mime": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes a MIME type by type, not by extension. Upstream declares no rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned result is a nullable object without a field schema: preserve explicit null and opaque object fields; an absent data member is rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mime/delete_mime GET variant declares x-readonly=false. Generated-client policy sends mutations as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Mime/delete_redirect": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes the selected domain document-root .htaccess redirect configuration. If docroot is omitted the server looks it up from domain; args and src default to empty strings. Preserve explicit empty strings separately from omission."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned result is a nullable object without a field schema: preserve explicit null and opaque object fields; an absent data member is rejected."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mime/delete_redirect GET variant declares x-readonly=false. Generated-client policy sends mutations as form POST to keep operation parameters out of access-log query strings."
+        }
+      ],
+      "order": [
+        "domain",
+        "args",
+        "docroot",
+        "src"
+      ]
+    },
+    "uapi:Mime/get_redirect": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 88 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns redirection_enabled as integer 0 or 1 and an optional URL. The pinned schema describes a string URL; the reviewed field-specific live correction also preserves explicit null. Omitted fields remain absent and no flag conversion is inferred."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, url was explicitly null on both GET routes in the initial capture at 9262564. Preserve null separately from an omitted field, empty string or URL string. Other response fields retain their pinned types."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "domain": "npr.rs"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      },
+      "response": {
+        "url": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Mime/get_redirect returned explicit null at $.url on both direct and bridged GET routes with HTTP 200 and API status 1 at revision 9262564a282b28c46c8846db3cb1102a4c776687. The original failed capture records this exact field type mismatch; preserve null separately from strings and omission, without widening sibling fields. Immutable artifact SHA-256 bb55502de9a306159e7d7eeeeb913b60cf016c5574d0ce94737c3365b6c62a9a. Structural evidence establishes type only, not the upstream reason for null.",
+              "fingerprint": "docs/api/evidence/2026-10-30-mime-section.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Mime/get_redirect returned explicit null at $.url on both direct and bridged GET routes with HTTP 200 and API status 1 at revision 9262564a282b28c46c8846db3cb1102a4c776687. The original failed capture records this exact field type mismatch; preserve null separately from strings and omission, without widening sibling fields. Immutable artifact SHA-256 bb55502de9a306159e7d7eeeeb913b60cf016c5574d0ce94737c3365b6c62a9a. Structural evidence establishes type only, not the upstream reason for null.",
+          "fingerprint": "docs/api/evidence/2026-10-30-mime-section.json"
+        }
+      ]
+    },
+    "uapi:Mime/list_handlers": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "The required type selects system or user handlers. Returns a list with optional extension, handler and origin fields; empty inventories remain lists."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "type": "user"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:Mime/list_hotlinks": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns hotlink settings, including integer allow_null, comma-separated extensions and a URL list. No domain selector is documented. Empty strings, zero and empty URL lists are preserved; omitted settings remain absent."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, redirect_url was explicitly null on both GET routes in the initial capture at 9262564. Preserve null separately from an omitted field, empty string or URL string. Other response fields retain their pinned types."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      },
+      "response": {
+        "redirect_url": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Mime/list_hotlinks returned explicit null at $.redirect_url on both direct and bridged GET routes with HTTP 200 and API status 1 at revision 9262564a282b28c46c8846db3cb1102a4c776687. The original failed capture records this exact field type mismatch; preserve null separately from strings and omission, without widening sibling fields. Immutable artifact SHA-256 bb55502de9a306159e7d7eeeeb913b60cf016c5574d0ce94737c3365b6c62a9a. Structural evidence establishes type only, not the upstream reason for null.",
+              "fingerprint": "docs/api/evidence/2026-10-30-mime-section.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Mime/list_hotlinks returned explicit null at $.redirect_url on both direct and bridged GET routes with HTTP 200 and API status 1 at revision 9262564a282b28c46c8846db3cb1102a4c776687. The original failed capture records this exact field type mismatch; preserve null separately from strings and omission, without widening sibling fields. Immutable artifact SHA-256 bb55502de9a306159e7d7eeeeb913b60cf016c5574d0ce94737c3365b6c62a9a. Structural evidence establishes type only, not the upstream reason for null.",
+          "fingerprint": "docs/api/evidence/2026-10-30-mime-section.json"
+        }
+      ]
+    },
+    "uapi:Mime/list_mime": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "The required type selects system or user MIME types. When PHP-FPM is enabled for the user or domain, PHP-version MIME types are not listed; only custom MIME types are displayed."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "type": "user"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:Mime/list_redirects": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Reads redirects from the selected account .htaccess files. destination matches the destination exactly; regex is a Perl regular expression matched against sourceurl. Status codes remain strings; matchwww and wildcard remain integer flags. Request type temp and response type temporary are distinct documented spellings."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:Mime/redirect_info": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the Web Server role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Retrieves local redirect information for the supplied domain and URL. The response domain may be the literal ** All Public Domains **. This operation does not establish HTTP redirect following or external URL availability."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "domain": "npr.rs",
+          "url": "http://npr.rs"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    }
+  }
+}

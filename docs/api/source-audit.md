@@ -2319,3 +2319,81 @@ from both parents, including the two configure-response nullable fields. The
 shared read-only assessor and its regression tests come from that approved master
 commit. Both original read-only artifacts remain unchanged; integration made no
 live requests and does not extend their evidence.
+
+## 2026-10-30 mime-section section
+
+This independent slice adds 14 generated operations to master a91cb0d,
+bringing its branch to 293 typed operations across 16 groups. Pinned source
+snapshots remain unchanged. Independent literal fixtures exercise wrapped direct,
+bare direct and WHM-bridged calls through the real generated contracts. The source
+has field examples but no full response examples for these operations; assembled
+fixtures are identified accordingly. No engine or generator behavior changed.
+
+The Mime group covers all 14 pinned functions: six reads use GET and eight
+mutations use form POST. No domain selector is documented for hotlink
+configuration. MIME deletion targets the MIME type, while handler deletion
+targets extensions. Redirect filtering, defaults and source/destination behavior
+follow each method's pinned PHPDoc. These calls do not test HTTP redirect delivery.
+
+Mutation results generally preserve nullable opaque objects. The pinned
+`add_handler` and `add_mime` schemas additionally declare a null-only enum; the
+current effective validator keeps their nullable object boundary without enforcing
+that enum. Missing payloads still fail. `deleteHotlink()` has an unspecified data
+schema, so its payload remains mixed rather than acquiring invented fields.
+
+The reviewed read-only catalog has 13 exact GET probes: WHM version and all
+6 read operations through both UAPI routes on npr/npr.rs. Shared command
+infrastructure reuses EvidenceRunner, its exact-URI GET guard and structural
+sanitization without repeating the historical baseline. The strict assessment
+requires the complete ordered catalog, matching provenance and zero discrepancies.
+The catalog does not execute the eight mutations; read observations cannot
+establish their effects. Live capture outcomes and later independent reviewer
+observations are recorded separately.
+
+The initial [2026-10-30 Mime capture](evidence/2026-10-30-mime-section.json)
+at `9262564` on `11.138.0.19` preserves 13 GET observations. All API outcomes
+passed, but four payload checks failed: `get_redirect.url` and
+`list_hotlinks.redirect_url` were explicitly null on both routes. The exact two
+field corrections preserve string, empty string, omission and null separately;
+other scalars/containers and sibling types remain rejected. Independently authored
+regressions first reproduced all six failures across direct wrapped, direct bare
+and bridged envelopes, then passed after regeneration. The original artifact is
+unchanged (SHA-256 `bb55502de9a306159e7d7eeeeb913b60cf016c5574d0ce94737c3365b6c62a9a`).
+The structural observations do not establish the upstream reason for null.
+
+The [corrected-contract Mime capture](evidence/2026-10-30-mime-section-corrected.json)
+at `fdbafb6` on `11.138.0.19` reruns the unchanged reviewed read catalog.
+All 13 GET observations passed HTTP, API, payload and probe checks with zero
+discrepancies and a passed strict assessment. Its SHA-256 is
+`91526a8fe46c683cf16fc8fabe3bcfc45ff0de17f11d383e9ee97ff7434e1c81`.
+The observed null URL fields are preserved. MIME and redirect lists were empty;
+handler rows were populated. This capture includes no mutations and does not
+establish HTTP redirect delivery or hotlink enforcement. The initial failed
+artifact remains unchanged.
+
+In a separate [review of `933e4dee80bfd7fa1c5543f3a54e454ae5b94b0c`](https://github.com/hostingpal/whm-api-client/pull/35#pullrequestreview-5717739276)
+on 2026-10-30, Claude reports successful live checks on `npr` through both direct
+and bridged UAPI routes for all eight mutations: `add_mime`, `delete_mime`,
+`add_handler`, `delete_handler`, `add_redirect`, `delete_redirect`, `add_hotlink`
+and `delete_hotlink`. Populated MIME, handler and redirect rows validated on both
+routes. The reviewer observed a string `list_hotlinks.redirect_url` while hotlink
+protection was enabled and null afterward; all mutations returned null, with one
+message on `add_redirect`. The reviewer snapshotted `public_html/.htaccess`,
+restored it and verified that its SHA-256 matched before and after. These are
+attributed reviewer observations, not additional records in either committed
+capture or evidence of HTTP redirect delivery/hotlink enforcement. No live calls
+were made for these documentation corrections.
+
+Follow-up `8x0.2.21` retains remaining response/argument variants and HTTP
+behavior, plus the runner's operation/route duplicate-key limitation for distinct
+argument variants. No current catalog hits that limitation. The pinned null-only
+mutation enums remain within the documented `8x0.18` compatibility limitation.
+
+The Mime branch then normally merged the approved PR #34 master commit
+`b68e76053049d47db6a075461bb3edee5cd4eed9`, which includes PR #33, bringing the
+combined generated surface to 325 operations across 25 groups. Regeneration
+preserves every operation spec from both parents and the Mime client code. The
+shared read-only assessor, its regression tests and the relocated domain probe
+test come from that approved master. All original evidence artifacts and pinned
+sources remain unchanged. Integration made no live requests or new captures and
+does not extend the historical observations.

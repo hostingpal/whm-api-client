@@ -203,3 +203,13 @@ issuance/renewal behavior. SHA-256:
 
 - [directory-access section](2026-10-30-directory-access.json), at `e3aa06b` on
   `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment. Directory records were present, but every captured auth_name and passwd_file was an empty string, and the privacy-user list was empty. This read-only capture establishes no mutation or HTTP-enforcement coverage. Separate reviewer mutation observations are attributed in the source audit. Follow-up `8x0.2.22` remains open.
+
+- [Initial Mime section](2026-10-30-mime-section.json), at `9262564` on
+  `11.138.0.19`: 13 GETs with successful API outcomes. Four payload mismatches
+  record null `get_redirect.url` and `list_hotlinks.redirect_url`, each through
+  both routes. Preserved unchanged as evidence for the two field-specific nullable
+  corrections; no acknowledgment or general URL coercion is applied.
+
+- [Corrected Mime section](2026-10-30-mime-section-corrected.json), at `fdbafb6`
+  on `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks with zero discrepancies and a passed strict assessment. The observed null URL fields are preserved. MIME and redirect lists were empty; handler rows were populated. This read-only capture establishes no mutation or HTTP redirect/hotlink enforcement coverage. Separate reviewer mutation and populated-row observations are attributed in the source audit. Initial failure evidence remains immutable.
+  Follow-up `8x0.2.21` remains open.

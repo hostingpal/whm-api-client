@@ -699,3 +699,35 @@ failed initial writes remain covered by follow-up `8x0.2.13`.
 
 Recorded capture: [2026-10-30 directory-access](../../docs/api/evidence/2026-10-30-directory-access.json).
 All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment. Directory records were present, but every captured auth_name and passwd_file was an empty string, and the privacy-user list was empty. The capture establishes no mutation or HTTP-enforcement coverage. Separate reviewer mutation observations are attributed in the source audit. See `8x0.2.22`.
+
+## mime-section read-only section
+
+The standalone `mime-section.php` entrypoint executes its fixed reviewed catalog:
+WHM version followed by both UAPI routes for all 6 selected read operations
+(13 GET observations). It requires committed source, tools, overlays and pinned
+inputs, both test tokens and exact account/domain opt-ins:
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/mime-section.php \
+  --output=docs/api/evidence/mime-section-new.json
+```
+
+The shared command binds `test.oblak.host`, direct cPanel user `npr` and the WHM
+bridge target `npr`. The existing exact-URI GET guard rejects other requests before
+HTTP dispatch. It captures each original response once and stores structural
+paths/types only. Strict assessment requires every ordered observation to pass
+HTTP, API, payload and provenance checks with zero discrepancies; it inherits no
+acknowledgments from historical baseline evidence. This read-only recipe does not
+exercise the eight mutations. Empty read results establish no populated row-field behavior.
+
+Use a new output path. The command reserves a protected 0600 temporary file before
+network I/O and publishes the completed report with a new-only atomic link. If a
+destination race or unsupported link prevents publication, the complete protected
+report remains at the JSON-encoded recovery path printed to stderr. Partial or
+failed initial writes remain covered by follow-up `8x0.2.13`.
+
+Recorded captures: [initial](../../docs/api/evidence/2026-10-30-mime-section.json)
+and [corrected](../../docs/api/evidence/2026-10-30-mime-section-corrected.json).
+The initial four payload mismatches establish exactly two nullable URL fields;
+the corrected capture preserves their null values. All 13 GET observations passed HTTP, API, payload and probe checks with zero discrepancies and a passed strict assessment. The observed null URL fields are preserved. MIME and redirect lists were empty; handler rows were populated. This read-only capture establishes no mutation or HTTP redirect/hotlink enforcement coverage. Separate reviewer mutation and populated-row observations are attributed in the source audit. See `8x0.2.21`.
