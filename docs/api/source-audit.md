@@ -1226,6 +1226,62 @@ live outcomes are recorded separately. The three LangPHP mutations are offline
 contract coverage until a dedicated reversible configuration fixture is observed.
 
 
+### Initial runtime observations and compatibility corrections
+
+The [initial 67-probe artifact](evidence/2026-10-30-domain-features-php.json)
+records c79ed1d on cPanel 11.138.0.19, SHA-256
+`d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f`.
+It contains 59 passed probes and eight payload failures, with all original structural
+observations retained. No mutation ran. The CLI subsequently failed while printing
+an absent static label, after the evidence file had already been saved; label
+coverage now has an independent regression test.
+
+Observed single-domain customlog/scriptalias lists extend their pinned object
+forms without inventing item fields. Documented flags admit bounded quoted 0/1,
+and integer ports admit lossless numeric strings. Feature metadata also returned
+quoted flags; has_feature returned an integer rather than its documented nullable
+object. That integer is preserved without guessing its meaning or turning it into
+a boolean. The root PHP-version union failure did not identify its offending field:
+its original fingerprint correctly masks all keys, so no correction was inferred.
+
+A failed root union can now additionally record analyses of its checked alternatives,
+identified by index and contract hash, from the same original response. These
+supplemental structural diagnostics retain unknown-key masking and never alter the
+primary fingerprint, runtime validation or discrepancy gate. They do not recover or
+rewrite the first artifact. Unknown domain and INI fields remain unresolved under
+8x0.2.17, as do the three PHP mutations' live behavior.
+
+
+The [compatibility run](evidence/2026-10-30-domain-features-php-compatibility.json)
+at a07f4f7 retained 67 GET observations on 11.138.0.19: 65 passed and the two PHP
+vhost probes still failed. Its SHA-256 is
+`ae83e8afa8f3296342c76c225d08b09d4e417e35fc2569f975a8f094b411eced`.
+The new candidate analysis identifies only `$[].phpversion_source` as the list
+alternative's type mismatch, with an observed object. A narrow correction now
+preserves both the pinned list and that object form using the same documented
+optional fields. No unknown key name or value is inferred. The strict evidence
+assessment remains failed for original mismatches and unacknowledged extras;
+this historical artifact is not rewritten after correcting the contract.
+
+
+### Corrected read-only verification
+
+The [corrected run](evidence/2026-10-30-domain-features-php-corrected.json) at
+7b172f3 on 11.138.0.19 records all 67 API/payload probes passing, including all 20
+new route-specific reads. Artifact SHA-256:
+`50a569139cc932442be93960c322d1afb408164537ef9668a98402651156c2e4`.
+The strict discrepancy assessment still fails: eight DomainInfo/INI observations
+contain unknown fields, and two Quota observations no longer match their historical
+11.138.0.15 acknowledgments. Both old Quota acknowledgments remain stale; no new
+acknowledgment was introduced. The single-domain customlog list also exposes a
+masked extra field. These successful payload calls are not discrepancy-free
+contract evidence. All three artifacts and their original outcomes remain intact.
+
+The first PR's final offline gates pass 4,310 tests and 33,655 assertions, plus
+maximum PHPStan, PHPCS and offline API-map/source/generation verification. The
+three PHP setters remain offline-only; no mutation ran in any of these captures.
+
+
 ## 2026-10-30 complete Email contracts
 
 The second stacked slice adds 92 generated operations, completing all 96 pinned

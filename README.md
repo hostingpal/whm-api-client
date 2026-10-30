@@ -250,13 +250,21 @@ sensitive parameters; retain a configuration backup before overwriting content.
 The content setter's pinned enum says `host|vhost` while its prose says `home|vhost`;
 this contradiction is documented, with no invented validation or default.
 
-`features()->hasFeature(name: 'autossl')` preserves its nullable object payload.
+`features()->hasFeature(name: 'autossl')` preserves its nullable object or observed
+integer payload; the integer's meaning is unspecified.
 Read `$account->responseMeta()?->uapiStatus()` immediately afterward for the access
 result: 1 means enabled; 0 means absent or disabled. This method accepts UAPI status
 0 because it carries the access result. Outer WHM bridge failures still throw.
 
 `uapi()->dns()->fetchCpanelGeneratedDomains()` requires cPanel 120 and preserves
 trailing dots; `lookup()` returns textual lines or explicit `null`.
+
+The [completed-module read capture](docs/api/evidence/2026-10-30-domain-features-php-corrected.json)
+observed all ten new reads through both routes on cPanel 11.138.0.19. All 67 catalog
+API/payload checks passed, while strict discrepancy review remains failed for
+unknown fields and stale historical Quota acknowledgments. PHP setters remain
+offline-tested only; see the [source audit](docs/api/source-audit.md).
+
 
 The Email module uses POST for mutations and secret-bearing requests. Passwords,
 password hashes, filter content and other marked inputs remain sensitive throughout

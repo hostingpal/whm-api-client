@@ -271,7 +271,10 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     customlog?: array{
  *         domain?: string,
  *         target?: string,
- *     },
+ *     }|list<array{
+ *         domain?: string,
+ *         target?: string,
+ *     }>,
  *     documentroot?: string,
  *     domain?: string,
  *     group?: string,
@@ -290,7 +293,10 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     scriptalias?: array{
  *         path?: string,
  *         url?: string,
- *     },
+ *     }|list<array{
+ *         path?: string,
+ *         url?: string,
+ *     }>,
  *     serveradmin?: string,
  *     serveralias?: string,
  *     servername?: string,
@@ -435,6 +441,10 @@ final readonly class DomainInfo
      * Documented: The pinned parameter name is return_https_redirect_status (singular redirect); some return
      * descriptions incorrectly use return_https_redirects_status. The request uses the declared singular parameter.
      * Hiding a requested temporary domain causes an API error.
+     *
+     * Observed: Observed customlog and scriptalias may be lists as well as the pinned objects. Quoted 0/1 hascgi and
+     * phpopenbasedirprotect flags normalize to integers, as do lossless integer port strings. Unknown fields remain
+     * outside the contract.
      *
      * API-map identity: uapi:DomainInfo/single_domain_data#GET (wire name single_domain_data).
      *

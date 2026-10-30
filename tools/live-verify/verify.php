@@ -143,6 +143,46 @@ $verifyCommand = static function (#[SensitiveParameter] array $arguments) use ($
         $temporary = null;
 
         $labels = [
+            'uapi:DomainInfo/domains_data|direct-uapi'
+                => 'uapi:DomainInfo/domains_data direct-uapi',
+            'uapi:DomainInfo/domains_data|bridged-uapi'
+                => 'uapi:DomainInfo/domains_data bridged-uapi',
+            'uapi:DomainInfo/single_domain_data|direct-uapi'
+                => 'uapi:DomainInfo/single_domain_data direct-uapi',
+            'uapi:DomainInfo/single_domain_data|bridged-uapi'
+                => 'uapi:DomainInfo/single_domain_data bridged-uapi',
+            'uapi:Features/get_feature_metadata|direct-uapi'
+                => 'uapi:Features/get_feature_metadata direct-uapi',
+            'uapi:Features/get_feature_metadata|bridged-uapi'
+                => 'uapi:Features/get_feature_metadata bridged-uapi',
+            'uapi:Features/has_feature|direct-uapi'
+                => 'uapi:Features/has_feature direct-uapi',
+            'uapi:Features/has_feature|bridged-uapi'
+                => 'uapi:Features/has_feature bridged-uapi',
+            'uapi:Features/has_features_like|direct-uapi'
+                => 'uapi:Features/has_features_like direct-uapi',
+            'uapi:Features/has_features_like|bridged-uapi'
+                => 'uapi:Features/has_features_like bridged-uapi',
+            'uapi:Features/list_features_like|direct-uapi'
+                => 'uapi:Features/list_features_like direct-uapi',
+            'uapi:Features/list_features_like|bridged-uapi'
+                => 'uapi:Features/list_features_like bridged-uapi',
+            'uapi:LangPHP/php_get_vhost_versions|direct-uapi'
+                => 'uapi:LangPHP/php_get_vhost_versions direct-uapi',
+            'uapi:LangPHP/php_get_vhost_versions|bridged-uapi'
+                => 'uapi:LangPHP/php_get_vhost_versions bridged-uapi',
+            'uapi:LangPHP/php_ini_get_user_basic_directives|direct-uapi'
+                => 'uapi:LangPHP/php_ini_get_user_basic_directives direct-uapi',
+            'uapi:LangPHP/php_ini_get_user_basic_directives|bridged-uapi'
+                => 'uapi:LangPHP/php_ini_get_user_basic_directives bridged-uapi',
+            'uapi:LangPHP/php_ini_get_user_content|direct-uapi'
+                => 'uapi:LangPHP/php_ini_get_user_content direct-uapi',
+            'uapi:LangPHP/php_ini_get_user_content|bridged-uapi'
+                => 'uapi:LangPHP/php_ini_get_user_content bridged-uapi',
+            'uapi:LangPHP/php_ini_get_user_paths|direct-uapi'
+                => 'uapi:LangPHP/php_ini_get_user_paths direct-uapi',
+            'uapi:LangPHP/php_ini_get_user_paths|bridged-uapi'
+                => 'uapi:LangPHP/php_ini_get_user_paths bridged-uapi',
             'whm1:version|whm' => 'whm1:version whm',
             'whm1:systemloadavg|whm' => 'whm1:systemloadavg whm',
             'uapi:DomainInfo/list_domains|direct-uapi' => 'uapi:DomainInfo/list_domains direct-uapi',

@@ -197,11 +197,18 @@ Domain details preserve list/hash alternatives and documented quoted flag varian
 PHP vhost versions preserve list/single-record variants. INI writes and PHP version
 changes use POST; INI content/directive inputs are sensitive. The content setter has
 an unresolved pinned host/home enum-versus-prose discrepancy. Features/has_feature
-returns nullable opaque data and uses UAPI status as the feature result; inspect
+returns nullable opaque data or an observed integer of unspecified meaning and
+uses UAPI status as the feature result; inspect
 responseMeta()->uapiStatus(), while retaining outer WHM failure checks. Response
 arguments in EnvelopeReader and OperationRunner remain SensitiveParameter because
 raw or decoded responses may contain secrets. Overlay parameter requiredness can
 be overridden only with evidence; omission retains the pinned requiredness.
+The 2026-10-30 corrected DomainInfo/Features/LangPHP artifact at 7b172f3 on 11.138.0.19
+records all 67 API/payload probes passing, including 20 new reads across both routes.
+Strict review remains failed for eight new Domain/INI unknown-field observations plus
+two Quota observations with stale 11.138.0.15 acknowledgments; do not claim
+discrepancy-free evidence. Three PHP setters remain offline-only; follow-up
+8x0.2.17 owns the remaining live work.
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.
