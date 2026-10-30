@@ -191,11 +191,12 @@ responseMeta()->uapiStatus(), while retaining outer WHM failure checks. Response
 arguments in EnvelopeReader and OperationRunner remain SensitiveParameter because
 raw or decoded responses may contain secrets. Overlay parameter requiredness can
 be overridden only with evidence; omission retains the pinned requiredness.
-The 2026-10-30 corrected DomainInfo/Features/LangPHP artifact at7b172f3 on11.138.0.19
-records all67 API/payload probes passing, including20new reads acrossbothroutes.
-Strictreview remainsfailed for8newDomain/INIunknownfieldobservations plus2Quota
-observationswithstale11.138.0.15acknowledgments; do notclaimdiscrepancy-freeevidence.
-ThreePHPsettersremainoffline-only; followup8x0.2.17 ownsremaininglivework.
+The 2026-10-30 corrected DomainInfo/Features/LangPHP artifact at 7b172f3 on 11.138.0.19
+records all 67 API/payload probes passing, including 20 new reads across both routes.
+Strict review remains failed for eight new Domain/INI unknown-field observations plus
+two Quota observations with stale 11.138.0.15 acknowledgments; do not claim
+discrepancy-free evidence. Three PHP setters remain offline-only; follow-up
+8x0.2.17 owns the remaining live work.
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.
