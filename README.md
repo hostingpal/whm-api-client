@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 21 generated typed groups cover 301 documented operations (see
+The 24 generated typed groups cover 311 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -319,6 +319,9 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->park()` | Domain alias creation, removal and inventory (3). |
 | `uapi()->subDomain()` | Subdomain creation, removal, document roots and validation metadata (6). |
 | `uapi()->webVhosts()` | Account virtual-host and SSL-capability inventories (2). |
+| `uapi()->directoryIndexes()` | Directory indexing reads and configuration (3). |
+| `uapi()->directoryPrivacy()` | Password-protection state and directory user management (6). |
+| `uapi()->directoryProtection()` | Leech-protection directory inventory (1). |
 | `uapi()->domainInfo()` | All 5 operations: `domainsData()`, `singleDomainData()`, `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
 | `uapi()->langPhp()` | All 11 operations: installed/default/vhost PHP versions, domain handlers and impacted domains, INI paths/basic directives/content reads, and `phpIniSetUserBasicDirectives()`, `phpIniSetUserContent()`, `phpSetVhostVersions()` |
 | `uapi()->features()` | All 5 operations: `getFeatureMetadata()`, `hasFeature()`, `hasFeaturesLike()`, `listFeatures()`, `listFeaturesLike()` |
@@ -366,6 +369,26 @@ retried or rolled back by the client.
 object fields; an absent payload is a mismatch. WebVhosts preserves optional and
 nullable proxy-subdomain lists. `listSslCapableDomains()` does not invent a domain
 argument from inconsistent upstream prose.
+
+The directory groups cover all ten pinned functions, available from cPanel 88.
+Six reads use GET and four mutations use form POST. Directory paths are forwarded
+unchanged. Only `DirectoryProtection/list_directories` documents paths relative to
+the account home directory. `configureDirectoryProtection()` documents absolute
+or relative paths without defining the relative base; `isDirectoryProtected()`
+documents absolute paths. The [PR #34 reviewer](https://github.com/hostingpal/whm-api-client/pull/34#pullrequestreview-5717732052)
+independently observed `public_html/...` relative paths working for both privacy
+methods through direct UAPI and the WHM bridge.
+Password-protection state belongs to DirectoryPrivacy; DirectoryProtection reports
+leech protection. A successful unprotected-directory result has payload flag 0;
+that does not make UAPI status 0 a success.
+
+`configureDirectoryProtection(dir, enabled, authname)` can omit `authname` when
+disabling protection, following the source's conditional requirement. Supply a
+realm name when enabling it. `addUser()` keeps its password sensitive throughout
+the request. User mutations preserve nullable opaque results and reject an absent
+payload. Directory fields retain optional presence; only `auth_name` and
+`auth_type` in the configure response additionally accept explicit null, based on
+the reviewer's successful disable calls. Read-operation field types are unchanged.
 
 `uapi()->dns()->fetchCpanelGeneratedDomains()` requires cPanel 120 and preserves
 trailing dots; `lookup()` returns textual lines or explicit `null`.
@@ -814,6 +837,14 @@ short summary, detailed behavior, an exact official cPanel operation link, and
 precise array shapes when they return arrays. Generated methods take their PHPDoc
 from the pinned documentation, and caveats it lacks are recorded as overlay notes.
 The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
+
+The [directory-access read-only capture](docs/api/evidence/2026-10-30-directory-access.json)
+records reviewed GET checks on cPanel `11.138.0.19`. All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment.
+Directory records were present, but every captured `auth_name` and `passwd_file`
+was an empty string, and the privacy-user list was empty. This capture made no
+indexing, password-protection or leech-protection changes and establishes no
+mutation or HTTP-enforcement coverage. Separate reviewer mutation observations
+are recorded in the source audit; they are not part of this artifact.
 
 The [live evidence runner](tools/live-verify/README.md) captures the same raw
 response before normalization and field filtering for 67 reviewed route-specific

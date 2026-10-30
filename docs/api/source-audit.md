@@ -2246,3 +2246,76 @@ SubDomain regex matching is case-insensitive and invalid Perl patterns fail;
 WebVhosts documents the temporary-domain error behavior without adding a selector.
 The shared read-only assessor rejects malformed records and absent or malformed
 structural maps; independent regressions cover the version and UAPI records.
+
+## 2026-10-30 directory-access section
+
+This independent slice adds 10 generated operations to master a91cb0d,
+bringing its original branch to 289 typed operations across 18 groups. Pinned source
+snapshots remain unchanged. Independent literal fixtures exercise wrapped direct,
+bare direct and WHM-bridged calls through the real generated contracts. The source
+has field examples but no full response examples for these operations; assembled
+fixtures are identified accordingly. No engine or generator behavior changed.
+
+The directory groups cover all ten pinned functions, available from cPanel 88.
+Six reads use GET and four mutations use form POST. Directory paths are forwarded
+unchanged. Only `DirectoryProtection/list_directories` documents paths relative to
+the account home directory. `configureDirectoryProtection()` documents absolute
+or relative paths without defining the relative base; `isDirectoryProtected()`
+documents absolute paths. The [PR #34 reviewer](https://github.com/hostingpal/whm-api-client/pull/34#pullrequestreview-5717732052)
+independently observed `public_html/...` relative paths working for both privacy
+methods through direct UAPI and the WHM bridge.
+Password-protection state belongs to DirectoryPrivacy; DirectoryProtection reports
+leech protection. A successful unprotected-directory result has payload flag 0;
+that does not make UAPI status 0 a success.
+
+`configureDirectoryProtection(dir, enabled, authname)` can omit `authname` when
+disabling protection, following the source's conditional requirement. Supply a
+realm name when enabling it. `addUser()` keeps its password sensitive throughout
+the request. User mutations preserve nullable opaque results and reject an absent
+payload. Directory fields retain optional presence; only `auth_name` and
+`auth_type` in the configure response additionally accept explicit null, based on
+the reviewer's successful disable calls. Read-operation field types are unchanged.
+
+The reviewed read-only catalog has 13 exact GET probes: WHM version and all
+6 read operations through both UAPI routes on npr/npr.rs. Shared command
+infrastructure reuses EvidenceRunner, its exact-URI GET guard and structural
+sanitization without repeating the historical baseline. The strict assessment
+requires the complete ordered catalog, matching provenance and zero discrepancies.
+All 4 mutations were offline-only in the original slice; read observations cannot
+establish their effects. The later reviewer run is recorded separately below.
+
+The [2026-10-30 directory-access capture](evidence/2026-10-30-directory-access.json)
+at `e3aa06b4bb693010ebd1df0709f4247b52022e72` on cPanel `11.138.0.19`
+records the reviewed catalog. Its SHA-256 is
+`3ae9c591fe57de8567195605985f435274da732e852561a0ca8776559d4e2685`. All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment.
+Directory records were present, but every captured `auth_name` and `passwd_file`
+was an empty string, and the privacy-user list was empty. This capture made no
+indexing, password-protection or leech-protection changes and establishes no
+mutation or HTTP-enforcement coverage. Separate reviewer mutation observations
+are recorded below; they are not part of this artifact. Follow-up `8x0.2.22` owns
+the remaining live/contract work.
+
+The [PR #34 review](https://github.com/hostingpal/whm-api-client/pull/34#pullrequestreview-5717732052) of
+`c5326f75d504cf8760cb8d25e5abe2e84576dea2` separately exercised all four
+mutations on `npr` through direct UAPI and the WHM bridge in throwaway directories,
+reporting directory and `.htpasswds` cleanup. Successful disable responses carried
+explicit null `auth_name` and `auth_type`, which the original string-only spec
+rejected with `PayloadMismatchException` and `outcomeConfirmed=true`. The correction
+makes exactly those two fields optional nullable strings on
+`configure_directory_protection`. It preserves string and omitted forms and leaves
+`passwd_file`, the integer flag, and every read-operation spec unchanged. The
+review also observed populated string fields while protected, safe API rejection
+when enabling without `authname`, and accepted relative paths as described above.
+The review did not state its server version and supplies no saved mutation
+artifact; it does not extend the read-only artifact's provenance or establish HTTP
+authentication enforcement. No live calls or replacement capture were made for
+this correction. The reviewer will recheck the mutation on the final integrated
+head; `8x0.2.22` retains the remaining evidence and contract work.
+
+The directory branch then normally merged the approved PR #33 master commit
+`2b67612fa5feb64e028e077f868e5917be6651be`, bringing the combined generated surface
+to 311 operations across 24 groups. Regeneration preserves every operation spec
+from both parents, including the two configure-response nullable fields. The
+shared read-only assessor and its regression tests come from that approved master
+commit. Both original read-only artifacts remain unchanged; integration made no
+live requests and does not extend their evidence.

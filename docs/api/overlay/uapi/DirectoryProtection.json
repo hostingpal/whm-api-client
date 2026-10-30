@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "DirectoryProtection",
+  "operations": {
+    "uapi:DirectoryProtection/list_directories": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 88 and later; operates on the selected account. No request defaults are declared in the pinned operation. Directory paths are sent unchanged and are not normalized by the client."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns leech protection information, separately from DirectoryPrivacy password protection. dir may be an absolute path or a path relative to the selected account home directory. children, current, home and parent contain optional path and state.has_leech_protection fields. The integer 1 enables leech protection and 0 disables it; this payload flag is distinct from UAPI success status. Omitted fields remain absent; an empty children list remains empty."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "dir": "/home/npr/public_html"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    }
+  }
+}

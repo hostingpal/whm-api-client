@@ -15,6 +15,12 @@ trait UapiGroups
 {
     private ?AddonDomain $addonDomainGroup = null;
 
+    private ?DirectoryIndexes $directoryIndexesGroup = null;
+
+    private ?DirectoryPrivacy $directoryPrivacyGroup = null;
+
+    private ?DirectoryProtection $directoryProtectionGroup = null;
+
     private ?Dns $dnsGroup = null;
 
     private ?Domain $domainGroup = null;
@@ -53,6 +59,36 @@ trait UapiGroups
     public function addonDomain(): AddonDomain
     {
         return $this->addonDomainGroup ??= new AddonDomain($this->run(...));
+    }
+
+    /**
+     * Select the DirectoryIndexes operations without making a request.
+     *
+     * The DirectoryIndexes module for UAPI.
+     */
+    public function directoryIndexes(): DirectoryIndexes
+    {
+        return $this->directoryIndexesGroup ??= new DirectoryIndexes($this->run(...));
+    }
+
+    /**
+     * Select the DirectoryPrivacy operations without making a request.
+     *
+     * The DirectoryPrivacy module for UAPI.
+     */
+    public function directoryPrivacy(): DirectoryPrivacy
+    {
+        return $this->directoryPrivacyGroup ??= new DirectoryPrivacy($this->run(...));
+    }
+
+    /**
+     * Select the DirectoryProtection operations without making a request.
+     *
+     * The DirectoryProtection module for UAPI.
+     */
+    public function directoryProtection(): DirectoryProtection
+    {
+        return $this->directoryProtectionGroup ??= new DirectoryProtection($this->run(...));
     }
 
     /**
