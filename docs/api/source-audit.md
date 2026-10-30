@@ -1411,3 +1411,17 @@ bridged multipart fetch now passes. Direct upload_cert exposes quoted versions o
 five documented numeric/flag fields, so only those fields receive the same bounded
 compatibility handling. Unknown upload_cert/delete_key fields remain failures;
 follow-up 8x0.2.19 tracks their contracts and remaining SSL live coverage.
+
+
+The [final owned SSL capture](evidence/2026-10-30-ssl-section-final.json) at
+64d5266 on 11.138.0.19 has SHA-256
+`a465a7763181c84cc917e793a3eb2f38f7b22f2f70e69ba39f7254bb4e53bce9`.
+All 23 planned original responses pass API, typed-payload and fixture-expectation
+checks, including all three multipart functions through direct and bridged UAPI.
+Both fresh keys and both certificates were confirmed absent after cleanup.
+The strict assessment still fails on four masked unknown-field observations:
+upload_cert and delete_key on each route. The cleanup_request_failure labels
+retain that strict discrepancy failure; successful deletion and final absence
+are recorded separately. No discrepancy is acknowledged or removed. This proves
+seven SSL functions on these routes/revision/version, not all 49 generated methods,
+certificate installation, TLS serving, trust, AutoSSL issuance or renewal.

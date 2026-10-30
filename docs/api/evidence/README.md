@@ -61,3 +61,19 @@ scoped to the exact contracts, revisions and routes recorded in each file.
   are confirmed absent; exit 0 retains the two Quota acknowledgments and no new
   discrepancies. Empty privilege lists, disabled prefixes, SQL enforcement and
   alternate server configurations remain unobserved.
+
+
+## Complete SSL slice (2026-10-30)
+
+Five immutable captures retain the correction sequence:
+[inventory preflight](2026-10-30-ssl-section.json),
+[inventory corrections](2026-10-30-ssl-section-corrected.json),
+[identity guard corrections](2026-10-30-ssl-section-identity-corrected.json),
+[upload corrections](2026-10-30-ssl-section-upload-corrected.json), and
+[final owned lifecycle](2026-10-30-ssl-section-final.json).
+The final capture has 23 successful API/payload/expectation observations across
+seven SSL functions plus WHM version, with all four resources confirmed cleaned.
+It still fails the strict gate for four unknown-field observations in upload_cert
+and delete_key. Three typed multipart operations were exercised through both UAPI
+routes. Installation, service configuration, trust and the remaining operations
+are outside this fixture; follow-up 8x0.2.19 retains that distinction.

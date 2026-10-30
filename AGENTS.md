@@ -201,12 +201,18 @@ arbitrary file/multipart uploads are unsupported. Multipart names/values are
 validated after metadata reset, all value-bearing frames are sensitive, routing
 stays in the URL and a collision-free delimiter preserves field bytes. Generator
 body_fields corrections require evidence and compatible duplicate schemas.
-The upload_key key/crt contradiction is explicit pending successful live evidence.
+The upload_key key/crt source contradiction remains explicit; the key field was
+accepted on both routes in the final owned fixture on 11.138.0.19.
 The optional install_ssl domain_dcv_method map is omitted until its serialization
 is established (8x0.2.16). SSL selector alternatives use evidenced required:false;
 preserve opaque/null/missing payload distinctions and private PEM data. Only fresh
 owned SSL fixture resources may be deleted in live verification; never install or
 replace account certificates as part of that fixture.
+The final owned SSL capture at 64d5266 records 23 API/payload/expectation passes,
+including all three multipart methods on both routes, and four confirmed cleaned
+resources. Strict evidence remains failed on upload_cert/delete_key unknown fields
+on both routes; preserve them and follow-up 8x0.2.19. No TLS serving, installation,
+trust, AutoSSL issuance or renewal behavior was tested by this fixture.
 DomainInfo (5), Features (5), and LangPHP (11) cover their complete pinned modules.
 Domain details preserve list/hash alternatives and documented quoted flag variants.
 PHP vhost versions preserve list/single-record variants. INI writes and PHP version

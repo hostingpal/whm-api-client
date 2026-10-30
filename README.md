@@ -305,6 +305,10 @@ repeated vhost names. Its optional `domain_dcv_method` map is omitted because th
 pinned source does not specify its wire encoding (follow-up `8x0.2.16`). The
 `upload_key` page disagrees about `key` versus `crt`; the generated request uses
 `key` from its parameter contract, with live verification reported separately.
+The owned SSL fixture verifies uploads, fetches and cleanup through both UAPI
+routes. Its 23 responses pass API/payload checks, but four undocumented-field
+observations still fail the strict evidence gate; see the [source audit](docs/api/source-audit.md).
+
 Certificate deletion/installation, account-wide AutoSSL and redirect changes take
 effect immediately. Live verification is bounded to fresh owned fixture material,
 without installing certificates or changing existing hosted services.
