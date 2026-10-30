@@ -220,6 +220,10 @@ final class UapiFtpTest extends TestCase
         yield 'exists omits domain' => [
             'ftp_exists', 'GET', static fn (Ftp $ftp): mixed => $ftp->ftpExists(user: 'u'), 'user=u', 'null', null,
         ];
+        yield 'finite integer quota stays an integer' => [
+            'get_quota', 'GET', static fn (Ftp $ftp): mixed => $ftp->getQuota(account: 'u'),
+            'account=u', '500', 500,
+        ];
         yield 'unlimited quota omits domain' => [
             'get_quota', 'GET', static fn (Ftp $ftp): mixed => $ftp->getQuota(account: 'u'),
             'account=u', '"unlimited"', 'unlimited',
@@ -322,7 +326,7 @@ final class UapiFtpTest extends TestCase
             'get_ftp_daemon_info' => ['{"enabled":2}', '{"name":null}', '{"supports":null}',
                 '{"supports":{"quota":"1"}}', '{"supports":{"login_without_domain":true}}'],
             'get_port' => ['{"port":"21"}', '{"port":null}', '{"port":21.5}'],
-            'get_quota' => ['500', '{}', '[]'],
+            'get_quota' => ['500.5', '500.0', 'true', '{}', '[]', '[500]'],
             'get_welcome_message' => ['42', '{}', '[]'],
             'server_name' => ['42', '{}', '[]'],
             'list_ftp' => ['{}', '[null]', '[{"homedir":null}]', '[{"user":42}]'],

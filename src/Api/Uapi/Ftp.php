@@ -358,19 +358,23 @@ final readonly class Ftp
      * Documented: Returns a string: unlimited or the quota in megabytes (MB). Do not interpret an absent payload as an
      * unlimited quota.
      *
+     * Observed: On cPanel 11.138.0.19, finite quotas were JSON integers through both UAPI routes; unlimited remained a
+     * string. The result preserves int|string, retaining documented strings and observed integers without float or
+     * boolean coercion.
+     *
      * API-map identity: uapi:Ftp/get_quota#GET (wire name get_quota).
      *
      * @param string $account The FTP account's username.
      * @param string|null $domain The user's associated domain. Null omits it.
-     * @return string
+     * @return string|int
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ftp-accounts/ftp-get_quota
      */
-    public function getQuota(string $account, ?string $domain = null): string
+    public function getQuota(string $account, ?string $domain = null): string|int
     {
-        /** @var string $result Validated against FtpSpec::GET_QUOTA. */
+        /** @var string|int $result Validated against FtpSpec::GET_QUOTA. */
         $result = ($this->run)(FtpSpec::GET_QUOTA, ['account' => $account, 'domain' => $domain]);
 
         return $result;

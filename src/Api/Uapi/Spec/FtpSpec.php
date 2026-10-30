@@ -141,7 +141,13 @@ final class FtpSpec
             'account' => ['name' => 'account', 'encoding' => 'scalar'],
             'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
         ],
-        'returns' => ['type' => 'string'],
+        'returns' => [
+            'type' => 'union',
+            'anyOf' => [
+                ['type' => 'string'],
+                ['type' => 'int'],
+            ],
+        ],
     ];
 
     public const GET_WELCOME_MESSAGE = [

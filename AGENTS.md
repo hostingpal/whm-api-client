@@ -171,6 +171,8 @@ weaken validation to void. Keep password arguments sensitive.
 Mutations use form POST; addFtp password/passHash map to pass/pass_hash and are
 sensitive. Preserve omitted defaults, false/zero, pipe-delimited filters, decimal
 string disk amounts, quota unlimited semantics and optional nullable htmldir.
+getQuota preserves documented strings and observed finite JSON integers as int|string;
+its evidence-bound root union accepts no float/boolean/null coercion.
 ftpExists returns a nullable opaque payload or API error, not a boolean.
 Deleting with destroy=true also deletes the home directory; killSession without
 login stops all account sessions. Anonymous settings are account-scoped. Keep

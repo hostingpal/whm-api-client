@@ -154,7 +154,8 @@ final class FtpSectionFixture
         $row = $this->ownedRow($rows, $user);
         $this->expect(self::directory($row->homedir ?? null) === $home && ($row->type ?? null) === 'sub');
         $this->require('set_quota', $route);
-        $this->expect($this->require('finite_quota', $route) === '17');
+        $quota = $this->require('finite_quota', $route);
+        $this->expect($quota === '17' || $quota === 17);
         $rows = $this->require('disk_accounts', $route);
         $matches = is_array($rows) ? array_values(array_filter($rows, static fn (mixed $row): bool =>
             is_array($row) && in_array($row['login'] ?? null, [$user, $user . '@npr.rs'], true))) : [];

@@ -103,6 +103,9 @@ final class FtpSectionServer implements ClientInterface
             case 'get_quota':
                 $quota = $this->accounts[$user]['quota'];
                 $data = $quota === 0 ? 'unlimited' : (string) $quota;
+                if ($this->fault === 'quota_float' && $quota !== 0) {
+                    $data = $quota + 0.5;
+                }
                 if ($this->fault === 'quota_integer' && $quota !== 0) {
                     $data = $quota;
                 }

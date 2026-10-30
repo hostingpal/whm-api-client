@@ -160,12 +160,12 @@ $quota = $account->quota()->getQuotaInfo(); // Disk fields in MB.
 $localQuota = $account->quota()->getLocalQuotaInfo(); // Disk fields in bytes.
 $underQuota = $quota['under_quota_overall'] ?? null; // 0|1, or absent.
 
-// FTP account inventory, daemon capabilities and quota strings.
+// FTP account inventory, daemon capabilities and quota values.
 $ftp = $account->ftp();
 $ftpAccounts = $ftp->listFtp(includeAcctTypes: 'sub');
 $ftpDiskUsage = $ftp->listFtpWithDisk(includeAcctTypes: 'main|sub');
 $ftpDaemon = $ftp->getFtpDaemonInfo(); // cPanel 54+; enabled and supports flags are 0|1.
-$ftpQuota = $ftp->getQuota(account: 'deploy', domain: 'example.com'); // string
+$ftpQuota = $ftp->getQuota(account: 'deploy', domain: 'example.com'); // int|string
 
 // MySQL inventory belongs to the selected cPanel account (cPanel 82+).
 $databases = $account->mysql()->listDatabases(); // database, disk_usage (bytes), users
@@ -207,7 +207,7 @@ the account welcome message. Mutation methods use form POST. `addFtp()` accepts
 `password` or `passHash`, which map to `pass` and `pass_hash`; the server forbids
 using both. Omitted options retain upstream defaults: new usernames lose dots by
 default, quotas default to unlimited, and the domain defaults to the cPanel
-account's primary domain. `getQuota()` returns a string; inventory disk amounts
+account's primary domain. `getQuota()` preserves documented strings and observed finite integers; inventory disk amounts
 are decimal strings in MB, and `_diskquota` uses `0.00` for unlimited while
 `diskquota` uses `unlimited`. Optional fields and explicit `htmldir: null` stay distinct.
 

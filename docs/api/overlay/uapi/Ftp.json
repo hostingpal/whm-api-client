@@ -137,6 +137,43 @@
         {
           "kind": "documented",
           "text": "Returns a string: unlimited or the quota in megabytes (MB). Do not interpret an absent payload as an unlimited quota."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, finite quotas were JSON integers through both UAPI routes; unlimited remained a string. The result preserves int|string, retaining documented strings and observed integers without float or boolean coercion."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "int"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "The finite_quota phase returned a JSON integer on both direct and bridged routes, while initial unlimited quotas remained strings. Original responses captured at dd82a734095977fae6f8a2f3a0b1fabf226f1004; artifact SHA-256 55b0184b8581fb288c0bb0016b4ce36ffce119b262f831edabe777c285a65da8. Preserve the documented string and observed integer forms without accepting floats, booleans or null. This observation is not a closed string enum or general range decision.",
+              "fingerprint": "docs/api/evidence/2026-10-30-ftp-section.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "The finite_quota phase returned a JSON integer on both direct and bridged routes, while initial unlimited quotas remained strings. Original responses captured at dd82a734095977fae6f8a2f3a0b1fabf226f1004; artifact SHA-256 55b0184b8581fb288c0bb0016b4ce36ffce119b262f831edabe777c285a65da8. Preserve the documented string and observed integer forms without accepting floats, booleans or null. This observation is not a closed string enum or general range decision.",
+          "fingerprint": "docs/api/evidence/2026-10-30-ftp-section.json"
         }
       ]
     },

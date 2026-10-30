@@ -1245,3 +1245,25 @@ are deliberately unobserved live in this recipe (follow-up `8x0.2.10`). FTP auth
 session rows, populated disk usage and another daemon/version remain separate
 from API execution evidence. Runtime results are recorded below only after an
 explicit capture; default PHP and API-map gates remain offline.
+
+
+The first committed-code capture at
+`dd82a734095977fae6f8a2f3a0b1fabf226f1004` on cPanel `11.138.0.19`
+failed strictly on the finite-quota read through both routes: the original
+payload was a JSON integer, while the pinned contract declares a string.
+Unlimited quotas were strings. The [original artifact](evidence/2026-10-30-ftp-section.json),
+SHA-256 `55b0184b8581fb288c0bb0016b4ce36ffce119b262f831edabe777c285a65da8`,
+preserves both type mismatches and the failed assessment. It contains 39
+observations; disk inventory phases were not reached. Both temporary FTP users
+were independently confirmed absent after cleanup. All 540 structural paths,
+provenance and assessment were audited without recording payload values or replaying requests.
+
+A correction limited to `Ftp/get_quota` retains the documented string form and
+observed integer form as `int|string`. An evidence-bound root union expresses
+this in the existing type grammar; no generic validator or generator behavior
+changes. Floats, booleans, null, lists and objects remain invalid. Independently
+authored endpoint tests reproduced the integer mismatch on all three envelope
+forms; the full fixture regression reproduced it before the correction. Fixture
+readback requires the assigned finite quota as exactly integer `17` or string
+`17`, separately from the initial `unlimited` value. The initial discrepancy is
+not waived or rewritten, and new live evidence must bind the corrected revision.

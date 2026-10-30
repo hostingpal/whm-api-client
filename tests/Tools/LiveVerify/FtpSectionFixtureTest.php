@@ -75,7 +75,7 @@ final class FtpSectionFixtureTest extends TestCase
         yield 'confirmed outcome malformed payload' => ['create_payload', 'cleaned', 1];
         yield 'delete is not retried' => ['delete_failure', 'uncertain', 1];
         yield 'incomplete inventory is not absence' => ['malformed_inventory', 'not_started', 0];
-        yield 'quota contract mismatch' => ['quota_integer', 'cleaned', 1];
+        yield 'quota contract mismatch' => ['quota_float', 'cleaned', 1];
         yield 'quota semantic mismatch' => ['wrong_quota', 'cleaned', 1];
         yield 'unknown raw keys are discrepancies' => ['unknown_field', 'cleaned', 1];
     }
@@ -95,6 +95,19 @@ final class FtpSectionFixtureTest extends TestCase
         foreach (['WHM_API_LIVE', 'WHM_API_LIVE_MUTATIONS', 'WHM_API_LIVE_ACCOUNT', 'WHM_API_LIVE_DOMAIN'] as $key) {
             yield [$key];
         }
+    }
+
+    public function testFiniteQuotaAcceptsTheObservedIntegerPayloadOnBothRoutes(): void
+    {
+        $http = new FtpSectionServer('quota_integer');
+        $report = self::fixture($http)->run();
+        self::assertSame('passed', $report['status']);
+        self::assertSame([], $report['assessment']['findings']);
+        self::assertSame([], $http->accounts);
+        $observations = array_values(array_filter($report['probes'], static fn (array $record): bool =>
+            $record['phase'] === 'finite_quota'));
+        self::assertCount(2, $observations);
+        self::assertSame([['$' => ['int']], ['$' => ['int']]], array_column($observations, 'payload_paths'));
     }
 
     public function testMatchesFullLoginIdentityAndNormalizesEquivalentHomePaths(): void
