@@ -133,8 +133,7 @@ final readonly class Mysql
      *
      * Documented: Available in cPanel 74 and later. Disabling the MySQL role disables this operation.
      *
-     * Documented: The host must already be authorized. Disabling the MySQL role disables this function, including when
-     * remote MySQL is configured.
+     * Documented: The host must already be authorized. Disabling the MySQL role disables this function.
      *
      * Documented: The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an
      * absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but
@@ -756,9 +755,9 @@ final readonly class Mysql
      * Documented: Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when
      * remote MySQL is not configured.
      *
-     * Documented: The returned optional failures list contains per-host error records. Inspect it alongside the
-     * envelope status; a successful envelope alone does not establish that every host accepted the password. Error text
-     * and hostnames are payload data. Omitted failures stays omitted.
+     * Documented: The returned optional failures list contains per-host error records (error, host). The pinned text
+     * does not say whether failures can accompany status 1, so check both. Error text and hostnames are payload data.
+     * Omitted failures stays omitted.
      *
      * API-map identity: uapi:Mysql/set_password#GET (wire name set_password).
      *

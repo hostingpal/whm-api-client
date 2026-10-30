@@ -23,6 +23,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
+use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
@@ -70,6 +71,20 @@ final class SensitiveTraceTest extends TestCase
 
         try {
             $leak(self::SECRET);
+        } catch (RuntimeException $exception) {
+            $seen = [];
+            self::assertTrue(self::contains($exception->getTrace(), $seen));
+        }
+    }
+
+    public function testTheTraceSearchDetectsUnmarkedResponseBodies(): void
+    {
+        $leak = static function (mixed $response): never {
+            throw new RuntimeException('Control failure.');
+        };
+
+        try {
+            $leak(new Response(200, [], self::SECRET));
         } catch (RuntimeException $exception) {
             $seen = [];
             self::assertTrue(self::contains($exception->getTrace(), $seen));
@@ -211,6 +226,41 @@ final class SensitiveTraceTest extends TestCase
             self::assertCount(1, $http->getRequests());
             self::assertSecretAbsent($exception);
         }
+    }
+
+    /** @param class-string<Throwable> $expected */
+    #[DataProvider('returnedMysqlPasswordFailures')]
+    public function testReturnedMysqlPasswordCannotLeakFromEnvelopeFailures(
+        bool $direct,
+        int $status,
+        string $body,
+        string $expected,
+    ): void {
+        [$client, $http] = self::client($direct);
+        $http->addResponse(new Response($status, [], str_replace('returned-password', self::SECRET, $body)));
+        try {
+            $client->uapi($direct ? null : 'npr')->mysql()->setupDbAndUser(prefix: 'app');
+            self::fail('Expected the returned-password response to fail.');
+        } catch (Throwable $exception) {
+            self::assertInstanceOf($expected, $exception);
+            self::assertCount(1, $http->getRequests());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    /** @return iterable<string, array{bool, int, string, class-string<Throwable>}> */
+    public static function returnedMysqlPasswordFailures(): iterable
+    {
+        $data = '{"database_user_password":"returned-password"}';
+        yield 'string status' => [true, 200, '{"status":"1","data":' . $data . '}', InvalidResponseException::class];
+        yield 'failed status with data' => [true, 200, '{"status":0,"data":' . $data . '}', ApiErrorException::class];
+        yield 'missing status' => [true, 200, '{"data":' . $data . '}', InvalidResponseException::class];
+        yield 'truncated JSON' => [true, 200, '{"data":' . $data, InvalidResponseException::class];
+        yield 'outer WHM failure' => [false, 200,
+            '{"metadata":{"result":0},"data":{"uapi":{"status":1,"data":' . $data . '}}}', ApiErrorException::class];
+        yield 'bridged UAPI failure' => [false, 200,
+            '{"metadata":{"result":1},"data":{"uapi":{"status":0,"data":' . $data . '}}}', ApiErrorException::class];
+        yield 'HTTP failure' => [true, 500, '{"status":1,"data":' . $data . '}', HttpException::class];
     }
 
     /** @return iterable<string, array{bool}> */
@@ -394,6 +444,10 @@ final class SensitiveTraceTest extends TestCase
 
         if ($value instanceof SensitiveParameterValue || $value instanceof MockClient) {
             return false;
+        }
+
+        if ($value instanceof MessageInterface && str_contains((string) $value->getBody(), self::SECRET)) {
+            return true;
         }
 
         if (is_object($value)) {

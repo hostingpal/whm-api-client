@@ -196,7 +196,7 @@ setup. Mutations use form POST; passwords stay in the request body.
 $mysql = $account->mysql();
 $mysql->revokeAccessToDatabase(database: 'npr_app', user: 'npr_appuser');
 $passwordResult = $mysql->setPassword(user: 'npr_appuser', password: $newPassword);
-$hostFailures = $passwordResult['failures'] ?? []; // Inspect even after a successful envelope.
+$hostFailures = $passwordResult['failures'] ?? []; // Check alongside the envelope status.
 $schema = $mysql->dumpDatabaseSchema(dbname: 'npr_app'); // SQL text; does not execute SQL.
 $routines = $mysql->listRoutines(databaseUser: 'npr_appuser');
 ```
@@ -216,9 +216,12 @@ resources. Its result includes a generated password; treat the entire result as
 sensitive. Keep the optional application prefix short (at most six alphanumeric
 characters) to preserve name entropy. Most mutation responses are nullable opaque
 objects: preserve `null` and arbitrary object fields. Password updates instead
-return an object with optional per-host `failures`; automatic setup returns an
-object with optional database, user, password, host and string-port fields. An
-absent payload remains a contract mismatch. Method PHPDoc documents each version
+return an object with optional per-host `failures` records (`error`, `host`).
+The pinned text does not say whether failures can accompany status 1, so check
+both the list and the status. Error text and hostnames are payload data; omitted
+`failures` stays omitted. Automatic setup returns an object with optional database,
+user, password, host and string-port fields. An absent payload remains a contract
+mismatch. Method PHPDoc documents each version
 floor, role requirement and result shape.
 
 Results are arrays keyed by the upstream wire names (`$domains['main_domain'] ?? null`).
@@ -263,7 +266,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->langPhp()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetDomainHandler()`, `phpGetImpactedDomains()` |
 | `uapi()->features()` | `listFeatures()` |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
-| `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()` |
+| `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()`, `addHost()`, `addHostNote()`, `checkDatabase()`, `deleteHost()`, `dumpDatabaseSchema()`, `getHostNotes()`, `listRoutines()`, `locateServer()`, `renameDatabase()`, `renameUser()`, `repairDatabase()`, `revokeAccessToDatabase()`, `setPassword()`, `setupDbAndUser()`, `updatePrivileges()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
 
 UAPI groups operate on the selected cPanel account through either credential route.
@@ -626,6 +629,8 @@ password-result failures checks, renames and empty-database maintenance. The fou
 remote-host/random-setup methods remain generated and offline-tested only, with
 safe live ownership/recovery tracked separately. SQL enforcement/authentication,
 populated tables/routines and other server configurations remain unobserved.
+The databases are empty and access is revoked before rename; this run does not
+observe grant or stored-code recreation.
 See the [section recipe](tools/live-verify/README.md#complete-mysql-section-recipe).
 The separate [finite-Quota scenario](docs/api/evidence/2026-10-17-finite-quota.json)
 adds five observations on a disposable account. Both Quota operations passed

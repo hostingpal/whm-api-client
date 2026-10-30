@@ -172,7 +172,9 @@ hosts/notes, table check/repair, schema export, routine listing, host location,
 database/user rename, privilege revocation, password update, random setup and
 account-wide privilege updates. All pinned mutations use form POST, including
 checkDatabase(). Password updates return an object with optional failures, whose
-nonempty entries must be inspected even after status 1. setupDbAndUser() (11.116+)
+per-host error records contain error and host. The pinned text does not say whether
+failures can accompany status 1, so inspect both. Error text and hostnames are payload
+data; omitted failures stays omitted. setupDbAndUser() (11.116+)
 returns optional credential fields and a string port; treat its result as sensitive.
 Rename database warnings can report failure to delete the original database or
 grants. Preserve per-method role/version caveats in overlay notes and regenerate.

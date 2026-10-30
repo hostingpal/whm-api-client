@@ -216,7 +216,8 @@ final class MysqlSectionFixture
                 }
                 $absent = !in_array($names[$kind], $identities, true)
                     && !in_array($names['renamed_' . $kind], $identities, true);
-                $this->expect($absent);
+                $state = $this->resources[$route][$kind];
+                $this->expect($absent && ($state === 'owned' || $state === 'renamed'));
                 $this->resourceState($route, $kind, 'cleaned');
             } catch (Throwable) {
                 if ($this->resources[$route][$kind] !== 'not_started') {
@@ -387,6 +388,7 @@ final class MysqlSectionFixture
             'limitations' => [
                 'empty_database_check_and_repair_do_not_observe_table_results',
                 'empty_routine_lists_do_not_observe_routine_items',
+                'rename_after_revocation_on_empty_databases_does_not_observe_grant_or_stored_code_recreation',
                 'schema_dump_values_are_not_persisted',
                 'privilege_readback_does_not_establish_sql_enforcement',
                 'password_result_does_not_establish_sql_authentication',

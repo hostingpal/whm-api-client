@@ -348,3 +348,10 @@ candidate filter, not ownership proof. Neither the report nor a later rerun is
 authorization to delete those candidates. The report deliberately omits exact names;
 resolve uncertainty using private server inspection. Successful final inventories
 must confirm both original and renamed identities absent.
+
+Access is revoked before rename and the databases are empty, so the recipe does
+not observe grant or stored-code recreation. An absent final inventory never
+resolves an uncertain creation or rename; those resources remain `uncertain` and
+require manual review. If publishing a completed report fails, stderr names its
+retained 0600 temporary file. Recover that file privately; do not replay mutations
+to recover evidence.

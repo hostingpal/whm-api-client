@@ -9,6 +9,7 @@ use Nyholm\Psr7\Response;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use RuntimeException;
 
 /** Independent in-memory account state with deliberately controllable unsuccessful effects. */
 final class MysqlSectionServer implements ClientInterface
@@ -31,7 +32,7 @@ final class MysqlSectionServer implements ClientInterface
     /** @var array<string, string> Function/route/occurrence to raw JSON payload. */
     public array $overrides = [];
 
-    /** @var array<string, string> Function/route/occurrence to before/after failure. */
+    /** @var array<string, string> Function/route/occurrence to before/after/lost/keep_original failure. */
     public array $failures = [];
 
     /** @var array<string, int> */
@@ -88,13 +89,17 @@ final class MysqlSectionServer implements ClientInterface
                 $old = self::parameter($parameters, 'oldname');
                 $new = self::parameter($parameters, 'newname');
                 $this->databases[$new] = $this->databases[$old] ?? [];
-                unset($this->databases[$old]);
+                if ($failure !== 'keep_original') {
+                    unset($this->databases[$old]);
+                }
                 break;
             case 'rename_user':
                 $old = self::parameter($parameters, 'oldname');
                 $new = self::parameter($parameters, 'newname');
                 $this->users[$new] = $this->users[$old] ?? [];
-                unset($this->users[$old]);
+                if ($failure !== 'keep_original') {
+                    unset($this->users[$old]);
+                }
                 break;
             case 'delete_database':
                 unset($this->databases[$name]);
@@ -143,6 +148,10 @@ final class MysqlSectionServer implements ClientInterface
                 break;
             default:
                 throw new LogicException('Unexpected synthetic operation.');
+        }
+
+        if ($failure === 'lost') {
+            throw new RuntimeException('Synthetic response lost.');
         }
 
         return self::response(

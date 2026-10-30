@@ -12,6 +12,7 @@ use Throwable;
 // Run the explicitly designated, committed-code recipe and atomically save structural evidence.
 $command = static function (#[SensitiveParameter] array $arguments): int {
     $temporary = null;
+    $retainCompletedReport = false;
     try {
         if ($arguments === ['--help']) {
             fwrite(STDOUT, "Usage: php tools/live-verify/mysql-section.php --output=PATH\n"
@@ -64,10 +65,11 @@ $command = static function (#[SensitiveParameter] array $arguments): int {
             ['schema_version' => 1, 'mysql_section' => $report],
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
         ) . "\n";
-        if (
-            @file_put_contents($temporary, $json) !== strlen($json)
-            || !@link($temporary, $output)
-        ) {
+        if (@file_put_contents($temporary, $json) !== strlen($json)) {
+            throw new RuntimeException('Evidence persistence failed.');
+        }
+        $retainCompletedReport = true;
+        if (!@link($temporary, $output)) {
             throw new RuntimeException('Evidence persistence failed.');
         }
         @unlink($temporary);
@@ -80,9 +82,13 @@ $command = static function (#[SensitiveParameter] array $arguments): int {
         $kind = $error instanceof LogicException ? 'configuration_failure' : 'execution_failure';
         fwrite(STDERR, 'MySQL section verification failed (' . $kind . ").\n");
 
+        if ($retainCompletedReport && $temporary !== null) {
+            fwrite(STDERR, 'Completed report retained at: ' . $temporary . "\n");
+        }
+
         return 1;
     } finally {
-        if ($temporary !== null) {
+        if ($temporary !== null && !$retainCompletedReport) {
             @unlink($temporary);
         }
     }

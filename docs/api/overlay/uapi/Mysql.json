@@ -267,7 +267,7 @@
         },
         {
           "kind": "documented",
-          "text": "The host must already be authorized. Disabling the MySQL role disables this function, including when remote MySQL is configured."
+          "text": "The host must already be authorized. Disabling the MySQL role disables this function."
         },
         {
           "kind": "documented",
@@ -514,7 +514,7 @@
         },
         {
           "kind": "documented",
-          "text": "The returned optional failures list contains per-host error records. Inspect it alongside the envelope status; a successful envelope alone does not establish that every host accepted the password. Error text and hostnames are payload data. Omitted failures stays omitted."
+          "text": "The returned optional failures list contains per-host error records (error, host). The pinned text does not say whether failures can accompany status 1, so check both. Error text and hostnames are payload data. Omitted failures stays omitted."
         }
       ],
       "method": "POST",

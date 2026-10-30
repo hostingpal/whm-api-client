@@ -1278,6 +1278,12 @@ designated test account. Both routes' database and user resources are cleaned;
 final inventories establish original and renamed names absent. No raw identities,
 SQL, passwords or arbitrary upstream messages are saved.
 
+Access is revoked before rename and both databases are empty. The rename readbacks
+establish name changes and cleanup only; they do not observe grant or stored-code
+recreation. This limitation also applies to the immutable artifact above. The
+current recipe reports it explicitly; no operation was replayed to update the
+historical evidence.
+
 The artifact's 820 structural paths, all 57 effective-contract hashes, source/map/
 generator/overlay provenance, version binding and complete assessment were audited
 without replaying requests. No new compatibility correction was required. These

@@ -75,6 +75,52 @@ final class MysqlSectionFixtureTest extends TestCase
         self::assertCount(2, $server->deleted, 'The independent bridge lifecycle still cleans its own resources.');
     }
 
+    #[DataProvider('lostResponses')]
+    public function testLostResponsesStayUncertainEvenWhenFinalInventoryIsEmpty(
+        string $function,
+        string $kind,
+        string $inventory,
+    ): void {
+        $server = new MysqlSectionServer();
+        $server->failures[$function . '/direct/1'] = 'lost';
+        $server->overrides[$inventory] = '[]';
+        $report = $this->fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertSame('uncertain', $report['resources']['direct-uapi'][$kind]);
+        self::assertContains('direct-uapi:cleanup_unconfirmed', $report['failures']);
+        self::assertSame(['database' => 'cleaned', 'user' => 'cleaned'], $report['resources']['bridged-uapi']);
+    }
+
+    /** @return iterable<string, array{string, string, string}> */
+    public static function lostResponses(): iterable
+    {
+        yield 'database creation' => ['create_database', 'database', 'list_databases/direct/2'];
+        yield 'user creation' => ['create_user', 'user', 'list_users/direct/2'];
+        yield 'database rename' => ['rename_database', 'database', 'list_databases/direct/3'];
+        yield 'user rename' => ['rename_user', 'user', 'list_users/direct/3'];
+    }
+
+    #[DataProvider('survivingOriginals')]
+    public function testAcceptedRenameRetainsAnUnexpectedOriginalForManualReview(string $kind, string $old): void
+    {
+        $server = new MysqlSectionServer();
+        $server->failures['rename_' . $kind . '/direct/1'] = 'keep_original';
+        $report = $this->fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertNotContains($old, $server->deleted);
+        self::assertArrayHasKey($old, $kind === 'database' ? $server->databases : $server->users);
+        self::assertSame('uncertain', $report['resources']['direct-uapi'][$kind]);
+        self::assertContains('direct-uapi:cleanup_unconfirmed', $report['failures']);
+        self::assertSame(['database' => 'cleaned', 'user' => 'cleaned'], $report['resources']['bridged-uapi']);
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function survivingOriginals(): iterable
+    {
+        yield 'database' => ['database', 'npr_wsa1b2c3d'];
+        yield 'user' => ['user', 'npr_wsa1b2c3u'];
+    }
+
     public function testAcceptedOutcomeWithBadCreationPayloadStillOwnsAndCleansTheResource(): void
     {
         $server = new MysqlSectionServer();

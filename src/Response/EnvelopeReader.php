@@ -12,6 +12,7 @@ use InvalidArgumentException;
 use JsonException;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
+use SensitiveParameter;
 use stdClass;
 
 /**
@@ -46,7 +47,7 @@ final class EnvelopeReader
      * @throws ApiErrorException If the Flag policy finds a WHM or UAPI failure outcome, or the bridge failed.
      */
     public static function read(
-        ResponseInterface $response,
+        #[SensitiveParameter] ResponseInterface $response,
         ResponseRoute $route,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): ApiResponse {

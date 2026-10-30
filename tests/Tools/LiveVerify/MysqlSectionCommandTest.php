@@ -113,8 +113,25 @@ STUB);
                 self::assertSame(0600, fileperms($root . '/output.json') & 0777);
                 self::assertSame('', $stderr);
             }
-            self::assertSame([], glob($root . '/.mysql-section-*'));
+            $temporary = glob($root . '/.mysql-section-*');
+            self::assertIsArray($temporary);
+            if ($scenario === 'race') {
+                self::assertCount(1, $temporary);
+                self::assertSame(0600, fileperms($temporary[0]) & 0777);
+                self::assertStringContainsString($temporary[0], $stderr);
+                $recovered = file_get_contents($temporary[0]);
+                self::assertIsString($recovered);
+                self::assertSame(
+                    ['schema_version' => 1, 'mysql_section' => ['status' => 'passed']],
+                    json_decode($recovered, true, 512, JSON_THROW_ON_ERROR),
+                );
+            } else {
+                self::assertSame([], $temporary);
+            }
         } finally {
+            foreach (glob($root . '/.mysql-section-*') ?: [] as $temporary) {
+                unlink($temporary);
+            }
             foreach (
                 ['context-loaded', 'cleanup-complete', 'output.json',
                 'vendor/autoload.php', 'tools/live-verify/mysql-section.php'] as $file
