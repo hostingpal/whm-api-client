@@ -354,6 +354,9 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		param.PHPType, param.DocType, param.Encoding, composite = paramTypes(spec, b.schemas.enumDoc(p.Locator.SourceID, decl["schema"]))
 		param.Sensitive = sensitiveName(p.Name, spec)
 		o := ov.Params[p.Name]
+		if o.Required != nil {
+			param.Required = *o.Required
+		}
 		if reason := secretDecision(p.Name, text(decl["description"]), spec, param.Sensitive); reason != "" && o.Sensitive == nil {
 			b.problem(op.ID + ": parameter " + p.Name + " may carry a secret (" + reason + `); declare "sensitive" true or false`)
 		}

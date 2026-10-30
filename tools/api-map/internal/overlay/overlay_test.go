@@ -152,6 +152,8 @@ func TestValidateRequiresEvidenceForBehaviourOverrides(t *testing.T) {
 		"optional payload": {`"optional_payload": true`, "whm1:listaccts: optional_payload needs evidence"},
 		"sensitive false":  {`"params": {"search": {"sensitive": false}}`, "whm1:listaccts: sensitive false on parameter search needs evidence"},
 		"encoding":         {`"params": {"search": {"encoding": "repeat"}}`, "whm1:listaccts: encoding on parameter search needs evidence"},
+		"required false":   {`"params": {"search": {"required": false}}`, "whm1:listaccts: required on parameter search needs evidence"},
+		"required true":    {`"params": {"search": {"required": true}}`, "whm1:listaccts: required on parameter search needs evidence"},
 		"variant":          {`"variant": "POST"`, "whm1:listaccts: variant needs evidence"},
 	} {
 		t.Run(name, func(t *testing.T) {

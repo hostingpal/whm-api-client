@@ -47,7 +47,8 @@
         "php": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
         "encoding": {"enum": ["scalar", "bool", "repeat", "numbered"]},
         "sensitive": {"type": "boolean"},
-        "omit": {"type": "boolean"}
+        "omit": {"type": "boolean"},
+        "required": {"type": "boolean"}
       },
       "additionalProperties": false
     },

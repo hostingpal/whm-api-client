@@ -78,6 +78,7 @@ var NoteKinds = map[string]string{"documented": "Documented", "observed": "Obser
 // reachable through call() and are left out of the generated signature.
 type Param struct {
 	PHP       string `json:"php,omitempty"`
+	Required  *bool  `json:"required,omitempty"`
 	Encoding  string `json:"encoding,omitempty"`
 	Sensitive *bool  `json:"sensitive,omitempty"`
 	Omit      bool   `json:"omit,omitempty"`
