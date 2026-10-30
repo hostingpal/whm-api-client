@@ -37,8 +37,11 @@ func (w *writer) paramDoc(indent string, p effective.Param, description string) 
 	head := func(t string) string { return indent + " * @param " + t + " $" + p.PHP }
 	if len(head(docType)) > lineWidth {
 		docType = p.PHPType
-		if p.Encoding == "repeat" || p.Encoding == "numbered" {
+		if isMultiple(p.Encoding) {
 			docType = "string|list<string>"
+			if p.Encoding == "suffix-numbered-scalar" {
+				docType = "string|int|list<string|int>"
+			}
 		}
 		if !p.Required {
 			docType += "|null"
@@ -168,7 +171,7 @@ func groupClass(g effective.Group) string {
 			uses = append(uses, rootNamespace+`\Exception\PayloadMismatchException`)
 		}
 		for _, p := range op.Params {
-			if p.Encoding == "repeat" || p.Encoding == "numbered" {
+			if isMultiple(p.Encoding) {
 				uses = append(uses, "InvalidArgumentException")
 			}
 			if p.Sensitive {
@@ -262,13 +265,15 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	w.doc(indent, identity+").")
 	w.line(indent + " *")
 	multi := false
+	scalarMulti := false
 	for _, p := range op.Params {
 		description := p.Description
 		if !p.Required {
 			description = strings.TrimSpace(description + " Null omits it.")
 		}
 		w.paramDoc(indent, p, description)
-		multi = multi || p.Encoding == "repeat" || p.Encoding == "numbered"
+		multi = multi || isMultiple(p.Encoding)
+		scalarMulti = scalarMulti || p.Encoding == "suffix-numbered-scalar"
 	}
 	if ret != nil {
 		w.docTag(indent, "@return "+docReturn(op, *ret))
@@ -282,7 +287,11 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		w.line(indent + " *     the outcome is not checked.")
 	}
 	if multi {
-		w.line(indent + " * @throws InvalidArgumentException If a list argument is empty or contains non-strings.")
+		if scalarMulti {
+			w.line(indent + " * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.")
+		} else {
+			w.line(indent + " * @throws InvalidArgumentException If a list argument is empty or contains non-strings.")
+		}
 	}
 	w.line(indent + " * @see " + op.SeeURL)
 	w.line(indent + " */")
@@ -513,4 +522,9 @@ func uniqueSorted(values []string) []string {
 	}
 	sort.Strings(result)
 	return result
+}
+
+// isMultiple identifies encodings whose array inputs require element PHPDoc.
+func isMultiple(encoding string) bool {
+	return encoding == "repeat" || encoding == "numbered" || encoding == "suffix-numbered" || encoding == "suffix-numbered-scalar"
 }

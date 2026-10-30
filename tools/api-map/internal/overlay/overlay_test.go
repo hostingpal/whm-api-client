@@ -236,3 +236,20 @@ func TestLoadRequiresTypeSpecCompanionKeys(t *testing.T) {
 		})
 	}
 }
+
+func TestSuffixNumberedEncodingRequiresOneTerminalWildcard(t *testing.T) {
+	for _, encoding := range []string{"suffix-numbered", "suffix-numbered-scalar"} {
+		for _, wire := range []string{"filter*", "action*", "dest*", "match*", "opt*", "part*", "val*"} {
+			content := strings.Replace(validWHM, `"name": "listAccounts",`, `"name": "listAccounts", "params": {"`+wire+`": {"encoding": "`+encoding+`"}}, "evidence": `+evidenceJSON+`,`, 1)
+			if problems := Validate(loadWHM(t, content)); len(problems) != 0 {
+				t.Fatal(problems)
+			}
+		}
+		for _, wire := range []string{"filter", "*", "filter**", "filter*x", "filter-1*", "filter.*", "1filter*"} {
+			content := strings.Replace(validWHM, `"name": "listAccounts",`, `"name": "listAccounts", "params": {"`+wire+`": {"encoding": "`+encoding+`"}}, "evidence": `+evidenceJSON+`,`, 1)
+			if problems := Validate(loadWHM(t, content)); len(problems) == 0 {
+				t.Fatalf("accepted %s on %s", encoding, wire)
+			}
+		}
+	}
+}

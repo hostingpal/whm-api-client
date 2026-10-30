@@ -82,6 +82,8 @@ func TestParamDocFallbackKeepsListElementTypes(t *testing.T) {
 		want  string
 	}{
 		{effective.Param{PHP: "names", Encoding: "repeat", PHPType: "string|array", DocType: long}, "     * @param string|list<string>|null $names Names."},
+		{effective.Param{PHP: "filters", Encoding: "suffix-numbered", PHPType: "string|array", DocType: long}, "     * @param string|list<string>|null $filters Names."},
+		{effective.Param{PHP: "values", Encoding: "suffix-numbered-scalar", PHPType: "string|int|array", DocType: long}, "     * @param string|int|list<string|int>|null $values Names."},
 		{effective.Param{PHP: "users", Encoding: "numbered", PHPType: "string|array", DocType: long, Required: true}, "     * @param string|list<string> $users Names."},
 	} {
 		w := &writer{}

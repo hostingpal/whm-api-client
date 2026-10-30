@@ -13,6 +13,290 @@ namespace HostingPal\WhmApiClient\Api\Uapi\Spec;
  */
 final class EmailSpec
 {
+    public const ACCOUNT_NAME = [
+        'function' => 'account_name',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+            'display' => ['name' => 'display', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'string'],
+    ];
+
+    public const ADD_AUTO_RESPONDER = [
+        'function' => 'add_auto_responder',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'body' => ['name' => 'body', 'encoding' => 'scalar'],
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+            'from' => ['name' => 'from', 'encoding' => 'scalar'],
+            'interval' => ['name' => 'interval', 'encoding' => 'scalar'],
+            'isHtml' => ['name' => 'is_html', 'encoding' => 'bool'],
+            'start' => ['name' => 'start', 'encoding' => 'scalar'],
+            'stop' => ['name' => 'stop', 'encoding' => 'scalar'],
+            'subject' => ['name' => 'subject', 'encoding' => 'scalar'],
+            'charset' => ['name' => 'charset', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const ADD_DOMAIN_FORWARDER = [
+        'function' => 'add_domain_forwarder',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'destinationDomain' => ['name' => 'destdomain', 'encoding' => 'scalar'],
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'string'],
+    ];
+
+    public const ADD_FORWARDER = [
+        'function' => 'add_forwarder',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+            'forwardOption' => ['name' => 'fwdopt', 'encoding' => 'scalar'],
+            'failureMessage' => ['name' => 'failmsgs', 'encoding' => 'scalar'],
+            'forwardEmail' => ['name' => 'fwdemail', 'encoding' => 'scalar'],
+            'forwardSystem' => ['name' => 'fwdsystem', 'encoding' => 'scalar'],
+            'pipeForward' => ['name' => 'pipefwd', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'domain' => ['type' => 'string'],
+                    'email' => ['type' => 'string'],
+                    'forward' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const ADD_LIST = [
+        'function' => 'add_list',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'list' => ['name' => 'list', 'encoding' => 'scalar'],
+            'password' => ['name' => 'password', 'encoding' => 'scalar'],
+            'private' => ['name' => 'private', 'encoding' => 'bool'],
+            'rebuildOnly' => ['name' => 'rebuildonly', 'encoding' => 'bool'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const ADD_MAILMAN_DELEGATES = [
+        'function' => 'add_mailman_delegates',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'delegates' => ['name' => 'delegates', 'encoding' => 'scalar'],
+            'list' => ['name' => 'list', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'delegates' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'metadata' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'transformed' => ['type' => 'mixed'],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const ADD_MX = [
+        'function' => 'add_mx',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'exchanger' => ['name' => 'exchanger', 'encoding' => 'scalar'],
+            'priority' => ['name' => 'priority', 'encoding' => 'scalar'],
+            'alwaysAccept' => ['name' => 'alwaysaccept', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'checkmx' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'changed' => ['type' => 'flag'],
+                        'detected' => ['type' => 'string'],
+                        'isprimary' => ['type' => 'flag'],
+                        'issecondary' => ['type' => 'flag'],
+                        'local' => ['type' => 'flag'],
+                        'mxcheck' => ['type' => 'string'],
+                        'remote' => ['type' => 'flag'],
+                        'secondary' => ['type' => 'flag'],
+                        'warnings' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    ],
+                ],
+                'results' => ['type' => 'string'],
+                'status' => ['type' => 'flag'],
+                'statusmsg' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const ADD_POP = [
+        'function' => 'add_pop',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+            'password' => ['name' => 'password', 'encoding' => 'scalar'],
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'passwordHash' => ['name' => 'password_hash', 'encoding' => 'scalar'],
+            'quota' => ['name' => 'quota', 'encoding' => 'scalar'],
+            'sendWelcomeEmail' => ['name' => 'send_welcome_email', 'encoding' => 'bool'],
+            'skipUpdateDb' => ['name' => 'skip_update_db', 'encoding' => 'bool'],
+        ],
+        'returns' => ['type' => 'string'],
+    ];
+
+    public const ADD_SPAM_FILTER = [
+        'function' => 'add_spam_filter',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+            'requiredScore' => ['name' => 'required_score', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const BROWSE_MAILBOX = [
+        'function' => 'browse_mailbox',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+            'dir' => ['name' => 'dir', 'encoding' => 'scalar'],
+            'showDotFiles' => ['name' => 'showdotfiles', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'depth' => ['type' => 'int'],
+                    'file' => ['type' => 'string'],
+                    'fullpath' => ['type' => 'string'],
+                    'isleaf' => ['type' => 'flag'],
+                    'ismailbox' => ['type' => 'flag'],
+                    'mtime' => ['type' => 'int'],
+                    'path' => ['type' => 'string'],
+                    'relpath' => ['type' => 'string'],
+                    'type' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const CHANGE_MX = [
+        'function' => 'change_mx',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'exchanger' => ['name' => 'exchanger', 'encoding' => 'scalar'],
+            'oldExchanger' => ['name' => 'oldexchanger', 'encoding' => 'scalar'],
+            'priority' => ['name' => 'priority', 'encoding' => 'scalar'],
+            'alwaysAccept' => ['name' => 'alwaysaccept', 'encoding' => 'bool'],
+            'oldPriority' => ['name' => 'oldpriority', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'checkmx' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'changed' => ['type' => 'flag'],
+                        'detected' => ['type' => 'string'],
+                        'isprimary' => ['type' => 'flag'],
+                        'issecondary' => ['type' => 'flag'],
+                        'local' => ['type' => 'flag'],
+                        'mxcheck' => ['type' => 'string'],
+                        'remote' => ['type' => 'flag'],
+                        'secondary' => ['type' => 'flag'],
+                        'warnings' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    ],
+                ],
+                'results' => ['type' => 'string'],
+                'status' => ['type' => 'flag'],
+                'statusmsg' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const CHECK_FASTMAIL = [
+        'function' => 'check_fastmail',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'string'],
+    ];
+
+    public const COUNT_AUTO_RESPONDERS = [
+        'function' => 'count_auto_responders',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'int'],
+    ];
+
+    public const COUNT_FILTERS = [
+        'function' => 'count_filters',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'int'],
+    ];
+
+    public const COUNT_FORWARDERS = [
+        'function' => 'count_forwarders',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'int'],
+    ];
+
+    public const COUNT_LISTS = [
+        'function' => 'count_lists',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'int'],
+    ];
+
     public const COUNT_POPS = [
         'function' => 'count_pops',
         'module' => 'Email',
@@ -20,6 +304,672 @@ final class EmailSpec
         'outcome' => 'flag',
         'params' => [],
         'returns' => ['type' => 'int'],
+    ];
+
+    public const DELETE_AUTO_RESPONDER = [
+        'function' => 'delete_auto_responder',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const DELETE_DOMAIN_FORWARDER = [
+        'function' => 'delete_domain_forwarder',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const DELETE_FILTER = [
+        'function' => 'delete_filter',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+            'filterName' => ['name' => 'filtername', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const DELETE_FORWARDER = [
+        'function' => 'delete_forwarder',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'address' => ['name' => 'address', 'encoding' => 'scalar'],
+            'forwarder' => ['name' => 'forwarder', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const DELETE_HELD_MESSAGES = [
+        'function' => 'delete_held_messages',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'int'],
+    ];
+
+    public const DELETE_LIST = [
+        'function' => 'delete_list',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'list' => ['name' => 'list', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const DELETE_MX = [
+        'function' => 'delete_mx',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'exchanger' => ['name' => 'exchanger', 'encoding' => 'scalar'],
+            'priority' => ['name' => 'priority', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'checkmx' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'changed' => ['type' => 'flag'],
+                        'detected' => ['type' => 'string'],
+                        'isprimary' => ['type' => 'flag'],
+                        'issecondary' => ['type' => 'flag'],
+                        'local' => ['type' => 'flag'],
+                        'mxcheck' => ['type' => 'string'],
+                        'remote' => ['type' => 'flag'],
+                        'secondary' => ['type' => 'flag'],
+                        'warnings' => ['type' => 'string'],
+                    ],
+                ],
+                'results' => ['type' => 'string'],
+                'status' => ['type' => 'flag'],
+                'statusmsg' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const DELETE_POP = [
+        'function' => 'delete_pop',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'flags' => ['name' => 'flags', 'encoding' => 'scalar'],
+            'skipQuota' => ['name' => 'skip_quota', 'encoding' => 'bool'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const DISABLE_FILTER = [
+        'function' => 'disable_filter',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+            'filterName' => ['name' => 'filtername', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'filtername' => ['type' => 'string'],
+                'updated' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const DISABLE_MAILBOX_AUTOCREATE = [
+        'function' => 'disable_mailbox_autocreate',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'flag'],
+    ];
+
+    public const DISABLE_SPAM_ASSASSIN = [
+        'function' => 'disable_spam_assassin',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const DISABLE_SPAM_AUTODELETE = [
+        'function' => 'disable_spam_autodelete',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'spam_auto_delete' => ['type' => 'int'],
+            ],
+        ],
+    ];
+
+    public const DISABLE_SPAM_BOX = [
+        'function' => 'disable_spam_box',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const DISPATCH_CLIENT_SETTINGS = [
+        'function' => 'dispatch_client_settings',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+            'to' => ['name' => 'to', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const EDIT_POP_QUOTA = [
+        'function' => 'edit_pop_quota',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+            'quota' => ['name' => 'quota', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const ENABLE_FILTER = [
+        'function' => 'enable_filter',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+            'filterName' => ['name' => 'filtername', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'filtername' => ['type' => 'string'],
+                'updated' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const ENABLE_MAILBOX_AUTOCREATE = [
+        'function' => 'enable_mailbox_autocreate',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'flag'],
+    ];
+
+    public const ENABLE_SPAM_ASSASSIN = [
+        'function' => 'enable_spam_assassin',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const ENABLE_SPAM_BOX = [
+        'function' => 'enable_spam_box',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const EXPORT_LISTS = [
+        'function' => 'export_lists',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const FETCH_CHARMAPS = [
+        'function' => 'fetch_charmaps',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'map' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const FTS_RESCAN_MAILBOX = [
+        'function' => 'fts_rescan_mailbox',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'flag'],
+    ];
+
+    public const GENERATE_MAILMAN_OTP = [
+        'function' => 'generate_mailman_otp',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'list' => ['name' => 'list', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'string'],
+    ];
+
+    public const GET_AUTO_RESPONDER = [
+        'function' => 'get_auto_responder',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+            'tempCharset' => ['name' => 'temp_charset', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'body' => ['type' => 'string'],
+                'charset' => ['type' => 'string'],
+                'from' => ['type' => 'string'],
+                'interval' => ['type' => 'int'],
+                'is_html' => ['type' => 'flag'],
+                'start' => ['type' => 'int'],
+                'stop' => ['type' => 'int'],
+                'subject' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const GET_CHARSETS = [
+        'function' => 'get_charsets',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'list', 'items' => ['type' => 'string']],
+    ];
+
+    public const GET_CLIENT_SETTINGS = [
+        'function' => 'get_client_settings',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'account' => ['type' => 'string'],
+                'activesync_available' => ['type' => 'flag'],
+                'activesync_host' => ['type' => 'string'],
+                'activesync_port' => ['type' => 'int'],
+                'activesync_username' => ['type' => 'string'],
+                'display' => ['type' => 'string'],
+                'domain' => ['type' => 'string'],
+                'from_archiving' => ['type' => 'flag'],
+                'has_plaintext_authentication' => ['type' => 'flag'],
+                'inbox_host' => ['type' => 'string'],
+                'inbox_insecure_port' => ['type' => 'int'],
+                'inbox_port' => ['type' => 'int'],
+                'inbox_service' => ['type' => 'string'],
+                'inbox_username' => ['type' => 'string'],
+                'mail_domain' => ['type' => 'string'],
+                'smtp_host' => ['type' => 'string'],
+                'smtp_insecure_port' => ['type' => 'int'],
+                'smtp_port' => ['type' => 'int'],
+                'smtp_username' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const GET_DEFAULT_EMAIL_QUOTA = [
+        'function' => 'get_default_email_quota',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'int'],
+    ];
+
+    public const GET_DEFAULT_EMAIL_QUOTA_MIB = [
+        'function' => 'get_default_email_quota_mib',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'int'],
+    ];
+
+    public const GET_DISK_USAGE = [
+        'function' => 'get_disk_usage',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'diskused' => ['type' => 'number'],
+                'domain' => ['type' => 'string'],
+                'login' => ['type' => 'string'],
+                'user' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const GET_FILTER = [
+        'function' => 'get_filter',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+            'filterName' => ['name' => 'filtername', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'actions' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'action' => ['type' => 'string'],
+                            'dest' => ['type' => 'string'],
+                            'number' => ['type' => 'int'],
+                        ],
+                    ],
+                ],
+                'filtername' => ['type' => 'string'],
+                'metadata' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'transformed' => ['type' => 'int'],
+                    ],
+                ],
+                'rules' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'match' => ['type' => 'string'],
+                            'number' => ['type' => 'int'],
+                            'opt' => ['type' => 'string'],
+                            'part' => ['type' => 'string'],
+                            'val' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_HELD_MESSAGE_COUNT = [
+        'function' => 'get_held_message_count',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'int'],
+    ];
+
+    public const GET_LISTS_TOTAL_DISK_USAGE = [
+        'function' => 'get_lists_total_disk_usage',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'int'],
+    ];
+
+    public const GET_MAILBOX_AUTOCREATE = [
+        'function' => 'get_mailbox_autocreate',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'flag'],
+    ];
+
+    public const GET_MAILMAN_DELEGATES = [
+        'function' => 'get_mailman_delegates',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'list' => ['name' => 'list', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'delegates' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'metadata' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'transformed' => ['type' => 'mixed'],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_MAIN_ACCOUNT_DISK_USAGE = [
+        'function' => 'get_main_account_disk_usage',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'string'],
+    ];
+
+    public const GET_MAIN_ACCOUNT_DISK_USAGE_BYTES = [
+        'function' => 'get_main_account_disk_usage_bytes',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'int'],
+    ];
+
+    public const GET_MAX_EMAIL_QUOTA = [
+        'function' => 'get_max_email_quota',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'int'],
+    ];
+
+    public const GET_MAX_EMAIL_QUOTA_MIB = [
+        'function' => 'get_max_email_quota_mib',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'int'],
+    ];
+
+    public const GET_POP_QUOTA = [
+        'function' => 'get_pop_quota',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+            'asBytes' => ['name' => 'as_bytes', 'encoding' => 'bool'],
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'int'],
+    ];
+
+    public const GET_SPAM_SETTINGS = [
+        'function' => 'get_spam_settings',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'cpuser_spam_auto_delete' => ['type' => 'flag', 'nullable' => true],
+                'cpuser_spam_auto_delete_score' => ['type' => 'int', 'nullable' => true],
+                'rewrites_subjects' => ['type' => 'flag'],
+                'spam_as_acl' => ['type' => 'int'],
+                'spam_auto_delete' => ['type' => 'flag', 'nullable' => true],
+                'spam_auto_delete_score' => ['type' => 'int', 'nullable' => true],
+                'spam_box_enabled' => ['type' => 'flag'],
+                'spam_enabled' => ['type' => 'flag'],
+                'spam_status_changeable' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const GET_WEBMAIL_SETTINGS = [
+        'function' => 'get_webmail_settings',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'domain' => ['type' => 'string'],
+                'has_maildir' => ['type' => 'int'],
+                'user' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const HAS_DELEGATED_MAILMAN_LISTS = [
+        'function' => 'has_delegated_mailman_lists',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'delegate' => ['name' => 'delegate', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'flag'],
+    ];
+
+    public const HAS_PLAINTEXT_AUTHENTICATION = [
+        'function' => 'has_plaintext_authentication',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'flag'],
+    ];
+
+    public const HOLD_OUTGOING = [
+        'function' => 'hold_outgoing',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const LIST_AUTO_RESPONDERS = [
+        'function' => 'list_auto_responders',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'regex' => ['name' => 'regex', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'email' => ['type' => 'string'],
+                    'subject' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_DEFAULT_ADDRESS = [
+        'function' => 'list_default_address',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'defaultaddress' => ['type' => 'string'],
+                    'domain' => ['type' => 'string'],
+                ],
+            ],
+        ],
     ];
 
     public const LIST_DOMAIN_FORWARDERS = [
@@ -37,6 +987,137 @@ final class EmailSpec
                 'fields' => [
                     'dest' => ['type' => 'string'],
                     'forward' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_FILTERS = [
+        'function' => 'list_filters',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'actions' => [
+                        'type' => 'list',
+                        'items' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'action' => ['type' => 'string'],
+                                'dest' => ['type' => 'string'],
+                            ],
+                        ],
+                    ],
+                    'enabled' => ['type' => 'int'],
+                    'filtername' => ['type' => 'string'],
+                    'rules' => [
+                        'type' => 'list',
+                        'items' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'match' => ['type' => 'string'],
+                                'opt' => ['type' => 'string'],
+                                'part' => ['type' => 'string'],
+                                'val' => ['type' => 'string'],
+                            ],
+                        ],
+                    ],
+                    'unescaped' => ['type' => 'bool'],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_FILTERS_BACKUPS = [
+        'function' => 'list_filters_backups',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'domain' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_FORWARDERS = [
+        'function' => 'list_forwarders',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'regex' => ['name' => 'regex', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'dest' => ['type' => 'string'],
+                    'forward' => ['type' => 'string'],
+                    'html_dest' => ['type' => 'string'],
+                    'html_forward' => ['type' => 'string'],
+                    'uri_dest' => ['type' => 'string'],
+                    'uri_forward' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_FORWARDERS_BACKUPS = [
+        'function' => 'list_forwarders_backups',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'domain' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_LISTS = [
+        'function' => 'list_lists',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'regex' => ['name' => 'regex', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'accesstype' => ['type' => 'string'],
+                    'advertised' => ['type' => 'flag'],
+                    'archive_private' => ['type' => 'flag'],
+                    'desthost' => ['type' => 'string'],
+                    'diskused' => ['type' => 'int'],
+                    'humandiskused' => ['type' => 'string'],
+                    'list' => ['type' => 'string'],
+                    'listadmin' => ['type' => 'string'],
+                    'listid' => ['type' => 'string'],
+                    'subscribe_policy' => ['type' => 'int'],
                 ],
             ],
         ],
@@ -65,6 +1146,47 @@ final class EmailSpec
         ],
     ];
 
+    public const LIST_MXS = [
+        'function' => 'list_mxs',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'alwaysaccept' => ['type' => 'flag'],
+                    'detected' => ['type' => 'string'],
+                    'domain' => ['type' => 'string'],
+                    'entries' => [
+                        'type' => 'list',
+                        'items' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'domain' => ['type' => 'string'],
+                                'entrycount' => ['type' => 'int'],
+                                'mx' => ['type' => 'string'],
+                                'priority' => ['type' => 'int'],
+                                'row' => ['type' => 'string'],
+                            ],
+                        ],
+                    ],
+                    'local' => ['type' => 'flag'],
+                    'mx' => ['type' => 'string'],
+                    'mxcheck' => ['type' => 'string'],
+                    'remote' => ['type' => 'flag'],
+                    'secondary' => ['type' => 'flag'],
+                    'status' => ['type' => 'flag'],
+                    'statusmsg' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
     public const LIST_POPS = [
         'function' => 'list_pops',
         'module' => 'Email',
@@ -87,5 +1209,434 @@ final class EmailSpec
                 ],
             ],
         ],
+    ];
+
+    public const LIST_POPS_WITH_DISK = [
+        'function' => 'list_pops_with_disk',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+            'getRestrictions' => ['name' => 'get_restrictions', 'encoding' => 'bool'],
+            'infinityImage' => ['name' => 'infinityimg', 'encoding' => 'scalar'],
+            'infinityLanguage' => ['name' => 'infinitylang', 'encoding' => 'bool'],
+            'maxAccounts' => ['name' => 'maxaccounts', 'encoding' => 'scalar'],
+            'noDisk' => ['name' => 'no_disk', 'encoding' => 'bool'],
+            'noValidate' => ['name' => 'no_validate', 'encoding' => 'bool'],
+            'regex' => ['name' => 'regex', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    '_diskquota' => ['type' => 'int'],
+                    '_diskused' => ['type' => 'int'],
+                    'diskquota' => [
+                        'type' => 'union',
+                        'anyOf' => [
+                            ['type' => 'int'],
+                            ['type' => 'string'],
+                        ],
+                    ],
+                    'diskused' => ['type' => 'number'],
+                    'diskusedpercent' => ['type' => 'int'],
+                    'diskusedpercent20' => ['type' => 'int'],
+                    'diskusedpercent_float' => ['type' => 'number'],
+                    'domain' => ['type' => 'string'],
+                    'email' => ['type' => 'string'],
+                    'has_suspended' => ['type' => 'flag'],
+                    'hold_outgoing' => ['type' => 'flag'],
+                    'humandiskquota' => [
+                        'type' => 'union',
+                        'anyOf' => [
+                            ['type' => 'int'],
+                            ['type' => 'string'],
+                        ],
+                    ],
+                    'humandiskused' => ['type' => 'string'],
+                    'login' => ['type' => 'string'],
+                    'mtime' => ['type' => 'int'],
+                    'suspended_incoming' => ['type' => 'flag'],
+                    'suspended_login' => ['type' => 'flag'],
+                    'suspended_outgoing' => ['type' => 'flag'],
+                    'txtdiskquota' => [
+                        'type' => 'union',
+                        'anyOf' => [
+                            ['type' => 'int'],
+                            ['type' => 'string'],
+                        ],
+                    ],
+                    'user' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_SYSTEM_FILTER_INFO = [
+        'function' => 'list_system_filter_info',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'filter_info' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const PASSWD_LIST = [
+        'function' => 'passwd_list',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'list' => ['name' => 'list', 'encoding' => 'scalar'],
+            'password' => ['name' => 'password', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const PASSWD_POP = [
+        'function' => 'passwd_pop',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+            'password' => ['name' => 'password', 'encoding' => 'scalar'],
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const RELEASE_OUTGOING = [
+        'function' => 'release_outgoing',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const REMOVE_MAILMAN_DELEGATES = [
+        'function' => 'remove_mailman_delegates',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'delegates' => ['name' => 'delegates', 'encoding' => 'scalar'],
+            'list' => ['name' => 'list', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'delegates' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'metadata' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'transformed' => ['type' => 'mixed'],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const REORDER_FILTERS = [
+        'function' => 'reorder_filters',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'filters' => ['name' => 'filter*', 'encoding' => 'suffix-numbered'],
+            'mailbox' => ['name' => 'mailbox', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const SET_ALWAYS_ACCEPT = [
+        'function' => 'set_always_accept',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'alwaysAccept' => ['name' => 'alwaysaccept', 'encoding' => 'scalar'],
+            'mxcheck' => ['name' => 'mxcheck', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'checkmx' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'changed' => ['type' => 'flag'],
+                        'detected' => ['type' => 'string'],
+                        'isprimary' => ['type' => 'flag'],
+                        'issecondary' => ['type' => 'flag'],
+                        'local' => ['type' => 'flag'],
+                        'mxcheck' => ['type' => 'string'],
+                        'remote' => ['type' => 'flag'],
+                        'secondary' => ['type' => 'flag'],
+                        'warnings' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    ],
+                ],
+                'detected' => ['type' => 'string'],
+                'local' => ['type' => 'flag'],
+                'mxcheck' => ['type' => 'string'],
+                'remote' => ['type' => 'flag'],
+                'results' => ['type' => 'string'],
+                'secondary' => ['type' => 'flag'],
+                'status' => ['type' => 'flag'],
+                'statusmsg' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const SET_DEFAULT_ADDRESS = [
+        'function' => 'set_default_address',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'forwardOption' => ['name' => 'fwdopt', 'encoding' => 'scalar'],
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'failureMessage' => ['name' => 'failmsgs', 'encoding' => 'scalar'],
+            'forwardEmail' => ['name' => 'fwdemail', 'encoding' => 'scalar'],
+            'pipeForward' => ['name' => 'pipefwd', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'dest' => ['type' => 'string'],
+                    'domain' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const SET_LIST_PRIVACY_OPTIONS = [
+        'function' => 'set_list_privacy_options',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'advertised' => ['name' => 'advertised', 'encoding' => 'bool'],
+            'archivePrivate' => ['name' => 'archive_private', 'encoding' => 'bool'],
+            'list' => ['name' => 'list', 'encoding' => 'scalar'],
+            'subscribePolicy' => ['name' => 'subscribe_policy', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const SET_MANUAL_MX_REDIRECTS = [
+        'function' => 'set_manual_mx_redirects',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'mxHost' => ['name' => 'mx_host', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'values' => ['type' => 'string', 'nullable' => true]],
+    ];
+
+    public const STATS_DB_STATUS = [
+        'function' => 'stats_db_status',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'string'],
+    ];
+
+    public const STORE_FILTER = [
+        'function' => 'store_filter',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'actions' => ['name' => 'action*', 'encoding' => 'suffix-numbered'],
+            'filterName' => ['name' => 'filtername', 'encoding' => 'scalar'],
+            'matches' => ['name' => 'match*', 'encoding' => 'suffix-numbered'],
+            'parts' => ['name' => 'part*', 'encoding' => 'suffix-numbered'],
+            'values' => ['name' => 'val*', 'encoding' => 'suffix-numbered-scalar'],
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+            'destinations' => ['name' => 'dest*', 'encoding' => 'suffix-numbered'],
+            'oldFilterName' => ['name' => 'oldfiltername', 'encoding' => 'scalar'],
+            'operators' => ['name' => 'opt*', 'encoding' => 'suffix-numbered'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'account' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const SUSPEND_INCOMING = [
+        'function' => 'suspend_incoming',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const SUSPEND_LOGIN = [
+        'function' => 'suspend_login',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const SUSPEND_OUTGOING = [
+        'function' => 'suspend_outgoing',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'flag'],
+    ];
+
+    public const TERMINATE_MAILBOX_SESSIONS = [
+        'function' => 'terminate_mailbox_sessions',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => null,
+    ];
+
+    public const TRACE_DELIVERY = [
+        'function' => 'trace_delivery',
+        'module' => 'Email',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'recipient' => ['name' => 'recipient', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'address' => ['type' => 'string'],
+                'destinations' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        [
+                            'type' => 'object',
+                            'fields' => [
+                                'aliasfile' => ['type' => 'string'],
+                                'command' => ['type' => 'string'],
+                                'mailbox' => ['type' => 'string'],
+                                'message' => ['type' => 'string'],
+                                'result' => ['type' => 'string'],
+                                'type' => ['type' => 'string'],
+                            ],
+                        ],
+                        [
+                            'type' => 'list',
+                            'items' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'mx' => ['type' => 'list', 'items' => ['type' => 'string']],
+                                    'type' => ['type' => 'string'],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'type' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const TRACE_FILTER = [
+        'function' => 'trace_filter',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'msg' => ['name' => 'msg', 'encoding' => 'scalar'],
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'trace' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const UNSET_MANUAL_MX_REDIRECTS = [
+        'function' => 'unset_manual_mx_redirects',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'values' => ['type' => 'string', 'nullable' => true]],
+    ];
+
+    public const UNSUSPEND_INCOMING = [
+        'function' => 'unsuspend_incoming',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'flag'],
+    ];
+
+    public const UNSUSPEND_LOGIN = [
+        'function' => 'unsuspend_login',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const UNSUSPEND_OUTGOING = [
+        'function' => 'unsuspend_outgoing',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const VERIFY_PASSWORD = [
+        'function' => 'verify_password',
+        'module' => 'Email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'email' => ['name' => 'email', 'encoding' => 'scalar'],
+            'password' => ['name' => 'password', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'flag'],
     ];
 }

@@ -67,6 +67,7 @@ final class ProbeCatalogTest extends TestCase
             $root . '/docs/api/overlay/whm/accounts.json',
             $root . '/docs/api/overlay/whm/web-server-configuration.json',
             $root . '/docs/api/overlay/uapi/LangPHP.json',
+            $root . '/docs/api/overlay/uapi/Features.json',
             $root . '/docs/api/overlay/uapi/SSL.json',
             $root . '/docs/api/overlay/uapi/Quota.json',
             $root . '/docs/api/overlay/uapi/Mysql.json',
@@ -124,7 +125,7 @@ final class ProbeCatalogTest extends TestCase
         $files = [
             'whm/server-administration.json', 'whm/accounts.json', 'whm/web-server-configuration.json',
             'uapi/DomainInfo.json', 'uapi/Email.json', 'uapi/LangPHP.json', 'uapi/SSL.json', 'uapi/Quota.json',
-            'uapi/Mysql.json',
+            'uapi/Mysql.json', 'uapi/Features.json',
         ];
         mkdir($root . '/docs/api/overlay/whm', 0700, true);
         mkdir($root . '/docs/api/overlay/uapi', 0700, true);
@@ -213,6 +214,13 @@ final class ProbeCatalogTest extends TestCase
                 'routes' => ['direct-uapi'],
             ]];
         }
+        yield 'different section domain' => ['uapi/DomainInfo.json', 'uapi:DomainInfo/single_domain_data', [
+            'domain' => 'other.test', 'hide_temporary_domains' => '0', 'return_https_redirect_status' => '0',
+        ]];
+        yield 'different feature' => ['uapi/Features.json', 'uapi:Features/has_feature', ['name' => 'other']];
+        yield 'different INI scope' => ['uapi/LangPHP.json', 'uapi:LangPHP/php_ini_get_user_content', [
+            'type' => 'vhost', 'vhost' => 'other.test',
+        ]];
         yield 'different account search' => ['whm/accounts.json', 'whm1:listaccts', [
             'search' => 'other', 'searchtype' => 'user', 'searchmethod' => 'exact',
         ]];

@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 13 generated typed groups cover 82 reviewed operations (see
+The 13 generated typed groups cover 95 operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -232,14 +232,28 @@ An empty live list does not verify the types of records it never returned.
 
 | Handle and accessor | Methods |
 | --- | --- |
-| `uapi()->domainInfo()` | `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
-| `uapi()->langPhp()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetDomainHandler()`, `phpGetImpactedDomains()` |
-| `uapi()->features()` | `listFeatures()` |
+| `uapi()->domainInfo()` | All 5 operations: `domainsData()`, `singleDomainData()`, `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
+| `uapi()->langPhp()` | All 11 operations: installed/default/vhost PHP versions, domain handlers and impacted domains, INI paths/basic directives/content reads, and `phpIniSetUserBasicDirectives()`, `phpIniSetUserContent()`, `phpSetVhostVersions()` |
+| `uapi()->features()` | All 5 operations: `getFeatureMetadata()`, `hasFeature()`, `hasFeaturesLike()`, `listFeatures()`, `listFeaturesLike()` |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
 | `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
 
 UAPI groups operate on the selected cPanel account through either credential route.
+DomainInfo, Features and LangPHP expose every function in their pinned modules.
+`domainsData(format: 'hash')` returns grouped domain records; `format: 'list'`
+returns a record list. Domain details retain optional fields and explicit nulls.
+`phpGetVhostVersions()` returns a list, or a single record when `vhost` is supplied.
+INI setters and PHP version changes use form POST. INI content and directives are
+sensitive parameters; retain a configuration backup before overwriting content.
+The content setter's pinned enum says `host|vhost` while its prose says `home|vhost`;
+this contradiction is documented, with no invented validation or default.
+
+`features()->hasFeature(name: 'autossl')` preserves its nullable object payload.
+Read `$account->responseMeta()?->uapiStatus()` immediately afterward for the access
+result: 1 means enabled; 0 means absent or disabled. This method accepts UAPI status
+0 because it carries the access result. Outer WHM bridge failures still throw.
+
 `uapi()->dns()->fetchCpanelGeneratedDomains()` requires cPanel 120 and preserves
 trailing dots; `lookup()` returns textual lines or explicit `null`.
 
@@ -409,8 +423,9 @@ contains the WHM envelope's raw `metadata`; `$uapi` contains the UAPI result
 envelope without `data`, including any supplied status, errors, messages,
 warnings, and metadata. Nested JSON metadata objects are represented as arrays. Bridged calls
 retain both maps and check both outcomes; outer WHM success alone is insufficient.
-These are the `OutcomePolicy::Flag` rules that every typed operation declares;
-generic calls may choose `OutcomePolicy::Unchecked` (see above).
+Most typed operations declare `OutcomePolicy::Flag`. The documented exception is
+`features()->hasFeature()`, which uses unchecked UAPI status for its access result.
+Generic calls may also choose `OutcomePolicy::Unchecked` (see above).
 
 Typed accessors read the documented envelope fields without coercion:
 `whmResult()`, `whmReason()`, `uapiStatus()`, `uapiErrors()`, `uapiWarnings()` and
@@ -559,8 +574,8 @@ from the pinned documentation, and caveats it lacks are recorded as overlay note
 The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
 
 The [live evidence runner](tools/live-verify/README.md) captures the same raw
-response before normalization and field filtering for 47 reviewed route-specific
-probes across 27 operations. It saves sanitized structural evidence with revision
+response before normalization and field filtering for 67 reviewed route-specific
+probes across 37 operations. It saves sanitized structural evidence with revision
 and contract hashes, while independent regression expectations remain in the
 offline suite. It covers WHM version/load and account/domain/PHP inventory, plus
 UAPI domain/PHP/Email/SSL/MySQL inventory and quotas through both UAPI routes.

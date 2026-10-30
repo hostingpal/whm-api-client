@@ -45,7 +45,7 @@
       "type": "object",
       "properties": {
         "php": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
-        "encoding": {"enum": ["scalar", "bool", "repeat", "numbered"]},
+        "encoding": {"enum": ["scalar", "bool", "repeat", "numbered", "suffix-numbered", "suffix-numbered-scalar"]},
         "sensitive": {"type": "boolean"},
         "omit": {"type": "boolean"},
         "required": {"type": "boolean"}

@@ -3,6 +3,7 @@ package overlay
 import (
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -66,6 +67,11 @@ func Validate(set Set) []string {
 				problems = append(problems, id+": body_fields requires multipart")
 			}
 			problems = append(problems, missingEvidence(id, op)...)
+			for wire, param := range op.Params {
+				if IsSuffixNumbered(param.Encoding) && !suffixPattern.MatchString(wire) {
+					problems = append(problems, id+": suffix-numbered parameter "+wire+" requires an identifier followed by one terminal *")
+				}
+			}
 			if observedWithoutLive(op) {
 				problems = append(problems, id+": an observed note needs live evidence")
 			}
@@ -144,4 +150,11 @@ func missingEvidence(id string, op Operation) []string {
 		problems[i] = id + ": " + setting + " needs evidence"
 	}
 	return problems
+}
+
+var suffixPattern = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*\*$`)
+
+// IsSuffixNumbered identifies reviewed one-based terminal-wildcard encodings.
+func IsSuffixNumbered(encoding string) bool {
+	return encoding == "suffix-numbered" || encoding == "suffix-numbered-scalar"
 }
