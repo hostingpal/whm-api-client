@@ -283,6 +283,7 @@ final class UapiFilemanTest extends TestCase
     /** @param FileCall $call */
     #[DataProvider('inventoryRepresentations')]
     #[DataProvider('flatRowRepresentations')]
+    #[DataProvider('emptyInventoryRepresentations')]
     public function testInventoryRepresentationCompatibility(
         string $route,
         Closure $call,
@@ -350,6 +351,41 @@ final class UapiFilemanTest extends TestCase
                     $route, $list, '[{"size":"' . $wire . '"}]', [['size' => $expected]],
                 ];
             }
+        }
+    }
+
+    /** @return iterable<string, array{string, FileCall, string, mixed}> */
+    public static function emptyInventoryRepresentations(): iterable
+    {
+        // Empty size/ownership strings come from PR37 review; the neighboring values are synthetic boundaries.
+        $rows = [
+            'empty size' => ['{"size":""}', ['size' => '']],
+            'empty uid' => ['{"uid":""}', ['uid' => '']],
+            'empty gid' => ['{"gid":""}', ['gid' => '']],
+            'integer zeros' => ['{"gid":0,"size":0,"uid":0}', ['gid' => 0, 'size' => 0, 'uid' => 0]],
+            'normalized size zero' => ['{"size":"0"}', ['size' => 0]],
+            'omitted size and ownership' => ['{"file":"omitted.txt"}', ['file' => 'omitted.txt']],
+            'root ownership with strict remaining fields' => [
+                '{"ctime":1700000000,"exists":1,"file":"root-owned","gid":"","isleaf":0,"mode":16877,'
+                    . '"mtime":1700000001,"nicemode":"0755","read":1,"size":"4096","type":"dir",'
+                    . '"uid":"","write":0}',
+                ['ctime' => 1700000000, 'exists' => 1, 'file' => 'root-owned', 'gid' => '', 'isleaf' => 0,
+                    'mode' => 16877, 'mtime' => 1700000001, 'nicemode' => '0755', 'read' => 1,
+                    'size' => 4096, 'type' => 'dir', 'uid' => '', 'write' => 0],
+            ],
+        ];
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            $information = static fn (Fileman $f): mixed => $f->getFileInformation('private/a.txt');
+            $list = static fn (Fileman $f): mixed => $f->listFiles('private');
+            foreach ($rows as $name => [$payload, $expected]) {
+                yield "$route information $name" => [$route, $information, $payload, $expected];
+                yield "$route flat row $name" => [$route, $list, '[' . $payload . ']', [$expected]];
+            }
+            yield "$route flat mixed empty zero and omitted size" => [
+                $route, $list, '[{"file":"empty.txt","size":""},{"file":"zero.txt","size":0},'
+                    . '{"file":"omitted.txt"}]',
+                [['file' => 'empty.txt', 'size' => ''], ['file' => 'zero.txt', 'size' => 0], ['file' => 'omitted.txt']],
+            ];
         }
     }
 
@@ -436,7 +472,7 @@ final class UapiFilemanTest extends TestCase
         $contexts = $function === 'list_files' ? ['dirs', 'files', 'flat'] : [''];
         foreach ($contexts as $context) {
             foreach (self::informationRow() as $field => $value) {
-                $badValues = is_int($value) ? ['null', '"0"', 'true', '[]'] : ['null', '0', 'true', '[]'];
+                $badValues = is_int($value) ? ['null', '"0"', '""', 'true', '[]'] : ['null', '0', 'true', '[]'];
                 if (
                     ($function === 'get_file_information' || $context === 'flat')
                     && in_array($field, ['mode', 'nicemode'], true)
@@ -444,8 +480,14 @@ final class UapiFilemanTest extends TestCase
                     $badValues = ['null', 'true', '[]', '1.5'];
                 }
                 if (($function === 'get_file_information' || $context === 'flat') && $field === 'size') {
-                    $badValues = ['null', 'true', '[]', '"00"', '"1.0"', '"+1"', '" 1"',
-                        '"9223372036854775808"'];
+                    $badValues = ['null', 'true', 'false', '[]', '{}', '1.5', '"unknown"', '"00"', '"1.0"',
+                        '"+1"', '" 1"', '"1 "', '"9223372036854775808"'];
+                }
+                if (
+                    ($function === 'get_file_information' || $context === 'flat')
+                    && in_array($field, ['uid', 'gid'], true)
+                ) {
+                    $badValues = ['null', 'true', 'false', '[]', '{}', '1.5', '"0"', '"503"', '"unknown"', '" "'];
                 }
                 if (in_array($field, ['exists', 'isleaf', 'read', 'write'], true)) {
                     array_push($badValues, '2', '-1', '1.0');
@@ -465,7 +507,7 @@ final class UapiFilemanTest extends TestCase
                 }
             }
             if ($context !== '') {
-                foreach (['null', '"0"', 'true', '2'] as $bad) {
+                foreach (['null', '"0"', '""', 'true', '2'] as $bad) {
                     $row = '{"isparent":' . $bad . '}';
                     yield $context === 'flat' ? '[' . $row . ']' : '{"' . $context . '":[' . $row . ']}';
                 }

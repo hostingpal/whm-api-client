@@ -870,3 +870,33 @@ listing alternative remains offline coverage. No file content, mutation,
 filesystem permission enforcement or charset round trip is established. Follow-up
 `8x0.2.24` remains open. Earlier failure captures stay unchanged. Final SHA-256:
 `946ba0512be318c20b51616a4ede7346e069ae1150f97b44c43ee03ea217bf8f`.
+
+### Fileman zero-byte review capture
+
+`fileman-review.php` runs seven GET probes at committed code: WHM version,
+autocomplete through both routes, information for one selected existing zero-byte
+file through both routes, and its `mail` directory listing through both routes.
+Select the same existing file through private read-only metadata inspection first.
+No fixture file is created, no content is read, and no mutation is authorized.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+WHM_API_LIVE_ZERO_FILE='mail/<selected-basename>' \
+php tools/live-verify/fileman-review.php --output=docs/api/evidence/fileman-review-new.json
+```
+
+The runtime path must be one non-hidden ASCII basename directly under `mail/`.
+Exact GET URI guards retain the selected path and account binding; path values
+and file contents never enter the artifact. Both information and listing require
+the selected basename, exact `/home/npr/mail/` identity, file type, existence flag
+and size equal to integer zero or the preserved empty-string marker. Listing
+requires exactly one matching row. Callback expectation failures use the existing
+conservative `probe_failure` outcome: raw structural evidence and HTTP status
+remain available, while successful API/payload outcomes are not asserted after a
+failed callback. Such a probe always fails strict assessment. Default inventory
+probes and shared capture/publication helpers remain unchanged.
+
+Use a new output path and preserve every prior artifact, including failures. The
+read-only capture establishes no content, permission-enforcement or filesystem
+mutation coverage, and cannot establish root-owned metadata variants unless such
+a row is actually observed.

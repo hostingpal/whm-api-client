@@ -46,7 +46,7 @@ use SensitiveParameter;
  *     exists?: 0|1,
  *     file?: string,
  *     fullpath?: string,
- *     gid?: int,
+ *     gid?: int|'',
  *     humansize?: string,
  *     isleaf?: 0|1,
  *     mimename?: string,
@@ -58,9 +58,9 @@ use SensitiveParameter;
  *     rawmimename?: string,
  *     rawmimetype?: string,
  *     read?: 0|1,
- *     size?: int,
+ *     size?: int|'',
  *     type?: string,
- *     uid?: int,
+ *     uid?: int|'',
  *     write?: 0|1,
  * }
  * @phpstan-type ListFilesResult array{
@@ -118,7 +118,7 @@ use SensitiveParameter;
  *     exists?: 0|1,
  *     file?: string,
  *     fullpath?: string,
- *     gid?: int,
+ *     gid?: int|'',
  *     humansize?: string,
  *     isleaf?: 0|1,
  *     isparent?: 0|1,
@@ -131,9 +131,9 @@ use SensitiveParameter;
  *     rawmimename?: string,
  *     rawmimetype?: string,
  *     read?: 0|1,
- *     size?: int,
+ *     size?: int|'',
  *     type?: string,
- *     uid?: int,
+ *     uid?: int|'',
  *     write?: 0|1,
  * }>
  * @phpstan-type MoveFileResult array{
@@ -367,7 +367,13 @@ final readonly class Fileman
      * Observed: On cPanel 11.138.0.19, mode was an integer and nicemode a numeric string on both routes; size was a
      * numeric string directly and an integer through the bridge. mode and nicemode preserve int|string representations,
      * including original string spelling, without a new string format guarantee. Canonical integer strings for size
-     * normalize losslessly to int; other fields are unchanged.
+     * normalize losslessly to int. Later empty size/uid/gid observations are recorded separately below; no general
+     * string widening is implied.
+     *
+     * Observed: PR37 review on cPanel 11.138.0.19 observed an empty size string for zero-byte files and empty uid/gid
+     * strings for root-owned entries through both direct UAPI and the WHM bridge. These empty strings remain empty
+     * strings, distinct from numeric zero and omission. Only file information and observed flat listing rows gain these
+     * forms; other integer fields and unobserved dirs/files object rows remain strict.
      *
      * API-map identity: uapi:Fileman/get_file_information#GET (wire name get_file_information).
      *
@@ -406,11 +412,16 @@ final readonly class Fileman
      *
      * This function returns a sorted list of files and directories.
      *
+     * Observed: All recorded responses through both routes on cPanel 11.138.0.19 are flat lists of file/directory rows.
+     * Iterate that list directly when array_is_list($result) is true; otherwise read the documented dirs and files
+     * lists when present. An empty array contains no rows and does not establish which upstream container was used. The
+     * dirs/files object alternative is retained from the pinned source but remains unobserved live.
+     *
      * Documented: Available in cPanel 11.44 and later. Disabling the File Storage role disables this operation.
      *
-     * Documented: Optional response row fields remain absent when omitted. dirs and files are separate lists,
-     * preserving empty lists. exists, isleaf, isparent, read and write are integer 0|1 flags. size is in bytes; mode is
-     * a string and nicemode is an integer.
+     * Documented: Optional row fields remain absent when omitted. exists, isleaf, isparent, read and write are integer
+     * 0|1 flags. The unobserved documented object alternative has separate dirs/files lists and retains string mode and
+     * integer nicemode/size; observed flat-row compatibility is documented separately.
      *
      * Documented: types is a pre-serialized pipe-separated scalar such as file|dir, following the pinned prose and
      * pipeDelimited style with explode=false. The existing scalar encoding has a string|int native boundary and
@@ -434,6 +445,11 @@ final readonly class Fileman
      * numeric-string size directly and integer size on the bridge. Flat mode and nicemode preserve int|string
      * representations without new string format/range claims; flat size normalizes canonical bounded integer strings
      * losslessly. The pinned dirs/files object rows retain string mode and integer nicemode/size.
+     *
+     * Observed: PR37 review on cPanel 11.138.0.19 observed an empty size string for zero-byte files and empty uid/gid
+     * strings for root-owned entries through both direct UAPI and the WHM bridge. These empty strings remain empty
+     * strings, distinct from numeric zero and omission. Only file information and observed flat listing rows gain these
+     * forms; other integer fields and unobserved dirs/files object rows remain strict.
      *
      * API-map identity: uapi:Fileman/list_files#GET (wire name list_files).
      *
@@ -579,11 +595,17 @@ final readonly class Fileman
      *
      * This function saves a file in a directory and encodes it in a character set.
      *
+     * Observed: Destructive omission: PR37 review on cPanel 11.138.0.19 confirmed that omitting content, including
+     * passing content: null, successfully truncates an existing file to zero bytes through both routes. A null variable
+     * is not a no-op. Supply intended content explicitly and verify the target before calling; the client cannot
+     * restore overwritten contents and never retries the write.
+     *
      * Documented: Available in cPanel 11.44 and later. Disabling the File Storage role disables this operation.
      *
-     * Documented: Saves a file using the supplied character encodings. Omitting content creates a blank file. Omitting
-     * dir uses the currently authenticated user home directory according to the pinned source; no alternate
-     * relative-path base is inferred. Content is sensitive and is form-encoded once in the POST body.
+     * Documented: Saves a file using the supplied character encodings. The pinned description calls omitted content a
+     * blank-file creation; the observed existing-file truncation caveat above also applies. Omitting dir uses the
+     * currently authenticated user home directory according to the pinned source; no alternate relative-path base is
+     * inferred. Content is sensitive and is form-encoded once in the POST body.
      *
      * Documented: Omitted fallback defaults to 1: save in the default character set if the requested one is
      * unavailable. Explicit false requests an error instead. Omitted source and target character encodings both default

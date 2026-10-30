@@ -127,7 +127,13 @@ final class FilemanSpec
                 'exists' => ['type' => 'flag'],
                 'file' => ['type' => 'string'],
                 'fullpath' => ['type' => 'string'],
-                'gid' => ['type' => 'int'],
+                'gid' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'int'],
+                        ['type' => 'string', 'literal' => ''],
+                    ],
+                ],
                 'humansize' => ['type' => 'string'],
                 'isleaf' => ['type' => 'flag'],
                 'mimename' => ['type' => 'string'],
@@ -151,9 +157,21 @@ final class FilemanSpec
                 'rawmimename' => ['type' => 'string'],
                 'rawmimetype' => ['type' => 'string'],
                 'read' => ['type' => 'flag'],
-                'size' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'size' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'int', 'accept' => ['numeric-string']],
+                        ['type' => 'string', 'literal' => ''],
+                    ],
+                ],
                 'type' => ['type' => 'string'],
-                'uid' => ['type' => 'int'],
+                'uid' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'int'],
+                        ['type' => 'string', 'literal' => ''],
+                    ],
+                ],
                 'write' => ['type' => 'flag'],
             ],
         ],
@@ -254,7 +272,13 @@ final class FilemanSpec
                             'exists' => ['type' => 'flag'],
                             'file' => ['type' => 'string'],
                             'fullpath' => ['type' => 'string'],
-                            'gid' => ['type' => 'int'],
+                            'gid' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int'],
+                                    ['type' => 'string', 'literal' => ''],
+                                ],
+                            ],
                             'humansize' => ['type' => 'string'],
                             'isleaf' => ['type' => 'flag'],
                             'isparent' => ['type' => 'flag'],
@@ -279,9 +303,21 @@ final class FilemanSpec
                             'rawmimename' => ['type' => 'string'],
                             'rawmimetype' => ['type' => 'string'],
                             'read' => ['type' => 'flag'],
-                            'size' => ['type' => 'int', 'accept' => ['numeric-string']],
+                            'size' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => ''],
+                                ],
+                            ],
                             'type' => ['type' => 'string'],
-                            'uid' => ['type' => 'int'],
+                            'uid' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int'],
+                                    ['type' => 'string', 'literal' => ''],
+                                ],
+                            ],
                             'write' => ['type' => 'flag'],
                         ],
                     ],

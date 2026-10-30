@@ -360,25 +360,32 @@ multipart support.
 `copyFile(source, destination)`, `moveFile(source, destination)` and
 `renameFile(source, destination)` keep source first. Content arguments are
 sensitive and form-encoded once. Paths and content are forwarded unchanged;
-charset conversion is performed by the server. Omitting save content creates a
-blank file; `emptyTrash()` defaults to purging the account trash. Preserve each
+charset conversion is performed by the server. **Omitting `saveFileContent()`
+content or passing `content: null` truncates an existing file to zero bytes.**
+A null variable is not a no-op; supply intended content and verify the target.
+`emptyTrash()` defaults to purging the account trash. Preserve each
 method's version, File Storage role, charset and destructive-operation caveats.
 
 `listFiles(types: 'file|dir')` accepts a pre-serialized pipe-delimited filter.
 The existing scalar encoding exposes a native `string|int` boundary without
 establishing integer filter semantics. No undeclared indexed `filepath-` family
 is inferred from `limitToList`. Optional response keys remain absent, flags stay
-integer `0|1`, and file sizes remain integer bytes. File-content charset fields
+integer `0|1`. File-information and flat-list sizes preserve the observed empty
+string for zero-byte files, distinct from numeric zero and omission; canonical
+integer strings still normalize losslessly. Their uid/gid fields also preserve
+observed empty strings for root-owned entries. File-content charset fields
 with unspecified schemas stay mixed. `emptyTrash()` preserves nullable opaque
 objects and rejects a missing payload.
 
 Observed file information preserves `mode` and `nicemode` as `int|string`,
 including string spelling, and normalizes `size` only from a lossless canonical
 integer string. String permission values do not establish a numeric format rule.
-Listings preserve both the documented object containing `dirs`/`files` lists and
-the observed flat list. Flat rows apply the same three representation corrections,
-bound to named candidate diagnostics in the second capture. The documented
-object alternative retains its original row types.
+Every recorded listing is a flat list of rows: iterate it directly. The pinned
+object alternative with `dirs`/`files` lists remains supported but unobserved.
+Use `array_is_list($result)` to select flat iteration; otherwise read those named
+lists when present. An empty array contains no rows under either interpretation.
+Flat rows have the reviewed permission/size representation corrections; the
+documented object alternative retains its original row types.
 
 All 13 methods have offline contract tests. The bounded live catalog selects
 three directory inventory reads through both routes, plus WHM version. It reads
@@ -455,9 +462,11 @@ bridge write occurred. Review 8x0.2.23.1 before more mutations. PTR findings rem
 strict failures and unwaived; historical evidence is immutable.
 The subsequent fixture-only correction permits the observed empty-list removal
 reply for original absence; getter equality and lost-outcome rules remain strict.
-It is offline-tested but no second capture has run. Seek Claude assessment before
-remaining bridge evidence; never replay the completed direct phase just to clear
-the original artifact.
+Claude review 5719375767 approved exact d499ab6 and independently verified both
+routes on 11.138.0.19, restoring user_prefs byte-identically. PR36 merged as
+52af23a with green CI and the same tree. No further capture is required; keep
+8x0.2.23.1 open for future committed both-route evidence, and never rerun just
+to clear the original artifact.
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.
