@@ -2467,3 +2467,22 @@ completes. Both mailboxes are confirmed cleaned. Preserve this failed artifact
 (SHA-256 `8c02bb75a38ab17bea72e39dd8c62f79726735bdb81a50ec8b3f29cc77072651`).
 The date field alone gains canonical, PHP-integer-bounded string normalization,
 with no exact date, string spelling or cause inferred from structural evidence.
+
+The final disabled-mailbox capture at `3ea2166` passes all 45 observations
+(31 GET, 14 POST), API/payload/expectation checks and strict assessment with zero
+discrepancies on `11.138.0.19`. Both original-response creation identities and
+inventory readbacks establish ownership; both mailbox deletions and final absence
+checks pass. All fourteen selected BoxTrapper functions execute through both
+routes, with protection disabled throughout and no delivery/queue mutation.
+This establishes configuration and three rule-list API readbacks, template reads,
+and empty logs/queues; it establishes no filtering or delivery enforcement.
+Artifact SHA-256:
+`c29304b444fe7fc57eb226ecd5b3a76ff5ccaf9b72440ac0548f5c0372c432ee`.
+
+Final offline gates pass 15,437 tests / 108,555 assertions, PHPCS, maximum PHPStan,
+strict Composer validation, Go tests/vet, pinned source/map checks and generation
+reproducibility. Independent contract, integration, correction and structural
+artifact reviews completed. Generated coverage is 372 operations in 29 groups;
+22 of this slice's 47 functions have bounded live observations, with remaining
+live work/PTR unknowns tracked in `8x0.2.23` and indexed preference inputs in
+`8x0.1.20`. Prior artifacts and pinned source snapshots remain unchanged.

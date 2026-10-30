@@ -652,6 +652,12 @@ the declared parameter and prose despite singular examples. Status flags remain
 integer `0|1`, optional fields remain absent, and dependencies identify affected
 related domains. API readback does not prove mail filtering or delivery behavior.
 
+The bounded live checks cover 22 of these 47 functions. The 19-GET catalog passes
+all API/payload checks while retaining two PTR unknown-field observations as strict findings.
+The disabled-mailbox BoxTrapper fixture passes all 45 observations with verified
+cleanup. Remaining variants and live coverage stay tracked; these checks do not
+establish filtering or delivery enforcement. See the [evidence index](docs/api/evidence/README.md).
+
 ### Account lifecycle and mutations
 
 Inventory methods use GET. Mutations use POST so passwords and other parameters stay

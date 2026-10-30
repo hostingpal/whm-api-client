@@ -243,3 +243,18 @@ rule readbacks pass on both routes. Direct `get_log.date` is a numeric string an
 fails the pinned integer contract; bridged `get_log.date` is a native integer and
 passes. The direct route stops before queue/final-status reads; the bridge
 completes. Both mailboxes are confirmed cleaned. This artifact remains failed.
+
+The [final BoxTrapper fixture](2026-10-30-boxtrapper-section-final.json) at
+`3ea2166` passes all 45 observations (31 GET, 14 POST), all expectations and the
+strict assessment with zero discrepancies on `11.138.0.19`. Fourteen BoxTrapper
+functions run through both routes; four Email functions and WHM version support
+the owned-mailbox lifecycle. Both temporary mailboxes are confirmed removed.
+Protection stays disabled, and no message delivery/processing, forwarding,
+template write or Spam Box clearing occurs. Empty logs/queues establish no
+message-row coverage or filtering efficacy. SHA-256:
+`c29304b444fe7fc57eb226ecd5b3a76ff5ccaf9b72440ac0548f5c0372c432ee`.
+
+Together the corrected read catalog and final fixture observe 22 of the 47 new
+functions. The other 25 functions and additional argument/payload variants remain
+offline-only or unobserved under `8x0.2.23`; the indexed SpamAssassin input family
+is separately tracked in `8x0.1.20`. All earlier captures remain unchanged.

@@ -93,6 +93,14 @@ of this run's exact mailbox identity; a `wbt` prefix alone proves no ownership.
 The broader generated API surface and indexed SpamAssassin preference-input gap
 (`whm-api-client-8x0.1.20`) remain separate from these bounded observations.
 
+The [corrected 19-GET capture](../../docs/api/evidence/2026-10-30-mail-protection-corrected.json)
+at `a063db0` passes API/payload checks and retains two strict PTR unknown-field
+findings. The [final BoxTrapper capture](../../docs/api/evidence/2026-10-30-boxtrapper-section-final.json)
+at `3ea2166` passes all 45 observations and strict assessment with zero
+discrepancies and both mailboxes cleaned. Initial failed captures remain intact.
+The observations cover 22 of the 47 new functions; other operations and variants
+remain under `whm-api-client-8x0.2.23`.
+
 ### Complete FTP section fixture
 
 `ftp-section.php` is a standalone opt-in recipe for the generated Ftp group. It

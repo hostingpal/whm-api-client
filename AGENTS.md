@@ -389,6 +389,18 @@ Fingerprint every dynamic key as a wildcard, even on type failure. Default objec
 specs still discard unreviewed fields. The scalar update preference argument does
 not yet cover indexed value-0/value-1 inputs (`8x0.1.20`). Do not infer filtering enforcement
 from API results or execute message delivery/Spam Box clearing as routine tests.
+The corrected mail-protection read catalog at a063db0 on 11.138.0.19 passes all
+19 API/payload checks, while strict status retains two PTR nested unknown-field
+observations under 8x0.2.23. Only evidenced EmailAuth nullable fields, PTR integer
+strings and precision-preserving SpamAssassin scores gained compatibility.
+The final BoxTrapper capture at 3ea2166 passes all 45 observations (31 GET,
+14 POST) with zero discrepancies and both fresh mailboxes confirmed cleaned.
+It observes 14 BoxTrapper functions through both routes while protection stays
+disabled. queue_days and log date accept canonical integer strings only where
+explicitly corrected; direct-only observed log date strings do not establish
+that variant on the bridge. Empty logs/queues prove no message-row schema or
+filtering/delivery behavior. Combined new live coverage is 22/47 functions;
+remaining operations/variants stay in 8x0.2.23. Preserve all earlier captures.
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.
