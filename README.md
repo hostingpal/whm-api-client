@@ -424,8 +424,11 @@ The [reviewed v2 capture](docs/api/evidence/2026-10-30-email-section-reviewed.js
 passes all 55 HTTP/API/payload checks and the new quota/trace expectations, with
 zero discrepancies and both mailboxes cleaned. Its strict assessment fails on
 one direct-route resumption readback expectation, tracked in `8x0.2.18.1`; that
-failure remains unwaived. Password, quota and suspension checks establish API behavior, not SMTP or
-IMAP access; see the [source audit](docs/api/source-audit.md).
+failure remains unwaived. The reviewer confirmed stale `listPops()` suspension
+flags despite correct server lock state and judged the finding nonblocking.
+Immediately after a write, the previous flag can persist until a later write
+refreshes the cache. Password, quota and suspension checks establish API behavior,
+not SMTP or IMAP access; see the [source audit](docs/api/source-audit.md).
 
 The DNS methods are read-only (GET):
 

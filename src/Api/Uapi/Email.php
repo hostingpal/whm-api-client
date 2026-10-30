@@ -2847,6 +2847,12 @@ final readonly class Email
      * Documented: skip_main: Whether to exclude the cPanel account's main account from the results. * `1` — Exclude
      * the main account. * `0` — Include the main account.
      *
+     * Observed: Reviewer testing on cPanel 11.138.0.19 found that listPops() immediately after suspendLogin() or
+     * unsuspendLogin() can return the previous suspended_login flag on either route. The flag can remain stale until a
+     * later write refreshes the cache, even when the server lock state already reflects the successful operation. The
+     * same-second mtime-cache explanation is supported, not proven. Evidence:
+     * https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604.
+     *
      * API-map identity: uapi:Email/list_pops#GET (wire name list_pops).
      *
      * @param bool|null $noValidate Whether to skip the email database's validation check. Null omits it.
@@ -3585,6 +3591,12 @@ final readonly class Email
      * object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON
      * list as an empty array; nonempty lists are rejected.
      *
+     * Observed: Reviewer testing on cPanel 11.138.0.19 found that listPops() immediately after suspendLogin() or
+     * unsuspendLogin() can return the previous suspended_login flag on either route. The flag can remain stale until a
+     * later write refreshes the cache, even when the server lock state already reflects the successful operation. The
+     * same-second mtime-cache explanation is supported, not proven. Evidence:
+     * https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604.
+     *
      * API-map identity: uapi:Email/suspend_login#GET (wire name suspend_login).
      *
      * @param string $email The email user's account name.
@@ -3806,6 +3818,12 @@ final readonly class Email
      * Documented: The pinned payload is a nullable object with no field schema. Explicit null remains null, opaque
      * object fields are preserved, and absent data is rejected. Existing empty-map compatibility accepts an empty JSON
      * list as an empty array; nonempty lists are rejected.
+     *
+     * Observed: Reviewer testing on cPanel 11.138.0.19 found that listPops() immediately after suspendLogin() or
+     * unsuspendLogin() can return the previous suspended_login flag on either route. The flag can remain stale until a
+     * later write refreshes the cache, even when the server lock state already reflects the successful operation. The
+     * same-second mtime-cache explanation is supported, not proven. Evidence:
+     * https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604.
      *
      * API-map identity: uapi:Email/unsuspend_login#GET (wire name unsuspend_login).
      *

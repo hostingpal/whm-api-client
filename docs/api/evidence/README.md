@@ -149,5 +149,7 @@ message retention pass on both routes. Its **strict assessment remains failed**:
 54 expectations pass and direct `resumed_mailboxes` fails its combined identity /
 zero-login-suspension predicate. Structure matches the prior passing artifact and
 cannot establish the failing value or cause. This new unwaived result is tracked
-in `8x0.2.18.1`; no further mutation was run to clear it.
+in `8x0.2.18.1`; this fixture was not repeated to clear it. Separate
+[reviewer investigation](https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604) confirmed stale API flags despite correct server
+lock state and judged the finding nonblocking; the artifact remains failed.
 SHA-256: `13bc03e54292f382e3ec9062b8a7c148735aaa278e4aeecba1262f638363791b`.

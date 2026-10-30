@@ -1859,16 +1859,42 @@ string login/email and integer suspension fields. Its structural payload and
 LIST_POPS contract hash are identical to the earlier passing 45-response capture.
 No missing-field/type discrepancy is observed; masked evidence cannot distinguish
 a missing target identity from an incorrect integer flag value or establish a
-cause. The failure does not prove the mailbox remained suspended or imply timing,
-caching or server behavior. Direct cleanup then succeeds, followed by the complete
+cause. This artifact alone does not prove the mailbox remained suspended or imply
+timing, caching or server behavior. Direct cleanup then succeeds, followed by the complete
 bridged lifecycle and cleanup, so all 55 planned phases are present.
 
-This is a new, unwaived semantic failure, tracked in **`8x0.2.18.1`**, with no
-nonblocking decision inferred. No mutation was repeated to clear it. Review must
-consider it separately from the passing new quota and trace cases. Independent
+This semantic failure remains unwaived and tracked in **`8x0.2.18.1`**. The later
+reviewer investigation below supplies a nonblocking decision without changing the
+artifact or assessment. This fixture was not repeated to clear the failure. Independent
 audit verifies all 914 structural path/type entries, exact phase order and methods,
 55 effective-contract hashes, revision/source/map/generator/overlay provenance,
 strict assessment and cleanup states. Credentials, account/domain/host and run
 identity values are absent. All earlier immutable evidence files are unchanged.
 Pre-capture offline gates passed 7,402 tests / 62,104 assertions, PHPCS, maximum
 PHPStan, Composer validation, full Go tests/vet and the offline API-map check.
+
+
+### Reviewer investigation of stale Email suspension flags
+
+The [review of `851def1`](https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604) separately reproduced stale `list_pops`
+suspension flags on `npr`, while checking the real lock state in the server's
+`shadow` file. Eight back-to-back API-only cycles produced three wrong flags in
+both directions; the stale values persisted after 1.8 seconds and appeared on
+both routes. Sixteen cycles with about a second between writes and server checks
+had no wrong flags. A further sixteen back-to-back cycles caught one stale
+suspended flag after unsuspend while the real lock was open. Server lock state
+was correct at every point checked, and each throwaway mailbox was removed.
+
+The reviewer concluded that the failed readback did not mean `unsuspendLogin()`
+failed and was not a client mutation defect. Same-second `email_accounts.json`
+and `shadow` mtimes support a cache-invalidation explanation, but do not prove
+the mechanism. Reading `listPops()` just after a write can return the prior flag,
+which can remain stale until a later write refreshes the cache. The reviewer
+explicitly marked this finding **nonblocking for PR31**, without waiving it.
+The failed artifact and open follow-up `8x0.2.18.1` remain unchanged in status.
+
+These observations are attributed reviewer evidence, separate from this chat's
+55-response structural capture. Observed overlay notes on `list_pops`,
+`suspend_login` and `unsuspend_login` render the caveat in the generated API docs.
+No runtime spec, recipe timing or captured response changed, and no new live run
+was performed for this documentation correction.

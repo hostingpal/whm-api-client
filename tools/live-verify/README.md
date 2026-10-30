@@ -557,4 +557,6 @@ Its command exits 1: direct `resumed_mailboxes` fails the combined target-identi
 zero-suspension predicate, leaving 54 passed, one failed and zero unchecked
 expectations. The masked structure matches the earlier successful capture and
 cannot distinguish the failing value or establish a cause. `8x0.2.18.1` remains
-open; no waiver or nonblocking decision is inferred and the fixture was not rerun.
+open and the fixture was not rerun. The later [reviewer investigation](https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604)
+confirmed stale API suspension flags despite correct server lock state and judged
+the finding nonblocking, without waiving it or changing the failed artifact.
