@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
 
 use FilesystemIterator;
+use HostingPal\WhmApiClient\Tools\LiveVerify\ProbeCatalog;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
@@ -393,9 +394,33 @@ final class VerifyCommandTest extends TestCase
         self::assertSame('', $stderr);
     }
 
+    public function testEveryCatalogProbeHasAnIndependentCliLabelCase(): void
+    {
+        $covered = [];
+        foreach (self::inventoryLabels() as [$operation, $route]) {
+            $covered[$operation . '|' . $route] = true;
+        }
+        foreach (ProbeCatalog::load(dirname(__DIR__, 3)) as $probe) {
+            self::assertArrayHasKey($probe->operation . '|' . $probe->route, $covered);
+        }
+    }
+
     /** @return iterable<string, array{string, string}> */
     public static function inventoryLabels(): iterable
     {
+        yield 'server version' => ['whm1:version', 'whm'];
+        yield 'server load' => ['whm1:systemloadavg', 'whm'];
+        foreach (
+            ['DomainInfo/list_domains', 'Email/list_pops', 'DomainInfo/domains_data',
+            'DomainInfo/single_domain_data', 'Features/get_feature_metadata', 'Features/has_feature',
+            'Features/has_features_like', 'Features/list_features_like', 'LangPHP/php_get_vhost_versions',
+            'LangPHP/php_ini_get_user_basic_directives', 'LangPHP/php_ini_get_user_content',
+            'LangPHP/php_ini_get_user_paths'] as $function
+        ) {
+            foreach (['direct-uapi', 'bridged-uapi'] as $route) {
+                yield $function . ' ' . $route => ['uapi:' . $function, $route];
+            }
+        }
         yield 'direct database inventory' => ['uapi:Mysql/list_databases', 'direct-uapi'];
         yield 'bridged database inventory' => ['uapi:Mysql/list_databases', 'bridged-uapi'];
         yield 'direct database user inventory' => ['uapi:Mysql/list_users', 'direct-uapi'];

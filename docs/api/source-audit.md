@@ -1224,3 +1224,29 @@ binding npr/npr.rs, domain hash output, home INI scope and fixed feature searche
 It now contains 67 probes across 37 operations. This is a runnable recipe count;
 live outcomes are recorded separately. The three LangPHP mutations are offline
 contract coverage until a dedicated reversible configuration fixture is observed.
+
+
+### Initial runtime observations and compatibility corrections
+
+The [initial 67-probe artifact](evidence/2026-10-30-domain-features-php.json)
+records c79ed1d on cPanel 11.138.0.19, SHA-256
+`d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f`.
+It contains 59 passed probes and eight payload failures, with all original structural
+observations retained. No mutation ran. The CLI subsequently failed while printing
+an absent static label, after the evidence file had already been saved; label
+coverage now has an independent regression test.
+
+Observed single-domain customlog/scriptalias lists extend their pinned object
+forms without inventing item fields. Documented flags admit bounded quoted 0/1,
+and integer ports admit lossless numeric strings. Feature metadata also returned
+quoted flags; has_feature returned an integer rather than its documented nullable
+object. That integer is preserved without guessing its meaning or turning it into
+a boolean. The root PHP-version union failure did not identify its offending field:
+its original fingerprint correctly masks all keys, so no correction was inferred.
+
+A failed root union can now additionally record analyses of its checked alternatives,
+identified by index and contract hash, from the same original response. These
+supplemental structural diagnostics retain unknown-key masking and never alter the
+primary fingerprint, runtime validation or discrepancy gate. They do not recover or
+rewrite the first artifact. Unknown domain and INI fields remain unresolved under
+8x0.2.17, as do the three PHP mutations' live behavior.

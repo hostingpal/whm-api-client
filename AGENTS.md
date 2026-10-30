@@ -185,7 +185,8 @@ Domain details preserve list/hash alternatives and documented quoted flag varian
 PHP vhost versions preserve list/single-record variants. INI writes and PHP version
 changes use POST; INI content/directive inputs are sensitive. The content setter has
 an unresolved pinned host/home enum-versus-prose discrepancy. Features/has_feature
-returns nullable opaque data and uses UAPI status as the feature result; inspect
+returns nullable opaque data or an observed integer of unspecified meaning and
+uses UAPI status as the feature result; inspect
 responseMeta()->uapiStatus(), while retaining outer WHM failure checks. Response
 arguments in EnvelopeReader and OperationRunner remain SensitiveParameter because
 raw or decoded responses may contain secrets. Overlay parameter requiredness can

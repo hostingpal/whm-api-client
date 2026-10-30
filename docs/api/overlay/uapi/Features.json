@@ -9,6 +9,10 @@
         {
           "kind": "documented",
           "text": "Lists this account's available feature metadata; id, name and integer is_plugin fields may be omitted. Third-party feature IDs are not a closed enumeration."
+        },
+        {
+          "kind": "observed",
+          "text": "Observed quoted 0/1 is_plugin values normalize to integer flags; other numeric strings remain invalid."
         }
       ],
       "probe": {
@@ -19,7 +23,32 @@
           "bridged-uapi"
         ],
         "expected": "success"
-      }
+      },
+      "response": {
+        "[].is_plugin": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Observed is_plugin as numeric-string. Its pinned integer 0/1 schema supports only bounded quoted 0/1 normalization, not arbitrary numeric strings. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
+              "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Observed is_plugin as numeric-string. Its pinned integer 0/1 schema supports only bounded quoted 0/1 normalization, not arbitrary numeric strings. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
+          "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+        }
+      ]
     },
     "uapi:Features/has_feature": {
       "outcome": "unchecked",
@@ -29,6 +58,13 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "Pinned /Features/has_feature responses/200/content/application~1json/examples/does-not-have-feature and exists-but-acct-does-not-have show status=0, errors=null and data=null for unavailable features; has-feature shows status=1 with data=null. UAPI status carries the feature-access outcome rather than an API error, so use unchecked for UAPI only. Outer WHM outcome checking remains mandatory."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Observed explicit integer data instead of the pinned nullable object. Retain both shapes without inferring integer meaning, a closed flag enum, or a conversion from numeric strings. The feature-access result remains UAPI status. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
+          "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
         }
       ],
       "notes": [
@@ -39,6 +75,10 @@
         {
           "kind": "documented",
           "text": "The pinned data schema is a nullable opaque object, with null in the documented access examples. Preserve explicit null and object fields; absent data is a payload mismatch. No boolean payload is invented."
+        },
+        {
+          "kind": "observed",
+          "text": "Observed data may also be an integer of unspecified meaning. Preserve the integer without inferring a closed flag enum or converting numeric strings; the feature-access result remains UAPI status."
         }
       ],
       "probe": {
@@ -51,6 +91,34 @@
           "bridged-uapi"
         ],
         "expected": "success"
+      },
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "map",
+                "nullable": true,
+                "values": {
+                  "type": "mixed"
+                }
+              },
+              {
+                "type": "int"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Observed explicit integer data instead of the pinned nullable object. Retain both shapes without inferring integer meaning, a closed flag enum, or a conversion from numeric strings. The feature-access result remains UAPI status. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
+              "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+            }
+          ]
+        }
       }
     },
     "uapi:Features/has_features_like": {

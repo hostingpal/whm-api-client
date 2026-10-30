@@ -111,6 +111,27 @@ final class DomainFeaturesPhpSectionTest extends TestCase
             '{"domain":"npr.rs","all_aliases_valid":0,"hascgi":1,"port":80,"userdirprotect":0}',
             ['all_aliases_valid' => 0, 'domain' => 'npr.rs', 'hascgi' => 1, 'port' => 80, 'userdirprotect' => 0],
         ];
+        yield 'single domain observed lists and bounded numeric strings' => [
+            'DomainInfo', 'single_domain_data', static fn (UapiClient $u): array =>
+                $u->domainInfo()->singleDomainData(domain: 'npr.rs'), 'GET', 'domain=npr.rs',
+            '{"customlog":[{"domain":"combined","target":"/logs/example"}],'
+                . '"scriptalias":[{"path":"/cgi","url":"/cgi-bin/"}],'
+                . '"hascgi":"1","phpopenbasedirprotect":"0","port":"80"}',
+            ['customlog' => [['domain' => 'combined', 'target' => '/logs/example']], 'hascgi' => 1,
+                'phpopenbasedirprotect' => 0, 'port' => 80,
+                'scriptalias' => [['path' => '/cgi', 'url' => '/cgi-bin/']]],
+        ];
+        yield 'feature metadata observed quoted flags' => [
+            'Features', 'get_feature_metadata', static fn (UapiClient $u): array =>
+                $u->features()->getFeatureMetadata(), 'GET', '',
+            '[{"is_plugin":"0"},{"is_plugin":"1"}]', [['is_plugin' => 0], ['is_plugin' => 1]],
+        ];
+        foreach ([0, 1, 7, -1] as $value) {
+            yield 'feature observed integer payload ' . $value => [
+                'Features', 'has_feature', static fn (UapiClient $u): array|int|null =>
+                    $u->features()->hasFeature(name: 'autossl'), 'GET', 'name=autossl', (string) $value, $value,
+            ];
+        }
         yield 'single domain omitted flags' => [
             'DomainInfo', 'single_domain_data', static fn (UapiClient $u): array =>
                 $u->domainInfo()->singleDomainData(domain: 'npr.rs'), 'GET', 'domain=npr.rs', '{}', [],
@@ -122,11 +143,13 @@ final class DomainFeaturesPhpSectionTest extends TestCase
             [['id' => 'plugin_search', 'is_plugin' => 0, 'name' => 'Search'], []],
         ];
         yield 'feature null access payload' => [
-            'Features', 'has_feature', static fn (UapiClient $u): ?array => $u->features()->hasFeature(name: 'autossl'),
+            'Features', 'has_feature', static fn (UapiClient $u): array|int|null =>
+                $u->features()->hasFeature(name: 'autossl'),
             'GET', 'name=autossl', 'null', null,
         ];
         yield 'feature opaque access payload' => [
-            'Features', 'has_feature', static fn (UapiClient $u): ?array => $u->features()->hasFeature(name: 'plugin'),
+            'Features', 'has_feature', static fn (UapiClient $u): array|int|null =>
+                $u->features()->hasFeature(name: 'plugin'),
             'GET', 'name=plugin', '{"opaque":{"flag":false,"zero":0}}',
             ['opaque' => ['flag' => false, 'zero' => 0]],
         ];
@@ -290,7 +313,7 @@ final class DomainFeaturesPhpSectionTest extends TestCase
             'domain hash' => static fn (UapiClient $u): array => $u->domainInfo()->domainsData(),
             'single domain' => static fn (UapiClient $u): array => $u->domainInfo()->singleDomainData(domain: 'npr.rs'),
             'metadata' => static fn (UapiClient $u): array => $u->features()->getFeatureMetadata(),
-            'has feature' => static fn (UapiClient $u): ?array => $u->features()->hasFeature(name: 'autossl'),
+            'has feature' => static fn (UapiClient $u): array|int|null => $u->features()->hasFeature(name: 'autossl'),
             'has like' => static fn (UapiClient $u): ?array => $u->features()->hasFeaturesLike(pattern: 'mail'),
             'list like' => static fn (UapiClient $u): ?array => $u->features()->listFeaturesLike(pattern: 'mail'),
             'versions' => static fn (UapiClient $u): array => $u->langPhp()->phpGetVhostVersions(),
@@ -315,6 +338,14 @@ final class DomainFeaturesPhpSectionTest extends TestCase
             yield $route . ' invalid redirect flag' => [$route, $calls['single domain'], '{"hascgi":2}', true];
             yield $route . ' invalid feature row' => [$route, $calls['metadata'], '[{"is_plugin":2}]', true];
             yield $route . ' invalid search flag' => [$route, $calls['has like'], '{"has_matching_features":2}', true];
+            yield $route . ' invalid quoted domain flag' => [
+                $route, $calls['single domain'], '{"hascgi":"2"}', true,
+            ];
+            yield $route . ' invalid quoted plugin flag' => [
+                $route, $calls['metadata'], '[{"is_plugin":"2"}]', true,
+            ];
+            yield $route . ' invalid feature numeric string' => [$route, $calls['has feature'], '"1"', false];
+            yield $route . ' invalid fractional port' => [$route, $calls['single domain'], '{"port":"80.5"}', true];
             yield $route . ' invalid enabled name' => [$route, $calls['list like'], '[false]', true];
             yield $route . ' invalid ini content' => [$route, $calls['get content'], '{"content":false}', true];
             yield $route . ' invalid path flag' => [$route, $calls['paths'], '{"paths":[{"main_domain":2}]}', true];

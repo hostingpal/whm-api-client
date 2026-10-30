@@ -1072,6 +1072,10 @@
         {
           "kind": "documented",
           "text": "The pinned parameter name is return_https_redirect_status (singular redirect); some return descriptions incorrectly use return_https_redirects_status. The request uses the declared singular parameter. Hiding a requested temporary domain causes an API error."
+        },
+        {
+          "kind": "observed",
+          "text": "Observed customlog and scriptalias may be lists as well as the pinned objects. Quoted 0/1 hascgi and phpopenbasedirprotect flags normalize to integers, as do lossless integer port strings. Unknown fields remain outside the contract."
         }
       ],
       "probe": {
@@ -1086,7 +1090,142 @@
           "bridged-uapi"
         ],
         "expected": "success"
-      }
+      },
+      "response": {
+        "customlog": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "object",
+                "fields": {
+                  "domain": {
+                    "type": "string"
+                  },
+                  "target": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "domain": {
+                      "type": "string"
+                    },
+                    "target": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Observed customlog as a list of objects. Preserve the pinned single_domain_data object fields as both object and list items; masked item keys cannot justify extra fields. The separate pinned domains_data examples also contain customlog lists, but do not redefine this operation's item keys. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
+              "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+            }
+          ]
+        },
+        "scriptalias": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "object",
+                "fields": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Observed scriptalias as a list of objects. Preserve the pinned single_domain_data object fields as both object and list items; masked item keys cannot justify extra fields. The separate pinned domains_data examples also contain scriptalias lists, but do not redefine this operation's item keys. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
+              "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+            }
+          ]
+        },
+        "hascgi": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Observed hascgi as numeric-string. The pinned field is an integer 0/1 flag, so accept only quoted 0 or 1 and normalize to the pinned integer contract; other numeric strings remain invalid. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
+              "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+            }
+          ]
+        },
+        "phpopenbasedirprotect": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Observed phpopenbasedirprotect as numeric-string. The pinned field is an integer 0/1 flag, so accept only quoted 0 or 1 and normalize to the pinned integer contract; other numeric strings remain invalid. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
+              "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+            }
+          ]
+        },
+        "port": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Observed port as numeric-string. Preserve the pinned integer port contract and existing bounds; accept only lossless integer conversion, not fractional values. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
+              "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Observed customlog as a list of objects. Preserve the pinned single_domain_data object fields as both object and list items; masked item keys cannot justify extra fields. The separate pinned domains_data examples also contain customlog lists, but do not redefine this operation's item keys. Both direct and bridged GET observations at revision c79ed1d; immutable artifact SHA-256 d75a3575bf2ceec2e38c620eedaaf98b54253a42cb0f506b4cdbd74bb6749a0f. Structural evidence does not establish values or unknown key names.",
+          "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php.json"
+        }
+      ]
     }
   }
 }

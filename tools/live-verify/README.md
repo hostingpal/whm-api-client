@@ -304,3 +304,13 @@ the equivalent combined comparison is 667 versus 659 lines. This avoids three
 repeated mechanics and saves eight lines in that comparison, while adding a
 shared helper to review. No elapsed review-time saving or broader adoption is
 claimed. Wrong authentication and prefix encoding still fail independent tests.
+
+When a present payload fails every alternative of its effective root union, the
+record also includes optional `payload_alternatives`. Each entry identifies the
+zero-based alternative `index`, its `sha256` (SHA-256 of the JSON-encoded checked
+type spec), and a separate structural `paths`/`discrepancies` analysis. These
+candidate analyses use the same original response, expose only that checked
+alternative's static field names, and wildcard unknown descendants. They do not
+select an alternative, accept a payload, or change the primary opaque union
+fingerprint, probe outcome, or discrepancy gate. They cannot recover field names
+from older masked artifacts; further diagnosis requires a new reviewed run.
