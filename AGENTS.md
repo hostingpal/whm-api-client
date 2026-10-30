@@ -306,8 +306,8 @@ unchanged. Empty-string userdirprotect remains documentation/offline coverage be
 the live field is omitted. Three PHP setters and their INI write/read round trip
 remain offline-only; follow-up 8x0.2.17 owns the remaining live work.
 The Mime group covers all 14 pinned functions: six reads use GET and eight
-mutations use form POST. Hotlink configuration is account-wide; deleting it has no
-domain selector. MIME deletion targets the MIME type, while handler deletion
+mutations use form POST. No domain selector is documented for hotlink
+configuration. MIME deletion targets the MIME type, while handler deletion
 targets extensions. Redirect filtering, defaults and source/destination behavior
 follow each method's pinned PHPDoc. These calls do not test HTTP redirect delivery.
 
@@ -317,7 +317,15 @@ current effective validator keeps their nullable object boundary without enforci
 that enum. Missing payloads still fail. `deleteHotlink()` has an unspecified data
 schema, so its payload remains mixed rather than acquiring invented fields.
 
-The corrected 2026-10-30 Mime capture at `fdbafb6` on `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks with zero discrepancies and a passed strict assessment. The observed null URL fields are preserved. MIME and redirect lists were empty; handler rows were populated. Eight mutations and HTTP redirect/hotlink enforcement remain unverified.
+The corrected 2026-10-30 Mime capture at `fdbafb6` on `11.138.0.19` records
+13 GET observations passing HTTP, API, payload and probe checks with zero
+discrepancies and a passed strict assessment. The observed null URL fields are
+preserved. MIME and redirect lists were empty; handler rows were populated.
+Separate [Claude reviewer evidence](https://github.com/hostingpal/whm-api-client/pull/35#pullrequestreview-5717739276)
+at `933e4de` reports all eight mutations and populated MIME, handler and redirect
+rows passing on `npr` through both routes, with the original `.htaccess` SHA-256
+restored. Keep those reviewer observations separate from the committed read-only
+captures; HTTP redirect delivery and hotlink enforcement remain unverified.
 Only `get_redirect.url` and `list_hotlinks.redirect_url` gained evidenced nullable
 compatibility. Keep initial `9262564` failures unchanged, null distinct from
 omission/string, and follow-up `8x0.2.21` open.

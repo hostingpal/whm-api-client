@@ -266,9 +266,8 @@ final readonly class Mime
      *
      * Documented: Available in cPanel 11.42 and later. Disabling the Web Server role disables this operation.
      *
-     * Documented: Removes hotlink protection for the selected account; no domain selector is documented. The pinned
-     * data schema is empty, so the result stays mixed without inventing a payload contract; an absent data member is
-     * rejected.
+     * Documented: Removes hotlink protection; no domain selector is documented. The pinned data schema is empty, so the
+     * result stays mixed without inventing a payload contract; an absent data member is rejected.
      *
      * API-map identity: uapi:Mime/delete_hotlink#GET (wire name delete_hotlink).
      *
@@ -426,8 +425,9 @@ final readonly class Mime
      *
      * Documented: Available in cPanel 11.42 and later. Disabling the Web Server role disables this operation.
      *
-     * Documented: Returns selected-account hotlink settings, including integer allow_null, comma-separated extensions
-     * and a URL list. Empty strings, zero and empty URL lists are preserved; omitted settings remain absent.
+     * Documented: Returns hotlink settings, including integer allow_null, comma-separated extensions and a URL list. No
+     * domain selector is documented. Empty strings, zero and empty URL lists are preserved; omitted settings remain
+     * absent.
      *
      * Observed: On cPanel 11.138.0.19, redirect_url was explicitly null on both GET routes in the initial capture at
      * 9262564. Preserve null separately from an omitted field, empty string or URL string. Other response fields retain

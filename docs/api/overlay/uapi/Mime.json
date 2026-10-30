@@ -142,7 +142,7 @@
         },
         {
           "kind": "documented",
-          "text": "Removes hotlink protection for the selected account; no domain selector is documented. The pinned data schema is empty, so the result stays mixed without inventing a payload contract; an absent data member is rejected."
+          "text": "Removes hotlink protection; no domain selector is documented. The pinned data schema is empty, so the result stays mixed without inventing a payload contract; an absent data member is rejected."
         }
       ],
       "method": "POST",
@@ -292,7 +292,7 @@
         },
         {
           "kind": "documented",
-          "text": "Returns selected-account hotlink settings, including integer allow_null, comma-separated extensions and a URL list. Empty strings, zero and empty URL lists are preserved; omitted settings remain absent."
+          "text": "Returns hotlink settings, including integer allow_null, comma-separated extensions and a URL list. No domain selector is documented. Empty strings, zero and empty URL lists are preserved; omitted settings remain absent."
         },
         {
           "kind": "observed",

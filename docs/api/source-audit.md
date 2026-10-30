@@ -2204,8 +2204,8 @@ has field examples but no full response examples for these operations; assembled
 fixtures are identified accordingly. No engine or generator behavior changed.
 
 The Mime group covers all 14 pinned functions: six reads use GET and eight
-mutations use form POST. Hotlink configuration is account-wide; deleting it has no
-domain selector. MIME deletion targets the MIME type, while handler deletion
+mutations use form POST. No domain selector is documented for hotlink
+configuration. MIME deletion targets the MIME type, while handler deletion
 targets extensions. Redirect filtering, defaults and source/destination behavior
 follow each method's pinned PHPDoc. These calls do not test HTTP redirect delivery.
 
@@ -2220,8 +2220,9 @@ The reviewed read-only catalog has 13 exact GET probes: WHM version and all
 infrastructure reuses EvidenceRunner, its exact-URI GET guard and structural
 sanitization without repeating the historical baseline. The strict assessment
 requires the complete ordered catalog, matching provenance and zero discrepancies.
-All 8 mutations remain offline-only in this slice; read observations cannot
-establish their effects. Live capture outcomes are recorded separately.
+The catalog does not execute the eight mutations; read observations cannot
+establish their effects. Live capture outcomes and later independent reviewer
+observations are recorded separately.
 
 The initial [2026-10-30 Mime capture](evidence/2026-10-30-mime-section.json)
 at `9262564` on `11.138.0.19` preserves 13 GET observations. All API outcomes
@@ -2236,6 +2237,28 @@ The structural observations do not establish the upstream reason for null.
 
 The [corrected-contract Mime capture](evidence/2026-10-30-mime-section-corrected.json)
 at `fdbafb6` on `11.138.0.19` reruns the unchanged reviewed read catalog.
-All 13 GET observations passed HTTP, API, payload and probe checks with zero discrepancies and a passed strict assessment. The observed null URL fields are preserved. MIME and redirect lists were empty; handler rows were populated. Eight mutations and HTTP redirect/hotlink enforcement remain unverified. The initial failed artifact remains unchanged. Follow-up `8x0.2.21`
-tracks remaining live variants and mutations; the pinned null-only mutation enums
-remain within the documented `8x0.18` compatibility limitation.
+All 13 GET observations passed HTTP, API, payload and probe checks with zero
+discrepancies and a passed strict assessment. Its SHA-256 is
+`91526a8fe46c683cf16fc8fabe3bcfc45ff0de17f11d383e9ee97ff7434e1c81`.
+The observed null URL fields are preserved. MIME and redirect lists were empty;
+handler rows were populated. This capture includes no mutations and does not
+establish HTTP redirect delivery or hotlink enforcement. The initial failed
+artifact remains unchanged.
+
+In a separate [review of `933e4dee80bfd7fa1c5543f3a54e454ae5b94b0c`](https://github.com/hostingpal/whm-api-client/pull/35#pullrequestreview-5717739276)
+on 2026-10-30, Claude reports successful live checks on `npr` through both direct
+and bridged UAPI routes for all eight mutations: `add_mime`, `delete_mime`,
+`add_handler`, `delete_handler`, `add_redirect`, `delete_redirect`, `add_hotlink`
+and `delete_hotlink`. Populated MIME, handler and redirect rows validated on both
+routes. The reviewer observed a string `list_hotlinks.redirect_url` while hotlink
+protection was enabled and null afterward; all mutations returned null, with one
+message on `add_redirect`. The reviewer snapshotted `public_html/.htaccess`,
+restored it and verified that its SHA-256 matched before and after. These are
+attributed reviewer observations, not additional records in either committed
+capture or evidence of HTTP redirect delivery/hotlink enforcement. No live calls
+were made for these documentation corrections.
+
+Follow-up `8x0.2.21` retains remaining response/argument variants and HTTP
+behavior, plus the runner's operation/route duplicate-key limitation for distinct
+argument variants. No current catalog hits that limitation. The pinned null-only
+mutation enums remain within the documented `8x0.18` compatibility limitation.
