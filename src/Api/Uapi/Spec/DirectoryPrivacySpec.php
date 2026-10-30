@@ -39,8 +39,8 @@ final class DirectoryPrivacySpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'auth_name' => ['type' => 'string'],
-                'auth_type' => ['type' => 'string'],
+                'auth_name' => ['type' => 'string', 'nullable' => true],
+                'auth_type' => ['type' => 'string', 'nullable' => true],
                 'passwd_file' => ['type' => 'string'],
                 'protected' => ['type' => 'flag'],
             ],

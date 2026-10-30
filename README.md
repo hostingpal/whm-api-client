@@ -350,8 +350,13 @@ This typed method requires integer status 0 or 1 and accepts 0 as an access resu
 Outer WHM bridge failures still throw.
 
 The directory groups cover all ten pinned functions, available from cPanel 88.
-Six reads use GET and four mutations use form POST. Directory paths retain their
-documented absolute or account-home-relative meaning and are forwarded unchanged.
+Six reads use GET and four mutations use form POST. Directory paths are forwarded
+unchanged. Only `DirectoryProtection/list_directories` documents paths relative to
+the account home directory. `configureDirectoryProtection()` documents absolute
+or relative paths without defining the relative base; `isDirectoryProtected()`
+documents absolute paths. The [PR #34 reviewer](https://github.com/hostingpal/whm-api-client/pull/34#pullrequestreview-5717732052)
+independently observed `public_html/...` relative paths working for both privacy
+methods through direct UAPI and the WHM bridge.
 Password-protection state belongs to DirectoryPrivacy; DirectoryProtection reports
 leech protection. A successful unprotected-directory result has payload flag 0;
 that does not make UAPI status 0 a success.
@@ -360,7 +365,9 @@ that does not make UAPI status 0 a success.
 disabling protection, following the source's conditional requirement. Supply a
 realm name when enabling it. `addUser()` keeps its password sensitive throughout
 the request. User mutations preserve nullable opaque results and reject an absent
-payload; all documented directory fields retain omission and null distinctions.
+payload. Directory fields retain optional presence; only `auth_name` and
+`auth_type` in the configure response additionally accept explicit null, based on
+the reviewer's successful disable calls. Read-operation field types are unchanged.
 
 `uapi()->dns()->fetchCpanelGeneratedDomains()` requires cPanel 120 and preserves
 trailing dots; `lookup()` returns textual lines or explicit `null`.
@@ -810,6 +817,14 @@ precise array shapes when they return arrays. Generated methods take their PHPDo
 from the pinned documentation, and caveats it lacks are recorded as overlay notes.
 The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
 
+The [directory-access read-only capture](docs/api/evidence/2026-10-30-directory-access.json)
+records reviewed GET checks on cPanel `11.138.0.19`. All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment.
+Directory records were present, but every captured `auth_name` and `passwd_file`
+was an empty string, and the privacy-user list was empty. This capture made no
+indexing, password-protection or leech-protection changes and establishes no
+mutation or HTTP-enforcement coverage. Separate reviewer mutation observations
+are recorded in the source audit; they are not part of this artifact.
+
 The [live evidence runner](tools/live-verify/README.md) captures the same raw
 response before normalization and field filtering for 67 reviewed route-specific
 probes across 37 operations. It saves sanitized structural evidence with revision
@@ -950,7 +965,3 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
-
-The [directory-access read-only capture](docs/api/evidence/2026-10-30-directory-access.json)
-records reviewed GET checks on cPanel `11.138.0.19`. All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment.
-Directory lists had populated structural fields, while the privacy-user list was empty. No indexing, password-protection or leech-protection setting changed. Four mutations and HTTP enforcement remain unverified.

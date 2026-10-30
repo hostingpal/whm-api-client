@@ -306,8 +306,13 @@ unchanged. Empty-string userdirprotect remains documentation/offline coverage be
 the live field is omitted. Three PHP setters and their INI write/read round trip
 remain offline-only; follow-up 8x0.2.17 owns the remaining live work.
 The directory groups cover all ten pinned functions, available from cPanel 88.
-Six reads use GET and four mutations use form POST. Directory paths retain their
-documented absolute or account-home-relative meaning and are forwarded unchanged.
+Six reads use GET and four mutations use form POST. Directory paths are forwarded
+unchanged. Only `DirectoryProtection/list_directories` documents paths relative to
+the account home directory. `configureDirectoryProtection()` documents absolute
+or relative paths without defining the relative base; `isDirectoryProtected()`
+documents absolute paths. The [PR #34 reviewer](https://github.com/hostingpal/whm-api-client/pull/34#pullrequestreview-5717732052)
+independently observed `public_html/...` relative paths working for both privacy
+methods through direct UAPI and the WHM bridge.
 Password-protection state belongs to DirectoryPrivacy; DirectoryProtection reports
 leech protection. A successful unprotected-directory result has payload flag 0;
 that does not make UAPI status 0 a success.
@@ -316,10 +321,16 @@ that does not make UAPI status 0 a success.
 disabling protection, following the source's conditional requirement. Supply a
 realm name when enabling it. `addUser()` keeps its password sensitive throughout
 the request. User mutations preserve nullable opaque results and reject an absent
-payload; all documented directory fields retain omission and null distinctions.
+payload. Directory fields retain optional presence; only `auth_name` and
+`auth_type` in the configure response additionally accept explicit null, based on
+the reviewer's successful disable calls. Read-operation field types are unchanged.
 
 The 2026-10-30 directory-access capture at `e3aa06b` on `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment.
-Directory lists had populated structural fields, while the privacy-user list was empty. No indexing, password-protection or leech-protection setting changed. Four mutations and HTTP enforcement remain unverified. Follow-up `8x0.2.22` remains open.
+Directory records were present, but every captured `auth_name` and `passwd_file`
+was an empty string, and the privacy-user list was empty. This capture made no
+indexing, password-protection or leech-protection changes and establishes no
+mutation or HTTP-enforcement coverage. Separate reviewer mutation observations
+are recorded in the source audit; they are not part of this artifact. Follow-up `8x0.2.22` remains open.
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.

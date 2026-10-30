@@ -34,7 +34,7 @@
         },
         {
           "kind": "documented",
-          "text": "Indexing types are standard, disabled, inherit (system defaults), and fancy (Apache FancyIndexing, including file size and modification date). The result remains a string, with no inferred closed response enum."
+          "text": "Indexing types are standard, disabled, inherit (system defaults), and fancy (Apache FancyIndexing, including file size and modification date). The pinned state.index_type fields reference the shared enum with these values. The runtime validates strings without enforcing this enum; broader enum validation is tracked separately."
         },
         {
           "kind": "documented",
@@ -62,7 +62,7 @@
         },
         {
           "kind": "documented",
-          "text": "Indexing types are standard, disabled, inherit (system defaults), and fancy (Apache FancyIndexing, including file size and modification date). The result remains a string, with no inferred closed response enum."
+          "text": "Indexing types are standard, disabled, inherit (system defaults), and fancy (Apache FancyIndexing, including file size and modification date). The pinned response declares these enum values. The runtime validates strings without enforcing this enum; broader enum validation is tracked separately."
         },
         {
           "kind": "documented",

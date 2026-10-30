@@ -15,7 +15,7 @@ use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
-use ReflectionMethod;
+use ReflectionParameter;
 use SensitiveParameter;
 
 /** Literal contracts from the pinned DirectoryIndexes, DirectoryPrivacy and DirectoryProtection sources. */
@@ -52,6 +52,64 @@ final class UapiDirectoryAccessTest extends TestCase
                 foreach (self::validCases($module, $function) as $index => [$payload, $expected]) {
                     yield "$route $module/$function $index" => [$route, $module, $function, $payload, $expected];
                 }
+            }
+        }
+    }
+
+    /** @param array{auth_name?: string|null, auth_type?: string|null, passwd_file?: string, protected: int} $expected */
+    #[DataProvider('disabledProtectionPayloads')]
+    public function testDisablingProtectionPreservesNullAuthenticationFields(
+        string $route,
+        string $payload,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $privacy = $account->directoryPrivacy();
+        $http->addResponse(new Response(200, [], self::envelope($route, '{"protected":1}')));
+        $privacy->isDirectoryProtected(dir: '/home/npr/public_html/example');
+        $previous = $account->responseMeta();
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+
+        try {
+            $actual = $privacy->configureDirectoryProtection(
+                dir: '/home/npr/public_html/example',
+                enabled: false,
+            );
+        } catch (PayloadMismatchException $error) {
+            self::assertTrue($error->outcomeConfirmed);
+            self::assertSame($account->responseMeta(), $error->metadata);
+            self::fail('A successful disable must accept null auth_name and auth_type fields.');
+        }
+        self::assertSame($expected, $actual);
+        $metadata = $account->responseMeta();
+        self::assertNotNull($metadata);
+        self::assertNotSame($previous, $metadata);
+        self::assertSame(1, $metadata->uapiStatus());
+        self::assertSame($route === 'bridge' ? 1 : null, $metadata->whmResult());
+        self::assertArrayNotHasKey('data', $metadata->uapi ?? []);
+        self::assertCount(2, $http->getRequests());
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('POST', $request->getMethod());
+        self::assertSame('dir=%2Fhome%2Fnpr%2Fpublic_html%2Fexample&enabled=0', (string) $request->getBody());
+    }
+
+    /** @return iterable<string, array{string, string, array{auth_name?: string|null, auth_type?: string|null, passwd_file?: string, protected: int}}> */
+    public static function disabledProtectionPayloads(): iterable
+    {
+        // Independent literals: PR #34 review 5717732052 observed both null fields on disable.
+        $cases = [
+            'both null' => ['{"auth_name":null,"auth_type":null,"passwd_file":"","protected":0}',
+                ['auth_name' => null, 'auth_type' => null, 'passwd_file' => '', 'protected' => 0]],
+            'name null and type omitted' => ['{"auth_name":null,"protected":0}',
+                ['auth_name' => null, 'protected' => 0]],
+            'type null and name omitted' => ['{"auth_type":null,"protected":0}',
+                ['auth_type' => null, 'protected' => 0]],
+        ];
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach ($cases as $name => [$payload, $expected]) {
+                yield "$route $name" => [$route, $payload, $expected];
             }
         }
     }
@@ -126,6 +184,7 @@ final class UapiDirectoryAccessTest extends TestCase
             self::assertSame($account->responseMeta(), $error->metadata);
             self::assertNotSame($previous, $error->metadata);
             self::assertSame(1, $error->metadata?->uapiStatus());
+            self::assertSame($route === 'bridge' ? 1 : null, $error->metadata->whmResult());
             self::assertSame(
                 $payload === null ? null : json_decode($payload, true, 512, JSON_THROW_ON_ERROR),
                 $error->payload,
@@ -181,8 +240,15 @@ final class UapiDirectoryAccessTest extends TestCase
                         foreach (['auth_name', 'auth_type', 'passwd_file', 'protected'] as $field) {
                             $badValues = $field === 'protected'
                                 ? ['null', '"0"', '"1"', '2', '-1', '1.0', 'true', '[]']
-                                : ['null', '0', 'true', '[]'];
+                                : ['null', '0', '1.5', 'true', 'false', '[]', '{}', '[null]'];
                             foreach ($badValues as $bad) {
+                                if (
+                                    $function === 'configure_directory_protection'
+                                    && in_array($field, ['auth_name', 'auth_type'], true)
+                                    && $bad === 'null'
+                                ) {
+                                    continue;
+                                }
                                 $cases[] = '{"' . $field . '":' . $bad . '}';
                             }
                         }
@@ -305,12 +371,8 @@ final class UapiDirectoryAccessTest extends TestCase
         self::assertNotSame($first->directoryPrivacy(), $other->directoryPrivacy());
         self::assertNotSame($first->directoryProtection(), $other->directoryProtection());
         self::assertSame([], $http->getRequests());
-        $method = new ReflectionMethod($first->directoryPrivacy(), 'addUser');
-        foreach ($method->getParameters() as $parameter) {
-            if ($parameter->getName() === 'password') {
-                self::assertCount(1, $parameter->getAttributes(SensitiveParameter::class));
-            }
-        }
+        $password = new ReflectionParameter([$first->directoryPrivacy(), 'addUser'], 'password');
+        self::assertCount(1, $password->getAttributes(SensitiveParameter::class));
         $http->addResponse(new Response(200, [], self::envelope('bridge', '"inherit"')));
         $first->directoryIndexes()->getIndexing('/home/npr/public_html');
         $metadata = $first->responseMeta();

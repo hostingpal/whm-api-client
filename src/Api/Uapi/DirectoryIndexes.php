@@ -95,7 +95,9 @@ final readonly class DirectoryIndexes
      * in the pinned operation. Directory paths are sent unchanged and are not normalized by the client.
      *
      * Documented: Indexing types are standard, disabled, inherit (system defaults), and fancy (Apache FancyIndexing,
-     * including file size and modification date). The result remains a string, with no inferred closed response enum.
+     * including file size and modification date). The pinned state.index_type fields reference the shared enum with
+     * these values. The runtime validates strings without enforcing this enum; broader enum validation is tracked
+     * separately.
      *
      * Documented: dir is an absolute directory path. Returns children, current, home and parent records with optional
      * path and state.index_type fields; omitted fields remain absent and an empty children list remains empty.
@@ -126,7 +128,8 @@ final readonly class DirectoryIndexes
      * in the pinned operation. Directory paths are sent unchanged and are not normalized by the client.
      *
      * Documented: Indexing types are standard, disabled, inherit (system defaults), and fancy (Apache FancyIndexing,
-     * including file size and modification date). The result remains a string, with no inferred closed response enum.
+     * including file size and modification date). The pinned response declares these enum values. The runtime validates
+     * strings without enforcing this enum; broader enum validation is tracked separately.
      *
      * Documented: Changes directory indexing through form POST. The source declares clean rollback; the client performs
      * no rollback automatically.

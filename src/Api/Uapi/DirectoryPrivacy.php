@@ -21,8 +21,8 @@ use SensitiveParameter;
  *
  * @phpstan-type AddUserResult array<array-key, mixed>|null
  * @phpstan-type ConfigureDirectoryProtectionResult array{
- *     auth_name?: string,
- *     auth_type?: string,
+ *     auth_name?: string|null,
+ *     auth_type?: string|null,
  *     passwd_file?: string,
  *     protected?: 0|1,
  * }
@@ -135,14 +135,19 @@ final readonly class DirectoryPrivacy
      * in the pinned operation. Directory paths are sent unchanged and are not normalized by the client.
      *
      * Documented: dir may be an absolute or relative directory path. enabled=true enables password protection; false
-     * disables it and is sent as 0. Supply authname only when enabling protection, as documented. authname is optional
-     * in this interface because it is conditional in the source prose; the client does not enforce that cross-parameter
-     * condition. Empty authname is sent rather than omitted. The source declares clean rollback; the client performs no
-     * automatic rollback.
+     * disables it and is sent as 0. Enabling protection requires authname; omit it when disabling, as documented.
+     * authname is optional in this interface because it is conditional in the source prose; the client does not enforce
+     * that cross-parameter condition. Empty authname is sent rather than omitted. The source declares clean rollback;
+     * the client performs no automatic rollback.
      *
      * Documented: auth_name, auth_type, passwd_file and protected remain optional. protected is an integer 0/1 payload
      * flag distinct from the ordinary UAPI success status: 0 means not protected. Basic and None are documented
-     * authentication types. Empty strings remain empty; no nullable fields are inferred.
+     * authentication types. Empty strings remain empty; omitted fields remain absent.
+     *
+     * Observed: The PR #34 reviewer observed explicit null auth_name and auth_type after successful disable calls
+     * through direct UAPI and the WHM bridge. This operation preserves those nulls separately from omitted fields and
+     * strings; read-operation schemas are unchanged. The same review observed that enabling without authname returns an
+     * API error and leaves the directory unprotected, and that public_html/... relative paths work for this operation.
      *
      * API-map identity: uapi:DirectoryPrivacy/configure_directory_protection#GET (wire name
      * configure_directory_protection).
@@ -216,6 +221,10 @@ final readonly class DirectoryPrivacy
      *
      * Documented: dir is the absolute directory path. An unprotected directory is represented by protected=0 in a
      * successful payload; UAPI status=0 remains an API failure.
+     *
+     * Observed: The PR #34 reviewer independently observed public_html/... relative paths accepted through direct UAPI
+     * and the WHM bridge. The pinned parameter documents an absolute path; this observation does not change its
+     * response contract.
      *
      * API-map identity: uapi:DirectoryPrivacy/is_directory_protected#GET (wire name is_directory_protected).
      *
