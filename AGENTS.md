@@ -196,6 +196,10 @@ The get_pop_quota result alone opts into lossless integral-fixed-point-string
 normalization, backed by the original 2026-10-30 quota-format artifact. Reject
 nonzero fractions, noncanonical whole parts and integer overflow; do not widen
 other integer contracts. Remaining live/source gaps are tracked in 8x0.2.18.
+The final owned Email capture at fd552b2 on 11.138.0.19 passes all 45 original
+observations across 16 Email functions plus WHM version, with zero discrepancies
+and both mailboxes confirmed absent. It verifies API password/quota/login-state
+behavior; it does not establish IMAP/SMTP access or live coverage of all 96 methods.
 DomainInfo (5), Features (5), and LangPHP (11) cover their complete pinned modules.
 Domain details preserve list/hash alternatives and documented quoted flag variants.
 PHP vhost versions preserve list/single-record variants. INI writes and PHP version

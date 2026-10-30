@@ -288,6 +288,10 @@ the formal destination shapes, but deeper recursive routed examples are not a ty
 recursive contract; `terminateMailboxSessions()` documents a WHM-like envelope in
 its UAPI page, so actual UAPI-envelope compatibility remains unverified. Offline
 fixtures cover all functions; live evidence is limited to explicitly recorded calls.
+The owned mailbox fixture passes 45 observations across 16 Email functions through
+both routes, with zero discrepancies and both temporary mailboxes confirmed
+removed. Password, quota and suspension checks establish API behavior, not SMTP or
+IMAP access; see the [source audit](docs/api/source-audit.md).
 
 The DNS methods are read-only (GET):
 

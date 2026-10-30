@@ -84,3 +84,9 @@ The diagnostic records only fixed format categories from the original response.
 All mailboxes created by these runs were confirmed absent after cleanup. Generated
 coverage of 96 functions is distinct from the 16-function owned-mailbox recipe;
 remaining live/source-contract work is tracked under 8x0.2.18.
+
+
+The [final owned Email lifecycle](2026-10-30-email-section-final.json), captured at
+fd552b2 on 11.138.0.19, passes all 45 observations and the strict zero-discrepancy
+assessment. It verifies 16 Email functions through both routes, with two fresh
+mailboxes confirmed cleaned up. All five earlier failed captures remain intact.

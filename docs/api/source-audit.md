@@ -1358,3 +1358,16 @@ validation still fails in this artifact; both created mailboxes were confirmed
 absent after cleanup. Only this evidenced operation receives lossless acceptance
 of zero-fraction fixed-point strings within PHP integer bounds. Fractional values,
 exponents, noncanonical integer parts and overflow remain rejected.
+
+
+The [final owned Email capture](evidence/2026-10-30-email-section-final.json) at
+fd552b2 on 11.138.0.19 has SHA-256
+`d1a8a5e97815a3eb7fe3524e7cea5227754320bc388293c9735f8a6df818cc9d`.
+All 45 planned original responses pass API, typed-payload, fixture-expectation and
+strict discrepancy checks, with zero discrepancies and no failure labels. Sixteen
+Email functions were exercised through direct and bridged UAPI, plus WHM version.
+Both fresh mailboxes were confirmed absent after creation, password verification,
+quota update/readback, login suspension/unsuspension and cleanup. No welcome or
+external delivery message was sent. This verifies API behavior on the recorded
+revision/version, not IMAP/SMTP access or every generated Email method. Follow-up
+8x0.2.18 retains unobserved functions and pinned-source contract gaps.
