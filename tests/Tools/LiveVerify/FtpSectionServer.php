@@ -70,6 +70,9 @@ final class FtpSectionServer implements ClientInterface
                 }
                 break;
             case 'add_ftp':
+                if ($this->fault === 'create_transport_absent' && !$bridge) {
+                    throw new RuntimeException('private creation response lost before inventory visibility');
+                }
                 if ($this->fault === 'create_race' && !$bridge) {
                     $this->accounts[$user] = ['directory' => '/private/unowned', 'quota' => 0];
                     $status = 0;

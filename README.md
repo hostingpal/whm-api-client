@@ -206,9 +206,10 @@ password changes, home directories, quotas, sessions, anonymous-access settings 
 the account welcome message. Mutation methods use form POST. `addFtp()` accepts
 `password` or `passHash`, which map to `pass` and `pass_hash`; the server forbids
 using both. Omitted options retain upstream defaults: new usernames lose dots by
-default, quotas default to unlimited, and the domain defaults to the cPanel
-account's primary domain. `getQuota()` preserves documented strings and observed finite integers; inventory disk amounts
-are decimal strings in MB, and `_diskquota` uses `0.00` for unlimited while
+default, quotas default to unlimited, the domain defaults to the cPanel
+account's primary domain, and an omitted `homedir` defaults to a directory with
+the same name as the FTP account. `getQuota()` preserves documented strings and
+observed finite integers; inventory disk amounts are decimal strings in MB, and `_diskquota` uses `0.00` for unlimited while
 `diskquota` uses `unlimited`. Optional fields and explicit `htmldir: null` stay distinct.
 
 ```php
@@ -223,7 +224,9 @@ The [FTP live audit](docs/api/source-audit.md#complete-ftp-section-2026-10-30)
 records 16 functions on both routes, successful API/payload checks and confirmed
 cleanup. Its strict evidence assessment still flags undocumented string fields
 in both disk-inventory observations; those fields stay outside typed results.
-Four settings/session functions remain live-unobserved.
+The saved artifact observes only `sub` inventory rows; main, anonymous and
+log-access rows are outside its captured evidence. Four settings/session functions
+remain live-unobserved.
 
 `deleteFtp(destroy: true)` also deletes the FTP home directory; choose the target
 carefully. `killSession()` defaults to stopping **all** FTP sessions for the
@@ -277,6 +280,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->langPhp()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetDomainHandler()`, `phpGetImpactedDomains()` |
 | `uapi()->features()` | `listFeatures()` |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
+| `uapi()->ftp()` | `addFtp()`, `allowsAnonymousFtp()`, `allowsAnonymousFtpIncoming()`, `changePassword()`, `deleteFtp()`, `ftpExists()`, `getFtpDaemonInfo()`, `getPort()`, `getQuota()`, `getWelcomeMessage()`, `killSession()`, `listFtp()`, `listFtpWithDisk()`, `listSessions()`, `serverName()`, `setAnonymousFtp()`, `setAnonymousFtpIncoming()`, `setHomedir()`, `setQuota()`, `setWelcomeMessage()` |
 | `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
 

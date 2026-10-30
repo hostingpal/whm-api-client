@@ -99,7 +99,8 @@ final readonly class Ftp
      *
      * Documented: Use password or passHash (wire pass or pass_hash), never both in one request. Null omits the option;
      * omission retains the server defaults, including removing dots from usernames and unlimited quota. The domain must
-     * belong to this cPanel account, and homedir is relative to its home directory.
+     * belong to this cPanel account, and homedir is relative to its home directory. Omitting homedir defaults to a
+     * directory with the same name as the FTP account.
      *
      * Documented: The pinned nullable object has no field schema. Explicit null and opaque object fields are preserved;
      * an absent payload is a contract mismatch. The existing empty-map compatibility accepts an empty JSON list as an

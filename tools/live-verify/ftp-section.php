@@ -12,6 +12,7 @@ use Throwable;
 // Committed-code FTP lifecycle with exact opt-ins and an atomic, new-only structural evidence artifact.
 $command = static function (#[SensitiveParameter] array $arguments): int {
     $temporary = null;
+    $reportReady = false;
     try {
         if ($arguments === ['--help']) {
             fwrite(STDOUT, "Usage: php tools/live-verify/ftp-section.php --output=PATH\n"
@@ -65,7 +66,11 @@ $command = static function (#[SensitiveParameter] array $arguments): int {
             ['schema_version' => 1, 'ftp_section' => $report],
             JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
         ) . "\n";
-        if (@file_put_contents($temporary, $json) !== strlen($json) || !@link($temporary, $output)) {
+        if (@file_put_contents($temporary, $json) !== strlen($json)) {
+            throw new RuntimeException('FTP evidence persistence failed.');
+        }
+        $reportReady = true;
+        if (!@link($temporary, $output)) {
             throw new RuntimeException('FTP evidence persistence failed.');
         }
         @unlink($temporary);
@@ -77,10 +82,13 @@ $command = static function (#[SensitiveParameter] array $arguments): int {
     } catch (Throwable $error) {
         $kind = $error instanceof LogicException ? 'configuration_failure' : 'execution_failure';
         fwrite(STDERR, 'FTP section verification failed (' . $kind . ").\n");
+        if ($reportReady && $temporary !== null) {
+            fwrite(STDERR, 'FTP section report retained at: ' . $temporary . "\n");
+        }
 
         return 1;
     } finally {
-        if ($temporary !== null) {
+        if ($temporary !== null && !$reportReady) {
             @unlink($temporary);
         }
     }

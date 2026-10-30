@@ -1229,8 +1229,9 @@ nullable-object shape follows the established general-enum policy, not exact
 JSON Schema validation or a claim of documented non-null data.
 
 The account-changing defaults are rendered in generated PHPDoc: `destroy=true`
-also deletes the FTP home directory, `kill_session` without a login targets all
-account sessions, and omitted quota settings can remove the quota. Both anonymous
+also deletes the FTP home directory, omitted `add_ftp` homedir defaults to a
+directory with the same name as the FTP account, `kill_session` without a login
+targets all account sessions, and omitted quota settings can remove the quota. Both anonymous
 access switches apply to the selected cPanel account. No generated source was
 edited by hand and no shared runtime or generator policy was changed.
 
@@ -1288,6 +1289,21 @@ policy, so API/payload success and evidence-assessment failure remain separate.
 The artifact's 634 structural paths, provenance, effective hashes and assessment
 were independently audited; no credentials, live usernames or response values
 were persisted. No third mutation run was performed merely to clear this finding.
+
+Both saved captures restrict inventory to `include_acct_types=sub`; the
+corrected artifact observes only `sub` rows. Main, anonymous and log-access rows
+are outside its captured evidence. The fixture report declares `sub_rows_only`
+for this recipe; the immutable artifacts are unchanged.
+
+The [external review of head `fc96ecd12506fb489b8bb98bda8b39b065350363`](https://github.com/hostingpal/whm-api-client/pull/28)
+reported a separate read-only, unfiltered diagnostic through both UAPI routes.
+`listFtp()` and `listFtpWithDisk()` passed typed validation for main, log-access
+and anonymous rows; no sub rows remained. That diagnostic is not bound to an
+evidence artifact. Its undocumented disk-inventory keys were `type` and `user`,
+both strings; this does not identify the masked unknown keys in the artifact's
+sub rows. The strict artifact assessment stays failed, without an acknowledgment
+or new typed field. The reviewer considers this finding nonblocking for merge;
+`8x0.2.11` remains open. No live rerun was performed for these review fixes.
 
 Before the first capture, the code commit changed 22 files: 18 manual files
 (2,623 additions / 4 removals) and four generated files (1,037 / 1). The evidence,

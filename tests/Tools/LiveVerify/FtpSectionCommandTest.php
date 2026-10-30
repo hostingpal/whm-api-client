@@ -62,8 +62,36 @@ final class FtpSectionCommandTest extends TestCase
         self::assertSame($json, file_get_contents($file));
     }
 
+    public function testDestinationRaceRetainsCompleteProtectedReportAndNamesItsPath(): void
+    {
+        $directory = $this->sandbox(true, true);
+        $result = self::runCommand($directory);
+        self::assertSame(1, $result['status']);
+        self::assertSame('concurrent destination', file_get_contents($directory . '/evidence.json'));
+        $retained = glob($directory . '/.ftp-section-*');
+        self::assertIsArray($retained);
+        self::assertCount(1, $retained);
+        self::assertSame(0600, fileperms($retained[0]) & 0777);
+        self::assertSame(['FTP section verification failed (execution_failure).',
+            'FTP section report retained at: ' . $retained[0]], $result['output']);
+        $json = file_get_contents($retained[0]);
+        self::assertIsString($json);
+        self::assertStringNotContainsString('private-', $json);
+        $report = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        self::assertIsArray($report);
+        self::assertSame(1, $report['schema_version']);
+        self::assertIsArray($report['ftp_section']);
+        self::assertSame('passed', $report['ftp_section']['status']);
+        self::assertSame(
+            ['direct-uapi' => 'cleaned', 'bridged-uapi' => 'cleaned'],
+            $report['ftp_section']['resources'],
+        );
+        self::assertIsArray($report['ftp_section']['probes']);
+        self::assertCount(41, $report['ftp_section']['probes']);
+    }
+
     /** Build an isolated CLI harness: real script, offline HTTP double, optional real repository context. */
-    private function sandbox(bool $verifiedContext): string
+    private function sandbox(bool $verifiedContext, bool $destinationRace = false): string
     {
         if (!extension_loaded('curl')) {
             self::markTestSkipped('CLI requires the cURL extension even with offline transport.');
@@ -86,6 +114,8 @@ final class FtpSectionCommandTest extends TestCase
             . 'private \\HostingPal\\WhmApiClient\\Tests\\Tools\\LiveVerify\\FtpSectionServer $server;'
             . ' public function __construct(bool $allowFormPost) { file_put_contents('
             . var_export($directory . '/transport-used', true) . ', "used");'
+            . ($destinationRace ? 'file_put_contents(' . var_export($directory . '/evidence.json', true)
+                . ', "concurrent destination");' : '')
             . ' $this->server = new \\HostingPal\\WhmApiClient\\Tests\\Tools\\LiveVerify\\FtpSectionServer(); }'
             . ' public function sendRequest(\\Psr\\Http\\Message\\RequestInterface $request): '
             . '\\Psr\\Http\\Message\\ResponseInterface { return $this->server->sendRequest($request); } }';

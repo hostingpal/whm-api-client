@@ -76,11 +76,14 @@ matching account later appears. A confirmed successful API creation can be
 cleaned up after a payload mismatch. Cleanup never retries a mutation, and a
 successful delete still requires an independent inventory confirming absence.
 
-If the command fails, retain the sanitized failure artifact. When a resource is
-`uncertain`, inspect the designated account privately and identify this run's
+If publication fails after the complete report is written, the command keeps its
+0600 temporary file and prints its path on stderr. Retain that file as the
+sanitized failure artifact. When a resource is `uncertain`, inspect the
+designated account privately and identify this run's
 `wftp`-prefixed account before manual recovery; the prefix alone does not prove
-ownership. Raw responses, passwords and actual resource identities remain out
-of the artifact. Do not rerun the fixture to recover the original response or
+ownership. An uncertain creation stays uncertain even if the final inventory is
+empty, because the server may finish creating it afterward. Raw responses,
+passwords and actual resource identities remain out of the artifact. Do not rerun the fixture to recover the original response or
 reuse a previous run's account. API outages and failed cleanup require private
 inspection; a failed assessment is not a successful verification.
 
@@ -88,8 +91,11 @@ inspection; a failed assessment is not a successful verification.
 `set_welcome_message` are generated and offline-tested but deliberately unobserved
 in this recipe (follow-up `whm-api-client-8x0.2.10`). It neither opens FTP sessions
 nor changes account-wide settings.
-Empty session responses provide no evidence about session row fields. Disabled
-FTP roles, other daemons and other versions remain separate evidence cases.
+Inventory captures use `include_acct_types=sub`; the report declares
+`sub_rows_only`, and main, anonymous and log-access rows are outside the saved
+artifact evidence. Empty session responses provide no evidence about session
+row fields. Disabled FTP roles, other daemons and other versions remain
+separate evidence cases.
 
 ### Nonempty MySQL fixture
 

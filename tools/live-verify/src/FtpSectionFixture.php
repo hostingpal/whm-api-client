@@ -179,7 +179,9 @@ final class FtpSectionFixture
             if ($this->resources[$route] !== 'not_started') {
                 $user = $this->recipe->user($route);
                 $this->expect(!isset($rows[$user]) && !isset($rows[$user . '@npr.rs']));
-                $this->resources[$route] = 'cleaned';
+                if ($this->resources[$route] === 'owned') {
+                    $this->resources[$route] = 'cleaned';
+                }
             }
         } catch (Throwable) {
             if ($this->resources[$route] !== 'not_started') {
@@ -330,7 +332,8 @@ final class FtpSectionFixture
                 'uapi:Ftp/set_anonymous_ftp' => 'account_setting_not_changed',
                 'uapi:Ftp/set_anonymous_ftp_incoming' => 'account_setting_not_changed',
                 'uapi:Ftp/set_welcome_message' => 'account_setting_not_changed'],
-            'limitations' => ['empty_session_lists_do_not_observe_session_fields',
+            'limitations' => ['sub_rows_only',
+                'empty_session_lists_do_not_observe_session_fields',
                 'home_directory_execution_does_not_establish_changed_directory_isolation',
                 'password_result_does_not_establish_ftp_authentication',
                 'quota_readback_does_not_establish_transfer_enforcement',

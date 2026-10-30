@@ -80,6 +80,22 @@ final class FtpSectionFixtureTest extends TestCase
         yield 'unknown raw keys are discrepancies' => ['unknown_field', 'cleaned', 1];
     }
 
+    public function testLostCreationResponseRemainsUncertainWhenFinalInventoryIsEmpty(): void
+    {
+        $http = new FtpSectionServer('create_transport_absent');
+        $report = self::fixture($http)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertSame('uncertain', $report['resources']['direct-uapi']);
+        self::assertSame('cleaned', $report['resources']['bridged-uapi']);
+        self::assertSame([], $http->accounts);
+        self::assertSame(['wftpfedcba9876543210'], $http->deleted);
+        $final = array_values(array_filter($report['probes'], static fn (array $record): bool =>
+            $record['phase'] === 'final_accounts' && $record['route'] === 'direct-uapi'));
+        self::assertCount(1, $final);
+        self::assertSame(['$' => ['empty-list']], $final[0]['payload_paths']);
+        self::assertPrivate($report);
+    }
+
     #[DataProvider('requiredEnvironment')]
     public function testPrerequisitesPreventAllRequests(string $key): void
     {
