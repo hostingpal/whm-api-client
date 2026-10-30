@@ -3,15 +3,16 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 15 generated typed groups cover 236 documented operations (see
+The 15 generated typed groups cover 279 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
-features, the complete Email module, SSL/AutoSSL inventory, disk quotas and the complete
+features, the complete Email and SSL modules, disk quotas and the complete
 pinned MySQL, FTP and PostgreSQL sections.
 Generic `call()` methods provide GET and form-encoded POST access without a typed
 group, subject to the operation's parameter, route and envelope requirements.
-JSON and multipart request bodies are not supported. The library provides token
+Generic calls do not support JSON or multipart bodies. Three typed SSL methods
+support reviewed multipart string fields. The library provides token
 authentication, direct and WHM-routed UAPI, typed array payloads, API exceptions,
 and per-client response metadata over a PSR HTTP transport.
 
@@ -316,6 +317,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->langPhp()` | All 11 operations: installed/default/vhost PHP versions, domain handlers and impacted domains, INI paths/basic directives/content reads, and `phpIniSetUserBasicDirectives()`, `phpIniSetUserContent()`, `phpSetVhostVersions()` |
 | `uapi()->features()` | All 5 operations: `getFeatureMetadata()`, `hasFeature()`, `hasFeaturesLike()`, `listFeatures()`, `listFeaturesLike()` |
 | `uapi()->email()` | All 96 pinned functions, including mailbox lifecycle, quotas and suspension, forwarders, filters, MX routing, autoresponders, spam settings and delivery diagnostics; see [generated methods](src/Api/Uapi/Email.php). |
+| `uapi()->ssl()` | All 49 nondeprecated functions, including certificate/key/CSR inventory and lifecycle, installation, AutoSSL, SNI and redirects; see [generated methods](src/Api/Uapi/Ssl.php). |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
 | `uapi()->ftp()` | `addFtp()`, `allowsAnonymousFtp()`, `allowsAnonymousFtpIncoming()`, `changePassword()`, `deleteFtp()`, `ftpExists()`, `getFtpDaemonInfo()`, `getPort()`, `getQuota()`, `getWelcomeMessage()`, `killSession()`, `listFtp()`, `listFtpWithDisk()`, `listSessions()`, `serverName()`, `setAnonymousFtp()`, `setAnonymousFtpIncoming()`, `setHomedir()`, `setQuota()`, `setWelcomeMessage()` |
 | `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()`, `addHost()`, `addHostNote()`, `checkDatabase()`, `deleteHost()`, `dumpDatabaseSchema()`, `getHostNotes()`, `listRoutines()`, `locateServer()`, `renameDatabase()`, `renameUser()`, `repairDatabase()`, `revokeAccessToDatabase()`, `setPassword()`, `setupDbAndUser()`, `updatePrivileges()` |
@@ -429,6 +431,52 @@ flags despite correct server lock state and judged the finding nonblocking.
 Immediately after a write, the previous flag can persist until a later write
 refreshes the cache. Password, quota and suspension checks establish API behavior,
 not SMTP or IMAP access; see the [source audit](docs/api/source-audit.md).
+
+
+The SSL module exposes 49 nondeprecated functions; `check_shared_cert` remains
+excluded upstream. Private keys and PEM inputs are sensitive, and writes use POST.
+`uploadKey(key: $pem)`, `uploadCert(crt: $pem)`, and
+`fetchKeyAndCabundleForCertificate(certificate: $pem)` send inline string fields as
+multipart bodies. Routing and authentication remain unchanged on both routes;
+these methods do not accept filesystem paths or file handles. Generic `call()`
+continues to support form bodies only. Binary multipart file fields are rejected
+during generation because filename uploads are unsupported.
+
+`getCabundle(cert: $pem)` sends the certificate as a form POST to avoid URL
+length limits and certificate contents in access logs. `installSsl()` marks
+certificate, CA bundle and private-key inputs sensitive. SSL certificate/key/CSR
+records share reviewed compatibility rules: canonical integer strings normalize
+to integer timestamp/bit-length fields, exact quoted self-signed flags become
+`0|1`, and issuer organization preserves explicit null. These field rules do not
+establish successful live execution of every method returning those records.
+
+For `fetchCertInfo()`, `setCsrFriendlyName()` and `setKeyFriendlyName()`, provide
+one documented selector (`id` or `friendlyName`); neither selector is forced by
+the PHP signature. `installSsl()` exposes the documented scalar parameters and
+repeated vhost names. Its optional `domain_dcv_method` map is omitted because the
+pinned source does not specify its wire encoding (follow-up `8x0.2.16`). The
+`upload_key` page disagrees about `key` versus `crt`; the generated request uses
+`key` from its parameter contract, with live verification reported separately.
+The [expanded owned SSL capture](docs/api/evidence/2026-10-30-ssl-section-expanded-final.json)
+at `1f67a43` on cPanel `11.138.0.19` records all 31 planned responses (13 GET,
+18 POST) across ten SSL functions through both routes plus WHM version. Every
+HTTP/API, typed-payload and fixture-expectation check passes. Both uploaded keys,
+both certificates and both generated keys are confirmed cleaned. This includes
+all three multipart methods, `fetchCertInfo()`, `fetchCertificatesForFqdns()` and
+`generateKey()`; nullable FQDN-certificate fields retain string|null precision.
+
+Strict evidence remains **failed** for six masked unknown-field observations in
+`upload_cert` and `delete_key`. Two are the added generated-key cleanup phases;
+all six match earlier operation/route/contract and full masked payload structures,
+which establishes neither unknown key identities nor counts. No finding is waived;
+`8x0.2.19` retains the contract investigation. The
+[earlier 27-response failure](docs/api/evidence/2026-10-30-ssl-section-reviewed.json)
+and every historical capture stay unchanged. See the [source audit](docs/api/source-audit.md)
+for provenance, limits and the separate original outcomes.
+
+Certificate deletion/installation, account-wide AutoSSL and redirect changes take
+effect immediately. Live verification is bounded to fresh owned fixture material,
+without installing certificates or changing existing hosted services.
 
 The DNS methods are read-only (GET):
 

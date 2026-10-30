@@ -98,6 +98,8 @@
         "name": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
         "variant": {"enum": ["GET", "POST"]},
         "method": {"enum": ["GET", "POST"]},
+        "body": {"enum": ["multipart"]},
+        "body_fields": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string", "minLength": 1}},
         "outcome": {"enum": ["flag", "unchecked"]},
         "unwrap": {"type": "string", "minLength": 1},
         "void": {"type": "boolean"},

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Api;
 
+use HostingPal\WhmApiClient\Api\Engine\MultipartEncoder;
 use HostingPal\WhmApiClient\Config\ClientConfig;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\TransportException;
@@ -116,16 +117,18 @@ abstract class AbstractApiClient
     }
 
     /**
-     * Execute one authenticated POST with form-encoded operation parameters.
+     * Execute one authenticated POST with the selected operation-body encoding.
      *
      * Routing fields stay in the query string while the operation parameters travel
      * as an application/x-www-form-urlencoded body, so they never reach the URL that
      * the pinned WHM documentation says the server records in its access log.
+     * Reviewed multipart operations instead use inline string fields with CRLF
+     * framing and a collision-free boundary. Generic calls retain form encoding.
      * Secret-bearing operations must use this executor. Encoding rules, lifecycle,
      * and failure handling match executeGet; an empty body is sent as empty content.
      *
      * @param Parameters $query Routing fields that remain in the URL.
-     * @param Parameters $body Operation parameters sent in the form-encoded body.
+     * @param Parameters $body Operation parameters sent with the selected form or inline-string multipart encoding.
      * @throws InvalidArgumentException If a parameter value or a multi-value parameter is invalid.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      */
@@ -137,8 +140,9 @@ abstract class AbstractApiClient
         array $body,
         ResponseRoute $route,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
+        RequestBodyFormat $bodyFormat = RequestBodyFormat::Form,
     ): ApiResponse {
-        return $this->execute(RequestMethod::Post, $path, $query, $body, $route, $outcome);
+        return $this->execute(RequestMethod::Post, $path, $query, $body, $route, $outcome, $bodyFormat);
     }
 
     /**
@@ -158,6 +162,7 @@ abstract class AbstractApiClient
         array $body,
         ResponseRoute $route,
         OutcomePolicy $outcome,
+        RequestBodyFormat $bodyFormat = RequestBodyFormat::Form,
     ): ApiResponse {
         $this->beginRequest();
         $uri = $this->config->baseUri() . $path;
@@ -171,8 +176,12 @@ abstract class AbstractApiClient
         ];
         $content = null;
         if ($method === RequestMethod::Post) {
-            $headers['Content-Type'] = 'application/x-www-form-urlencoded';
-            $content = self::encode($body);
+            if ($bodyFormat === RequestBodyFormat::Multipart) {
+                [$headers['Content-Type'], $content] = MultipartEncoder::encode($body);
+            } else {
+                $headers['Content-Type'] = 'application/x-www-form-urlencoded';
+                $content = self::encode($body);
+            }
         }
 
         try {

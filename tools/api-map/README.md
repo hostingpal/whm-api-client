@@ -101,6 +101,9 @@ Operation entries (all keys optional):
 - `order`: wire names moved to the front of the signature in that order;
   required arguments always precede optional ones, so an order that lists an
   optional parameter before a required one, or an omitted parameter, is a problem.
+- `body` (`multipart`) selects reviewed inline string multipart encoding; `body_fields`
+  maps explicitly corrected body property names to existing query parameter names.
+  Both require operation-level evidence.
 - `method` (`GET`/`POST`), `outcome` (`flag`, the default, or `unchecked`),
   `void` (no payload) and `unwrap` (return one documented object field; exclusive
   with `void`). Read-only operations default to GET; mutating, unknown-risk and
@@ -119,7 +122,11 @@ Operation entries (all keys optional):
   evidence. `probe` is stored, not read by the generator.
 - `response`: corrections keyed by payload path. A path is dot-separated field
   names; `[]` steps into list items and `{}` into map values, as in `acct`,
-  `acct[]`, `data{}` or `acct[].uid`; the empty path is invalid. Keys: `type`
+  `acct[]`, `data{}` or `acct[].uid`; the empty path is invalid. A backslash escapes
+  a literal dot in a field name: `[].issuer\.organizationName` addresses the
+  literal `issuer.organizationName` key, while `[].issuer.organizationName`
+  addresses nested fields. JSON writes that backslash as `\\`; trailing and
+  other escape sequences are rejected. Keys: `type`
   (a scalar type; keeps nullability), `accept` (added to the variants the
   schema already implies: `numeric-string` for int and
   number, `integral-fixed-point-string` for int only (canonical bounded integer
@@ -158,9 +165,18 @@ wire name may appear only once.
 The fields of a documented `application/x-www-form-urlencoded` request body
 become parameters after the query parameters (required only when the body and
 its schema require them) and force POST, which form-encodes every operation
-parameter in the body. Operations whose request body is not form-encoded
-(multipart, JSON), or whose form schema has no plain properties, and operations
-flagged deprecated upstream must be excluded. Evidence is `kind` (`doc` or `live`), `version`, `date`
+parameter in the body. Reviewed UAPI operations may select `body: "multipart"` with operation-level evidence.
+Only inline, non-nullable string fields are supported. Query declarations may repeat
+body fields only when their schemas match (documentation annotations are ignored);
+the query declaration retains its requiredness. Every query field must have a matching
+body field. An evidence-backed `body_fields` map explicitly corrects a contradictory
+body property name to an existing query parameter, such as `{"crt": "key"}`; unknown
+sources, unknown targets, duplicate targets and omitted multipart fields fail generation.
+The runtime keeps routing fields in the query and sends binary-preserving string fields
+with a collision-checked multipart boundary. This routing capability is not evidence of
+live operation support. Generic `call()` stays form-only. JSON bodies, unreviewed
+multipart bodies, bodies without plain properties, and deprecated operations remain
+unsupported by generation. Evidence is `kind` (`doc` or `live`), `version`, `date`
 (`YYYY-MM-DD`), `note` and an optional `fingerprint`.
 
 ```bash

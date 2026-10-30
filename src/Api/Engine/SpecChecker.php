@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Api\Engine;
 
+use HostingPal\WhmApiClient\Api\RequestBodyFormat;
 use LogicException;
 
 /**
@@ -120,6 +121,21 @@ final class SpecChecker
         }
 
         self::params($spec['params'] ?? null);
+        if (OperationSpec::body($spec) === RequestBodyFormat::Multipart) {
+            if (($spec['method'] ?? null) !== 'POST' || !isset($spec['module'])) {
+                throw new LogicException('Multipart requires a UAPI POST operation.');
+            }
+            $parameters = $spec['params'] ?? null;
+            if (!is_array($parameters)) {
+                throw new LogicException('Multipart requires parameter specs.');
+            }
+            foreach ($parameters as $parameter) {
+                if (!is_array($parameter) || ($parameter['encoding'] ?? null) !== 'scalar') {
+                    throw new LogicException('Multipart requires scalar string fields.');
+                }
+            }
+        }
+
 
         if (!array_key_exists('returns', $spec)) {
             throw new LogicException('Operation spec is missing "returns".');

@@ -675,6 +675,16 @@ final class SensitiveTraceTest extends TestCase
     private static function secretCalls(): iterable
     {
         foreach (['direct', 'bridged'] as $route) {
+            foreach (['cert', 'cabundle'] as $field) {
+                yield $route . ' SSL install ' . $field => [
+                    $route,
+                    static fn (Client $client): mixed => $client->uapi($route === 'direct' ? null : 'npr')->ssl()
+                        ->installSsl(...['cert' => 'fixture cert', 'domain' => 'npr.rs', $field => self::SECRET]),
+                ];
+            }
+        }
+
+        foreach (['direct', 'bridged'] as $route) {
             $account = $route === 'direct' ? null : 'npr';
             yield $route . ' INI content' => [
                 $route,

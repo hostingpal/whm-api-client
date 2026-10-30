@@ -560,3 +560,82 @@ cannot distinguish the failing value or establish a cause. `8x0.2.18.1` remains
 open and the fixture was not rerun. The later [reviewer investigation](https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604)
 confirmed stale API suspension flags despite correct server lock state and judged
 the finding nonblocking, without waiving it or changing the failed artifact.
+
+## Owned SSL storage recipe
+
+`php tools/live-verify/ssl-section.php --output=PATH` requires committed inputs,
+PHP cURL and OpenSSL, both test tokens, `WHM_API_LIVE=1`,
+`WHM_API_LIVE_MUTATIONS=1`, `WHM_API_LIVE_ACCOUNT=npr`, and
+`WHM_API_LIVE_DOMAIN=npr.rs`. The output must be a new path. Complete structural
+reports are retained in a protected recovery file if new-only publication fails.
+
+The recipe generates independent RSA-2048 private keys and self-signed npr.rs
+certificates for the two routes, retaining PEM contents only in process memory.
+It captures WHM version and key/certificate inventories through both routes before
+any upload. Comparable IDs, public moduli and friendly names must establish that
+neither fresh resource exists. An absent or null RSA modulus is accepted only
+with the pinned non-RSA identity: `key_algorithm` is `id-ecPublicKey`, the curve
+is `prime256v1` or `secp384r1`, and `ecdsa_public` is nonempty hexadecimal text.
+Ambiguous RSA or unknown identities stop preflight before uploads. This check
+classifies unrelated ECDSA inventory; it does not validate the elliptic-curve
+point cryptographically or adopt that resource. The recipe uploads each new key and certificate, fetches
+the matching key and CA bundle, reads the owned certificate by exact ID and
+retrieves certificates for the designated npr.rs domain. It then generates one
+additional RSA-2048 key per route and deletes only exact IDs confirmed by
+successful original creation responses. Matching public moduli bind returned private keys
+without persisting private material. Payload validation failures still permit
+cleanup when the successful original response establishes an unambiguous owned ID;
+failed or ambiguous creation never adopts an ID from a later inventory.
+For generated keys, ownership additionally requires a fully validated successful
+original response with a unique new ID and matching returned PEM/public modulus.
+The ID and modulus must be absent from prior inventories and all other owned
+resources. The label is fresh and route-bound. Lost, unsuccessful or malformed
+generation stays uncertain even when a later inventory appears to identify it;
+no generated key is adopted or deleted by inference. Generated-key state is
+separate from the uploaded key/certificate states.
+
+After an upload proves exact ownership and passes API and typed payload checks,
+unknown response fields alone allow the owned-resource lifecycle to continue to
+fetch and cleanup. The original unknown-field discrepancies remain in evidence,
+and the final strict assessment still fails on every discrepancy. This narrow
+continuation rule does not apply to preflight, other inventories, fetch or cleanup;
+all other upload discrepancies and unsuccessful API/payload checks stop continuation.
+
+The one-shot guard checks exact opt-ins, account, credentials, routing, fields,
+headers, form bytes and multipart bytes. No request is retried. Each confirmed owned ID gets
+one cleanup attempt, followed by inventory checks for ID and public-modulus
+absence. Uncertain creations remain unresolved and stop later route lifecycles.
+Existing unrelated resources are retained. No certificates are installed and no
+TLS service certificates, AutoSSL exclusions, SSL defaults, redirects or mail SNI
+configuration are changed. Successful storage calls do not establish HTTPS or
+trust behavior.
+
+The expanded v2 recipe plans 31 original observations: version, four initial
+inventories, and thirteen lifecycle/cleanup observations on each route (13 GET,
+18 POST overall). It covers ten SSL functions through both routes and six
+separately owned resources. The first
+[integrated v2 capture](../../docs/api/evidence/2026-10-30-ssl-section-reviewed.json)
+at `d159935` retains 27 responses (13 GET, 14 POST). Both `fetch_cert_info` phases
+pass; both `fetch_certificates_for_fqdns` phases fail typed validation for null
+`cab`, `validation_type` and `verify_error`, so neither generated-key phase starts.
+The four uploaded resources are cleaned, while generated-key states remain
+`not_started`. The failed result is preserved under `8x0.4.11.3.4`; it does not
+establish generated-key execution or six-resource cleanup. The three narrow
+nullable-field corrections preserve the failed capture's original pre-correction
+contract. After explicit review clearance, the separate
+[expanded final capture](../../docs/api/evidence/2026-10-30-ssl-section-expanded-final.json)
+at `1f67a43` on `11.138.0.19` records all 31 responses with passing HTTP/API,
+typed-payload, probe and fixture expectations. All six uploaded/generated resources
+are cleaned, including generated-key ID and public-modulus absence checks.
+Strict status remains failed for six unknown-field observations: upload_cert and
+both key-delete phases on each route. The two added generated-key delete phases
+match the prior delete_key masked structures/contract; key names/counts remain
+unknown and no observation is waived. Follow-up `8x0.2.19` retains that work.
+The historical v1 artifact retains its original 23 observations unchanged. Reports keep
+structural paths and provenance from `EvidenceRunner`, separate semantic
+expectations and resource states, and no private key, certificate, resource ID or
+arbitrary upstream error text. Any failed observation, expectation, missing stage,
+unknown-field discrepancy or unconfirmed cleanup makes the report fail. A failed
+preflight remains failed evidence, not a successful skip. The pinned `upload_key` body-field contradiction remains documented. The final
+2026-10-30 fixture at 64d5266 observed successful use of the key field through
+both routes on 11.138.0.19; this does not amend the pinned source.

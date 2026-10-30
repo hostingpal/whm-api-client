@@ -51,7 +51,7 @@ func Validate(set Set) []string {
 			seen[id] = name
 			op := file.Operations[id]
 			if op.Exclude != nil && (op.Name != "" || len(op.Params) > 0 || len(op.Response) > 0 || op.Unwrap != "" ||
-				op.OptionalPayload || op.Variant != "") {
+				op.OptionalPayload || op.Variant != "" || op.Body != "" || len(op.BodyFields) > 0) {
 				problems = append(problems, id+": excluded operations take no other settings")
 			}
 			if op.Void && op.Unwrap != "" {
@@ -59,6 +59,12 @@ func Validate(set Set) []string {
 			}
 			if op.Void && op.OptionalPayload {
 				problems = append(problems, id+": void and optional_payload are exclusive")
+			}
+			if op.Body != "" && (op.Body != "multipart" || file.Family != "uapi") {
+				problems = append(problems, id+": reviewed multipart bodies require UAPI")
+			}
+			if len(op.BodyFields) > 0 && op.Body != "multipart" {
+				problems = append(problems, id+": body_fields requires multipart")
 			}
 			problems = append(problems, missingEvidence(id, op)...)
 			for wire, param := range op.Params {
@@ -103,6 +109,12 @@ func missingEvidence(id string, op Operation) []string {
 		return nil
 	}
 	var settings []string
+	if op.Body != "" {
+		settings = append(settings, "body")
+	}
+	if len(op.BodyFields) > 0 {
+		settings = append(settings, "body_fields")
+	}
 	if op.Variant != "" {
 		settings = append(settings, "variant")
 	}

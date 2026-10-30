@@ -153,3 +153,47 @@ in `8x0.2.18.1`; this fixture was not repeated to clear it. Separate
 [reviewer investigation](https://github.com/hostingpal/whm-api-client/pull/31#pullrequestreview-5715451604) confirmed stale API flags despite correct server
 lock state and judged the finding nonblocking; the artifact remains failed.
 SHA-256: `13bc03e54292f382e3ec9062b8a7c148735aaa278e4aeecba1262f638363791b`.
+
+## Complete SSL slice (2026-10-30)
+
+The initial five immutable captures retain the correction sequence:
+[inventory preflight](2026-10-30-ssl-section.json),
+[inventory corrections](2026-10-30-ssl-section-corrected.json),
+[identity guard corrections](2026-10-30-ssl-section-identity-corrected.json),
+[upload corrections](2026-10-30-ssl-section-upload-corrected.json), and
+[final owned lifecycle](2026-10-30-ssl-section-final.json).
+The final capture has 23 successful API/payload/expectation observations across
+seven SSL functions plus WHM version, with all four resources confirmed cleaned.
+It still fails the strict gate for four unknown-field observations in upload_cert
+and delete_key. Three typed multipart operations were exercised through both UAPI
+routes. Installation, service configuration, trust and the remaining operations
+are outside this fixture; follow-up 8x0.2.19 retains that distinction.
+
+
+The [integrated SSL v2 capture](2026-10-30-ssl-section-reviewed.json) at
+`d159935d8da99062ef6527952ff1f6b1c5274dbd` records 27 responses (13 GET, 14 POST)
+on `11.138.0.19`. All HTTP/API outcomes pass; 25 payload/probe/expectation checks
+pass and two FQDN-certificate payload checks fail, leaving their expectations
+unchecked. Each route observes null `cab`, `validation_type` and `verify_error`
+against nonnullable pinned string fields. Both `fetch_cert_info` phases pass.
+Four uploaded resources are cleaned and both generated-key states are
+`not_started`; the 31-phase recipe remains incomplete. The four prior masked
+upload_cert/delete_key unknown-field observations also remain. Strict assessment
+is failed without waivers. The new contract corrections and outstanding generation
+evidence are tracked in `8x0.4.11.3.4`; no operation was repeated to clear the result.
+SHA-256: `bd1e409a5608fff3ab4be889b84ce83743188548ec154f24e19601e9c7ad9aef`.
+
+
+The [expanded final SSL v2 capture](2026-10-30-ssl-section-expanded-final.json)
+at `1f67a43398fabc46b35b5bd30d08c3d7ffe7467a` on `11.138.0.19` contains all
+31 responses (13 GET, 18 POST). Every HTTP/API/payload/probe/expectation check
+passes; ten SSL functions run through both UAPI routes, and all six resources are
+confirmed cleaned. Strict status remains **failed** for six masked unknown-field
+observations: upload_cert, delete_key and the added delete_generated_key phase on
+each route. All six match earlier operation/variant/route/method/version/source/
+effective-contract, full payload-path and discrepancy structures. This establishes
+masked structural equivalence only; unknown field names/counts remain unknown.
+No discrepancy is waived under `8x0.2.19`. Earlier failed artifacts stay unchanged.
+This storage recipe establishes no TLS installation/serving/trust or AutoSSL
+issuance/renewal behavior. SHA-256:
+`1a42e7a3c920b70eb91ef2f26f7f40aed8209693b8e850f56e594a2620d382d5`.

@@ -388,6 +388,9 @@ func specClass(g effective.Group) string {
 			w.line("        'module' => " + phpString(op.Module) + ",")
 		}
 		w.line("        'method' => " + phpString(op.Method) + ",")
+		if op.Body != "" {
+			w.line("        'body' => " + phpString(op.Body) + ",")
+		}
 		w.line("        'outcome' => " + phpString(op.Outcome) + ",")
 		if len(op.Params) == 0 {
 			w.line("        'params' => [],")

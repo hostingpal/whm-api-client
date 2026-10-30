@@ -1898,3 +1898,297 @@ These observations are attributed reviewer evidence, separate from this chat's
 `suspend_login` and `unsuspend_login` render the caveat in the generated API docs.
 No runtime spec, recipe timing or captured response changed, and no new live run
 was performed for this documentation correction.
+
+## 2026-10-30 complete SSL contracts and multipart request support
+
+The third stacked slice adds 43 typed SSL functions, covering all 49 nondeprecated
+functions (check_shared_cert stays excluded). Together with the preceding Email
+and DomainInfo/Features/LangPHP slices and the approved MySQL/FTP/PostgreSQL
+master changes, this branch generates 279 operations in 15 groups. Pinned source snapshots remain unchanged. Independent request and
+payload fixtures cover direct wrapped, direct bare and WHM-bridged execution.
+
+Three source-declared multipart operations now use explicitly reviewed inline
+string bodies: fetch_key_and_cabundle_for_certificate, upload_cert and upload_key.
+The shared lifecycle retains exact routing, per-attempt metadata clearing, no
+retries and sensitive frames. Boundary selection preserves arbitrary field bytes;
+unsafe field names and non-string values fail locally. This adds no generic JSON,
+file-handle or multipart escape hatch. Generator checks reject unreviewed multipart
+bodies and incompatible query/body duplicate declarations. The upload_key page's
+body crt versus query key contradiction is represented by an evidence-required
+body-field correction; actual key acceptance is a separately recorded live claim.
+
+The source's prose requires either ID or friendly name for three selectors despite
+marking both required in its schema; evidence-bound requiredness corrections expose
+both alternatives. install_ssl's optional domain_dcv_method object remains omitted
+with a generated caveat because no authoritative form encoding is specified.
+Follow-up8x0.2.16 owns this contract gap. Opaque/no-data operations preserve their
+respective null/field/absence contracts instead of inventing mutation return types.
+
+The SSL fixture uses independently generated, fresh in-memory PEM material for each
+route. It never installs certificates or changes existing hosted services. Every
+cleanup target must have confirmed creation and an unambiguous new identity;
+uncertain uploads remain failed evidence and are never adopted from later reads.
+Actual multipart results and resource cleanup are documented after execution.
+
+### SSL inventory preflight observations
+
+The [first SSL capture](evidence/2026-10-30-ssl-section.json) at 4a3c988 on
+11.138.0.19 has SHA-256
+`088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd`.
+Five GET responses were retained: WHM version passed, while list_keys/list_certs
+failed typed validation on both routes. No upload or deletion ran; all resources
+remain not_started. Eight evidenced corrections preserve quoted integer fields,
+quoted self-signed flags and a nullable literal issuer.organizationName value.
+The generator now supports escaped dots in correction paths so this literal wire
+key is targeted without changing any nested field or replacing an entire object.
+
+The [corrected inventory capture](evidence/2026-10-30-ssl-section-corrected.json)
+at a43adae, SHA-256
+`8b83217819c1275503d40c9d4547407794bc4e3a450170643e43fc1a93a63719`,
+passes all five API/payload checks without discrepancies. Fixture preflight still
+fails for existing certificate rows without a modulus; no mutation ran. The
+inventory identity guard now permits omitted/null modulus only when the pinned
+id-ecPublicKey algorithm, a documented curve and nonempty hexadecimal public point
+establish non-RSA identity. Ambiguous RSA/unknown rows fail, including null modulus
+previously admitted without algorithm checks. Independent tests cover both
+inventories and preserve unrelated resources. Failed artifacts remain immutable.
+
+The [owned-upload capture](evidence/2026-10-30-ssl-section-identity-corrected.json)
+at 079d86b on 11.138.0.19 has SHA-256
+`ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08`.
+It records 19 original responses. Both routes accepted the multipart upload_key
+field named key. Direct upload validation then rejected quoted integer fields;
+the bridged key and certificate uploads passed typed validation, but an unknown
+certificate field stopped the lifecycle before fetch. Delete responses also exposed
+quoted integers/flags and an unknown key field. Every confirmed uploaded resource
+was deleted and its absence verified; the direct certificate was never created.
+
+Corrections target only the observed upload_key, delete_key and delete_cert fields.
+A reviewed upload-only continuation rule permits a valid typed upload with unknown
+extra fields to proceed after its original response proves ownership. Those extras
+remain recorded and fail the strict final assessment. Preflight, inventory, fetch,
+cleanup, uncertain-identity handling and the final zero-discrepancy gate are unchanged.
+
+The [upload-corrected capture](evidence/2026-10-30-ssl-section-upload-corrected.json)
+at 1370c7b, SHA-256
+`1f38a174a8075059bcd55ccd865061c6be3cab98f052eaf93c2f43e5eb65b2ee`,
+records 22 responses and confirms cleanup of all four uploaded resources. The
+bridged multipart fetch now passes. Direct upload_cert exposes quoted versions of
+five documented numeric/flag fields, so only those fields receive the same bounded
+compatibility handling. Unknown upload_cert/delete_key fields remain failures;
+follow-up 8x0.2.19 tracks their contracts and remaining SSL live coverage.
+
+
+The [final owned SSL capture](evidence/2026-10-30-ssl-section-final.json) at
+64d5266 on 11.138.0.19 has SHA-256
+`a465a7763181c84cc917e793a3eb2f38f7b22f2f70e69ba39f7254bb4e53bce9`.
+All 23 planned original responses pass API, typed-payload and fixture-expectation
+checks, including all three multipart functions through direct and bridged UAPI.
+Both fresh keys and both certificates were confirmed absent after cleanup.
+The strict assessment still fails on four masked unknown-field observations:
+upload_cert and delete_key on each route. The cleanup_request_failure labels
+retain that strict discrepancy failure; successful deletion and final absence
+are recorded separately. No discrepancy is acknowledged or removed. This proves
+seven SSL functions on these routes/revision/version, not all 49 generated methods,
+certificate installation, TLS serving, trust, AutoSSL issuance or renewal.
+
+
+### SSL external-review corrections: 2026-10-30
+
+Review of `7ff0090a75c7e87931fe4cdf933f0c8fc2f85142` independently reproduced
+quoted `created`/`modulus_length` on direct `generate_key` after successful
+creation, and `is_self_signed` failures on `fetch_cert_info` and
+`fetch_certificates_for_fqdns`. The earlier evidence-bound corrections covered
+only selected inventory/upload/delete operations. The reviewed record-family
+policy now applies the same narrow rules to all **66 declared fields in 21 SSL
+operations**: canonical PHP-integer-bounded strings for `created`,
+`modulus_length`, `not_after`, `not_before`; exact quoted 0/1 for
+`is_self_signed`; and explicit null for the literal `issuer.organizationName`
+string. Existing optional fields and nullable modulus lengths are preserved.
+This is family compatibility inferred from the matching pinned record contracts,
+reviewed live reproductions and immutable original SSL artifacts, not a claim
+that each extended operation/path was captured live. Unknown fields remain
+masked and unacknowledged under `8x0.2.19`.
+
+Independent endpoint fixtures cover native and quoted values, null versus omission,
+invalid flags, fractional/exponent/noncanonical numeric strings, integer overflow
+and wrong organization types across wrapped, bare and bridged UAPI. Before the
+fix, 132 accepted-record cases failed; 16 installSsl certificate/CA-bundle trace
+cases also reproduced the missing parameter marks. Certificate and CA-bundle
+arguments now remain sensitive alongside the private key. `getCabundle()` sends
+PEM in a form POST body, retaining its pinned GET source identity while avoiding
+URL length limits and certificate contents in access logs. A Go regression first
+proved that a multipart override accepted a binary file schema; generation now
+rejects it because inline string fields do not provide filename upload semantics.
+The executor and live cURL documentation describes both supported body encodings.
+
+The expanded SSL storage recipe adds `generate_key`, `fetch_cert_info` and
+`fetch_certificates_for_fqdns` through both routes. It plans **31 observations
+(13 GET, 18 POST)** across ten SSL functions plus WHM version, retaining all three
+multipart operations. Each route tracks a generated key separately from its
+uploaded key and certificate, for six resource states. Generated ownership needs
+a successful fully validated original response with a unique new ID, matching
+PEM/public modulus, fresh route-bound label and absence from prior inventories
+and other owned resources. Lost/malformed/unsuccessful generation remains uncertain;
+later absence or identity sightings never authorize adoption, deletion or retry.
+Independent failure modes cover each of those cases. Private PEM, resource IDs
+and moduli stay in memory; final inventories check exact IDs and public moduli.
+No account/server certificate is installed or replaced, and no TLS service,
+AutoSSL, trust or renewal coverage is inferred. The optional install_ssl DCV map
+remains omitted under `8x0.2.16`.
+
+This stage runs offline only. Final master integration, regeneration to the
+combined 279-operation/15-group surface and one capture from committed integrated
+code follow the parent Email PR merge. Every historical SSL artifact remains
+unchanged, including the 23-observation v1 run and its four strict unknown-field
+findings. The expanded recipe does not waive those findings or promote them into
+typed fields.
+
+
+Offline validation for these review fixes passes `composer validate`,
+`composer check` (**9,059 tests / 57,727 assertions**), `composer api-map:check`,
+and the complete Go test/vet suites. The final independent record suite passes
+1,914 tests / 5,154 assertions; installSsl PEM trace cases pass 16 / 80;
+expanded fixture and request guards pass 72 / 602. A focused read-only review of
+the ownership, guard and independently authored record tests found no actionable
+issue and passed 1,986 tests / 5,756 assertions. The independent field matrix
+confirms exactly 44 changed field specifications among the 66 reviewed fields,
+with every other existing type/nullability key preserved. Historical evidence
+files remain byte-identical. Integration and live capture remain separate pending
+steps, and this offline result does not establish upstream behavior for the
+expanded recipe.
+
+
+### Integrated SSL v2 capture after PR31: 2026-10-30
+
+The approved Email parent was integrated by normal merge at
+`d159935d8da99062ef6527952ff1f6b1c5274dbd`, without rebasing. Regeneration produces
+**279 operations across 15 groups**, retaining all reviewed Email/runtime/schema
+corrections and all historical evidence. Pre-capture Composer validation/check
+(**11,019 tests / 75,525 assertions**), API-map checks, full Go tests and vet pass.
+The reviewed SSL field matrix remains identical after integration.
+
+Exactly one [expanded capture](evidence/2026-10-30-ssl-section-reviewed.json)
+ran at that committed code on `11.138.0.19`, SHA-256
+`bd1e409a5608fff3ab4be889b84ce83743188548ec154f24e19601e9c7ad9aef`.
+It retains **27 original responses (13 GET, 14 POST)**. All 27 HTTP 200/API
+outcomes pass. Twenty-five payload/probe/expectation checks pass; both
+`fetch_certificates_for_fqdns` calls fail typed validation, with expectations
+`not_checked`. Their records are `probes[11]` (direct) and `probes[22]` (bridged).
+Both original payloads report null|string structural types at `$[].cab`,
+`$[].validation_type` and `$[].verify_error`; each path raises `type_mismatch`.
+The pinned three fields are optional nonnullable strings, with no enum. The
+validation_type prose nevertheless documents null, and sibling certificate
+contracts already declare that field nullable. fetch_cert_info's cabundle also
+permits null, while other cab endpoints and installed_host.verify_error retain
+separate pinned semantics; no cross-operation widening is inferred.
+
+Both `fetch_cert_info` phases succeed and the reviewed numeric/flag conversions
+work where exercised. Each lifecycle stops at the FQDN-certificate mismatch
+before key generation. The four uploaded keys/certificates are confirmed cleaned;
+both generated-key states are `not_started`, so neither generated-key execution
+nor six-resource cleanup is established. Four known masked unknown-field
+observations in upload_cert/delete_key remain unwaived under `8x0.2.19`.
+Strict assessment stays **failed**, including incomplete planned phases,
+lifecycle failures and cleanup-request labels from delete_key discrepancies.
+No mutation was retried and no second capture was run to relabel this evidence.
+
+Independent audit checks all 27 effective contracts, request methods/source
+variants, committed source/map/generator/overlay/revision hashes and the original
+strict report. All **1,144 structural path/type entries** and **58 historical
+parent-artifact comparisons** pass. Configured credentials, response-derived
+account/domain/host values, PEM contents and resource identities are absent;
+only the fixed public recipe identifier includes its account label. The artifact
+was written with mode0600 and no capture temporary files remain. The three narrow
+nullable-field corrections, external review and outstanding generation evidence
+are tracked in open `whm-api-client-8x0.4.11.3.4`; this artifact remains immutable.
+The optional install_ssl DCV map stays omitted under `8x0.2.16`.
+
+
+### Narrow FQDN certificate nullability correction
+
+Open follow-up `whm-api-client-8x0.4.11.3.4` adds `nullable:true` at exactly
+`fetch_certificates_for_fqdns` result fields `cab`, `validation_type` and
+`verify_error`. The validation_type correction follows the pinned prose's explicit
+null case despite its missing schema flag. The cab/verify_error corrections bind
+the original direct and bridged observations in the immutable 27-response artifact,
+including its code revision, method, source variant, hash and null|string types.
+No null meaning is assigned to cab/verify_error. All three fields remain optional
+strings with explicit null separate from omission; every sibling operation keeps
+its existing cab/verify_error semantics and every other SSL field is unchanged.
+
+Independent fixtures cover strings, empty strings, null and omission on wrapped,
+bare and bridged UAPI. The nine null cases first fail; all 75 focused acceptance
+and rejection cases then pass, including wrong boolean/integer/float/array values.
+An independent spec comparison verifies exactly three nullable flags and no other
+operation, type, optionality or constraint changes. Historical artifacts remain
+byte-identical and the failed capture is not reassessed as successful under a new
+contract. No additional live request was made. Review, corrected FQDN evidence
+and the unexecuted generated-key phases remain outstanding on the open follow-up.
+
+
+The narrow correction passes Composer validation/check (**11,094 tests /
+75,675 assertions**), offline API-map checks, full Go tests and vet. The focused
+75-case nullability suite passes 150 assertions. A separate field-spec audit
+confirms exactly the three nullable flags and all other SSL rules unchanged;
+non-SSL generated groups/specs retain the approved master contracts. External
+review and a separately authorized committed-code capture remain pending; no
+additional live request follows this correction in this stage.
+
+
+### Expanded final SSL capture after review clearance
+
+The reviewer explicitly cleared exact code
+`1f67a43398fabc46b35b5bd30d08c3d7ffe7467a` in
+[comment 6528376774](https://github.com/hostingpal/whm-api-client/pull/32#issuecomment-6528376774)
+for one committed-code capture after independently checking the three nullable
+fields and both-route generated-key normalization/cleanup. This is separate
+reviewer evidence; the new committed artifact comes from the cleared code's one
+existing guarded fixture run. No code, request or compatibility rule changed
+between that clearance and capture.
+
+The [expanded final SSL artifact](evidence/2026-10-30-ssl-section-expanded-final.json)
+has SHA-256 `1a42e7a3c920b70eb91ef2f26f7f40aed8209693b8e850f56e594a2620d382d5`
+and records **all 31 original responses: 13 GET and 18 POST** on
+`11.138.0.19`. Every HTTP 200/API outcome, typed payload, probe and independent
+fixture expectation passes. Ten SSL functions execute on both direct and
+WHM-bridged UAPI, plus WHM version. This includes all three multipart operations,
+`fetch_cert_info`, `fetch_certificates_for_fqdns` and `generate_key`. The corrected
+FQDN fields preserve null|string values, and generated-key numeric fields normalize
+to the precise integer contract. Generated private keys remain in process memory;
+the successful original response establishes unique fresh ID/modulus/PEM identity
+before any generated-key cleanup is authorized.
+
+Both uploaded keys, both certificates and both generated keys are `cleaned`.
+Final same-run inventories confirm exact owned ID and public-modulus absence,
+while unrelated resources are retained. No mutation is retried and no observation
+is replayed to recover evidence. No certificate is installed or replaced, and the
+recipe establishes no TLS serving, trust, service configuration, AutoSSL issuance
+or renewal behavior, nor successful live execution of all 49 generated methods.
+The install_ssl DCV map remains omitted under `8x0.2.16`.
+
+The command exits **1** and strict status remains **failed**, solely for **six
+masked unknown-field observations**. upload_cert, delete_key and the new
+`delete_generated_key` phase each contribute one observation per route; the latter
+still invokes SSL/delete_key. Every tuple is `$[].*` / `unknown_field` with string
+structural types. All six match the earlier 27-response artifact at operation,
+source variant, route, actual method, server version, pinned source and effective
+contract hashes, full payload paths and discrepancy tuples. The added generated-key
+cleanup supplies two more observations of that operation/structure family. This
+is masked structural equivalence, not proof of unknown key identities or counts.
+No original discrepancy is removed, acknowledged or promoted to a typed field.
+The two cleanup_request_failure labels retain the strict discrepancy failures;
+API deletion, passing expectations and final absence are recorded separately.
+Follow-up `8x0.2.19` remains open for these contracts and other unobserved SSL work.
+
+Independent audits verify every effective contract and committed revision/source/
+map/generator/overlay hash, ordered phase identity, method and source variant.
+All **1,266 structural path/type entries** and **94 historical parent-artifact
+comparisons** pass, including the failed 27-response artifact. Recomputing the
+strict report preserves every original record and its failed status. Configured
+credentials, response-derived account/domain/host values, private/public PEM and
+resource identities are absent; the fixed public recipe identifier retains its
+account label. The new file was created with mode0600 and no capture temporary
+files remain. Pre-capture code passed Composer validation/check (**11,094 tests /
+75,675 assertions**), offline API-map checks and Go tests/vet. Only evidence and
+documentation follow this capture; no additional live request was made.

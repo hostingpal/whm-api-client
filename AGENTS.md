@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 15 typed groups cover 236 documented operations:
+and cPanel UAPI surface. The 15 typed groups cover 279 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -238,6 +238,51 @@ The final owned Email capture at fd552b2 on 11.138.0.19 passes all 45 original
 observations across 16 Email functions plus WHM version, with zero discrepancies
 and both mailboxes confirmed absent. It verifies API password/quota/login-state
 behavior; it does not establish IMAP/SMTP access or live coverage of all 96 methods.
+
+The SSL module exposes all 49 nondeprecated functions. Typed fetch-key/cabundle,
+upload-cert and upload-key calls use reviewed multipart string fields, configured
+by an explicit body: multipart spec. Generic calls remain form-only; JSON and
+arbitrary file/multipart uploads are unsupported. Multipart names/values are
+validated after metadata reset, all value-bearing frames are sensitive, routing
+stays in the URL and a collision-free delimiter preserves field bytes. Generator
+body_fields corrections require evidence and compatible duplicate schemas.
+The upload_key key/crt source contradiction remains explicit; the key field was
+accepted on both routes in the final owned fixture on 11.138.0.19.
+The optional install_ssl domain_dcv_method map is omitted until its serialization
+is established (8x0.2.16). SSL selector alternatives use evidenced required:false;
+preserve opaque/null/missing payload distinctions and private PEM data. Only fresh
+owned SSL fixture resources may be deleted in live verification; never install or
+replace account certificates as part of that fixture.
+The expanded owned SSL capture at `1f67a43` on `11.138.0.19` records all
+31 HTTP/API/payload/probe/expectation passes (13 GET, 18 POST), ten SSL functions
+on both routes plus WHM version, and six confirmed cleaned resources. It includes
+all three multipart methods, generated keys and both certificate-information reads.
+Strict status remains failed for six masked unknown-field observations in
+upload_cert/delete_key, including two added generated-key cleanup observations.
+All six match prior operation/variant/route/method/version/source/effective-contract,
+full payload paths and discrepancy tuples; masking cannot establish unknown key
+identities/counts. Preserve every finding under `8x0.2.19`; no waiver or new typed
+unknown field is added. No TLS serving, installation, trust, AutoSSL issuance or
+renewal behavior is established.
+SSL response compatibility applies reviewed field rules consistently to all
+21 operations declaring 66 affected certificate/key/CSR fields. Preserve integer
+normalization, exact 0/1 string flags and reviewed issuer organization nullability.
+Family inference is separate from operation-specific live evidence. getCabundle
+uses form POST for PEM input; installSsl certificate/bundle inputs are sensitive,
+and generation refuses binary multipart file fields. Generated ownership requires
+the original successful validated response, a fresh unique ID, matching PEM/public
+modulus and preflight absence. Lost/malformed generation stays uncertain; never
+infer ownership from later inventories or retry.
+The earlier `d159935` capture remains failed at 27 responses, with four uploaded
+resources cleaned and generated keys not_started. Its observed null cab,
+validation_type and verify_error support only the three reviewed nullable fields
+on fetch_certificates_for_fqdns, preserving optional string|null contracts.
+validation_type also follows explicit pinned null prose. Sibling endpoints are
+unchanged. The corrected code at `1f67a43` was explicitly cleared for one capture;
+the resulting `2026-10-30-ssl-section-expanded-final.json` is separate immutable
+evidence. Follow-ups `8x0.4.11.3.3`/`8x0.4.11.3.4` retain final external acceptance,
+and `8x0.2.16` retains the omitted install_ssl DCV map.
+
 DomainInfo (5), Features (5), and LangPHP (11) cover their complete pinned modules.
 Domain details preserve list/hash alternatives, documented quoted flag variants
 and exact empty-string userdirprotect values without mapping them to 0.

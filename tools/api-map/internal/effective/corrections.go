@@ -15,13 +15,32 @@ type segment struct {
 }
 
 // parsePath splits "acct[].uid" into fields with list ("[]") and map ("{}") steps.
+// A backslash escapes a literal dot in a field name; other escapes are invalid.
 // The empty path would address the payload root, which is not a field path.
 func parsePath(path string) ([]segment, error) {
 	if path == "" {
 		return nil, fmt.Errorf("path %q is not a field path", path)
 	}
+	var parts []string
+	var part strings.Builder
+	for i := 0; i < len(path); i++ {
+		switch path[i] {
+		case '\\':
+			if i+1 == len(path) || path[i+1] != '.' {
+				return nil, fmt.Errorf("invalid escape in response path %q", path)
+			}
+			i++
+			part.WriteByte('.')
+		case '.':
+			parts = append(parts, part.String())
+			part.Reset()
+		default:
+			part.WriteByte(path[i])
+		}
+	}
+	parts = append(parts, part.String())
 	var segments []segment
-	for i, part := range strings.Split(path, ".") {
+	for i, part := range parts {
 		seg := segment{}
 		for strings.HasSuffix(part, "[]") || strings.HasSuffix(part, "{}") {
 			seg.suffixes = append([]string{part[len(part)-2:]}, seg.suffixes...)
