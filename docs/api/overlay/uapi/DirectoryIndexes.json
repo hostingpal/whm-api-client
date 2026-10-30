@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "DirectoryIndexes",
+  "operations": {
+    "uapi:DirectoryIndexes/get_indexing": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 88 and later; operates on the selected account. No request defaults are declared in the pinned operation. Directory paths are sent unchanged and are not normalized by the client."
+        },
+        {
+          "kind": "documented",
+          "text": "Indexing types are standard, disabled, inherit (system defaults), and fancy (Apache FancyIndexing, including file size and modification date). The result remains a string, with no inferred closed response enum."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "dir": "/home/npr/public_html"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:DirectoryIndexes/list_directories": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 88 and later; operates on the selected account. No request defaults are declared in the pinned operation. Directory paths are sent unchanged and are not normalized by the client."
+        },
+        {
+          "kind": "documented",
+          "text": "Indexing types are standard, disabled, inherit (system defaults), and fancy (Apache FancyIndexing, including file size and modification date). The pinned state.index_type fields reference the shared enum with these values. The runtime validates strings without enforcing this enum; broader enum validation is tracked separately."
+        },
+        {
+          "kind": "documented",
+          "text": "dir is an absolute directory path. Returns children, current, home and parent records with optional path and state.index_type fields; omitted fields remain absent and an empty children list remains empty."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "dir": "/home/npr/public_html"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:DirectoryIndexes/set_indexing": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 88 and later; operates on the selected account. No request defaults are declared in the pinned operation. Directory paths are sent unchanged and are not normalized by the client."
+        },
+        {
+          "kind": "documented",
+          "text": "Indexing types are standard, disabled, inherit (system defaults), and fancy (Apache FancyIndexing, including file size and modification date). The pinned response declares these enum values. The runtime validates strings without enforcing this enum; broader enum validation is tracked separately."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes directory indexing through form POST. The source declares clean rollback; the client performs no rollback automatically."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /DirectoryIndexes/set_indexing declares x-readonly=false. It changes the selected account directory settings or access users, so use form POST. Password inputs, when present, must stay out of query strings."
+        }
+      ]
+    }
+  }
+}

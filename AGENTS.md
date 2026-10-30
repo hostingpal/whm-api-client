@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 16 typed groups cover 293 documented operations:
+and cPanel UAPI surface. The 25 typed groups cover 325 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -305,6 +305,51 @@ reads and normalized countPops() through both routes. Strict review remains fail
 unchanged. Empty-string userdirprotect remains documentation/offline coverage because
 the live field is omitted. Three PHP setters and their INI write/read round trip
 remain offline-only; follow-up 8x0.2.17 owns the remaining live work.
+The domain-management groups cover all 22 pinned functions. Inventory and lookup
+methods use GET; nine mutations use form POST. Most new domain endpoints require
+cPanel 138; generated PHPDoc records the different floors and role restrictions.
+Names and document roots are forwarded using their documented wire fields. Omitted
+options retain server defaults, while explicit false is sent as 0. Rename and
+conversion operations can change hosted configuration immediately and are not
+retried or rolled back by the client.
+
+`deleteAddonDomain()`, `park()->park()`, `park()->unpark()` and
+`deleteSubdomain()` return void because their source expressly specifies no data.
+`addSubdomain()` instead preserves a nullable opaque object, including unknown
+object fields; an absent payload is a mismatch. WebVhosts preserves optional and
+nullable proxy-subdomain lists. `listSslCapableDomains()` does not invent a domain
+argument from inconsistent upstream prose.
+
+The 2026-10-30 domain-management capture at `9db0cad` on `11.138.0.19`: All 27 GET observations passed HTTP, API, payload and probe checks. Strict assessment remains failed for two masked integer unknown-field observations at `$[].*` in `WebVhosts/list_ssl_capable_domains`, one per route. No acknowledgment or new typed field was added.
+Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants are not established by this capture. Separate [Claude reviewer evidence](https://github.com/hostingpal/whm-api-client/pull/33#pullrequestreview-5717731712) reports seven mutation methods passing on both routes with cleanup; rename and temporary-domain conversion remain unobserved. Follow-up `8x0.2.20` remains open.
+
+The directory groups cover all ten pinned functions, available from cPanel 88.
+Six reads use GET and four mutations use form POST. Directory paths are forwarded
+unchanged. Only `DirectoryProtection/list_directories` documents paths relative to
+the account home directory. `configureDirectoryProtection()` documents absolute
+or relative paths without defining the relative base; `isDirectoryProtected()`
+documents absolute paths. The [PR #34 reviewer](https://github.com/hostingpal/whm-api-client/pull/34#pullrequestreview-5717732052)
+independently observed `public_html/...` relative paths working for both privacy
+methods through direct UAPI and the WHM bridge.
+Password-protection state belongs to DirectoryPrivacy; DirectoryProtection reports
+leech protection. A successful unprotected-directory result has payload flag 0;
+that does not make UAPI status 0 a success.
+
+`configureDirectoryProtection(dir, enabled, authname)` can omit `authname` when
+disabling protection, following the source's conditional requirement. Supply a
+realm name when enabling it. `addUser()` keeps its password sensitive throughout
+the request. User mutations preserve nullable opaque results and reject an absent
+payload. Directory fields retain optional presence; only `auth_name` and
+`auth_type` in the configure response additionally accept explicit null, based on
+the reviewer's successful disable calls. Read-operation field types are unchanged.
+
+The 2026-10-30 directory-access capture at `e3aa06b` on `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment.
+Directory records were present, but every captured `auth_name` and `passwd_file`
+was an empty string, and the privacy-user list was empty. This capture made no
+indexing, password-protection or leech-protection changes and establishes no
+mutation or HTTP-enforcement coverage. Separate reviewer mutation observations
+are recorded in the source audit; they are not part of this artifact. Follow-up `8x0.2.22` remains open.
+
 The Mime group covers all 14 pinned functions: six reads use GET and eight
 mutations use form POST. No domain selector is documented for hotlink
 configuration. MIME deletion targets the MIME type, while handler deletion

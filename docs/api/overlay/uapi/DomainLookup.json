@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "DomainLookup",
+  "operations": {
+    "uapi:DomainLookup/countbasedomains": {
+      "name": "countBaseDomains",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138. This function counts the cPanel account's base domains: the primary\ndomain, its addon domains and its parked domains.\n\n**Note:**\n\nThe count excludes temporary domains, and matches the number of entries\nthat the `DomainLookup::getbasedomains` function returns by default."
+        }
+      ]
+    },
+    "uapi:DomainLookup/getbasedomains": {
+      "name": "getBaseDomains",
+      "order": [
+        "return_temporary_domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138. This function lists the cPanel account's base domains: the primary\ndomain, its addon domains and its parked domains.\n\n**Note:**\n\nSubdomains are **not** base domains and this function does not return\nthem. Use the `SubDomain::listsubdomains` function for those."
+        }
+      ]
+    },
+    "uapi:DomainLookup/getdocroot": {
+      "name": "getDocumentRoot",
+      "order": [
+        "domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138. This function retrieves the document root for a single domain on the\ncPanel account.\n\n**Note:**\n\nIf the domain does not exist on the account, the system returns the\naccount's `public_html` directory rather than an error."
+        },
+        {
+          "kind": "documented",
+          "text": "domain: The domain to look up. The system converts this value to lowercase.\n\nOmit this parameter to retrieve the document root for the account's primary domain."
+        }
+      ]
+    },
+    "uapi:DomainLookup/getdocroots": {
+      "name": "getDocumentRoots",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138. This function retrieves the document root for every domain on the cPanel account, including the primary domain, addon domains, parked domains and subdomains."
+        }
+      ]
+    }
+  }
+}

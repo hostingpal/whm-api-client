@@ -3,12 +3,12 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 16 generated typed groups cover 293 documented operations (see
+The 25 generated typed groups cover 325 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
-features, the complete Email and SSL modules, disk quotas and the complete
-pinned MySQL, FTP, PostgreSQL and Mime sections.
+features, domain management, directory access, the complete Email and SSL modules,
+disk quotas and the complete pinned MySQL, FTP, PostgreSQL and Mime sections.
 Generic `call()` methods provide GET and form-encoded POST access without a typed
 group, subject to the operation's parameter, route and envelope requirements.
 Generic calls do not support JSON or multipart bodies. Three typed SSL methods
@@ -313,6 +313,15 @@ An empty live list does not verify the types of records it never returned.
 
 | Handle and accessor | Methods |
 | --- | --- |
+| `uapi()->addonDomain()` | Complete addon-domain create, delete and inventory operations (3). |
+| `uapi()->domain()` | Temporary-domain checks, conversion and rename operations (4). |
+| `uapi()->domainLookup()` | Base-domain and document-root lookups (4). |
+| `uapi()->park()` | Domain alias creation, removal and inventory (3). |
+| `uapi()->subDomain()` | Subdomain creation, removal, document roots and validation metadata (6). |
+| `uapi()->webVhosts()` | Account virtual-host and SSL-capability inventories (2). |
+| `uapi()->directoryIndexes()` | Directory indexing reads and configuration (3). |
+| `uapi()->directoryPrivacy()` | Password-protection state and directory user management (6). |
+| `uapi()->directoryProtection()` | Leech-protection directory inventory (1). |
 | `uapi()->mime()` | Complete MIME types, handlers, redirects and hotlink configuration (14). |
 | `uapi()->domainInfo()` | All 5 operations: `domainsData()`, `singleDomainData()`, `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
 | `uapi()->langPhp()` | All 11 operations: installed/default/vhost PHP versions, domain handlers and impacted domains, INI paths/basic directives/content reads, and `phpIniSetUserBasicDirectives()`, `phpIniSetUserContent()`, `phpSetVhostVersions()` |
@@ -346,6 +355,41 @@ result: 1 means enabled; 0 with no errors means absent or disabled. Nonempty
 `responseMeta()->uapiErrors()` means the call failed, not that the feature is disabled.
 This typed method requires integer status 0 or 1 and accepts 0 as an access result.
 Outer WHM bridge failures still throw.
+
+The domain-management groups cover all 22 pinned functions. Inventory and lookup
+methods use GET; nine mutations use form POST. Most new domain endpoints require
+cPanel 138; generated PHPDoc records the different floors and role restrictions.
+Names and document roots are forwarded using their documented wire fields. Omitted
+options retain server defaults, while explicit false is sent as 0. Rename and
+conversion operations can change hosted configuration immediately and are not
+retried or rolled back by the client.
+
+`deleteAddonDomain()`, `park()->park()`, `park()->unpark()` and
+`deleteSubdomain()` return void because their source expressly specifies no data.
+`addSubdomain()` instead preserves a nullable opaque object, including unknown
+object fields; an absent payload is a mismatch. WebVhosts preserves optional and
+nullable proxy-subdomain lists. `listSslCapableDomains()` does not invent a domain
+argument from inconsistent upstream prose.
+
+The directory groups cover all ten pinned functions, available from cPanel 88.
+Six reads use GET and four mutations use form POST. Directory paths are forwarded
+unchanged. Only `DirectoryProtection/list_directories` documents paths relative to
+the account home directory. `configureDirectoryProtection()` documents absolute
+or relative paths without defining the relative base; `isDirectoryProtected()`
+documents absolute paths. The [PR #34 reviewer](https://github.com/hostingpal/whm-api-client/pull/34#pullrequestreview-5717732052)
+independently observed `public_html/...` relative paths working for both privacy
+methods through direct UAPI and the WHM bridge.
+Password-protection state belongs to DirectoryPrivacy; DirectoryProtection reports
+leech protection. A successful unprotected-directory result has payload flag 0;
+that does not make UAPI status 0 a success.
+
+`configureDirectoryProtection(dir, enabled, authname)` can omit `authname` when
+disabling protection, following the source's conditional requirement. Supply a
+realm name when enabling it. `addUser()` keeps its password sensitive throughout
+the request. User mutations preserve nullable opaque results and reject an absent
+payload. Directory fields retain optional presence; only `auth_name` and
+`auth_type` in the configure response additionally accept explicit null, based on
+the reviewer's successful disable calls. Read-operation field types are unchanged.
 
 The Mime group covers all 14 pinned functions: six reads use GET and eight
 mutations use form POST. No domain selector is documented for hotlink
@@ -807,6 +851,14 @@ precise array shapes when they return arrays. Generated methods take their PHPDo
 from the pinned documentation, and caveats it lacks are recorded as overlay notes.
 The full documentation requirements are in [AGENTS.md](AGENTS.md#documentation-requirements).
 
+The [directory-access read-only capture](docs/api/evidence/2026-10-30-directory-access.json)
+records reviewed GET checks on cPanel `11.138.0.19`. All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment.
+Directory records were present, but every captured `auth_name` and `passwd_file`
+was an empty string, and the privacy-user list was empty. This capture made no
+indexing, password-protection or leech-protection changes and establishes no
+mutation or HTTP-enforcement coverage. Separate reviewer mutation observations
+are recorded in the source audit; they are not part of this artifact.
+
 The [live evidence runner](tools/live-verify/README.md) captures the same raw
 response before normalization and field filtering for 67 reviewed route-specific
 probes across 37 operations. It saves sanitized structural evidence with revision
@@ -875,6 +927,10 @@ Real HostingPal consumer integration testing is deferred by the user as of
 2026-10-17; no consumer validation is claimed. It can resume against the current
 client before full API coverage or a release. Any public prerelease is a separate decision with
 an explicit coverage and compatibility statement.
+
+The [domain-management read-only capture](docs/api/evidence/2026-10-30-domain-management.json)
+records reviewed GET checks on cPanel `11.138.0.19`. All 27 GET observations passed HTTP, API, payload and probe checks. Strict assessment remains failed for two masked integer unknown-field observations at `$[].*` in `WebVhosts/list_ssl_capable_domains`, one per route. No acknowledgment or new typed field was added.
+Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants are not observed by this capture, which makes no mutation requests. A separate [reviewer report](https://github.com/hostingpal/whm-api-client/pull/33#pullrequestreview-5717731712) records seven mutation methods passing through both routes with cleanup; rename and temporary-domain conversion remain unobserved.
 
 The development lockfile resolves dependencies against PHP 8.3. Runtime
 requirements for consumers come from `composer.json`, not this lockfile.

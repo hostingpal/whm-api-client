@@ -1,0 +1,158 @@
+[
+  {
+    "module": "DirectoryIndexes",
+    "function": "get_indexing",
+    "payload": "disabled"
+  },
+  {
+    "module": "DirectoryIndexes",
+    "function": "list_directories",
+    "payload": {
+      "children": [
+        {
+          "path": "/home/example/example.com/cgi-bin",
+          "state": {
+            "index_type": "inherit"
+          }
+        }
+      ],
+      "current": {
+        "path": "/home/example/example.com",
+        "state": {
+          "index_type": "inherit"
+        }
+      },
+      "home": {
+        "path": "/home/example",
+        "state": {
+          "index_type": "inherit"
+        }
+      },
+      "parent": {
+        "path": "/home/example",
+        "state": {
+          "index_type": "inherit"
+        }
+      }
+    }
+  },
+  {
+    "module": "DirectoryIndexes",
+    "function": "set_indexing",
+    "payload": "disabled"
+  },
+  {
+    "module": "DirectoryPrivacy",
+    "function": "add_user",
+    "payload": null
+  },
+  {
+    "module": "DirectoryPrivacy",
+    "function": "configure_directory_protection",
+    "payload": {
+      "auth_name": "protectandserve",
+      "auth_type": "Basic",
+      "passwd_file": "/home/example/.htpasswds/example.com/passwd",
+      "protected": 1
+    }
+  },
+  {
+    "module": "DirectoryPrivacy",
+    "function": "delete_user",
+    "payload": null
+  },
+  {
+    "module": "DirectoryPrivacy",
+    "function": "is_directory_protected",
+    "payload": {
+      "auth_name": "Protected 'example.com'",
+      "auth_type": "Basic",
+      "passwd_file": "/home/example/.htpasswds/example.com/passwd",
+      "protected": 1
+    }
+  },
+  {
+    "module": "DirectoryPrivacy",
+    "function": "list_directories",
+    "payload": {
+      "children": [
+        {
+          "path": "/home/example/example.com/cgi-bin",
+          "state": {
+            "auth_name": "Protected 'example.com'",
+            "auth_type": "Basic",
+            "passwd_file": "/home/example/.htpasswds/example.com/passwd",
+            "protected": 1
+          }
+        }
+      ],
+      "current": {
+        "path": "/home/example/example.com",
+        "state": {
+          "auth_name": "protected",
+          "auth_type": "Basic",
+          "passwd_file": "/home/example/.htpasswds/example.com/passwd",
+          "protected": 1
+        }
+      },
+      "home": {
+        "path": "/home/example",
+        "state": {
+          "auth_name": "protected",
+          "auth_type": "Basic",
+          "passwd_file": "/home/example/.htpasswds/example.com/passwd",
+          "protected": 1
+        }
+      },
+      "parent": {
+        "path": "/home/example",
+        "state": {
+          "auth_name": "protected",
+          "auth_type": "Basic",
+          "passwd_file": "/home/example/.htpasswds/example.com/passwd",
+          "protected": 1
+        }
+      }
+    }
+  },
+  {
+    "module": "DirectoryPrivacy",
+    "function": "list_users",
+    "payload": [
+      "example1",
+      "example2"
+    ]
+  },
+  {
+    "module": "DirectoryProtection",
+    "function": "list_directories",
+    "payload": {
+      "children": [
+        {
+          "path": "/home/example/example.com/cgi-bin",
+          "state": {
+            "has_leech_protection": 1
+          }
+        }
+      ],
+      "current": {
+        "path": "/home/example/example.com",
+        "state": {
+          "has_leech_protection": 1
+        }
+      },
+      "home": {
+        "path": "/home/example",
+        "state": {
+          "has_leech_protection": 1
+        }
+      },
+      "parent": {
+        "path": "/home/example",
+        "state": {
+          "has_leech_protection": 1
+        }
+      }
+    }
+  }
+]

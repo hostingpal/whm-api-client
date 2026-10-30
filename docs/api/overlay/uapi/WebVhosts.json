@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "WebVhosts",
+  "operations": {
+    "uapi:WebVhosts/list_domains": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 56. This function lists virtual host names for each domain."
+        }
+      ]
+    },
+    "uapi:WebVhosts/list_ssl_capable_domains": {
+      "order": [
+        "hide_temporary_domains"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 64. This function lists every domain for which you may purchase an SSL certificate. The possible domains for the Secure Sockets Layer (SSL) certificate include applicable [service subdomains.](https://go.cpanel.net/ServiceProxySubdomains)"
+        },
+        {
+          "kind": "documented",
+          "text": "hideTemporaryDomains=true returns an error if the requested domain is temporary; false returns all domains including temporary domains. The pinned parameter description refers to a requested domain, but the operation declares no domain selector."
+        }
+      ]
+    }
+  }
+}

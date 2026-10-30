@@ -198,6 +198,12 @@ This storage recipe establishes no TLS installation/serving/trust or AutoSSL
 issuance/renewal behavior. SHA-256:
 `1a42e7a3c920b70eb91ef2f26f7f40aed8209693b8e850f56e594a2620d382d5`.
 
+- [domain-management section](2026-10-30-domain-management.json), at `9db0cad` on
+  `11.138.0.19`: All 27 GET observations passed HTTP, API, payload and probe checks. Strict assessment remains failed for two masked integer unknown-field observations at `$[].*` in `WebVhosts/list_ssl_capable_domains`, one per route. No acknowledgment or new typed field was added. Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants are not established by this capture. Separate reviewer evidence for seven mutation methods is recorded in the source audit; rename and temporary-domain conversion remain unobserved. Follow-up `8x0.2.20` remains open.
+
+- [directory-access section](2026-10-30-directory-access.json), at `e3aa06b` on
+  `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks, with zero discrepancies and a passed strict assessment. Directory records were present, but every captured auth_name and passwd_file was an empty string, and the privacy-user list was empty. This read-only capture establishes no mutation or HTTP-enforcement coverage. Separate reviewer mutation observations are attributed in the source audit. Follow-up `8x0.2.22` remains open.
+
 - [Initial Mime section](2026-10-30-mime-section.json), at `9262564` on
   `11.138.0.19`: 13 GETs with successful API outcomes. Four payload mismatches
   record null `get_redirect.url` and `list_hotlinks.redirect_url`, each through
@@ -205,5 +211,5 @@ issuance/renewal behavior. SHA-256:
   corrections; no acknowledgment or general URL coercion is applied.
 
 - [Corrected Mime section](2026-10-30-mime-section-corrected.json), at `fdbafb6`
-  on `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks with zero discrepancies and a passed strict assessment. The observed null URL fields are preserved. MIME and redirect lists were empty; handler rows were populated. Eight mutations and HTTP redirect/hotlink enforcement remain unverified. Initial failure evidence remains immutable.
+  on `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks with zero discrepancies and a passed strict assessment. The observed null URL fields are preserved. MIME and redirect lists were empty; handler rows were populated. This read-only capture establishes no mutation or HTTP redirect/hotlink enforcement coverage. Separate reviewer mutation and populated-row observations are attributed in the source audit. Initial failure evidence remains immutable.
   Follow-up `8x0.2.21` remains open.

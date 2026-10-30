@@ -1,0 +1,225 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "DirectoryPrivacy",
+  "operations": {
+    "uapi:DirectoryPrivacy/add_user": {
+      "method": "POST",
+      "order": [
+        "dir",
+        "user",
+        "password"
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 88 and later; operates on the selected account. No request defaults are declared in the pinned operation. Directory paths are sent unchanged and are not normalized by the client."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares no rollback. Returns a nullable object without pinned fields; opaque object fields and explicit null are preserved. An absent data member is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "Adds a user authorized for this protected directory. The password is sensitive and is sent in the form POST body."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /DirectoryPrivacy/add_user declares x-readonly=false. It changes the selected account directory settings or access users, so use form POST. Password inputs, when present, must stay out of query strings."
+        }
+      ]
+    },
+    "uapi:DirectoryPrivacy/configure_directory_protection": {
+      "method": "POST",
+      "order": [
+        "dir",
+        "enabled",
+        "authname"
+      ],
+      "params": {
+        "authname": {
+          "required": false
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /DirectoryPrivacy/configure_directory_protection parameters/0 marks authname required but its description explicitly says \"Only use this parameter when you enable password protection.\" Override only authname requiredness so disabling can omit it. dir and enabled retain pinned requiredness; no runtime cross-field rule is invented. x-readonly=false requires form POST."
+        },
+        {
+          "kind": "live",
+          "version": "not recorded in PR #34 reviewer run",
+          "date": "2026-10-30",
+          "note": "Reviewer live run documented at https://github.com/hostingpal/whm-api-client/pull/34#pullrequestreview-5717732052, reviewing revision c5326f75d504cf8760cb8d25e5abe2e84576dea2, exercised npr through direct UAPI and the WHM bridge in throwaway directories and reported cleanup. Disabling configure_directory_protection succeeded but returned explicit null auth_name and auth_type, causing PayloadMismatchException with outcomeConfirmed=true. Only these two response fields on this operation gain null; existing strings, optional presence, passwd_file and protected remain unchanged. This review is separate from the saved read-only artifact; its server version was not stated."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 88 and later; operates on the selected account. No request defaults are declared in the pinned operation. Directory paths are sent unchanged and are not normalized by the client."
+        },
+        {
+          "kind": "documented",
+          "text": "dir may be an absolute or relative directory path. enabled=true enables password protection; false disables it and is sent as 0. Enabling protection requires authname; omit it when disabling, as documented. authname is optional in this interface because it is conditional in the source prose; the client does not enforce that cross-parameter condition. Empty authname is sent rather than omitted. The source declares clean rollback; the client performs no automatic rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "auth_name, auth_type, passwd_file and protected remain optional. protected is an integer 0/1 payload flag distinct from the ordinary UAPI success status: 0 means not protected. Basic and None are documented authentication types. Empty strings remain empty; omitted fields remain absent."
+        },
+        {
+          "kind": "observed",
+          "text": "The PR #34 reviewer observed explicit null auth_name and auth_type after successful disable calls through direct UAPI and the WHM bridge. This operation preserves those nulls separately from omitted fields and strings; read-operation schemas are unchanged. The same review observed that enabling without authname returns an API error and leaves the directory unprotected, and that public_html/... relative paths work for this operation."
+        }
+      ],
+      "response": {
+        "auth_name": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR #34 reviewer run",
+              "date": "2026-10-30",
+              "note": "Reviewer live run documented at https://github.com/hostingpal/whm-api-client/pull/34#pullrequestreview-5717732052, reviewing revision c5326f75d504cf8760cb8d25e5abe2e84576dea2, exercised npr through direct UAPI and the WHM bridge in throwaway directories and reported cleanup. Disabling configure_directory_protection succeeded but returned explicit null auth_name and auth_type, causing PayloadMismatchException with outcomeConfirmed=true. Only these two response fields on this operation gain null; existing strings, optional presence, passwd_file and protected remain unchanged. This review is separate from the saved read-only artifact; its server version was not stated. Corrected field: auth_name."
+            }
+          ]
+        },
+        "auth_type": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR #34 reviewer run",
+              "date": "2026-10-30",
+              "note": "Reviewer live run documented at https://github.com/hostingpal/whm-api-client/pull/34#pullrequestreview-5717732052, reviewing revision c5326f75d504cf8760cb8d25e5abe2e84576dea2, exercised npr through direct UAPI and the WHM bridge in throwaway directories and reported cleanup. Disabling configure_directory_protection succeeded but returned explicit null auth_name and auth_type, causing PayloadMismatchException with outcomeConfirmed=true. Only these two response fields on this operation gain null; existing strings, optional presence, passwd_file and protected remain unchanged. This review is separate from the saved read-only artifact; its server version was not stated. Corrected field: auth_type."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:DirectoryPrivacy/delete_user": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 88 and later; operates on the selected account. No request defaults are declared in the pinned operation. Directory paths are sent unchanged and are not normalized by the client."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares no rollback. Returns a nullable object without pinned fields; opaque object fields and explicit null are preserved. An absent data member is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the named directory user; dir is the absolute directory path."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /DirectoryPrivacy/delete_user declares x-readonly=false. It changes the selected account directory settings or access users, so use form POST. Password inputs, when present, must stay out of query strings."
+        }
+      ]
+    },
+    "uapi:DirectoryPrivacy/is_directory_protected": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 88 and later; operates on the selected account. No request defaults are declared in the pinned operation. Directory paths are sent unchanged and are not normalized by the client."
+        },
+        {
+          "kind": "documented",
+          "text": "auth_name, auth_type, passwd_file and protected remain optional. protected is an integer 0/1 payload flag distinct from the ordinary UAPI success status: 0 means not protected. Basic and None are documented authentication types. Empty strings remain empty; no nullable fields are inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "dir is the absolute directory path. An unprotected directory is represented by protected=0 in a successful payload; UAPI status=0 remains an API failure."
+        },
+        {
+          "kind": "observed",
+          "text": "The PR #34 reviewer independently observed public_html/... relative paths accepted through direct UAPI and the WHM bridge. The pinned parameter documents an absolute path; this observation does not change its response contract."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "dir": "/home/npr/public_html"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "not recorded in PR #34 reviewer run",
+          "date": "2026-10-30",
+          "note": "Reviewer run at https://github.com/hostingpal/whm-api-client/pull/34#pullrequestreview-5717732052, reviewing revision c5326f75d504cf8760cb8d25e5abe2e84576dea2, independently observed public_html/... relative paths accepted by is_directory_protected through direct UAPI and the WHM bridge. The pinned parameter describes an absolute path. This adds an observed note only; its response contract is unchanged. The review did not state the server version."
+        }
+      ]
+    },
+    "uapi:DirectoryPrivacy/list_directories": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 88 and later; operates on the selected account. No request defaults are declared in the pinned operation. Directory paths are sent unchanged and are not normalized by the client."
+        },
+        {
+          "kind": "documented",
+          "text": "auth_name, auth_type, passwd_file and protected remain optional. protected is an integer 0/1 payload flag distinct from the ordinary UAPI success status: 0 means not protected. Basic and None are documented authentication types. Empty strings remain empty; no nullable fields are inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns privacy information in children, current, home and parent directory records. Optional records and fields remain absent when omitted; empty children remains an empty list."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "dir": "/home/npr/public_html"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:DirectoryPrivacy/list_users": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 88 and later; operates on the selected account. No request defaults are declared in the pinned operation. Directory paths are sent unchanged and are not normalized by the client."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the list of users authorized to access this password-protected directory; empty lists remain empty and user order is preserved."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "dir": "/home/npr/public_html"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    }
+  }
+}
