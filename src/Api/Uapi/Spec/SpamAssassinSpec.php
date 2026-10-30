@@ -35,13 +35,7 @@ final class SpamAssassinSpec
                 'fields' => [
                     'key' => ['type' => 'string'],
                     'rule_type' => ['type' => 'string'],
-                    'score' => [
-                        'type' => 'union',
-                        'anyOf' => [
-                            ['type' => 'number'],
-                            ['type' => 'int'],
-                        ],
-                    ],
+                    'score' => ['type' => 'number', 'accept' => ['numeric-string'], 'preserve' => true],
                 ],
             ],
         ],

@@ -61,7 +61,7 @@ use SensitiveParameter;
  * }>
  * @phpstan-type ValidateCurrentDkimsResult list<array{
  *     domain?: string,
- *     error?: string,
+ *     error?: string|null,
  *     expected?: string,
  *     records?: list<array{
  *         current?: string,
@@ -73,8 +73,8 @@ use SensitiveParameter;
  * }>
  * @phpstan-type ValidateCurrentDmarcsResult list<array{
  *     domain?: string,
- *     error?: string,
- *     record?: string,
+ *     error?: string|null,
+ *     record?: string|null,
  *     state?: string,
  *     subdomain?: string,
  *     suggested?: string,
@@ -82,7 +82,7 @@ use SensitiveParameter;
  * @phpstan-type ValidateCurrentPtrsResult list<array{
  *     arpa_domain?: string,
  *     domain?: string,
- *     error?: string,
+ *     error?: string|null,
  *     helo?: string,
  *     ip_address?: string,
  *     ip_version?: int,
@@ -434,7 +434,11 @@ final readonly class EmailAuth
      * PERMFAIL. Keep omitted fields distinct from empty strings and lists.
      *
      * Documented: Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields
-     * remain distinct from explicit null. No unpinned nullable variants are inferred.
+     * remain distinct from explicit null. Only the operation-specific fields supported by the recorded live evidence
+     * accept additional wire forms.
+     *
+     * Observed: The 2026-10-30 capture on 11.138.0.19 through direct UAPI and the WHM bridge observed explicit null
+     * error. Those fields preserve string/null/omission distinctions; other string fields stay nonnullable.
      *
      * API-map identity: uapi:EmailAuth/validate_current_dkims#GET (wire name validate_current_dkims).
      *
@@ -468,7 +472,11 @@ final readonly class EmailAuth
      * MALFORMED for syntax issues. These payload findings are distinct from the ordinary UAPI status.
      *
      * Documented: Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields
-     * remain distinct from explicit null. No unpinned nullable variants are inferred.
+     * remain distinct from explicit null. Only the operation-specific fields supported by the recorded live evidence
+     * accept additional wire forms.
+     *
+     * Observed: The 2026-10-30 capture on 11.138.0.19 through direct UAPI and the WHM bridge observed explicit null
+     * error, record. Those fields preserve string/null/omission distinctions; other string fields stay nonnullable.
      *
      * API-map identity: uapi:EmailAuth/validate_current_dmarcs#GET (wire name validate_current_dmarcs).
      *
@@ -507,7 +515,14 @@ final readonly class EmailAuth
      * valid. nameservers and forward_records preserve empty lists.
      *
      * Documented: Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields
-     * remain distinct from explicit null. No unpinned nullable variants are inferred.
+     * remain distinct from explicit null. Only the operation-specific fields supported by the recorded live evidence
+     * accept additional wire forms.
+     *
+     * Observed: The 2026-10-30 capture on 11.138.0.19 through direct UAPI and the WHM bridge observed explicit null
+     * error. Those fields preserve string/null/omission distinctions; other string fields stay nonnullable. This
+     * operation alone also accepts canonical quoted integer ip_version values and normalizes them to integers. The
+     * masked unknown null at $[].ptr_records[].* remains untyped and unacknowledged; its name and count cannot be
+     * recovered from structural evidence. No nested field contract is invented.
      *
      * API-map identity: uapi:EmailAuth/validate_current_ptrs#GET (wire name validate_current_ptrs).
      *

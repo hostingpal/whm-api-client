@@ -213,3 +213,14 @@ issuance/renewal behavior. SHA-256:
 - [Corrected Mime section](2026-10-30-mime-section-corrected.json), at `fdbafb6`
   on `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks with zero discrepancies and a passed strict assessment. The observed null URL fields are preserved. MIME and redirect lists were empty; handler rows were populated. This read-only capture establishes no mutation or HTTP redirect/hotlink enforcement coverage. Separate reviewer mutation and populated-row observations are attributed in the source audit. Initial failure evidence remains immutable.
   Follow-up `8x0.2.21` remains open.
+
+## Mail protection (2026-10-30)
+
+The [initial mail-protection capture](2026-10-30-mail-protection.json) at
+`4495789` records 19 GETs on `11.138.0.19`. All API outcomes pass, but eight
+payload checks fail: nullable EmailAuth DKIM/DMARC/PTR fields, numeric-string PTR
+IP versions, and numeric-string SpamAssassin scores differ from the pinned
+contracts. Two PTR observations also contain an unreviewed null field at
+`$[].ptr_records[].*`. The artifact remains unchanged; field compatibility and
+unknown-field investigation are separate. Follow-up `8x0.2.23` owns the remaining
+live work and unresolved PTR structure.

@@ -21,7 +21,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  * @phpstan-type GetSymbolicTestNamesResult list<array{
  *     key?: string,
  *     rule_type?: string,
- *     score?: int|float|int,
+ *     score?: int|float|numeric-string,
  * }>
  * @phpstan-type GetUserPreferencesResult array{
  *     blacklist_from?: list<string>,
@@ -78,8 +78,13 @@ final readonly class SpamAssassin
      * This function lists the Apache SpamAssassin™ scores for each symbolic test.
      *
      * Documented: Available in cPanel 70 and later. Returns symbolic test names, rule types and numeric scores. Row
-     * fields remain optional; integer and floating-point score alternatives are preserved without accepting numeric
-     * strings. An empty result remains an empty list.
+     * fields remain optional; pinned integer and floating-point scores remain unchanged. An empty result remains an
+     * empty list.
+     *
+     * Observed: On cPanel 11.138.0.19, get_symbolic_test_names returned score values classified as float, integer and
+     * numeric-string on both direct UAPI and the WHM bridge. Accepted decimal numeric strings are preserved unchanged
+     * to retain precision and formatting; arbitrary strings, booleans and null are not accepted. This compatibility
+     * applies only to this operation's score field.
      *
      * API-map identity: uapi:SpamAssassin/get_symbolic_test_names#GET (wire name get_symbolic_test_names).
      *

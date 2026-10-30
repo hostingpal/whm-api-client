@@ -2433,3 +2433,16 @@ operations through both routes, bound to npr/npr.rs. BoxTrapper mailbox-specific
 reads/settings use a separate owned-mailbox fixture. Live outcomes and limitations
 are recorded separately; no mail delivery or filtering-enforcement claim follows
 from structural/API checks.
+
+The first read-only capture at `4495789` on `11.138.0.19` records 19 HTTP-200
+successful API outcomes and eight payload failures. Its immutable SHA-256 is
+`801d8741c2f22fde88e3e00d3ff930e4d3e7dd6ea8547e23b1bdf763e0c78775`.
+Both routes observe null DKIM error, DMARC error/record and PTR error fields;
+only those four fields gain nullable compatibility. PTR ip_version opts into
+the existing canonical, PHP-integer-bounded numeric-string conversion. SpamAssassin
+symbolic scores preserve observed numeric strings alongside native integer/float
+values, using the existing finite decimal grammar without floating-point coercion.
+The structural artifact does not establish exact numeric spellings or values;
+synthetic precision/bounds tests remain separate. Known fields and sibling
+contracts stay strict. Two PTR nested null unknown-field observations remain
+untyped and unacknowledged under `8x0.2.23`.

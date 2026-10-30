@@ -30,7 +30,11 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 70 and later. Returns symbolic test names, rule types and numeric scores. Row fields remain optional; integer and floating-point score alternatives are preserved without accepting numeric strings. An empty result remains an empty list."
+          "text": "Available in cPanel 70 and later. Returns symbolic test names, rule types and numeric scores. Row fields remain optional; pinned integer and floating-point scores remain unchanged. An empty result remains an empty list."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, get_symbolic_test_names returned score values classified as float, integer and numeric-string on both direct UAPI and the WHM bridge. Accepted decimal numeric strings are preserved unchanged to retain precision and formatting; arbitrary strings, booleans and null are not accepted. This compatibility applies only to this operation's score field."
         }
       ],
       "probe": {
@@ -41,7 +45,32 @@
           "bridged-uapi"
         ],
         "expected": "success"
-      }
+      },
+      "response": {
+        "[].score": {
+          "type": "number",
+          "accept": [
+            "numeric-string"
+          ],
+          "preserve": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Original immutable docs/api/evidence/2026-10-30-mail-protection.json (SHA-256 801d8741c2f22fde88e3e00d3ff930e4d3e7dd6ea8547e23b1bdf763e0c78775), captured at revision 449578942816f597433461506f862d2caed36298, records HTTP 200 and API success for get_symbolic_test_names on direct-uapi and bridged-uapi, with payload path $[].score observed as float, int and numeric-string and a type_mismatch. Replace only the equivalent pinned number-or-integer union with number plus the existing decimal numeric-string acceptance and preservation rule, retaining integer/float values, optional presence and strict rejection of other strings/boolean/null. The artifact contains structural types, not raw score values; precision and formatting tests use synthetic literals. Preserve the original failed artifact unchanged."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Original immutable docs/api/evidence/2026-10-30-mail-protection.json (SHA-256 801d8741c2f22fde88e3e00d3ff930e4d3e7dd6ea8547e23b1bdf763e0c78775), captured at revision 449578942816f597433461506f862d2caed36298, records HTTP 200 and API success for get_symbolic_test_names on direct-uapi and bridged-uapi, with payload path $[].score observed as float, int and numeric-string and a type_mismatch. Replace only the equivalent pinned number-or-integer union with number plus the existing decimal numeric-string acceptance and preservation rule, retaining integer/float values, optional presence and strict rejection of other strings/boolean/null. The artifact contains structural types, not raw score values; precision and formatting tests use synthetic literals. Preserve the original failed artifact unchanged."
+        }
+      ]
     },
     "uapi:SpamAssassin/get_user_preferences": {
       "notes": [

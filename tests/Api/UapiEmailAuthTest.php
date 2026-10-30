@@ -72,6 +72,41 @@ final class UapiEmailAuthTest extends TestCase
         self::assertCount(1, $http->getRequests());
     }
 
+    /** @param list<array<string, int|string|null>> $expected */
+    #[DataProvider('observedFieldVariants')]
+    public function testObservedFieldsPreserveNullAndNormalizeOnlyPtrIntegers(
+        string $route,
+        string $function,
+        string $payload,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        self::assertSame($expected, self::invoke($client->uapi('npr'), $function));
+        self::assertCount(1, $http->getRequests());
+        self::assertSame(1, $client->uapi('npr')->responseMeta()?->uapiStatus());
+    }
+
+    /** @return iterable<string, array{string, string, string, list<array<string, int|string|null>>}> */
+    public static function observedFieldVariants(): iterable
+    {
+        $cases = [
+            ['validate_current_dkims', '[{"error":null}]', [['error' => null]]],
+            ['validate_current_dmarcs', '[{"error":null}]', [['error' => null]]],
+            ['validate_current_dmarcs', '[{"record":null}]', [['record' => null]]],
+            ['validate_current_ptrs', '[{"error":null}]', [['error' => null]]],
+            ['validate_current_ptrs', '[{"ip_version":"4"}]', [['ip_version' => 4]]],
+            ['validate_current_ptrs', '[{"ip_version":"6"}]', [['ip_version' => 6]]],
+            ['validate_current_ptrs', '[{"error":null,"ip_version":"4"},{}]',
+                [['error' => null, 'ip_version' => 4], []]],
+        ];
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach ($cases as $i => [$function, $payload, $expected]) {
+                yield "$route $function observed $i" => [$route, $function, $payload, $expected];
+            }
+        }
+    }
+
     /** @return iterable<string, array{string, string, ?string}> */
     public static function invalidPayloads(): iterable
     {
@@ -102,8 +137,28 @@ final class UapiEmailAuthTest extends TestCase
                     default => ['null', '0', 'false', '[]'],
                 };
                 foreach ($badValues as $i => $bad) {
+                    $nullable = ($field === 'error' && in_array(
+                        $function,
+                        ['validate_current_dkims', 'validate_current_dmarcs', 'validate_current_ptrs'],
+                        true,
+                    )) || ($function === 'validate_current_dmarcs' && $field === 'record');
+                    if ($nullable && $bad === 'null') {
+                        continue;
+                    }
+                    if ($function === 'validate_current_ptrs' && $field === 'ip_version' && $bad === '"4"') {
+                        continue;
+                    }
                     yield "$function $field $i" => ['direct', $function, '[{"' . $field . '":' . $bad . '}]'];
                 }
+            }
+        }
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (
+                ['"4.0"', '"4.1"', '"4e0"', '"04"', '"+4"', '" 4"', '"4 "', '""', '"-0"',
+                '"9223372036854775808"', '"-9223372036854775809"'] as $i => $version
+            ) {
+                yield "$route ptr strict integer $i" =>
+                    [$route, 'validate_current_ptrs', '[{"ip_version":' . $version . '}]'];
             }
         }
         foreach (['validate_current_dkims', 'validate_current_spfs'] as $function) {

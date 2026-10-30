@@ -197,7 +197,7 @@ final class EmailAuthSpec
                 'type' => 'object',
                 'fields' => [
                     'domain' => ['type' => 'string'],
-                    'error' => ['type' => 'string'],
+                    'error' => ['type' => 'string', 'nullable' => true],
                     'expected' => ['type' => 'string'],
                     'records' => [
                         'type' => 'list',
@@ -231,8 +231,8 @@ final class EmailAuthSpec
                 'type' => 'object',
                 'fields' => [
                     'domain' => ['type' => 'string'],
-                    'error' => ['type' => 'string'],
-                    'record' => ['type' => 'string'],
+                    'error' => ['type' => 'string', 'nullable' => true],
+                    'record' => ['type' => 'string', 'nullable' => true],
                     'state' => ['type' => 'string'],
                     'subdomain' => ['type' => 'string'],
                     'suggested' => ['type' => 'string'],
@@ -256,10 +256,10 @@ final class EmailAuthSpec
                 'fields' => [
                     'arpa_domain' => ['type' => 'string'],
                     'domain' => ['type' => 'string'],
-                    'error' => ['type' => 'string'],
+                    'error' => ['type' => 'string', 'nullable' => true],
                     'helo' => ['type' => 'string'],
                     'ip_address' => ['type' => 'string'],
-                    'ip_version' => ['type' => 'int'],
+                    'ip_version' => ['type' => 'int', 'accept' => ['numeric-string']],
                     'nameservers' => ['type' => 'list', 'items' => ['type' => 'string']],
                     'ptr_records' => [
                         'type' => 'list',

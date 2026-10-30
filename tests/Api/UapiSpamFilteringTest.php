@@ -95,6 +95,29 @@ final class UapiSpamFilteringTest extends TestCase
     }
 
     #[DataProvider('routes')]
+    public function testSymbolicTestScoresPreserveNumericStrings(string $route): void
+    {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope(
+            $route,
+            '[{"key":"CUSTOM","rule_type":"body_tests","score":"0.10000000000000000500"},'
+                . '{"score":"-0.25"},{"score":"+001.5000"},{"score":"0.00"},{"score":0},{"score":0.5},{}]',
+        )));
+        self::assertSame([
+            ['key' => 'CUSTOM', 'rule_type' => 'body_tests', 'score' => '0.10000000000000000500'],
+            ['score' => '-0.25'], ['score' => '+001.5000'], ['score' => '0.00'],
+            ['score' => 0], ['score' => 0.5], [],
+        ], $account->spamAssassin()->getSymbolicTestNames());
+        self::assertRequest($http, $route, 'SpamAssassin', 'get_symbolic_test_names');
+        self::assertCount(1, $http->getRequests());
+        $metadata = $account->responseMeta();
+        self::assertNotNull($metadata);
+        self::assertSame(1, $metadata->uapiStatus());
+        self::assertSame($route === 'bridge' ? 1 : null, $metadata->whmResult());
+    }
+
+    #[DataProvider('routes')]
     public function testPinnedCustomPreferenceExampleSurvivesUpdate(string $route): void
     {
         [$client, $http] = self::client($route);
@@ -150,7 +173,12 @@ final class UapiSpamFilteringTest extends TestCase
     public static function invalidCases(): iterable
     {
         $cases = [
-            ['SpamAssassin', 'get_symbolic_test_names', '[{"score":"1.0"}]'],
+            ['SpamAssassin', 'get_symbolic_test_names', '[{"score":"not-a-score"}]'],
+            ['SpamAssassin', 'get_symbolic_test_names', '[{"score":null}]'],
+            ['SpamAssassin', 'get_symbolic_test_names', '[{"score":true}]'],
+            ['SpamAssassin', 'get_symbolic_test_names', '[{"score":""}]'],
+            ['SpamAssassin', 'get_symbolic_test_names', '[{"score":" 1.0"}]'],
+            ['SpamAssassin', 'get_symbolic_test_names', '[{"score":"1e3"}]'],
             ['SpamAssassin', 'get_symbolic_test_names', '[{"key":null}]'],
             ['SpamAssassin', 'get_symbolic_test_names', '[{"rule_type":0}]'],
             ['SpamAssassin', 'get_user_preferences', '{"blacklist_from":[null]}'],

@@ -632,6 +632,12 @@ DNS. Private-key inputs and returned PEM values are sensitive. DKIM validation
 can update the validity cache despite its read-only classification. DMARC methods
 require cPanel 124+, and the other EmailAuth methods require 78+.
 
+Observed compatibility preserves nullable DKIM/PTR error fields and DMARC
+error/record fields. PTR IP versions normalize canonical integer strings to
+integers. SpamAssassin symbolic scores preserve numeric strings without losing
+precision. These corrections apply only to the evidenced fields; see the
+[source audit](docs/api/source-audit.md) for their pinned and live distinctions.
+
 SpamAssassin preferences keep their four known fields typed while preserving
 custom keys. Custom values in `getUserPreferences()` have no pinned type; the
 update response documents custom string lists. Numeric `required_score` lists

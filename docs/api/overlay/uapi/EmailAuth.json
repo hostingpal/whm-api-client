@@ -326,7 +326,11 @@
         },
         {
           "kind": "documented",
-          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. No unpinned nullable variants are inferred."
+          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. Only the operation-specific fields supported by the recorded live evidence accept additional wire forms."
+        },
+        {
+          "kind": "observed",
+          "text": "The 2026-10-30 capture on 11.138.0.19 through direct UAPI and the WHM bridge observed explicit null error. Those fields preserve string/null/omission distinctions; other string fields stay nonnullable."
         }
       ],
       "evidence": [
@@ -335,8 +339,27 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "Pinned /EmailAuth/validate_current_dkims declares x-readonly=true. The domain parameter prose or multiple-domain example explicitly permits duplicate domain keys; use repeat encoding rather than JSON, comma splitting or an invented suffix family."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "docs/api/evidence/2026-10-30-mail-protection.json SHA-256 801d8741c2f22fde88e3e00d3ff930e4d3e7dd6ea8547e23b1bdf763e0c78775, captured at revision 449578942816f597433461506f862d2caed36298 on cPanel 11.138.0.19 with pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records uapi:EmailAuth/validate_current_dkims#GET through direct-uapi and bridged-uapi with HTTP 200 and API success. The operation-specific observed wire variants at $[].error support only the field corrections recorded below; their individual rules retain exact path/type evidence. Other fields and sibling operations remain unchanged."
         }
-      ]
+      ],
+      "response": {
+        "[].error": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-mail-protection.json SHA-256 801d8741c2f22fde88e3e00d3ff930e4d3e7dd6ea8547e23b1bdf763e0c78775, captured at revision 449578942816f597433461506f862d2caed36298 on cPanel 11.138.0.19 with pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records uapi:EmailAuth/validate_current_dkims#GET through direct-uapi and bridged-uapi with HTTP 200 and successful API outcome. Both observations record $[].error as null; prior payload validation failed for that path. Correct only this operation and field, preserving optional presence and the pinned base type. Accept explicit null in addition to strings; null is not omission or an empty string."
+            }
+          ]
+        }
+      }
     },
     "uapi:EmailAuth/validate_current_dmarcs": {
       "params": {
@@ -356,7 +379,11 @@
         },
         {
           "kind": "documented",
-          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. No unpinned nullable variants are inferred."
+          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. Only the operation-specific fields supported by the recorded live evidence accept additional wire forms."
+        },
+        {
+          "kind": "observed",
+          "text": "The 2026-10-30 capture on 11.138.0.19 through direct UAPI and the WHM bridge observed explicit null error, record. Those fields preserve string/null/omission distinctions; other string fields stay nonnullable."
         }
       ],
       "evidence": [
@@ -365,8 +392,38 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "Pinned /EmailAuth/validate_current_dmarcs declares x-readonly=true. The domain parameter prose or multiple-domain example explicitly permits duplicate domain keys; use repeat encoding rather than JSON, comma splitting or an invented suffix family."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "docs/api/evidence/2026-10-30-mail-protection.json SHA-256 801d8741c2f22fde88e3e00d3ff930e4d3e7dd6ea8547e23b1bdf763e0c78775, captured at revision 449578942816f597433461506f862d2caed36298 on cPanel 11.138.0.19 with pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records uapi:EmailAuth/validate_current_dmarcs#GET through direct-uapi and bridged-uapi with HTTP 200 and API success. The operation-specific observed wire variants at $[].error, $[].record support only the field corrections recorded below; their individual rules retain exact path/type evidence. Other fields and sibling operations remain unchanged."
         }
-      ]
+      ],
+      "response": {
+        "[].error": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-mail-protection.json SHA-256 801d8741c2f22fde88e3e00d3ff930e4d3e7dd6ea8547e23b1bdf763e0c78775, captured at revision 449578942816f597433461506f862d2caed36298 on cPanel 11.138.0.19 with pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records uapi:EmailAuth/validate_current_dmarcs#GET through direct-uapi and bridged-uapi with HTTP 200 and successful API outcome. Both observations record $[].error as null; prior payload validation failed for that path. Correct only this operation and field, preserving optional presence and the pinned base type. Accept explicit null in addition to strings; null is not omission or an empty string."
+            }
+          ]
+        },
+        "[].record": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-mail-protection.json SHA-256 801d8741c2f22fde88e3e00d3ff930e4d3e7dd6ea8547e23b1bdf763e0c78775, captured at revision 449578942816f597433461506f862d2caed36298 on cPanel 11.138.0.19 with pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records uapi:EmailAuth/validate_current_dmarcs#GET through direct-uapi and bridged-uapi with HTTP 200 and successful API outcome. Both observations record $[].record as null; prior payload validation failed for that path. Correct only this operation and field, preserving optional presence and the pinned base type. Accept explicit null in addition to strings; null is not omission or an empty string."
+            }
+          ]
+        }
+      }
     },
     "uapi:EmailAuth/validate_current_ptrs": {
       "params": {
@@ -386,7 +443,11 @@
         },
         {
           "kind": "documented",
-          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. No unpinned nullable variants are inferred."
+          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. Only the operation-specific fields supported by the recorded live evidence accept additional wire forms."
+        },
+        {
+          "kind": "observed",
+          "text": "The 2026-10-30 capture on 11.138.0.19 through direct UAPI and the WHM bridge observed explicit null error. Those fields preserve string/null/omission distinctions; other string fields stay nonnullable. This operation alone also accepts canonical quoted integer ip_version values and normalizes them to integers. The masked unknown null at $[].ptr_records[].* remains untyped and unacknowledged; its name and count cannot be recovered from structural evidence. No nested field contract is invented."
         }
       ],
       "evidence": [
@@ -395,8 +456,40 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "Pinned /EmailAuth/validate_current_ptrs declares x-readonly=true. The domain parameter prose or multiple-domain example explicitly permits duplicate domain keys; use repeat encoding rather than JSON, comma splitting or an invented suffix family."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "docs/api/evidence/2026-10-30-mail-protection.json SHA-256 801d8741c2f22fde88e3e00d3ff930e4d3e7dd6ea8547e23b1bdf763e0c78775, captured at revision 449578942816f597433461506f862d2caed36298 on cPanel 11.138.0.19 with pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records uapi:EmailAuth/validate_current_ptrs#GET through direct-uapi and bridged-uapi with HTTP 200 and API success. The operation-specific observed wire variants at $[].error, $[].ip_version support only the field corrections recorded below; their individual rules retain exact path/type evidence. Other fields and sibling operations remain unchanged. The masked null unknown_field at $[].ptr_records[].* remains untyped and unacknowledged; no unknown key identity or count is inferred."
         }
-      ]
+      ],
+      "response": {
+        "[].error": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-mail-protection.json SHA-256 801d8741c2f22fde88e3e00d3ff930e4d3e7dd6ea8547e23b1bdf763e0c78775, captured at revision 449578942816f597433461506f862d2caed36298 on cPanel 11.138.0.19 with pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records uapi:EmailAuth/validate_current_ptrs#GET through direct-uapi and bridged-uapi with HTTP 200 and successful API outcome. Both observations record $[].error as null; prior payload validation failed for that path. Correct only this operation and field, preserving optional presence and the pinned base type. Accept explicit null in addition to strings; null is not omission or an empty string."
+            }
+          ]
+        },
+        "[].ip_version": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "docs/api/evidence/2026-10-30-mail-protection.json SHA-256 801d8741c2f22fde88e3e00d3ff930e4d3e7dd6ea8547e23b1bdf763e0c78775, captured at revision 449578942816f597433461506f862d2caed36298 on cPanel 11.138.0.19 with pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records uapi:EmailAuth/validate_current_ptrs#GET through direct-uapi and bridged-uapi with HTTP 200 and successful API outcome. Both observations record $[].ip_version as numeric-string; prior payload validation failed for that path. Correct only this operation and field, preserving optional presence and the pinned base type. Accept canonical integer numeric strings and normalize losslessly to PHP int, retaining native integers, integer bounds and rejection of fractions, exponent notation, noncanonical strings, booleans and null. Do not infer an enum or widen the SPF ip_version sibling."
+            }
+          ]
+        }
+      }
     },
     "uapi:EmailAuth/validate_current_spfs": {
       "params": {
