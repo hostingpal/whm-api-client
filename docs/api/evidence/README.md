@@ -61,3 +61,15 @@ scoped to the exact contracts, revisions and routes recorded in each file.
   are confirmed absent; exit 0 retains the two Quota acknowledgments and no new
   discrepancies. Empty privilege lists, disabled prefixes, SQL enforcement and
   alternate server configurations remain unobserved.
+
+
+- [FTP initial capture](2026-10-30-ftp-section.json): 39 observations at
+  `dd82a734` on `11.138.0.19`; finite quota integers on both routes mismatched the
+  pinned string schema. Both temporary accounts were cleaned. The unchanged
+  failed artifact supports the targeted `getQuota()` string/integer correction.
+- [FTP corrected-contract capture](2026-10-30-ftp-section-corrected.json): all
+  41 HTTP/API/payload/expectation observations at `cd7bdb6` passed, covering
+  16 Ftp functions on both UAPI routes plus WHM version, with cleanup confirmed.
+  The strict assessment still fails for two disk-inventory unknown-field
+  observations; masked string fields remain untyped and tracked in `8x0.2.11`.
+  Settings/session operations remain live-unobserved under `8x0.2.10`.

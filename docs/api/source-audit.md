@@ -1267,3 +1267,35 @@ forms; the full fixture regression reproduced it before the correction. Fixture
 readback requires the assigned finite quota as exactly integer `17` or string
 `17`, separately from the initial `unlimited` value. The initial discrepancy is
 not waived or rewritten, and new live evidence must bind the corrected revision.
+
+
+The second capture at `cd7bdb6a57bc6fe40dc0442d9c49c956cdfabe90` is saved as
+[the corrected-contract artifact](evidence/2026-10-30-ftp-section-corrected.json),
+SHA-256 `5bf7067e69efb996a31fb6c4b0a30f5a63402f4f8c5c88c81b11db73f4f4e94a`.
+All **41 observations** passed HTTP, API outcome, generated payload validation and
+fixture expectations on `11.138.0.19`: 16 Ftp functions through both routes plus
+WHM version. Both temporary users were independently confirmed absent; neither
+run removed directory contents. The original-response finite quotas were integers,
+and the populated disk inventories contained the documented row fields.
+
+The command still exited **1**: each disk-inventory observation has an
+`unknown_field` discrepancy at `$[].*` with string type. Those are two route
+observations, not evidence of exactly two field names or any particular names.
+The strict assessment remains **failed** with `unacknowledged_discrepancy`.
+No acknowledgment or undocumented typed field was added; `8x0.2.11` tracks the
+contract investigation. The typed client discards unknown fields by its existing
+policy, so API/payload success and evidence-assessment failure remain separate.
+The artifact's 634 structural paths, provenance, effective hashes and assessment
+were independently audited; no credentials, live usernames or response values
+were persisted. No third mutation run was performed merely to clear this finding.
+
+Before the first capture, the code commit changed 22 files: 18 manual files
+(2,623 additions / 4 removals) and four generated files (1,037 / 1). The evidence,
+quota correction and this addendum are additional work. A fresh independent
+whole-branch review of `dd82a734` found no actionable issue and independently ran
+767 tests / 6,142 assertions. The evidence-driven quota correction then passed
+its observed RED-to-GREEN endpoint and fixture regressions, full **4,745 tests /
+36,992 assertions**, formatting, maximum-level PHPStan and offline API-map checks.
+No shared runtime or generator change was needed. External current-head review,
+the unknown-field decision, and the four deliberately unobserved live functions
+remain distinct from these implementation and execution results.

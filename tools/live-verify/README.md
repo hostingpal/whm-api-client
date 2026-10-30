@@ -54,6 +54,13 @@ original response and refuses to overwrite an existing artifact. The strict
 assessment requires all 41 ordered phase observations: WHM version and 20 phases
 per UAPI route, covering 16 Ftp functions. It accepts no discrepancy acknowledgments.
 
+The [2026-10-30 corrected-contract capture](../../docs/api/evidence/2026-10-30-ftp-section-corrected.json)
+passed all 41 API/payload/expectation observations and both cleanups, but exits 1
+because both disk inventories have undocumented string fields at `$[].*`.
+The strict assessment remains failed; `8x0.2.11` tracks that contract investigation.
+The [initial capture](../../docs/api/evidence/2026-10-30-ftp-section.json) separately
+preserves the finite-integer quota mismatch that justified `getQuota(): int|string`.
+
 Each route uses an independent random FTP username. The recipe checks absence,
 creates that user, checks its inventory/existence/unlimited quota, updates its
 password and home-directory spelling, sets a 17 MB quota, reads back the quota

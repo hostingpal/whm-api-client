@@ -360,6 +360,11 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   to the existing account home; no directory contents are deleted. Settings and
   session killing remain offline-only; readback does not prove FTP authentication,
   transfer-quota enforcement or a change in directory isolation.
+  The corrected-contract 2026-10-30 artifact at cd7bdb6 on 11.138.0.19 passes
+  all 41 API/payload/expectation observations and cleanup, but strict assessment
+  fails on two list_ftp_with_disk unknown-field observations ($[].*, string).
+  Keep their discrepancies; no acknowledgment or typed unknown field was added.
+  The contract investigation is 8x0.2.11; deferred live settings/session work is 8x0.2.10.
 - The optional `--mysql-fixture` runner mode additionally requires
   `WHM_API_LIVE_MUTATIONS=1`. It creates two databases and two database users on
   the designated `npr` account, checks linked/unlinked inventory through both

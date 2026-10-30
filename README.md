@@ -219,6 +219,12 @@ $ftp->setQuota(user: 'deploy', domain: 'example.com', quota: 250);
 $ftp->deleteFtp(user: 'deploy', destroy: false, domain: 'example.com');
 ```
 
+The [FTP live audit](docs/api/source-audit.md#complete-ftp-section-2026-10-30)
+records 16 functions on both routes, successful API/payload checks and confirmed
+cleanup. Its strict evidence assessment still flags undocumented string fields
+in both disk-inventory observations; those fields stay outside typed results.
+Four settings/session functions remain live-unobserved.
+
 `deleteFtp(destroy: true)` also deletes the FTP home directory; choose the target
 carefully. `killSession()` defaults to stopping **all** FTP sessions for the
 cPanel account when `login` is omitted. Anonymous access/transfer settings apply
