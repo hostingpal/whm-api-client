@@ -46,7 +46,8 @@ use LogicException;
  *   keys stay integer keys. An empty JSON array [] is an empty map.
  * - object: "fields" (name => type spec) are validated in declared order and
  *   returned under their names (numeric names become integer keys); fields
- *   named in "required" must be present; unknown payload fields are dropped.
+ *   named in "required" must be present. An optional "values" type spec validates
+ *   and preserves undeclared fields; without it, unknown payload fields are dropped.
  *   An empty JSON array [] is an empty object when nothing is required.
  * - union: "anyOf" (nonempty list of type specs); the first branch that
  *   validates wins and partial branch results are discarded.
@@ -168,7 +169,7 @@ final class ShapeValidator
     }
 
     /**
-     * Validate declared fields in declared order and drop unknown fields.
+     * Validate declared fields first, then opt-in extra values in their wire order.
      *
      * @param array<mixed> $type
      * @return array<array-key, mixed>
@@ -181,6 +182,7 @@ final class ShapeValidator
             throw new LogicException('Invalid object type spec.');
         }
 
+        $valueType = array_key_exists('values', $type) ? self::child($type, 'values') : null;
         if ($value === [] && $required === []) {
             return [];
         }
@@ -197,6 +199,14 @@ final class ShapeValidator
                 $result[$name] = self::value($object->{$name}, $fieldType, $read);
             } elseif (in_array($name, $required, true)) {
                 $read->fail();
+            }
+        }
+
+        if ($valueType !== null) {
+            foreach (get_object_vars($object) as $name => $item) {
+                if (!array_key_exists($name, $fields)) {
+                    $result[$name] = self::value($item, $valueType, $read);
+                }
             }
         }
 

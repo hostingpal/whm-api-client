@@ -214,6 +214,51 @@ issuance/renewal behavior. SHA-256:
   on `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks with zero discrepancies and a passed strict assessment. The observed null URL fields are preserved. MIME and redirect lists were empty; handler rows were populated. This read-only capture establishes no mutation or HTTP redirect/hotlink enforcement coverage. Separate reviewer mutation and populated-row observations are attributed in the source audit. Initial failure evidence remains immutable.
   Follow-up `8x0.2.21` remains open.
 
+## Mail protection (2026-10-30)
+
+The [initial mail-protection capture](2026-10-30-mail-protection.json) at
+`4495789` records 19 GETs on `11.138.0.19`. All API outcomes pass, but eight
+payload checks fail: nullable EmailAuth DKIM/DMARC/PTR fields, numeric-string PTR
+IP versions, and numeric-string SpamAssassin scores differ from the pinned
+contracts. Two PTR observations also contain an unreviewed null field at
+`$[].ptr_records[].*`. The artifact remains unchanged; field compatibility and
+unknown-field investigation are separate. Follow-up `8x0.2.23` owns the remaining
+live work and unresolved PTR structure.
+
+The [corrected mail-protection capture](2026-10-30-mail-protection-corrected.json)
+at `a063db0` passes all 19 HTTP/API/payload checks on `11.138.0.19`. Strict status
+remains failed only for the two masked PTR unknown-field observations; no
+acknowledgment or unknown-field schema was added. All requests were GET.
+
+The [initial BoxTrapper fixture](2026-10-30-boxtrapper-section.json) at the same
+revision records 23 observations (15 GET, 8 POST), all API outcomes successful.
+Both configuration reads fail payload validation because `queue_days` is a
+numeric string. Each route aborts before rule setters and later reads. Both fresh
+mailboxes are confirmed cleaned; the failed 45-phase assessment is preserved.
+
+The [BoxTrapper queue-duration correction capture](2026-10-30-boxtrapper-section-corrected.json)
+at `da4dddc` contains 43 observations (29 GET, 14 POST), all API outcomes
+successful and 42 payload checks passing. Configuration and allow/block/ignore
+rule readbacks pass on both routes. Direct `get_log.date` is a numeric string and
+fails the pinned integer contract; bridged `get_log.date` is a native integer and
+passes. The direct route stops before queue/final-status reads; the bridge
+completes. Both mailboxes are confirmed cleaned. This artifact remains failed.
+
+The [final BoxTrapper fixture](2026-10-30-boxtrapper-section-final.json) at
+`3ea2166` passes all 45 observations (31 GET, 14 POST), all expectations and the
+strict assessment with zero discrepancies on `11.138.0.19`. Fourteen BoxTrapper
+functions run through both routes; four Email functions and WHM version support
+the owned-mailbox lifecycle. Both temporary mailboxes are confirmed removed.
+Protection stays disabled, and no message delivery/processing, forwarding,
+template write or Spam Box clearing occurs. Empty logs/queues establish no
+message-row coverage or filtering efficacy. SHA-256:
+`c29304b444fe7fc57eb226ecd5b3a76ff5ccaf9b72440ac0548f5c0372c432ee`.
+
+Together the corrected read catalog and final fixture observe 22 of the 47 new
+functions. The other 25 functions and additional argument/payload variants remain
+offline-only or unobserved under `8x0.2.23`; the indexed SpamAssassin input family
+is separately tracked in `8x0.1.20`. All earlier captures remain unchanged.
+
 The initial [Fileman inventory capture](2026-10-30-fileman-inventory.json)
 at `5ea0d565bb2eda9d5e03a0df23b5d8d07d1487bf` on `11.138.0.19` records seven
 GETs. All HTTP/API outcomes pass; three payload checks pass and four fail.

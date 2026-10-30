@@ -46,10 +46,14 @@ final class EmailSectionCommandTest extends TestCase
     public function testCommittedContextAndCleanupPrecedeEvidencePersistence(string $scenario, int $exit): void
     {
         $root = sys_get_temp_dir() . '/email-section-cli-' . bin2hex(random_bytes(6));
-        mkdir($root . '/tools/live-verify', 0700, true);
+        mkdir($root . '/tools/live-verify/src', 0700, true);
         mkdir($root . '/vendor', 0700, true);
         $source = dirname(__DIR__, 3) . '/tools/live-verify/email-section.php';
         self::assertTrue(copy($source, $root . '/tools/live-verify/email-section.php'));
+        self::assertTrue(copy(
+            dirname(__DIR__, 3) . '/tools/live-verify/src/SectionCommand.php',
+            $root . '/tools/live-verify/src/SectionCommand.php',
+        ));
         file_put_contents($root . '/vendor/autoload.php', <<<'STUB'
 <?php
 namespace HostingPal\WhmApiClient\Tools\LiveVerify;
@@ -135,13 +139,15 @@ STUB);
         } finally {
             foreach (
                 ['context-loaded', 'cleanup-complete', 'output.json',
-                'vendor/autoload.php', 'tools/live-verify/email-section.php'] as $file
+                'vendor/autoload.php', 'tools/live-verify/email-section.php',
+                'tools/live-verify/src/SectionCommand.php'] as $file
             ) {
                 if (is_file($root . '/' . $file)) {
                     unlink($root . '/' . $file);
                 }
             }
             rmdir($root . '/vendor');
+            rmdir($root . '/tools/live-verify/src');
             rmdir($root . '/tools/live-verify');
             rmdir($root . '/tools');
             rmdir($root);

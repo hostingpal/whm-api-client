@@ -1,0 +1,260 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "SpamAssassin",
+  "accessor": "spamAssassin",
+  "operations": {
+    "uapi:SpamAssassin/clear_spam_box": {
+      "method": "POST",
+      "void": true,
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70 and later. Deletes every Spam Box folder contents for all email addresses on the selected account, including the system user email account. This destructive account-wide operation has no rollback; the client does not retry or roll it back."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned result envelope has no data member. This operation returns no data; payload fields are not invented."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /SpamAssassin/clear_spam_box declares x-readonly=false and x-rollback=none; its result properties contain no data member. Use form POST and an evidenced void result."
+        }
+      ]
+    },
+    "uapi:SpamAssassin/get_symbolic_test_names": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70 and later. Returns symbolic test names, rule types and numeric scores. Row fields remain optional; pinned integer and floating-point scores remain unchanged. An empty result remains an empty list."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, get_symbolic_test_names returned score values classified as float, integer and numeric-string on both direct UAPI and the WHM bridge. Accepted decimal numeric strings are preserved unchanged to retain precision and formatting; arbitrary strings, booleans and null are not accepted. This compatibility applies only to this operation's score field."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      },
+      "response": {
+        "[].score": {
+          "type": "number",
+          "accept": [
+            "numeric-string"
+          ],
+          "preserve": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Original immutable docs/api/evidence/2026-10-30-mail-protection.json (SHA-256 801d8741c2f22fde88e3e00d3ff930e4d3e7dd6ea8547e23b1bdf763e0c78775), captured at revision 449578942816f597433461506f862d2caed36298, records HTTP 200 and API success for get_symbolic_test_names on direct-uapi and bridged-uapi, with payload path $[].score observed as float, int and numeric-string and a type_mismatch. Replace only the equivalent pinned number-or-integer union with number plus the existing decimal numeric-string acceptance and preservation rule, retaining integer/float values, optional presence and strict rejection of other strings/boolean/null. The artifact contains structural types, not raw score values; precision and formatting tests use synthetic literals. Preserve the original failed artifact unchanged."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Original immutable docs/api/evidence/2026-10-30-mail-protection.json (SHA-256 801d8741c2f22fde88e3e00d3ff930e4d3e7dd6ea8547e23b1bdf763e0c78775), captured at revision 449578942816f597433461506f862d2caed36298, records HTTP 200 and API success for get_symbolic_test_names on direct-uapi and bridged-uapi, with payload path $[].score observed as float, int and numeric-string and a type_mismatch. Replace only the equivalent pinned number-or-integer union with number plus the existing decimal numeric-string acceptance and preservation rule, retaining integer/float values, optional presence and strict rejection of other strings/boolean/null. The artifact contains structural types, not raw score values; precision and formatting tests use synthetic literals. Preserve the original failed artifact unchanged."
+        }
+      ]
+    },
+    "uapi:SpamAssassin/get_user_preferences": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70 and later. Lists the selected account preferences. blacklist_from, required_score, score and whitelist_from remain optional lists; empty lists and zero numeric required_score items are preserved. No preference defaults are supplied by the client."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned prose allows additional custom preferences without specifying their value shape. Both preference reads and updates preserve undeclared keys as opaque JSON values under one effective contract. The four declared fields keep their strict list types and documented or evidenced item types; omitted fields stay absent and custom null values remain distinct from omission. No particular opaque custom value shape is claimed as live-observed."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, independent PR36 review observed required_score numeric strings on both direct UAPI and the WHM bridge for reads and successful updates. Accepted decimal numeric strings are preserved unchanged, including precision and trailing zeros; JSON integers and floats remain accepted. Arbitrary strings, booleans, null and containers are rejected as score items. Omitted required_score stays absent and an empty list stays empty."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      },
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "blacklist_from": {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "required_score": {
+                "type": "list",
+                "items": {
+                  "type": "number",
+                  "accept": [
+                    "numeric-string"
+                  ],
+                  "preserve": true
+                }
+              },
+              "score": {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "whitelist_from": {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "values": {
+              "type": "mixed"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned /SpamAssassin/get_user_preferences description explicitly says additional customizations may appear in the returns, but supplies no type for custom values. Preserve the four declared optional list fields with their reviewed item contracts and preserve only undeclared keys as mixed JSON values. The update response echoes the complete preference set, so both operations share this opaque custom-value boundary rather than inferring a universal list<string> constraint from the malformed update source node."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Independent PR36 reviewer observations at https://github.com/hostingpal/whm-api-client/pull/36#pullrequestreview-5719192482, reviewed revision ed1e68c44acc8b97133892f0ce7d068d5db11fab, report cPanel 11.138.0.19 returning required_score arrays containing numeric strings 5.1, 6 and 5.0 through both direct-uapi and bridged-uapi for get_user_preferences and update_user_preference. Successful writes then failed the list<number> payload contract. Apply the existing number accept:numeric-string and preserve:true rule only to required_score items on both operations, retaining JSON integers/floats, optional presence and empty lists while rejecting nondecimal strings, booleans, null and containers. Preserve strings without numeric conversion. These observations are reviewer evidence, separate from the committed read-only and BoxTrapper artifacts; those earlier captures do not establish this mutation coverage. Precision and formatting boundary fixtures are synthetic, not additional live observations."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Independent PR36 reviewer observations at https://github.com/hostingpal/whm-api-client/pull/36#pullrequestreview-5719192482, reviewed revision ed1e68c44acc8b97133892f0ce7d068d5db11fab, report cPanel 11.138.0.19 returning required_score arrays containing numeric strings 5.1, 6 and 5.0 through both direct-uapi and bridged-uapi for get_user_preferences and update_user_preference. Successful writes then failed the list<number> payload contract. Apply the existing number accept:numeric-string and preserve:true rule only to required_score items on both operations, retaining JSON integers/floats, optional presence and empty lists while rejecting nondecimal strings, booleans, null and containers. Preserve strings without numeric conversion. These observations are reviewer evidence, separate from the committed read-only and BoxTrapper artifacts; those earlier captures do not establish this mutation coverage. Precision and formatting boundary fixtures are synthetic, not additional live observations."
+        }
+      ]
+    },
+    "uapi:SpamAssassin/update_user_preference": {
+      "method": "POST",
+      "order": [
+        "preference",
+        "value"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70 and later; changes the selected account preferences with no rollback. Set one preference per call: score, required_score, whitelist_from, blacklist_from or a custom preference name. Omit value to remove previous settings; an explicitly empty string or string zero is sent rather than omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "For score, value is a TEST_NAME SCORE string and the documented score must be greater than 0 and less than 1000. required_score uses a floating-point value expressed as the documented string input; address preferences use an email address. These content rules are server-side semantics, not client-side configuration inference."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned source documents multiple values as value-0 and value-1. This interface exposes only the pinned single string value; the current numbered encoder does not establish that exact zero-based family. Use no inferred comma delimiter or alternative numbered serialization."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned return example includes custom preferences such as ok_locales. Its custom-variable description and string item hint are misplaced as a properties.additionalProperties member without a type. The update response echoes the complete preference set, so its effective custom-value contract matches get_user_preferences: preserve undeclared keys as opaque JSON values while validating the four declared fields strictly. This reviewed compatibility boundary does not infer a literal additionalProperties field or claim that synthetic opaque value variants were observed live."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, independent PR36 review observed required_score numeric strings on both direct UAPI and the WHM bridge for reads and successful updates. Accepted decimal numeric strings are preserved unchanged, including precision and trailing zeros; JSON integers and floats remain accepted. Arbitrary strings, booleans, null and containers are rejected as score items. Omitted required_score stays absent and an empty list stays empty."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /SpamAssassin/update_user_preference declares x-readonly=false and x-rollback=none. Use form POST. preference is required; value is optional and omission explicitly removes previous settings. Only scalar value input is represented until the documented value-0/value-1 family can be encoded exactly."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Independent PR36 reviewer observations at https://github.com/hostingpal/whm-api-client/pull/36#pullrequestreview-5719192482, reviewed revision ed1e68c44acc8b97133892f0ce7d068d5db11fab, report cPanel 11.138.0.19 returning required_score arrays containing numeric strings 5.1, 6 and 5.0 through both direct-uapi and bridged-uapi for get_user_preferences and update_user_preference. Successful writes then failed the list<number> payload contract. Apply the existing number accept:numeric-string and preserve:true rule only to required_score items on both operations, retaining JSON integers/floats, optional presence and empty lists while rejecting nondecimal strings, booleans, null and containers. Preserve strings without numeric conversion. These observations are reviewer evidence, separate from the committed read-only and BoxTrapper artifacts; those earlier captures do not establish this mutation coverage. Precision and formatting boundary fixtures are synthetic, not additional live observations."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "blacklist_from": {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "required_score": {
+                "type": "list",
+                "items": {
+                  "type": "number",
+                  "accept": [
+                    "numeric-string"
+                  ],
+                  "preserve": true
+                }
+              },
+              "score": {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "whitelist_from": {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "values": {
+              "type": "mixed"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned /SpamAssassin/update_user_preference data/properties/additionalProperties incorrectly nests the custom-variable description inside properties and omits its type; its array prose, string items and ok_locales:[all] example suggest a string-list custom value, while both preference operations explicitly admit additional customizations and the read source supplies no custom-value schema. PR36 review https://github.com/hostingpal/whm-api-client/pull/36#pullrequestreview-5719192482 at ed1e68c44acc8b97133892f0ce7d068d5db11fab confirms that updates echo the complete preference set and requires consistent custom-value typing. Use the existing read boundary, values:mixed, for undeclared keys on both operations rather than claiming the malformed hint establishes a universal custom-value schema. Preserve the four declared optional list fields and apply the separately evidenced numeric-string compatibility only to required_score items. No literal additionalProperties API field is inferred, and no extra custom-value shape is claimed as live-observed."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Independent PR36 reviewer observations at https://github.com/hostingpal/whm-api-client/pull/36#pullrequestreview-5719192482, reviewed revision ed1e68c44acc8b97133892f0ce7d068d5db11fab, report cPanel 11.138.0.19 returning required_score arrays containing numeric strings 5.1, 6 and 5.0 through both direct-uapi and bridged-uapi for get_user_preferences and update_user_preference. Successful writes then failed the list<number> payload contract. Apply the existing number accept:numeric-string and preserve:true rule only to required_score items on both operations, retaining JSON integers/floats, optional presence and empty lists while rejecting nondecimal strings, booleans, null and containers. Preserve strings without numeric conversion. These observations are reviewer evidence, separate from the committed read-only and BoxTrapper artifacts; those earlier captures do not establish this mutation coverage. Precision and formatting boundary fixtures are synthetic, not additional live observations."
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,766 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "BoxTrapper",
+  "operations": {
+    "uapi:BoxTrapper/blacklist_messages": {
+      "method": "POST",
+      "params": {
+        "queuefile": {
+          "php": "queuefiles",
+          "encoding": "repeat"
+        }
+      },
+      "order": [
+        "email",
+        "queuefile"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Blacklists senders and can delete matching queued messages; there is no rollback. The pinned queuefile.examples.multiple explicitly sends repeated queuefile fields for multiple messages."
+        },
+        {
+          "kind": "documented",
+          "text": "Inspect every returned record for failed, reason and any documented warning even with API status 1; envelope success does not establish every message action succeeded. Optional failure and match fields remain absent when omitted."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /BoxTrapper/blacklist_messages declares x-readonly=false and x-rollback=none; mutations use form POST. parameters/1/examples/multiple explicitly sends queuefile=file1&queuefile=file2, supporting repeated queuefile fields with the public queuefiles string-or-list argument."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/delete_messages": {
+      "method": "POST",
+      "params": {
+        "queuefile": {
+          "php": "queuefiles",
+          "encoding": "repeat"
+        }
+      },
+      "order": [
+        "email",
+        "queuefile",
+        "all_like"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Permanently deletes queued messages with no rollback. Repeated queuefile fields select multiple files; all_like defaults to 0 and broadens deletion when true."
+        },
+        {
+          "kind": "documented",
+          "text": "Inspect every returned record for failed, reason and any documented warning even with API status 1; envelope success does not establish every message action succeeded. Optional failure and match fields remain absent when omitted."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /BoxTrapper/delete_messages declares x-readonly=false and x-rollback=none; mutations use form POST. Parameter descriptions explicitly permit repeated fields; rule descriptions also permit numbered alternatives."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/deliver_messages": {
+      "method": "POST",
+      "params": {
+        "queuefile": {
+          "php": "queuefiles",
+          "encoding": "repeat"
+        }
+      },
+      "order": [
+        "email",
+        "queuefile",
+        "all_like"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Delivers queued messages with no rollback. Repeated queuefile fields select multiple files; all_like defaults to 0 and broadens delivery when true."
+        },
+        {
+          "kind": "documented",
+          "text": "Inspect every returned record for failed, reason and any documented warning even with API status 1; envelope success does not establish every message action succeeded. Optional failure and match fields remain absent when omitted."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /BoxTrapper/deliver_messages declares x-readonly=false and x-rollback=none; mutations use form POST. Parameter descriptions explicitly permit repeated fields; rule descriptions also permit numbered alternatives."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/get_allowlist": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 94 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns string rules for senders whose messages BoxTrapper delivers. Empty rule lists remain lists."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/get_blocklist": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 94 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns string rules whose matches are deleted with a sender notification. Reading the rules does not send a notification."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/get_configuration": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Configuration fields are optional; flags remain integers and spam_score remains numeric. from_addresses is a comma-separated string. queue_days can be zero on reads while writes document a minimum of one."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, queue_days arrived as a numeric string through both direct and bridged UAPI. This field accepts canonical integer strings within PHP integer bounds and normalizes them to int. Omission stays absent; null and other scalar formats are rejected. The structural artifact does not identify the exact string grammar or value. Flags and all other fields keep their existing contracts."
+        }
+      ],
+      "response": {
+        "queue_days": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "The original BoxTrapper/get_configuration GET responses through direct-uapi and bridged-uapi at revision a063db053896b28e662ad3c8be6396888781d198 recorded $.queue_days as numeric-string, while the pinned source declares integer. Both HTTP 200/API outcomes succeeded and payload validation failed at this field. Immutable failed artifact SHA-256 5f931b1c478b3ab1c5e8dabf9fcc78381a57aa70a7204bffe0c428f99125ae29 contains 23 original observations (15 GET, 8 POST), with both owned mailboxes confirmed cleaned. Opt in only this optional nonnullable field to the existing canonical PHP-integer-bounded numeric-string conversion and normalize to int. The structural evidence does not establish the exact string grammar, value or cause of wire variation. Preserve omitted fields and all sibling types; decimal, exponent, whitespace, noncanonical and overflowing strings remain rejected.",
+              "fingerprint": "docs/api/evidence/2026-10-30-boxtrapper-section.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "The original BoxTrapper/get_configuration GET responses through direct-uapi and bridged-uapi at revision a063db053896b28e662ad3c8be6396888781d198 recorded $.queue_days as numeric-string, while the pinned source declares integer. Both HTTP 200/API outcomes succeeded and payload validation failed at this field. Immutable failed artifact SHA-256 5f931b1c478b3ab1c5e8dabf9fcc78381a57aa70a7204bffe0c428f99125ae29 contains 23 original observations (15 GET, 8 POST), with both owned mailboxes confirmed cleaned. Opt in only this optional nonnullable field to the existing canonical PHP-integer-bounded numeric-string conversion and normalize to int. The structural evidence does not establish the exact string grammar, value or cause of wire variation. Preserve omitted fields and all sibling types; decimal, exponent, whitespace, noncanonical and overflowing strings remain rejected.",
+          "fingerprint": "docs/api/evidence/2026-10-30-boxtrapper-section.json"
+        }
+      ]
+    },
+    "uapi:BoxTrapper/get_email_template": {
+      "order": [
+        "email",
+        "template"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns template contents as a string, including an empty string. Template text can contain private message information."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/get_forwarders": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 86 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a string list of forwarding addresses, preserving empty lists. Does not forward or deliver messages."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/get_ignorelist": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 94 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns string rules whose matches are deleted without notifying senders. Empty rule lists remain lists."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/get_log": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted date defaults to the current date. Missing logs return an empty path and empty lines list. Log contents can contain private message information."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, the direct UAPI date field arrived as a numeric string, while the bridged UAPI date field remained a native integer. date accepts canonical integer strings within PHP integer bounds and normalizes to int; string compatibility on the bridge is offline-tested rather than live-observed. Omission stays absent, null stays invalid, and lines/path retain their pinned types. The structural capture does not establish the string grammar or exact timestamp."
+        }
+      ],
+      "response": {
+        "date": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "In the immutable corrected BoxTrapper capture at revision da4dddc8afc77eef01a22784d7d63e882ad2d192 on cPanel 11.138.0.19, the direct-uapi get_log GET response reported $.date as numeric-string and a type_mismatch against the pinned integer field. The bridged-uapi get_log GET response reported native int and passed payload validation: numeric-string compatibility is directly observed only on the direct route. Both HTTP 200/API outcomes succeeded. Artifact docs/api/evidence/2026-10-30-boxtrapper-section-corrected.json SHA-256 8c02bb75a38ab17bea72e39dd8c62f79726735bdb81a50ec8b3f29cc77072651 contains 43 original observations (29 GET, 14 POST), with both owned mailboxes confirmed cleaned. Opt in only optional nonnullable get_log.date to the existing canonical PHP-integer-bounded numeric-string conversion, retaining integer output and strict sibling types. Structural evidence establishes neither the exact string grammar nor date value; no decimal, exponent, whitespace or overflow compatibility is inferred.",
+              "fingerprint": "docs/api/evidence/2026-10-30-boxtrapper-section-corrected.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "In the immutable corrected BoxTrapper capture at revision da4dddc8afc77eef01a22784d7d63e882ad2d192 on cPanel 11.138.0.19, the direct-uapi get_log GET response reported $.date as numeric-string and a type_mismatch against the pinned integer field. The bridged-uapi get_log GET response reported native int and passed payload validation: numeric-string compatibility is directly observed only on the direct route. Both HTTP 200/API outcomes succeeded. Artifact docs/api/evidence/2026-10-30-boxtrapper-section-corrected.json SHA-256 8c02bb75a38ab17bea72e39dd8c62f79726735bdb81a50ec8b3f29cc77072651 contains 43 original observations (29 GET, 14 POST), with both owned mailboxes confirmed cleaned. Opt in only optional nonnullable get_log.date to the existing canonical PHP-integer-bounded numeric-string conversion, retaining integer output and strict sibling types. Structural evidence establishes neither the exact string grammar nor date value; no decimal, exponent, whitespace or overflow compatibility is inferred.",
+          "fingerprint": "docs/api/evidence/2026-10-30-boxtrapper-section-corrected.json"
+        }
+      ]
+    },
+    "uapi:BoxTrapper/get_message": {
+      "order": [
+        "email",
+        "queuefile"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns at most the first 200 message lines. email expressly accepts an address or cPanel username. The independent optional fields are content (string), contents (unspecified schema) and queuefile; do not infer a type or alias for contents. Response contents are sensitive payload data."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/get_status": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns integer 0 for disabled and 1 for enabled. Payload 0 is a successful read only when the UAPI envelope status is 1."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/ignore_messages": {
+      "method": "POST",
+      "params": {
+        "queuefile": {
+          "php": "queuefiles",
+          "encoding": "repeat"
+        }
+      },
+      "order": [
+        "email",
+        "queuefile"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Marks queued-message senders for Exim to ignore, with no rollback. The queuefile description explicitly permits duplicate parameters, while examples.multiple uses queuefile-1/queuefile-2/queuefile-3. This client selects the documented repeated-field alternative."
+        },
+        {
+          "kind": "documented",
+          "text": "Inspect every returned record for failed, reason and any documented warning even with API status 1; envelope success does not establish every message action succeeded. Optional failure and match fields remain absent when omitted."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /BoxTrapper/ignore_messages declares x-readonly=false and x-rollback=none; mutations use form POST. Parameter descriptions explicitly permit repeated fields; rule descriptions also permit numbered alternatives."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/list_email_templates": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Lists template identifiers without an email selector. blacklist sends rejection text, verify requests verification, verifyreleased responds to verification and returnverify reports verification failure. Listing does not send mail."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/list_queued_messages": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Queued records preserve optional sender, filename, subject and integer Unix timestamp; empty queues remain lists. Omitted date stays omitted. Message metadata can contain private information."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/process_messages": {
+      "method": "POST",
+      "params": {
+        "queuefile": {
+          "php": "queuefiles",
+          "encoding": "repeat"
+        },
+        "action": {
+          "php": "actions",
+          "encoding": "repeat"
+        }
+      },
+      "order": [
+        "action",
+        "queuefile",
+        "email"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Repeated actions execute in caller-supplied order against repeated queuefile values. The queuefile parameter description documents repetition; its multiple example instead mistakenly labels filenames as email fields. Use the documented queuefile field. Actions can deliver or delete messages or alter sender handling with no rollback. email remains optional in the pinned schema but is explicitly required outside Webmail: supply it for direct and bridged API calls. Do not retry partial processing."
+        },
+        {
+          "kind": "documented",
+          "text": "Inspect every returned record for failed, reason and any documented warning even with API status 1; envelope success does not establish every message action succeeded. Optional failure and match fields remain absent when omitted."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /BoxTrapper/process_messages declares x-readonly=false and x-rollback=none; mutations use form POST. Parameter descriptions explicitly permit repeated fields; rule descriptions also permit numbered alternatives."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/reset_email_template": {
+      "method": "POST",
+      "order": [
+        "template",
+        "email"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Restores the selected template to its system default. email remains optional in the pinned schema but is explicitly required outside Webmail: supply it for direct and bridged API calls. The pinned source classifies this operation as clean rollback; the client performs no automatic rollback or retry."
+        },
+        {
+          "kind": "documented",
+          "text": "The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit null; an absent data member is a payload mismatch."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /BoxTrapper/reset_email_template declares x-readonly=false and x-rollback=clean; mutations use form POST. "
+        }
+      ]
+    },
+    "uapi:BoxTrapper/save_configuration": {
+      "method": "POST",
+      "order": [
+        "email",
+        "enable_auto_whitelist",
+        "from_addresses",
+        "queue_days",
+        "whitelist_by_association",
+        "from_name",
+        "spam_score"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes message handling. Required queue_days documents a minimum of one; omitted spam_score retains current configuration. from_addresses is one comma-separated string. Optional from_name and spam_score retain omission; explicit zero flags and empty strings are sent. The pinned source classifies this operation as clean rollback; the client performs no automatic rollback or retry."
+        },
+        {
+          "kind": "documented",
+          "text": "The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit null; an absent data member is a payload mismatch."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /BoxTrapper/save_configuration declares x-readonly=false and x-rollback=clean; mutations use form POST. "
+        }
+      ]
+    },
+    "uapi:BoxTrapper/save_email_template": {
+      "method": "POST",
+      "params": {
+        "contents": {
+          "sensitive": true
+        }
+      },
+      "order": [
+        "email",
+        "template",
+        "contents"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Replaces template text. Contents must include To: %email%; verify additionally requires Subject: verify#%msgid%. Contents cannot exceed four KB. The URI-encoding instruction applies to the CLI: the client form-encodes supplied contents once. Contents are sensitive. The pinned source classifies this operation as clean rollback; the client performs no automatic rollback or retry."
+        },
+        {
+          "kind": "documented",
+          "text": "The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit null; an absent data member is a payload mismatch."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /BoxTrapper/save_email_template declares x-readonly=false and x-rollback=clean; mutations use form POST. "
+        }
+      ]
+    },
+    "uapi:BoxTrapper/set_allowlist": {
+      "method": "POST",
+      "params": {
+        "rules": {
+          "encoding": "repeat",
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 94 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Sets rules that permit matching messages. Upstream permits repeated or incremented rules names; this client uses repeated rules fields. Rules are sensitive strings with no inferred expression structure. The pinned source classifies this operation as clean rollback; the client performs no automatic rollback or retry."
+        },
+        {
+          "kind": "documented",
+          "text": "The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit null; an absent data member is a payload mismatch."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /BoxTrapper/set_allowlist declares x-readonly=false and x-rollback=clean; mutations use form POST. Parameter descriptions explicitly permit repeated fields; rule descriptions also permit numbered alternatives."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/set_blocklist": {
+      "method": "POST",
+      "params": {
+        "rules": {
+          "encoding": "repeat",
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 94 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Sets rules that delete matching messages and notify their senders. Upstream permits repeated or incremented rules names; this client uses repeated rules fields. Rules are sensitive strings. The pinned source classifies this operation as clean rollback; the client performs no automatic rollback or retry."
+        },
+        {
+          "kind": "documented",
+          "text": "The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit null; an absent data member is a payload mismatch."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /BoxTrapper/set_blocklist declares x-readonly=false and x-rollback=clean; mutations use form POST. Parameter descriptions explicitly permit repeated fields; rule descriptions also permit numbered alternatives."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/set_forwarders": {
+      "method": "POST",
+      "params": {
+        "forwarder": {
+          "php": "forwarders",
+          "encoding": "repeat",
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 86 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Adds forwarding addresses and changes future message handling. The pinned forwarder query array has email-formatted examples but no item type; URL and CLI examples send one scalar forwarder field. OpenAPI default query form/explode=true supports repeated fields. The client accepts string values and lists, while multi-address serialization remains unverified live. Forwarding addresses are sensitive. The pinned source classifies this operation as clean rollback; the client performs no automatic rollback or retry."
+        },
+        {
+          "kind": "documented",
+          "text": "The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit null; an absent data member is a payload mismatch."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /BoxTrapper/set_forwarders declares x-readonly=false and x-rollback=clean; mutations use form POST. The forwarder query array uses the OpenAPI default form style and explode=true, supporting repeated forwarder fields. Item format=email and string samples support string-valued fields despite missing items.type; multi-address serialization remains unverified live."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/set_ignorelist": {
+      "method": "POST",
+      "params": {
+        "rules": {
+          "encoding": "repeat",
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 94 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Sets rules that delete matching messages without notifying senders. Upstream permits repeated or incremented rules names; this client uses repeated rules fields. Rules are sensitive strings. The pinned source classifies this operation as clean rollback; the client performs no automatic rollback or retry."
+        },
+        {
+          "kind": "documented",
+          "text": "The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit null; an absent data member is a payload mismatch."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /BoxTrapper/set_ignorelist declares x-readonly=false and x-rollback=clean; mutations use form POST. Parameter descriptions explicitly permit repeated fields; rule descriptions also permit numbered alternatives."
+        }
+      ]
+    },
+    "uapi:BoxTrapper/set_status": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Enables or disables future BoxTrapper processing with no rollback. email expressly accepts an address or cPanel username. Explicit false is sent as enabled=0."
+        },
+        {
+          "kind": "documented",
+          "text": "The result is a nullable object without a pinned field schema. Preserve opaque fields and explicit null; an absent data member is a payload mismatch."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /BoxTrapper/set_status declares x-readonly=false and x-rollback=none; mutations use form POST. "
+        }
+      ]
+    },
+    "uapi:BoxTrapper/whitelist_messages": {
+      "method": "POST",
+      "params": {
+        "queuefile": {
+          "php": "queuefiles",
+          "encoding": "repeat"
+        }
+      },
+      "order": [
+        "queuefile",
+        "email"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the Receive Mail role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Webmail overrides the email selector with the authenticated mailbox. Direct and bridged UAPI calls retain the supplied selector; do not assume the cPanel target username is a mailbox address."
+        },
+        {
+          "kind": "documented",
+          "text": "Adds senders to the allowed list with no rollback. Multiple queuefile values use repeated fields. For previously unlisted senders upstream directs callers to deliver_messages to retrieve messages. failed is the string \"1\", unlike sibling integer flags. email remains optional as pinned; supply the intended mailbox outside Webmail."
+        },
+        {
+          "kind": "documented",
+          "text": "Inspect every returned record for failed, reason and any documented warning even with API status 1; envelope success does not establish every message action succeeded. Optional failure and match fields remain absent when omitted."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /BoxTrapper/whitelist_messages declares x-readonly=false and x-rollback=none; mutations use form POST. Parameter descriptions explicitly permit repeated fields; rule descriptions also permit numbered alternatives."
+        }
+      ]
+    }
+  }
+}

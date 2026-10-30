@@ -2398,6 +2398,181 @@ test come from that approved master. All original evidence artifacts and pinned
 sources remain unchanged. Integration made no live requests or new captures and
 does not extend the historical observations.
 
+## 2026-10-30 mail-protection section
+
+All 47 pinned operations across BoxTrapper, EmailAuth, SpamAssassin and cPGreyList
+are generated from the unchanged 2026-10-13 source. The 19 reads use GET and 28
+mutations or secret-returning operations use form POST. Independent literal
+fixtures cover exact parameters, all declared result fields and the complete
+SpamAssassin update example through wrapped direct, bare direct and WHM-routed
+UAPI. Source descriptions, parameter-level examples, requiredness, role/version
+caveats and partial-result semantics are reviewed separately from generated specs.
+
+BoxTrapper blacklist_messages explicitly supports repeated queuefile fields in
+its parameter-level example, even though the schema is scalar. Rule lists permit
+repeated or numbered forms; the selected encoding is repeated. Some message and
+Greylisting examples use contradictory field names; generated requests follow
+the declared parameters and explicit repeated-key prose. set_forwarders has an
+array schema with missing item type and an email example; repeated string values
+follow the query array's default form/explode serialization. No server behavior
+is inferred from that source interpretation.
+
+SpamAssassin's update response nests an additionalProperties description under
+properties and omits its array type, while prose and the complete example show
+custom-named string lists. The example does not establish a general contract
+for every custom preference. Both read and update return the complete preference
+object, so their evidence-backed root replacements retain the same four known
+optional fields and preserve opaque custom values as mixed. The new opt-in object values child preserves those keys without weakening
+known fields; structural evidence masks dynamic keys. Existing closed objects and
+all prior operation specs retain their contracts. Typed scalar preference values
+do not yet implement the separately documented value-0/value-1 family, tracked
+under `whm-api-client-8x0.1.20`.
+
+The fixed read-only catalog has 19 observations: WHM version plus nine selected
+operations through both routes, bound to npr/npr.rs. BoxTrapper mailbox-specific
+reads/settings use a separate owned-mailbox fixture. Live outcomes and limitations
+are recorded separately; no mail delivery or filtering-enforcement claim follows
+from structural/API checks.
+
+The first read-only capture at `4495789` on `11.138.0.19` records 19 HTTP-200
+successful API outcomes and eight payload failures. Its immutable SHA-256 is
+`801d8741c2f22fde88e3e00d3ff930e4d3e7dd6ea8547e23b1bdf763e0c78775`.
+Both routes observe null DKIM error, DMARC error/record and PTR error fields;
+only those four fields gain nullable compatibility. PTR ip_version opts into
+the existing canonical, PHP-integer-bounded numeric-string conversion. SpamAssassin
+symbolic scores preserve observed numeric strings alongside native integer/float
+values, using the existing finite decimal grammar without floating-point coercion.
+The structural artifact does not establish exact numeric spellings or values;
+synthetic precision/bounds tests remain separate. Known fields and sibling
+contracts stay strict. Two PTR nested null unknown-field observations remain
+untyped and unacknowledged under `8x0.2.23`.
+
+The corrected read-only capture at `a063db0` passes all 19 API/payload checks;
+strict assessment remains failed for the two PTR unknown-field observations.
+Its immutable SHA-256 is
+`6cf42ae1f62f70835a5025174d352801b69b80e9900c85050dce15543e944701`.
+At the same revision, the first BoxTrapper fixture captures 23 observations
+(15 GET, 8 POST): all API outcomes succeed and both configuration reads fail only
+on numeric-string `queue_days`. Both temporary mailboxes are confirmed cleaned.
+The original artifact SHA-256 is
+`5f931b1c478b3ab1c5e8dabf9fcc78381a57aa70a7204bffe0c428f99125ae29`.
+Only `get_configuration.queue_days` gains the existing canonical integer-string
+normalization; no boolean flags or sibling field contracts change. The first
+capture does not establish rule round trips or later-phase behavior.
+
+The next BoxTrapper capture at `da4dddc` contains 43 observations (29 GET,
+14 POST), all API outcomes successful. All configuration/rule/template readbacks
+pass through both routes. Direct `get_log.date` is a numeric string and fails
+payload validation; its bridged counterpart is a native integer and passes.
+The direct route aborts before its queue/final-status reads, while the bridge
+completes. Both mailboxes are confirmed cleaned. Preserve this failed artifact
+(SHA-256 `8c02bb75a38ab17bea72e39dd8c62f79726735bdb81a50ec8b3f29cc77072651`).
+The date field alone gains canonical, PHP-integer-bounded string normalization,
+with no exact date, string spelling or cause inferred from structural evidence.
+
+The final disabled-mailbox capture at `3ea2166` passes all 45 observations
+(31 GET, 14 POST), API/payload/expectation checks and strict assessment with zero
+discrepancies on `11.138.0.19`. Both original-response creation identities and
+inventory readbacks establish ownership; both mailbox deletions and final absence
+checks pass. All fourteen selected BoxTrapper functions execute through both
+routes, with protection disabled throughout and no delivery/queue mutation.
+This establishes configuration and three rule-list API readbacks, template reads,
+and empty logs/queues; it establishes no filtering or delivery enforcement.
+Artifact SHA-256:
+`c29304b444fe7fc57eb226ecd5b3a76ff5ccaf9b72440ac0548f5c0372c432ee`.
+
+Initial handoff gates passed 15,437 tests / 108,555 assertions, PHPCS, maximum PHPStan,
+strict Composer validation, Go tests/vet, pinned source/map checks and generation
+reproducibility. Independent contract, integration, correction and structural
+artifact reviews completed. Generated coverage is 372 operations in 29 groups;
+22 of this slice's 47 functions have bounded live observations, with remaining
+live work/PTR unknowns tracked in `8x0.2.23` and indexed preference inputs in
+`8x0.1.20`. Prior artifacts and pinned source snapshots remain unchanged.
+
+### PR36 current-head review corrections
+
+[Claude review 5719192482](https://github.com/hostingpal/whm-api-client/pull/36#pullrequestreview-5719192482)
+assessed `ed1e68c44acc8b97133892f0ce7d068d5db11fab` on cPanel `11.138.0.19`.
+The reviewer observed `required_score` numeric strings in both preference reads
+and updates through direct UAPI and the WHM bridge. The two item contracts now
+use the existing finite numeric-string acceptance with preservation, alongside
+native integers and floats. Independent tests cover exact formatting, precision,
+invalid values and all supported envelopes. Custom preference values remain
+opaque on both operations because updates return the complete preference object.
+These reviewer observations are distinct from the committed structural artifacts.
+
+The reviewer also found a preexisting local `_dmarc` record despite a null DMARC
+validation record. Removal deleted it; the reviewer restored the zone snapshot
+and verified the record separately. Both validation and removal now document
+that null is not a safe absence check. This correction adds no new DMARC calls.
+
+Pinned `x-rollback=clean` classifications are now represented correctly for
+BoxTrapper `save_configuration`, `save_email_template`, `reset_email_template`,
+`set_allowlist`, `set_blocklist`, `set_ignorelist` and `set_forwarders`.
+The client still performs no automatic rollback or retry. Other operations'
+rollback classifications are unchanged.
+
+The largest remaining payload risk is unobserved nested DKIM/SPF
+`records[].reason` nullability. Populated queued-message `time` values and eight
+message actions also remain unobserved. These remain in `8x0.2.23`; no contract
+is widened by speculation. The two masked PTR strict failures remain explicitly
+nonblocking and unwaived under that same follow-up.
+
+The Email and BoxTrapper entrypoints now share `SectionCommand`; their original
+fixtures, guards and recipes remain byte-identical. The new required-score
+fixture uses that command and restricts four nominal POSTs to one changed value
+and one exact restoration through each route. Both routes confirm the full
+original preference set. Original floats, overflowing JSON integers, unsafe
+threshold shapes or disagreeing route snapshots fail before writes. The private
+comparison preserves scalar types and list order and ignores only object-key
+order. Lost-response uncertainty cannot be cleared by later matching reads.
+
+Independent offline review checked request confinement, zero-POST preflight
+failures, distinct restoration, unretried uncertain writes, evidence privacy and
+separate preference/catalog assessments. The integrated correction passes
+15,662 tests / 110,316 assertions, PHPCS, maximum PHPStan, strict Composer
+validation, Go tests/vet and the offline source/map/generation gate. These checks
+do not establish a live outcome for the new recipe; its final capture is separate.
+
+### Required-score correction capture at 6f3e0cb
+
+The single requested final capture at
+`6f3e0cb530c04874dc504b9b291a4401ea80f187` on `11.138.0.19` is preserved as
+[`2026-10-30-mail-protection-review-final.json`](evidence/2026-10-30-mail-protection-review-final.json),
+SHA-256 `7c0c9b67e1bc79e3c3e39d0406013e846c0d715c0837d038dd304fcb5244014c`.
+It contains 26 observations (24 GET, two POST), all HTTP 200 with successful API
+outcomes and payload validation. Direct threshold set and readback expectations
+pass with a numeric-string score. The original preference object had no
+`required_score`; the omission-based restoration reply contains an empty
+`required_score` list instead of omitting the field, so its exact-object
+expectation fails. This is a response-versus-state distinction, not a payload
+contract failure.
+
+Both subsequent restoration reads and both final catalog preference reads match
+the complete original object, with the field absent. The immutable artifact still
+records direct restoration as `uncertain`, bridge mutation as `not_started`, and
+failed preference assessment. No mutation was retried and no bridge write ran.
+The final 19-GET catalog retains the two masked PTR unknown-field failures without
+waiver. Their masked structures match the earlier capture; this does not identify
+the underlying unknown key names. `8x0.2.23.1` tracks review of the removal reply
+expectation and remaining bridge evidence before any further mutation.
+
+Committed captures now observe 23 of the 47 new functions, adding direct
+`update_user_preference` execution to the prior 22. That count does not establish
+bridged preference mutation coverage, successful strict final assessment or mail
+filtering enforcement. All earlier artifacts remain byte-identical.
+
+The follow-up fixture correction accepts an empty-list removal reply only when
+`required_score` was originally absent, and only for the restoration POST
+response. All other preference fields must still match exactly; configured
+original values stay exact. Both restoration getters and final catalog getters
+still require the original object with the field absent. Lost-response uncertainty
+and failed API/payload outcomes remain failures. Independent literal regressions
+cover the observed response variant, strict getters, unrelated changes and
+uncertain outcomes. The full offline gate passes 15,680 tests / 110,389 assertions.
+No second live capture has run; the first artifact is neither rewritten nor
+reclassified. Claude assessment is pending before remaining bridge evidence.
+
 ## Fileman GET and form slice (2026-10-30)
 
 The Fileman group implements 13 of 14 pinned functions: directory autocomplete,

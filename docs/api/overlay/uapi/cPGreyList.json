@@ -1,0 +1,169 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "cPGreyList",
+  "accessor": "cpGreyList",
+  "class": "CpGreyList",
+  "operations": {
+    "uapi:cPGreyList/disable_all_domains": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.50 and later; operates on the selected cPanel account. No request defaults or server-role restriction are stated in the pinned operation. Integer enabled=0 means disabled and enabled=1 means enabled in a successful payload; UAPI status=0 is still a failed call."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes Greylisting settings with no rollback. Returned dependencies identify other domains affected by a selected domain change; preserve their order and empty lists. Domain row fields are optional, and no undocumented nullable alternatives are inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes Greylisting for all domains belonging to the selected account; no domain selector is accepted."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /cPGreyList/disable_all_domains declares x-readonly=false and x-rollback=none. Use form POST; the client performs no retry or automatic rollback."
+        }
+      ]
+    },
+    "uapi:cPGreyList/disable_domains": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.50 and later; operates on the selected cPanel account. No request defaults or server-role restriction are stated in the pinned operation. Integer enabled=0 means disabled and enabled=1 means enabled in a successful payload; UAPI status=0 is still a failed call."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes Greylisting settings with no rollback. Returned dependencies identify other domains affected by a selected domain change; preserve their order and empty lists. Domain row fields are optional, and no undocumented nullable alternatives are inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "domains accepts one string or a nonempty sequential list of strings encoded as repeated domains fields. The source prose specifies repetition, while its multiple-value example incorrectly uses singular domain. No comma or pipe splitting is inferred; a supplied string is forwarded unchanged."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /cPGreyList/disable_domains declares x-readonly=false and x-rollback=none. Use form POST; the client performs no retry or automatic rollback."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /cPGreyList/disable_domains parameter domains explicitly says to use the domains parameter multiple times for multiple domains. Encode the plural documented name as repeated fields; example strings incorrectly use singular domain and do not override the declared parameter name."
+        }
+      ],
+      "params": {
+        "domains": {
+          "encoding": "repeat"
+        }
+      }
+    },
+    "uapi:cPGreyList/enable_all_domains": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.50 and later; operates on the selected cPanel account. No request defaults or server-role restriction are stated in the pinned operation. Integer enabled=0 means disabled and enabled=1 means enabled in a successful payload; UAPI status=0 is still a failed call."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes Greylisting settings with no rollback. Returned dependencies identify other domains affected by a selected domain change; preserve their order and empty lists. Domain row fields are optional, and no undocumented nullable alternatives are inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes Greylisting for all domains belonging to the selected account; no domain selector is accepted."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /cPGreyList/enable_all_domains declares x-readonly=false and x-rollback=none. Use form POST; the client performs no retry or automatic rollback."
+        }
+      ]
+    },
+    "uapi:cPGreyList/enable_domains": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.50 and later; operates on the selected cPanel account. No request defaults or server-role restriction are stated in the pinned operation. Integer enabled=0 means disabled and enabled=1 means enabled in a successful payload; UAPI status=0 is still a failed call."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes Greylisting settings with no rollback. Returned dependencies identify other domains affected by a selected domain change; preserve their order and empty lists. Domain row fields are optional, and no undocumented nullable alternatives are inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "domains accepts one string or a nonempty sequential list of strings encoded as repeated domains fields. The source prose specifies repetition, while its multiple-value example incorrectly uses singular domain. No comma or pipe splitting is inferred; a supplied string is forwarded unchanged."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /cPGreyList/enable_domains declares x-readonly=false and x-rollback=none. Use form POST; the client performs no retry or automatic rollback."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /cPGreyList/enable_domains parameter domains explicitly says to use the domains parameter multiple times for multiple domains. Encode the plural documented name as repeated fields; example strings incorrectly use singular domain and do not override the declared parameter name."
+        }
+      ],
+      "params": {
+        "domains": {
+          "encoding": "repeat"
+        }
+      }
+    },
+    "uapi:cPGreyList/has_greylisting_enabled": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.50 and later; operates on the selected cPanel account. No request defaults or server-role restriction are stated in the pinned operation. Integer enabled=0 means disabled and enabled=1 means enabled in a successful payload; UAPI status=0 is still a failed call."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:cPGreyList/list_domains": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.50 and later; operates on the selected cPanel account. No request defaults or server-role restriction are stated in the pinned operation. Integer enabled=0 means disabled and enabled=1 means enabled in a successful payload; UAPI status=0 is still a failed call."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns optional domain fields, dependency string lists and an optional cPGreyList object with optional integer total_disabled and total_enabled counts. An empty list remains empty; omitted fields stay absent."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    }
+  }
+}

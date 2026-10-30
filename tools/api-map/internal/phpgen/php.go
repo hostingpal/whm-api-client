@@ -117,8 +117,8 @@ func baseShape(spec effective.TypeSpec, indent string) string {
 	case "union":
 		return unionShape(spec, indent)
 	case "object":
-		// The engine returns [] for an object without declared fields.
-		if len(spec.Fields) == 0 {
+		// Closed fieldless objects return []; open objects preserve typed extras.
+		if len(spec.Fields) == 0 && spec.Values == nil {
 			return "array{}"
 		}
 		inner := indent + "    "
@@ -138,6 +138,9 @@ func baseShape(spec effective.TypeSpec, indent string) string {
 				optional = ""
 			}
 			lines = append(lines, inner+key+optional+": "+shape(field.Spec, inner)+",")
+		}
+		if spec.Values != nil {
+			lines = append(lines, inner+"...<array-key, "+shape(*spec.Values, inner)+">")
 		}
 		lines = append(lines, indent+"}")
 		return strings.Join(lines, "\n")
