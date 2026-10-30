@@ -1195,3 +1195,32 @@ The suite gained 264 cases and reached **4,015 tests / 31,055 assertions**. Requ
 Composer and offline API-map gates passed. A separate local review of the code
 commit found no issues and ran 400 focused tests / 5,253 assertions. External
 review rounds and findings are tracked in Beads; human review time is not instrumented.
+
+
+## 2026-10-30 complete DomainInfo, Features and LangPHP contracts
+
+This slice adds 13 generated methods: both remaining DomainInfo operations, four
+Features operations and seven LangPHP operations. The three modules now contain
+5, 5 and 11 methods respectively; branch coverage is 95 operations in 13 groups.
+Pinned snapshots are unchanged. Overlay evidence identifies the domain list/hash
+container discrepancies, quoted domain flags, the PHP vhost list/single-record
+alternatives and malformed phpversion_source schema. The INI content setter's
+host/home conflict remains visible; no unsupported enum or empty-string flag
+coercion is inferred.
+
+Features/has_feature's pinned examples use UAPI status 0 for absent/disabled access,
+so that operation declares unchecked UAPI outcome semantics and retains its
+nullable object payload. The WHM bridge still checks its outer result. Independent
+fixtures cover literal requests and populated, omitted, null, empty, false and zero
+responses through wrapped direct, bare direct and bridged envelopes. Response-trace
+regressions demonstrate that both raw HTTP responses and decoded payloads must be
+sensitive even when a read returns a secret. The generated INI setter parameters
+are also sensitive. The first stack commit adds evidence-required parameter
+requiredness corrections for prose-documented alternatives used by subsequent
+Email and SSL slices.
+
+The reviewed read-only catalog adds 20 probes across the ten new read operations,
+binding npr/npr.rs, domain hash output, home INI scope and fixed feature searches.
+It now contains 67 probes across 37 operations. This is a runnable recipe count;
+live outcomes are recorded separately. The three LangPHP mutations are offline
+contract coverage until a dedicated reversible configuration fixture is observed.

@@ -13,6 +13,500 @@ namespace HostingPal\WhmApiClient\Api\Uapi\Spec;
  */
 final class DomainInfoSpec
 {
+    public const DOMAINS_DATA = [
+        'function' => 'domains_data',
+        'module' => 'DomainInfo',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'format' => ['name' => 'format', 'encoding' => 'scalar'],
+            'hideTemporaryDomains' => ['name' => 'hide_temporary_domains', 'encoding' => 'bool'],
+            'returnHttpsRedirectsStatus' => ['name' => 'return_https_redirects_status', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'union',
+            'anyOf' => [
+                [
+                    'type' => 'object',
+                    'fields' => [
+                        'addon_domains' => [
+                            'type' => 'list',
+                            'items' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'all_aliases_valid' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                    'can_https_redirect' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                    'customlog' => [
+                                        'type' => 'union',
+                                        'anyOf' => [
+                                            [
+                                                'type' => 'object',
+                                                'fields' => [
+                                                    'format' => ['type' => 'string'],
+                                                    'target' => ['type' => 'string'],
+                                                ],
+                                            ],
+                                            [
+                                                'type' => 'list',
+                                                'items' => [
+                                                    'type' => 'object',
+                                                    'fields' => [
+                                                        'format' => ['type' => 'string'],
+                                                        'target' => ['type' => 'string'],
+                                                    ],
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                    'documentroot' => ['type' => 'string'],
+                                    'domain' => ['type' => 'string'],
+                                    'group' => ['type' => 'string'],
+                                    'hascgi' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                    'homedir' => ['type' => 'string'],
+                                    'ifmodulemodsuphpc' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'group' => ['type' => 'string'],
+                                        ],
+                                    ],
+                                    'ip' => ['type' => 'string'],
+                                    'ipv6' => ['type' => 'string', 'nullable' => true],
+                                    'is_https_redirecting' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                    'is_temporary' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                    'no_cache_update' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                    'options' => ['type' => 'string'],
+                                    'owner' => ['type' => 'string'],
+                                    'parked_capable_of_https_redirects' => [
+                                        'type' => 'list',
+                                        'items' => ['type' => 'string'],
+                                    ],
+                                    'parked_with_https_redirects' => [
+                                        'type' => 'list',
+                                        'items' => ['type' => 'string'],
+                                    ],
+                                    'port' => ['type' => 'int', 'accept' => ['numeric-string']],
+                                    'scriptalias' => [
+                                        'type' => 'union',
+                                        'anyOf' => [
+                                            [
+                                                'type' => 'object',
+                                                'fields' => [
+                                                    'path' => ['type' => 'string'],
+                                                    'url' => ['type' => 'string'],
+                                                ],
+                                            ],
+                                            [
+                                                'type' => 'list',
+                                                'items' => [
+                                                    'type' => 'object',
+                                                    'fields' => [
+                                                        'path' => ['type' => 'string'],
+                                                        'url' => ['type' => 'string'],
+                                                    ],
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                    'serveradmin' => ['type' => 'string'],
+                                    'serveralias' => ['type' => 'string'],
+                                    'servername' => ['type' => 'string'],
+                                    'type' => ['type' => 'string'],
+                                    'usecanonicalname' => ['type' => 'string'],
+                                    'user' => ['type' => 'string'],
+                                    'userdirprotect' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                ],
+                            ],
+                        ],
+                        'main_domain' => [
+                            'type' => 'union',
+                            'anyOf' => [
+                                [
+                                    'type' => 'object',
+                                    'fields' => [
+                                        'all_aliases_valid' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                        'can_https_redirect' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                        'customlog' => [
+                                            'type' => 'union',
+                                            'anyOf' => [
+                                                [
+                                                    'type' => 'object',
+                                                    'fields' => [
+                                                        'format' => ['type' => 'string'],
+                                                        'target' => ['type' => 'string'],
+                                                    ],
+                                                ],
+                                                [
+                                                    'type' => 'list',
+                                                    'items' => [
+                                                        'type' => 'object',
+                                                        'fields' => [
+                                                            'format' => ['type' => 'string'],
+                                                            'target' => ['type' => 'string'],
+                                                        ],
+                                                    ],
+                                                ],
+                                            ],
+                                        ],
+                                        'documentroot' => ['type' => 'string'],
+                                        'domain' => ['type' => 'string'],
+                                        'group' => ['type' => 'string'],
+                                        'hascgi' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                        'homedir' => ['type' => 'string'],
+                                        'ifmodulemodsuphpc' => [
+                                            'type' => 'object',
+                                            'fields' => [
+                                                'group' => ['type' => 'string'],
+                                            ],
+                                        ],
+                                        'ip' => ['type' => 'string'],
+                                        'ipv6' => ['type' => 'string', 'nullable' => true],
+                                        'is_https_redirecting' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                        'is_temporary' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                        'no_cache_update' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                        'options' => ['type' => 'string'],
+                                        'owner' => ['type' => 'string'],
+                                        'parked_capable_of_https_redirects' => [
+                                            'type' => 'list',
+                                            'items' => ['type' => 'string'],
+                                        ],
+                                        'parked_with_https_redirects' => [
+                                            'type' => 'list',
+                                            'items' => ['type' => 'string'],
+                                        ],
+                                        'port' => ['type' => 'int', 'accept' => ['numeric-string']],
+                                        'scriptalias' => [
+                                            'type' => 'union',
+                                            'anyOf' => [
+                                                [
+                                                    'type' => 'object',
+                                                    'fields' => [
+                                                        'path' => ['type' => 'string'],
+                                                        'url' => ['type' => 'string'],
+                                                    ],
+                                                ],
+                                                [
+                                                    'type' => 'list',
+                                                    'items' => [
+                                                        'type' => 'object',
+                                                        'fields' => [
+                                                            'path' => ['type' => 'string'],
+                                                            'url' => ['type' => 'string'],
+                                                        ],
+                                                    ],
+                                                ],
+                                            ],
+                                        ],
+                                        'serveradmin' => ['type' => 'string'],
+                                        'serveralias' => ['type' => 'string'],
+                                        'servername' => ['type' => 'string'],
+                                        'type' => ['type' => 'string'],
+                                        'usecanonicalname' => ['type' => 'string'],
+                                        'user' => ['type' => 'string'],
+                                        'userdirprotect' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                    ],
+                                ],
+                                [
+                                    'type' => 'list',
+                                    'items' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'all_aliases_valid' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                            'can_https_redirect' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                            'customlog' => [
+                                                'type' => 'union',
+                                                'anyOf' => [
+                                                    [
+                                                        'type' => 'object',
+                                                        'fields' => [
+                                                            'format' => ['type' => 'string'],
+                                                            'target' => ['type' => 'string'],
+                                                        ],
+                                                    ],
+                                                    [
+                                                        'type' => 'list',
+                                                        'items' => [
+                                                            'type' => 'object',
+                                                            'fields' => [
+                                                                'format' => ['type' => 'string'],
+                                                                'target' => ['type' => 'string'],
+                                                            ],
+                                                        ],
+                                                    ],
+                                                ],
+                                            ],
+                                            'documentroot' => ['type' => 'string'],
+                                            'domain' => ['type' => 'string'],
+                                            'group' => ['type' => 'string'],
+                                            'hascgi' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                            'homedir' => ['type' => 'string'],
+                                            'ifmodulemodsuphpc' => [
+                                                'type' => 'object',
+                                                'fields' => [
+                                                    'group' => ['type' => 'string'],
+                                                ],
+                                            ],
+                                            'ip' => ['type' => 'string'],
+                                            'ipv6' => ['type' => 'string', 'nullable' => true],
+                                            'is_https_redirecting' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                            'is_temporary' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                            'no_cache_update' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                            'options' => ['type' => 'string'],
+                                            'owner' => ['type' => 'string'],
+                                            'parked_capable_of_https_redirects' => [
+                                                'type' => 'list',
+                                                'items' => ['type' => 'string'],
+                                            ],
+                                            'parked_with_https_redirects' => [
+                                                'type' => 'list',
+                                                'items' => ['type' => 'string'],
+                                            ],
+                                            'port' => ['type' => 'int', 'accept' => ['numeric-string']],
+                                            'scriptalias' => [
+                                                'type' => 'union',
+                                                'anyOf' => [
+                                                    [
+                                                        'type' => 'object',
+                                                        'fields' => [
+                                                            'path' => ['type' => 'string'],
+                                                            'url' => ['type' => 'string'],
+                                                        ],
+                                                    ],
+                                                    [
+                                                        'type' => 'list',
+                                                        'items' => [
+                                                            'type' => 'object',
+                                                            'fields' => [
+                                                                'path' => ['type' => 'string'],
+                                                                'url' => ['type' => 'string'],
+                                                            ],
+                                                        ],
+                                                    ],
+                                                ],
+                                            ],
+                                            'serveradmin' => ['type' => 'string'],
+                                            'serveralias' => ['type' => 'string'],
+                                            'servername' => ['type' => 'string'],
+                                            'type' => ['type' => 'string'],
+                                            'usecanonicalname' => ['type' => 'string'],
+                                            'user' => ['type' => 'string'],
+                                            'userdirprotect' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'parked_capable_of_https_redirects' => ['type' => 'list', 'items' => ['type' => 'string']],
+                        'parked_domains' => [
+                            'type' => 'list',
+                            'items' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'all_aliases_valid' => ['type' => 'flag'],
+                                            'can_https_redirect' => ['type' => 'flag'],
+                                            'documentroot' => ['type' => 'string'],
+                                            'domain' => ['type' => 'string'],
+                                            'group' => ['type' => 'string'],
+                                            'hascgi' => ['type' => 'flag'],
+                                            'homedir' => ['type' => 'string'],
+                                            'ip' => ['type' => 'string'],
+                                            'ipv6' => ['type' => 'string', 'nullable' => true],
+                                            'is_https_redirecting' => ['type' => 'flag'],
+                                            'is_temporary' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                            'no_cache_update' => ['type' => 'flag'],
+                                            'owner' => ['type' => 'string'],
+                                            'serveradmin' => ['type' => 'string'],
+                                            'serveralias' => ['type' => 'string'],
+                                            'servername' => ['type' => 'string'],
+                                            'type' => ['type' => 'string'],
+                                            'usecanonicalname' => ['type' => 'string'],
+                                            'user' => ['type' => 'string'],
+                                            'userdirprotect' => ['type' => 'flag'],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'parked_with_https_redirects' => ['type' => 'list', 'items' => ['type' => 'string']],
+                        'sub_domains' => [
+                            'type' => 'list',
+                            'items' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'all_aliases_valid' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                    'can_https_redirect' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                    'customlog' => [
+                                        'type' => 'union',
+                                        'anyOf' => [
+                                            [
+                                                'type' => 'object',
+                                                'fields' => [
+                                                    'format' => ['type' => 'string'],
+                                                    'target' => ['type' => 'string'],
+                                                ],
+                                            ],
+                                            [
+                                                'type' => 'list',
+                                                'items' => [
+                                                    'type' => 'object',
+                                                    'fields' => [
+                                                        'format' => ['type' => 'string'],
+                                                        'target' => ['type' => 'string'],
+                                                    ],
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                    'documentroot' => ['type' => 'string'],
+                                    'domain' => ['type' => 'string'],
+                                    'group' => ['type' => 'string'],
+                                    'hascgi' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                    'homedir' => ['type' => 'string'],
+                                    'ifmodulemodsuphpc' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'group' => ['type' => 'string'],
+                                        ],
+                                    ],
+                                    'ip' => ['type' => 'string'],
+                                    'ipv6' => ['type' => 'string', 'nullable' => true],
+                                    'is_https_redirecting' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                    'is_temporary' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                    'no_cache_update' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                    'options' => ['type' => 'string'],
+                                    'owner' => ['type' => 'string'],
+                                    'parked_capable_of_https_redirects' => [
+                                        'type' => 'list',
+                                        'items' => ['type' => 'string'],
+                                    ],
+                                    'parked_with_https_redirects' => [
+                                        'type' => 'list',
+                                        'items' => ['type' => 'string'],
+                                    ],
+                                    'port' => ['type' => 'int', 'accept' => ['numeric-string']],
+                                    'scriptalias' => [
+                                        'type' => 'union',
+                                        'anyOf' => [
+                                            [
+                                                'type' => 'object',
+                                                'fields' => [
+                                                    'path' => ['type' => 'string'],
+                                                    'url' => ['type' => 'string'],
+                                                ],
+                                            ],
+                                            [
+                                                'type' => 'list',
+                                                'items' => [
+                                                    'type' => 'object',
+                                                    'fields' => [
+                                                        'path' => ['type' => 'string'],
+                                                        'url' => ['type' => 'string'],
+                                                    ],
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                    'serveradmin' => ['type' => 'string'],
+                                    'serveralias' => ['type' => 'string'],
+                                    'servername' => ['type' => 'string'],
+                                    'type' => ['type' => 'string'],
+                                    'usecanonicalname' => ['type' => 'string'],
+                                    'user' => ['type' => 'string'],
+                                    'userdirprotect' => ['type' => 'flag', 'accept' => ['string-flag']],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'all_aliases_valid' => ['type' => 'flag', 'accept' => ['string-flag']],
+                            'can_https_redirect' => ['type' => 'flag', 'accept' => ['string-flag']],
+                            'customlog' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'format' => ['type' => 'string'],
+                                            'target' => ['type' => 'string'],
+                                        ],
+                                    ],
+                                    [
+                                        'type' => 'list',
+                                        'items' => [
+                                            'type' => 'object',
+                                            'fields' => [
+                                                'format' => ['type' => 'string'],
+                                                'target' => ['type' => 'string'],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'documentroot' => ['type' => 'string'],
+                            'domain' => ['type' => 'string'],
+                            'group' => ['type' => 'string'],
+                            'hascgi' => ['type' => 'flag', 'accept' => ['string-flag']],
+                            'homedir' => ['type' => 'string'],
+                            'ifmodulemodsuphpc' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'group' => ['type' => 'string'],
+                                ],
+                            ],
+                            'ip' => ['type' => 'string'],
+                            'ipv6' => ['type' => 'string', 'nullable' => true],
+                            'is_https_redirecting' => ['type' => 'flag', 'accept' => ['string-flag']],
+                            'is_temporary' => ['type' => 'flag', 'accept' => ['string-flag']],
+                            'no_cache_update' => ['type' => 'flag', 'accept' => ['string-flag']],
+                            'options' => ['type' => 'string'],
+                            'owner' => ['type' => 'string'],
+                            'parked_capable_of_https_redirects' => ['type' => 'list', 'items' => ['type' => 'string']],
+                            'parked_with_https_redirects' => ['type' => 'list', 'items' => ['type' => 'string']],
+                            'port' => ['type' => 'int', 'accept' => ['numeric-string']],
+                            'scriptalias' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'path' => ['type' => 'string'],
+                                            'url' => ['type' => 'string'],
+                                        ],
+                                    ],
+                                    [
+                                        'type' => 'list',
+                                        'items' => [
+                                            'type' => 'object',
+                                            'fields' => [
+                                                'path' => ['type' => 'string'],
+                                                'url' => ['type' => 'string'],
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                            'serveradmin' => ['type' => 'string'],
+                            'serveralias' => ['type' => 'string'],
+                            'servername' => ['type' => 'string'],
+                            'type' => ['type' => 'string'],
+                            'usecanonicalname' => ['type' => 'string'],
+                            'user' => ['type' => 'string'],
+                            'userdirprotect' => ['type' => 'flag', 'accept' => ['string-flag']],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
     public const LIST_DOMAINS = [
         'function' => 'list_domains',
         'module' => 'DomainInfo',
@@ -59,5 +553,63 @@ final class DomainInfoSpec
             ],
         ],
         'unwrap' => 'primary_domain',
+    ];
+
+    public const SINGLE_DOMAIN_DATA = [
+        'function' => 'single_domain_data',
+        'module' => 'DomainInfo',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'hideTemporaryDomains' => ['name' => 'hide_temporary_domains', 'encoding' => 'bool'],
+            'returnHttpsRedirectStatus' => ['name' => 'return_https_redirect_status', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'all_aliases_valid' => ['type' => 'flag'],
+                'can_https_redirect' => ['type' => 'flag'],
+                'customlog' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'domain' => ['type' => 'string'],
+                        'target' => ['type' => 'string'],
+                    ],
+                ],
+                'documentroot' => ['type' => 'string'],
+                'domain' => ['type' => 'string'],
+                'group' => ['type' => 'string'],
+                'hascgi' => ['type' => 'flag'],
+                'homedir' => ['type' => 'string'],
+                'ifmodulemodsuphpc' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'group' => ['type' => 'string'],
+                    ],
+                ],
+                'ip' => ['type' => 'string'],
+                'is_https_redirecting' => ['type' => 'flag'],
+                'is_temporary' => ['type' => 'flag'],
+                'options' => ['type' => 'string'],
+                'owner' => ['type' => 'string'],
+                'phpopenbasedirprotect' => ['type' => 'flag'],
+                'port' => ['type' => 'int'],
+                'scriptalias' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'path' => ['type' => 'string'],
+                        'url' => ['type' => 'string'],
+                    ],
+                ],
+                'serveradmin' => ['type' => 'string'],
+                'serveralias' => ['type' => 'string'],
+                'servername' => ['type' => 'string'],
+                'type' => ['type' => 'string'],
+                'usecanonicalname' => ['type' => 'string'],
+                'user' => ['type' => 'string'],
+                'userdirprotect' => ['type' => 'flag'],
+            ],
+        ],
     ];
 }

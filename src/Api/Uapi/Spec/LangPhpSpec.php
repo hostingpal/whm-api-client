@@ -78,4 +78,211 @@ final class LangPhpSpec
         ],
         'unwrap' => 'version',
     ];
+
+    public const PHP_GET_VHOST_VERSIONS = [
+        'function' => 'php_get_vhost_versions',
+        'module' => 'LangPHP',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'vhost' => ['name' => 'vhost', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'union',
+            'anyOf' => [
+                [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'account' => ['type' => 'string'],
+                            'account_owner' => ['type' => 'string'],
+                            'documentroot' => ['type' => 'string'],
+                            'homedir' => ['type' => 'string'],
+                            'main_domain' => ['type' => 'flag'],
+                            'php_fpm' => ['type' => 'flag'],
+                            'php_fpm_pool_parms' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'pm_max_children' => ['type' => 'int'],
+                                    'pm_max_requests' => ['type' => 'int'],
+                                    'pm_process_idle_timeout' => ['type' => 'int'],
+                                ],
+                            ],
+                            'phpversion_source' => [
+                                'type' => 'list',
+                                'items' => [
+                                    'type' => 'object',
+                                    'fields' => [
+                                        'domain' => ['type' => 'string'],
+                                        'system_default' => ['type' => 'flag'],
+                                    ],
+                                ],
+                            ],
+                            'version' => ['type' => 'string'],
+                            'vhost' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+                [
+                    'type' => 'object',
+                    'fields' => [
+                        'account' => ['type' => 'string'],
+                        'account_owner' => ['type' => 'string'],
+                        'documentroot' => ['type' => 'string'],
+                        'homedir' => ['type' => 'string'],
+                        'main_domain' => ['type' => 'flag'],
+                        'php_fpm' => ['type' => 'flag'],
+                        'php_fpm_pool_parms' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'pm_max_children' => ['type' => 'int'],
+                                'pm_max_requests' => ['type' => 'int'],
+                                'pm_process_idle_timeout' => ['type' => 'int'],
+                            ],
+                        ],
+                        'phpversion_source' => [
+                            'type' => 'list',
+                            'items' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'domain' => ['type' => 'string'],
+                                    'system_default' => ['type' => 'flag'],
+                                ],
+                            ],
+                        ],
+                        'version' => ['type' => 'string'],
+                        'vhost' => ['type' => 'string'],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const PHP_INI_GET_USER_BASIC_DIRECTIVES = [
+        'function' => 'php_ini_get_user_basic_directives',
+        'module' => 'LangPHP',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'type' => ['name' => 'type', 'encoding' => 'scalar'],
+            'vhost' => ['name' => 'vhost', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'directives' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'default_value' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'bool'],
+                                    ['type' => 'int'],
+                                    ['type' => 'number'],
+                                ],
+                            ],
+                            'info' => ['type' => 'string'],
+                            'key' => ['type' => 'string'],
+                            'php_ini_mode' => ['type' => 'string'],
+                            'type' => ['type' => 'string'],
+                            'value' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const PHP_INI_GET_USER_CONTENT = [
+        'function' => 'php_ini_get_user_content',
+        'module' => 'LangPHP',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'type' => ['name' => 'type', 'encoding' => 'scalar'],
+            'vhost' => ['name' => 'vhost', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'content' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const PHP_INI_GET_USER_PATHS = [
+        'function' => 'php_ini_get_user_paths',
+        'module' => 'LangPHP',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'paths' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'account' => ['type' => 'string'],
+                            'documentroot' => ['type' => 'string'],
+                            'homedir' => ['type' => 'string'],
+                            'main_domain' => ['type' => 'flag'],
+                            'path' => ['type' => 'string'],
+                            'type' => ['type' => 'string'],
+                            'version' => ['type' => 'string'],
+                            'vhost' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const PHP_INI_SET_USER_BASIC_DIRECTIVES = [
+        'function' => 'php_ini_set_user_basic_directives',
+        'module' => 'LangPHP',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'directives' => ['name' => 'directive', 'encoding' => 'numbered'],
+            'type' => ['name' => 'type', 'encoding' => 'scalar'],
+            'vhost' => ['name' => 'vhost', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'mixed'],
+    ];
+
+    public const PHP_INI_SET_USER_CONTENT = [
+        'function' => 'php_ini_set_user_content',
+        'module' => 'LangPHP',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'content' => ['name' => 'content', 'encoding' => 'scalar'],
+            'type' => ['name' => 'type', 'encoding' => 'scalar'],
+            'vhost' => ['name' => 'vhost', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const PHP_SET_VHOST_VERSIONS = [
+        'function' => 'php_set_vhost_versions',
+        'module' => 'LangPHP',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'version' => ['name' => 'version', 'encoding' => 'scalar'],
+            'vhosts' => ['name' => 'vhost', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'vhosts' => ['type' => 'list', 'items' => ['type' => 'string']],
+            ],
+        ],
+    ];
 }

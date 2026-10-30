@@ -3,6 +3,95 @@
   "family": "uapi",
   "group": "Features",
   "operations": {
-    "uapi:Features/list_features": {}
+    "uapi:Features/list_features": {},
+    "uapi:Features/get_feature_metadata": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Lists this account's available feature metadata; id, name and integer is_plugin fields may be omitted. Third-party feature IDs are not a closed enumeration."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": [],
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:Features/has_feature": {
+      "outcome": "unchecked",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /Features/has_feature responses/200/content/application~1json/examples/does-not-have-feature and exists-but-acct-does-not-have show status=0, errors=null and data=null for unavailable features; has-feature shows status=1 with data=null. UAPI status carries the feature-access outcome rather than an API error, so use unchecked for UAPI only. Outer WHM outcome checking remains mandatory."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This operation uses UAPI status as the feature-access result: inspect responseMeta()->uapiStatus() after the call (1 means enabled; 0 means absent or disabled). A UAPI status of 0 is accepted; an outer WHM bridge failure still throws."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned data schema is a nullable opaque object, with null in the documented access examples. Preserve explicit null and object fields; absent data is a payload mismatch. No boolean payload is invented."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "name": "autossl"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:Features/has_features_like": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Only enabled matching features count. has_matching_features remains an optional integer 0/1 flag; the entire result may be null. Omitted isRegex preserves the server default; false is sent explicitly as 0."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "pattern": "mail",
+          "is_regex": "0"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:Features/list_features_like": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Returns only enabled feature names that match the pattern. Preserve the distinct null and empty-list results; omission of isRegex leaves the default in effect, while false sends 0."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {
+          "pattern": "mail",
+          "is_regex": "0"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    }
   }
 }

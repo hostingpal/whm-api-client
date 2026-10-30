@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 13 typed groups cover 82 reviewed operations:
+and cPanel UAPI surface. The 13 typed groups cover 95 operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -180,6 +180,16 @@ typed or live-verified coverage. The 2026-10-13 spec's
 [scaling decision (typed core plus generic calls)](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls)
 is superseded: its hand-written-group decision is replaced by the generated-client
 design (bead `whm-api-client-8x0.10`).
+DomainInfo (5), Features (5), and LangPHP (11) cover their complete pinned modules.
+Domain details preserve list/hash alternatives and documented quoted flag variants.
+PHP vhost versions preserve list/single-record variants. INI writes and PHP version
+changes use POST; INI content/directive inputs are sensitive. The content setter has
+an unresolved pinned host/home enum-versus-prose discrepancy. Features/has_feature
+returns nullable opaque data and uses UAPI status as the feature result; inspect
+responseMeta()->uapiStatus(), while retaining outer WHM failure checks. Response
+arguments in EnvelopeReader and OperationRunner remain SensitiveParameter because
+raw or decoded responses may contain secrets. Overlay parameter requiredness can
+be overridden only with evidence; omission retains the pinned requiredness.
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.
@@ -251,7 +261,8 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   operation parameters in the body, because the pinned WHM documentation says the
   server records query strings in its access log. Mutations and any operation with
   a secret-bearing parameter must use POST. `OutcomePolicy::Flag` (the documented
-  `metadata.result`/`status` 1/0 rule) is what every typed group declares;
+  `metadata.result`/`status` 1/0 rule) is the default typed policy; Features/has_feature
+  uses unchecked UAPI status because 0 means absent/disabled and 1 enabled;
   `OutcomePolicy::Unchecked` records the envelope for operations whose status
   carries payload semantics; on the WHM bridge it waives only the UAPI status, and
   the outer WHM result is checked under both policies. Both require a usable envelope.
@@ -329,8 +340,8 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
 ## Generated-client delivery
 
 - Follow the [current delivery design](docs/superpowers/specs/2026-10-14-generated-client-design.md#first-evidence-slice-and-next-batch).
-  The development-only runner in `tools/live-verify/` captures 47 reviewed
-  read-only route-specific probes across 27 operations through the generated
+  The development-only runner in `tools/live-verify/` captures 67 reviewed
+  read-only route-specific probes across 37 operations through the generated
   client; run it explicitly
   with `WHM_API_LIVE=1 composer live:verify -- --output=docs/api/evidence/read-only.json`.
   It requires committed code and persists sanitized structure only. Catalog entries
