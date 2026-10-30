@@ -3,11 +3,11 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 13 generated typed groups cover 95 operations (see
+The 13 generated typed groups cover 187 operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
-features, Email inventory, SSL/AutoSSL inventory, disk quotas and MySQL inventory,
+features, the complete Email module, SSL/AutoSSL inventory, disk quotas and MySQL inventory,
 database/user creation, privilege assignment and deletion.
 Generic `call()` methods provide GET and form-encoded POST access without a typed
 group, subject to the operation's parameter, route and envelope requirements.
@@ -235,6 +235,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->domainInfo()` | All 5 operations: `domainsData()`, `singleDomainData()`, `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
 | `uapi()->langPhp()` | All 11 operations: installed/default/vhost PHP versions, domain handlers and impacted domains, INI paths/basic directives/content reads, and `phpIniSetUserBasicDirectives()`, `phpIniSetUserContent()`, `phpSetVhostVersions()` |
 | `uapi()->features()` | All 5 operations: `getFeatureMetadata()`, `hasFeature()`, `hasFeaturesLike()`, `listFeatures()`, `listFeaturesLike()` |
+| `uapi()->email()` | All 96 pinned functions, including mailbox lifecycle, quotas and suspension, forwarders, filters, MX routing, autoresponders, spam settings and delivery diagnostics; see [generated methods](src/Api/Uapi/Email.php). |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
 | `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
@@ -256,6 +257,27 @@ result: 1 means enabled; 0 means absent or disabled. This method accepts UAPI st
 
 `uapi()->dns()->fetchCpanelGeneratedDomains()` requires cPanel 120 and preserves
 trailing dots; `lookup()` returns textual lines or explicit `null`.
+
+The Email module uses POST for mutations and secret-bearing requests. Passwords,
+password hashes, filter content and other marked inputs remain sensitive throughout
+the library's call stack. `addPop(email: 'demo', password: $password, domain: 'example.com',
+sendWelcomeEmail: false)` suppresses the optional welcome message. Supply either
+`password` or `passwordHash`, never both; account quota and role restrictions still
+apply. Methods that send mail or change account-wide settings execute immediately.
+
+`storeFilter()` and `reorderFilters()` accept nonempty ordered lists for numbered
+filter parameters. The client emits `action1`, `action2`, or `filter1`, `filter2`;
+`values` also accepts integer items for numeric comparisons. Other filter lists
+accept strings. Empty/keyed lists and colliding wire names fail before dispatch.
+Mailbox counts and quota results retain their documented zero/unlimited meanings.
+`listPopsWithDisk()` keeps floating-point MB usage, while opaque mutation payloads
+retain fields and explicit nulls.
+
+Two Email contracts remain limited by the pinned source: `traceDelivery()` preserves
+the formal destination shapes, but deeper recursive routed examples are not a typed
+recursive contract; `terminateMailboxSessions()` documents a WHM-like envelope in
+its UAPI page, so actual UAPI-envelope compatibility remains unverified. Offline
+fixtures cover all functions; live evidence is limited to explicitly recorded calls.
 
 The DNS methods are read-only (GET):
 

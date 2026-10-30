@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 13 typed groups cover 95 operations:
+and cPanel UAPI surface. The 13 typed groups cover 187 operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -180,6 +180,18 @@ typed or live-verified coverage. The 2026-10-13 spec's
 [scaling decision (typed core plus generic calls)](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls)
 is superseded: its hand-written-group decision is replaced by the generated-client
 design (bead `whm-api-client-8x0.10`).
+The complete Email module exposes 96 pinned functions. Mutations and secret-bearing
+requests use form POST. Preserve password/passwordHash alternatives, receive-mail
+role/default/zero-unlimited caveats, and integer/floating-point quota units. Email
+filter wire families use reviewed suffix-numbered encodings: filter*, action*, dest*,
+match*, opt*, part*, val* become name1/name2; only val* allows integer items. Lists
+must be nonempty/sequential, and expanded wire collisions fail before dispatch.
+The formal trace_delivery destination alternatives are merged without dropping
+fields from later optional-object alternatives; recursive example behavior remains
+unverified. terminate_mailbox_sessions has an upstream envelope discrepancy and
+no documented data payload; never claim successful live compatibility without
+observing it. Live tests must never send welcome/configuration messages or deliver
+mail, and only newly owned fixture mailboxes may be changed or removed.
 DomainInfo (5), Features (5), and LangPHP (11) cover their complete pinned modules.
 Domain details preserve list/hash alternatives and documented quoted flag variants.
 PHP vhost versions preserve list/single-record variants. INI writes and PHP version

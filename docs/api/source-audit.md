@@ -1224,3 +1224,34 @@ binding npr/npr.rs, domain hash output, home INI scope and fixed feature searche
 It now contains 67 probes across 37 operations. This is a runnable recipe count;
 live outcomes are recorded separately. The three LangPHP mutations are offline
 contract coverage until a dedicated reversible configuration fixture is observed.
+
+
+## 2026-10-30 complete Email contracts
+
+The second stacked slice adds 92 generated operations, completing all 96 pinned
+Email functions and bringing this branch to 187 typed operations in 13 groups.
+Independent literal fixtures cover wrapped direct, bare direct and WHM-bridged
+requests, optional arguments and payload omission/null/type boundaries. All
+mutations and secret-bearing parameters travel in form POST bodies. The client
+performs one request immediately and does not retry or roll back mutations.
+
+Source-bound corrections permit add_pop password-hash alternatives, preserve
+floating-point MB in list_pops_with_disk, and model manual MX results as dynamic
+maps rather than a property literally named additionalProperties. For trace_delivery,
+merging the finite formal destination fields avoids first-branch optional-object
+validation dropping later documented fields. The recursive routed example remains
+an explicit limitation. terminate_mailbox_sessions documents a WHM-style result
+on its UAPI page; generated UAPI routing is preserved without inventing a second
+route or claiming live envelope compatibility.
+
+Email filter families require new one-based suffix encoding. Reviewed names ending
+in * expand to 1, 2, and so on; they do not use the existing WHM hyphen convention.
+The scalar variant permits integer values only for the documented numeric filter
+comparisons. Independent wire tests reject malformed lists and collisions after
+metadata reset and verify secret redaction. Shared generator and runtime checks
+reject unsupported patterns before any network request.
+
+The standalone mailbox fixture is a separate evidence scope: exact npr/npr.rs,
+fresh owned addresses, welcome messages disabled, no delivery or external recipients,
+strict cleanup, and original-response structural capture. Its actual outcomes and
+unobserved operations are recorded separately from generated coverage.
