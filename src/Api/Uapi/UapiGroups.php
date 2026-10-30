@@ -39,6 +39,8 @@ trait UapiGroups
 
     private ?Features $featuresGroup = null;
 
+    private ?Fileman $filemanGroup = null;
+
     private ?Ftp $ftpGroup = null;
 
     private ?LangPhp $langPhpGroup = null;
@@ -189,6 +191,16 @@ trait UapiGroups
     public function features(): Features
     {
         return $this->featuresGroup ??= new Features($this->run(...));
+    }
+
+    /**
+     * Select the Fileman operations without making a request.
+     *
+     * The Fileman module for UAPI.
+     */
+    public function fileman(): Fileman
+    {
+        return $this->filemanGroup ??= new Fileman($this->run(...));
     }
 
     /**

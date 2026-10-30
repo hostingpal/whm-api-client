@@ -2571,4 +2571,175 @@ and failed API/payload outcomes remain failures. Independent literal regressions
 cover the observed response variant, strict getters, unrelated changes and
 uncertain outcomes. The full offline gate passes 15,680 tests / 110,389 assertions.
 No second live capture has run; the first artifact is neither rewritten nor
-reclassified. Claude assessment is pending before remaining bridge evidence.
+reclassified. [Claude review 5719375767](https://github.com/hostingpal/whm-api-client/pull/36#pullrequestreview-5719375767)
+approved exact `d499ab6`, independently reproduced the removal reply and verified
+numeric-string preference set/read/update with a custom preference through both
+routes on `11.138.0.19`; `user_prefs` was restored byte-identical. This reviewer
+report is separate from the committed artifact. No further capture is required.
+PR36 merged as `52af23a` with green CI and the reviewed tree. Follow-up
+`8x0.2.23.1` remains open for future committed both-route evidence.
+
+## Fileman GET and form slice (2026-10-30)
+
+The Fileman group implements 13 of 14 pinned functions: directory autocomplete,
+file information, file content and directory listings use GET; content saving,
+in-memory transcoding, copy, move, rename, delete, trash, restore and trash purging
+use form POST. `upload_files` requires multipart and cannot use the WHM UAPI
+bridge; it remains excluded under `8x0.1.19`. Generic form calls do not supply
+multipart support.
+
+`copyFile(source, destination)`, `moveFile(source, destination)` and
+`renameFile(source, destination)` keep source first. Content arguments are
+sensitive and form-encoded once. Paths and content are forwarded unchanged;
+charset conversion is performed by the server. **Omitting `saveFileContent()`
+content or passing `content: null` truncates an existing file to zero bytes.**
+A null variable is not a no-op; supply intended content and verify the target.
+`emptyTrash()` defaults to purging the account trash. Preserve each
+method's version, File Storage role, charset and destructive-operation caveats.
+
+`listFiles(types: 'file|dir')` accepts a pre-serialized pipe-delimited filter.
+The existing scalar encoding exposes a native `string|int` boundary without
+establishing integer filter semantics. No undeclared indexed `filepath-` family
+is inferred from `limitToList`. Optional response keys remain absent, flags stay
+integer `0|1`. File-information and flat-list sizes preserve the observed empty
+string for zero-byte files, distinct from numeric zero and omission; canonical
+integer strings still normalize losslessly. Their uid/gid fields also preserve
+observed empty strings for root-owned entries. File-content charset fields
+with unspecified schemas stay mixed. `emptyTrash()` preserves nullable opaque
+objects and rejects a missing payload.
+
+Observed file information preserves `mode` and `nicemode` as `int|string`,
+including string spelling, and normalizes `size` only from a lossless canonical
+integer string. String permission values do not establish a numeric format rule.
+Every recorded listing is a flat list of rows: iterate it directly. The pinned
+object alternative with `dirs`/`files` lists remains supported but unobserved.
+Use `array_is_list($result)` to select flat iteration; otherwise read those named
+lists when present. An empty array contains no rows under either interpretation.
+Flat rows have the reviewed permission/size representation corrections; the
+documented object alternative retains its original row types.
+
+All 13 methods have offline contract tests. The bounded live catalog selects
+three directory inventory reads through both routes, plus WHM version. It reads
+no existing file content and sends no mutations. Content, filesystem lifecycle
+and transcoding verification remain under `8x0.2.24`; exclusive fixture creation
+must precede overwrite-capable saves.
+
+The unchanged pinned UAPI source SHA-256 is
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+The overlay preserves declared parameter requiredness. Effective response
+contracts explicitly replace the list_files root with a union and widen only
+the evidenced get_file_information and flat-row fields described above; they
+do not claim to preserve every pinned response shape unchanged.
+`list_files.types` has an array schema with `style: pipeDelimited` and
+`explode: false`; caller-prepared scalar encoding follows that wire contract.
+`limit_to_list` mentions indexed paths without declaring their request schema.
+Neither detail justifies inventing a request family or delimiter conversion.
+
+The independent module test uses literal wire and payload oracles across direct
+wrapped/bare and bridged UAPI, omitted/empty/false options, response type failures,
+metadata and sensitive-content traces. The seven-request catalog has a separate
+literal URI oracle and rejects mutation methods before network dispatch. Existing
+runtime, generator and live-runner behavior is unchanged.
+
+The initial [Fileman inventory capture](evidence/2026-10-30-fileman-inventory.json)
+at `5ea0d565bb2eda9d5e03a0df23b5d8d07d1487bf` on `11.138.0.19` records seven
+GETs. All HTTP/API outcomes pass; three payload checks pass and four fail.
+`get_file_information` returns integer `mode` and numeric-string `nicemode` on
+both routes, plus numeric-string `size` on the direct route. `list_files`
+returns a flat list on both routes instead of the pinned object with `dirs` and
+`files` lists. The initial listing rows have wildcarded fields because the
+container did not match; this artifact establishes no named flat-row field types.
+The original failure evidence stays immutable, with SHA-256
+`c4f5b8b3f8930adb168f657a9b679544ad3196286250a00cd9701fe736277491`.
+
+The [second Fileman inventory capture](evidence/2026-10-30-fileman-inventory-corrected.json)
+at `bc7662dd86bfbccf41e1640cc3b38f9d63e1a0bc` records seven successful
+HTTP/API outcomes and five passing payload checks. Both listing payloads still
+fail the union. The existing original-response `payload_alternatives` diagnostics
+for flat-list candidate index 1 (SHA-256
+`2da4c9dfe2a88ae19278cc4b771de12efa463396dd478a7ebca72e8fc8c4b7be`)
+identify integer `mode` and numeric-string `nicemode` on both routes, plus
+numeric-string `size` directly and integer `size` through the bridge. This is
+candidate structural evidence, not a passing or selected alternative.
+
+These observations bind the same representation corrections to flat rows only:
+`mode` and `nicemode` preserve `int|string`; `size` accepts lossless canonical
+integer strings. The pinned object alternative's `dirs`/`files` row contracts
+remain unchanged. The second artifact stays immutable with SHA-256
+`7bd1db300c24babef264c7bfc445dbc2c1430a82152bdf33665a553428a0726f`.
+
+The [final Fileman inventory capture](evidence/2026-10-30-fileman-inventory-final.json)
+at `ec442bdea2fcab033d95a8f10b84afc56df8ec42` on `11.138.0.19` passes all seven GET
+observations: WHM version and all three inventory operations through both UAPI
+routes. HTTP/API/payload/probe checks and strict assessment pass with zero
+discrepancies. Directory information and flat listing rows are populated;
+`isparent` is omitted in the observed listing rows. The documented object-format
+listing alternative remains offline coverage. No file content, mutation,
+filesystem permission enforcement or charset round trip is established. Follow-up
+`8x0.2.24` remains open. Earlier failure captures stay unchanged. Final SHA-256:
+`946ba0512be318c20b51616a4ede7346e069ae1150f97b44c43ee03ea217bf8f`.
+
+### PR37 review corrections and master integration
+
+Master `52af23a` (approved PR36) was merged normally into the Fileman branch as
+`2ee036e`. Both slices and every existing artifact were preserved; combined
+generation is 385 operations in 30 groups. Integration passed 17,738 tests /
+124,501 assertions and the offline API-map gate before pushing.
+
+[Claude review 5719361198](https://github.com/hostingpal/whm-api-client/pull/37#pullrequestreview-5719361198)
+assessed `d484e4b` on `11.138.0.19` through both routes. It observed empty `size`
+strings for zero-byte files and empty `uid`/`gid` strings for root-owned entries
+in information and flat listing responses. Six narrow field unions now preserve
+those exact empty strings alongside the existing integer contracts; canonical
+integer-string size conversion remains lossless. Other integer fields and the
+unobserved `dirs`/`files` object rows remain unchanged. Independent fixtures cover
+empty versus zero/omission, mixed listing rows, malformed values and all envelopes.
+
+The reviewer also observed omitted/null save content truncate an existing file
+from eight bytes to zero with a successful response. Generated notes, README and
+agent guidance now state that destructive behavior explicitly. Listing guidance
+leads with the observed flat list and explains the named-list alternative without
+claiming it was observed. Stale shape-preservation claims are corrected.
+
+A separate private metadata inspection issued exactly two guarded GETs for the
+existing `npr` mail directory. Both routes returned 13 visible entries and agreed
+on one existing zero-byte file; no root-owned candidate row was present. No file
+content was read and no resource was created or changed. The selected path stays
+private and is not part of committed structural evidence. Root-owned compatibility
+remains attributed to the reviewer; no additional empty fields are inferred.
+The unobserved all-optional object branch and its strict rows stay in `8x0.2.24`.
+
+[Claude comment 6535026613](https://github.com/hostingpal/whm-api-client/pull/37#issuecomment-6535026613)
+subsequently compared root-owned files and directories with ordinary rows through
+both routes on `11.138.0.19`. Only `uid` and `gid` changed from integers to empty
+strings; other fields kept their normal types, and the reviewer removed the
+throwaway directory. This independently confirms the narrow correction scope;
+it is reviewer evidence, not part of our read-only capture.
+
+The final corrected code passes 18,027 tests / 126,265 assertions, PHPCS, maximum
+PHPStan, strict Composer validation, Go tests/vet and the offline source/map/
+generation gate. Independent review of the seven-GET zero-byte catalog confirmed
+exact URI/account confinement, metadata identity/zero assertions, privacy and
+unchanged shared helpers. No new live outcome is inferred from these offline
+checks; the committed-code final capture is recorded separately.
+
+### Final integrated Fileman review capture
+
+The immutable [review capture](evidence/2026-10-30-fileman-review-final.json) binds
+`06001e0cab782c7bd46d7d0d1f659b0c3f7ebc7d` on `11.138.0.19`, SHA-256
+`dfc4899b5e88df167ee361a081f5e682b54f20dd5005603023184ad98057993d`.
+All seven GET observations pass HTTP 200, API outcomes, payload validation,
+probe expectations and strict assessment with zero discrepancies. They cover WHM
+version plus autocomplete, the existing selected zero-byte file's information
+and its mail-directory listing through both routes. Information responses expose
+`size` as an empty string through both routes. The recipe verifies exact file
+identity and the zero marker in each information/list response without persisting
+the selected path. No file content was read and no resource was created or changed.
+
+This capture observes three of the thirteen generated Fileman functions through
+both routes. It establishes no new filesystem mutation or permission-enforcement
+coverage. Root-owned uid/gid forms remain supported by the reviewer's separate
+observations, not inferred from ordinary owner fields here. Every earlier JSON
+artifact from both merged parents is byte-identical, including failed captures.
+The evidence commit changes only documentation/artifacts; executable code and
+effective contracts remain those of the captured revision.

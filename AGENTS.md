@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 29 typed groups cover 372 documented operations:
+and cPanel UAPI surface. The 30 typed groups cover 385 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -350,6 +350,64 @@ indexing, password-protection or leech-protection changes and establishes no
 mutation or HTTP-enforcement coverage. Separate reviewer mutation observations
 are recorded in the source audit; they are not part of this artifact. Follow-up `8x0.2.22` remains open.
 
+The Fileman group implements 13 of 14 pinned functions: directory autocomplete,
+file information, file content and directory listings use GET; content saving,
+in-memory transcoding, copy, move, rename, delete, trash, restore and trash purging
+use form POST. `upload_files` requires multipart and cannot use the WHM UAPI
+bridge; it remains excluded under `8x0.1.19`. Generic form calls do not supply
+multipart support.
+
+`copyFile(source, destination)`, `moveFile(source, destination)` and
+`renameFile(source, destination)` keep source first. Content arguments are
+sensitive and form-encoded once. Paths and content are forwarded unchanged;
+charset conversion is performed by the server. **Omitting `saveFileContent()`
+content or passing `content: null` truncates an existing file to zero bytes.**
+A null variable is not a no-op; supply intended content and verify the target.
+`emptyTrash()` defaults to purging the account trash. Preserve each
+method's version, File Storage role, charset and destructive-operation caveats.
+
+`listFiles(types: 'file|dir')` accepts a pre-serialized pipe-delimited filter.
+The existing scalar encoding exposes a native `string|int` boundary without
+establishing integer filter semantics. No undeclared indexed `filepath-` family
+is inferred from `limitToList`. Optional response keys remain absent, flags stay
+integer `0|1`. File-information and flat-list sizes preserve the observed empty
+string for zero-byte files, distinct from numeric zero and omission; canonical
+integer strings still normalize losslessly. Their uid/gid fields also preserve
+observed empty strings for root-owned entries. File-content charset fields
+with unspecified schemas stay mixed. `emptyTrash()` preserves nullable opaque
+objects and rejects a missing payload.
+
+Observed file information preserves `mode` and `nicemode` as `int|string`,
+including string spelling, and normalizes `size` only from a lossless canonical
+integer string. String permission values do not establish a numeric format rule.
+Every recorded listing is a flat list of rows: iterate it directly. The pinned
+object alternative with `dirs`/`files` lists remains supported but unobserved.
+Use `array_is_list($result)` to select flat iteration; otherwise read those named
+lists when present. An empty array contains no rows under either interpretation.
+Flat rows have the reviewed permission/size representation corrections; the
+documented object alternative retains its original row types.
+
+All 13 methods have offline contract tests. The bounded live catalog selects
+three directory inventory reads through both routes, plus WHM version. It reads
+no existing file content and sends no mutations. Content, filesystem lifecycle
+and transcoding verification remain under `8x0.2.24`; exclusive fixture creation
+must precede overwrite-capable saves.
+
+The [final Fileman inventory capture](docs/api/evidence/2026-10-30-fileman-inventory-final.json)
+at `ec442bd` on `11.138.0.19` passes all seven GET observations
+and strict assessment with zero discrepancies. It covers three inventory
+operations through both routes; the other ten methods remain offline-tested.
+No existing file content was read and no mutation ran. Follow-up `8x0.2.24`
+owns their live verification; multipart upload remains under `8x0.1.19`.
+
+The [PR37 review capture](docs/api/evidence/2026-10-30-fileman-review-final.json)
+at `06001e0cab782c7bd46d7d0d1f659b0c3f7ebc7d` on `11.138.0.19` passes all seven
+GET observations with zero discrepancies. Both routes return an empty-string
+size for the selected existing zero-byte file; information and directory checks
+confirm its identity and zero marker. No content was read and no resource was
+created or changed. The root-owned uid/gid variants remain supported by Claude's
+separate report. Earlier artifacts stay immutable.
+
 The Mime group covers all 14 pinned functions: six reads use GET and eight
 mutations use form POST. No domain selector is documented for hotlink
 configuration. MIME deletion targets the MIME type, while handler deletion
@@ -412,9 +470,11 @@ bridge write occurred. Review 8x0.2.23.1 before more mutations. PTR findings rem
 strict failures and unwaived; historical evidence is immutable.
 The subsequent fixture-only correction permits the observed empty-list removal
 reply for original absence; getter equality and lost-outcome rules remain strict.
-It is offline-tested but no second capture has run. Seek Claude assessment before
-remaining bridge evidence; never replay the completed direct phase just to clear
-the original artifact.
+Claude review 5719375767 approved exact d499ab6 and independently verified both
+routes on 11.138.0.19, restoring user_prefs byte-identically. PR36 merged as
+52af23a with green CI and the same tree. No further capture is required; keep
+8x0.2.23.1 open for future committed both-route evidence, and never rerun just
+to clear the original artifact.
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.

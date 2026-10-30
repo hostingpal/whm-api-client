@@ -258,3 +258,50 @@ Together the corrected read catalog and final fixture observe 22 of the 47 new
 functions. The other 25 functions and additional argument/payload variants remain
 offline-only or unobserved under `8x0.2.23`; the indexed SpamAssassin input family
 is separately tracked in `8x0.1.20`. All earlier captures remain unchanged.
+
+The initial [Fileman inventory capture](2026-10-30-fileman-inventory.json)
+at `5ea0d565bb2eda9d5e03a0df23b5d8d07d1487bf` on `11.138.0.19` records seven
+GETs. All HTTP/API outcomes pass; three payload checks pass and four fail.
+`get_file_information` returns integer `mode` and numeric-string `nicemode` on
+both routes, plus numeric-string `size` on the direct route. `list_files`
+returns a flat list on both routes instead of the pinned object with `dirs` and
+`files` lists. The initial listing rows have wildcarded fields because the
+container did not match; this artifact establishes no named flat-row field types.
+The original failure evidence stays immutable, with SHA-256
+`c4f5b8b3f8930adb168f657a9b679544ad3196286250a00cd9701fe736277491`.
+
+The [second Fileman inventory capture](2026-10-30-fileman-inventory-corrected.json)
+at `bc7662dd86bfbccf41e1640cc3b38f9d63e1a0bc` records seven successful
+HTTP/API outcomes and five passing payload checks. Both listing payloads still
+fail the union. The existing original-response `payload_alternatives` diagnostics
+for flat-list candidate index 1 (SHA-256
+`2da4c9dfe2a88ae19278cc4b771de12efa463396dd478a7ebca72e8fc8c4b7be`)
+identify integer `mode` and numeric-string `nicemode` on both routes, plus
+numeric-string `size` directly and integer `size` through the bridge. This is
+candidate structural evidence, not a passing or selected alternative.
+
+These observations bind the same representation corrections to flat rows only:
+`mode` and `nicemode` preserve `int|string`; `size` accepts lossless canonical
+integer strings. The pinned object alternative's `dirs`/`files` row contracts
+remain unchanged. The second artifact stays immutable with SHA-256
+`7bd1db300c24babef264c7bfc445dbc2c1430a82152bdf33665a553428a0726f`.
+
+The [final Fileman inventory capture](2026-10-30-fileman-inventory-final.json)
+at `ec442bdea2fcab033d95a8f10b84afc56df8ec42` on `11.138.0.19` passes all seven GET
+observations: WHM version and all three inventory operations through both UAPI
+routes. HTTP/API/payload/probe checks and strict assessment pass with zero
+discrepancies. Directory information and flat listing rows are populated;
+`isparent` is omitted in the observed listing rows. The documented object-format
+listing alternative remains offline coverage. No file content, mutation,
+filesystem permission enforcement or charset round trip is established. Follow-up
+`8x0.2.24` remains open. Earlier failure captures stay unchanged. Final SHA-256:
+`946ba0512be318c20b51616a4ede7346e069ae1150f97b44c43ee03ea217bf8f`.
+
+The [Fileman review capture](2026-10-30-fileman-review-final.json) at
+`06001e0cab782c7bd46d7d0d1f659b0c3f7ebc7d` on `11.138.0.19` passes all seven GETs
+and strict assessment with zero discrepancies. Both routes observe an empty-string
+size for the selected existing zero-byte file; exact identity and zero-marker
+checks pass for its information and directory listing. No content was read and
+no resource was created or changed. Root-owned uid/gid forms are separate reviewer
+evidence. Earlier captures remain immutable. SHA-256:
+`dfc4899b5e88df167ee361a081f5e682b54f20dd5005603023184ad98057993d`.

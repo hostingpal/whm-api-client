@@ -836,3 +836,73 @@ Recorded captures: [initial](../../docs/api/evidence/2026-10-30-mime-section.jso
 and [corrected](../../docs/api/evidence/2026-10-30-mime-section-corrected.json).
 The initial four payload mismatches establish exactly two nullable URL fields;
 the corrected capture preserves their null values. All 13 GET observations passed HTTP, API, payload and probe checks with zero discrepancies and a passed strict assessment. The observed null URL fields are preserved. MIME and redirect lists were empty; handler rows were populated. This read-only capture establishes no mutation or HTTP redirect/hotlink enforcement coverage. Separate reviewer mutation and populated-row observations are attributed in the source audit. See `8x0.2.21`.
+
+## Fileman directory inventory
+
+`fileman-section.php` binds the `fileman-inventory-v1` recipe to seven GETs:
+WHM version, then `autocompletedir`, `get_file_information` and `list_files`
+through both routes. Autocomplete uses the `public` prefix with all three flags
+explicitly false. Information and listings use `public_html`, request MIME and
+permission fields and leaf-directory checks, and omit hidden entries. Listings
+use `types=dir|file`. The account is exactly `npr` on `test.oblak.host`.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/fileman-section.php \
+  --output=docs/api/evidence/fileman-inventory-new.json
+```
+
+Both tokens and committed inputs are required. The unchanged shared command,
+exact-URI GET guard and original-response sanitizer retain structural paths/types
+only. Strict assessment accepts no discrepancies or historical acknowledgments.
+Use a new output path; publication and protected recovery follow the other
+read-only sections. No existing file content is read, and no mutation is sent.
+File content, filesystem lifecycle and transcoding remain under `8x0.2.24`.
+Multipart upload remains under `8x0.1.19` and is not exposed by this catalog.
+
+The [final Fileman inventory capture](../../docs/api/evidence/2026-10-30-fileman-inventory-final.json)
+at `ec442bdea2fcab033d95a8f10b84afc56df8ec42` on `11.138.0.19` passes all seven GET
+observations: WHM version and all three inventory operations through both UAPI
+routes. HTTP/API/payload/probe checks and strict assessment pass with zero
+discrepancies. Directory information and flat listing rows are populated;
+`isparent` is omitted in the observed listing rows. The documented object-format
+listing alternative remains offline coverage. No file content, mutation,
+filesystem permission enforcement or charset round trip is established. Follow-up
+`8x0.2.24` remains open. Earlier failure captures stay unchanged. Final SHA-256:
+`946ba0512be318c20b51616a4ede7346e069ae1150f97b44c43ee03ea217bf8f`.
+
+### Fileman zero-byte review capture
+
+`fileman-review.php` runs seven GET probes at committed code: WHM version,
+autocomplete through both routes, information for one selected existing zero-byte
+file through both routes, and its `mail` directory listing through both routes.
+Select the same existing file through private read-only metadata inspection first.
+No fixture file is created, no content is read, and no mutation is authorized.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+WHM_API_LIVE_ZERO_FILE='mail/<selected-basename>' \
+php tools/live-verify/fileman-review.php --output=docs/api/evidence/fileman-review-new.json
+```
+
+The runtime path must be one non-hidden ASCII basename directly under `mail/`.
+Exact GET URI guards retain the selected path and account binding; path values
+and file contents never enter the artifact. Both information and listing require
+the selected basename, exact `/home/npr/mail/` identity, file type, existence flag
+and size equal to integer zero or the preserved empty-string marker. Listing
+requires exactly one matching row. Callback expectation failures use the existing
+conservative `probe_failure` outcome: raw structural evidence and HTTP status
+remain available, while successful API/payload outcomes are not asserted after a
+failed callback. Such a probe always fails strict assessment. Default inventory
+probes and shared capture/publication helpers remain unchanged.
+
+Use a new output path and preserve every prior artifact, including failures. The
+read-only capture establishes no content, permission-enforcement or filesystem
+mutation coverage, and cannot establish root-owned metadata variants unless such
+a row is actually observed.
+
+The [committed review capture](../../docs/api/evidence/2026-10-30-fileman-review-final.json)
+at `06001e0` on `11.138.0.19` passes all seven GETs, both-route identity/zero checks
+and strict assessment with zero discrepancies. Both information responses contain
+the preserved empty-string size. No content was read or resource changed. Earlier
+captures remain unchanged; do not repeat the run just for handoff.
