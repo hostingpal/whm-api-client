@@ -457,22 +457,22 @@ repeated vhost names. Its optional `domain_dcv_method` map is omitted because th
 pinned source does not specify its wire encoding (follow-up `8x0.2.16`). The
 `upload_key` page disagrees about `key` versus `crt`; the generated request uses
 `key` from its parameter contract, with live verification reported separately.
-The owned SSL fixture verifies uploads, fetches and cleanup through both UAPI
-routes. Its 23 responses pass API/payload checks, but four undocumented-field
-observations still fail the strict evidence gate; see the [source audit](docs/api/source-audit.md).
-The expanded recipe adds generated-key creation and certificate-information reads
-on both routes, with six resource states and 31 planned observations. Its first
-[integrated-head capture](docs/api/evidence/2026-10-30-ssl-section-reviewed.json)
-at `d159935` stops after 27 responses: `fetchCertInfo()` passes on both routes,
-but `fetchCertificatesForFqdns()` rejects observed null `cab`, `validation_type`
-and `verify_error` fields against pinned string schemas. All API outcomes pass;
-25 payload checks pass and two fail. The four uploaded resources are cleaned;
-generated keys remain `not_started`. Follow-up `8x0.4.11.3.4` tracks the narrow
-contract corrections and outstanding generated-key evidence. The failed artifact
-and existing unknown-field findings remain unwaived.
-The three nullable-field corrections are implemented with independent offline
-fixtures; corrected FQDN-certificate and generated-key live coverage still awaits
-review and a separately authorized capture.
+The [expanded owned SSL capture](docs/api/evidence/2026-10-30-ssl-section-expanded-final.json)
+at `1f67a43` on cPanel `11.138.0.19` records all 31 planned responses (13 GET,
+18 POST) across ten SSL functions through both routes plus WHM version. Every
+HTTP/API, typed-payload and fixture-expectation check passes. Both uploaded keys,
+both certificates and both generated keys are confirmed cleaned. This includes
+all three multipart methods, `fetchCertInfo()`, `fetchCertificatesForFqdns()` and
+`generateKey()`; nullable FQDN-certificate fields retain string|null precision.
+
+Strict evidence remains **failed** for six masked unknown-field observations in
+`upload_cert` and `delete_key`. Two are the added generated-key cleanup phases;
+all six match earlier operation/route/contract and full masked payload structures,
+which establishes neither unknown key identities nor counts. No finding is waived;
+`8x0.2.19` retains the contract investigation. The
+[earlier 27-response failure](docs/api/evidence/2026-10-30-ssl-section-reviewed.json)
+and every historical capture stay unchanged. See the [source audit](docs/api/source-audit.md)
+for provenance, limits and the separate original outcomes.
 
 Certificate deletion/installation, account-wide AutoSSL and redirect changes take
 effect immediately. Live verification is bounded to fresh owned fixture material,

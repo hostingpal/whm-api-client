@@ -156,7 +156,7 @@ SHA-256: `13bc03e54292f382e3ec9062b8a7c148735aaa278e4aeecba1262f638363791b`.
 
 ## Complete SSL slice (2026-10-30)
 
-Five immutable captures retain the correction sequence:
+The initial five immutable captures retain the correction sequence:
 [inventory preflight](2026-10-30-ssl-section.json),
 [inventory corrections](2026-10-30-ssl-section-corrected.json),
 [identity guard corrections](2026-10-30-ssl-section-identity-corrected.json),
@@ -182,3 +182,18 @@ upload_cert/delete_key unknown-field observations also remain. Strict assessment
 is failed without waivers. The new contract corrections and outstanding generation
 evidence are tracked in `8x0.4.11.3.4`; no operation was repeated to clear the result.
 SHA-256: `bd1e409a5608fff3ab4be889b84ce83743188548ec154f24e19601e9c7ad9aef`.
+
+
+The [expanded final SSL v2 capture](2026-10-30-ssl-section-expanded-final.json)
+at `1f67a43398fabc46b35b5bd30d08c3d7ffe7467a` on `11.138.0.19` contains all
+31 responses (13 GET, 18 POST). Every HTTP/API/payload/probe/expectation check
+passes; ten SSL functions run through both UAPI routes, and all six resources are
+confirmed cleaned. Strict status remains **failed** for six masked unknown-field
+observations: upload_cert, delete_key and the added delete_generated_key phase on
+each route. All six match earlier operation/variant/route/method/version/source/
+effective-contract, full payload-path and discrepancy structures. This establishes
+masked structural equivalence only; unknown field names/counts remain unknown.
+No discrepancy is waived under `8x0.2.19`. Earlier failed artifacts stay unchanged.
+This storage recipe establishes no TLS installation/serving/trust or AutoSSL
+issuance/renewal behavior. SHA-256:
+`1a42e7a3c920b70eb91ef2f26f7f40aed8209693b8e850f56e594a2620d382d5`.

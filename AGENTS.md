@@ -253,34 +253,35 @@ is established (8x0.2.16). SSL selector alternatives use evidenced required:fals
 preserve opaque/null/missing payload distinctions and private PEM data. Only fresh
 owned SSL fixture resources may be deleted in live verification; never install or
 replace account certificates as part of that fixture.
-The final owned SSL capture at 64d5266 records 23 API/payload/expectation passes,
-including all three multipart methods on both routes, and four confirmed cleaned
-resources. Strict evidence remains failed on upload_cert/delete_key unknown fields
-on both routes; preserve them and follow-up 8x0.2.19. No TLS serving, installation,
-trust, AutoSSL issuance or renewal behavior was tested by this fixture.
-SSL response compatibility now applies the reviewed field rules consistently to
-all 21 operations declaring the 66 affected certificate/key/CSR fields. Preserve
-integer normalization, exact 0/1 string flags and only the reviewed issuer
-organization nullability. Family inference is not operation-specific live evidence.
-getCabundle uses form POST for PEM input, and installSsl certificate/bundle inputs
-are sensitive. Generation refuses binary multipart file fields. The expanded
-SSL storage recipe plans 31 observations and six resource states, adding a fresh
-generated key per route plus fetchCertInfo/fetchCertificatesForFqdns. Generated
-ownership requires the original successful validated response, a fresh unique ID,
-matching PEM/public modulus and preflight absence. Lost/malformed generation stays
-uncertain; never infer ownership from later inventories or retry. After approved
-Email/master integration, the capture at d159935 stops after27responses: both
-fetch_certificates_for_fqdns reads return API success but reject null cab,
-validation_type and verify_error against pinned string schemas. Allfouruploaded
-resources are cleaned; generatedkeys stay not_started. Preserve the failed
-2026-10-30-ssl-section-reviewed.json and track the three narrow corrections plus
-outstanding generate_key coverage in8x0.4.11.3.4. Existingfourunknownobservations
-remain unwaived under2.19; do not silently promote failed evidence.
-The follow-up implements nullable:true only for fetch_certificates_for_fqdns
-cab, validation_type and verify_error. validation_type follows explicit pinned
-null prose; cab/verify_error follow the immutable failed artifact. Preserve each
-optional string field as string|null; do not widen sibling endpoints. These
-corrections are offline-tested, and another live capture requires review.
+The expanded owned SSL capture at `1f67a43` on `11.138.0.19` records all
+31 HTTP/API/payload/probe/expectation passes (13 GET, 18 POST), ten SSL functions
+on both routes plus WHM version, and six confirmed cleaned resources. It includes
+all three multipart methods, generated keys and both certificate-information reads.
+Strict status remains failed for six masked unknown-field observations in
+upload_cert/delete_key, including two added generated-key cleanup observations.
+All six match prior operation/variant/route/method/version/source/effective-contract,
+full payload paths and discrepancy tuples; masking cannot establish unknown key
+identities/counts. Preserve every finding under `8x0.2.19`; no waiver or new typed
+unknown field is added. No TLS serving, installation, trust, AutoSSL issuance or
+renewal behavior is established.
+SSL response compatibility applies reviewed field rules consistently to all
+21 operations declaring 66 affected certificate/key/CSR fields. Preserve integer
+normalization, exact 0/1 string flags and reviewed issuer organization nullability.
+Family inference is separate from operation-specific live evidence. getCabundle
+uses form POST for PEM input; installSsl certificate/bundle inputs are sensitive,
+and generation refuses binary multipart file fields. Generated ownership requires
+the original successful validated response, a fresh unique ID, matching PEM/public
+modulus and preflight absence. Lost/malformed generation stays uncertain; never
+infer ownership from later inventories or retry.
+The earlier `d159935` capture remains failed at 27 responses, with four uploaded
+resources cleaned and generated keys not_started. Its observed null cab,
+validation_type and verify_error support only the three reviewed nullable fields
+on fetch_certificates_for_fqdns, preserving optional string|null contracts.
+validation_type also follows explicit pinned null prose. Sibling endpoints are
+unchanged. The corrected code at `1f67a43` was explicitly cleared for one capture;
+the resulting `2026-10-30-ssl-section-expanded-final.json` is separate immutable
+evidence. Follow-ups `8x0.4.11.3.3`/`8x0.4.11.3.4` retain final external acceptance,
+and `8x0.2.16` retains the omitted install_ssl DCV map.
 
 DomainInfo (5), Features (5), and LangPHP (11) cover their complete pinned modules.
 Domain details preserve list/hash alternatives, documented quoted flag variants

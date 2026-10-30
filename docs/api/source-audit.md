@@ -2134,3 +2134,61 @@ confirms exactly the three nullable flags and all other SSL rules unchanged;
 non-SSL generated groups/specs retain the approved master contracts. External
 review and a separately authorized committed-code capture remain pending; no
 additional live request follows this correction in this stage.
+
+
+### Expanded final SSL capture after review clearance
+
+The reviewer explicitly cleared exact code
+`1f67a43398fabc46b35b5bd30d08c3d7ffe7467a` in
+[comment 6528376774](https://github.com/hostingpal/whm-api-client/pull/32#issuecomment-6528376774)
+for one committed-code capture after independently checking the three nullable
+fields and both-route generated-key normalization/cleanup. This is separate
+reviewer evidence; the new committed artifact comes from the cleared code's one
+existing guarded fixture run. No code, request or compatibility rule changed
+between that clearance and capture.
+
+The [expanded final SSL artifact](evidence/2026-10-30-ssl-section-expanded-final.json)
+has SHA-256 `1a42e7a3c920b70eb91ef2f26f7f40aed8209693b8e850f56e594a2620d382d5`
+and records **all 31 original responses: 13 GET and 18 POST** on
+`11.138.0.19`. Every HTTP 200/API outcome, typed payload, probe and independent
+fixture expectation passes. Ten SSL functions execute on both direct and
+WHM-bridged UAPI, plus WHM version. This includes all three multipart operations,
+`fetch_cert_info`, `fetch_certificates_for_fqdns` and `generate_key`. The corrected
+FQDN fields preserve null|string values, and generated-key numeric fields normalize
+to the precise integer contract. Generated private keys remain in process memory;
+the successful original response establishes unique fresh ID/modulus/PEM identity
+before any generated-key cleanup is authorized.
+
+Both uploaded keys, both certificates and both generated keys are `cleaned`.
+Final same-run inventories confirm exact owned ID and public-modulus absence,
+while unrelated resources are retained. No mutation is retried and no observation
+is replayed to recover evidence. No certificate is installed or replaced, and the
+recipe establishes no TLS serving, trust, service configuration, AutoSSL issuance
+or renewal behavior, nor successful live execution of all 49 generated methods.
+The install_ssl DCV map remains omitted under `8x0.2.16`.
+
+The command exits **1** and strict status remains **failed**, solely for **six
+masked unknown-field observations**. upload_cert, delete_key and the new
+`delete_generated_key` phase each contribute one observation per route; the latter
+still invokes SSL/delete_key. Every tuple is `$[].*` / `unknown_field` with string
+structural types. All six match the earlier 27-response artifact at operation,
+source variant, route, actual method, server version, pinned source and effective
+contract hashes, full payload paths and discrepancy tuples. The added generated-key
+cleanup supplies two more observations of that operation/structure family. This
+is masked structural equivalence, not proof of unknown key identities or counts.
+No original discrepancy is removed, acknowledged or promoted to a typed field.
+The two cleanup_request_failure labels retain the strict discrepancy failures;
+API deletion, passing expectations and final absence are recorded separately.
+Follow-up `8x0.2.19` remains open for these contracts and other unobserved SSL work.
+
+Independent audits verify every effective contract and committed revision/source/
+map/generator/overlay hash, ordered phase identity, method and source variant.
+All **1,266 structural path/type entries** and **94 historical parent-artifact
+comparisons** pass, including the failed 27-response artifact. Recomputing the
+strict report preserves every original record and its failed status. Configured
+credentials, response-derived account/domain/host values, private/public PEM and
+resource identities are absent; the fixed public recipe identifier retains its
+account label. The new file was created with mode0600 and no capture temporary
+files remain. Pre-capture code passed Composer validation/check (**11,094 tests /
+75,675 assertions**), offline API-map checks and Go tests/vet. Only evidence and
+documentation follow this capture; no additional live request was made.

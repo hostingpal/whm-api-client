@@ -621,10 +621,17 @@ pass; both `fetch_certificates_for_fqdns` phases fail typed validation for null
 The four uploaded resources are cleaned, while generated-key states remain
 `not_started`. The failed result is preserved under `8x0.4.11.3.4`; it does not
 establish generated-key execution or six-resource cleanup. The three narrow
-nullable-field corrections are independently offline-tested; the preserved failed
-capture still binds its original pre-correction contract. Corrected live behavior
-and generated-key coverage await review and a separate authorized capture. The historical v1
-artifact retains its original 23 observations unchanged. Reports keep
+nullable-field corrections preserve the failed capture's original pre-correction
+contract. After explicit review clearance, the separate
+[expanded final capture](../../docs/api/evidence/2026-10-30-ssl-section-expanded-final.json)
+at `1f67a43` on `11.138.0.19` records all 31 responses with passing HTTP/API,
+typed-payload, probe and fixture expectations. All six uploaded/generated resources
+are cleaned, including generated-key ID and public-modulus absence checks.
+Strict status remains failed for six unknown-field observations: upload_cert and
+both key-delete phases on each route. The two added generated-key delete phases
+match the prior delete_key masked structures/contract; key names/counts remain
+unknown and no observation is waived. Follow-up `8x0.2.19` retains that work.
+The historical v1 artifact retains its original 23 observations unchanged. Reports keep
 structural paths and provenance from `EvidenceRunner`, separate semantic
 expectations and resource states, and no private key, certificate, resource ID or
 arbitrary upstream error text. Any failed observation, expectation, missing stage,
