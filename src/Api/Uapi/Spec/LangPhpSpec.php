@@ -110,12 +110,24 @@ final class LangPhpSpec
                                 ],
                             ],
                             'phpversion_source' => [
-                                'type' => 'list',
-                                'items' => [
-                                    'type' => 'object',
-                                    'fields' => [
-                                        'domain' => ['type' => 'string'],
-                                        'system_default' => ['type' => 'flag'],
+                                'type' => 'union',
+                                'anyOf' => [
+                                    [
+                                        'type' => 'list',
+                                        'items' => [
+                                            'type' => 'object',
+                                            'fields' => [
+                                                'domain' => ['type' => 'string'],
+                                                'system_default' => ['type' => 'flag'],
+                                            ],
+                                        ],
+                                    ],
+                                    [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'domain' => ['type' => 'string'],
+                                            'system_default' => ['type' => 'flag'],
+                                        ],
                                     ],
                                 ],
                             ],
@@ -142,12 +154,24 @@ final class LangPhpSpec
                             ],
                         ],
                         'phpversion_source' => [
-                            'type' => 'list',
-                            'items' => [
-                                'type' => 'object',
-                                'fields' => [
-                                    'domain' => ['type' => 'string'],
-                                    'system_default' => ['type' => 'flag'],
+                            'type' => 'union',
+                            'anyOf' => [
+                                [
+                                    'type' => 'list',
+                                    'items' => [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'domain' => ['type' => 'string'],
+                                            'system_default' => ['type' => 'flag'],
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'type' => 'object',
+                                    'fields' => [
+                                        'domain' => ['type' => 'string'],
+                                        'system_default' => ['type' => 'flag'],
+                                    ],
                                 ],
                             ],
                         ],

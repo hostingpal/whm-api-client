@@ -117,18 +117,34 @@
                       }
                     },
                     "phpversion_source": {
-                      "type": "list",
-                      "items": {
-                        "type": "object",
-                        "fields": {
-                          "domain": {
-                            "type": "string"
-                          },
-                          "system_default": {
-                            "type": "flag"
+                      "type": "union",
+                      "anyOf": [
+                        {
+                          "type": "list",
+                          "items": {
+                            "type": "object",
+                            "fields": {
+                              "domain": {
+                                "type": "string"
+                              },
+                              "system_default": {
+                                "type": "flag"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "fields": {
+                            "domain": {
+                              "type": "string"
+                            },
+                            "system_default": {
+                              "type": "flag"
+                            }
                           }
                         }
-                      }
+                      ]
                     },
                     "version": {
                       "type": "string"
@@ -175,18 +191,34 @@
                     }
                   },
                   "phpversion_source": {
-                    "type": "list",
-                    "items": {
-                      "type": "object",
-                      "fields": {
-                        "domain": {
-                          "type": "string"
-                        },
-                        "system_default": {
-                          "type": "flag"
+                    "type": "union",
+                    "anyOf": [
+                      {
+                        "type": "list",
+                        "items": {
+                          "type": "object",
+                          "fields": {
+                            "domain": {
+                              "type": "string"
+                            },
+                            "system_default": {
+                              "type": "flag"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "fields": {
+                          "domain": {
+                            "type": "string"
+                          },
+                          "system_default": {
+                            "type": "flag"
+                          }
                         }
                       }
-                    }
+                    ]
                   },
                   "version": {
                     "type": "string"
@@ -204,6 +236,13 @@
               "version": "pinned 2026-10-13",
               "date": "2026-10-30",
               "note": "Pinned /LangPHP/php_get_vhost_versions responses/200/content/application~1json/schema/properties/result/properties/data has type=array and items properties, while its description says it returns a single object when using vhost. Preserve both precise shapes. phpversion_source is retained as the declared list of optional domain/system_default objects; its stray properties sibling is not used to invent an object variant."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php-compatibility.json",
+              "note": "Both direct/bridged GET records at a07f4f7, artifact SHA-256 ae83e8afa8f3296342c76c225d08b09d4e417e35fc2569f975a8f094b411eced, diagnose the list alternative mismatch precisely at $[].phpversion_source with observed object type. Retain the pinned domain/system_default fields for both list items and object form. No masked key identity or new field is inferred; original failed fingerprints and alternative hashes remain unchanged."
             }
           ]
         }
@@ -215,7 +254,11 @@
         },
         {
           "kind": "documented",
-          "text": "Without vhost the documented result is a virtual-host list; with vhost the prose also documents a single object. Flags remain integer 0/1, row fields are optional, and phpversion_source retains the declared list. No closed PHP package-name enum is imposed."
+          "text": "Without vhost the documented result is a virtual-host list; with vhost the prose also documents a single object. Flags remain integer 0/1, row fields are optional, and phpversion_source retains the declared list plus the observed object form with the same pinned fields. No closed PHP package-name enum is imposed."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 phpversion_source is also an object. Preserve that alternative alongside the pinned list; unknown fields are not inferred from masked diagnostics."
         }
       ],
       "probe": {
@@ -226,7 +269,16 @@
           "bridged-uapi"
         ],
         "expected": "success"
-      }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "fingerprint": "docs/api/evidence/2026-10-30-domain-features-php-compatibility.json",
+          "note": "Both direct/bridged GET records at a07f4f7, artifact SHA-256 ae83e8afa8f3296342c76c225d08b09d4e417e35fc2569f975a8f094b411eced, diagnose the list alternative mismatch precisely at $[].phpversion_source with observed object type. Retain the pinned domain/system_default fields for both list items and object form. No masked key identity or new field is inferred; original failed fingerprints and alternative hashes remain unchanged."
+        }
+      ]
     },
     "uapi:LangPHP/php_ini_get_user_basic_directives": {
       "notes": [

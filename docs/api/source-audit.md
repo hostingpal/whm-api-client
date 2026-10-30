@@ -1250,3 +1250,15 @@ supplemental structural diagnostics retain unknown-key masking and never alter t
 primary fingerprint, runtime validation or discrepancy gate. They do not recover or
 rewrite the first artifact. Unknown domain and INI fields remain unresolved under
 8x0.2.17, as do the three PHP mutations' live behavior.
+
+
+The [compatibility run](evidence/2026-10-30-domain-features-php-compatibility.json)
+at a07f4f7 retained 67 GET observations on 11.138.0.19: 65 passed and the two PHP
+vhost probes still failed. Its SHA-256 is
+`ae83e8afa8f3296342c76c225d08b09d4e417e35fc2569f975a8f094b411eced`.
+The new candidate analysis identifies only `$[].phpversion_source` as the list
+alternative's type mismatch, with an observed object. A narrow correction now
+preserves both the pinned list and that object form using the same documented
+optional fields. No unknown key name or value is inferred. The strict evidence
+assessment remains failed for original mismatches and unacknowledged extras;
+this historical artifact is not rewritten after correcting the contract.

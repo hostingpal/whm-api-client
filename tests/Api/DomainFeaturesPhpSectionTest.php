@@ -211,6 +211,18 @@ final class DomainFeaturesPhpSectionTest extends TestCase
             'GET', 'type=home', '{"content":"[PHP]\\n; a+b&x=1\\ndisplay_errors=0\\n"}',
             ['content' => "[PHP]\n; a+b&x=1\ndisplay_errors=0\n"],
         ];
+        yield 'php versions observed source object' => [
+            'LangPHP', 'php_get_vhost_versions', static fn (UapiClient $u): array =>
+                $u->langPhp()->phpGetVhostVersions(),
+            'GET', '', '[{"phpversion_source":{"domain":"npr.rs"}}]',
+            [['phpversion_source' => ['domain' => 'npr.rs']]],
+        ];
+        yield 'php single vhost observed source object' => [
+            'LangPHP', 'php_get_vhost_versions', static fn (UapiClient $u): array =>
+                $u->langPhp()->phpGetVhostVersions(vhost: 'npr.rs'),
+            'GET', 'vhost=npr.rs', '{"phpversion_source":{"system_default":1}}',
+            ['phpversion_source' => ['system_default' => 1]],
+        ];
         yield 'php ini paths retain home and vhost rows' => [
             'LangPHP', 'php_ini_get_user_paths', static fn (UapiClient $u): array =>
                 $u->langPhp()->phpIniGetUserPaths(),

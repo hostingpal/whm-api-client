@@ -29,7 +29,7 @@ final class EvidenceRunnerTest extends TestCase
     {
         $http = new Client();
         $http->addResponse(new Response(200, [], '{"status":1,"data":[{'
-            . '"phpversion_source":{"domain":"private-value","private-inner":{"vhost":"private-nested"}},'
+            . '"php_fpm":"private-value",'
             . '"private-key":{"phpversion_source":"private-value"}}]}'));
         $probes = array_values(array_filter(
             ProbeCatalog::load(self::ROOT),
@@ -49,8 +49,8 @@ final class EvidenceRunnerTest extends TestCase
         self::assertSame('failed', $record['payload_validation']);
         self::assertSame([['path' => '$', 'kind' => 'type_mismatch']], $record['discrepancies']);
         self::assertSame([
-            '$' => ['list'], '$[]' => ['object'], '$[].*' => ['object'],
-            '$[].*.*' => ['object', 'string'], '$[].*.*.*' => ['string'],
+            '$' => ['list'], '$[]' => ['object'], '$[].*' => ['object', 'string'],
+            '$[].*.*' => ['string'],
         ], $record['payload_paths']);
         self::assertArrayHasKey('payload_alternatives', $record);
         $alternatives = $record['payload_alternatives'] ?? [];
@@ -66,12 +66,10 @@ final class EvidenceRunnerTest extends TestCase
         }
         self::assertSame([
             ['path' => '$[].*', 'kind' => 'unknown_field'],
-            ['path' => '$[].phpversion_source', 'kind' => 'type_mismatch'],
+            ['path' => '$[].php_fpm', 'kind' => 'type_mismatch'],
         ], $list['discrepancies']);
-        self::assertSame(['object'], $list['paths']['$[].phpversion_source']);
-        self::assertSame(['object', 'string'], $list['paths']['$[].phpversion_source.*']);
-        self::assertSame(['string'], $list['paths']['$[].phpversion_source.*.*']);
-        self::assertArrayNotHasKey('$[].phpversion_source.domain', $list['paths']);
+        self::assertSame(['string'], $list['paths']['$[].php_fpm']);
+        self::assertSame(['string'], $list['paths']['$[].*.*']);
         self::assertArrayNotHasKey('$[].*.phpversion_source', $list['paths']);
         self::assertSame($record['payload_paths'], $object['paths']);
         self::assertSame([['path' => '$', 'kind' => 'type_mismatch']], $object['discrepancies']);

@@ -37,7 +37,10 @@ use SensitiveParameter;
  *     phpversion_source?: list<array{
  *         domain?: string,
  *         system_default?: 0|1,
- *     }>,
+ *     }>|array{
+ *         domain?: string,
+ *         system_default?: 0|1,
+ *     },
  *     version?: string,
  *     vhost?: string,
  * }>|array{
@@ -55,7 +58,10 @@ use SensitiveParameter;
  *     phpversion_source?: list<array{
  *         domain?: string,
  *         system_default?: 0|1,
- *     }>,
+ *     }>|array{
+ *         domain?: string,
+ *         system_default?: 0|1,
+ *     },
  *     version?: string,
  *     vhost?: string,
  * }
@@ -211,8 +217,11 @@ final readonly class LangPhp
      * Requests act through the selected account.
      *
      * Documented: Without vhost the documented result is a virtual-host list; with vhost the prose also documents a
-     * single object. Flags remain integer 0/1, row fields are optional, and phpversion_source retains the declared
-     * list. No closed PHP package-name enum is imposed.
+     * single object. Flags remain integer 0/1, row fields are optional, and phpversion_source retains the declared list
+     * plus the observed object form with the same pinned fields. No closed PHP package-name enum is imposed.
+     *
+     * Observed: On cPanel 11.138.0.19 phpversion_source is also an object. Preserve that alternative alongside the
+     * pinned list; unknown fields are not inferred from masked diagnostics.
      *
      * API-map identity: uapi:LangPHP/php_get_vhost_versions#GET (wire name php_get_vhost_versions).
      *
