@@ -45,6 +45,54 @@ The two provisioning metadata reads also take no arguments. Their optional field
 remain optional, and a null database prefix remains distinct from an omitted one.
 Hostnames, database-server versions and prefixes are retained only as structural types.
 
+### Mail protection reads and disabled-mailbox fixture
+
+The separate `mail-protection.php` catalog captures 19 GET observations: WHM
+version plus nine reads through direct and bridged UAPI. It covers BoxTrapper
+email-template names, four EmailAuth validators for `npr.rs`, two SpamAssassin
+reads and two cPGreyList reads. It does not alter the default catalog.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/mail-protection.php --output=docs/api/evidence/mail-protection-new.json
+```
+
+The separate BoxTrapper recipe creates one fresh mailbox per route, with welcome
+email disabled and an explicit finite quota. Both routes must first confirm the
+mail domain and absence of both candidates. Ownership requires the original
+validated creation response to identify the exact login and a successful inventory
+to confirm it. An uncertain creation is never adopted for cleanup.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/boxtrapper-section.php --output=docs/api/evidence/boxtrapper-section-new.json
+```
+
+The nominal recipe captures 45 ordered observations across 14 BoxTrapper
+functions, four Email functions and WHM version. It confirms BoxTrapper starts
+disabled, explicitly keeps it disabled, writes conservative configuration and
+allow/block/ignore rules, and reads them back. It also reads the verify template,
+template names, an empty log and empty queue, then checks disabled status again.
+It never enables protection, forwards mail, changes templates, processes queued
+messages or clears Spam Boxes. It establishes no mail-delivery or filtering effect.
+
+A finally block deletes only confirmed owned mailboxes once and checks that both
+candidate addresses are absent. A lost creation or deletion response remains
+uncertain even if a later inventory is empty. The protected structural artifact
+retains every original failure; strict assessment requires all phases, successful
+outcomes and expectations, consistent provenance, verified cleanup and zero
+discrepancies. No discrepancy acknowledgments apply. Actual identities, passwords,
+rule content, templates and upstream error text are not saved.
+
+Both commands require committed effective inputs, both tokens, exact `npr` /
+`npr.rs` selectors and a new output filename. If publication fails after writing a
+complete report, the command retains the protected temporary artifact and reports
+its path. Uncertain resource recovery requires private inspection and confirmation
+of this run's exact mailbox identity; a `wbt` prefix alone proves no ownership.
+The broader generated API surface and indexed SpamAssassin preference-input gap
+(`whm-api-client-8x0.1.20`) remain separate from these bounded observations.
+
 ### Complete FTP section fixture
 
 `ftp-section.php` is a standalone opt-in recipe for the generated Ftp group. It

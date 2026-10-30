@@ -11,7 +11,7 @@ type TypeSpec struct {
 	Accept   []string
 	Preserve bool
 	Items    *TypeSpec
-	Values   *TypeSpec
+	Values   *TypeSpec // map values, or opt-in undeclared object fields
 	Fields   []Field
 	Required []string
 	AnyOf    []TypeSpec

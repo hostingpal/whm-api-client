@@ -3,12 +3,13 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 25 generated typed groups cover 325 documented operations (see
+The 29 generated typed groups cover 372 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
 features, domain management, directory access, the complete Email and SSL modules,
-disk quotas and the complete pinned MySQL, FTP, PostgreSQL and Mime sections.
+disk quotas and the complete pinned MySQL, FTP, PostgreSQL and Mime sections,
+plus mail protection through BoxTrapper, EmailAuth, SpamAssassin and cPGreyList.
 Generic `call()` methods provide GET and form-encoded POST access without a typed
 group, subject to the operation's parameter, route and envelope requirements.
 Generic calls do not support JSON or multipart bodies. Three typed SSL methods
@@ -322,6 +323,10 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->directoryIndexes()` | Directory indexing reads and configuration (3). |
 | `uapi()->directoryPrivacy()` | Password-protection state and directory user management (6). |
 | `uapi()->directoryProtection()` | Leech-protection directory inventory (1). |
+| `uapi()->boxTrapper()` | Complete BoxTrapper configuration, templates and message queue operations (25). |
+| `uapi()->emailAuth()` | Complete DKIM, SPF, DMARC and PTR management/validation (12). |
+| `uapi()->spamAssassin()` | Complete preference, symbolic-test and Spam Box operations (4). |
+| `uapi()->cpGreyList()` | Complete account/domain Greylisting controls and inventory (6). |
 | `uapi()->mime()` | Complete MIME types, handlers, redirects and hotlink configuration (14). |
 | `uapi()->domainInfo()` | All 5 operations: `domainsData()`, `singleDomainData()`, `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
 | `uapi()->langPhp()` | All 11 operations: installed/default/vhost PHP versions, domain handlers and impacted domains, INI paths/basic directives/content reads, and `phpIniSetUserBasicDirectives()`, `phpIniSetUserContent()`, `phpSetVhostVersions()` |
@@ -595,6 +600,51 @@ Selected behaviors worth knowing:
   WHM credentials; service and automatically created domains are excluded upstream.
 - PHP configuration operations may require EasyApache 4 and the WebServer role, as
   documented per method.
+
+### Mail protection
+
+The four mail-protection groups expose all 47 pinned functions. Nineteen reads
+use GET; the 28 mutation or secret-returning operations use form POST. Inspect
+both the envelope and per-item results: a successful request does not establish
+that every queued message or domain action succeeded.
+
+```php
+$account = $client->uapi('npr');
+$templates = $account->boxTrapper()->listEmailTemplates();
+$dkim = $account->emailAuth()->validateCurrentDkims(domains: ['example.com']);
+$preferences = $account->spamAssassin()->getUserPreferences();
+$greylisting = $account->cpGreyList()->listDomains();
+```
+
+BoxTrapper requires the Receive Mail role. Its mailbox methods take an email
+address unless their individual documentation also permits the cPanel username;
+Webmail parameter defaults do not establish defaults for this client's cPanel
+routes. Queue actions and rule setters accept the documented repeated arguments.
+`blacklistMessages()` supports one filename or repeated `queuefiles`. Template
+content and rule inputs are sensitive, as are returned message contents. Partial
+failure records remain payload data; do not retry mutations automatically.
+
+EmailAuth uses repeated `domains`, `keys` and `records` where documented. The
+client encodes raw PEM/SPF text once; it does not pair or validate cardinality of
+parallel lists. Three DMARC methods allow omitted domains; omission in apply/remove
+can affect all domains on the account. Key installation does not itself update
+DNS. Private-key inputs and returned PEM values are sensitive. DKIM validation
+can update the validity cache despite its read-only classification. DMARC methods
+require cPanel 124+, and the other EmailAuth methods require 78+.
+
+SpamAssassin preferences keep their four known fields typed while preserving
+custom keys. Custom values in `getUserPreferences()` have no pinned type; the
+update response documents custom string lists. Numeric `required_score` lists
+remain distinct from string-valued preferences. `updateUserPreference()` accepts
+one scalar `value`; omission removes settings, while empty string and string `0`
+remain explicit values. The documented `value-0`/`value-1` multi-value family is
+not yet represented by the typed signature (`whm-api-client-8x0.1.20`). `clearSpamBox()` deletes all Spam Box
+contents across the selected account and has no individual-mailbox selector.
+
+Greylisting selected-domain methods send repeated plural `domains` keys, following
+the declared parameter and prose despite singular examples. Status flags remain
+integer `0|1`, optional fields remain absent, and dependencies identify affected
+related domains. API readback does not prove mail filtering or delivery behavior.
 
 ### Account lifecycle and mutations
 

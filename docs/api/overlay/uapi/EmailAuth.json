@@ -1,0 +1,432 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "EmailAuth",
+  "operations": {
+    "uapi:EmailAuth/apply_dmarc": {
+      "method": "POST",
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "order": [
+        "policy",
+        "domain"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 124 and later; operates on the selected account. Domains are sent as repeated domain keys, as explicitly documented in the pinned parameter prose or multiple-domain example. Requiredness remains pinned: only applyDmarc, removeDmarc and validateCurrentDmarcs permit omitted domains."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting domains applies the policy to all domains owned by the selected account. Temporary domains cannot be edited. policy is forwarded unchanged and form-encoded once."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. No unpinned nullable variants are inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares no rollback. Uses form POST with a single attempt and no automatic retry or rollback. Per-domain integer status 0 or 1 is payload data; inspect it even when the UAPI envelope succeeds."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /EmailAuth/apply_dmarc declares x-readonly=false. The domain parameter prose or multiple-domain example explicitly permits duplicate domain keys; use repeat encoding rather than JSON, comma splitting or an invented suffix family. Mutations use form POST; fetch_dkim_private_keys retains that method because the pinned source also marks it mutating."
+        }
+      ]
+    },
+    "uapi:EmailAuth/disable_dkim": {
+      "method": "POST",
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 78 and later; operates on the selected account. Domains are sent as repeated domain keys, as explicitly documented in the pinned parameter prose or multiple-domain example. Requiredness remains pinned: only applyDmarc, removeDmarc and validateCurrentDmarcs permit omitted domains."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes DKIM records on the DNS server for the requested domains."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. No unpinned nullable variants are inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares no rollback. Uses form POST with a single attempt and no automatic retry or rollback. Per-domain integer status 0 or 1 is payload data; inspect it even when the UAPI envelope succeeds."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /EmailAuth/disable_dkim declares x-readonly=false. The domain parameter prose or multiple-domain example explicitly permits duplicate domain keys; use repeat encoding rather than JSON, comma splitting or an invented suffix family. Mutations use form POST; fetch_dkim_private_keys retains that method because the pinned source also marks it mutating."
+        }
+      ]
+    },
+    "uapi:EmailAuth/enable_dkim": {
+      "method": "POST",
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 78 and later; operates on the selected account. Domains are sent as repeated domain keys, as explicitly documented in the pinned parameter prose or multiple-domain example. Requiredness remains pinned: only applyDmarc, removeDmarc and validateCurrentDmarcs permit omitted domains."
+        },
+        {
+          "kind": "documented",
+          "text": "Enables DKIM records on the DNS server; if a record does not exist, the server installs a new record."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. No unpinned nullable variants are inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares no rollback. Uses form POST with a single attempt and no automatic retry or rollback. Per-domain integer status 0 or 1 is payload data; inspect it even when the UAPI envelope succeeds."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /EmailAuth/enable_dkim declares x-readonly=false. The domain parameter prose or multiple-domain example explicitly permits duplicate domain keys; use repeat encoding rather than JSON, comma splitting or an invented suffix family. Mutations use form POST; fetch_dkim_private_keys retains that method because the pinned source also marks it mutating."
+        }
+      ]
+    },
+    "uapi:EmailAuth/ensure_dkim_keys_exist": {
+      "method": "POST",
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 78 and later; operates on the selected account. Domains are sent as repeated domain keys, as explicitly documented in the pinned parameter prose or multiple-domain example. Requiredness remains pinned: only applyDmarc, removeDmarc and validateCurrentDmarcs permit omitted domains."
+        },
+        {
+          "kind": "documented",
+          "text": "This operation can create keys when absent and replace existing keys that do not meet the server security requirements. It is a mutation despite its validity-check wording."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. No unpinned nullable variants are inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares no rollback. Uses form POST with a single attempt and no automatic retry or rollback. Per-domain integer status 0 or 1 is payload data; inspect it even when the UAPI envelope succeeds."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /EmailAuth/ensure_dkim_keys_exist declares x-readonly=false. The domain parameter prose or multiple-domain example explicitly permits duplicate domain keys; use repeat encoding rather than JSON, comma splitting or an invented suffix family. Mutations use form POST; fetch_dkim_private_keys retains that method because the pinned source also marks it mutating."
+        }
+      ]
+    },
+    "uapi:EmailAuth/fetch_dkim_private_keys": {
+      "method": "POST",
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 78 and later; operates on the selected account. Domains are sent as repeated domain keys, as explicitly documented in the pinned parameter prose or multiple-domain example. Requiredness remains pinned: only applyDmarc, removeDmarc and validateCurrentDmarcs permit omitted domains."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares x-readonly=false and is sent as form POST. Returned pem values contain private key material; protect this payload and never record the values in evidence artifacts."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. No unpinned nullable variants are inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares no rollback. Uses form POST with a single attempt and no automatic retry; pem values remain unredacted payload data returned to the caller."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /EmailAuth/fetch_dkim_private_keys declares x-readonly=false. The domain parameter prose or multiple-domain example explicitly permits duplicate domain keys; use repeat encoding rather than JSON, comma splitting or an invented suffix family. Mutations use form POST; fetch_dkim_private_keys retains that method because the pinned source also marks it mutating."
+        }
+      ]
+    },
+    "uapi:EmailAuth/install_dkim_private_keys": {
+      "method": "POST",
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        },
+        "key": {
+          "php": "keys",
+          "encoding": "repeat",
+          "sensitive": true
+        }
+      },
+      "order": [
+        "domain",
+        "key"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 78 and later; operates on the selected account. Domains are sent as repeated domain keys, as explicitly documented in the pinned parameter prose or multiple-domain example. Requiredness remains pinned: only applyDmarc, removeDmarc and validateCurrentDmarcs permit omitted domains."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply one key for each domain, in corresponding list order. The client forwards the lists without inventing a cross-list cardinality rule. Key inputs are sensitive, passed as raw PEM strings and form-encoded once; do not pre-encode the pinned percent-encoded URL example."
+        },
+        {
+          "kind": "documented",
+          "text": "Installing private keys does not update local DNS records. When the local DNS server is authoritative, enableDkim updates those records; upstream recommends batching both operations, but this method executes only its own single request."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. No unpinned nullable variants are inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares no rollback. Uses form POST with a single attempt and no automatic retry or rollback. Per-domain integer status 0 or 1 is payload data; inspect it even when the UAPI envelope succeeds."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /EmailAuth/install_dkim_private_keys declares x-readonly=false. The domain parameter prose or multiple-domain example explicitly permits duplicate domain keys; use repeat encoding rather than JSON, comma splitting or an invented suffix family. The accompanying key parameter explicitly requires one value for each domain; use corresponding repeated keys. The source does not define a JSON request body. Mutations use form POST; fetch_dkim_private_keys retains that method because the pinned source also marks it mutating."
+        }
+      ]
+    },
+    "uapi:EmailAuth/install_spf_records": {
+      "method": "POST",
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        },
+        "record": {
+          "php": "records",
+          "encoding": "repeat"
+        }
+      },
+      "order": [
+        "domain",
+        "record"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 78 and later; operates on the selected account. Domains are sent as repeated domain keys, as explicitly documented in the pinned parameter prose or multiple-domain example. Requiredness remains pinned: only applyDmarc, removeDmarc and validateCurrentDmarcs permit omitted domains."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply one SPF record for each domain, in corresponding list order. The client forwards the lists without inventing a cross-list cardinality rule. Supply raw record text; the client form-encodes it once rather than requiring the percent-encoded sample."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. No unpinned nullable variants are inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares no rollback. Uses form POST with a single attempt and no automatic retry or rollback. Per-domain integer status 0 or 1 is payload data; inspect it even when the UAPI envelope succeeds."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /EmailAuth/install_spf_records declares x-readonly=false. The domain parameter prose or multiple-domain example explicitly permits duplicate domain keys; use repeat encoding rather than JSON, comma splitting or an invented suffix family. The accompanying record parameter explicitly requires one value for each domain; use corresponding repeated keys. The source does not define a JSON request body. Mutations use form POST; fetch_dkim_private_keys retains that method because the pinned source also marks it mutating."
+        }
+      ]
+    },
+    "uapi:EmailAuth/remove_dmarc": {
+      "method": "POST",
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 124 and later; operates on the selected account. Domains are sent as repeated domain keys, as explicitly documented in the pinned parameter prose or multiple-domain example. Requiredness remains pinned: only applyDmarc, removeDmarc and validateCurrentDmarcs permit omitted domains."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting domains removes all DMARC records from all domains owned by the selected account. Temporary domains cannot be changed."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. No unpinned nullable variants are inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The source declares no rollback. Uses form POST with a single attempt and no automatic retry or rollback. Per-domain integer status 0 or 1 is payload data; inspect it even when the UAPI envelope succeeds."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /EmailAuth/remove_dmarc declares x-readonly=false. The domain parameter prose or multiple-domain example explicitly permits duplicate domain keys; use repeat encoding rather than JSON, comma splitting or an invented suffix family. Mutations use form POST; fetch_dkim_private_keys retains that method because the pinned source also marks it mutating."
+        }
+      ]
+    },
+    "uapi:EmailAuth/validate_current_dkims": {
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 78 and later; operates on the selected account. Domains are sent as repeated domain keys, as explicitly documented in the pinned parameter prose or multiple-domain example. Requiredness remains pinned: only applyDmarc, removeDmarc and validateCurrentDmarcs permit omitted domains."
+        },
+        {
+          "kind": "documented",
+          "text": "The source marks this operation read-only, but describes validity_cache_update effects on the DKIM validity cache. It may fail to preserve whitespace in returned DKIM records. domain in each result has the default._domainkey prefix. error is returned for DNS lookup failures; nested reason is documented only for PERMFAIL. Keep omitted fields distinct from empty strings and lists."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. No unpinned nullable variants are inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /EmailAuth/validate_current_dkims declares x-readonly=true. The domain parameter prose or multiple-domain example explicitly permits duplicate domain keys; use repeat encoding rather than JSON, comma splitting or an invented suffix family."
+        }
+      ]
+    },
+    "uapi:EmailAuth/validate_current_dmarcs": {
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 124 and later; operates on the selected account. Domains are sent as repeated domain keys, as explicitly documented in the pinned parameter prose or multiple-domain example. Requiredness remains pinned: only applyDmarc, removeDmarc and validateCurrentDmarcs permit omitted domains."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting domains validates all domains owned by the selected account. state reports DMARC, SPF, DKIM or DNS findings; subdomain has the _dmarc prefix. error is documented for DNS or SPF/DKIM failures and may be MALFORMED for syntax issues. These payload findings are distinct from the ordinary UAPI status."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. No unpinned nullable variants are inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /EmailAuth/validate_current_dmarcs declares x-readonly=true. The domain parameter prose or multiple-domain example explicitly permits duplicate domain keys; use repeat encoding rather than JSON, comma splitting or an invented suffix family."
+        }
+      ]
+    },
+    "uapi:EmailAuth/validate_current_ptrs": {
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 78 and later; operates on the selected account. Domains are sent as repeated domain keys, as explicitly documented in the pinned parameter prose or multiple-domain example. Requiredness remains pinned: only applyDmarc, removeDmarc and validateCurrentDmarcs permit omitted domains."
+        },
+        {
+          "kind": "documented",
+          "text": "Validates the PTR records for domain mail-sending IPv4/IPv6 addresses and matching forward A/AAAA records. Invalid IP addresses omit arpa_domain, ip_address, ip_version and ptr_records; error is documented for ERROR. Private IP addresses have no DNS PTR definition. VALID requires every PTR record for the address to be valid. nameservers and forward_records preserve empty lists."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. No unpinned nullable variants are inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /EmailAuth/validate_current_ptrs declares x-readonly=true. The domain parameter prose or multiple-domain example explicitly permits duplicate domain keys; use repeat encoding rather than JSON, comma splitting or an invented suffix family."
+        }
+      ]
+    },
+    "uapi:EmailAuth/validate_current_spfs": {
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 78 and later; operates on the selected account. Domains are sent as repeated domain keys, as explicitly documented in the pinned parameter prose or multiple-domain example. Requiredness remains pinned: only applyDmarc, removeDmarc and validateCurrentDmarcs permit omitted domains."
+        },
+        {
+          "kind": "documented",
+          "text": "error is documented only for ERROR; nested reason is omitted when there are no errors. Nested record states follow the documented SPF outcomes. IP versions remain integers; payload states and DNS findings are separate from the ordinary UAPI status."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nonnullable list of records with optional pinned fields; empty lists and omitted fields remain distinct from explicit null. No unpinned nullable variants are inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /EmailAuth/validate_current_spfs declares x-readonly=true. The domain parameter prose or multiple-domain example explicitly permits duplicate domain keys; use repeat encoding rather than JSON, comma splitting or an invented suffix family."
+        }
+      ]
+    }
+  }
+}

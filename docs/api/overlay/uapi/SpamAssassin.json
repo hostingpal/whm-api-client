@@ -1,0 +1,192 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "SpamAssassin",
+  "accessor": "spamAssassin",
+  "operations": {
+    "uapi:SpamAssassin/clear_spam_box": {
+      "method": "POST",
+      "void": true,
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70 and later. Deletes every Spam Box folder contents for all email addresses on the selected account, including the system user email account. This destructive account-wide operation has no rollback; the client does not retry or roll it back."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned result envelope has no data member. This operation returns no data; payload fields are not invented."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /SpamAssassin/clear_spam_box declares x-readonly=false and x-rollback=none; its result properties contain no data member. Use form POST and an evidenced void result."
+        }
+      ]
+    },
+    "uapi:SpamAssassin/get_symbolic_test_names": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70 and later. Returns symbolic test names, rule types and numeric scores. Row fields remain optional; integer and floating-point score alternatives are preserved without accepting numeric strings. An empty result remains an empty list."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:SpamAssassin/get_user_preferences": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70 and later. Lists the selected account preferences. blacklist_from, required_score, score and whitelist_from remain optional lists; empty lists and zero numeric required_score items are preserved. No preference defaults are supplied by the client."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned prose allows additional custom preferences without specifying their value shape. The four declared fields keep their strict list types; additional keys and their JSON values are preserved without inventing a value schema. Omitted fields stay absent and null is distinct from omission."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      },
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "blacklist_from": {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "required_score": {
+                "type": "list",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "score": {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "whitelist_from": {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "values": {
+              "type": "mixed"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned /SpamAssassin/get_user_preferences description explicitly says additional customizations may appear in the returns, but supplies no type for custom values. Preserve the four declared optional list fields strictly and preserve only undeclared keys as mixed JSON values; do not infer list<string> from the update operation."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:SpamAssassin/update_user_preference": {
+      "method": "POST",
+      "order": [
+        "preference",
+        "value"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 70 and later; changes the selected account preferences with no rollback. Set one preference per call: score, required_score, whitelist_from, blacklist_from or a custom preference name. Omit value to remove previous settings; an explicitly empty string or string zero is sent rather than omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "For score, value is a TEST_NAME SCORE string and the documented score must be greater than 0 and less than 1000. required_score uses a floating-point value expressed as the documented string input; address preferences use an email address. These content rules are server-side semantics, not client-side configuration inference."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned source documents multiple values as value-0 and value-1. This interface exposes only the pinned single string value; the current numbered encoder does not establish that exact zero-based family. Use no inferred comma delimiter or alternative numbered serialization."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned return example includes custom preferences such as ok_locales. Its custom-variable description is misplaced as a properties.additionalProperties member without a type. The effective object keeps the four named fields strict and preserves undeclared custom keys as string lists, following that description, its string item schema and the example. It does not infer a literal additionalProperties field."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /SpamAssassin/update_user_preference declares x-readonly=false and x-rollback=none. Use form POST. preference is required; value is optional and omission explicitly removes previous settings. Only scalar value input is represented until the documented value-0/value-1 family can be encoded exactly."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "blacklist_from": {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "required_score": {
+                "type": "list",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "score": {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "whitelist_from": {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "values": {
+              "type": "list",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-30",
+              "note": "Pinned /SpamAssassin/update_user_preference data/properties/additionalProperties incorrectly nests an additionalProperties description inside properties and omits its type. That description says a custom-variable array, its items schema is string, and data/example contains ok_locales:[all]. Correct this placement through an object with the same four declared optional list fields and list<string> values only for undeclared keys. No literal additionalProperties API field is inferred; required_score remains list<number>."
+            }
+          ]
+        }
+      }
+    }
+  }
+}

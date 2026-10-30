@@ -2397,3 +2397,39 @@ shared read-only assessor, its regression tests and the relocated domain probe
 test come from that approved master. All original evidence artifacts and pinned
 sources remain unchanged. Integration made no live requests or new captures and
 does not extend the historical observations.
+
+## 2026-10-30 mail-protection section
+
+All 47 pinned operations across BoxTrapper, EmailAuth, SpamAssassin and cPGreyList
+are generated from the unchanged 2026-10-13 source. The 19 reads use GET and 28
+mutations or secret-returning operations use form POST. Independent literal
+fixtures cover exact parameters, all declared result fields and the complete
+SpamAssassin update example through wrapped direct, bare direct and WHM-routed
+UAPI. Source descriptions, parameter-level examples, requiredness, role/version
+caveats and partial-result semantics are reviewed separately from generated specs.
+
+BoxTrapper blacklist_messages explicitly supports repeated queuefile fields in
+its parameter-level example, even though the schema is scalar. Rule lists permit
+repeated or numbered forms; the selected encoding is repeated. Some message and
+Greylisting examples use contradictory field names; generated requests follow
+the declared parameters and explicit repeated-key prose. set_forwarders has an
+array schema with missing item type and an email example; repeated string values
+follow the query array's default form/explode serialization. No server behavior
+is inferred from that source interpretation.
+
+SpamAssassin's update response nests an additionalProperties description under
+properties and omits its array type, while prose and the complete example show
+custom-named string lists. An evidence-backed root replacement retains the four
+known optional fields and adds typed custom values. get_user_preferences permits
+customizations but does not pin their value shape, so its custom values remain
+mixed. The new opt-in object values child preserves those keys without weakening
+known fields; structural evidence masks dynamic keys. Existing closed objects and
+all prior operation specs retain their contracts. Typed scalar preference values
+do not yet implement the separately documented value-0/value-1 family, tracked
+under `whm-api-client-8x0.1.20`.
+
+The fixed read-only catalog has 19 observations: WHM version plus nine selected
+operations through both routes, bound to npr/npr.rs. BoxTrapper mailbox-specific
+reads/settings use a separate owned-mailbox fixture. Live outcomes and limitations
+are recorded separately; no mail delivery or filtering-enforcement claim follows
+from structural/API checks.

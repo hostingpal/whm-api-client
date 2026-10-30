@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 25 typed groups cover 325 documented operations:
+and cPanel UAPI surface. The 29 typed groups cover 372 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -374,6 +374,21 @@ captures; HTTP redirect delivery and hotlink enforcement remain unverified.
 Only `get_redirect.url` and `list_hotlinks.redirect_url` gained evidenced nullable
 compatibility. Keep initial `9262564` failures unchanged, null distinct from
 omission/string, and follow-up `8x0.2.21` open.
+The mail-protection section covers BoxTrapper25, EmailAuth12, SpamAssassin4 and
+cPGreyList6: nineteen reads and twenty-eight form POST operations. Keep per-item
+message/domain results separate from the envelope. BoxTrapper requires Receive
+Mail; mailbox arguments and Webmail defaults follow each method's source. Its
+rule/template inputs and EmailAuth PEM arguments remain sensitive. Repeated
+queuefiles, domains, keys, records and rule fields follow documented parameter
+examples/prose; source inconsistencies stay explicit in overlay notes.
+SpamAssassin custom preference fields use an opt-in object values spec: declared
+fields remain strictly typed, while undeclared keys are preserved under the
+values child. Read custom values are mixed; update custom values are string lists.
+The malformed literal additionalProperties source node is not a returned field.
+Fingerprint every dynamic key as a wildcard, even on type failure. Default object
+specs still discard unreviewed fields. The scalar update preference argument does
+not yet cover indexed value-0/value-1 inputs (`8x0.1.20`). Do not infer filtering enforcement
+from API results or execute message delivery/Spam Box clearing as routine tests.
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.
