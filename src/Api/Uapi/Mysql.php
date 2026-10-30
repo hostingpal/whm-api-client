@@ -19,10 +19,19 @@ use SensitiveParameter;
  * according to the configured credentials, with a single attempt and no retries. The handle clears responseMeta()
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
+ * @phpstan-type AddHostResult array<array-key, mixed>|null
+ * @phpstan-type AddHostNoteResult array<array-key, mixed>|null
+ * @phpstan-type CheckDatabaseResult list<array{
+ *     msg_text?: string,
+ *     msg_type?: string,
+ *     table?: string,
+ * }>
  * @phpstan-type CreateDatabaseResult array<array-key, mixed>|null
  * @phpstan-type CreateUserResult array<array-key, mixed>|null
  * @phpstan-type DeleteDatabaseResult array<array-key, mixed>|null
+ * @phpstan-type DeleteHostResult array<array-key, mixed>|null
  * @phpstan-type DeleteUserResult array<array-key, mixed>|null
+ * @phpstan-type GetHostNotesResult array<array-key, string>
  * @phpstan-type GetPrivilegesOnDatabaseResult list<string>
  * @phpstan-type GetRestrictionsResult array{
  *     max_database_name_length?: int,
@@ -39,12 +48,39 @@ use SensitiveParameter;
  *     disk_usage?: int,
  *     users?: list<string>,
  * }>
+ * @phpstan-type ListRoutinesResult list<string>
  * @phpstan-type ListUsersResult list<array{
  *     databases?: list<string>,
  *     shortuser?: string,
  *     user?: string,
  * }>
+ * @phpstan-type LocateServerResult array{
+ *     is_remote?: 0|1,
+ *     remote_host?: string,
+ * }
+ * @phpstan-type RenameDatabaseResult array<array-key, mixed>|null
+ * @phpstan-type RenameUserResult array<array-key, mixed>|null
+ * @phpstan-type RepairDatabaseResult list<array{
+ *     msg_text?: string,
+ *     msg_type?: string,
+ *     table?: string,
+ * }>
+ * @phpstan-type RevokeAccessToDatabaseResult array<array-key, mixed>|null
+ * @phpstan-type SetPasswordResult array{
+ *     failures?: list<array{
+ *         error?: string,
+ *         host?: string,
+ *     }>,
+ * }
  * @phpstan-type SetPrivilegesOnDatabaseResult array<array-key, mixed>|null
+ * @phpstan-type SetupDbAndUserResult array{
+ *     database?: string,
+ *     database_user?: string,
+ *     database_user_password?: string,
+ *     hostname?: string,
+ *     port?: string,
+ * }
+ * @phpstan-type UpdatePrivilegesResult array<array-key, mixed>|null
  */
 final readonly class Mysql
 {
@@ -56,6 +92,98 @@ final readonly class Mysql
      */
     public function __construct(private Closure $run)
     {
+    }
+
+    /**
+     * Enable remote MySQL host access.
+     *
+     * This function authorizes a remote MySQL® host to access the account's databases.
+     *
+     * Documented: Available in cPanel 11.52 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: Authorizes the supplied remote host for this account. Wildcards and CIDR ranges can broaden access;
+     * choose the host deliberately.
+     *
+     * Documented: The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an
+     * absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but
+     * rejects nonempty lists.
+     *
+     * API-map identity: uapi:Mysql/add_host#GET (wire name add_host).
+     *
+     * @param string $host The remote MySQL server's hostname or IP address.
+     * @return AddHostResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/remote-databases/mysql-add_host
+     */
+    public function addHost(string $host): ?array
+    {
+        /** @var AddHostResult $result Validated against MysqlSpec::ADD_HOST. */
+        $result = ($this->run)(MysqlSpec::ADD_HOST, ['host' => $host]);
+
+        return $result;
+    }
+
+    /**
+     * Add remote MySQL host note.
+     *
+     * This function adds a note about a remote MySQL® server.
+     *
+     * Documented: Available in cPanel 74 and later. Disabling the MySQL role disables this operation.
+     *
+     * Documented: The host must already be authorized. Disabling the MySQL role disables this function, including when
+     * remote MySQL is configured.
+     *
+     * Documented: The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an
+     * absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but
+     * rejects nonempty lists.
+     *
+     * API-map identity: uapi:Mysql/add_host_note#GET (wire name add_host_note).
+     *
+     * @param string $host The remote MySQL server's hostname or IP address.
+     * @param string $note note that describes the remote MySQL server.
+     * @return AddHostNoteResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/remote-databases/mysql-add_host_note
+     */
+    public function addHostNote(string $host, string $note): ?array
+    {
+        /** @var AddHostNoteResult $result Validated against MysqlSpec::ADD_HOST_NOTE. */
+        $result = ($this->run)(MysqlSpec::ADD_HOST_NOTE, ['host' => $host, 'note' => $note]);
+
+        return $result;
+    }
+
+    /**
+     * Validate MySQL database integrity.
+     *
+     * This function checks for errors in all of the tables in a MySQL® database.
+     *
+     * Documented: Available in cPanel 54 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: Returns per-table diagnostic messages; callers should inspect msg_type and msg_text even when the API
+     * envelope reports success. The pinned operation is classified as mutating and is sent as form POST.
+     *
+     * API-map identity: uapi:Mysql/check_database#GET (wire name check_database).
+     *
+     * @param string $name The database's name.
+     * @return CheckDatabaseResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-management/mysql-check_database
+     */
+    public function checkDatabase(string $name): array
+    {
+        /** @var CheckDatabaseResult $result Validated against MysqlSpec::CHECK_DATABASE. */
+        $result = ($this->run)(MysqlSpec::CHECK_DATABASE, ['name' => $name]);
+
+        return $result;
     }
 
     /**
@@ -169,6 +297,38 @@ final readonly class Mysql
     }
 
     /**
+     * Disable remote MySQL host access.
+     *
+     * This function removes a remote MySQL® host's access to the account's databases.
+     *
+     * Documented: Available in cPanel 11.52 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: Removes the supplied remote host from this account. The operation declares no rollback; verify the
+     * exact target.
+     *
+     * Documented: The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an
+     * absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but
+     * rejects nonempty lists.
+     *
+     * API-map identity: uapi:Mysql/delete_host#GET (wire name delete_host).
+     *
+     * @param string $host The remote MySQL server's hostname, IP Address, or IP address range.
+     * @return DeleteHostResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/remote-databases/mysql-delete_host
+     */
+    public function deleteHost(string $host): ?array
+    {
+        /** @var DeleteHostResult $result Validated against MysqlSpec::DELETE_HOST. */
+        $result = ($this->run)(MysqlSpec::DELETE_HOST, ['host' => $host]);
+
+        return $result;
+    }
+
+    /**
      * Delete MySQL user.
      *
      * This function deletes a MySQL® user.
@@ -197,6 +357,61 @@ final readonly class Mysql
     {
         /** @var DeleteUserResult $result Validated against MysqlSpec::DELETE_USER. */
         $result = ($this->run)(MysqlSpec::DELETE_USER, ['name' => $name]);
+
+        return $result;
+    }
+
+    /**
+     * Return MySQL database schema.
+     *
+     * This function returns a string that you can give to MySQL® to recreate a particular database’s schema.
+     *
+     * Documented: Available in cPanel 82 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: Returns SQL schema text, which can contain database and object identifiers. Treat it as payload data;
+     * this method does not execute the SQL.
+     *
+     * API-map identity: uapi:Mysql/dump_database_schema#GET (wire name dump_database_schema).
+     *
+     * @param string $dbname The database's name.
+     * @return string
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-management/mysql-dump_database_schema
+     */
+    public function dumpDatabaseSchema(string $dbname): string
+    {
+        /** @var string $result Validated against MysqlSpec::DUMP_DATABASE_SCHEMA. */
+        $result = ($this->run)(MysqlSpec::DUMP_DATABASE_SCHEMA, ['dbname' => $dbname]);
+
+        return $result;
+    }
+
+    /**
+     * Return remote MySQL host notes.
+     *
+     * This function returns the notes associated with the account's remote MySQL® hosts.
+     *
+     * Documented: Available in cPanel 74 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: Returns a map keyed by remote hostnames or IP addresses. Values remain strings, including empty
+     * notes; dynamic host keys are payload data.
+     *
+     * API-map identity: uapi:Mysql/get_host_notes#GET (wire name get_host_notes).
+     *
+     * @return GetHostNotesResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/remote-databases/mysql-get_host_notes
+     */
+    public function getHostNotes(): array
+    {
+        /** @var GetHostNotesResult $result Validated against MysqlSpec::GET_HOST_NOTES. */
+        $result = ($this->run)(MysqlSpec::GET_HOST_NOTES, []);
 
         return $result;
     }
@@ -315,6 +530,34 @@ final readonly class Mysql
     }
 
     /**
+     * Return MySQL user routines.
+     *
+     * This function returns a database user's MySQL® routines.
+     *
+     * Documented: Available in cPanel 82 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: Omitting databaseUser lists routines for all database users in this account. An empty result is an
+     * empty list; routine names remain strings.
+     *
+     * API-map identity: uapi:Mysql/list_routines#GET (wire name list_routines).
+     *
+     * @param string|null $databaseUser The database user for whom to return MySQL routines. Null omits it.
+     * @return ListRoutinesResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-list_routines
+     */
+    public function listRoutines(?string $databaseUser = null): array
+    {
+        /** @var ListRoutinesResult $result Validated against MysqlSpec::LIST_ROUTINES. */
+        $result = ($this->run)(MysqlSpec::LIST_ROUTINES, ['databaseUser' => $databaseUser]);
+
+        return $result;
+    }
+
+    /**
      * Return MySQL users.
      *
      * This function lists an account's MySQL® database users.
@@ -337,6 +580,203 @@ final readonly class Mysql
     {
         /** @var ListUsersResult $result Validated against MysqlSpec::LIST_USERS. */
         $result = ($this->run)(MysqlSpec::LIST_USERS, []);
+
+        return $result;
+    }
+
+    /**
+     * Return MySQL server host information.
+     *
+     * This function returns information about the account's MySQL® host.
+     *
+     * Documented: Available in cPanel 11.52 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: is_remote is an integer flag. remote_host is optional and is not inferred when absent. This operation
+     * returns host information, not credentials.
+     *
+     * API-map identity: uapi:Mysql/locate_server#GET (wire name locate_server).
+     *
+     * @return LocateServerResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-information/mysql-locate_server
+     */
+    public function locateServer(): array
+    {
+        /** @var LocateServerResult $result Validated against MysqlSpec::LOCATE_SERVER. */
+        $result = ($this->run)(MysqlSpec::LOCATE_SERVER, []);
+
+        return $result;
+    }
+
+    /**
+     * Update MySQL database name.
+     *
+     * This function renames a MySQL® database.
+     *
+     * Documented: Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: This moves data and recreates grants and stored code before deleting the original database. Back up
+     * first. Even a successful result can include warnings about an undeleted original database or grants; inspect
+     * responseMeta()->uapiWarnings(). No automatic retry is performed.
+     *
+     * Documented: The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an
+     * absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but
+     * rejects nonempty lists.
+     *
+     * Documented: When database prefixing is enabled, newName must include the account prefix and underscore. The
+     * documented name limit is 64 characters with each underscore counted twice (63 visible characters with the prefix
+     * underscore, fewer with additional underscores). Failure during creation, data movement or grant recreation
+     * triggers an attempted restoration; restoration failures are included in the API error response.
+     *
+     * API-map identity: uapi:Mysql/rename_database#GET (wire name rename_database).
+     *
+     * @param string $oldName The database's current name.
+     * @param string $newName The database's new name.
+     * @return RenameDatabaseResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-management/mysql-rename_database
+     */
+    public function renameDatabase(string $oldName, string $newName): ?array
+    {
+        /** @var RenameDatabaseResult $result Validated against MysqlSpec::RENAME_DATABASE. */
+        $result = ($this->run)(MysqlSpec::RENAME_DATABASE, ['oldName' => $oldName, 'newName' => $newName]);
+
+        return $result;
+    }
+
+    /**
+     * Update MySQL username.
+     *
+     * This function renames a MySQL® database user.
+     *
+     * Documented: Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: Renames the account database user. Username and prefix limits depend on the database server. The
+     * operation declares no rollback; verify both names before calling.
+     *
+     * Documented: The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an
+     * absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but
+     * rejects nonempty lists.
+     *
+     * Documented: The documented username limits are 16 characters on MySQL 5.6, 32 on MySQL 5.7 and later, and 47 on
+     * MariaDB. The account prefix uses up to the first eight account-name characters plus an underscore, consuming up
+     * to nine characters of that limit.
+     *
+     * API-map identity: uapi:Mysql/rename_user#GET (wire name rename_user).
+     *
+     * @param string $oldName The user's current name.
+     * @param string $newName The user's new name.
+     * @return RenameUserResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-rename_user
+     */
+    public function renameUser(string $oldName, string $newName): ?array
+    {
+        /** @var RenameUserResult $result Validated against MysqlSpec::RENAME_USER. */
+        $result = ($this->run)(MysqlSpec::RENAME_USER, ['oldName' => $oldName, 'newName' => $newName]);
+
+        return $result;
+    }
+
+    /**
+     * Repair MySQL database tables.
+     *
+     * This function repairs all of the tables in a MySQL® database.
+     *
+     * Documented: Available in cPanel 54 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: Returns per-table repair messages; callers must inspect msg_type and msg_text alongside the API
+     * outcome. The operation declares no rollback and does not provide a backup.
+     *
+     * API-map identity: uapi:Mysql/repair_database#GET (wire name repair_database).
+     *
+     * @param string $name The database's name.
+     * @return RepairDatabaseResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-management/mysql-repair_database
+     */
+    public function repairDatabase(string $name): array
+    {
+        /** @var RepairDatabaseResult $result Validated against MysqlSpec::REPAIR_DATABASE. */
+        $result = ($this->run)(MysqlSpec::REPAIR_DATABASE, ['name' => $name]);
+
+        return $result;
+    }
+
+    /**
+     * Remove MySQL user privileges.
+     *
+     * This function revokes a MySQL® database user's privileges.
+     *
+     * Documented: Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: Revokes the database user privileges on the named database. Use the account prefix where required.
+     * The operation declares no rollback; a later grant is a separate operation.
+     *
+     * Documented: The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an
+     * absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but
+     * rejects nonempty lists.
+     *
+     * API-map identity: uapi:Mysql/revoke_access_to_database#GET (wire name revoke_access_to_database).
+     *
+     * @param string $database The database's name.
+     * @param string $user The database user's name.
+     * @return RevokeAccessToDatabaseResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-revoke_access_to_database
+     */
+    public function revokeAccessToDatabase(string $database, string $user): ?array
+    {
+        /** @var RevokeAccessToDatabaseResult $result Validated against MysqlSpec::REVOKE_ACCESS_TO_DATABASE. */
+        $result = ($this->run)(MysqlSpec::REVOKE_ACCESS_TO_DATABASE, ['database' => $database, 'user' => $user]);
+
+        return $result;
+    }
+
+    /**
+     * Update MySQL user password.
+     *
+     * This function sets a MySQL® database user's password.
+     *
+     * Documented: Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: The returned optional failures list contains per-host error records. Inspect it alongside the
+     * envelope status; a successful envelope alone does not establish that every host accepted the password. Error text
+     * and hostnames are payload data. Omitted failures stays omitted.
+     *
+     * API-map identity: uapi:Mysql/set_password#GET (wire name set_password).
+     *
+     * @param string $user The MySQL database user.
+     * @param string $password The user's new password.
+     * @return SetPasswordResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-set_password
+     */
+    public function setPassword(
+        string $user,
+        #[SensitiveParameter]
+        string $password,
+    ): array {
+        /** @var SetPasswordResult $result Validated against MysqlSpec::SET_PASSWORD. */
+        $result = ($this->run)(MysqlSpec::SET_PASSWORD, ['user' => $user, 'password' => $password]);
 
         return $result;
     }
@@ -380,6 +820,69 @@ final readonly class Mysql
             'user' => $user,
             'privileges' => $privileges,
         ]);
+
+        return $result;
+    }
+
+    /**
+     * Create a randomly named MySQL username/database set.
+     *
+     * This function creates a randomly named MySQL® database and user. This allows a 3rdparty tool to create its own
+     * DB without needing any knowledge of cPanel internals such as quotas or other limits. These will simply be passed
+     * back as an error.
+     *
+     * Documented: Available in cPanel 11.116 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: Creates a database and user with generated names and returns a generated password. Treat the entire
+     * result as sensitive. The optional application prefix should be at most six alphanumeric characters; longer
+     * prefixes reduce random-name entropy. Preserve optional fields and the string port. If the response is lost, do
+     * not blindly retry creation.
+     *
+     * API-map identity: uapi:Mysql/setup_db_and_user#GET (wire name setup_db_and_user).
+     *
+     * @param string|null $prefix An optional string to prepend to the randomly generated database name. Null omits it.
+     * @return SetupDbAndUserResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-management/mysql-setup_db_and_user
+     */
+    public function setupDbAndUser(?string $prefix = null): array
+    {
+        /** @var SetupDbAndUserResult $result Validated against MysqlSpec::SETUP_DB_AND_USER. */
+        $result = ($this->run)(MysqlSpec::SETUP_DB_AND_USER, ['prefix' => $prefix]);
+
+        return $result;
+    }
+
+    /**
+     * Update MySQL® privileges.
+     *
+     * This function updates privileges for all MySQL® databases and users on an account.
+     *
+     * Documented: Available in cPanel 82 and later. Disabling the MySQL/MariaDB role disables this operation when
+     * remote MySQL is not configured.
+     *
+     * Documented: Updates privileges for all databases and users in this cPanel account, not only a named pair. The
+     * operation declares no rollback; verify the account scope before calling.
+     *
+     * Documented: The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an
+     * absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but
+     * rejects nonempty lists.
+     *
+     * API-map identity: uapi:Mysql/update_privileges#GET (wire name update_privileges).
+     *
+     * @return UpdatePrivilegesResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-update_privileges
+     */
+    public function updatePrivileges(): ?array
+    {
+        /** @var UpdatePrivilegesResult $result Validated against MysqlSpec::UPDATE_PRIVILEGES. */
+        $result = ($this->run)(MysqlSpec::UPDATE_PRIVILEGES, []);
 
         return $result;
     }

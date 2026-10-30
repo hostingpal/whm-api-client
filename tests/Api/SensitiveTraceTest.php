@@ -12,6 +12,7 @@ use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\HttpException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
+use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use Http\Mock\Client as MockClient;
@@ -194,6 +195,24 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
+    #[DataProvider('mysqlRoutes')]
+    public function testReturnedMysqlPasswordIsRetainedOnlyInExplicitPayloadAfterMismatch(bool $direct): void
+    {
+        [$client, $http] = self::client($direct);
+        $result = '{"status":1,"data":{"database_user_password":"' . self::SECRET . '","port":3306}}';
+        $http->addResponse(new Response(200, [], $direct ? $result
+            : '{"metadata":{"result":1},"data":{"uapi":' . $result . '}}'));
+        try {
+            $client->uapi($direct ? null : 'npr')->mysql()->setupDbAndUser(prefix: 'app');
+            self::fail('An integer port must fail the pinned string contract.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertTrue($exception->outcomeConfirmed);
+            self::assertSame(['database_user_password' => self::SECRET, 'port' => 3306], $exception->payload);
+            self::assertCount(1, $http->getRequests());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
     /** @return iterable<string, array{bool}> */
     public static function mysqlRoutes(): iterable
     {
@@ -264,6 +283,16 @@ final class SensitiveTraceTest extends TestCase
             'bridged',
             static fn (Client $client): mixed =>
                 $client->uapi('npr')->mysql()->createUser(name: 'npr_writer', password: self::SECRET),
+        ];
+        yield 'direct MySQL set password' => [
+            'direct',
+            static fn (Client $client): mixed =>
+                $client->uapi()->mysql()->setPassword(user: 'npr_writer', password: self::SECRET),
+        ];
+        yield 'bridged MySQL set password' => [
+            'bridged',
+            static fn (Client $client): mixed =>
+                $client->uapi('npr')->mysql()->setPassword(user: 'npr_writer', password: self::SECRET),
         ];
         yield 'WHM passwd' => [
             'whm',

@@ -3,12 +3,12 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 13 generated typed groups cover 82 reviewed operations (see
+The 13 generated typed groups cover 97 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
-features, Email inventory, SSL/AutoSSL inventory, disk quotas and MySQL inventory,
-database/user creation, privilege assignment and deletion.
+features, Email inventory, SSL/AutoSSL inventory, disk quotas and the complete
+pinned MySQL section.
 Generic `call()` methods provide GET and form-encoded POST access without a typed
 group, subject to the operation's parameter, route and envelope requirements.
 JSON and multipart request bodies are not supported. The library provides token
@@ -186,13 +186,40 @@ in [the evidence audit](docs/api/source-audit.md#runtime-observations-2026-10-16
 MySQL inventory returns lists of records with optional wire-key fields; empty
 lists and zero disk usage are preserved. These operations are unavailable when
 the MySQL/MariaDB role is disabled and remote MySQL is not configured.
-The same group provides `createDatabase()`, `createUser()`,
-`setPrivilegesOnDatabase()`, `deleteUser()` and `deleteDatabase()` for the selected
-account. They use form POST; passwords stay in the request body. Privilege
-assignment replaces the user's current database privileges, and deletion removes
-the named resource. The pinned mutation responses are nullable objects with no
-documented field schema: `null` stays `null`, while object fields are preserved
-as an opaque array. An absent response payload remains a contract mismatch.
+The MySQL group covers all 25 operations in the pinned API section. Alongside
+inventory and provisioning, it includes remote-host access and notes, schema
+export, routine listing, server location, database/user renaming, table checking
+and repair, privilege revocation, password updates and automatic database/user
+setup. Mutations use form POST; passwords stay in the request body.
+
+```php
+$mysql = $account->mysql();
+$mysql->revokeAccessToDatabase(database: 'npr_app', user: 'npr_appuser');
+$passwordResult = $mysql->setPassword(user: 'npr_appuser', password: $newPassword);
+$hostFailures = $passwordResult['failures'] ?? []; // Inspect even after a successful envelope.
+$schema = $mysql->dumpDatabaseSchema(dbname: 'npr_app'); // SQL text; does not execute SQL.
+$routines = $mysql->listRoutines(databaseUser: 'npr_appuser');
+```
+
+Privilege assignment replaces the user's current database privileges; revocation
+removes access to that database. `updatePrivileges()` affects all databases and
+users in the selected cPanel account. Remote-host wildcards and CIDR ranges can
+broaden access. `addHostNote()` requires an authorized host and the MySQL role.
+`renameDatabase(oldName, newName)` moves data, recreates grants and stored code,
+and removes the old database. Back up first and inspect
+`responseMeta()->uapiWarnings()`: a successful rename can leave the old database
+or grants behind. `checkDatabase()` and `repairDatabase()` return per-table
+messages that must be inspected alongside the envelope status.
+
+`setupDbAndUser(prefix: 'app')` requires cPanel 11.116+ and creates randomly named
+resources. Its result includes a generated password; treat the entire result as
+sensitive. Keep the optional application prefix short (at most six alphanumeric
+characters) to preserve name entropy. Most mutation responses are nullable opaque
+objects: preserve `null` and arbitrary object fields. Password updates instead
+return an object with optional per-host `failures`; automatic setup returns an
+object with optional database, user, password, host and string-port fields. An
+absent payload remains a contract mismatch. Method PHPDoc documents each version
+floor, role requirement and result shape.
 
 Results are arrays keyed by the upstream wire names (`$domains['main_domain'] ?? null`).
 Omitted fields are absent keys (use `array_key_exists()` or `??`) and an explicit

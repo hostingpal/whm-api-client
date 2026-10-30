@@ -1195,3 +1195,65 @@ The suite gained 264 cases and reached **4,015 tests / 31,055 assertions**. Requ
 Composer and offline API-map gates passed. A separate local review of the code
 commit found no issues and ran 400 focused tests / 5,253 assertions. External
 review rounds and findings are tracked in Beads; human review time is not instrumented.
+
+## Pinned-contract audit: 2026-10-30 complete Mysql section
+
+The owner requested a larger dedicated PR, preferably covering an entire API
+section, and delegated scope selection and development-server testing while away.
+The selected batch completes all 25 functions in the pinned UAPI `Mysql` section:
+15 new methods raise generated coverage from 82 to 97 operations across the same
+13 groups. The source snapshot and map checksum remain unchanged. The complete
+API still has 1,213 nondeprecated functions without generated methods.
+
+The additions are `addHost()`, `addHostNote()`, `checkDatabase()`, `deleteHost()`,
+`dumpDatabaseSchema()`, `getHostNotes()`, `listRoutines()`, `locateServer()`,
+`renameDatabase()`, `renameUser()`, `repairDatabase()`,
+`revokeAccessToDatabase()`, `setPassword()`, `setupDbAndUser()` and
+`updatePrivileges()`. Every pinned mutation, including `check_database`, uses
+form POST; the four new reads use GET. This section needs neither JSON nor
+multipart execution support. Existing group generation and runtime validation
+remain the contract path.
+
+An independent audit compared all 15 additions with the decompressed pinned
+cPanel OpenAPI source (`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`).
+It confirmed parameter mappings and response shapes and found documentation
+caveats dropped by the generator's prose extraction. Overlay notes now preserve
+all version floors and role requirements, database-rename prefix/underscore limits
+and restoration warnings, and database-username limits. The `add_host_note` role
+condition is stricter than the other operations. `setup_db_and_user` starts at
+cPanel 11.116. Parameter ordering puts the original name before the new name and
+the database user before the password.
+
+Mutation result contracts stay distinct: most accept nullable opaque objects;
+`set_password` returns an object with optional `failures`, and
+`setup_db_and_user` returns optional credential fields and a string port.
+Per-host password failures remain payload data; the public method does not
+invent a global envelope rule. Diagnostic table messages and rename warnings
+also require caller inspection. Raw schema text and dynamically keyed host notes
+are preserved as payload data.
+
+The new credential-returning operation exposed an existing trace-privacy gap:
+a successful response with a password and malformed `port` could retain that
+password inside `OperationRunner::result()`'s response argument in `getTrace()`
+when `zend.exception_ignore_args=0`. Independent direct and bridged regressions
+failed before the response was marked `SensitiveParameter` and passed afterward.
+The intentionally explicit, unvalidated `PayloadMismatchException::$payload`
+remains available; the change protects implicit trace arguments. Both routes
+still make exactly one request.
+
+Independent literal endpoint cases cover all 15 additions on direct wrapped,
+direct bare and bridged responses, including exact URI/body/auth, omission,
+explicit empty values, null versus absent data, nested wrong types, integer flags,
+opaque objects, API failures and metadata replacement. Password-input failures
+join the existing sensitive-trace matrix. The generator/specs do not supply the
+expected endpoint results. Generated coverage, offline validation and actual live
+observations are separate claims.
+
+The standalone section recipe is scoped to 21 operations on each UAPI route.
+Four generated/offline-tested operations remain outside its live recipe:
+remote-host add/note/delete lack an authoritative absence check in host notes,
+and random setup needs safe recovery when generated identities are not returned.
+Follow-up `whm-api-client-8x0.2.9` tracks that evidence work. Empty tables/routines,
+API-reported grants and password results do not prove SQL enforcement, SQL login,
+repair of damaged tables or stored-routine behavior. Consumer integration remains
+deferred. The historical baseline and its Quota acknowledgment policy are unchanged.

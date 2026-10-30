@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 13 typed groups cover 82 reviewed operations:
+and cPanel UAPI surface. The 13 typed groups cover 97 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -167,6 +167,15 @@ Privilege assignment replaces existing privileges. Mutation results are nullable
 objects with no pinned field schema: preserve opaque object fields, explicit null
 and the distinction from an absent payload. Do not invent a field contract or
 weaken validation to void. Keep password arguments sensitive.
+The Mysql group covers all 25 pinned operations. Additional methods cover remote
+hosts/notes, table check/repair, schema export, routine listing, host location,
+database/user rename, privilege revocation, password update, random setup and
+account-wide privilege updates. All pinned mutations use form POST, including
+checkDatabase(). Password updates return an object with optional failures, whose
+nonempty entries must be inspected even after status 1. setupDbAndUser() (11.116+)
+returns optional credential fields and a string port; treat its result as sensitive.
+Rename database warnings can report failure to delete the original database or
+grants. Preserve per-method role/version caveats in overlay notes and regenerate.
 `uapi()->quota()` exposes account quota totals in MB and local usage in bytes.
 Preserve zero/unlimited/disabled semantics, optional fields and integer status flags;
 local byte limits can lag updates and distributed totals differ from local usage.
@@ -339,8 +348,9 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   (`8x0.2.3`), expanded Email inventory (`8x0.4.1`), the SSL slice (`8x0.4.2`),
   Quota (`8x0.4.3`) and MySQL inventory (`8x0.4.4`) build on the initial slices;
   consumer feedback (`8x0.10.3`) is deferred by the user as of 2026-10-17.
-  That deferral removes only the consumer prerequisite for the bounded expansion
-  pilot; MySQL, finite-Quota, plumbing and current-head review gates remain.
+  The correction cycle and bounded pilot completed through PR25, followed by the
+  provisioning reads in PR26. Consumer integration remains deferred. On 2026-10-30
+  the owner authorized the full Mysql section as one larger dedicated PR.
 - The optional `--mysql-fixture` runner mode additionally requires
   `WHM_API_LIVE_MUTATIONS=1`. It creates two databases and two database users on
   the designated `npr` account, checks linked/unlinked inventory through both
