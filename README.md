@@ -3,12 +3,12 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 14 generated typed groups cover 102 documented operations (see
+The 14 generated typed groups cover 117 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
-features, Email inventory, SSL/AutoSSL inventory, disk quotas and MySQL inventory,
-database/user creation, privilege assignment and deletion, and the complete FTP module.
+features, Email inventory, SSL/AutoSSL inventory, disk quotas and the complete
+pinned MySQL and FTP sections.
 Generic `call()` methods provide GET and form-encoded POST access without a typed
 group, subject to the operation's parameter, route and envelope requirements.
 JSON and multipart request bodies are not supported. The library provides token
@@ -193,13 +193,43 @@ in [the evidence audit](docs/api/source-audit.md#runtime-observations-2026-10-16
 MySQL inventory returns lists of records with optional wire-key fields; empty
 lists and zero disk usage are preserved. These operations are unavailable when
 the MySQL/MariaDB role is disabled and remote MySQL is not configured.
-The same group provides `createDatabase()`, `createUser()`,
-`setPrivilegesOnDatabase()`, `deleteUser()` and `deleteDatabase()` for the selected
-account. They use form POST; passwords stay in the request body. Privilege
-assignment replaces the user's current database privileges, and deletion removes
-the named resource. The pinned mutation responses are nullable objects with no
-documented field schema: `null` stays `null`, while object fields are preserved
-as an opaque array. An absent response payload remains a contract mismatch.
+The MySQL group covers all 25 operations in the pinned API section. Alongside
+inventory and provisioning, it includes remote-host access and notes, schema
+export, routine listing, server location, database/user renaming, table checking
+and repair, privilege revocation, password updates and automatic database/user
+setup. Mutations use form POST; passwords stay in the request body.
+
+```php
+$mysql = $account->mysql();
+$mysql->revokeAccessToDatabase(database: 'npr_app', user: 'npr_appuser');
+$passwordResult = $mysql->setPassword(user: 'npr_appuser', password: $newPassword);
+$hostFailures = $passwordResult['failures'] ?? []; // Check alongside the envelope status.
+$schema = $mysql->dumpDatabaseSchema(dbname: 'npr_app'); // SQL text; does not execute SQL.
+$routines = $mysql->listRoutines(databaseUser: 'npr_appuser');
+```
+
+Privilege assignment replaces the user's current database privileges; revocation
+removes access to that database. `updatePrivileges()` affects all databases and
+users in the selected cPanel account. Remote-host wildcards and CIDR ranges can
+broaden access. `addHostNote()` requires an authorized host and the MySQL role.
+`renameDatabase(oldName, newName)` moves data, recreates grants and stored code,
+and removes the old database. Back up first and inspect
+`responseMeta()->uapiWarnings()`: a successful rename can leave the old database
+or grants behind. `checkDatabase()` and `repairDatabase()` return per-table
+messages that must be inspected alongside the envelope status.
+
+`setupDbAndUser(prefix: 'app')` requires cPanel 11.116+ and creates randomly named
+resources. Its result includes a generated password; treat the entire result as
+sensitive. Keep the optional application prefix short (at most six alphanumeric
+characters) to preserve name entropy. Most mutation responses are nullable opaque
+objects: preserve `null` and arbitrary object fields. Password updates instead
+return an object with optional per-host `failures` records (`error`, `host`).
+The pinned text does not say whether failures can accompany status 1, so check
+both the list and the status. Error text and hostnames are payload data; omitted
+`failures` stays omitted. Automatic setup returns an object with optional database,
+user, password, host and string-port fields. An absent payload remains a contract
+mismatch. Method PHPDoc documents each version
+floor, role requirement and result shape.
 
 The FTP group covers all 20 pinned functions, including account creation/deletion,
 password changes, home directories, quotas, sessions, anonymous-access settings and
@@ -281,7 +311,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->features()` | `listFeatures()` |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
 | `uapi()->ftp()` | `addFtp()`, `allowsAnonymousFtp()`, `allowsAnonymousFtpIncoming()`, `changePassword()`, `deleteFtp()`, `ftpExists()`, `getFtpDaemonInfo()`, `getPort()`, `getQuota()`, `getWelcomeMessage()`, `killSession()`, `listFtp()`, `listFtpWithDisk()`, `listSessions()`, `serverName()`, `setAnonymousFtp()`, `setAnonymousFtpIncoming()`, `setHomedir()`, `setQuota()`, `setWelcomeMessage()` |
-| `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()` |
+| `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()`, `addHost()`, `addHostNote()`, `checkDatabase()`, `deleteHost()`, `dumpDatabaseSchema()`, `getHostNotes()`, `listRoutines()`, `locateServer()`, `renameDatabase()`, `renameUser()`, `repairDatabase()`, `revokeAccessToDatabase()`, `setPassword()`, `setupDbAndUser()`, `updatePrivileges()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
 
 UAPI groups operate on the selected cPanel account through either credential route.
@@ -633,8 +663,20 @@ object results and optional prefix/privilege variants remain offline-tested only
 The [provisioning readback run](docs/api/evidence/2026-10-17-mysql-provisioning.json)
 adds restrictions, database-server information and exact `SELECT` readback through
 both routes. All 49 reads and ten fixture mutations passed, and cleanup confirmed
-all four resources absent. Empty privilege lists and disabled prefixes remain
-offline-tested only; the same two Quota acknowledgments remain visible.
+all four resources absent. That artifact does not observe empty privilege lists
+or disabled prefixes; the same two Quota acknowledgments remain visible.
+The [complete-section run](docs/api/evidence/2026-10-30-mysql-section.json)
+adds 57 phase-specific observations on cPanel `11.138.0.19`: one WHM version
+probe plus 21 MySQL operations on each UAPI route, with repeated lifecycle reads.
+All observations pass with zero discrepancies; original and renamed fixture
+identities are confirmed absent afterward. It observes SELECT-to-empty revocation,
+password-result failures checks, renames and empty-database maintenance. The four
+remote-host/random-setup methods remain generated and offline-tested only, with
+safe live ownership/recovery tracked separately. SQL enforcement/authentication,
+populated tables/routines and other server configurations remain unobserved.
+The databases are empty and access is revoked before rename; this run does not
+observe grant or stored-code recreation.
+See the [section recipe](tools/live-verify/README.md#complete-mysql-section-recipe).
 The separate [finite-Quota scenario](docs/api/evidence/2026-10-17-finite-quota.json)
 adds five observations on a disposable account. Both Quota operations passed
 finite-limit checks through both routes, and token/account/domain/zone cleanup

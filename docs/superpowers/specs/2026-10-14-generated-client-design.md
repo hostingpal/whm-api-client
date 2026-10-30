@@ -6,7 +6,7 @@ Delivery and validation policy refined on 2026-10-15 under
 `whm-api-client-8x0.26`. The first phase-2 evidence runner and fingerprints are
 implemented under `8x0.10.1`, with Email inventory added under `8x0.10.2`.
 At the PR20 checkpoint (2026-10-16), [generated coverage](../../api/coverage.md)
-contains 74 operations in 13 groups. The
+contained 74 operations in 13 groups. The
 [saved evidence](../../api/evidence/2026-10-16-discrepancy-policy.json) covers
 43 route-specific probes across 25 operations, including account/domain/PHP,
 Email, SSL/AutoSSL, Quota and MySQL inventory. Its discrepancy review passes with
@@ -21,7 +21,11 @@ observations with successful finite-limit checks and cleanup; its command exits
 1 for two unacknowledged unknown-field observations, without reusing baseline
 acknowledgments or changing the Quota contract. The consumer exercise
 is deferred by the user as of 2026-10-17; further coverage remains unfinished. The
-approved correction cycle below gates the next expansion pilot.
+correction cycle below completed through PR25, followed by the separately approved
+PR26 provisioning reads (82 operations). The owner authorized completing the Mysql
+and FTP sections on 2026-10-30; current [generated coverage](../../api/coverage.md)
+is 117 operations across 14 groups, including all 25 pinned Mysql and 20 Ftp
+functions. Full API parity remains unfinished.
 Decision record: `whm-api-client-8x0.10`. This design supersedes the
 "typed core plus generic calls / lean pattern" scaling decision
 (`whm-api-client-8x0.7`, recorded in the
@@ -462,7 +466,10 @@ needs them; JSON/multipart support is still required for eventual full parity.
 
 ### Approved post-PR20 correction cycle
 
-The resumed delivery sequence is tracked under `whm-api-client-8x0.10`:
+The historical delivery sequence is tracked under `whm-api-client-8x0.10`.
+Steps 1, 3, 4 and 6 completed in PR21–PR25 on 2026-10-17. Step 2 remains
+deferred, and step 5 remains conditional future work; neither blocks the completed
+pilot or the owner-authorized full Mysql section. The sequence was:
 
 1. Correct support claims and stale progress (`8x0.1.17`). Current execution
    supports GET and form-encoded POST. The pinned inventory includes 13 JSON and

@@ -364,3 +364,54 @@ the equivalent combined comparison is 667 versus 659 lines. This avoids three
 repeated mechanics and saves eight lines in that comparison, while adding a
 shared helper to review. No elapsed review-time saving or broader adoption is
 claimed. Wrong authentication and prefix encoding still fail independent tests.
+
+## Complete Mysql section recipe
+
+The standalone section recipe keeps its phase evidence separate from the historical
+`--mysql-fixture` and the default read-only catalog:
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 WHM_API_LIVE_ACCOUNT=npr \
+  php tools/live-verify/mysql-section.php --output=docs/api/evidence/mysql-section.json
+```
+
+Both `OBLAK_TEST_WHM_KEY` and `OBLAK_TEST_NPR_KEY` must be exported. Effective source,
+overlay and runner code must be committed. The recipe binds `test.oblak.host` and
+the designated `npr` account, requires all opt-ins on each request, and makes no
+mutation retries. Run only one instance at a time. It captures 21 Mysql
+operations through direct UAPI and the WHM bridge, using separate run-owned
+resources for each route. Grant/revoke reads check API-reported privileges, not
+SQL enforcement; password checks inspect the returned failure list, not SQL login.
+Empty database checks, repairs and routine lists establish no populated table or
+stored-routine behavior. `updatePrivileges()` affects the entire `npr` test account.
+
+Generated coverage includes all 25 pinned Mysql functions. Four are deliberately
+unobserved by this recipe: `add_host`, `add_host_note`, `delete_host` and
+`setup_db_and_user`. Host notes do not prove the absence of an authorized host
+without a note. Random setup needs an ownership-safe recovery path when the
+response containing its generated identities is lost. Offline tests cover these
+contracts; no successful live observation is inferred from them.
+
+The report retains phase identities, sanitized original-response structures,
+request methods, version and contract provenance. Unknown/dynamic keys are masked;
+raw passwords, schema SQL, resource names and upstream error text are not persisted.
+Fixture expectations and cleanup remain distinct from payload/discrepancy results.
+A failed phase remains a failure even if cleanup succeeds. Historical discrepancy
+acknowledgments do not apply to this recipe.
+
+If a run reports uncertain ownership or cleanup, inspect the designated account's
+inventory privately before deciding on recovery. The recipe never adopts a name
+merely because it appeared after a failed creation. An unsuccessful rename retains
+possible original and destination resources; even an accepted rename can leave an
+original name behind, which makes cleanup fail. The `npr_ws` name prefix is only a
+candidate filter, not ownership proof. Neither the report nor a later rerun is
+authorization to delete those candidates. The report deliberately omits exact names;
+resolve uncertainty using private server inspection. Successful final inventories
+must confirm both original and renamed identities absent.
+
+Access is revoked before rename and the databases are empty, so the recipe does
+not observe grant or stored-code recreation. An absent final inventory never
+resolves an uncertain creation or rename; those resources remain `uncertain` and
+require manual review. If publishing a completed report fails, stderr names its
+retained 0600 temporary file. Recover that file privately; do not replay mutations
+to recover evidence.
