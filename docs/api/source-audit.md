@@ -2222,3 +2222,14 @@ sanitization without repeating the historical baseline. The strict assessment
 requires the complete ordered catalog, matching provenance and zero discrepancies.
 All 8 mutations remain offline-only in this slice; read observations cannot
 establish their effects. Live capture outcomes are recorded separately.
+
+The initial [2026-10-30 Mime capture](evidence/2026-10-30-mime-section.json)
+at `9262564` on `11.138.0.19` preserves 13 GET observations. All API outcomes
+passed, but four payload checks failed: `get_redirect.url` and
+`list_hotlinks.redirect_url` were explicitly null on both routes. The exact two
+field corrections preserve string, empty string, omission and null separately;
+other scalars/containers and sibling types remain rejected. Independently authored
+regressions first reproduced all six failures across direct wrapped, direct bare
+and bridged envelopes, then passed after regeneration. The original artifact is
+unchanged (SHA-256 `bb55502de9a306159e7d7eeeeb913b60cf016c5574d0ce94737c3365b6c62a9a`).
+The structural observations do not establish the upstream reason for null.

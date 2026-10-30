@@ -124,7 +124,7 @@ final class MimeSpec
             'type' => 'object',
             'fields' => [
                 'redirection_enabled' => ['type' => 'flag'],
-                'url' => ['type' => 'string'],
+                'url' => ['type' => 'string', 'nullable' => true],
             ],
         ],
     ];
@@ -161,7 +161,7 @@ final class MimeSpec
             'fields' => [
                 'allow_null' => ['type' => 'flag'],
                 'extensions' => ['type' => 'string'],
-                'redirect_url' => ['type' => 'string'],
+                'redirect_url' => ['type' => 'string', 'nullable' => true],
                 'state' => ['type' => 'string'],
                 'urls' => ['type' => 'list', 'items' => ['type' => 'string']],
             ],

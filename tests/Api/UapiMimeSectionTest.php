@@ -143,6 +143,49 @@ final class UapiMimeSectionTest extends TestCase
         ), 'domain=npr.rs&url=', '{"domain":"** All Public Domains **","url":""}'];
     }
 
+    /** @param array<string, string|null> $expected */
+    #[DataProvider('observedNullableUrls')]
+    public function testObservedNullableUrlsPreserveNullStringAndOmission(
+        string $route,
+        string $function,
+        string $payload,
+        array $expected,
+        bool $valid,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('exampleuser');
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        if (!$valid) {
+            $this->expectException(PayloadMismatchException::class);
+        }
+        $result = $function === 'get_redirect'
+            ? $account->mime()->getRedirect('npr.rs') : $account->mime()->listHotlinks();
+        self::assertSame($expected, $result);
+        self::assertSame(1, $account->responseMeta()?->uapiStatus());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, string, array<string, string|null>, bool}> */
+    public static function observedNullableUrls(): iterable
+    {
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (['get_redirect' => 'url', 'list_hotlinks' => 'redirect_url'] as $function => $field) {
+                yield $route . ' ' . $function . ' absent' => [$route, $function, '{}', [], true];
+                foreach ([null, '', '0', 'http://npr.rs/'] as $value) {
+                    yield $route . ' ' . $function . ' ' . json_encode($value, JSON_THROW_ON_ERROR) => [
+                        $route, $function, json_encode([$field => $value], JSON_THROW_ON_ERROR),
+                        [$field => $value], true,
+                    ];
+                }
+                foreach (['0', '1.5', 'false', 'true', '[]', '{}', '["http://npr.rs/"]'] as $value) {
+                    yield $route . ' ' . $function . ' invalid ' . $value => [
+                        $route, $function, '{"' . $field . '":' . $value . '}', [], false,
+                    ];
+                }
+            }
+        }
+    }
+
     /** @param Call $call */
     #[DataProvider('payloadVariants')]
     public function testPresenceAndShapeBoundaries(string $route, Closure $call, ?string $payload, bool $valid): void
@@ -215,6 +258,13 @@ final class UapiMimeSectionTest extends TestCase
                             $invalid[] = '"0"';
                         }
                         foreach ($invalid as $value) {
+                            if (
+                                $value === 'null'
+                                && (($function === 'get_redirect' && $field === 'url')
+                                    || ($function === 'list_hotlinks' && $field === 'redirect_url'))
+                            ) {
+                                continue;
+                            }
                             $payload = '{"' . $field . '":' . $value . '}';
                             if (in_array($function, ['list_handlers', 'list_mime', 'list_redirects'], true)) {
                                 $payload = '[' . $payload . ']';

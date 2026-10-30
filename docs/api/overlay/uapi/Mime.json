@@ -219,7 +219,11 @@
         },
         {
           "kind": "documented",
-          "text": "Returns redirection_enabled as integer 0 or 1 and an optional URL. Omitted fields remain absent; no nullable URL or flag conversion is documented."
+          "text": "Returns redirection_enabled as integer 0 or 1 and an optional URL. The pinned schema describes a string URL; the reviewed field-specific live correction also preserves explicit null. Omitted fields remain absent and no flag conversion is inferred."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, url was explicitly null on both GET routes in the initial capture at 9262564. Preserve null separately from an omitted field, empty string or URL string. Other response fields retain their pinned types."
         }
       ],
       "probe": {
@@ -232,7 +236,30 @@
           "bridged-uapi"
         ],
         "expected": "success"
-      }
+      },
+      "response": {
+        "url": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Mime/get_redirect returned explicit null at $.url on both direct and bridged GET routes with HTTP 200 and API status 1 at revision 9262564a282b28c46c8846db3cb1102a4c776687. The original failed capture records this exact field type mismatch; preserve null separately from strings and omission, without widening sibling fields. Immutable artifact SHA-256 bb55502de9a306159e7d7eeeeb913b60cf016c5574d0ce94737c3365b6c62a9a. Structural evidence establishes type only, not the upstream reason for null.",
+              "fingerprint": "docs/api/evidence/2026-10-30-mime-section.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Mime/get_redirect returned explicit null at $.url on both direct and bridged GET routes with HTTP 200 and API status 1 at revision 9262564a282b28c46c8846db3cb1102a4c776687. The original failed capture records this exact field type mismatch; preserve null separately from strings and omission, without widening sibling fields. Immutable artifact SHA-256 bb55502de9a306159e7d7eeeeb913b60cf016c5574d0ce94737c3365b6c62a9a. Structural evidence establishes type only, not the upstream reason for null.",
+          "fingerprint": "docs/api/evidence/2026-10-30-mime-section.json"
+        }
+      ]
     },
     "uapi:Mime/list_handlers": {
       "notes": [
@@ -266,6 +293,10 @@
         {
           "kind": "documented",
           "text": "Returns selected-account hotlink settings, including integer allow_null, comma-separated extensions and a URL list. Empty strings, zero and empty URL lists are preserved; omitted settings remain absent."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, redirect_url was explicitly null on both GET routes in the initial capture at 9262564. Preserve null separately from an omitted field, empty string or URL string. Other response fields retain their pinned types."
         }
       ],
       "probe": {
@@ -276,7 +307,30 @@
           "bridged-uapi"
         ],
         "expected": "success"
-      }
+      },
+      "response": {
+        "redirect_url": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Mime/list_hotlinks returned explicit null at $.redirect_url on both direct and bridged GET routes with HTTP 200 and API status 1 at revision 9262564a282b28c46c8846db3cb1102a4c776687. The original failed capture records this exact field type mismatch; preserve null separately from strings and omission, without widening sibling fields. Immutable artifact SHA-256 bb55502de9a306159e7d7eeeeb913b60cf016c5574d0ce94737c3365b6c62a9a. Structural evidence establishes type only, not the upstream reason for null.",
+              "fingerprint": "docs/api/evidence/2026-10-30-mime-section.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Mime/list_hotlinks returned explicit null at $.redirect_url on both direct and bridged GET routes with HTTP 200 and API status 1 at revision 9262564a282b28c46c8846db3cb1102a4c776687. The original failed capture records this exact field type mismatch; preserve null separately from strings and omission, without widening sibling fields. Immutable artifact SHA-256 bb55502de9a306159e7d7eeeeb913b60cf016c5574d0ce94737c3365b6c62a9a. Structural evidence establishes type only, not the upstream reason for null.",
+          "fingerprint": "docs/api/evidence/2026-10-30-mime-section.json"
+        }
+      ]
     },
     "uapi:Mime/list_mime": {
       "notes": [

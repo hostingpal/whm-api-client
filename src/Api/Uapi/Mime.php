@@ -27,7 +27,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  * @phpstan-type DeleteRedirectResult array<array-key, mixed>|null
  * @phpstan-type GetRedirectResult array{
  *     redirection_enabled?: 0|1,
- *     url?: string,
+ *     url?: string|null,
  * }
  * @phpstan-type ListHandlersResult list<array{
  *     extension?: string,
@@ -37,7 +37,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  * @phpstan-type ListHotlinksResult array{
  *     allow_null?: 0|1,
  *     extensions?: string,
- *     redirect_url?: string,
+ *     redirect_url?: string|null,
  *     state?: string,
  *     urls?: list<string>,
  * }
@@ -367,8 +367,13 @@ final readonly class Mime
      *
      * Documented: Available in cPanel 88 and later.
      *
-     * Documented: Returns redirection_enabled as integer 0 or 1 and an optional URL. Omitted fields remain absent; no
-     * nullable URL or flag conversion is documented.
+     * Documented: Returns redirection_enabled as integer 0 or 1 and an optional URL. The pinned schema describes a
+     * string URL; the reviewed field-specific live correction also preserves explicit null. Omitted fields remain
+     * absent and no flag conversion is inferred.
+     *
+     * Observed: On cPanel 11.138.0.19, url was explicitly null on both GET routes in the initial capture at 9262564.
+     * Preserve null separately from an omitted field, empty string or URL string. Other response fields retain their
+     * pinned types.
      *
      * API-map identity: uapi:Mime/get_redirect#GET (wire name get_redirect).
      *
@@ -423,6 +428,10 @@ final readonly class Mime
      *
      * Documented: Returns selected-account hotlink settings, including integer allow_null, comma-separated extensions
      * and a URL list. Empty strings, zero and empty URL lists are preserved; omitted settings remain absent.
+     *
+     * Observed: On cPanel 11.138.0.19, redirect_url was explicitly null on both GET routes in the initial capture at
+     * 9262564. Preserve null separately from an omitted field, empty string or URL string. Other response fields retain
+     * their pinned types.
      *
      * API-map identity: uapi:Mime/list_hotlinks#GET (wire name list_hotlinks).
      *

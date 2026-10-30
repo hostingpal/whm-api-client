@@ -197,3 +197,9 @@ No discrepancy is waived under `8x0.2.19`. Earlier failed artifacts stay unchang
 This storage recipe establishes no TLS installation/serving/trust or AutoSSL
 issuance/renewal behavior. SHA-256:
 `1a42e7a3c920b70eb91ef2f26f7f40aed8209693b8e850f56e594a2620d382d5`.
+
+- [Initial Mime section](2026-10-30-mime-section.json), at `9262564` on
+  `11.138.0.19`: 13 GETs with successful API outcomes. Four payload mismatches
+  record null `get_redirect.url` and `list_hotlinks.redirect_url`, each through
+  both routes. Preserved unchanged as evidence for the two field-specific nullable
+  corrections; no acknowledgment or general URL coercion is applied.
