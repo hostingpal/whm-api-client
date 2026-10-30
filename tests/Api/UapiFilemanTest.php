@@ -282,6 +282,7 @@ final class UapiFilemanTest extends TestCase
 
     /** @param FileCall $call */
     #[DataProvider('inventoryRepresentations')]
+    #[DataProvider('flatRowRepresentations')]
     public function testInventoryRepresentationCompatibility(
         string $route,
         Closure $call,
@@ -326,6 +327,29 @@ final class UapiFilemanTest extends TestCase
             yield "$route flat singleton preserves optional fields" => [
                 $route, $list, '[{"file":"a.txt","size":0,"future":true}]', [['file' => 'a.txt', 'size' => 0]],
             ];
+        }
+    }
+
+    /** @return iterable<string, array{string, FileCall, string, mixed}> */
+    public static function flatRowRepresentations(): iterable
+    {
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            $list = static fn (Fileman $f): mixed => $f->listFiles('private');
+            foreach ([0, 33152] as $mode) {
+                yield "$route round2 flat integer mode $mode" => [
+                    $route, $list, '[{"mode":' . $mode . '}]', [['mode' => $mode]],
+                ];
+            }
+            foreach (['0600', '0', '755', ''] as $mode) {
+                yield "$route round2 flat preserved nicemode $mode" => [
+                    $route, $list, '[{"nicemode":"' . $mode . '"}]', [['nicemode' => $mode]],
+                ];
+            }
+            foreach (['0' => 0, '4096' => 4096] as $wire => $expected) {
+                yield "$route round2 flat normalized size $wire" => [
+                    $route, $list, '[{"size":"' . $wire . '"}]', [['size' => $expected]],
+                ];
+            }
         }
     }
 
@@ -413,10 +437,13 @@ final class UapiFilemanTest extends TestCase
         foreach ($contexts as $context) {
             foreach (self::informationRow() as $field => $value) {
                 $badValues = is_int($value) ? ['null', '"0"', 'true', '[]'] : ['null', '0', 'true', '[]'];
-                if ($function === 'get_file_information' && in_array($field, ['mode', 'nicemode'], true)) {
+                if (
+                    ($function === 'get_file_information' || $context === 'flat')
+                    && in_array($field, ['mode', 'nicemode'], true)
+                ) {
                     $badValues = ['null', 'true', '[]', '1.5'];
                 }
-                if ($function === 'get_file_information' && $field === 'size') {
+                if (($function === 'get_file_information' || $context === 'flat') && $field === 'size') {
                     $badValues = ['null', 'true', '[]', '"00"', '"1.0"', '"+1"', '" 1"',
                         '"9223372036854775808"'];
                 }

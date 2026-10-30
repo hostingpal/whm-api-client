@@ -124,9 +124,9 @@ use SensitiveParameter;
  *     isparent?: 0|1,
  *     mimename?: string,
  *     mimetype?: string,
- *     mode?: string,
+ *     mode?: string|int,
  *     mtime?: int,
- *     nicemode?: int,
+ *     nicemode?: int|string,
  *     path?: string,
  *     rawmimename?: string,
  *     rawmimetype?: string,
@@ -422,11 +422,18 @@ final readonly class Fileman
      * indexed filepath- parameters or family encoding. Only the declared limitToList flag is exposed; no indexed inputs
      * are inferred. Omitted options retain server defaults and explicit false is sent as 0.
      *
-     * Observed: On cPanel 11.138.0.19, listFiles returned a flat list on both routes. The result preserves both the
-     * complete pinned dirs/files object and a flat list with the pinned optional row fields. Applying documented row
-     * fields to the observed list is provisional contract inference: the initial capture masked row keys and
-     * establishes no named row field variants. Listing mode, nicemode and size retain their pinned types until separate
-     * evidence supports any correction.
+     * Observed: The initial 11.138.0.19 capture returned a flat list on both routes. The result preserved the complete
+     * pinned dirs/files object plus a flat list with pinned optional row fields as provisional contract inference: that
+     * capture masked row keys and established no named row field variants. Preserve that historical finding separately
+     * from later named candidate evidence.
+     *
+     * Observed: The separate corrected 11.138.0.19 inventory exposes named flat-row fields through payload_alternatives
+     * index 1 from the same original responses (candidate SHA-256
+     * 2da4c9dfe2a88ae19278cc4b771de12efa463396dd478a7ebca72e8fc8c4b7be). This candidate failed; it was not a
+     * selected/passed alternative. Flat rows had integer mode and numeric-string nicemode on both routes, plus
+     * numeric-string size directly and integer size on the bridge. Flat mode and nicemode preserve int|string
+     * representations without new string format/range claims; flat size normalizes canonical bounded integer strings
+     * losslessly. The pinned dirs/files object rows retain string mode and integer nicemode/size.
      *
      * API-map identity: uapi:Fileman/list_files#GET (wire name list_files).
      *

@@ -1,0 +1,985 @@
+{
+    "schema_version": 1,
+    "read_only_section": {
+        "recipe": "fileman-inventory-v1",
+        "status": "failed",
+        "probes": [
+            {
+                "operation": "whm1:version",
+                "variant": "whm1:version#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T22:16:33Z",
+                "revision": "bc7662dd86bfbccf41e1640cc3b38f9d63e1a0bc",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "e68757bafceb0b0fc2554b80d2e0bd91b59eb362d4efde9aaa86a33d189a4316",
+                "effective_contract_sha256": "a3b55069b379516f20fcf82f959226d68b68ac515a7e55c0bde8842d39effd60",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.version": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.version": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:Fileman/autocompletedir",
+                "variant": "uapi:Fileman/autocompletedir#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T22:16:34Z",
+                "revision": "bc7662dd86bfbccf41e1640cc3b38f9d63e1a0bc",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "e68757bafceb0b0fc2554b80d2e0bd91b59eb362d4efde9aaa86a33d189a4316",
+                "effective_contract_sha256": "27edea0e1f8a3e34b0224179230684ab19a069e8bb2400063c60583e267e3052",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].file": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].file": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:Fileman/autocompletedir",
+                "variant": "uapi:Fileman/autocompletedir#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T22:16:34Z",
+                "revision": "bc7662dd86bfbccf41e1640cc3b38f9d63e1a0bc",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "e68757bafceb0b0fc2554b80d2e0bd91b59eb362d4efde9aaa86a33d189a4316",
+                "effective_contract_sha256": "27edea0e1f8a3e34b0224179230684ab19a069e8bb2400063c60583e267e3052",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].file": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].file": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:Fileman/get_file_information",
+                "variant": "uapi:Fileman/get_file_information#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T22:16:34Z",
+                "revision": "bc7662dd86bfbccf41e1640cc3b38f9d63e1a0bc",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "e68757bafceb0b0fc2554b80d2e0bd91b59eb362d4efde9aaa86a33d189a4316",
+                "effective_contract_sha256": "f856bfa0507db83ca398ab212fe6b9731429712a5ec0cf5afdb4783fa4ba67d8",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.absdir": [
+                        "string"
+                    ],
+                    "$.data.ctime": [
+                        "int"
+                    ],
+                    "$.data.exists": [
+                        "int"
+                    ],
+                    "$.data.file": [
+                        "string"
+                    ],
+                    "$.data.fullpath": [
+                        "string"
+                    ],
+                    "$.data.gid": [
+                        "int"
+                    ],
+                    "$.data.humansize": [
+                        "string"
+                    ],
+                    "$.data.isleaf": [
+                        "int"
+                    ],
+                    "$.data.mimename": [
+                        "string"
+                    ],
+                    "$.data.mimetype": [
+                        "string"
+                    ],
+                    "$.data.mode": [
+                        "int"
+                    ],
+                    "$.data.mtime": [
+                        "int"
+                    ],
+                    "$.data.nicemode": [
+                        "numeric-string"
+                    ],
+                    "$.data.path": [
+                        "string"
+                    ],
+                    "$.data.rawmimename": [
+                        "string"
+                    ],
+                    "$.data.rawmimetype": [
+                        "string"
+                    ],
+                    "$.data.read": [
+                        "int"
+                    ],
+                    "$.data.size": [
+                        "numeric-string"
+                    ],
+                    "$.data.type": [
+                        "string"
+                    ],
+                    "$.data.uid": [
+                        "int"
+                    ],
+                    "$.data.write": [
+                        "int"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.absdir": [
+                        "string"
+                    ],
+                    "$.ctime": [
+                        "int"
+                    ],
+                    "$.exists": [
+                        "int"
+                    ],
+                    "$.file": [
+                        "string"
+                    ],
+                    "$.fullpath": [
+                        "string"
+                    ],
+                    "$.gid": [
+                        "int"
+                    ],
+                    "$.humansize": [
+                        "string"
+                    ],
+                    "$.isleaf": [
+                        "int"
+                    ],
+                    "$.mimename": [
+                        "string"
+                    ],
+                    "$.mimetype": [
+                        "string"
+                    ],
+                    "$.mode": [
+                        "int"
+                    ],
+                    "$.mtime": [
+                        "int"
+                    ],
+                    "$.nicemode": [
+                        "numeric-string"
+                    ],
+                    "$.path": [
+                        "string"
+                    ],
+                    "$.rawmimename": [
+                        "string"
+                    ],
+                    "$.rawmimetype": [
+                        "string"
+                    ],
+                    "$.read": [
+                        "int"
+                    ],
+                    "$.size": [
+                        "numeric-string"
+                    ],
+                    "$.type": [
+                        "string"
+                    ],
+                    "$.uid": [
+                        "int"
+                    ],
+                    "$.write": [
+                        "int"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:Fileman/get_file_information",
+                "variant": "uapi:Fileman/get_file_information#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T22:16:35Z",
+                "revision": "bc7662dd86bfbccf41e1640cc3b38f9d63e1a0bc",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "e68757bafceb0b0fc2554b80d2e0bd91b59eb362d4efde9aaa86a33d189a4316",
+                "effective_contract_sha256": "f856bfa0507db83ca398ab212fe6b9731429712a5ec0cf5afdb4783fa4ba67d8",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.absdir": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.ctime": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.exists": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.file": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.fullpath": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.gid": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.humansize": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.isleaf": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.mimename": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.mimetype": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.mode": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.mtime": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.nicemode": [
+                        "numeric-string"
+                    ],
+                    "$.data.uapi.data.path": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.rawmimename": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.rawmimetype": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.read": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.size": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.type": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.uid": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.write": [
+                        "int"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.absdir": [
+                        "string"
+                    ],
+                    "$.ctime": [
+                        "int"
+                    ],
+                    "$.exists": [
+                        "int"
+                    ],
+                    "$.file": [
+                        "string"
+                    ],
+                    "$.fullpath": [
+                        "string"
+                    ],
+                    "$.gid": [
+                        "int"
+                    ],
+                    "$.humansize": [
+                        "string"
+                    ],
+                    "$.isleaf": [
+                        "int"
+                    ],
+                    "$.mimename": [
+                        "string"
+                    ],
+                    "$.mimetype": [
+                        "string"
+                    ],
+                    "$.mode": [
+                        "int"
+                    ],
+                    "$.mtime": [
+                        "int"
+                    ],
+                    "$.nicemode": [
+                        "numeric-string"
+                    ],
+                    "$.path": [
+                        "string"
+                    ],
+                    "$.rawmimename": [
+                        "string"
+                    ],
+                    "$.rawmimetype": [
+                        "string"
+                    ],
+                    "$.read": [
+                        "int"
+                    ],
+                    "$.size": [
+                        "int"
+                    ],
+                    "$.type": [
+                        "string"
+                    ],
+                    "$.uid": [
+                        "int"
+                    ],
+                    "$.write": [
+                        "int"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "uapi:Fileman/list_files",
+                "variant": "uapi:Fileman/list_files#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T22:16:35Z",
+                "revision": "bc7662dd86bfbccf41e1640cc3b38f9d63e1a0bc",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "e68757bafceb0b0fc2554b80d2e0bd91b59eb362d4efde9aaa86a33d189a4316",
+                "effective_contract_sha256": "f5fbf8be779de74a50316e7c8efdbca6b2b9427f839bbfec215bcc8bb62122a9",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "failed",
+                "probe_outcome": "failed",
+                "failure_kind": "payload_mismatch",
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].*": [
+                        "int",
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "int",
+                        "numeric-string",
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$",
+                        "kind": "type_mismatch"
+                    }
+                ],
+                "payload_alternatives": [
+                    {
+                        "index": 0,
+                        "sha256": "0c39f15ce53950cdd3aaa34b892aefff64a0c945654ad03b5c1f97fce3a09e76",
+                        "paths": {
+                            "$": [
+                                "list"
+                            ],
+                            "$[]": [
+                                "object"
+                            ],
+                            "$[].*": [
+                                "int",
+                                "numeric-string",
+                                "string"
+                            ]
+                        },
+                        "discrepancies": [
+                            {
+                                "path": "$",
+                                "kind": "type_mismatch"
+                            }
+                        ]
+                    },
+                    {
+                        "index": 1,
+                        "sha256": "2da4c9dfe2a88ae19278cc4b771de12efa463396dd478a7ebca72e8fc8c4b7be",
+                        "paths": {
+                            "$": [
+                                "list"
+                            ],
+                            "$[]": [
+                                "object"
+                            ],
+                            "$[].absdir": [
+                                "string"
+                            ],
+                            "$[].ctime": [
+                                "int"
+                            ],
+                            "$[].exists": [
+                                "int"
+                            ],
+                            "$[].file": [
+                                "string"
+                            ],
+                            "$[].fullpath": [
+                                "string"
+                            ],
+                            "$[].gid": [
+                                "int"
+                            ],
+                            "$[].humansize": [
+                                "string"
+                            ],
+                            "$[].isleaf": [
+                                "int",
+                                "missing"
+                            ],
+                            "$[].isparent": [
+                                "missing"
+                            ],
+                            "$[].mimename": [
+                                "string"
+                            ],
+                            "$[].mimetype": [
+                                "string"
+                            ],
+                            "$[].mode": [
+                                "int"
+                            ],
+                            "$[].mtime": [
+                                "int"
+                            ],
+                            "$[].nicemode": [
+                                "numeric-string"
+                            ],
+                            "$[].path": [
+                                "string"
+                            ],
+                            "$[].rawmimename": [
+                                "string"
+                            ],
+                            "$[].rawmimetype": [
+                                "string"
+                            ],
+                            "$[].read": [
+                                "int"
+                            ],
+                            "$[].size": [
+                                "numeric-string"
+                            ],
+                            "$[].type": [
+                                "string"
+                            ],
+                            "$[].uid": [
+                                "int"
+                            ],
+                            "$[].write": [
+                                "int"
+                            ]
+                        },
+                        "discrepancies": [
+                            {
+                                "path": "$[].mode",
+                                "kind": "type_mismatch"
+                            },
+                            {
+                                "path": "$[].nicemode",
+                                "kind": "type_mismatch"
+                            },
+                            {
+                                "path": "$[].size",
+                                "kind": "type_mismatch"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "operation": "uapi:Fileman/list_files",
+                "variant": "uapi:Fileman/list_files#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T22:16:35Z",
+                "revision": "bc7662dd86bfbccf41e1640cc3b38f9d63e1a0bc",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "001af4b940627bc14988f70e0491e3c5f68045a5",
+                "overlay_sha256": "e68757bafceb0b0fc2554b80d2e0bd91b59eb362d4efde9aaa86a33d189a4316",
+                "effective_contract_sha256": "f5fbf8be779de74a50316e7c8efdbca6b2b9427f839bbfec215bcc8bb62122a9",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "failed",
+                "probe_outcome": "failed",
+                "failure_kind": "payload_mismatch",
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].*": [
+                        "int",
+                        "numeric-string",
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].*": [
+                        "int",
+                        "numeric-string",
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$",
+                        "kind": "type_mismatch"
+                    }
+                ],
+                "payload_alternatives": [
+                    {
+                        "index": 0,
+                        "sha256": "0c39f15ce53950cdd3aaa34b892aefff64a0c945654ad03b5c1f97fce3a09e76",
+                        "paths": {
+                            "$": [
+                                "list"
+                            ],
+                            "$[]": [
+                                "object"
+                            ],
+                            "$[].*": [
+                                "int",
+                                "numeric-string",
+                                "string"
+                            ]
+                        },
+                        "discrepancies": [
+                            {
+                                "path": "$",
+                                "kind": "type_mismatch"
+                            }
+                        ]
+                    },
+                    {
+                        "index": 1,
+                        "sha256": "2da4c9dfe2a88ae19278cc4b771de12efa463396dd478a7ebca72e8fc8c4b7be",
+                        "paths": {
+                            "$": [
+                                "list"
+                            ],
+                            "$[]": [
+                                "object"
+                            ],
+                            "$[].absdir": [
+                                "string"
+                            ],
+                            "$[].ctime": [
+                                "int"
+                            ],
+                            "$[].exists": [
+                                "int"
+                            ],
+                            "$[].file": [
+                                "string"
+                            ],
+                            "$[].fullpath": [
+                                "string"
+                            ],
+                            "$[].gid": [
+                                "int"
+                            ],
+                            "$[].humansize": [
+                                "string"
+                            ],
+                            "$[].isleaf": [
+                                "int",
+                                "missing"
+                            ],
+                            "$[].isparent": [
+                                "missing"
+                            ],
+                            "$[].mimename": [
+                                "string"
+                            ],
+                            "$[].mimetype": [
+                                "string"
+                            ],
+                            "$[].mode": [
+                                "int"
+                            ],
+                            "$[].mtime": [
+                                "int"
+                            ],
+                            "$[].nicemode": [
+                                "numeric-string"
+                            ],
+                            "$[].path": [
+                                "string"
+                            ],
+                            "$[].rawmimename": [
+                                "string"
+                            ],
+                            "$[].rawmimetype": [
+                                "string"
+                            ],
+                            "$[].read": [
+                                "int"
+                            ],
+                            "$[].size": [
+                                "int"
+                            ],
+                            "$[].type": [
+                                "string"
+                            ],
+                            "$[].uid": [
+                                "int"
+                            ],
+                            "$[].write": [
+                                "int"
+                            ]
+                        },
+                        "discrepancies": [
+                            {
+                                "path": "$[].mode",
+                                "kind": "type_mismatch"
+                            },
+                            {
+                                "path": "$[].nicemode",
+                                "kind": "type_mismatch"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

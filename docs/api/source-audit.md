@@ -2426,8 +2426,9 @@ Observed file information preserves `mode` and `nicemode` as `int|string`,
 including string spelling, and normalizes `size` only from a lossless canonical
 integer string. String permission values do not establish a numeric format rule.
 Listings preserve both the documented object containing `dirs`/`files` lists and
-the observed flat list. The flat rows use the pinned row schema; the initial
-capture only established their container because field names were masked.
+the observed flat list. Flat rows apply the same three representation corrections,
+bound to named candidate diagnostics in the second capture. The documented
+object alternative retains its original row types.
 
 All 13 methods have offline contract tests. The bounded live catalog selects
 three directory inventory reads through both routes, plus WHM version. It reads
@@ -2459,3 +2460,19 @@ returns a flat list on both routes instead of the pinned object with `dirs` and
 container did not match; this artifact establishes no named flat-row field types.
 The original failure evidence stays immutable, with SHA-256
 `c4f5b8b3f8930adb168f657a9b679544ad3196286250a00cd9701fe736277491`.
+
+The [second Fileman inventory capture](evidence/2026-10-30-fileman-inventory-corrected.json)
+at `bc7662dd86bfbccf41e1640cc3b38f9d63e1a0bc` records seven successful
+HTTP/API outcomes and five passing payload checks. Both listing payloads still
+fail the union. The existing original-response `payload_alternatives` diagnostics
+for flat-list candidate index 1 (SHA-256
+`2da4c9dfe2a88ae19278cc4b771de12efa463396dd478a7ebca72e8fc8c4b7be`)
+identify integer `mode` and numeric-string `nicemode` on both routes, plus
+numeric-string `size` directly and integer `size` through the bridge. This is
+candidate structural evidence, not a passing or selected alternative.
+
+These observations bind the same representation corrections to flat rows only:
+`mode` and `nicemode` preserve `int|string`; `size` accepts lossless canonical
+integer strings. The pinned object alternative's `dirs`/`files` row contracts
+remain unchanged. The second artifact stays immutable with SHA-256
+`7bd1db300c24babef264c7bfc445dbc2c1430a82152bdf33665a553428a0726f`.

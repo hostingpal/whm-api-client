@@ -418,8 +418,9 @@ Observed file information preserves `mode` and `nicemode` as `int|string`,
 including string spelling, and normalizes `size` only from a lossless canonical
 integer string. String permission values do not establish a numeric format rule.
 Listings preserve both the documented object containing `dirs`/`files` lists and
-the observed flat list. The flat rows use the pinned row schema; the initial
-capture only established their container because field names were masked.
+the observed flat list. Flat rows apply the same three representation corrections,
+bound to named candidate diagnostics in the second capture. The documented
+object alternative retains its original row types.
 
 All 13 methods have offline contract tests. The bounded live catalog selects
 three directory inventory reads through both routes, plus WHM version. It reads
