@@ -159,8 +159,12 @@ final class Fingerprint
 
         foreach ($value instanceof stdClass ? get_object_vars($value) : [] as $name => $item) {
             if (!array_key_exists($name, $fields)) {
-                $this->discrepancy($path . '.*', 'unknown_field');
-                $this->opaque($item, $path . '.*');
+                if (array_key_exists('values', $type)) {
+                    $this->visit($item, self::child($type, 'values'), $path . '.*');
+                } else {
+                    $this->discrepancy($path . '.*', 'unknown_field');
+                    $this->opaque($item, $path . '.*');
+                }
             }
         }
     }

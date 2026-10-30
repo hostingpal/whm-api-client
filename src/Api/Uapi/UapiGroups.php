@@ -15,6 +15,10 @@ trait UapiGroups
 {
     private ?AddonDomain $addonDomainGroup = null;
 
+    private ?BoxTrapper $boxTrapperGroup = null;
+
+    private ?CpGreyList $cpGreyListGroup = null;
+
     private ?DirectoryIndexes $directoryIndexesGroup = null;
 
     private ?DirectoryPrivacy $directoryPrivacyGroup = null;
@@ -30,6 +34,8 @@ trait UapiGroups
     private ?DomainLookup $domainLookupGroup = null;
 
     private ?Email $emailGroup = null;
+
+    private ?EmailAuth $emailAuthGroup = null;
 
     private ?Features $featuresGroup = null;
 
@@ -47,6 +53,8 @@ trait UapiGroups
 
     private ?Quota $quotaGroup = null;
 
+    private ?SpamAssassin $spamAssassinGroup = null;
+
     private ?Ssl $sslGroup = null;
 
     private ?SubDomain $subDomainGroup = null;
@@ -61,6 +69,26 @@ trait UapiGroups
     public function addonDomain(): AddonDomain
     {
         return $this->addonDomainGroup ??= new AddonDomain($this->run(...));
+    }
+
+    /**
+     * Select the BoxTrapper operations without making a request.
+     *
+     * The BoxTrapper module for UAPI.
+     */
+    public function boxTrapper(): BoxTrapper
+    {
+        return $this->boxTrapperGroup ??= new BoxTrapper($this->run(...));
+    }
+
+    /**
+     * Select the cPGreyList operations without making a request.
+     *
+     * The cPGreyList module for UAPI.
+     */
+    public function cpGreyList(): CpGreyList
+    {
+        return $this->cpGreyListGroup ??= new CpGreyList($this->run(...));
     }
 
     /**
@@ -144,6 +172,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the EmailAuth operations without making a request.
+     *
+     * The EmailAuth module for UAPI.
+     */
+    public function emailAuth(): EmailAuth
+    {
+        return $this->emailAuthGroup ??= new EmailAuth($this->run(...));
+    }
+
+    /**
      * Select the Features operations without making a request.
      *
      * The Features module for UAPI.
@@ -221,6 +259,16 @@ trait UapiGroups
     public function quota(): Quota
     {
         return $this->quotaGroup ??= new Quota($this->run(...));
+    }
+
+    /**
+     * Select the SpamAssassin operations without making a request.
+     *
+     * The SpamAssassin module for UAPI.
+     */
+    public function spamAssassin(): SpamAssassin
+    {
+        return $this->spamAssassinGroup ??= new SpamAssassin($this->run(...));
     }
 
     /**

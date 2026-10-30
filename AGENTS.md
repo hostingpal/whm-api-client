@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 25 typed groups cover 325 documented operations:
+and cPanel UAPI surface. The 29 typed groups cover 372 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -374,6 +374,47 @@ captures; HTTP redirect delivery and hotlink enforcement remain unverified.
 Only `get_redirect.url` and `list_hotlinks.redirect_url` gained evidenced nullable
 compatibility. Keep initial `9262564` failures unchanged, null distinct from
 omission/string, and follow-up `8x0.2.21` open.
+The mail-protection section covers BoxTrapper25, EmailAuth12, SpamAssassin4 and
+cPGreyList6: nineteen reads and twenty-eight form POST operations. Keep per-item
+message/domain results separate from the envelope. BoxTrapper requires Receive
+Mail; mailbox arguments and Webmail defaults follow each method's source. Its
+rule/template inputs and EmailAuth PEM arguments remain sensitive. Repeated
+queuefiles, domains, keys, records and rule fields follow documented parameter
+examples/prose; source inconsistencies stay explicit in overlay notes.
+SpamAssassin custom preference fields use an opt-in object values spec: declared
+fields remain strictly typed, while undeclared keys are preserved under the
+values child. Read and update custom values are mixed because both return the
+complete preference object; declared fields remain strict. required_score list
+items preserve observed numeric strings alongside native integers and floats.
+The malformed literal additionalProperties source node is not a returned field.
+Fingerprint every dynamic key as a wildcard, even on type failure. Default object
+specs still discard unreviewed fields. The scalar update preference argument does
+not yet cover indexed value-0/value-1 inputs (`8x0.1.20`). Do not infer filtering enforcement
+from API results or execute message delivery/Spam Box clearing as routine tests.
+The corrected mail-protection read catalog at a063db0 on 11.138.0.19 passes all
+19 API/payload checks, while strict status retains two PTR nested unknown-field
+observations under 8x0.2.23. Only evidenced EmailAuth nullable fields, PTR integer
+strings and precision-preserving SpamAssassin scores gained compatibility.
+The final BoxTrapper capture at 3ea2166 passes all 45 observations (31 GET,
+14 POST) with zero discrepancies and both fresh mailboxes confirmed cleaned.
+It observes 14 BoxTrapper functions through both routes while protection stays
+disabled. queue_days and log date accept canonical integer strings only where
+explicitly corrected; direct-only observed log date strings do not establish
+that variant on the bridge. Empty logs/queues prove no message-row schema or
+filtering/delivery behavior. Initial captures cover 22/47 functions;
+remaining operations/variants stay in 8x0.2.23. Preserve all earlier captures.
+The correction capture at 6f3e0cb adds direct preference mutation execution
+(23/47 combined) but stops at 26 observations: all HTTP/API/payload pass, removal
+reply expectation fails on empty-list versus original omission. Both restoration
+reads and final catalog reads match the original complete state. Keep the artifact
+failed, direct restoration uncertain and bridge not_started; no mutation retry or
+bridge write occurred. Review 8x0.2.23.1 before more mutations. PTR findings remain
+strict failures and unwaived; historical evidence is immutable.
+The subsequent fixture-only correction permits the observed empty-list removal
+reply for original absence; getter equality and lost-outcome rules remain strict.
+It is offline-tested but no second capture has run. Seek Claude assessment before
+remaining bridge evidence; never replay the completed direct phase just to clear
+the original artifact.
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.

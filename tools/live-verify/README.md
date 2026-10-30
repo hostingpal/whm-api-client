@@ -45,6 +45,111 @@ The two provisioning metadata reads also take no arguments. Their optional field
 remain optional, and a null database prefix remains distinct from an omitted one.
 Hostnames, database-server versions and prefixes are retained only as structural types.
 
+### Mail protection reads and disabled-mailbox fixture
+
+The separate `mail-protection.php` catalog captures 19 GET observations: WHM
+version plus nine reads through direct and bridged UAPI. It covers BoxTrapper
+email-template names, four EmailAuth validators for `npr.rs`, two SpamAssassin
+reads and two cPGreyList reads. It does not alter the default catalog.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/mail-protection.php --output=docs/api/evidence/mail-protection-new.json
+```
+
+The separate BoxTrapper recipe creates one fresh mailbox per route, with welcome
+email disabled and an explicit finite quota. Both routes must first confirm the
+mail domain and absence of both candidates. Ownership requires the original
+validated creation response to identify the exact login and a successful inventory
+to confirm it. An uncertain creation is never adopted for cleanup.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/boxtrapper-section.php --output=docs/api/evidence/boxtrapper-section-new.json
+```
+
+The nominal recipe captures 45 ordered observations across 14 BoxTrapper
+functions, four Email functions and WHM version. It confirms BoxTrapper starts
+disabled, explicitly keeps it disabled, writes conservative configuration and
+allow/block/ignore rules, and reads them back. It also reads the verify template,
+template names, an empty log and empty queue, then checks disabled status again.
+It never enables protection, forwards mail, changes templates, processes queued
+messages or clears Spam Boxes. It establishes no mail-delivery or filtering effect.
+
+A finally block deletes only confirmed owned mailboxes once and checks that both
+candidate addresses are absent. A lost creation or deletion response remains
+uncertain even if a later inventory is empty. The protected structural artifact
+retains every original failure; strict assessment requires all phases, successful
+outcomes and expectations, consistent provenance, verified cleanup and zero
+discrepancies. No discrepancy acknowledgments apply. Actual identities, passwords,
+rule content, templates and upstream error text are not saved.
+
+Both commands require committed effective inputs, both tokens, exact `npr` /
+`npr.rs` selectors and a new output filename. If publication fails after writing a
+complete report, the command retains the protected temporary artifact and reports
+its path. Uncertain resource recovery requires private inspection and confirmation
+of this run's exact mailbox identity; a `wbt` prefix alone proves no ownership.
+The broader generated API surface and indexed SpamAssassin preference-input gap
+(`whm-api-client-8x0.1.20`) remain separate from these bounded observations.
+
+The [corrected 19-GET capture](../../docs/api/evidence/2026-10-30-mail-protection-corrected.json)
+at `a063db0` passes API/payload checks and retains two strict PTR unknown-field
+findings. The [final BoxTrapper capture](../../docs/api/evidence/2026-10-30-boxtrapper-section-final.json)
+at `3ea2166` passes all 45 observations and strict assessment with zero
+discrepancies and both mailboxes cleaned. Initial failed captures remain intact.
+Those initial captures cover 22 of the 47 new functions; other operations and variants
+remain under `whm-api-client-8x0.2.23`.
+
+### Required-score restoration fixture
+
+`spam-preference-section.php` verifies the reviewed `required_score` correction
+on the designated `npr` account. The shared `SectionCommand` handles authorization,
+committed-input checks and protected, new-only publication for this fixture and
+the Email and BoxTrapper entrypoints; each fixture retains its own request guard,
+recipe and cleanup logic.
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/spam-preference-section.php --output=docs/api/evidence/spam-preference-new.json
+```
+
+Both routes must first return the same complete preference object. The original
+threshold must be absent or a single numeric string that can be restored exactly.
+Preflight also refuses floating-point values anywhere in the preference tree,
+including oversized JSON integers decoded as floats, because their exact original
+value cannot be established after PHP decoding. This is a fixture boundary; the
+generated API contract is unchanged.
+The fixture sets one different threshold and reads it back through each route,
+then restores the exact original value (or removes only `required_score` when it
+was originally absent). Both routes confirm the complete original preference set
+after restoration, including all unrelated settings. Only the restoration POST
+reply may retain an empty `required_score` list for original absence; getters
+must still show the field absent and every unrelated setting unchanged. Original values and custom
+key names stay in memory; the artifact contains sanitized structure only.
+
+A dispatched mutation is never repeated. Cleanup sends one distinct restoration
+request even after an accepted-outcome payload failure or transport uncertainty;
+uncertainty remains a failure even if later reads match. Any phase failure halts
+further threshold changes. The nominal capture has 31 observations: two preference
+preflights, ten set/read/restore/confirmation observations, and one final 19-GET
+mail-protection catalog. The threshold phase and restoration are assessed
+separately from strict catalog discrepancies. Known PTR findings remain failures
+and receive no waiver. This recipe does not replay the BoxTrapper mailbox fixture
+or establish filtering or delivery enforcement.
+
+The [correction capture](../../docs/api/evidence/2026-10-30-mail-protection-review-final.json)
+at `6f3e0cb` stopped after 26 observations (24 GET, two POST), all successful at
+HTTP/API/payload level. Removal returned an empty `required_score` list, failing
+the exact reply expectation against original absence. Both restoration reads and
+both final catalog reads matched the complete original state. The artifact keeps
+its failed assessment and direct `uncertain` / bridge `not_started` states; the
+bridge write did not run. `8x0.2.23.1` tracks reviewer assessment before any further
+mutation. The two PTR strict findings remain unwaived. This adds direct preference
+mutation execution to committed coverage (23/47), without claiming full fixture
+completion or bridged mutation evidence. Do not rerun to clear these findings.
+
 ### Complete FTP section fixture
 
 `ftp-section.php` is a standalone opt-in recipe for the generated Ftp group. It

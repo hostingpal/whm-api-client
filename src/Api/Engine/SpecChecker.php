@@ -15,7 +15,7 @@ use LogicException;
  * whichever payload the server would return. The check covers the operation keys
  * described on OperationSpec, every parameter spec (including those of arguments a
  * call omits), and the complete ShapeValidator type grammar recursively: every list
- * item, map value, object field and union branch, and the type of nullable specs,
+ * item, map value, object field, optional object extra value and union branch, and the type of nullable specs,
  * which the validator never inspects for a null payload. It also rejects duplicate
  * wire names across parameters (the second would silently overwrite the first),
  * "unwrap" on a nullable object result (a null payload could never be unwrapped),
@@ -236,6 +236,9 @@ final class SpecChecker
 
         foreach ($fields as $field) {
             self::type($field);
+        }
+        if (array_key_exists('values', $type)) {
+            self::type($type['values']);
         }
 
         foreach ($required as $name) {
