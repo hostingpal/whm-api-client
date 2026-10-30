@@ -947,3 +947,8 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+The [corrected Mime read-only capture](docs/api/evidence/2026-10-30-mime-section-corrected.json)
+records reviewed GET checks on cPanel `11.138.0.19`. All 13 GET observations passed HTTP, API, payload and probe checks with zero discrepancies and a passed strict assessment. The observed null URL fields are preserved. MIME and redirect lists were empty; handler rows were populated. Eight mutations and HTTP redirect/hotlink enforcement remain unverified.
+`getRedirect()['url']` and `listHotlinks()['redirect_url']` preserve observed null
+separately from string and omission; their original failed capture is retained.

@@ -666,3 +666,8 @@ network I/O and publishes the completed report with a new-only atomic link. If a
 destination race or unsupported link prevents publication, the complete protected
 report remains at the JSON-encoded recovery path printed to stderr. Partial or
 failed initial writes remain covered by follow-up `8x0.2.13`.
+
+Recorded captures: [initial](../../docs/api/evidence/2026-10-30-mime-section.json)
+and [corrected](../../docs/api/evidence/2026-10-30-mime-section-corrected.json).
+The initial four payload mismatches establish exactly two nullable URL fields;
+the corrected capture preserves their null values. All 13 GET observations passed HTTP, API, payload and probe checks with zero discrepancies and a passed strict assessment. The observed null URL fields are preserved. MIME and redirect lists were empty; handler rows were populated. Eight mutations and HTTP redirect/hotlink enforcement remain unverified. See `8x0.2.21`.

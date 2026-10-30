@@ -317,6 +317,10 @@ current effective validator keeps their nullable object boundary without enforci
 that enum. Missing payloads still fail. `deleteHotlink()` has an unspecified data
 schema, so its payload remains mixed rather than acquiring invented fields.
 
+The corrected 2026-10-30 Mime capture at `fdbafb6` on `11.138.0.19`: All 13 GET observations passed HTTP, API, payload and probe checks with zero discrepancies and a passed strict assessment. The observed null URL fields are preserved. MIME and redirect lists were empty; handler rows were populated. Eight mutations and HTTP redirect/hotlink enforcement remain unverified.
+Only `get_redirect.url` and `list_hotlinks.redirect_url` gained evidenced nullable
+compatibility. Keep initial `9262564` failures unchanged, null distinct from
+omission/string, and follow-up `8x0.2.21` open.
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.

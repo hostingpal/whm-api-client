@@ -2233,3 +2233,9 @@ regressions first reproduced all six failures across direct wrapped, direct bare
 and bridged envelopes, then passed after regeneration. The original artifact is
 unchanged (SHA-256 `bb55502de9a306159e7d7eeeeb913b60cf016c5574d0ce94737c3365b6c62a9a`).
 The structural observations do not establish the upstream reason for null.
+
+The [corrected-contract Mime capture](evidence/2026-10-30-mime-section-corrected.json)
+at `fdbafb6` on `11.138.0.19` reruns the unchanged reviewed read catalog.
+All 13 GET observations passed HTTP, API, payload and probe checks with zero discrepancies and a passed strict assessment. The observed null URL fields are preserved. MIME and redirect lists were empty; handler rows were populated. Eight mutations and HTTP redirect/hotlink enforcement remain unverified. The initial failed artifact remains unchanged. Follow-up `8x0.2.21`
+tracks remaining live variants and mutations; the pinned null-only mutation enums
+remain within the documented `8x0.18` compatibility limitation.
