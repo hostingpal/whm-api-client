@@ -323,6 +323,15 @@ argument from inconsistent upstream prose.
 The 2026-10-30 domain-management capture at `9db0cad` on `11.138.0.19`: All 27 GET observations passed HTTP, API, payload and probe checks. Strict assessment remains failed for two masked integer unknown-field observations at `$[].*` in `WebVhosts/list_ssl_capable_domains`, one per route. No acknowledgment or new typed field was added.
 Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants are not established by this capture. Separate [Claude reviewer evidence](https://github.com/hostingpal/whm-api-client/pull/33#pullrequestreview-5717731712) reports seven mutation methods passing on both routes with cleanup; rename and temporary-domain conversion remain unobserved. Follow-up `8x0.2.20` remains open.
 
+
+The corrected [statistics capture](docs/api/evidence/2026-10-31-resource-statistics-corrected.json)
+at `a439c3c` on `11.138.0.19` records 23 HTTP-200 GETs. Twenty-one API/payload/probe
+checks pass with zero discrepancies; both `Stats/get_site_errors` API calls fail,
+so strict status remains failed. Ten new functions pass on both routes. Daily
+statistics, site/report lists and analyzer lists are empty; populated variants
+remain offline coverage. No settings or log content changed. Follow-up `8x0.2.25`
+retains the unresolved log errors and other unobserved variants.
+
 The directory groups cover all ten pinned functions, available from cPanel 88.
 Six reads use GET and four mutations use form POST. Directory paths are forwarded
 unchanged. Only `DirectoryProtection/list_directories` documents paths relative to

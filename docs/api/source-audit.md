@@ -2801,3 +2801,23 @@ bridge reports native integers. These are structural classifications, not raw
 values or proof of a particular numeric-string spelling. Preserve the original
 failed artifact, SHA-256
 `6114814a2c39e52080d34c90cf0790380c16b86d3dca87677cb00fea50a407f3`.
+
+### Corrected resource/statistics capture
+
+The immutable [corrected capture](evidence/2026-10-31-resource-statistics-corrected.json)
+at `a439c3c7791a16207437911c4dda93ee60105ac0` on `11.138.0.19` records all 23 GETs
+with HTTP 200. Twenty-one API, payload and probe checks pass with zero schema
+discrepancies. Both `Stats/get_site_errors` API requests still fail before payload
+validation, so the overall strict assessment remains failed; neither failure is
+waived or reclassified as a skip. The selector and bounds follow the pinned
+source, which supplies no diagnosed cause. Follow-up `8x0.2.25` remains open.
+
+The successful checks establish canonical integer-string compatibility for the
+selected resource rows, percentages and direct month-start timestamps, and
+integer leaves for the selected two-level bandwidth query. They do not establish
+fractional percentages or other grouping depths. Daily-stat maps, site lists,
+report-file lists and analyzer lists are empty, so their populated schemas remain
+offline-tested. Ten of the eleven new functions pass through both routes; error-log
+payloads remain unobserved. No settings, analyzer execution or log mutation ran.
+The original capture stays unchanged. Corrected artifact SHA-256:
+`904c85e93c2774646f68ddbbf38685355164f6bec9c1f19bc8e3d72e96438521`.

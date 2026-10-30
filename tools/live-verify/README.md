@@ -930,3 +930,11 @@ payload values are not persisted. Strict assessment accepts no discrepancies or
 historical acknowledgments. No configuration write, report download or analyzer
 execution is performed. Failed capability/schema observations remain failed
 evidence instead of being skipped or waived.
+
+The corrected [statistics capture](../../docs/api/evidence/2026-10-31-resource-statistics-corrected.json)
+at `a439c3c` on `11.138.0.19` records 23 HTTP-200 GETs. Twenty-one API/payload/probe
+checks pass with zero discrepancies; both `Stats/get_site_errors` API calls fail,
+so strict status remains failed. Ten new functions pass on both routes. Daily
+statistics, site/report lists and analyzer lists are empty; populated variants
+remain offline coverage. No settings or log content changed. Follow-up `8x0.2.25`
+retains the unresolved log errors and other unobserved variants.
