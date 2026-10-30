@@ -12,6 +12,7 @@ use InvalidArgumentException;
 use JsonException;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
+use SensitiveParameter;
 use stdClass;
 
 /**
@@ -39,14 +40,15 @@ final class EnvelopeReader
      * available metadata is retained without inventing missing success flags.
      * Both policies require a usable envelope; only Flag interprets the operation's
      * outcome (WHM metadata.result or UAPI status), while the bridge's outer WHM
-     * result is interpreted under both.
+     * result is interpreted under both. The response argument is sensitive because
+     * its body can contain secrets even when the envelope or outcome is invalid.
      *
      * @throws HttpException If HTTP status is outside 200-299.
      * @throws InvalidResponseException If JSON or required envelope fields are unusable.
      * @throws ApiErrorException If the Flag policy finds a WHM or UAPI failure outcome, or the bridge failed.
      */
     public static function read(
-        ResponseInterface $response,
+        #[SensitiveParameter] ResponseInterface $response,
         ResponseRoute $route,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): ApiResponse {

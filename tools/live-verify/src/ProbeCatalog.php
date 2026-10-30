@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient\Tools\LiveVerify;
 use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\DomainInfoSpec;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\EmailSpec;
+use HostingPal\WhmApiClient\Api\Uapi\Spec\FeaturesSpec;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\LangPhpSpec;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\MysqlSpec;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\QuotaSpec;
@@ -27,6 +28,7 @@ final class ProbeCatalog
     {
         $server = self::read($root . '/docs/api/overlay/whm/server-administration.json');
         $domains = self::read($root . '/docs/api/overlay/uapi/DomainInfo.json');
+        $features = self::read($root . '/docs/api/overlay/uapi/Features.json');
         $email = self::read($root . '/docs/api/overlay/uapi/Email.json');
         $accounts = self::read($root . '/docs/api/overlay/whm/accounts.json');
         $webServer = self::read($root . '/docs/api/overlay/whm/web-server-configuration.json');
@@ -376,39 +378,141 @@ final class ProbeCatalog
                 . '&cpanel.module=Quota&cpanel.function=get_local_quota_info',
                 static fn (Client $client): mixed => $client->uapi('npr')->quota()->getLocalQuotaInfo(),
             ),
-            ...self::parameterlessUapiPair(
+            ...self::readOnlyUapiPair(
                 $mysql,
                 'Mysql',
                 'list_databases',
                 MysqlSpec::LIST_DATABASES,
                 static fn (UapiClient $account): mixed => $account->mysql()->listDatabases(),
             ),
-            ...self::parameterlessUapiPair(
+            ...self::readOnlyUapiPair(
                 $mysql,
                 'Mysql',
                 'list_users',
                 MysqlSpec::LIST_USERS,
                 static fn (UapiClient $account): mixed => $account->mysql()->listUsers(),
             ),
-            ...self::parameterlessUapiPair(
+            ...self::readOnlyUapiPair(
                 $mysql,
                 'Mysql',
                 'get_restrictions',
                 MysqlSpec::GET_RESTRICTIONS,
                 static fn (UapiClient $account): mixed => $account->mysql()->getRestrictions(),
             ),
-            ...self::parameterlessUapiPair(
+            ...self::readOnlyUapiPair(
                 $mysql,
                 'Mysql',
                 'get_server_information',
                 MysqlSpec::GET_SERVER_INFORMATION,
                 static fn (UapiClient $account): mixed => $account->mysql()->getServerInformation(),
             ),
+            ...self::readOnlyUapiPair(
+                $domains,
+                'DomainInfo',
+                'domains_data',
+                DomainInfoSpec::DOMAINS_DATA,
+                static fn (UapiClient $account): mixed =>
+                    $account->domainInfo()->domainsData(
+                        format: 'hash',
+                        hideTemporaryDomains: false,
+                        returnHttpsRedirectsStatus: false,
+                    ),
+                'format=hash&hide_temporary_domains=0&return_https_redirects_status=0',
+                ['format' => 'hash', 'hide_temporary_domains' => '0', 'return_https_redirects_status' => '0'],
+            ),
+            ...self::readOnlyUapiPair(
+                $domains,
+                'DomainInfo',
+                'single_domain_data',
+                DomainInfoSpec::SINGLE_DOMAIN_DATA,
+                static fn (UapiClient $account): mixed =>
+                    $account->domainInfo()->singleDomainData(
+                        domain: 'npr.rs',
+                        hideTemporaryDomains: false,
+                        returnHttpsRedirectStatus: false,
+                    ),
+                'domain=npr.rs&hide_temporary_domains=0&return_https_redirect_status=0',
+                ['domain' => 'npr.rs', 'hide_temporary_domains' => '0', 'return_https_redirect_status' => '0'],
+            ),
+            ...self::readOnlyUapiPair(
+                $features,
+                'Features',
+                'get_feature_metadata',
+                FeaturesSpec::GET_FEATURE_METADATA,
+                static fn (UapiClient $account): mixed =>
+                    $account->features()->getFeatureMetadata(),
+            ),
+            ...self::readOnlyUapiPair(
+                $features,
+                'Features',
+                'has_feature',
+                FeaturesSpec::HAS_FEATURE,
+                static fn (UapiClient $account): mixed =>
+                    $account->features()->hasFeature(name: 'autossl'),
+                'name=autossl',
+                ['name' => 'autossl'],
+            ),
+            ...self::readOnlyUapiPair(
+                $features,
+                'Features',
+                'has_features_like',
+                FeaturesSpec::HAS_FEATURES_LIKE,
+                static fn (UapiClient $account): mixed =>
+                    $account->features()->hasFeaturesLike(pattern: 'mail', isRegex: false),
+                'pattern=mail&is_regex=0',
+                ['pattern' => 'mail', 'is_regex' => '0'],
+            ),
+            ...self::readOnlyUapiPair(
+                $features,
+                'Features',
+                'list_features_like',
+                FeaturesSpec::LIST_FEATURES_LIKE,
+                static fn (UapiClient $account): mixed =>
+                    $account->features()->listFeaturesLike(pattern: 'mail', isRegex: false),
+                'pattern=mail&is_regex=0',
+                ['pattern' => 'mail', 'is_regex' => '0'],
+            ),
+            ...self::readOnlyUapiPair(
+                $php,
+                'LangPHP',
+                'php_get_vhost_versions',
+                LangPhpSpec::PHP_GET_VHOST_VERSIONS,
+                static fn (UapiClient $account): mixed =>
+                    $account->langPhp()->phpGetVhostVersions(),
+            ),
+            ...self::readOnlyUapiPair(
+                $php,
+                'LangPHP',
+                'php_ini_get_user_basic_directives',
+                LangPhpSpec::PHP_INI_GET_USER_BASIC_DIRECTIVES,
+                static fn (UapiClient $account): mixed =>
+                    $account->langPhp()->phpIniGetUserBasicDirectives(type: 'home'),
+                'type=home',
+                ['type' => 'home'],
+            ),
+            ...self::readOnlyUapiPair(
+                $php,
+                'LangPHP',
+                'php_ini_get_user_content',
+                LangPhpSpec::PHP_INI_GET_USER_CONTENT,
+                static fn (UapiClient $account): mixed =>
+                    $account->langPhp()->phpIniGetUserContent(type: 'home'),
+                'type=home',
+                ['type' => 'home'],
+            ),
+            ...self::readOnlyUapiPair(
+                $php,
+                'LangPHP',
+                'php_ini_get_user_paths',
+                LangPhpSpec::PHP_INI_GET_USER_PATHS,
+                static fn (UapiClient $account): mixed =>
+                    $account->langPhp()->phpIniGetUserPaths(),
+            ),
         ];
     }
 
     /**
-     * Bind one reviewed parameterless call to the authenticated direct account and the fixed npr bridge.
+     * Bind one reviewed GET to the authenticated direct account and the fixed npr bridge.
      *
      * Module, function and callback are code-owned; overlay recipes still pass through probe() unchanged.
      * This development-only pilot shares routing mechanics, never endpoint expectations or argument encoding.
@@ -416,14 +520,17 @@ final class ProbeCatalog
      * @param array<mixed> $overlay
      * @param array<mixed> $spec
      * @param Closure(UapiClient): mixed $invoke
+     * @param array<string, string> $arguments Exact reviewed recipe values.
      * @return array{Probe, Probe} Direct probe first, then the WHM bridge.
      */
-    private static function parameterlessUapiPair(
+    private static function readOnlyUapiPair(
         array $overlay,
         string $module,
         string $function,
         array $spec,
         Closure $invoke,
+        string $query = '',
+        array $arguments = [],
     ): array {
         $operation = 'uapi:' . $module . '/' . $function;
 
@@ -433,8 +540,10 @@ final class ProbeCatalog
                 $operation,
                 'direct-uapi',
                 $spec,
-                'https://test.oblak.host:2083/execute/' . $module . '/' . $function,
+                'https://test.oblak.host:2083/execute/' . $module . '/' . $function
+                . ($query === '' ? '' : '?' . $query),
                 static fn (Client $client): mixed => $invoke($client->uapi()),
+                $arguments,
             ),
             self::probe(
                 $overlay,
@@ -442,8 +551,10 @@ final class ProbeCatalog
                 'bridged-uapi',
                 $spec,
                 'https://test.oblak.host:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
-                . '&cpanel.module=' . $module . '&cpanel.function=' . $function,
+                . '&cpanel.module=' . $module . '&cpanel.function=' . $function
+                . ($query === '' ? '' : '&' . $query),
                 static fn (Client $client): mixed => $invoke($client->uapi('npr')),
+                $arguments,
             ),
         ];
     }

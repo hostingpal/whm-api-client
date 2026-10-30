@@ -411,7 +411,7 @@ final class MysqlFixtureTest extends TestCase
         $report = (self::fixture($http))->run(
             $original,
             static function (array $wrapped) use ($original, $capture): array {
-                self::assertCount(49, $wrapped);
+                self::assertCount(count($original) + 2, $wrapped);
                 foreach ($original as $index => $probe) {
                     if (!str_starts_with($probe->operation, 'uapi:Mysql/')) {
                         self::assertSame($probe, $wrapped[$index]);

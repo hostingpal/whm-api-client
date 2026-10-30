@@ -12,6 +12,7 @@ use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\HttpException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
+use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use Http\Mock\Client as MockClient;
@@ -194,6 +195,89 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
+    #[DataProvider('iniResponseRoutes')]
+    public function testIniContentEchoedSecretStaysOutOfPayloadFailureTrace(bool $direct): void
+    {
+        [$client, $http] = self::client($direct);
+        $result = '{"status":1,"data":["' . self::SECRET . '"]}';
+        $http->addResponse(new Response(200, [], $direct
+            ? $result
+            : '{"metadata":{"result":1},"data":{"uapi":' . $result . '}}'));
+
+        try {
+            $client->uapi($direct ? null : 'npr')->langPhp()->phpIniGetUserContent(type: 'home');
+            self::fail('Expected an invalid object payload for INI content.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertTrue($exception->outcomeConfirmed);
+            self::assertSame(1, $exception->metadata?->uapiStatus());
+            self::assertCount(1, $http->getRequests());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    /** @return iterable<string, array{bool}> */
+    public static function iniResponseRoutes(): iterable
+    {
+        yield 'direct' => [true];
+        yield 'bridged' => [false];
+    }
+
+    /** @param class-string<Throwable> $expected */
+    #[DataProvider('iniEnvelopeFailures')]
+    public function testIniEnvelopeFailuresKeepRawResponsesOutOfLibraryTraceArguments(
+        string $route,
+        string $failure,
+        string $expected,
+    ): void {
+        [$client, $http] = self::client($route !== 'bridged');
+        $status = match ($failure) {
+            'malformed' => '"1"',
+            'uapi' => '0',
+            default => '1',
+        };
+        $result = '{"status":' . $status . ',"data":{"password":"' . self::SECRET . '"}}';
+        $body = match ($route) {
+            'direct' => '{"result":' . $result . '}',
+            'bare' => $result,
+            default => '{"metadata":{"result":' . ($failure === 'whm' ? '0' : '1')
+                . '},"data":{"uapi":' . $result . '}}',
+        };
+        $http->addResponse(new Response(200, [], $body));
+
+        try {
+            $client->uapi($route === 'bridged' ? 'npr' : null)->langPhp()->phpIniGetUserContent(type: 'home');
+            self::fail('Expected the malformed or failed INI envelope to be rejected.');
+        } catch (Throwable $exception) {
+            self::assertInstanceOf($expected, $exception);
+            self::assertCount(1, $http->getRequests());
+            foreach ($exception->getTrace() as $frame) {
+                $class = $frame['class'] ?? '';
+                if (
+                    !str_starts_with($class, 'HostingPal\\WhmApiClient\\')
+                    || str_starts_with($class, 'HostingPal\\WhmApiClient\\Tests\\')
+                ) {
+                    continue;
+                }
+                $seen = [];
+                self::assertFalse(
+                    self::containsResponse($frame['args'] ?? [], $seen),
+                    $class . '::' . $frame['function'] . ' retains a raw HTTP response in its trace arguments.',
+                );
+            }
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    /** @return iterable<string, array{string, string, class-string<Throwable>}> */
+    public static function iniEnvelopeFailures(): iterable
+    {
+        foreach (['direct', 'bare', 'bridged'] as $route) {
+            yield $route . ' string UAPI status' => [$route, 'malformed', InvalidResponseException::class];
+            yield $route . ' failed UAPI status' => [$route, 'uapi', ApiErrorException::class];
+        }
+        yield 'bridged failed outer WHM result' => ['bridged', 'whm', ApiErrorException::class];
+    }
+
     /** @return iterable<string, array{bool}> */
     public static function mysqlRoutes(): iterable
     {
@@ -255,6 +339,15 @@ final class SensitiveTraceTest extends TestCase
     /** @return iterable<string, array{'whm'|'direct'|'bridged', Closure(Client): mixed}> */
     private static function secretCalls(): iterable
     {
+        foreach (['direct', 'bridged'] as $route) {
+            $account = $route === 'direct' ? null : 'npr';
+            yield $route . ' INI content' => [
+                $route,
+                static fn (Client $client): mixed =>
+                    $client->uapi($account)->langPhp()->phpIniSetUserContent(self::SECRET, 'vhost', 'npr.rs'),
+            ];
+        }
+
         yield 'direct MySQL create user' => [
             'direct',
             static fn (Client $client): mixed =>
@@ -344,6 +437,39 @@ final class SensitiveTraceTest extends TestCase
             self::assertStringNotContainsString(self::SECRET, $current->getTraceAsString());
             self::assertStringNotContainsString(self::SECRET, $current->getMessage());
         }
+    }
+
+    /**
+     * A response can retain the secret in a resource-backed stream that object-property searches cannot read.
+     * Library trace frames must redact the response itself, including responses nested in containers.
+     *
+     * @param array<int, true> $seen
+     */
+    private static function containsResponse(mixed $value, array &$seen): bool
+    {
+        if ($value instanceof SensitiveParameterValue) {
+            return false;
+        }
+        if ($value instanceof ResponseInterface) {
+            return true;
+        }
+        if (is_object($value)) {
+            $id = spl_object_id($value);
+            if (isset($seen[$id])) {
+                return false;
+            }
+            $seen[$id] = true;
+            $value = (array) $value;
+        }
+        if (is_array($value)) {
+            foreach ($value as $item) {
+                if (self::containsResponse($item, $seen)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
