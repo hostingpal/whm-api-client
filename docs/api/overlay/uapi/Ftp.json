@@ -1,0 +1,379 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Ftp",
+  "operations": {
+    "uapi:Ftp/add_ftp": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Ftp/add_ftp GET variant has x-readonly=false and x-rollback=none. The generated-client policy uses form POST for mutations and secret-bearing parameters, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Use password or passHash (wire pass or pass_hash), never both in one request. Null omits the option; omission retains the server defaults, including removing dots from usernames and unlimited quota. The domain must belong to this cPanel account, and homedir is relative to its home directory."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Explicit null and opaque object fields are preserved; an absent payload is a contract mismatch. The existing empty-map compatibility accepts an empty JSON list as an empty array, but rejects nonempty lists."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload enum contains only null. The generated client applies its existing nullable-object shape policy; it does not enforce general JSON Schema enums. Acceptance of an opaque object is a runtime compatibility boundary, not a documented non-null response guarantee."
+        }
+      ],
+      "params": {
+        "pass": {
+          "php": "password",
+          "sensitive": true
+        },
+        "pass_hash": {
+          "php": "passHash",
+          "sensitive": true
+        }
+      },
+      "order": [
+        "user",
+        "pass",
+        "pass_hash",
+        "domain",
+        "homedir",
+        "quota",
+        "disallowdot"
+      ]
+    },
+    "uapi:Ftp/allows_anonymous_ftp": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        }
+      ]
+    },
+    "uapi:Ftp/allows_anonymous_ftp_incoming": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        }
+      ]
+    },
+    "uapi:Ftp/delete_ftp": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Ftp/delete_ftp GET variant has x-readonly=false and x-rollback=none. The generated-client policy uses form POST for mutations and secret-bearing parameters, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the selected FTP account. destroy=true also deletes its home directory; omission defaults to retaining the directory. The pinned operation declares no rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Explicit null and opaque object fields are preserved; an absent payload is a contract mismatch. The existing empty-map compatibility accepts an empty JSON list as an empty array, but rejects nonempty lists."
+        }
+      ]
+    },
+    "uapi:Ftp/ftp_exists": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "This is not a boolean lookup. An existing FTP account produces a successful nullable object payload; an absent account raises an API error under the documented status policy. The selected domain defaults to the cPanel account primary domain when omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Explicit null and opaque object fields are preserved; an absent payload is a contract mismatch. The existing empty-map compatibility accepts an empty JSON list as an empty array, but rejects nonempty lists."
+        }
+      ]
+    },
+    "uapi:Ftp/get_ftp_daemon_info": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "enabled and the nested supports fields remain integer 0|1 flags; omitted fields remain absent. The daemon name can be empty."
+        }
+      ]
+    },
+    "uapi:Ftp/get_port": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        }
+      ]
+    },
+    "uapi:Ftp/get_quota": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a string: unlimited or the quota in megabytes (MB). Do not interpret an absent payload as an unlimited quota."
+        }
+      ]
+    },
+    "uapi:Ftp/get_welcome_message": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        }
+      ]
+    },
+    "uapi:Ftp/kill_session": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Ftp/kill_session GET variant has x-readonly=false and x-rollback=none. The generated-client policy uses form POST for mutations and secret-bearing parameters, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting login uses the server default all and stops all FTP sessions for the cPanel account. Supply an explicit login when only one FTP account should be affected. The pinned operation declares no rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Explicit null and opaque object fields are preserved; an absent payload is a contract mismatch. The existing empty-map compatibility accepts an empty JSON list as an empty array, but rejects nonempty lists."
+        }
+      ]
+    },
+    "uapi:Ftp/list_ftp": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Filters are pipe-delimited strings, not arrays. Omitted includeAcctTypes includes all account types; omitted skipAcctTypes excludes none. Row fields remain optional."
+        }
+      ]
+    },
+    "uapi:Ftp/list_ftp_with_disk": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Filters are pipe-delimited strings. Disk amounts are decimal strings in MB: _diskquota uses 0.00 for unlimited, while diskquota uses unlimited. Preserve optional fields and the nullable htmldir field; zero, empty strings, null and omission are distinct."
+        }
+      ]
+    },
+    "uapi:Ftp/list_sessions": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        }
+      ]
+    },
+    "uapi:Ftp/passwd": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Ftp/passwd GET variant has x-readonly=false and x-rollback=none. The generated-client policy uses form POST for mutations and secret-bearing parameters, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes the selected FTP account password. The password argument is sensitive and travels as pass in the form POST body. The domain defaults to the cPanel account primary domain when omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Explicit null and opaque object fields are preserved; an absent payload is a contract mismatch. The existing empty-map compatibility accepts an empty JSON list as an empty array, but rejects nonempty lists."
+        }
+      ],
+      "name": "changePassword",
+      "params": {
+        "pass": {
+          "php": "password",
+          "sensitive": true
+        }
+      },
+      "order": [
+        "user",
+        "pass",
+        "domain"
+      ]
+    },
+    "uapi:Ftp/server_name": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        }
+      ]
+    },
+    "uapi:Ftp/set_anonymous_ftp": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Ftp/set_anonymous_ftp GET variant has x-readonly=false and x-rollback=none. The generated-client policy uses form POST for mutations and secret-bearing parameters, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes anonymous FTP logins for the selected cPanel account. Omitting set uses the upstream default 0 (disabled); explicit false is sent as 0."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Explicit null and opaque object fields are preserved; an absent payload is a contract mismatch. The existing empty-map compatibility accepts an empty JSON list as an empty array, but rejects nonempty lists."
+        }
+      ]
+    },
+    "uapi:Ftp/set_anonymous_ftp_incoming": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Ftp/set_anonymous_ftp_incoming GET variant has x-readonly=false and x-rollback=none. The generated-client policy uses form POST for mutations and secret-bearing parameters, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes inbound anonymous FTP transfers for the selected cPanel account. Omitting set uses the upstream default 0 (disabled); explicit false is sent as 0."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Explicit null and opaque object fields are preserved; an absent payload is a contract mismatch. The existing empty-map compatibility accepts an empty JSON list as an empty array, but rejects nonempty lists."
+        }
+      ]
+    },
+    "uapi:Ftp/set_homedir": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Ftp/set_homedir GET variant has x-readonly=false and x-rollback=none. The generated-client policy uses form POST for mutations and secret-bearing parameters, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later. Disabling the FTP role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes the selected FTP account home directory. Omission uses the documented user@domain subdirectory default, not the current directory. The domain defaults to the cPanel account primary domain."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Explicit null and opaque object fields are preserved; an absent payload is a contract mismatch. The existing empty-map compatibility accepts an empty JSON list as an empty array, but rejects nonempty lists."
+        }
+      ]
+    },
+    "uapi:Ftp/set_quota": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Ftp/set_quota GET variant has x-readonly=false and x-rollback=none. The generated-client policy uses form POST for mutations and secret-bearing parameters, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Quota is in MB. quota=0 or kill=true grants unlimited disk space. Omitted kill and quota retain their documented defaults of 0, so omitting quota can remove the limit."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Explicit null and opaque object fields are preserved; an absent payload is a contract mismatch. The existing empty-map compatibility accepts an empty JSON list as an empty array, but rejects nonempty lists."
+        }
+      ]
+    },
+    "uapi:Ftp/set_welcome_message": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Ftp/set_welcome_message GET variant has x-readonly=false and x-rollback=none. The generated-client policy uses form POST for mutations and secret-bearing parameters, keeping operation parameters out of access-log query strings."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Disabling the FTP role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Sets the FTP welcome message for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Explicit null and opaque object fields are preserved; an absent payload is a contract mismatch. The existing empty-map compatibility accepts an empty JSON list as an empty array, but rejects nonempty lists."
+        }
+      ]
+    }
+  }
+}

@@ -1195,3 +1195,53 @@ The suite gained 264 cases and reached **4,015 tests / 31,055 assertions**. Requ
 Composer and offline API-map gates passed. A separate local review of the code
 commit found no issues and ran 400 focused tests / 5,253 assertions. External
 review rounds and findings are tracked in Beads; human review time is not instrumented.
+
+
+### Complete FTP section: 2026-10-30
+
+The owner requested another coherent API slice in an independent PR while
+keeping the complete MySQL PR separate. Bead `whm-api-client-8x0.4.9` covers all
+20 pinned `Ftp` functions from the unchanged 2026-10-13 cPanel OpenAPI snapshot:
+`add_ftp`, `allows_anonymous_ftp`, `allows_anonymous_ftp_incoming`, `delete_ftp`,
+`ftp_exists`, `get_ftp_daemon_info`, `get_port`, `get_quota`, `get_welcome_message`,
+`kill_session`, `list_ftp`, `list_ftp_with_disk`, `list_sessions`, `passwd`,
+`server_name`, `set_anonymous_ftp`, `set_anonymous_ftp_incoming`, `set_homedir`,
+`set_quota` and `set_welcome_message`.
+
+All nine mutations execute as form POST; the eleven read operations use GET.
+`passwd` is exposed as `changePassword(user, password, domain)`; `pass` and
+`pass_hash` map to sensitive `password` and `passHash` arguments. Optional
+parameters preserve omission, explicit false, empty strings and zero. The API
+forbids sending both password forms, leaves domains defaulted to the cPanel
+primary domain, and defaults new usernames to dot removal. These are upstream
+semantics rather than new local cross-parameter validation.
+
+The overlay preserves FTP-role caveats and version floors: cPanel 54 for
+`get_ftp_daemon_info` and `set_homedir`, 11.42 for the other operations. Inventory
+row fields remain optional; disk amounts remain decimal strings in MB, with
+`_diskquota` using `0.00` for unlimited and `diskquota` using `unlimited`.
+`get_quota` is a string payload. `htmldir` may be explicitly null. Sessions keep
+their documented optional fields and integer PID. `ftp_exists` is a nullable
+object success or an API error, not a boolean result. Opaque nullable object
+results retain explicit null and unknown object fields but reject an absent
+payload. `add_ftp` has a literal `[null]` enum in the pinned schema: its generated
+nullable-object shape follows the established general-enum policy, not exact
+JSON Schema validation or a claim of documented non-null data.
+
+The account-changing defaults are rendered in generated PHPDoc: `destroy=true`
+also deletes the FTP home directory, `kill_session` without a login targets all
+account sessions, and omitted quota settings can remove the quota. Both anonymous
+access switches apply to the selected cPanel account. No generated source was
+edited by hand and no shared runtime or generator policy was changed.
+
+The separate section verifier is scoped to `npr` / `npr.rs`, with both live
+opt-ins and committed source inputs. It exercises a run-owned FTP user through
+each UAPI route. Home-directory arguments `.` and `./` refer to the existing
+cPanel home; cleanup always supplies `destroy=false`. The directory call can
+establish execution/readback, not a change in filesystem isolation. Failed or
+uncertain creation never authorizes deleting a possibly unrelated user.
+Account-wide anonymous settings, the welcome-message setter and session killing
+are deliberately unobserved live in this recipe (follow-up `8x0.2.10`). FTP authentication, active
+session rows, populated disk usage and another daemon/version remain separate
+from API execution evidence. Runtime results are recorded below only after an
+explicit capture; default PHP and API-map gates remain offline.

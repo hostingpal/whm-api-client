@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 13 typed groups cover 82 reviewed operations:
+and cPanel UAPI surface. The 14 typed groups cover 102 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -167,6 +167,14 @@ Privilege assignment replaces existing privileges. Mutation results are nullable
 objects with no pinned field schema: preserve opaque object fields, explicit null
 and the distinction from an absent payload. Do not invent a field contract or
 weaken validation to void. Keep password arguments sensitive.
+`uapi()->ftp()` exposes all 20 pinned Ftp functions for the selected account.
+Mutations use form POST; addFtp password/passHash map to pass/pass_hash and are
+sensitive. Preserve omitted defaults, false/zero, pipe-delimited filters, decimal
+string disk amounts, quota unlimited semantics and optional nullable htmldir.
+ftpExists returns a nullable opaque payload or API error, not a boolean.
+Deleting with destroy=true also deletes the home directory; killSession without
+login stops all account sessions. Anonymous settings are account-scoped. Keep
+role/version caveats and sensitive parameters in the overlay, then regenerate.
 `uapi()->quota()` exposes account quota totals in MB and local usage in bytes.
 Preserve zero/unlimited/disabled semantics, optional fields and integer status flags;
 local byte limits can lag updates and distributed totals differ from local usage.
@@ -341,6 +349,15 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   consumer feedback (`8x0.10.3`) is deferred by the user as of 2026-10-17.
   That deferral removes only the consumer prerequisite for the bounded expansion
   pilot; MySQL, finite-Quota, plumbing and current-head review gates remain.
+- The standalone `tools/live-verify/ftp-section.php` recipe requires both live
+  opt-ins, exact `WHM_API_LIVE_ACCOUNT=npr` / `WHM_API_LIVE_DOMAIN=npr.rs`, both
+  tokens and committed inputs. It targets 41 ordered observations across 16 Ftp
+  functions on both UAPI routes plus WHM version, with no discrepancy acknowledgments.
+  Each route owns a fresh FTP user only after confirmed API creation. Cleanup
+  always sends destroy=false and confirms absence. Home arguments . and ./ refer
+  to the existing account home; no directory contents are deleted. Settings and
+  session killing remain offline-only; readback does not prove FTP authentication,
+  transfer-quota enforcement or a change in directory isolation.
 - The optional `--mysql-fixture` runner mode additionally requires
   `WHM_API_LIVE_MUTATIONS=1`. It creates two databases and two database users on
   the designated `npr` account, checks linked/unlinked inventory through both
