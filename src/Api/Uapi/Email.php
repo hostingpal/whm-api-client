@@ -1089,6 +1089,11 @@ final readonly class Email
      *
      * Documented: Available in cPanel 82.
      *
+     * Observed: On cPanel 11.138.0.19, numeric-string count results were observed through both direct and bridged UAPI.
+     * Canonical integer strings within PHP integer bounds normalize to int; integer responses remain supported.
+     * Explicit null, missing data and noncanonical numeric strings remain rejected. No cause for the wire variation or
+     * main-account inclusion is inferred.
+     *
      * API-map identity: uapi:Email/count_pops#GET (wire name count_pops).
      *
      * @return int

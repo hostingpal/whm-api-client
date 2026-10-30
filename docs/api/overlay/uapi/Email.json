@@ -16,6 +16,10 @@
         {
           "kind": "documented",
           "text": "Available in cPanel 82."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, numeric-string count results were observed through both direct and bridged UAPI. Canonical integer strings within PHP integer bounds normalize to int; integer responses remain supported. Explicit null, missing data and noncanonical numeric strings remain rejected. No cause for the wire variation or main-account inclusion is inferred."
         }
       ],
       "probe": {
@@ -26,7 +30,35 @@
           "bridged-uapi"
         ],
         "expected": "success"
-      }
+      },
+      "response": {
+        "": {
+          "replace": {
+            "type": "int",
+            "accept": [
+              "numeric-string"
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "At revision 7300ef501c952c7361594150610ff4fbb4b09da0, both direct-uapi and bridged-uapi count_pops GET responses recorded numeric-string at the payload root, with successful API outcomes and payload mismatch against the pinned integer result. The immutable failed artifact SHA256 is c3b795074558ee25cbeb001d09e002efe55942a32abfaa49bc8de03f97df6f31. All 17 requests were GET; both resources remained not_started. Preserve integer output while adding only existing canonical PHP-integer-bounded numeric-string normalization for this operation. The structural evidence does not establish the exact string grammar, count value, cause of wire variation, or whether the main account is included.",
+              "fingerprint": "docs/api/evidence/2026-10-30-email-section-quota-corrected.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "At revision 7300ef501c952c7361594150610ff4fbb4b09da0, both direct-uapi and bridged-uapi count_pops GET responses recorded numeric-string at the payload root, with successful API outcomes and payload mismatch against the pinned integer result. The immutable failed artifact SHA256 is c3b795074558ee25cbeb001d09e002efe55942a32abfaa49bc8de03f97df6f31. All 17 requests were GET; both resources remained not_started. Preserve integer output while adding only existing canonical PHP-integer-bounded numeric-string normalization for this operation. The structural evidence does not establish the exact string grammar, count value, cause of wire variation, or whether the main account is included.",
+          "fingerprint": "docs/api/evidence/2026-10-30-email-section-quota-corrected.json"
+        }
+      ]
     },
     "uapi:Email/list_domain_forwarders": {
       "notes": [
