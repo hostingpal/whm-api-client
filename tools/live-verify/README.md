@@ -666,3 +666,6 @@ network I/O and publishes the completed report with a new-only atomic link. If a
 destination race or unsupported link prevents publication, the complete protected
 report remains at the JSON-encoded recovery path printed to stderr. Partial or
 failed initial writes remain covered by follow-up `8x0.2.13`.
+
+Recorded capture: [2026-10-30 domain-management](../../docs/api/evidence/2026-10-30-domain-management.json).
+All 27 GET observations passed HTTP, API, payload and probe checks. Strict assessment remains failed for two masked integer unknown-field observations at `$[].*` in `WebVhosts/list_ssl_capable_domains`, one per route. No acknowledgment or new typed field was added. Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants remain offline-only, as do all nine mutations. See `8x0.2.20`.

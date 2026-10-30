@@ -2225,3 +2225,7 @@ sanitization without repeating the historical baseline. The strict assessment
 requires the complete ordered catalog, matching provenance and zero discrepancies.
 All 9 mutations remain offline-only in this slice; read observations cannot
 establish their effects. Live capture outcomes are recorded separately.
+
+The [2026-10-30 domain-management capture](evidence/2026-10-30-domain-management.json)
+at `9db0cad` on cPanel `11.138.0.19` records the reviewed catalog. All 27 GET observations passed HTTP, API, payload and probe checks. Strict assessment remains failed for two masked integer unknown-field observations at `$[].*` in `WebVhosts/list_ssl_capable_domains`, one per route. No acknowledgment or new typed field was added.
+Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants remain offline-only, as do all nine mutations. Follow-up `8x0.2.20` owns the remaining live/contract work.

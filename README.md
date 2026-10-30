@@ -955,3 +955,7 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+The [domain-management read-only capture](docs/api/evidence/2026-10-30-domain-management.json)
+records reviewed GET checks on cPanel `11.138.0.19`. All 27 GET observations passed HTTP, API, payload and probe checks. Strict assessment remains failed for two masked integer unknown-field observations at `$[].*` in `WebVhosts/list_ssl_capable_domains`, one per route. No acknowledgment or new typed field was added.
+Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants remain offline-only, as do all nine mutations.
