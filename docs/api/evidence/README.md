@@ -139,3 +139,15 @@ The [final owned Email lifecycle](2026-10-30-email-section-final.json), captured
 fd552b2 on 11.138.0.19, passes all 45 observations and the strict zero-discrepancy
 assessment. It verifies 16 Email functions through both routes, with two fresh
 mailboxes confirmed cleaned up. All five earlier failed captures remain intact.
+
+
+The [reviewed Email v2 capture](2026-10-30-email-section-reviewed.json) at
+`205079c790ad2ed290c00d1656d4cffbe488d21c` contains 55 original responses
+(39 GET, 16 POST), all HTTP/API/payload/probe checks passing, zero discrepancies,
+and both owned mailboxes cleaned. Unlimited MB/byte assertions and local trace
+message retention pass on both routes. Its **strict assessment remains failed**:
+54 expectations pass and direct `resumed_mailboxes` fails its combined identity /
+zero-login-suspension predicate. Structure matches the prior passing artifact and
+cannot establish the failing value or cause. This new unwaived result is tracked
+in `8x0.2.18.1`; no further mutation was run to clear it.
+SHA-256: `13bc03e54292f382e3ec9062b8a7c148735aaa278e4aeecba1262f638363791b`.

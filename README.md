@@ -419,7 +419,12 @@ fixtures cover all functions; live evidence is limited to explicitly recorded ca
 The earlier owned-mailbox capture passed 45 observations across 16 Email functions
 through both routes, with zero discrepancies and both temporary mailboxes removed.
 The revised recipe adds unlimited MB/byte readbacks and local delivery traces,
-using the same two run-owned mailboxes and sending no mail. Password, quota and suspension checks establish API behavior, not SMTP or
+using the same two run-owned mailboxes and sending no mail.
+The [reviewed v2 capture](docs/api/evidence/2026-10-30-email-section-reviewed.json)
+passes all 55 HTTP/API/payload checks and the new quota/trace expectations, with
+zero discrepancies and both mailboxes cleaned. Its strict assessment fails on
+one direct-route resumption readback expectation, tracked in `8x0.2.18.1`; that
+failure remains unwaived. Password, quota and suspension checks establish API behavior, not SMTP or
 IMAP access; see the [source audit](docs/api/source-audit.md).
 
 The DNS methods are read-only (GET):

@@ -1829,3 +1829,46 @@ artifacts and all trace safeguards. Generated coverage is **236 operations acros
 zero bytes. Four GET-only traces use only run-bound local recipients. No delivery
 operation is invoked. The revised capture is recorded separately below after
 committed-code verification; no older capture is modified or waived.
+
+
+### Revised Email capture after review
+
+The single revised capture ran at committed integrated code
+`205079c790ad2ed290c00d1656d4cffbe488d21c` on cPanel `11.138.0.19`, saved as
+[2026-10-30-email-section-reviewed.json](evidence/2026-10-30-email-section-reviewed.json),
+SHA-256 `13bc03e54292f382e3ec9062b8a7c148735aaa278e4aeecba1262f638363791b`.
+It contains all **55 original responses**: 39 GET and 16 POST, covering 17 Email
+functions through both UAPI routes plus WHM version. All 55 HTTP 200, API outcome,
+typed-payload and probe checks pass, with **zero discrepancies**. There are
+**54 passed, one failed and zero unchecked fixture expectations**. Both owned
+mailboxes were confirmed cleaned up; each final inventory is an empty list.
+
+All new cases pass on both routes. The `unlimited_quota` phase asserts the exact
+literal `unlimited` in MB units, and `unlimited_bytes` asserts integer `0`; these
+committed expectations provide value checks beyond the artifact's structural
+string/int types. Each run-bound missing-recipient trace observes a list item
+with string `message` and `type`, retained by the corrected typed contract. The
+owned-recipient traces have empty destination lists and establish no item fields.
+No message was sent and no recursive tree or actual delivery is established.
+
+The command exits **1** and the strict assessment remains **failed**, solely for
+`unsuccessful_phase`: direct UAPI `resumed_mailboxes` fails the exact predicate
+`isset($rows[$address]) && ($rows[$address]['suspended_login'] ?? null) === 0`
+after an API-successful `unsuspend_login`. The inventory is a nonempty list with
+string login/email and integer suspension fields. Its structural payload and
+LIST_POPS contract hash are identical to the earlier passing 45-response capture.
+No missing-field/type discrepancy is observed; masked evidence cannot distinguish
+a missing target identity from an incorrect integer flag value or establish a
+cause. The failure does not prove the mailbox remained suspended or imply timing,
+caching or server behavior. Direct cleanup then succeeds, followed by the complete
+bridged lifecycle and cleanup, so all 55 planned phases are present.
+
+This is a new, unwaived semantic failure, tracked in **`8x0.2.18.1`**, with no
+nonblocking decision inferred. No mutation was repeated to clear it. Review must
+consider it separately from the passing new quota and trace cases. Independent
+audit verifies all 914 structural path/type entries, exact phase order and methods,
+55 effective-contract hashes, revision/source/map/generator/overlay provenance,
+strict assessment and cleanup states. Credentials, account/domain/host and run
+identity values are absent. All earlier immutable evidence files are unchanged.
+Pre-capture offline gates passed 7,402 tests / 62,104 assertions, PHPCS, maximum
+PHPStan, Composer validation, full Go tests/vet and the offline API-map check.

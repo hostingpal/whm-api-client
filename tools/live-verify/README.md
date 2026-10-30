@@ -547,3 +547,14 @@ same captured response into five fixed categories: canonical-integer,
 integral-fixed-point, fractional-fixed-point, other-numeric or other. Fixed-point
 labels describe syntax, not bounds or accepted compatibility. No value, length or
 unknown key is retained, and the diagnostic never changes validation or the gate.
+
+
+The [reviewed Email v2 capture](../../docs/api/evidence/2026-10-30-email-section-reviewed.json)
+contains all 55 phases on `11.138.0.19` at `205079c`, with all HTTP/API/payload
+checks passing, zero discrepancies and both mailboxes cleaned. The exact unlimited
+MB/byte expectations and both local trace targets pass through both routes.
+Its command exits 1: direct `resumed_mailboxes` fails the combined target-identity /
+zero-suspension predicate, leaving 54 passed, one failed and zero unchecked
+expectations. The masked structure matches the earlier successful capture and
+cannot distinguish the failing value or establish a cause. `8x0.2.18.1` remains
+open; no waiver or nonblocking decision is inferred and the fixture was not rerun.
