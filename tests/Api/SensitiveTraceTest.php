@@ -10,6 +10,7 @@ use HostingPal\WhmApiClient\Api\RepeatedList;
 use HostingPal\WhmApiClient\Api\RequestMethod;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
+use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\HttpException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
@@ -313,6 +314,222 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
+
+    /**
+     * @param 'direct'|'bridged' $route
+     * @param Closure(Client): mixed $call
+     */
+    #[DataProvider('postgresqlPasswordCalls')]
+    public function testPostgresqlPayloadFailuresKeepPasswordsOutOfTraceArguments(string $route, Closure $call): void
+    {
+        [$client, $http] = self::client($route === 'direct');
+        $http->addResponse(new Response(200, [], $route === 'direct'
+            ? '{"status":1,"data":false}'
+            : '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":false}}}'));
+
+        try {
+            $call($client);
+            self::fail('Expected an invalid payload after the confirmed PostgreSQL write.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertTrue($exception->outcomeConfirmed);
+            self::assertSame(1, $exception->metadata?->uapiStatus());
+            self::assertCount(1, $http->getRequests());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    #[DataProvider('postgresqlResponseRoutes')]
+    public function testPostgresqlCreateUserEchoedPasswordStaysOutOfPayloadFailureTrace(bool $direct): void
+    {
+        [$client, $http] = self::client($direct);
+        $result = '{"status":1,"data":{"password":"' . self::SECRET . '"}}';
+        $http->addResponse(new Response(200, [], $direct
+            ? $result
+            : '{"metadata":{"result":1},"data":{"uapi":' . $result . '}}'));
+
+        try {
+            $client->uapi($direct ? null : 'npr')->postgresql()->createUser('npr_writer', self::SECRET);
+            self::fail('Expected an invalid integer payload after the confirmed PostgreSQL write.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertTrue($exception->outcomeConfirmed);
+            self::assertSame(1, $exception->metadata?->uapiStatus());
+            self::assertSame(['password' => self::SECRET], $exception->payload);
+            self::assertCount(1, $http->getRequests());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    /** @param class-string<ApiException> $expected */
+    #[DataProvider('postgresqlEchoedOutcomeFailures')]
+    public function testPostgresqlEchoedOutcomeSecretsStayOutOfTraceArguments(
+        bool $direct,
+        string $field,
+        string $expected,
+    ): void {
+        [$client, $http] = self::client($direct);
+        $result = ['status' => 0, 'data' => null];
+        $whm = ['result' => 1];
+        if ($field === 'reason') {
+            $whm = ['result' => 0, 'reason' => self::SECRET];
+        } else {
+            $result[$field] = $field === 'status' ? self::SECRET : [self::SECRET];
+            if ($field === 'messages') {
+                $result['status'] = 'invalid';
+            }
+        }
+        $document = $direct ? $result : ['metadata' => $whm, 'data' => ['uapi' => $result]];
+        $http->addResponse(new Response(200, [], json_encode($document, JSON_THROW_ON_ERROR)));
+        $account = $client->uapi($direct ? null : 'npr');
+
+        try {
+            $account->postgresql()->createUser('npr_writer', self::SECRET);
+            self::fail('Expected the failed or invalid PostgreSQL outcome to be rejected.');
+        } catch (ApiException $exception) {
+            self::assertInstanceOf($expected, $exception);
+            self::assertCount(1, $http->getRequests());
+            self::assertSame($account->responseMeta(), $exception->metadata);
+            $metadata = $field === 'reason' ? $exception->metadata?->whm : $exception->metadata?->uapi;
+            self::assertSame(
+                $field === 'status' || $field === 'reason' ? self::SECRET : [self::SECRET],
+                $metadata[$field] ?? null,
+            );
+            self::assertStringNotContainsString(self::SECRET, $exception->getTraceAsString());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    /** @return iterable<string, array{bool, string, class-string<ApiException>}> */
+    public static function postgresqlEchoedOutcomeFailures(): iterable
+    {
+        yield 'direct errors' => [true, 'errors', ApiErrorException::class];
+        yield 'direct messages with invalid status' => [true, 'messages', InvalidResponseException::class];
+        yield 'direct secret status' => [true, 'status', InvalidResponseException::class];
+        yield 'bridged errors' => [false, 'errors', ApiErrorException::class];
+        yield 'bridged outer WHM reason' => [false, 'reason', ApiErrorException::class];
+    }
+
+    /** @return iterable<string, array{bool}> */
+    public static function postgresqlResponseRoutes(): iterable
+    {
+        yield 'direct' => [true];
+        yield 'bridged' => [false];
+    }
+
+    /** @param class-string<Throwable> $expected */
+    #[DataProvider('postgresqlEnvelopeFailures')]
+    public function testPostgresqlEnvelopeFailuresKeepRawResponsesOutOfLibraryTraceArguments(
+        string $route,
+        string $failure,
+        string $expected,
+    ): void {
+        [$client, $http] = self::client($route !== 'bridged');
+        $status = match ($failure) {
+            'malformed' => '"1"',
+            'uapi' => '0',
+            default => '1',
+        };
+        $result = '{"status":' . $status . ',"data":{"password":"' . self::SECRET . '"}}';
+        $body = match ($route) {
+            'direct' => '{"result":' . $result . '}',
+            'bare' => $result,
+            default => '{"metadata":{"result":' . ($failure === 'whm' ? '0' : '1')
+                . '},"data":{"uapi":' . $result . '}}',
+        };
+        $http->addResponse(new Response(200, [], $body));
+
+        try {
+            $client->uapi($route === 'bridged' ? 'npr' : null)->postgresql()->createUser('npr_writer', self::SECRET);
+            self::fail('Expected the malformed or failed PostgreSQL envelope to be rejected.');
+        } catch (Throwable $exception) {
+            self::assertInstanceOf($expected, $exception);
+            self::assertCount(1, $http->getRequests());
+            foreach ($exception->getTrace() as $frame) {
+                $class = $frame['class'] ?? '';
+                if (
+                    !str_starts_with($class, 'HostingPal\\WhmApiClient\\')
+                    || str_starts_with($class, 'HostingPal\\WhmApiClient\\Tests\\')
+                ) {
+                    continue;
+                }
+                $seen = [];
+                self::assertFalse(
+                    self::containsResponse($frame['args'] ?? [], $seen),
+                    $class . '::' . $frame['function'] . ' retains a raw HTTP response in its trace arguments.',
+                );
+            }
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    /** @return iterable<string, array{string, string, class-string<Throwable>}> */
+    public static function postgresqlEnvelopeFailures(): iterable
+    {
+        foreach (['direct', 'bare', 'bridged'] as $route) {
+            yield $route . ' string UAPI status' => [$route, 'malformed', InvalidResponseException::class];
+            yield $route . ' failed UAPI status' => [$route, 'uapi', ApiErrorException::class];
+        }
+        yield 'bridged failed outer WHM result' => ['bridged', 'whm', ApiErrorException::class];
+    }
+
+    /** @return iterable<string, array{'direct'|'bridged', Closure(Client): mixed}> */
+    public static function postgresqlPasswordCalls(): iterable
+    {
+        foreach (['direct', 'bridged'] as $route) {
+            $account = $route === 'direct' ? null : 'npr';
+            yield $route . ' PostgreSQL create user' => [
+                $route,
+                static fn (Client $client): mixed =>
+                    $client->uapi($account)->postgresql()->createUser(name: 'npr_writer', password: self::SECRET),
+            ];
+            yield $route . ' PostgreSQL rename user' => [
+                $route,
+                static fn (Client $client): mixed => $client->uapi($account)->postgresql()->renameUser(
+                    oldName: 'npr_writer',
+                    newName: 'npr_reader',
+                    password: self::SECRET,
+                ),
+            ];
+            yield $route . ' PostgreSQL set password' => [
+                $route,
+                static fn (Client $client): mixed =>
+                    $client->uapi($account)->postgresql()->setPassword(user: 'npr_writer', password: self::SECRET),
+            ];
+        }
+    }
+
+    /**
+     * A response can retain the secret in a resource-backed stream that object-property searches cannot read.
+     * Library trace frames must redact the response itself, including responses nested in containers.
+     *
+     * @param array<int, true> $seen
+     */
+    private static function containsResponse(mixed $value, array &$seen): bool
+    {
+        if ($value instanceof SensitiveParameterValue) {
+            return false;
+        }
+        if ($value instanceof ResponseInterface) {
+            return true;
+        }
+        if (is_object($value)) {
+            $id = spl_object_id($value);
+            if (isset($seen[$id])) {
+                return false;
+            }
+            $seen[$id] = true;
+            $value = (array) $value;
+        }
+        if (is_array($value)) {
+            foreach ($value as $item) {
+                if (self::containsResponse($item, $seen)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     /** @return iterable<string, array{bool}> */
     public static function mysqlRoutes(): iterable
     {
@@ -375,6 +592,7 @@ final class SensitiveTraceTest extends TestCase
     private static function secretCalls(): iterable
     {
         yield from self::ftpSecretCalls();
+        yield from self::postgresqlPasswordCalls();
 
         yield 'direct MySQL create user' => [
             'direct',

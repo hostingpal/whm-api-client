@@ -40,7 +40,8 @@ final class EnvelopeReader
      * available metadata is retained without inventing missing success flags.
      * Both policies require a usable envelope; only Flag interprets the operation's
      * outcome (WHM metadata.result or UAPI status), while the bridge's outer WHM
-     * result is interpreted under both.
+     * result is interpreted under both. The response argument is sensitive because
+     * its body can contain secrets even when the envelope or outcome is invalid.
      *
      * @throws HttpException If HTTP status is outside 200-299.
      * @throws InvalidResponseException If JSON or required envelope fields are unusable.
@@ -145,9 +146,17 @@ final class EnvelopeReader
         throw new InvalidResponseException('Invalid JSON response envelope.');
     }
 
-    /** Interpret the documented integer 0/1 success convention (OutcomePolicy::Flag). */
-    private static function outcome(mixed $value, string $family, ?ResponseMetadata $metadata): void
-    {
+    /**
+     * Interpret the documented integer 0/1 success convention (OutcomePolicy::Flag).
+     *
+     * An invalid outcome or upstream diagnostic can echo secrets, so both raw
+     * values and metadata must stay out of automatic exception trace arguments.
+     */
+    private static function outcome(
+        #[SensitiveParameter] mixed $value,
+        string $family,
+        #[SensitiveParameter] ?ResponseMetadata $metadata,
+    ): void {
         if ($value === 0) {
             throw new ApiErrorException(
                 $family . ' operation failed; inspect errors() or response metadata.',

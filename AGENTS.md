@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 14 typed groups cover 117 documented operations:
+and cPanel UAPI surface. The 15 typed groups cover 131 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -188,6 +188,17 @@ ftpExists returns a nullable opaque payload or API error, not a boolean.
 Deleting with destroy=true also deletes the home directory; killSession without
 login stops all account sessions. Anonymous settings are account-scoped. Keep
 role/version caveats and sensitive parameters in the overlay, then regenerate.
+`uapi()->postgresql()` exposes all 14 pinned PostgreSQL functions for the selected
+account: three inventory/restriction GETs and eleven form POST mutations.
+`createUser()` returns a nullable integer with no pinned meaning; other mutations
+return nullable opaque objects. Preserve explicit null, opaque fields and absent
+payload distinctions. `listUsers()` is a string list; database row fields are
+optional and `disk_usage` is integer bytes. Restrictions have an optional string
+prefix, not a pinned nullable prefix. Password arguments remain sensitive.
+Rename methods use oldName/newName, with a new password for `renameUser()`;
+`renameUserNoPassword()` requires a subsequent password change per upstream.
+`updatePrivileges()` synchronizes the whole selected account. Preserve no-rollback,
+prefix, PostgreSQL-role and version caveats in the overlay, then regenerate.
 `uapi()->quota()` exposes account quota totals in MB and local usage in bytes.
 Preserve zero/unlimited/disabled semantics, optional fields and integer status flags;
 local byte limits can lag updates and distributed totals differ from local usage.
@@ -377,6 +388,29 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
   fails on two list_ftp_with_disk unknown-field observations ($[].*, string).
   Keep their discrepancies; no acknowledgment or typed unknown field was added.
   The contract investigation is 8x0.2.11; deferred live settings/session work is 8x0.2.10.
+- The standalone `tools/live-verify/postgresql-section.php` recipe covers the full
+  PostgreSQL module on exact `npr` / `npr.rs`, with both live opt-ins, both tokens
+  and committed inputs. All six inventory/restriction preflight reads across both
+  routes must pass, and database/user inventories must be empty before creation.
+  Each route owns fresh resources only after confirmed creation; account-wide
+  privilege synchronization requires another inventory bound to those resources.
+  Rename-without-password is immediately followed by a password update. Never adopt
+  uncertain creations or delete ambiguous rename identities. Capture original
+  responses structurally and verify every original/renamed identity absent after
+  cleanup. No retries, payload logging, discrepancy acknowledgments or SQL-auth /
+  privilege-enforcement claims. Failed preflight remains failed evidence, not a skip.
+  The 2026-10-30 artifact at `6539db7` on `11.138.0.19` records seven GETs:
+  WHM version passed; all six PostgreSQL reads returned HTTP 200 with API failures.
+  No mutation ran and all resources remain not_started in that immutable artifact.
+  After the reviewer's owner-requested PostgreSQL 13.23 installation and role/service
+  enablement, the separate `2026-10-30-postgresql-section-enabled.json` capture at
+  `61a9f3e` on the same cPanel version passes all 57 observations (33 GET, 24 POST)
+  for all 14 functions through both routes. Strict assessment passes with zero
+  discrepancies; both databases and both users are cleaned, with every original
+  and renamed identity confirmed absent. Mutation payloads are explicit null;
+  non-null alternatives remain offline-only. This closes live follow-up `8x0.2.14`.
+  Keep SQL enforcement/login and new-table grant synchronization unclaimed.
+  Optional short/failed temporary-write recovery remains tracked in `8x0.2.13`.
 - The optional `--mysql-fixture` runner mode additionally requires
   `WHM_API_LIVE_MUTATIONS=1`. It creates two databases and two database users on
   the designated `npr` account, checks linked/unlinked inventory through both

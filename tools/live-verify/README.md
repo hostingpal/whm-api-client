@@ -415,3 +415,66 @@ resolves an uncertain creation or rename; those resources remain `uncertain` and
 require manual review. If publishing a completed report fails, stderr names its
 retained 0600 temporary file. Recover that file privately; do not replay mutations
 to recover evidence.
+
+
+## Complete PostgreSQL section
+
+The separate `postgresql-section.php` command exercises the generated PostgreSQL
+module on the designated `npr` / `npr.rs` test account. It requires committed
+inputs, both tokens, PHP cURL, and both live opt-ins:
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_MUTATIONS=1 \
+WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/postgresql-section.php --output=docs/api/evidence/postgresql-section.json
+```
+
+The command writes only a new output file, atomically with mode 0600. If atomic
+publication fails after capture, it preserves the complete protected temporary
+report and prints its JSON-escaped recovery path; do not repeat operations to
+recover evidence. It captures
+WHM version and PostgreSQL database inventory, user inventory and restrictions
+through both UAPI routes before any mutation. Failed preflight or nonempty
+inventories stop the lifecycle and produce failed evidence; a preflight refusal
+never counts as successful mutation or cleanup coverage.
+
+Each route then owns a fresh database and user after confirmed API creation.
+The recipe exercises grants, renames, password changes, account-wide privilege
+synchronization and revocation before deleting its resources and checking all
+original and renamed identities for absence. An inventory check immediately
+before synchronization refuses unrelated databases or users. Renaming without
+a password is followed immediately by setting a new password. Uncertain creation
+is never adopted; ambiguous rename identities are not deleted. An absent inventory
+cannot resolve an uncertain operation that could still complete later; the state
+remains uncertain and subsequent lifecycle work stops. No mutation is
+retried. The transport verifies TLS, disables redirects and has bounded timeouts.
+
+Observations retain exact phase, route, actual method, server version, revision
+and contract hashes. The original response supplies only structural types and
+masked paths; names, passwords, raw payloads and upstream error text are not
+persisted. The strict assessment accepts no discrepancies or missing phases and
+does not inherit baseline acknowledgments. Offline fixture tests use independently
+authored server responses. API readback does not establish SQL authentication,
+SQL privilege enforcement or privileges on newly created tables.
+
+
+The [2026-10-30 PostgreSQL capture](../../docs/api/evidence/2026-10-30-postgresql-section.json)
+is **failed preflight evidence**: the WHM version check passed, but all six
+PostgreSQL reads returned API failures. The lifecycle stopped before writes, and
+all resources are `not_started`. It establishes no successful PostgreSQL payload
+or mutation coverage and stays unchanged.
+
+After the reviewer's owner-requested PostgreSQL 13.23 installation, the separate
+[enabled-service lifecycle](../../docs/api/evidence/2026-10-30-postgresql-section-enabled.json)
+was captured once at committed integrated code `61a9f3e` on cPanel `11.138.0.19`.
+All 57 observations (33 GET, 24 POST) pass across all 14 functions on both routes,
+with zero discrepancies and a passing strict assessment. Both databases and both
+users are cleaned, and original/renamed identities are confirmed absent. All
+mutation payloads are explicit null; non-null payload alternatives remain covered
+by offline fixtures. This run closes `whm-api-client-8x0.2.14`. It establishes
+API execution and readback, with the SQL authentication/enforcement and new-table
+grant-synchronization limits above. The installation was an earlier owner-requested
+server change, not part of this lifecycle recipe.
+
+A short or failed initial temporary-file write has no complete recovery file;
+that separate resilience improvement is tracked in `whm-api-client-8x0.2.13`.

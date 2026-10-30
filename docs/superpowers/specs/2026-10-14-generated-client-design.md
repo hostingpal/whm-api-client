@@ -22,10 +22,10 @@ observations with successful finite-limit checks and cleanup; its command exits
 acknowledgments or changing the Quota contract. The consumer exercise
 is deferred by the user as of 2026-10-17; further coverage remains unfinished. The
 correction cycle below completed through PR25, followed by the separately approved
-PR26 provisioning reads (82 operations). The owner authorized completing the Mysql
-and FTP sections on 2026-10-30; current [generated coverage](../../api/coverage.md)
-is 117 operations across 14 groups, including all 25 pinned Mysql and 20 Ftp
-functions. Full API parity remains unfinished.
+PR26 provisioning reads (82 operations). The owner authorized completing the Mysql,
+FTP and PostgreSQL sections on 2026-10-30; current [generated coverage](../../api/coverage.md)
+is 131 operations across 15 groups, including all 25 pinned Mysql, 20 Ftp and
+14 Postgresql functions. Full API parity remains unfinished.
 Decision record: `whm-api-client-8x0.10`. This design supersedes the
 "typed core plus generic calls / lean pattern" scaling decision
 (`whm-api-client-8x0.7`, recorded in the

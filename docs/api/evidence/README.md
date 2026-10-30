@@ -80,3 +80,17 @@ scoped to the exact contracts, revisions and routes recorded in each file.
   The strict assessment still fails for two disk-inventory unknown-field
   observations; masked string fields remain untyped and tracked in `8x0.2.11`.
   Settings/session operations remain live-unobserved under `8x0.2.10`.
+
+- [PostgreSQL service preflight](2026-10-30-postgresql-section.json): seven GETs
+  at `6539db7` on `11.138.0.19`. WHM version passes; all six PostgreSQL reads
+  return HTTP 200 with API failures. No mutation ran and every resource remains
+  `not_started`; this failed artifact establishes no successful PostgreSQL payload
+  or lifecycle observations. It remains immutable.
+- [PostgreSQL enabled-service lifecycle](2026-10-30-postgresql-section-enabled.json):
+  57 observations (33 GET, 24 POST) at `61a9f3e` on `11.138.0.19`, following the
+  reviewer's owner-requested PostgreSQL installation. All 14 functions pass on
+  direct and bridged UAPI, with zero discrepancies and a passing strict assessment.
+  Both databases and both users are cleaned; original and renamed identities are
+  confirmed absent. All mutation payloads are explicit null. This establishes no
+  SQL enforcement/login or new-table grant synchronization; non-null mutation
+  payloads remain offline-only.
