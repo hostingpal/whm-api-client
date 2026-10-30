@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient\Api\Engine;
 use HostingPal\WhmApiClient\Api\AbstractApiClient;
 use HostingPal\WhmApiClient\Api\NumberedList;
 use HostingPal\WhmApiClient\Api\RepeatedList;
+use HostingPal\WhmApiClient\Api\SuffixNumberedList;
 use InvalidArgumentException;
 use LogicException;
 use SensitiveParameter;
@@ -15,7 +16,8 @@ use SensitiveParameter;
  * Encode a generated method's named arguments into wire parameters.
  *
  * Null arguments are omitted, so an explicit null and an omitted argument send
- * the same request. Flags become 0/1, repeated and numbered lists become their
+ * the same request. Flags become 0/1; repeated, WHM-numbered and suffix-numbered
+ * values become their
  * marker objects, and finite float scalars are sent as strings that round-trip
  * exactly (see float()), independent of the precision, serialize_precision and
  * locale settings. List contents are not validated here: AbstractApiClient
@@ -68,6 +70,8 @@ final class ArgumentEncoder
                     : throw new LogicException('Flag arguments must be booleans.'),
                 'repeat' => new RepeatedList(self::multiple($value)),
                 'numbered' => new NumberedList(self::multiple($value)),
+                'suffix-numbered' => new SuffixNumberedList($value),
+                'suffix-numbered-scalar' => new SuffixNumberedList($value, true),
                 default => throw new LogicException('Unsupported parameter encoding for ' . $name . '.'),
             };
         }

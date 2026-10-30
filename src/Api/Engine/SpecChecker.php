@@ -32,7 +32,7 @@ use LogicException;
  */
 final class SpecChecker
 {
-    private const ENCODINGS = ['scalar', 'bool', 'repeat', 'numbered'];
+    private const ENCODINGS = ['scalar', 'bool', 'repeat', 'numbered', 'suffix-numbered', 'suffix-numbered-scalar'];
 
     /** Accepted wire variants per type; types not listed accept none. */
     private const ACCEPT = [
@@ -168,12 +168,37 @@ final class SpecChecker
                 throw new LogicException('Invalid parameter spec for ' . $name . '.');
             }
 
+            $suffix = in_array($param['encoding'], ['suffix-numbered', 'suffix-numbered-scalar'], true);
+            if (
+                ($suffix && preg_match('/^[A-Za-z_][A-Za-z0-9_]*\*$/D', $wire) !== 1)
+                || (!$suffix && str_contains($wire, '*'))
+            ) {
+                throw new LogicException('Invalid suffix-numbered parameter pattern.');
+            }
+            foreach ($wires as $other => $otherSuffix) {
+                if (
+                    ($suffix && self::overlaps($wire, (string) $other, $otherSuffix))
+                    || ($otherSuffix && self::overlaps((string) $other, $wire, $suffix))
+                ) {
+                    throw new LogicException('Overlapping wire names in the parameter specs.');
+                }
+            }
+
             if (isset($wires[$wire])) {
                 throw new LogicException('Duplicate wire name in the parameter specs: ' . $wire);
             }
 
-            $wires[$wire] = true;
+            $wires[$wire] = $suffix;
         }
+    }
+
+    /** Check whether another declared wire name can expand into this pattern. */
+    private static function overlaps(string $pattern, string $other, bool $otherSuffix): bool
+    {
+        $base = substr($pattern, 0, -1);
+        $other = $otherSuffix ? substr($other, 0, -1) : $other;
+
+        return preg_match('/^' . preg_quote($base, '/') . '[1-9][0-9]*$/D', $other) === 1;
     }
 
     /**

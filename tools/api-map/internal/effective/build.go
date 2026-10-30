@@ -338,7 +338,7 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 			}
 			continue
 		}
-		if strings.ContainsAny(p.Name, "*") {
+		if strings.ContainsAny(p.Name, "*") && !overlay.IsSuffixNumbered(ov.Params[p.Name].Encoding) {
 			b.problem(op.ID + ": parameter " + p.Name + " is a name pattern; omit it and use call()")
 			continue
 		}
@@ -409,7 +409,27 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 			firstOptional = wire
 		}
 	}
-	return append(orderParams(required, ov.Order), orderParams(optional, ov.Order)...)
+	params := append(orderParams(required, ov.Order), orderParams(optional, ov.Order)...)
+	for i, p := range params {
+		if !overlay.IsSuffixNumbered(p.Encoding) {
+			continue
+		}
+		base := strings.TrimSuffix(p.Wire, "*")
+		expanded := regexp.MustCompile("^" + regexp.QuoteMeta(base) + "[1-9][0-9]*$")
+		for j, other := range params {
+			if i == j {
+				continue
+			}
+			name := other.Wire
+			if overlay.IsSuffixNumbered(other.Encoding) {
+				name = strings.TrimSuffix(name, "*")
+			}
+			if expanded.MatchString(name) {
+				b.problem(op.ID + ": overlapping wire names " + p.Wire + " and " + other.Wire)
+			}
+		}
+	}
+	return params
 }
 
 // orderParams moves parameters named in order (by wire name) to the front, in
@@ -629,6 +649,10 @@ func scalarUnion(kinds map[string]bool) string {
 
 func encodingTypes(encoding string, current Param) (string, string, string) {
 	switch encoding {
+	case "suffix-numbered":
+		return "string|array", "string|list<string>", encoding
+	case "suffix-numbered-scalar":
+		return "string|int|array", "string|int|list<string|int>", encoding
 	case "numbered":
 		return "string|array", "string|list<string>", "numbered"
 	case "repeat":
