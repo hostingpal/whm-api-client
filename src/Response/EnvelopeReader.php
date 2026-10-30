@@ -146,9 +146,17 @@ final class EnvelopeReader
         throw new InvalidResponseException('Invalid JSON response envelope.');
     }
 
-    /** Interpret the documented integer 0/1 success convention (OutcomePolicy::Flag). */
-    private static function outcome(mixed $value, string $family, ?ResponseMetadata $metadata): void
-    {
+    /**
+     * Interpret the documented integer 0/1 success convention (OutcomePolicy::Flag).
+     *
+     * An invalid outcome or upstream diagnostic can echo secrets, so both raw
+     * values and metadata must stay out of automatic exception trace arguments.
+     */
+    private static function outcome(
+        #[SensitiveParameter] mixed $value,
+        string $family,
+        #[SensitiveParameter] ?ResponseMetadata $metadata,
+    ): void {
         if ($value === 0) {
             throw new ApiErrorException(
                 $family . ' operation failed; inspect errors() or response metadata.',

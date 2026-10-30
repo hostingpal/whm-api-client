@@ -61,3 +61,12 @@ scoped to the exact contracts, revisions and routes recorded in each file.
   are confirmed absent; exit 0 retains the two Quota acknowledgments and no new
   discrepancies. Empty privilege lists, disabled prefixes, SQL enforcement and
   alternate server configurations remain unobserved.
+
+- [PostgreSQL service preflight](2026-10-30-postgresql-section.json): seven GETs
+  at `6539db7` on `11.138.0.19`. WHM version passes; all six PostgreSQL reads
+  return HTTP 200 with API failures. No mutation ran and every resource remains
+  `not_started`; this failed artifact establishes no successful PostgreSQL payload
+  or lifecycle observations. It remains immutable. A fresh capture at the final
+  integrated PR head is required under `8x0.2.14` after the owner-requested
+  PostgreSQL installation; the reviewer's separate successful run is not this
+  branch's committed evidence.

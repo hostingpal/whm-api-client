@@ -10,6 +10,7 @@ use HostingPal\WhmApiClient\Api\RepeatedList;
 use HostingPal\WhmApiClient\Api\RequestMethod;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
+use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\HttpException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
@@ -23,6 +24,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
+use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
@@ -70,6 +72,20 @@ final class SensitiveTraceTest extends TestCase
 
         try {
             $leak(self::SECRET);
+        } catch (RuntimeException $exception) {
+            $seen = [];
+            self::assertTrue(self::contains($exception->getTrace(), $seen));
+        }
+    }
+
+    public function testTheTraceSearchDetectsUnmarkedResponseBodies(): void
+    {
+        $leak = static function (mixed $secret): never {
+            throw new RuntimeException('Control failure.');
+        };
+
+        try {
+            $leak(new Response(200, [], self::SECRET));
         } catch (RuntimeException $exception) {
             $seen = [];
             self::assertTrue(self::contains($exception->getTrace(), $seen));
@@ -233,9 +249,59 @@ final class SensitiveTraceTest extends TestCase
         } catch (PayloadMismatchException $exception) {
             self::assertTrue($exception->outcomeConfirmed);
             self::assertSame(1, $exception->metadata?->uapiStatus());
+            self::assertSame(['password' => self::SECRET], $exception->payload);
             self::assertCount(1, $http->getRequests());
             self::assertSecretAbsent($exception);
         }
+    }
+
+    /** @param class-string<ApiException> $expected */
+    #[DataProvider('postgresqlEchoedOutcomeFailures')]
+    public function testPostgresqlEchoedOutcomeSecretsStayOutOfTraceArguments(
+        bool $direct,
+        string $field,
+        string $expected,
+    ): void {
+        [$client, $http] = self::client($direct);
+        $result = ['status' => 0, 'data' => null];
+        $whm = ['result' => 1];
+        if ($field === 'reason') {
+            $whm = ['result' => 0, 'reason' => self::SECRET];
+        } else {
+            $result[$field] = $field === 'status' ? self::SECRET : [self::SECRET];
+            if ($field === 'messages') {
+                $result['status'] = 'invalid';
+            }
+        }
+        $document = $direct ? $result : ['metadata' => $whm, 'data' => ['uapi' => $result]];
+        $http->addResponse(new Response(200, [], json_encode($document, JSON_THROW_ON_ERROR)));
+        $account = $client->uapi($direct ? null : 'npr');
+
+        try {
+            $account->postgresql()->createUser('npr_writer', self::SECRET);
+            self::fail('Expected the failed or invalid PostgreSQL outcome to be rejected.');
+        } catch (ApiException $exception) {
+            self::assertInstanceOf($expected, $exception);
+            self::assertCount(1, $http->getRequests());
+            self::assertSame($account->responseMeta(), $exception->metadata);
+            $metadata = $field === 'reason' ? $exception->metadata?->whm : $exception->metadata?->uapi;
+            self::assertSame(
+                $field === 'status' || $field === 'reason' ? self::SECRET : [self::SECRET],
+                $metadata[$field] ?? null,
+            );
+            self::assertStringNotContainsString(self::SECRET, $exception->getTraceAsString());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    /** @return iterable<string, array{bool, string, class-string<ApiException>}> */
+    public static function postgresqlEchoedOutcomeFailures(): iterable
+    {
+        yield 'direct errors' => [true, 'errors', ApiErrorException::class];
+        yield 'direct messages with invalid status' => [true, 'messages', InvalidResponseException::class];
+        yield 'direct secret status' => [true, 'status', InvalidResponseException::class];
+        yield 'bridged errors' => [false, 'errors', ApiErrorException::class];
+        yield 'bridged outer WHM reason' => [false, 'reason', ApiErrorException::class];
     }
 
     /** @return iterable<string, array{bool}> */
@@ -533,6 +599,10 @@ final class SensitiveTraceTest extends TestCase
 
         if ($value instanceof SensitiveParameterValue || $value instanceof MockClient) {
             return false;
+        }
+
+        if ($value instanceof MessageInterface && str_contains((string) $value->getBody(), self::SECRET)) {
+            return true;
         }
 
         if (is_object($value)) {
