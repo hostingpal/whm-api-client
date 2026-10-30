@@ -287,7 +287,7 @@ final class UapiSslSectionTest extends TestCase
                 'getCabundle',
                 'get_cabundle',
                 ['cert' => 'fixture +& cert'],
-                'GET',
+                'POST',
                 'cert=fixture%20%2B%26%20cert',
                 '{"bundle":"fixture","cab":"fixture cab","domain":"a.test"}',
             ],
@@ -656,7 +656,7 @@ final class UapiSslSectionTest extends TestCase
             'enable_mail_sni' => '{"failed_domains":{"a.test":null}}',
             'fetch_best_for_domain' => '{"key":null}',
             'fetch_cert_info' => '{"subject.commonName_ip":false}',
-            'fetch_certificates_for_fqdns' => '[{"modulus_length":"2048"}]',
+            'fetch_certificates_for_fqdns' => '[{"modulus_length":"2048.5"}]',
             'find_certificates_for_key' => '[{"issuer.commonName":null}]',
             'find_csrs_for_key' => '[{"created":null}]',
             'generate_cert' => '{"text":false}',
@@ -672,7 +672,7 @@ final class UapiSslSectionTest extends TestCase
             'mail_sni_status' => '{"enabled":true}',
             'rebuild_mail_sni_config' => '{"success":2}',
             'show_cert' => '{"details":{"issuer":{"commonName":false}}}',
-            'show_csr' => '{"details":{"created":"123"}}',
+            'show_csr' => '{"details":{"created":"123.5"}}',
             'show_key' => '{"details":{"key":false}}',
             'toggle_ssl_redirect_for_domains' => '[null]',
         ];
@@ -844,8 +844,8 @@ final class UapiSslSectionTest extends TestCase
                     yield "$route invalid $method flag $value"
                         => [$route, $method, '[{"is_self_signed":' . $value . '}]'];
                 }
-                yield "$route $method unrelated issuer null"
-                    => [$route, $method, '[{"issuer.organizationName":null}]'];
+                yield "$route $method organization type"
+                    => [$route, $method, '[{"issuer.organizationName":false}]'];
             }
         }
     }

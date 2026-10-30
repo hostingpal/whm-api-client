@@ -308,7 +308,16 @@ excluded upstream. Private keys and PEM inputs are sensitive, and writes use POS
 `fetchKeyAndCabundleForCertificate(certificate: $pem)` send inline string fields as
 multipart bodies. Routing and authentication remain unchanged on both routes;
 these methods do not accept filesystem paths or file handles. Generic `call()`
-continues to support form bodies only.
+continues to support form bodies only. Binary multipart file fields are rejected
+during generation because filename uploads are unsupported.
+
+`getCabundle(cert: $pem)` sends the certificate as a form POST to avoid URL
+length limits and certificate contents in access logs. `installSsl()` marks
+certificate, CA bundle and private-key inputs sensitive. SSL certificate/key/CSR
+records share reviewed compatibility rules: canonical integer strings normalize
+to integer timestamp/bit-length fields, exact quoted self-signed flags become
+`0|1`, and issuer organization preserves explicit null. These field rules do not
+establish successful live execution of every method returning those records.
 
 For `fetchCertInfo()`, `setCsrFriendlyName()` and `setKeyFriendlyName()`, provide
 one documented selector (`id` or `friendlyName`); neither selector is forced by
@@ -320,6 +329,10 @@ pinned source does not specify its wire encoding (follow-up `8x0.2.16`). The
 The owned SSL fixture verifies uploads, fetches and cleanup through both UAPI
 routes. Its 23 responses pass API/payload checks, but four undocumented-field
 observations still fail the strict evidence gate; see the [source audit](docs/api/source-audit.md).
+The expanded recipe adds generated-key creation and certificate-information reads
+on both routes, with six separately owned resources and 31 planned observations.
+It is offline-verified; its committed-head capture follows integration of the
+approved parent branch.
 
 Certificate deletion/installation, account-wide AutoSSL and redirect changes take
 effect immediately. Live verification is bounded to fresh owned fixture material,

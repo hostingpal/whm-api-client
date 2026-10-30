@@ -128,7 +128,7 @@ abstract class AbstractApiClient
      * and failure handling match executeGet; an empty body is sent as empty content.
      *
      * @param Parameters $query Routing fields that remain in the URL.
-     * @param Parameters $body Operation parameters sent in the form-encoded body.
+     * @param Parameters $body Operation parameters sent with the selected form or inline-string multipart encoding.
      * @throws InvalidArgumentException If a parameter value or a multi-value parameter is invalid.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      */

@@ -358,7 +358,7 @@ integral-fixed-point, fractional-fixed-point, other-numeric or other. Fixed-poin
 labels describe syntax, not bounds or accepted compatibility. No value, length or
 unknown key is retained, and the diagnostic never changes validation or the gate.
 
-## Owned SSL multipart storage recipe
+## Owned SSL storage recipe
 
 `php tools/live-verify/ssl-section.php --output=PATH` requires committed inputs,
 PHP cURL and OpenSSL, both test tokens, `WHM_API_LIVE=1`,
@@ -376,11 +376,21 @@ is `prime256v1` or `secp384r1`, and `ecdsa_public` is nonempty hexadecimal text.
 Ambiguous RSA or unknown identities stop preflight before uploads. This check
 classifies unrelated ECDSA inventory; it does not validate the elliptic-curve
 point cryptographically or adopt that resource. The recipe uploads each new key and certificate, fetches
-the matching key and CA bundle, and deletes only exact IDs confirmed by successful
-original creation responses. Matching public moduli bind returned private keys
+the matching key and CA bundle, reads the owned certificate by exact ID and
+retrieves certificates for the designated npr.rs domain. It then generates one
+additional RSA-2048 key per route and deletes only exact IDs confirmed by
+successful original creation responses. Matching public moduli bind returned private keys
 without persisting private material. Payload validation failures still permit
 cleanup when the successful original response establishes an unambiguous owned ID;
 failed or ambiguous creation never adopts an ID from a later inventory.
+For generated keys, ownership additionally requires a fully validated successful
+original response with a unique new ID and matching returned PEM/public modulus.
+The ID and modulus must be absent from prior inventories and all other owned
+resources. The label is fresh and route-bound. Lost, unsuccessful or malformed
+generation stays uncertain even when a later inventory appears to identify it;
+no generated key is adopted or deleted by inference. Generated-key state is
+separate from the uploaded key/certificate states.
+
 After an upload proves exact ownership and passes API and typed payload checks,
 unknown response fields alone allow the owned-resource lifecycle to continue to
 fetch and cleanup. The original unknown-field discrepancies remain in evidence,
@@ -389,7 +399,7 @@ continuation rule does not apply to preflight, other inventories, fetch or clean
 all other upload discrepancies and unsuccessful API/payload checks stop continuation.
 
 The one-shot guard checks exact opt-ins, account, credentials, routing, fields,
-headers and multipart bytes. No request is retried. Each confirmed owned ID gets
+headers, form bytes and multipart bytes. No request is retried. Each confirmed owned ID gets
 one cleanup attempt, followed by inventory checks for ID and public-modulus
 absence. Uncertain creations remain unresolved and stop later route lifecycles.
 Existing unrelated resources are retained. No certificates are installed and no
@@ -397,8 +407,12 @@ TLS service certificates, AutoSSL exclusions, SSL defaults, redirects or mail SN
 configuration are changed. Successful storage calls do not establish HTTPS or
 trust behavior.
 
-Successful evidence contains 23 original observations: version, four initial
-inventories, and nine lifecycle/cleanup observations on each route. Reports keep
+The expanded v2 recipe plans 31 original observations: version, four initial
+inventories, and thirteen lifecycle/cleanup observations on each route (13 GET,
+18 POST overall). It covers ten SSL functions through both routes and six
+separately owned resources. This expansion is offline-verified; a fresh capture
+from committed integrated code remains pending the parent branch merge. The
+historical v1 artifact retains its original 23 observations unchanged. Reports keep
 structural paths and provenance from `EvidenceRunner`, separate semantic
 expectations and resource states, and no private key, certificate, resource ID or
 arbitrary upstream error text. Any failed observation, expectation, missing stage,

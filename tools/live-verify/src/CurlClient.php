@@ -33,7 +33,7 @@ final readonly class CurlClient implements ClientInterface
     {
     }
 
-    /** Execute one opted-in, bounded HTTPS GET or authorized form POST without retries. */
+    /** Execute one opted-in, bounded HTTPS GET or authorized form/multipart POST without retries. */
     public function sendRequest(#[SensitiveParameter] RequestInterface $request): ResponseInterface
     {
         if (getenv('WHM_API_LIVE') !== '1') {

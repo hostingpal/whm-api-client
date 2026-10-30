@@ -223,7 +223,7 @@ final class UapiSslTest extends TestCase
         $cases = [
             ['installed_hosts', '[{"certificate":null}]'],
             ['installed_hosts', '[{"certificate":{"issuer.commonName":null}}]'],
-            ['installed_hosts', '[{"certificate":{"modulus_length":"2048"}}]'],
+            ['installed_hosts', '[{"certificate":{"modulus_length":"2048.5"}}]'],
             ['installed_hosts', '[{"certificate":{"ecdsa_curve_name":1}}]'],
             ['installed_hosts', '[{"certificate":{"not_after":null}}]'],
             ['installed_hosts', '[{"domains":[null]}]'],

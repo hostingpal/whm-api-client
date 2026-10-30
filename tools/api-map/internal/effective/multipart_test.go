@@ -54,7 +54,7 @@ func TestBuildRejectsUnreviewedMultipartAliasesAndNonStringFields(t *testing.T) 
 		{`{"body":"multipart"}`, "crt", "string", "query parameter key has no matching multipart field"},
 		{`{"body":"multipart","body_fields":{"missing":"key"}}`, "key", "string", "body_fields names an undocumented multipart field"},
 		{`{"body":"multipart","body_fields":{"crt":"missing"}}`, "crt", "string", "body_fields target must name a documented query parameter"},
-		{`{"body":"multipart"}`, "key", "integer", "multipart fields must have string schemas"},
+		{`{"body":"multipart"}`, "key", "integer", "multipart fields must have inline string schemas"},
 		{`{"body":"multipart","params":{"key":{"omit":true}}}`, "key", "string", "multipart fields cannot be omitted"},
 	} {
 		m := fixtureMap(t)
@@ -80,5 +80,26 @@ func TestBuildRejectsUnreviewedMultipartAliasesAndNonStringFields(t *testing.T) 
 		if !strings.Contains(problems, tc.want) {
 			t.Fatalf("want %s in %s", tc.want, problems)
 		}
+	}
+}
+
+// A file upload needs filename and streaming semantics that inline fields do not provide.
+func TestBuildRejectsBinaryMultipartFileFields(t *testing.T) {
+	m := fixtureMap(t)
+	binary := map[string]any{"type": "string", "format": "binary"}
+	addQueryParameter(t, m, "uapi:DomainInfo/primary_domain", "key", binary)
+	fixtureNode(t, m, "uapi:DomainInfo/primary_domain")["requestBody"] = map[string]any{"content": map[string]any{
+		"multipart/form-data": map[string]any{"schema": map[string]any{"type": "object", "properties": map[string]any{"key": binary}}},
+	}}
+	set := fixtureOverlay("listed")
+	var ov overlay.Operation
+	if err := json.Unmarshal([]byte(`{"body":"multipart","params":{"key":{"sensitive":true}}}`), &ov); err != nil {
+		t.Fatal(err)
+	}
+	ov.Evidence = evidence()
+	set.Files[0].Operations["uapi:DomainInfo/primary_domain"] = ov
+	_, problems := buildProblems(t, m, set)
+	if !strings.Contains(problems, "multipart fields must have inline string schemas; binary file fields are unsupported") {
+		t.Fatalf("binary file field must fail before generation, got %q", problems)
 	}
 }

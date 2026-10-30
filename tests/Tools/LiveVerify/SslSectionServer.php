@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
 
+use HostingPal\WhmApiClient\Tools\LiveVerify\SslSectionMaterial;
 use Nyholm\Psr7\Response;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
@@ -113,6 +114,41 @@ final class SslSectionServer implements ClientInterface
                 if ($isKey && $this->failure === 'key_duplicate') {
                     $data[] = $data[0];
                 }
+                break;
+            case 'generate_key':
+                $material = SslSectionMaterial::generate();
+                $id = 'owned-generated-key-' . ($bridge ? 'bridge' : 'direct');
+                $this->keys[$id] = ['id' => $id, 'modulus' => $material->modulus, 'pem' => $material->key];
+                if ($this->failure === 'generated_lost') {
+                    throw new RuntimeException('Fixture generated response lost.');
+                }
+                $data = ['id' => $id, 'modulus' => $material->modulus, 'text' => $material->key,
+                    'friendly_name' => $fields['friendly_name'] ?? '',
+                    'created' => $bridge ? 123 : '123', 'modulus_length' => $bridge ? 2048 : '2048'];
+                if ($this->failure === 'generated_api') {
+                    $status = 0;
+                } elseif ($this->failure === 'generated_missing_id') {
+                    unset($data['id']);
+                } elseif ($this->failure === 'generated_wrong_modulus') {
+                    $data['modulus'] = 'deadbeef';
+                } elseif ($this->failure === 'generated_payload') {
+                    $data['created'] = 'malformed';
+                } elseif ($this->failure === 'generated_existing') {
+                    $data['id'] = 'existing';
+                }
+                break;
+            case 'fetch_cert_info':
+                $id = $fields['id'] ?? '';
+                if (!is_string($id)) {
+                    throw new RuntimeException('Fixture fetch lacks exact identity.');
+                }
+                $certificate = $this->certificates[$id]['pem'] ?? '';
+                $keyId = 'owned-key-' . ($bridge ? 'bridge' : 'direct');
+                $data = ['certificate' => $certificate, 'key' => $this->keys[$keyId]['pem'],
+                    'is_self_signed' => $bridge ? 1 : '1'];
+                break;
+            case 'fetch_certificates_for_fqdns':
+                $data = [['domains' => ['npr.rs'], 'is_self_signed' => $bridge ? 1 : '1']];
                 break;
             case 'fetch_key_and_cabundle_for_certificate':
                 $id = 'owned-key-' . ($bridge ? 'bridge' : 'direct');

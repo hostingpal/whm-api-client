@@ -25,6 +25,10 @@
         {
           "kind": "documented",
           "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
         }
       ],
       "probe": {
@@ -35,7 +39,80 @@
           "bridged-uapi"
         ],
         "expected": "success"
-      }
+      },
+      "response": {
+        "[].certificate.is_self_signed": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/installed_hosts field [].certificate.is_self_signed. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "[].certificate.issuer\\.organizationName": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/installed_hosts field [].certificate.issuer\\.organizationName. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "[].certificate.modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/installed_hosts field [].certificate.modulus_length. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "[].certificate.not_after": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/installed_hosts field [].certificate.not_after. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "[].certificate.not_before": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/installed_hosts field [].certificate.not_before. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/installed_hosts."
+        }
+      ]
     },
     "uapi:SSL/get_autossl_excluded_domains": {
       "probe": {
@@ -163,6 +240,10 @@
         {
           "kind": "observed",
           "text": "On cPanel 11.138.0.19, bridged-uapi returned created, modulus_length, not_before, not_after, is_self_signed as numeric strings. Canonical integer strings normalize to integers; is_self_signed accepts only exact string flags 0/1. This correction is limited to this operation and retains existing nullability and omission."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
         }
       ],
       "response": {
@@ -230,6 +311,17 @@
               "note": "docs/api/evidence/2026-10-30-ssl-section-identity-corrected.json SHA-256 ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08; revision 079d86bf3eb075f049d6f102b1db1cc9496c08d9. The bridged-uapi POST original response reports delete_cert $[].is_self_signed as numeric-string, whereas pinned /SSL/delete_cert GET result.data.items.properties[is_self_signed] declares integer 0/1. Accept only exact string flags 0/1 and normalize to integers."
             }
           ]
+        },
+        "[].issuer\\.organizationName": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/delete_cert field [].issuer\\.organizationName. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
         }
       },
       "evidence": [
@@ -238,6 +330,12 @@
           "version": "11.138.0.19",
           "date": "2026-10-30",
           "note": "docs/api/evidence/2026-10-30-ssl-section-identity-corrected.json SHA-256 ee85cb903f02a686ccce6c0f317b4c36fb8f8715db48c86fd3ee4a6b8eea7e08; revision 079d86bf3eb075f049d6f102b1db1cc9496c08d9. The bridged-uapi POST original response reports delete_cert $[].created as numeric-string, whereas pinned /SSL/delete_cert GET result.data.items.properties[created] declares integer. Accept canonical in-range integer strings and normalize to integers; preserve existing nullability and omission rules."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/delete_cert."
         }
       ]
     },
@@ -254,6 +352,33 @@
         {
           "kind": "documented",
           "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
+        }
+      ],
+      "response": {
+        "[].created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/delete_csr field [].created. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/delete_csr."
         }
       ]
     },
@@ -390,6 +515,10 @@
         {
           "kind": "documented",
           "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
         }
       ],
       "params": {
@@ -406,8 +535,29 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "The pinned /SSL/fetch_cert_info operation description states: \"You must call either the friendly_name or id parameter.\" Both parameters incorrectly carry required:true in the same source. They are alternative selectors, so each is optional in the public signature; the caller must supply one. The required new_friendly_name, where present, is unchanged."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/fetch_cert_info."
         }
-      ]
+      ],
+      "response": {
+        "is_self_signed": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/fetch_cert_info field is_self_signed. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        }
+      }
     },
     "uapi:SSL/fetch_certificates_for_fqdns": {
       "notes": [
@@ -418,6 +568,96 @@
         {
           "kind": "documented",
           "text": "The returned payload can contain private key material. Treat the result as sensitive and avoid logging or persisting it."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
+        }
+      ],
+      "response": {
+        "[].created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/fetch_certificates_for_fqdns field [].created. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "[].is_self_signed": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/fetch_certificates_for_fqdns field [].is_self_signed. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "[].issuer\\.organizationName": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/fetch_certificates_for_fqdns field [].issuer\\.organizationName. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "[].modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/fetch_certificates_for_fqdns field [].modulus_length. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "[].not_after": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/fetch_certificates_for_fqdns field [].not_after. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "[].not_before": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/fetch_certificates_for_fqdns field [].not_before. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/fetch_certificates_for_fqdns."
         }
       ]
     },
@@ -430,6 +670,96 @@
         {
           "kind": "documented",
           "text": "Identify the stored account resource with its ID or friendly name as described upstream. Omitted selector arguments are not filled from another account."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
+        }
+      ],
+      "response": {
+        "[].created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/find_certificates_for_key field [].created. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "[].is_self_signed": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/find_certificates_for_key field [].is_self_signed. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "[].issuer\\.organizationName": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/find_certificates_for_key field [].issuer\\.organizationName. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "[].modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/find_certificates_for_key field [].modulus_length. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "[].not_after": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/find_certificates_for_key field [].not_after. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "[].not_before": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/find_certificates_for_key field [].not_before. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/find_certificates_for_key."
         }
       ]
     },
@@ -442,6 +772,33 @@
         {
           "kind": "documented",
           "text": "Identify the stored account resource with its ID or friendly name as described upstream. Omitted selector arguments are not filled from another account."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
+        }
+      ],
+      "response": {
+        "[].created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/find_csrs_for_key field [].created. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/find_csrs_for_key."
         }
       ]
     },
@@ -459,6 +816,10 @@
         {
           "kind": "documented",
           "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
         }
       ],
       "evidence": [
@@ -467,8 +828,92 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "key_id is a stored resource identifier or algorithm/size selector, not private key material."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/generate_cert."
         }
-      ]
+      ],
+      "response": {
+        "created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/generate_cert field created. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "is_self_signed": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/generate_cert field is_self_signed. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "issuer\\.organizationName": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/generate_cert field issuer\\.organizationName. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/generate_cert field modulus_length. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "not_after": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/generate_cert field not_after. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "not_before": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/generate_cert field not_before. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        }
+      }
     },
     "uapi:SSL/generate_csr": {
       "params": {
@@ -488,6 +933,10 @@
         {
           "kind": "documented",
           "text": "Requires a valid key in the selected account's ssl directory; generateKey can create one."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
         }
       ],
       "evidence": [
@@ -496,8 +945,29 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "key_id is a stored resource identifier or algorithm/size selector, not private key material."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/generate_csr."
         }
-      ]
+      ],
+      "response": {
+        "created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/generate_csr field created. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        }
+      }
     },
     "uapi:SSL/generate_key": {
       "params": {
@@ -524,6 +994,10 @@
         {
           "kind": "documented",
           "text": "Use keytype or keysize, never both. Omission keeps the upstream default key selection; keysize is the legacy option."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
         }
       ],
       "evidence": [
@@ -532,23 +1006,181 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "keysize is a stored resource identifier or algorithm/size selector, not private key material. keytype is a stored resource identifier or algorithm/size selector, not private key material."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/generate_key."
         }
-      ]
+      ],
+      "response": {
+        "created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/generate_key field created. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/generate_key field modulus_length. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        }
+      }
     },
     "uapi:SSL/get_cabundle": {
       "notes": [
         {
           "kind": "documented",
           "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "The client sends the PEM certificate in a form POST body to avoid URL field limits and certificate contents in access logs. Pass the plain PEM string; the client encodes it once."
+        }
+      ],
+      "params": {
+        "cert": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "SSL/get_cabundle accepts a complete PEM certificate. Request policy keeps PEM contents out of logged URLs and avoids GET field/URL limits: mark cert sensitive and dispatch a form POST, retaining the pinned GET source identity. No live coverage is inferred."
         }
       ]
     },
-    "uapi:SSL/get_cn_name": {},
+    "uapi:SSL/get_cn_name": {
+      "response": {
+        "is_self_signed": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/get_cn_name field is_self_signed. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/get_cn_name."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
+        }
+      ]
+    },
     "uapi:SSL/installed_host": {
       "notes": [
         {
           "kind": "documented",
           "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
+        }
+      ],
+      "response": {
+        "certificate.is_self_signed": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/installed_host field certificate.is_self_signed. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "certificate.issuer\\.organizationName": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/installed_host field certificate.issuer\\.organizationName. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "certificate.modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/installed_host field certificate.modulus_length. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "certificate.not_after": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/installed_host field certificate.not_after. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "certificate.not_before": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/installed_host field certificate.not_before. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/installed_host."
         }
       ]
     },
@@ -584,7 +1216,7 @@
         },
         {
           "kind": "observed",
-          "text": "On cPanel 11.138.0.19, inventory created, not_before, not_after and modulus_length values arrived as numeric strings and are normalized to integers. Exact string is_self_signed flags normalize to 0|1. The literal issuer.organizationName field also accepts observed null; it is distinct from an omitted field. These corrections are limited to this inventory operation."
+          "text": "On cPanel 11.138.0.19, inventory created, not_before, not_after and modulus_length values arrived as numeric strings and are normalized to integers. Exact string is_self_signed flags normalize to 0|1. The literal issuer.organizationName field also accepts observed null; it is distinct from an omitted field. These observations also support the separately reviewed record-family compatibility rules."
         }
       ],
       "response": {
@@ -683,6 +1315,33 @@
         {
           "kind": "documented",
           "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
+        }
+      ],
+      "response": {
+        "[].created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/list_csrs field [].created. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/list_csrs."
         }
       ]
     },
@@ -937,6 +1596,59 @@
         {
           "kind": "documented",
           "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
+        }
+      ],
+      "response": {
+        "details.is_self_signed": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/show_cert field details.is_self_signed. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "details.not_after": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/show_cert field details.not_after. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "details.not_before": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/show_cert field details.not_before. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/show_cert."
         }
       ]
     },
@@ -953,6 +1665,33 @@
         {
           "kind": "documented",
           "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
+        }
+      ],
+      "response": {
+        "details.created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/show_csr field details.created. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/show_csr."
         }
       ]
     },
@@ -973,6 +1712,46 @@
         {
           "kind": "documented",
           "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
+        }
+      ],
+      "response": {
+        "details.created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/show_key field details.created. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        },
+        "details.modulus_length": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/show_key field details.modulus_length. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/show_key."
         }
       ]
     },
@@ -1045,6 +1824,12 @@
           "version": "11.138.0.19",
           "date": "2026-10-30",
           "note": "docs/api/evidence/2026-10-30-ssl-section-upload-corrected.json SHA-256 1f38a174a8075059bcd55ccd865061c6be3cab98f052eaf93c2f43e5eb65b2ee; revision 1370c7ba6e78b4cdb68c3983eb7d0a4f240a6b3e. The direct-uapi POST original response on 11.138.0.19 reports upload_cert $[].created as numeric-string; bridged-uapi reports integer. Pinned /SSL/upload_cert POST result.data.items.properties[created] declares integer. Accept canonical in-range integer strings and normalize to integers, retaining pinned nullability and omission rules. Unknown response fields remain unacknowledged; this correction does not establish discrepancy-free evidence."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-30",
+          "note": "Record-family compatibility reviewed at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154, bound to docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641. New field corrections retain exact types and established conversions. This extension alone does not establish live execution of uapi:SSL/upload_cert."
         }
       ],
       "notes": [
@@ -1059,6 +1844,10 @@
         {
           "kind": "observed",
           "text": "On cPanel 11.138.0.19, direct UAPI returned created, modulus_length, not_after, not_before and is_self_signed as numeric strings; the WHM bridge returned integers. Canonical integer strings normalize to integers; is_self_signed accepts only exact string flags 0/1. Existing nullability and omission remain unchanged. Unknown response fields remain unacknowledged and keep the strict evidence assessment failed."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared. Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from operation-specific live coverage."
         }
       ],
       "response": {
@@ -1124,6 +1913,17 @@
               "version": "11.138.0.19",
               "date": "2026-10-30",
               "note": "docs/api/evidence/2026-10-30-ssl-section-upload-corrected.json SHA-256 1f38a174a8075059bcd55ccd865061c6be3cab98f052eaf93c2f43e5eb65b2ee; revision 1370c7ba6e78b4cdb68c3983eb7d0a4f240a6b3e. The direct-uapi POST original response on 11.138.0.19 reports upload_cert $[].is_self_signed as numeric-string; bridged-uapi reports integer. Pinned /SSL/upload_cert POST result.data.items.properties[is_self_signed] declares integer 0/1. Accept only exact string flags 0/1 and normalize to integers. Unknown response fields remain unacknowledged; this correction does not establish discrepancy-free evidence."
+            }
+          ]
+        },
+        "[].issuer\\.organizationName": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-30",
+              "note": "Reviewed SSL record-family compatibility for uapi:SSL/upload_cert field [].issuer\\.organizationName. docs/api/evidence/2026-10-30-ssl-section.json SHA-256 088e3c0e5045c2daf90f4dc8e705d863805614767db878b8226b5588cd8a30bd, revision 4a3c988c019abda03d552e8be819685643215641 observes the same certificate/key/CSR record fields with quoted integers, exact quoted 0/1 flags and a nullable literal issuer.organizationName. The owner-authorized review at https://github.com/hostingpal/whm-api-client/pull/32#pullrequestreview-5715146154 requires consistent accepted forms across operations returning these records; it independently reproduces generate_key created/modulus_length and fetch_cert_info/fetch_certificates_for_fqdns failures on 11.138.0.19. This operation/path extension is record-family inference, not a claim that this exact operation was live-observed. Preserve canonical PHP-integer bounds, exact flag grammar, existing nullable modulus_length, omission and precise returned types; only the organization string gains null."
             }
           ]
         }
@@ -1224,6 +2024,12 @@
         },
         "key": {
           "sensitive": true
+        },
+        "cert": {
+          "sensitive": true
+        },
+        "cabundle": {
+          "sensitive": true
         }
       },
       "evidence": [
@@ -1232,6 +2038,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
           "note": "Pinned /SSL/install_ssl GET parameter vhost_names explicitly permits duplicate or incremented parameter names; use duplicate names in the form POST body. The optional domain_dcv_method parameter is an object map but its description and examples define no wire serialization. It is omitted from the typed signature pending source or runtime evidence; no JSON or bracketed encoding is inferred."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "install_ssl cert and cabundle carry PEM certificate/chain strings, the same sensitive input family as sibling SSL methods. Mark both SensitiveParameter to keep them out of automatic traces, alongside the existing private key mark. This does not imply that certificates are private keys."
         }
       ],
       "notes": [

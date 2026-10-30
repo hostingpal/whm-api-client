@@ -30,7 +30,7 @@ use Throwable;
  * @phpstan-import-type Record from EvidenceRunner
  * @phpstan-type Observation array{phase:string, expectation:'passed'|'failed'|'not_checked', record:Record}
  * @phpstan-type Resources array{key:'not_started'|'owned'|'cleaned'|'uncertain',
- *     cert:'not_started'|'owned'|'cleaned'|'uncertain'}
+ *     cert:'not_started'|'owned'|'cleaned'|'uncertain', generated_key:'not_started'|'owned'|'cleaned'|'uncertain'}
  * @phpstan-type Report array{recipe:string,status:'passed'|'failed',probes:list<Observation>,
  *     resources:array<Route,Resources>,failures:list<string>,limitations:list<string>}
  */
@@ -45,6 +45,9 @@ final class SslSectionFixture
         'uapi:SSL/upload_cert' => ['uapi:SSL/upload_cert#POST', 'POST'],
         'uapi:SSL/fetch_key_and_cabundle_for_certificate'
             => ['uapi:SSL/fetch_key_and_cabundle_for_certificate#POST', 'POST'],
+        'uapi:SSL/generate_key' => ['uapi:SSL/generate_key#GET', 'POST'],
+        'uapi:SSL/fetch_cert_info' => ['uapi:SSL/fetch_cert_info#GET', 'POST'],
+        'uapi:SSL/fetch_certificates_for_fqdns' => ['uapi:SSL/fetch_certificates_for_fqdns#GET', 'POST'],
         'uapi:SSL/delete_key' => ['uapi:SSL/delete_key#GET', 'POST'],
         'uapi:SSL/delete_cert' => ['uapi:SSL/delete_cert#GET', 'POST'],
     ];
@@ -58,13 +61,17 @@ final class SslSectionFixture
     private array $records = [];
     /** @var array<Route,Resources> */
     private array $resources = [
-        'direct-uapi' => ['key' => 'not_started', 'cert' => 'not_started'],
-        'bridged-uapi' => ['key' => 'not_started', 'cert' => 'not_started'],
+        'direct-uapi' => ['key' => 'not_started', 'cert' => 'not_started', 'generated_key' => 'not_started'],
+        'bridged-uapi' => ['key' => 'not_started', 'cert' => 'not_started', 'generated_key' => 'not_started'],
     ];
     /** @var array<string,string> */
     private array $owned = [];
     /** @var list<string> */
     private array $initialIds = [];
+    /** @var list<string> */
+    private array $initialModuli = [];
+    /** @var array<string,string> */
+    private array $generatedModuli = [];
     /** @var list<string> */
     private array $failures = [];
     private bool $used = false;
@@ -119,6 +126,9 @@ final class SslSectionFixture
                     $this->absent($rows);
                     foreach ($rows as $row) {
                         $this->initialIds[] = $row['id'];
+                        if ($row['modulus'] !== null) {
+                            $this->initialModuli[] = $row['modulus'];
+                        }
                     }
                 } catch (Throwable) {
                     $ready = false;
@@ -153,6 +163,9 @@ final class SslSectionFixture
             $this->absent($rows);
             foreach ($rows as $row) {
                 $this->initialIds[] = $row['id'];
+                if ($row['modulus'] !== null) {
+                    $this->initialModuli[] = $row['modulus'];
+                }
             }
         }
         $material = $this->materials[$route];
@@ -187,6 +200,63 @@ final class SslSectionFixture
         $this->expect(is_string($certificate)
             && @openssl_x509_fingerprint($certificate, 'sha256')
                 === openssl_x509_fingerprint($material->certificate, 'sha256'));
+        $info = $this->call('fetch_cert_info', $route, 'fetch_cert_info', [
+            'id' => $this->owned[$route . ':cert'],
+        ]);
+        $this->successful();
+        $this->expect(is_array($info) && ($info['is_self_signed'] ?? null) === 1
+            && is_string($info['certificate'] ?? null)
+            && @openssl_x509_fingerprint($info['certificate'], 'sha256')
+                === openssl_x509_fingerprint($material->certificate, 'sha256')
+            && is_string($info['key'] ?? null) && SslSectionMaterial::keyModulus($info['key']) === $material->modulus);
+        $certificates = $this->call('fetch_certificates_for_fqdns', $route, 'fetch_certificates_for_fqdns', [
+            'domains' => 'npr.rs',
+        ]);
+        $this->successful();
+        $matchedDomain = false;
+        if (is_array($certificates) && array_is_list($certificates)) {
+            foreach ($certificates as $row) {
+                if (
+                    is_array($row) && is_array($row['domains'] ?? null)
+                    && in_array('npr.rs', $row['domains'], true)
+                ) {
+                    $matchedDomain = true;
+                }
+            }
+        }
+        $this->expect($matchedDomain);
+        $this->setState($route, 'generated_key', 'uncertain');
+        $generated = $this->call('generate_key', $route, 'generate_key', [
+            'friendly_name' => SslSectionGuard::name($material) . '-generated', 'keytype' => 'rsa-2048',
+        ]);
+        // Only a fully validated successful original response can establish generated-key ownership.
+        // A lost/malformed result stays uncertain even if a later inventory appears to identify it.
+        if (
+            $this->last()['record']['api_outcome'] === 'success'
+            && $this->last()['record']['payload_validation'] === 'passed' && is_array($generated)
+        ) {
+            $id = $generated['id'] ?? null;
+            $modulus = $generated['modulus'] ?? null;
+            $pem = $generated['text'] ?? null;
+            $fresh = is_string($id) && $id !== '' && !in_array($id, $this->initialIds, true)
+                && !in_array($id, $this->owned, true) && is_string($modulus) && is_string($pem);
+            $normalized = $fresh ? SslSectionMaterial::normalize($modulus) : null;
+            if (
+                $fresh && $normalized !== null && SslSectionMaterial::keyModulus($pem) === $normalized
+                && !in_array($normalized, $this->initialModuli, true)
+                && !in_array($normalized, $this->generatedModuli, true)
+                && $normalized !== $this->materials['direct-uapi']->modulus
+                && $normalized !== $this->materials['bridged-uapi']->modulus
+                && ($generated['friendly_name'] ?? null) === SslSectionGuard::name($material) . '-generated'
+            ) {
+                $this->owned[$route . ':generated_key'] = $id;
+                $this->generatedModuli[$route] = $normalized;
+                $this->guard->own($route, 'generated_key', $id);
+                $this->setState($route, 'generated_key', 'owned');
+            }
+        }
+        $this->expect($this->resources[$route]['generated_key'] === 'owned');
+        $this->successful();
     }
 
     /** Read the original creation response, never a later resource inventory.
@@ -230,12 +300,17 @@ final class SslSectionFixture
     /** @param Route $route */
     private function cleanup(string $route): void
     {
-        foreach (['cert', 'key'] as $kind) {
+        foreach (['generated_key', 'cert', 'key'] as $kind) {
             if ($this->resources[$route][$kind] !== 'owned') {
                 continue;
             }
             try {
-                $this->call('delete_' . $kind, $route, 'delete_' . $kind, ['id' => $this->owned[$route . ':' . $kind]]);
+                $this->call(
+                    'delete_' . $kind,
+                    $route,
+                    $kind === 'generated_key' ? 'delete_key' : 'delete_' . $kind,
+                    ['id' => $this->owned[$route . ':' . $kind]],
+                );
                 $this->successful();
             } catch (Throwable) {
                 $this->failures[] = $route . ':cleanup_request_failure';
@@ -249,11 +324,21 @@ final class SslSectionFixture
                 foreach ($rows as $row) {
                     $this->expect($row['id'] !== $id);
                 }
+                if ($kind === 'key' && $this->resources[$route]['generated_key'] === 'owned') {
+                    foreach ($rows as $row) {
+                        $this->expect($row['id'] !== $this->owned[$route . ':generated_key']
+                            && $row['modulus'] !== $this->generatedModuli[$route]);
+                    }
+                    $this->setState($route, 'generated_key', 'cleaned');
+                }
                 if ($this->resources[$route][$kind] === 'owned') {
                     $this->setState($route, $kind, 'cleaned');
                 }
             } catch (Throwable) {
                 $this->failures[] = $route . ':cleanup_unconfirmed';
+                if ($kind === 'key' && $this->resources[$route]['generated_key'] === 'owned') {
+                    $this->setState($route, 'generated_key', 'uncertain');
+                }
                 if ($this->resources[$route][$kind] !== 'not_started') {
                     $this->setState($route, $kind, 'uncertain');
                 }
@@ -309,7 +394,9 @@ final class SslSectionFixture
         foreach ($rows as $row) {
             foreach ($this->materials as $material) {
                 $this->expect($row['modulus'] !== $material->modulus
-                    && $row['friendly_name'] !== SslSectionGuard::name($material));
+                    && $row['friendly_name'] !== SslSectionGuard::name($material)
+                    && $row['friendly_name'] !== SslSectionGuard::name($material) . '-generated'
+                    && !in_array($row['modulus'], $this->generatedModuli, true));
             }
         }
     }
@@ -327,6 +414,9 @@ final class SslSectionFixture
             'version' => ServerSpec::VERSION,
             'list_keys' => SslSpec::LIST_KEYS,
             'list_certs' => SslSpec::LIST_CERTS,
+            'generate_key' => SslSpec::GENERATE_KEY,
+            'fetch_cert_info' => SslSpec::FETCH_CERT_INFO,
+            'fetch_certificates_for_fqdns' => SslSpec::FETCH_CERTIFICATES_FOR_FQDNS,
             'upload_key' => SslSpec::UPLOAD_KEY,
             'upload_cert' => SslSpec::UPLOAD_CERT,
             'fetch_key_and_cabundle_for_certificate' => SslSpec::FETCH_KEY_AND_CABUNDLE_FOR_CERTIFICATE,
@@ -350,6 +440,12 @@ final class SslSectionFixture
                     'version' => $client->whm()->server()->version(),
                     'list_keys' => $ssl?->listKeys(),
                     'list_certs' => $ssl?->listCerts(),
+                    'generate_key' => $ssl?->generateKey(
+                        friendlyName: $fields['friendly_name'],
+                        keytype: 'rsa-2048',
+                    ),
+                    'fetch_cert_info' => $ssl?->fetchCertInfo(id: $fields['id']),
+                    'fetch_certificates_for_fqdns' => $ssl?->fetchCertificatesForFqdns($fields['domains']),
                     'upload_key' => $ssl?->uploadKey(key: $fields['key'], friendlyName: $fields['friendly_name']),
                     'upload_cert' => $ssl?->uploadCert(crt: $fields['crt'], friendlyName: $fields['friendly_name']),
                     'fetch_key_and_cabundle_for_certificate' => $ssl?->fetchKeyAndCabundleForCertificate(
@@ -372,7 +468,7 @@ final class SslSectionFixture
     }
 
     /** @param Route $route
-     * @param 'key'|'cert' $kind
+     * @param 'key'|'cert'|'generated_key' $kind
      * @param 'not_started'|'owned'|'cleaned'|'uncertain' $state
      */
     private function setState(string $route, string $kind, string $state): void
@@ -380,8 +476,10 @@ final class SslSectionFixture
         $current = $this->resources[$route];
         if ($kind === 'key') {
             $current['key'] = $state;
-        } else {
+        } elseif ($kind === 'cert') {
             $current['cert'] = $state;
+        } else {
+            $current['generated_key'] = $state;
         }
         $this->resources[$route] = $current;
     }
@@ -448,7 +546,7 @@ final class SslSectionFixture
     /** @return Report */
     private function report(): array
     {
-        $passed = $this->failures === [] && count($this->records) === 23;
+        $passed = $this->failures === [] && count($this->records) === 31;
         $version = $this->records[0]['record']['server_version'] ?? null;
         foreach ($this->records as &$record) {
             $record['record']['server_version'] = $version;
@@ -459,9 +557,9 @@ final class SslSectionFixture
                 && $record['record']['probe_outcome'] === 'passed' && $record['record']['discrepancies'] === [];
         }
         foreach ($this->resources as $state) {
-            $passed = $passed && $state === ['key' => 'cleaned', 'cert' => 'cleaned'];
+            $passed = $passed && $state === ['key' => 'cleaned', 'cert' => 'cleaned', 'generated_key' => 'cleaned'];
         }
-        return ['recipe' => 'ssl-owned-multipart-npr-v1', 'status' => $passed ? 'passed' : 'failed',
+        return ['recipe' => 'ssl-owned-storage-npr-v2', 'status' => $passed ? 'passed' : 'failed',
             'probes' => $this->records, 'resources' => $this->resources,
             'failures' => array_values(array_unique($this->failures)),
             'limitations' => ['storage_only_no_certificate_installation', 'no_tls_service_or_trust_claim',

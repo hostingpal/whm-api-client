@@ -89,6 +89,39 @@ final class SslSectionGuardTest extends TestCase
         }
     }
 
+    public function testGenerationCannotBeReauthorizedUnderAnotherPhase(): void
+    {
+        $material = SslSectionMaterial::generate();
+        $http = new MockClient(new Psr17Factory());
+        $guard = new SslSectionGuard($http, ['whm' => 'fixture', 'cpanel' => 'fixture'], [
+            'direct-uapi' => $material, 'bridged-uapi' => $material,
+        ]);
+        $this->expectException(LogicException::class);
+        try {
+            $guard->authorize('second_generation', 'direct-uapi', 'generate_key', [
+                'friendly_name' => SslSectionGuard::name($material) . '-generated', 'keytype' => 'rsa-2048',
+            ]);
+        } finally {
+            self::assertSame([], $http->getRequests());
+        }
+    }
+
+    public function testGeneratedKeyDeleteCannotUseTheUploadedKeyIdentity(): void
+    {
+        $material = SslSectionMaterial::generate();
+        $http = new MockClient(new Psr17Factory());
+        $guard = new SslSectionGuard($http, ['whm' => 'fixture', 'cpanel' => 'fixture'], [
+            'direct-uapi' => $material, 'bridged-uapi' => $material,
+        ]);
+        $guard->own('direct-uapi', 'key', 'uploaded-key');
+        $this->expectException(LogicException::class);
+        try {
+            $guard->authorize('delete_generated_key', 'direct-uapi', 'delete_key', ['id' => 'uploaded-key']);
+        } finally {
+            self::assertSame([], $http->getRequests());
+        }
+    }
+
     public function testDeletionNeedsConfirmedExactIdentityAndNeverUsesFriendlyName(): void
     {
         $material = SslSectionMaterial::generate();

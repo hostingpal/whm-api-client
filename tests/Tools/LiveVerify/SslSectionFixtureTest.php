@@ -61,14 +61,18 @@ final class SslSectionFixtureTest extends TestCase
             }
         }
         self::assertSame(6, $multipart);
-        self::assertSame(4, $deletions);
+        self::assertSame(6, $deletions);
         self::assertSame([], $server->keys);
         self::assertSame([], $server->certificates);
         self::assertSame(2, $server->counts['upload_key'] ?? 0);
         self::assertSame(2, $server->counts['upload_cert'] ?? 0);
         self::assertSame(2, $server->counts['fetch_key_and_cabundle_for_certificate'] ?? 0);
-        self::assertSame(2, $server->counts['delete_key'] ?? 0);
+        self::assertSame(4, $server->counts['delete_key'] ?? 0);
         self::assertSame(2, $server->counts['delete_cert'] ?? 0);
+        self::assertSame(2, $server->counts['generate_key'] ?? 0);
+        self::assertSame(2, $server->counts['fetch_cert_info'] ?? 0);
+        self::assertSame(2, $server->counts['fetch_certificates_for_fqdns'] ?? 0);
+        self::assertCount(31, $report['probes']);
         $json = json_encode($report, JSON_THROW_ON_ERROR);
         foreach (['BEGIN', 'PRIVATE', 'owned-key-', 'owned-cert-', 'fixture-token'] as $secret) {
             self::assertStringNotContainsString($secret, $json);
@@ -203,7 +207,7 @@ final class SslSectionFixtureTest extends TestCase
         self::assertSame([$row], $server->existingInventory[$function]);
         self::assertSame(2, $server->counts['upload_key'] ?? 0);
         self::assertSame(2, $server->counts['upload_cert'] ?? 0);
-        self::assertSame(2, $server->counts['delete_key'] ?? 0);
+        self::assertSame(4, $server->counts['delete_key'] ?? 0);
         self::assertSame(2, $server->counts['delete_cert'] ?? 0);
         self::assertSame([], $server->keys);
         self::assertSame([], $server->certificates);
@@ -238,7 +242,10 @@ final class SslSectionFixtureTest extends TestCase
             self::assertSame(0, $server->counts[$op] ?? 0);
         }
         foreach ($report['resources'] as $resources) {
-            self::assertSame(['key' => 'not_started', 'cert' => 'not_started'], $resources);
+            self::assertSame(
+                ['key' => 'not_started', 'cert' => 'not_started', 'generated_key' => 'not_started'],
+                $resources,
+            );
         }
         self::assertSame([$row], $server->existingInventory[$function]);
     }
@@ -275,11 +282,11 @@ final class SslSectionFixtureTest extends TestCase
         $server = new SslSectionServer('upload_unknown');
         $report = self::fixture($server)->run();
         self::assertSame('failed', $report['status']);
-        self::assertCount(23, $report['probes']);
+        self::assertCount(31, $report['probes']);
         self::assertSame(2, $server->counts['fetch_key_and_cabundle_for_certificate'] ?? 0);
         self::assertSame(2, $server->counts['upload_key'] ?? 0);
         self::assertSame(2, $server->counts['upload_cert'] ?? 0);
-        self::assertSame(2, $server->counts['delete_key'] ?? 0);
+        self::assertSame(4, $server->counts['delete_key'] ?? 0);
         self::assertSame(2, $server->counts['delete_cert'] ?? 0);
         self::assertSame([], $server->keys);
         self::assertSame([], $server->certificates);
@@ -295,7 +302,7 @@ final class SslSectionFixtureTest extends TestCase
         }
         self::assertSame(4, $uploads);
         foreach ($report['resources'] as $resources) {
-            self::assertSame(['key' => 'cleaned', 'cert' => 'cleaned'], $resources);
+            self::assertSame(['key' => 'cleaned', 'cert' => 'cleaned', 'generated_key' => 'cleaned'], $resources);
         }
         $encoded = json_encode($report, JSON_THROW_ON_ERROR);
         self::assertStringNotContainsString('unreviewed_fixture_field', $encoded);
@@ -312,7 +319,10 @@ final class SslSectionFixtureTest extends TestCase
         self::assertSame(0, $server->counts['upload_cert'] ?? 0);
         self::assertSame(0, $server->counts['fetch_key_and_cabundle_for_certificate'] ?? 0);
         foreach ($report['resources'] as $resources) {
-            self::assertSame(['key' => 'not_started', 'cert' => 'not_started'], $resources);
+            self::assertSame(
+                ['key' => 'not_started', 'cert' => 'not_started', 'generated_key' => 'not_started'],
+                $resources,
+            );
         }
     }
 
@@ -333,6 +343,37 @@ final class SslSectionFixtureTest extends TestCase
                 ['path' => '$[].*', 'kind' => 'unknown_field'],
                     ['path' => '$[].created', 'kind' => 'type_mismatch']], $probe['record']['discrepancies']);
             }
+        }
+    }
+
+    #[DataProvider('uncertainGeneratedKeys')]
+    public function testUnconfirmedGeneratedKeyNeverAdoptsLaterInventoryOrRetries(string $mode): void
+    {
+        $server = new SslSectionServer($mode);
+        if ($mode === 'generated_existing') {
+            $server->keys['existing'] = ['id' => 'existing', 'modulus' => 'cafe', 'pem' => 'not read'];
+        }
+        $report = self::fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertSame('uncertain', $report['resources']['direct-uapi']['generated_key']);
+        self::assertSame(1, $server->counts['generate_key'] ?? 0);
+        self::assertSame(1, $server->counts['delete_key'] ?? 0, 'Only the confirmed uploaded key is deleted.');
+        self::assertArrayHasKey('owned-generated-key-direct', $server->keys);
+        self::assertSame('not_started', $report['resources']['bridged-uapi']['key']);
+        self::assertContains('unresolved_ownership', $report['failures']);
+        $json = json_encode($report, JSON_THROW_ON_ERROR);
+        self::assertStringNotContainsString('PRIVATE', $json);
+        self::assertStringNotContainsString('owned-generated-key', $json);
+    }
+
+    /** @return iterable<string,array{string}> */
+    public static function uncertainGeneratedKeys(): iterable
+    {
+        foreach (
+            ['generated_lost', 'generated_api', 'generated_missing_id', 'generated_wrong_modulus',
+            'generated_payload', 'generated_existing'] as $mode
+        ) {
+            yield $mode => [$mode];
         }
     }
 

@@ -30,7 +30,7 @@ use SensitiveParameter;
  *     id?: string,
  *     is_self_signed?: 0|1,
  *     'issuer.commonName'?: string,
- *     'issuer.organizationName'?: string,
+ *     'issuer.organizationName'?: string|null,
  *     issuer_text?: string,
  *     key_algorithm?: string,
  *     modulus?: string|null,
@@ -104,7 +104,7 @@ use SensitiveParameter;
  *     id?: string,
  *     is_self_signed?: 0|1,
  *     'issuer.commonName'?: string,
- *     'issuer.organizationName'?: string,
+ *     'issuer.organizationName'?: string|null,
  *     issuer_text?: string,
  *     key?: string,
  *     key_algorithm?: string,
@@ -141,7 +141,7 @@ use SensitiveParameter;
  *     id?: string,
  *     is_self_signed?: 0|1,
  *     'issuer.commonName'?: string,
- *     'issuer.organizationName'?: string,
+ *     'issuer.organizationName'?: string|null,
  *     issuer_text?: string,
  *     key_algorithm?: string,
  *     modulus?: string|null,
@@ -173,7 +173,7 @@ use SensitiveParameter;
  *     id?: string,
  *     is_self_signed?: 0|1,
  *     'issuer.commonName'?: string,
- *     'issuer.organizationName'?: string,
+ *     'issuer.organizationName'?: string|null,
  *     key_algorithm?: string,
  *     modulus?: string|null,
  *     modulus_length?: int|null,
@@ -258,7 +258,7 @@ use SensitiveParameter;
  *         id?: string,
  *         is_self_signed?: 0|1,
  *         'issuer.commonName'?: string,
- *         'issuer.organizationName'?: string,
+ *         'issuer.organizationName'?: string|null,
  *         issuer_text?: string,
  *         key_algorithm?: string,
  *         modulus?: string|null,
@@ -284,7 +284,7 @@ use SensitiveParameter;
  *         is_autossl?: 0|1,
  *         is_self_signed?: 0|1,
  *         'issuer.commonName'?: string,
- *         'issuer.organizationName'?: string,
+ *         'issuer.organizationName'?: string|null,
  *         issuer_text?: string,
  *         key_algorithm?: string,
  *         modulus?: string|null,
@@ -445,7 +445,7 @@ use SensitiveParameter;
  *     id?: string,
  *     is_self_signed?: 0|1,
  *     'issuer.commonName'?: string,
- *     'issuer.organizationName'?: string,
+ *     'issuer.organizationName'?: string|null,
  *     key_algorithm?: string,
  *     modulus?: string|null,
  *     modulus_length?: int|null,
@@ -551,6 +551,11 @@ final readonly class Ssl
      * exact string flags 0/1. This correction is limited to this operation and retains existing nullability and
      * omission.
      *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
+     *
      * API-map identity: uapi:SSL/delete_cert#GET (wire name delete_cert).
      *
      * @param string|null $friendlyName The certificate's friendly name. Null omits it.
@@ -582,6 +587,11 @@ final readonly class Ssl
      *
      * Documented: Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables
      * this operation.
+     *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
      *
      * API-map identity: uapi:SSL/delete_csr#GET (wire name delete_csr).
      *
@@ -777,6 +787,11 @@ final readonly class Ssl
      * Documented: Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables
      * this operation.
      *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
+     *
      * API-map identity: uapi:SSL/fetch_cert_info#GET (wire name fetch_cert_info).
      *
      * @param string|null $friendlyName The certificate's human readable name. Null omits it.
@@ -806,6 +821,11 @@ final readonly class Ssl
      *
      * Documented: The returned payload can contain private key material. Treat the result as sensitive and avoid
      * logging or persisting it.
+     *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
      *
      * API-map identity: uapi:SSL/fetch_certificates_for_fqdns#GET (wire name fetch_certificates_for_fqdns).
      *
@@ -871,6 +891,11 @@ final readonly class Ssl
      * Documented: Identify the stored account resource with its ID or friendly name as described upstream. Omitted
      * selector arguments are not filled from another account.
      *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
+     *
      * API-map identity: uapi:SSL/find_certificates_for_key#GET (wire name find_certificates_for_key).
      *
      * @param string|null $friendlyName The key's friendly name. Null omits it.
@@ -900,6 +925,11 @@ final readonly class Ssl
      * Documented: Identify the stored account resource with its ID or friendly name as described upstream. Omitted
      * selector arguments are not filled from another account.
      *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
+     *
      * API-map identity: uapi:SSL/find_csrs_for_key#GET (wire name find_csrs_for_key).
      *
      * @param string|null $friendlyName The key's friendly name. Null omits it.
@@ -928,6 +958,11 @@ final readonly class Ssl
      *
      * Documented: Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables
      * this operation.
+     *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
      *
      * API-map identity: uapi:SSL/generate_cert#GET (wire name generate_cert).
      *
@@ -986,6 +1021,11 @@ final readonly class Ssl
      * this operation.
      *
      * Documented: Requires a valid key in the selected account's ssl directory; generateKey can create one.
+     *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
      *
      * API-map identity: uapi:SSL/generate_csr#GET (wire name generate_csr).
      *
@@ -1048,6 +1088,11 @@ final readonly class Ssl
      *
      * Documented: Use keytype or keysize, never both. Omission keeps the upstream default key selection; keysize is the
      * legacy option.
+     *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
      *
      * API-map identity: uapi:SSL/generate_key#GET (wire name generate_key).
      *
@@ -1157,6 +1202,9 @@ final readonly class Ssl
      * Documented: Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables
      * this operation.
      *
+     * Documented: The client sends the PEM certificate in a form POST body to avoid URL field limits and certificate
+     * contents in access logs. Pass the plain PEM string; the client encodes it once.
+     *
      * API-map identity: uapi:SSL/get_cabundle#GET (wire name get_cabundle).
      *
      * @param string $cert The certificate's text.
@@ -1166,8 +1214,10 @@ final readonly class Ssl
      *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/cpanel-account-ssl-management/ssl-get_cabundle
      */
-    public function getCabundle(string $cert): array
-    {
+    public function getCabundle(
+        #[SensitiveParameter]
+        string $cert,
+    ): array {
         /** @var GetCabundleResult $result Validated against SslSpec::GET_CABUNDLE. */
         $result = ($this->run)(SslSpec::GET_CABUNDLE, ['cert' => $cert]);
 
@@ -1178,6 +1228,11 @@ final readonly class Ssl
      * Request best SSL domain for service.
      *
      * This function retrieves the most secure domain for a service.
+     *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
      *
      * API-map identity: uapi:SSL/get_cn_name#GET (wire name get_cn_name).
      *
@@ -1240,8 +1295,10 @@ final readonly class Ssl
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ssl-certificate-management/ssl-install_ssl
      */
     public function installSsl(
+        #[SensitiveParameter]
         string $cert,
         string $domain,
+        #[SensitiveParameter]
         ?string $cabundle = null,
         #[SensitiveParameter]
         ?string $key = null,
@@ -1272,6 +1329,11 @@ final readonly class Ssl
      *
      * Documented: Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables
      * this operation.
+     *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
      *
      * API-map identity: uapi:SSL/installed_host#GET (wire name installed_host).
      *
@@ -1304,6 +1366,11 @@ final readonly class Ssl
      *
      * Documented: Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables
      * this operation.
+     *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
      *
      * API-map identity: uapi:SSL/installed_hosts#GET (wire name installed_hosts).
      *
@@ -1412,8 +1479,8 @@ final readonly class Ssl
      *
      * Observed: On cPanel 11.138.0.19, inventory created, not_before, not_after and modulus_length values arrived as
      * numeric strings and are normalized to integers. Exact string is_self_signed flags normalize to 0|1. The literal
-     * issuer.organizationName field also accepts observed null; it is distinct from an omitted field. These corrections
-     * are limited to this inventory operation.
+     * issuer.organizationName field also accepts observed null; it is distinct from an omitted field. These
+     * observations also support the separately reviewed record-family compatibility rules.
      *
      * API-map identity: uapi:SSL/list_certs#GET (wire name list_certs).
      *
@@ -1441,6 +1508,11 @@ final readonly class Ssl
      *
      * Documented: Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables
      * this operation.
+     *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
      *
      * API-map identity: uapi:SSL/list_csrs#GET (wire name list_csrs).
      *
@@ -1839,6 +1911,11 @@ final readonly class Ssl
      * Documented: Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables
      * this operation.
      *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
+     *
      * API-map identity: uapi:SSL/show_cert#GET (wire name show_cert).
      *
      * @param string|null $friendlyName The certificate's friendly name. Null omits it.
@@ -1870,6 +1947,11 @@ final readonly class Ssl
      *
      * Documented: Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables
      * this operation.
+     *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
      *
      * API-map identity: uapi:SSL/show_csr#GET (wire name show_csr).
      *
@@ -1905,6 +1987,11 @@ final readonly class Ssl
      *
      * Documented: Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables
      * this operation.
+     *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
      *
      * API-map identity: uapi:SSL/show_key#GET (wire name show_key).
      *
@@ -1996,6 +2083,11 @@ final readonly class Ssl
      * is_self_signed as numeric strings; the WHM bridge returned integers. Canonical integer strings normalize to
      * integers; is_self_signed accepts only exact string flags 0/1. Existing nullability and omission remain unchanged.
      * Unknown response fields remain unacknowledged and keep the strict evidence assessment failed.
+     *
+     * Observed: Reviewed SSL record-family compatibility accepts canonical integer strings for timestamp/bit-length
+     * fields, exact quoted 0/1 self-signed flags and nullable issuer organization where those fields are declared.
+     * Numeric fields normalize to integers; optional keys stay omitted. Family inference is separate from
+     * operation-specific live coverage.
      *
      * API-map identity: uapi:SSL/upload_cert#POST (wire name upload_cert).
      *

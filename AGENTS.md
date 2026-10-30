@@ -220,6 +220,18 @@ including all three multipart methods on both routes, and four confirmed cleaned
 resources. Strict evidence remains failed on upload_cert/delete_key unknown fields
 on both routes; preserve them and follow-up 8x0.2.19. No TLS serving, installation,
 trust, AutoSSL issuance or renewal behavior was tested by this fixture.
+SSL response compatibility now applies the reviewed field rules consistently to
+all 21 operations declaring the 66 affected certificate/key/CSR fields. Preserve
+integer normalization, exact 0/1 string flags and only the reviewed issuer
+organization nullability. Family inference is not operation-specific live evidence.
+getCabundle uses form POST for PEM input, and installSsl certificate/bundle inputs
+are sensitive. Generation refuses binary multipart file fields. The expanded
+SSL storage recipe plans 31 observations and six resource states, adding a fresh
+generated key per route plus fetchCertInfo/fetchCertificatesForFqdns. Generated
+ownership requires the original successful validated response, a fresh unique ID,
+matching PEM/public modulus and preflight absence. Lost/malformed generation stays
+uncertain; never infer ownership from later inventories or retry. Final integrated
+committed-code capture remains pending the parent PR merge.
 
 DomainInfo (5), Features (5), and LangPHP (11) cover their complete pinned modules.
 Domain details preserve list/hash alternatives, documented quoted flag variants

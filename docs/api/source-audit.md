@@ -1497,3 +1497,69 @@ retain that strict discrepancy failure; successful deletion and final absence
 are recorded separately. No discrepancy is acknowledged or removed. This proves
 seven SSL functions on these routes/revision/version, not all 49 generated methods,
 certificate installation, TLS serving, trust, AutoSSL issuance or renewal.
+
+
+### SSL external-review corrections: 2026-10-30
+
+Review of `7ff0090a75c7e87931fe4cdf933f0c8fc2f85142` independently reproduced
+quoted `created`/`modulus_length` on direct `generate_key` after successful
+creation, and `is_self_signed` failures on `fetch_cert_info` and
+`fetch_certificates_for_fqdns`. The earlier evidence-bound corrections covered
+only selected inventory/upload/delete operations. The reviewed record-family
+policy now applies the same narrow rules to all **66 declared fields in 21 SSL
+operations**: canonical PHP-integer-bounded strings for `created`,
+`modulus_length`, `not_after`, `not_before`; exact quoted 0/1 for
+`is_self_signed`; and explicit null for the literal `issuer.organizationName`
+string. Existing optional fields and nullable modulus lengths are preserved.
+This is family compatibility inferred from the matching pinned record contracts,
+reviewed live reproductions and immutable original SSL artifacts, not a claim
+that each extended operation/path was captured live. Unknown fields remain
+masked and unacknowledged under `8x0.2.19`.
+
+Independent endpoint fixtures cover native and quoted values, null versus omission,
+invalid flags, fractional/exponent/noncanonical numeric strings, integer overflow
+and wrong organization types across wrapped, bare and bridged UAPI. Before the
+fix, 132 accepted-record cases failed; 16 installSsl certificate/CA-bundle trace
+cases also reproduced the missing parameter marks. Certificate and CA-bundle
+arguments now remain sensitive alongside the private key. `getCabundle()` sends
+PEM in a form POST body, retaining its pinned GET source identity while avoiding
+URL length limits and certificate contents in access logs. A Go regression first
+proved that a multipart override accepted a binary file schema; generation now
+rejects it because inline string fields do not provide filename upload semantics.
+The executor and live cURL documentation describes both supported body encodings.
+
+The expanded SSL storage recipe adds `generate_key`, `fetch_cert_info` and
+`fetch_certificates_for_fqdns` through both routes. It plans **31 observations
+(13 GET, 18 POST)** across ten SSL functions plus WHM version, retaining all three
+multipart operations. Each route tracks a generated key separately from its
+uploaded key and certificate, for six resource states. Generated ownership needs
+a successful fully validated original response with a unique new ID, matching
+PEM/public modulus, fresh route-bound label and absence from prior inventories
+and other owned resources. Lost/malformed/unsuccessful generation remains uncertain;
+later absence or identity sightings never authorize adoption, deletion or retry.
+Independent failure modes cover each of those cases. Private PEM, resource IDs
+and moduli stay in memory; final inventories check exact IDs and public moduli.
+No account/server certificate is installed or replaced, and no TLS service,
+AutoSSL, trust or renewal coverage is inferred. The optional install_ssl DCV map
+remains omitted under `8x0.2.16`.
+
+This stage runs offline only. Final master integration, regeneration to the
+combined 279-operation/15-group surface and one capture from committed integrated
+code follow the parent Email PR merge. Every historical SSL artifact remains
+unchanged, including the 23-observation v1 run and its four strict unknown-field
+findings. The expanded recipe does not waive those findings or promote them into
+typed fields.
+
+
+Offline validation for these review fixes passes `composer validate`,
+`composer check` (**9,059 tests / 57,727 assertions**), `composer api-map:check`,
+and the complete Go test/vet suites. The final independent record suite passes
+1,914 tests / 5,154 assertions; installSsl PEM trace cases pass 16 / 80;
+expanded fixture and request guards pass 72 / 602. A focused read-only review of
+the ownership, guard and independently authored record tests found no actionable
+issue and passed 1,986 tests / 5,756 assertions. The independent field matrix
+confirms exactly 44 changed field specifications among the 66 reviewed fields,
+with every other existing type/nullability key preserved. Historical evidence
+files remain byte-identical. Integration and live capture remain separate pending
+steps, and this offline result does not establish upstream behavior for the
+expanded recipe.

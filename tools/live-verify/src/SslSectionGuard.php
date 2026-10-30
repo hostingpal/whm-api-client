@@ -44,7 +44,7 @@ final class SslSectionGuard implements ClientInterface
     }
 
     /** @param Route $route
-     * @param 'key'|'cert' $kind
+     * @param 'key'|'cert'|'generated_key' $kind
      */
     public function own(string $route, string $kind, #[SensitiveParameter] string $id): void
     {
@@ -68,6 +68,12 @@ final class SslSectionGuard implements ClientInterface
             throw new LogicException('SSL fixture phase already consumed.');
         }
         $this->used[$identity] = true;
+        if (
+            (in_array($function, ['generate_key', 'fetch_cert_info', 'fetch_certificates_for_fqdns'], true)
+            && $phase !== $function) || ($phase === 'delete_generated_key' && $function !== 'delete_key')
+        ) {
+            throw new LogicException('SSL fixture function does not match the reviewed phase.');
+        }
         $expected = [];
         $method = 'GET';
         if ($route === 'whm') {
@@ -79,10 +85,14 @@ final class SslSectionGuard implements ClientInterface
             $material = $this->materials[$route];
             $expected = match ($function) {
                 'list_keys', 'list_certs' => [],
+                'generate_key' => ['friendly_name' => self::name($material) . '-generated', 'keytype' => 'rsa-2048'],
+                'fetch_cert_info' => ['id' => $this->owned[$route . ':cert'] ?? ''],
+                'fetch_certificates_for_fqdns' => ['domains' => 'npr.rs'],
                 'upload_key' => ['key' => $material->key, 'friendly_name' => self::name($material)],
                 'upload_cert' => ['crt' => $material->certificate, 'friendly_name' => self::name($material)],
                 'fetch_key_and_cabundle_for_certificate' => ['certificate' => $material->certificate],
-                'delete_key' => ['id' => $this->owned[$route . ':key'] ?? ''],
+                'delete_key' => ['id' => $this->owned[$route . ':'
+                    . ($phase === 'delete_generated_key' ? 'generated_key' : 'key')] ?? ''],
                 'delete_cert' => ['id' => $this->owned[$route . ':cert'] ?? ''],
                 default => throw new LogicException('SSL fixture operation unavailable.'),
             };
@@ -125,9 +135,13 @@ final class SslSectionGuard implements ClientInterface
         ];
         $body = '';
         if ($step['method'] === 'POST') {
-            if (str_starts_with($step['function'], 'delete_')) {
+            if (
+                !in_array($step['function'], [
+                'upload_key', 'upload_cert', 'fetch_key_and_cabundle_for_certificate',
+                ], true)
+            ) {
                 $headers['content-type'] = ['application/x-www-form-urlencoded'];
-                $body = 'id=' . rawurlencode($step['fields']['id']);
+                $body = http_build_query($step['fields'], '', '&', PHP_QUERY_RFC3986);
             } else {
                 $type = $request->getHeaderLine('Content-Type');
                 if (preg_match('/\Amultipart\/form-data; boundary=([A-Za-z0-9_-]{20,70})\z/', $type, $match) !== 1) {

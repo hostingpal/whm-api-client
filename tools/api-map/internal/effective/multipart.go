@@ -62,7 +62,7 @@ func (b *builder) multipartBody(op model.Operation, v model.Variant, ov overlay.
 		matched[name] = true
 		field, _, _, valid := b.schemas.follow(source, props[sourceName])
 		if !valid || !multipartString(field) {
-			b.problem(op.ID + ": multipart fields must have string schemas")
+			b.problem(op.ID + ": multipart fields must have inline string schemas; binary file fields are unsupported")
 			return nil, false
 		}
 		if ov.Params[name].Omit {
@@ -95,7 +95,7 @@ func (b *builder) multipartBody(op model.Operation, v model.Variant, ov overlay.
 }
 
 func multipartString(schema map[string]any) bool {
-	return schema["type"] == "string" && schema["nullable"] != true && schema["oneOf"] == nil && schema["anyOf"] == nil && schema["allOf"] == nil
+	return schema["type"] == "string" && schema["format"] != "binary" && schema["nullable"] != true && schema["oneOf"] == nil && schema["anyOf"] == nil && schema["allOf"] == nil
 }
 
 // Documentation annotations do not change the duplicate field's wire contract.
