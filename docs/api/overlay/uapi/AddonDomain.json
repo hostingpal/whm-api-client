@@ -41,6 +41,10 @@
         {
           "kind": "documented",
           "text": "force: Accepted for compatibility, but ignored for account-level callers. It can no longer cause the system to skip the domain name, [DNS](https://go.cpanel.net/dnsrecords), and registration checks, or to overwrite an existing DNS zone.\n\nThe system still refuses to create a domain that another account owns.\n* `0` - Enforce the checks.\n* `1` - Accepted, but has no effect for account-level callers."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback."
         }
       ],
       "evidence": [
@@ -48,7 +52,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
-          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /AddonDomain/addaddondomain GET x-readonly=false. Mutations use form POST; preserve the source parameter names and omission semantics."
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /AddonDomain/addaddondomain GET x-readonly=false and x-rollback=none. Mutations use form POST; preserve the source parameter names and omission semantics."
         }
       ]
     },
@@ -81,6 +85,14 @@
         {
           "kind": "documented",
           "text": "disallowdot: Whether to remove the dot (`.`) characters from the subdomain label when the system removes the subdomain.\n* `1` - Remove dots from the subdomain label.\n* `0` - Do **not** remove dots from the subdomain label."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "If other domains remain parked on the subdomain, only the addon domain is unparked and the subdomain remains. This void method returns no payload; inspect responseMeta()->uapiMessages() for that partial-success detail."
         }
       ],
       "void": true,
@@ -89,7 +101,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
-          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /AddonDomain/deladdondomain GET x-readonly=false. Mutations use form POST; preserve the source parameter names and omission semantics."
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /AddonDomain/deladdondomain GET x-readonly=false and x-rollback=none. Mutations use form POST; preserve the source parameter names and omission semantics."
         },
         {
           "kind": "doc",

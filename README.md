@@ -870,6 +870,10 @@ Real HostingPal consumer integration testing is deferred by the user as of
 client before full API coverage or a release. Any public prerelease is a separate decision with
 an explicit coverage and compatibility statement.
 
+The [domain-management read-only capture](docs/api/evidence/2026-10-30-domain-management.json)
+records reviewed GET checks on cPanel `11.138.0.19`. All 27 GET observations passed HTTP, API, payload and probe checks. Strict assessment remains failed for two masked integer unknown-field observations at `$[].*` in `WebVhosts/list_ssl_capable_domains`, one per route. No acknowledgment or new typed field was added.
+Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants are not observed by this capture, which makes no mutation requests. A separate [reviewer report](https://github.com/hostingpal/whm-api-client/pull/33#pullrequestreview-5717731712) records seven mutation methods passing through both routes with cleanup; rename and temporary-domain conversion remain unobserved.
+
 The development lockfile resolves dependencies against PHP 8.3. Runtime
 requirements for consumers come from `composer.json`, not this lockfile.
 
@@ -955,7 +959,3 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
-
-The [domain-management read-only capture](docs/api/evidence/2026-10-30-domain-management.json)
-records reviewed GET checks on cPanel `11.138.0.19`. All 27 GET observations passed HTTP, API, payload and probe checks. Strict assessment remains failed for two masked integer unknown-field observations at `$[].*` in `WebVhosts/list_ssl_capable_domains`, one per route. No acknowledgment or new typed field was added.
-Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants remain offline-only, as do all nine mutations.

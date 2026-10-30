@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace HostingPal\WhmApiClient\Tests\Api;
+namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
 
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Http\HttpTransport;

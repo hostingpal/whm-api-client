@@ -321,7 +321,7 @@ nullable proxy-subdomain lists. `listSslCapableDomains()` does not invent a doma
 argument from inconsistent upstream prose.
 
 The 2026-10-30 domain-management capture at `9db0cad` on `11.138.0.19`: All 27 GET observations passed HTTP, API, payload and probe checks. Strict assessment remains failed for two masked integer unknown-field observations at `$[].*` in `WebVhosts/list_ssl_capable_domains`, one per route. No acknowledgment or new typed field was added.
-Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants remain offline-only, as do all nine mutations. Follow-up `8x0.2.20` remains open.
+Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants are not established by this capture. Separate [Claude reviewer evidence](https://github.com/hostingpal/whm-api-client/pull/33#pullrequestreview-5717731712) reports seven mutation methods passing on both routes with cleanup; rename and temporary-domain conversion remain unobserved. Follow-up `8x0.2.20` remains open.
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.

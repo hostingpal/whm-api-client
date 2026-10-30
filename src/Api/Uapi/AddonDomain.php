@@ -77,6 +77,8 @@ final readonly class AddonDomain
      * an existing DNS zone. The system still refuses to create a domain that another account owns. * `0` - Enforce the
      * checks. * `1` - Accepted, but has no effect for account-level callers.
      *
+     * Documented: The pinned operation declares no rollback.
+     *
      * API-map identity: uapi:AddonDomain/addaddondomain#GET (wire name addaddondomain).
      *
      * @param string $newDomain The addon domain to create.
@@ -134,6 +136,12 @@ final readonly class AddonDomain
      * Documented: disallowdot: Whether to remove the dot (`.`) characters from the subdomain label when the system
      * removes the subdomain. * `1` - Remove dots from the subdomain label. * `0` - Do **not** remove dots from the
      * subdomain label.
+     *
+     * Documented: The pinned operation declares no rollback.
+     *
+     * Documented: If other domains remain parked on the subdomain, only the addon domain is unparked and the subdomain
+     * remains. This void method returns no payload; inspect responseMeta()->uapiMessages() for that partial-success
+     * detail.
      *
      * API-map identity: uapi:AddonDomain/deladdondomain#GET (wire name deladdondomain).
      *

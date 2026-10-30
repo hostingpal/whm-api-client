@@ -45,6 +45,10 @@
         {
           "kind": "documented",
           "text": "The pinned nullable object has no field schema: preserve opaque object fields and explicit null; absent data is distinct and invalid."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback."
         }
       ],
       "evidence": [
@@ -52,7 +56,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
-          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /SubDomain/addsubdomain GET x-readonly=false. Mutations use form POST; preserve the source parameter names and omission semantics."
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /SubDomain/addsubdomain GET x-readonly=false and x-rollback=none. Mutations use form POST; preserve the source parameter names and omission semantics."
         }
       ]
     },
@@ -75,6 +79,10 @@
         {
           "kind": "documented",
           "text": "domain: The full domain name of the subdomain or addon domain whose document root you want to change. The domain must belong to the calling cPanel user."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback."
         }
       ],
       "evidence": [
@@ -82,7 +90,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
-          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /SubDomain/changedocroot GET x-readonly=false. Mutations use form POST; preserve the source parameter names and omission semantics."
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /SubDomain/changedocroot GET x-readonly=false and x-rollback=none. Mutations use form POST; preserve the source parameter names and omission semantics."
         }
       ]
     },
@@ -110,6 +118,10 @@
         {
           "kind": "documented",
           "text": "disallowdot: Whether to remove the dot (`.`) characters from the subdomain label in the `domain` value.\n* `1` - Remove dots from the subdomain label.\n* `0` - Do **not** remove dots from the subdomain label."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation declares no rollback."
         }
       ],
       "void": true,
@@ -118,7 +130,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-30",
-          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /SubDomain/delsubdomain GET x-readonly=false. Mutations use form POST; preserve the source parameter names and omission semantics."
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /SubDomain/delsubdomain GET x-readonly=false and x-rollback=none. Mutations use form POST; preserve the source parameter names and omission semantics."
         },
         {
           "kind": "doc",
@@ -147,6 +159,10 @@
         {
           "kind": "documented",
           "text": "Available in cPanel 138. This function lists the subdomains on the cPanel account, including the subdomains that the account's addon domains are parked on."
+        },
+        {
+          "kind": "documented",
+          "text": "regex matches fully qualified subdomain names case-insensitively. An invalid Perl regular expression makes the function fail and reports the error in the errors field."
         }
       ]
     },

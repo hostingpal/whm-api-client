@@ -103,6 +103,8 @@ final readonly class Park
      * system appends the primary domain to this value. Omit this parameter to park the domain on the primary domain
      * itself.
      *
+     * Documented: The pinned operation declares no rollback.
+     *
      * API-map identity: uapi:Park/park#GET (wire name park).
      *
      * @param string $domain The domain to park.
@@ -145,6 +147,8 @@ final readonly class Park
      * the `AddonDomain::listaddondomains` function returns in its `domainkey` field. Omit this parameter to let the
      * system determine the subdomain. Pass it only when the domain is parked on a subdomain rather than on the primary
      * domain.
+     *
+     * Documented: The pinned operation declares no rollback.
      *
      * API-map identity: uapi:Park/unpark#GET (wire name unpark).
      *

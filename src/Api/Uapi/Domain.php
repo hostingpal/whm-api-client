@@ -57,6 +57,8 @@ final readonly class Domain
      * parameter defaults to the domain's name. **Note:** The function will create a symlink in place of the previous
      * temporary domain's document root directory. The symlink will point to the registered domain's document root.
      *
+     * Documented: The pinned operation declares no rollback.
+     *
      * API-map identity: uapi:Domain/convert_temporary_to_registered#POST (wire name convert_temporary_to_registered).
      *
      * @param string $domain A valid temporary domain on the account.
@@ -126,6 +128,8 @@ final readonly class Domain
      *
      * Documented: docroot: The path to the domain's document root directory. If you do not specify a value, this
      * parameter defaults to the new domain name.
+     *
+     * Documented: The pinned operation declares no rollback.
      *
      * API-map identity: uapi:Domain/rename_domain#POST (wire name rename_domain).
      *

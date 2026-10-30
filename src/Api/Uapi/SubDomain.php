@@ -76,6 +76,8 @@ final readonly class SubDomain
      * Documented: The pinned nullable object has no field schema: preserve opaque object fields and explicit null;
      * absent data is distinct and invalid.
      *
+     * Documented: The pinned operation declares no rollback.
+     *
      * API-map identity: uapi:SubDomain/addsubdomain#GET (wire name addsubdomain).
      *
      * @param string $domain The subdomain name to create.
@@ -133,6 +135,8 @@ final readonly class SubDomain
      * Documented: domain: The full domain name of the subdomain or addon domain whose document root you want to change.
      * The domain must belong to the calling cPanel user.
      *
+     * Documented: The pinned operation declares no rollback.
+     *
      * API-map identity: uapi:SubDomain/changedocroot#GET (wire name changedocroot).
      *
      * @param string $domain The full domain name of the subdomain or addon domain whose document root you want to
@@ -169,6 +173,8 @@ final readonly class SubDomain
      *
      * Documented: disallowdot: Whether to remove the dot (`.`) characters from the subdomain label in the `domain`
      * value. * `1` - Remove dots from the subdomain label. * `0` - Do **not** remove dots from the subdomain label.
+     *
+     * Documented: The pinned operation declares no rollback.
      *
      * API-map identity: uapi:SubDomain/delsubdomain#GET (wire name delsubdomain).
      *
@@ -216,6 +222,9 @@ final readonly class SubDomain
      *
      * Documented: Available in cPanel 138. This function lists the subdomains on the cPanel account, including the
      * subdomains that the account's addon domains are parked on.
+     *
+     * Documented: regex matches fully qualified subdomain names case-insensitively. An invalid Perl regular expression
+     * makes the function fail and reports the error in the errors field.
      *
      * API-map identity: uapi:SubDomain/listsubdomains#GET (wire name listsubdomains).
      *

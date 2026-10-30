@@ -14,6 +14,7 @@ use Http\Mock\Client;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 /** @phpstan-import-type Context from EvidenceRunner */
 final class ReadOnlySectionRunnerTest extends TestCase
@@ -84,6 +85,54 @@ final class ReadOnlySectionRunnerTest extends TestCase
         yield 'http status' => ['http_status', 500];
         yield 'failure' => ['failure_kind', 'request_failure'];
         yield 'unknown field' => ['discrepancies', [['path' => '$.*', 'kind' => 'unknown_field']]];
+    }
+
+    #[DataProvider('malformedRecords')]
+    public function testAssessmentRejectsMalformedRecordsAndMissingStructuralEvidence(
+        int $index,
+        ?string $field,
+        mixed $replacement,
+        bool $remove,
+    ): void {
+        $http = new Client();
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{"version":"11.138.0.19"}}'));
+        $http->addResponse(new Response(200, [], '{"status":1,"data":{"primary_domain":"example.com"}}'));
+        $report = (new ReadOnlySectionRunner($http, self::context()))->run(
+            self::probes(),
+            'synthetic-v1',
+            '1',
+            ['whm' => 'synthetic-whm', 'cpanel' => 'synthetic-cpanel'],
+        );
+        self::assertSame('passed', $report['status']);
+        $records = $report['probes'];
+        if ($field === null) {
+            $records[$index] = $replacement;
+        } elseif ($remove) {
+            unset($records[$index][$field]);
+        } else {
+            $records[$index][$field] = $replacement;
+        }
+        self::assertFalse(ReadOnlySectionRunner::passes(self::probes(), $records, self::context()));
+    }
+
+    /** @return iterable<string, array{int, ?string, mixed, bool}> */
+    public static function malformedRecords(): iterable
+    {
+        foreach ([0, 1] as $index) {
+            yield "null record $index" => [$index, null, null, false];
+            yield "scalar record $index" => [$index, null, 'not a record', false];
+            yield "object record $index" => [$index, null, new stdClass(), false];
+            foreach (['response_paths', 'payload_paths'] as $field) {
+                yield "missing $field $index" => [$index, $field, null, true];
+                yield "null $field $index" => [$index, $field, null, false];
+                yield "scalar $field $index" => [$index, $field, 'not a map', false];
+                yield "empty $field $index" => [$index, $field, [], false];
+                yield "missing root $field $index" => [$index, $field, ['$.field' => ['string']], false];
+                yield "empty types $field $index" => [$index, $field, ['$' => []], false];
+                yield "scalar types $field $index" => [$index, $field, ['$' => 'object'], false];
+                yield "non-string type $field $index" => [$index, $field, ['$' => [1]], false];
+            }
+        }
     }
 
     public function testEmptyAndDuplicateCatalogsCannotPass(): void

@@ -22,7 +22,7 @@
         },
         {
           "kind": "documented",
-          "text": "The hide_temporary_domains description discusses a requested domain although this function declares no domain parameter. Preserve the declared flag without inventing a selector."
+          "text": "hideTemporaryDomains=true returns an error if the requested domain is temporary; false returns all domains including temporary domains. The pinned parameter description refers to a requested domain, but the operation declares no domain selector."
         }
       ]
     }

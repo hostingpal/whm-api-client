@@ -51,13 +51,14 @@ final readonly class ReadOnlySectionRunner
      * closed rather than relying on a PHPDoc assertion. This does not validate upstream payloads again.
      *
      * @param list<Probe> $probes
-     * @param list<array<string, mixed>> $records
+     * @param array<mixed> $records
      * @param Context $context
      */
     public static function passes(array $probes, array $records, array $context): bool
     {
         if (
-            $probes === [] || count($probes) !== count($records)
+            $probes === [] || !array_is_list($records) || count($probes) !== count($records)
+            || !is_array($records[0] ?? null)
             || $probes[0]->operation !== 'whm1:version' || $probes[0]->route !== 'whm'
         ) {
             return false;
@@ -69,6 +70,12 @@ final readonly class ReadOnlySectionRunner
         $seen = [];
         foreach ($probes as $index => $probe) {
             $record = $records[$index];
+            if (
+                !is_array($record) || !self::hasPaths($record['response_paths'] ?? null)
+                || !self::hasPaths($record['payload_paths'] ?? null)
+            ) {
+                return false;
+            }
             $identity = $probe->operation . '|' . $probe->route;
             if (isset($seen[$identity]) || $probe->unavailable !== null) {
                 return false;
@@ -87,6 +94,26 @@ final readonly class ReadOnlySectionRunner
             ];
             foreach ($expected as $key => $value) {
                 if (!array_key_exists($key, $record) || $record[$key] !== $value) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /** Require structural evidence, including a root, without revalidating the upstream payload. */
+    private static function hasPaths(mixed $paths): bool
+    {
+        if (!is_array($paths) || !array_key_exists('$', $paths)) {
+            return false;
+        }
+        foreach ($paths as $path => $types) {
+            if (!is_string($path) || !is_array($types) || !array_is_list($types) || $types === []) {
+                return false;
+            }
+            foreach ($types as $type) {
+                if (!is_string($type) || $type === '') {
                     return false;
                 }
             }

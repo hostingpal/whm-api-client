@@ -75,8 +75,9 @@ final readonly class WebVhosts
      * certificate. The possible domains for the Secure Sockets Layer (SSL) certificate include applicable [service
      * subdomains.](https://go.cpanel.net/ServiceProxySubdomains)
      *
-     * Documented: The hide_temporary_domains description discusses a requested domain although this function declares
-     * no domain parameter. Preserve the declared flag without inventing a selector.
+     * Documented: hideTemporaryDomains=true returns an error if the requested domain is temporary; false returns all
+     * domains including temporary domains. The pinned parameter description refers to a requested domain, but the
+     * operation declares no domain selector.
      *
      * API-map identity: uapi:WebVhosts/list_ssl_capable_domains#GET (wire name list_ssl_capable_domains).
      *
