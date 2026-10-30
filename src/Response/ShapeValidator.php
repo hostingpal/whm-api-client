@@ -21,6 +21,10 @@ use LogicException;
  * - string: a JSON string, returned unchanged.
  * - int: a JSON integer. "accept" 'numeric-string' also admits a canonical
  *   decimal string (optional minus, no leading zeros, within PHP int range).
+ *   The separate 'integral-fixed-point-string' opt-in admits that same integer
+ *   part followed by a dot and one or more zeros. Its integer part is checked by
+ *   an exact string/int roundtrip; negative zero and overflow fail. Conversion
+ *   strips only the zero fraction, without floats, rounding or precision loss.
  * - number: an int or finite float. "accept" 'numeric-string' also admits a
  *   string of the form [+-]?digits(.digits)?; with "preserve" => true (number
  *   only) the matched string is returned unchanged. Otherwise it is normalized as
@@ -233,6 +237,15 @@ final class ShapeValidator
             && (string) (int) $value === $value
         ) {
             return (int) $value;
+        }
+
+        if (
+            in_array('integral-fixed-point-string', $accept, true)
+            && is_string($value)
+            && preg_match('/\A(-?(?:0|[1-9][0-9]*))\.0+\z/', $value, $parts) === 1
+            && (string) (int) $parts[1] === $parts[1]
+        ) {
+            return (int) $parts[1];
         }
 
         return $read->fail();

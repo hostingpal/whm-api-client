@@ -61,3 +61,26 @@ scoped to the exact contracts, revisions and routes recorded in each file.
   are confirmed absent; exit 0 retains the two Quota acknowledgments and no new
   discrepancies. Empty privilege lists, disabled prefixes, SQL enforcement and
   alternate server configurations remain unobserved.
+
+
+## Complete DomainInfo, Features, LangPHP and Email slices (2026-10-30)
+
+The three DomainInfo/Features/LangPHP captures retain initial failures, narrowed
+compatibility corrections and the final 67 successful API/payload observations:
+[initial](2026-10-30-domain-features-php.json),
+[compatibility](2026-10-30-domain-features-php-compatibility.json), and
+[corrected](2026-10-30-domain-features-php-corrected.json).
+The final strict assessment still fails on unknown fields and stale Quota
+acknowledgments; PHP setters remain unobserved. See the source audit and follow-up
+8x0.2.17 for exact scope.
+
+Email captures preserve each step without rewriting failed evidence:
+[preflight](2026-10-30-email-section.json),
+[MX correction](2026-10-30-email-section-corrected.json),
+[quota correction](2026-10-30-email-section-quota-corrected.json),
+[count correction](2026-10-30-email-section-count-corrected.json), and
+[quota format diagnostic](2026-10-30-email-section-quota-format.json).
+The diagnostic records only fixed format categories from the original response.
+All mailboxes created by these runs were confirmed absent after cleanup. Generated
+coverage of 96 functions is distinct from the 16-function owned-mailbox recipe;
+remaining live/source-contract work is tracked under 8x0.2.18.

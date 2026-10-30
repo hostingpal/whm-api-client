@@ -1347,3 +1347,14 @@ canonical-integer correction. Both created mailboxes were confirmed cleaned up.
 Structural numeric-string evidence alone cannot establish a lossless conversion;
 a separate same-response diagnostic now records fixed format categories only.
 It does not change the typed contract, original failure or strict assessment.
+
+
+The [quota-format diagnostic](evidence/2026-10-30-email-section-quota-format.json)
+at fa887d3 on 11.138.0.19 has SHA-256
+`1e30c8b3f1472213d325670909acc666a8d7e8eee52f12a708be3d15ddd58f7f`.
+Both original get_pop_quota responses contain integral-fixed-point strings: the
+fractional digits are all zero. No numeric value or length is retained. Typed
+validation still fails in this artifact; both created mailboxes were confirmed
+absent after cleanup. Only this evidenced operation receives lossless acceptance
+of zero-fraction fixed-point strings within PHP integer bounds. Fractional values,
+exponents, noncanonical integer parts and overflow remain rejected.

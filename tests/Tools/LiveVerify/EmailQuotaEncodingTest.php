@@ -103,11 +103,11 @@ final class EmailQuotaEncodingTest extends TestCase
         self::assertStringNotContainsString('private', json_encode($report, JSON_THROW_ON_ERROR));
     }
 
-    public function testFixedPointDiagnosticCannotChangeThePrimaryFailureOrItsGate(): void
+    public function testFractionalFixedPointDiagnosticCannotChangeThePrimaryFailureOrItsGate(): void
     {
         $server = new EmailSectionServer();
-        $server->overrides['get_pop_quota/direct/1'] = '"32.000000000000000000"';
-        $server->overrides['get_pop_quota/bridge/1'] = '"32.000000000000000000"';
+        $server->overrides['get_pop_quota/direct/1'] = '"32.000000000000000001"';
+        $server->overrides['get_pop_quota/bridge/1'] = '"32.000000000000000001"';
         $report = self::runFixture($server, 'wrapped');
         self::assertSame('failed', $report['status']);
         self::assertSame('failed', $report['assessment']['status']);
@@ -116,13 +116,35 @@ final class EmailQuotaEncodingTest extends TestCase
         self::assertCount(29, $server->requests);
         foreach ($report['probes'] as $record) {
             if ($record['operation'] === 'uapi:Email/get_pop_quota') {
-                self::assertSame('integral-fixed-point', $record['scalar_encoding'] ?? null);
+                self::assertSame('fractional-fixed-point', $record['scalar_encoding'] ?? null);
                 self::assertSame('success', $record['api_outcome']);
                 self::assertSame('failed', $record['payload_validation']);
                 self::assertSame('failed', $record['probe_outcome']);
                 self::assertSame('not_checked', $record['expectation']);
                 self::assertSame(['$' => ['numeric-string']], $record['payload_paths']);
                 self::assertSame([['path' => '$', 'kind' => 'type_mismatch']], $record['discrepancies']);
+            }
+        }
+    }
+
+    public function testAcceptedZeroFractionRetainsOriginalFingerprintAndDiagnostic(): void
+    {
+        $server = new EmailSectionServer();
+        $server->overrides['get_pop_quota/direct/1'] = '"32.000000000000000000"';
+        $server->overrides['get_pop_quota/bridge/1'] = '"32.000000000000000000"';
+        $report = self::runFixture($server, 'wrapped');
+        self::assertSame('passed', $report['status']);
+        self::assertSame('passed', $report['assessment']['status']);
+        self::assertCount(45, $report['probes']);
+        self::assertCount(45, $server->requests);
+        foreach ($report['probes'] as $record) {
+            if ($record['phase'] === 'initial_quota') {
+                self::assertSame('integral-fixed-point', $record['scalar_encoding'] ?? null);
+                self::assertSame('success', $record['api_outcome']);
+                self::assertSame('passed', $record['payload_validation']);
+                self::assertSame('passed', $record['expectation']);
+                self::assertSame(['$' => ['numeric-string']], $record['payload_paths']);
+                self::assertSame([], $record['discrepancies']);
             }
         }
     }

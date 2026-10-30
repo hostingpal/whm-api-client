@@ -278,6 +278,8 @@ filter parameters. The client emits `action1`, `action2`, or `filter1`, `filter2
 `values` also accepts integer items for numeric comparisons. Other filter lists
 accept strings. Empty/keyed lists and colliding wire names fail before dispatch.
 Mailbox counts and quota results retain their documented zero/unlimited meanings.
+`getPopQuota()` normalizes observed zero-fraction decimal strings to integers
+without floating-point conversion; fractional values and overflow remain errors.
 `listPopsWithDisk()` keeps floating-point MB usage, while opaque mutation payloads
 retain fields and explicit nulls.
 

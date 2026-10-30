@@ -57,7 +57,7 @@
       "properties": {
         "type": {"enum": ["string", "int", "number", "bool", "flag", "mixed", "list", "map", "object", "union"]},
         "nullable": {"type": "boolean"},
-        "accept": {"type": "array", "items": {"enum": ["numeric-string", "string-flag", "int-flag", "bool"]}, "uniqueItems": true},
+        "accept": {"type": "array", "items": {"enum": ["numeric-string", "integral-fixed-point-string", "string-flag", "int-flag", "bool"]}, "uniqueItems": true},
         "preserve": {"type": "boolean"},
         "items": {"$ref": "#/$defs/typeSpec"},
         "values": {"$ref": "#/$defs/typeSpec"},
@@ -78,7 +78,7 @@
       "type": "object",
       "properties": {
         "type": {"enum": ["string", "int", "number", "bool", "flag", "mixed"]},
-        "accept": {"type": "array", "items": {"enum": ["numeric-string", "string-flag", "int-flag", "bool"]}, "uniqueItems": true},
+        "accept": {"type": "array", "items": {"enum": ["numeric-string", "integral-fixed-point-string", "string-flag", "int-flag", "bool"]}, "uniqueItems": true},
         "nullable": {"type": "boolean"},
         "preserve": {"type": "boolean"},
         "required": {"type": "boolean"},

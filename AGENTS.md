@@ -192,6 +192,10 @@ unverified. terminate_mailbox_sessions has an upstream envelope discrepancy and
 no documented data payload; never claim successful live compatibility without
 observing it. Live tests must never send welcome/configuration messages or deliver
 mail, and only newly owned fixture mailboxes may be changed or removed.
+The get_pop_quota result alone opts into lossless integral-fixed-point-string
+normalization, backed by the original 2026-10-30 quota-format artifact. Reject
+nonzero fractions, noncanonical whole parts and integer overflow; do not widen
+other integer contracts. Remaining live/source gaps are tracked in 8x0.2.18.
 DomainInfo (5), Features (5), and LangPHP (11) cover their complete pinned modules.
 Domain details preserve list/hash alternatives and documented quoted flag variants.
 PHP vhost versions preserve list/single-record variants. INI writes and PHP version
