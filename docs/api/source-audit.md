@@ -1195,3 +1195,113 @@ The suite gained 264 cases and reached **4,015 tests / 31,055 assertions**. Requ
 Composer and offline API-map gates passed. A separate local review of the code
 commit found no issues and ran 400 focused tests / 5,253 assertions. External
 review rounds and findings are tracked in Beads; human review time is not instrumented.
+
+## Pinned-contract audit: 2026-10-30 complete Mysql section
+
+The owner requested a larger dedicated PR, preferably covering an entire API
+section, and delegated scope selection and development-server testing while away.
+The selected batch completes all 25 functions in the pinned UAPI `Mysql` section:
+15 new methods raise generated coverage from 82 to 97 operations across the same
+13 groups. The source snapshot and map checksum remain unchanged. The complete
+API still has 1,213 nondeprecated functions without generated methods.
+
+The additions are `addHost()`, `addHostNote()`, `checkDatabase()`, `deleteHost()`,
+`dumpDatabaseSchema()`, `getHostNotes()`, `listRoutines()`, `locateServer()`,
+`renameDatabase()`, `renameUser()`, `repairDatabase()`,
+`revokeAccessToDatabase()`, `setPassword()`, `setupDbAndUser()` and
+`updatePrivileges()`. Every pinned mutation, including `check_database`, uses
+form POST; the four new reads use GET. This section needs neither JSON nor
+multipart execution support. Existing group generation and runtime validation
+remain the contract path.
+
+An independent audit compared all 15 additions with the decompressed pinned
+cPanel OpenAPI source (`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`).
+It confirmed parameter mappings and response shapes and found documentation
+caveats dropped by the generator's prose extraction. Overlay notes now preserve
+all version floors and role requirements, database-rename prefix/underscore limits
+and restoration warnings, and database-username limits. The `add_host_note` role
+condition is stricter than the other operations. `setup_db_and_user` starts at
+cPanel 11.116. Parameter ordering puts the original name before the new name and
+the database user before the password.
+
+Mutation result contracts stay distinct: most accept nullable opaque objects;
+`set_password` returns an object with optional `failures`, and
+`setup_db_and_user` returns optional credential fields and a string port.
+Per-host password failures remain payload data; the public method does not
+invent a global envelope rule. Diagnostic table messages and rename warnings
+also require caller inspection. Raw schema text and dynamically keyed host notes
+are preserved as payload data.
+
+The new credential-returning operation exposed an existing trace-privacy gap:
+a successful response with a password and malformed `port` could retain that
+password inside `OperationRunner::result()`'s response argument in `getTrace()`
+when `zend.exception_ignore_args=0`. Independent direct and bridged regressions
+failed before the response was marked `SensitiveParameter` and passed afterward.
+The intentionally explicit, unvalidated `PayloadMismatchException::$payload`
+remains available; the change protects implicit trace arguments. Both routes
+still make exactly one request.
+
+Independent literal endpoint cases cover all 15 additions on direct wrapped,
+direct bare and bridged responses, including exact URI/body/auth, omission,
+explicit empty values, null versus absent data, nested wrong types, integer flags,
+opaque objects, API failures and metadata replacement. Password-input failures
+join the existing sensitive-trace matrix. The generator/specs do not supply the
+expected endpoint results. Generated coverage, offline validation and actual live
+observations are separate claims.
+
+The standalone section recipe is scoped to 21 operations on each UAPI route.
+Four generated/offline-tested operations remain outside its live recipe:
+remote-host add/note/delete lack an authoritative absence check in host notes,
+and random setup needs safe recovery when generated identities are not returned.
+Follow-up `whm-api-client-8x0.2.9` tracks that evidence work. Empty tables/routines,
+API-reported grants and password results do not prove SQL enforcement, SQL login,
+repair of damaged tables or stored-routine behavior. Consumer integration remains
+deferred. The historical baseline and its Quota acknowledgment policy are unchanged.
+
+### Runtime observations: 2026-10-30 Mysql section
+
+One authorized run of the standalone section recipe at code revision
+`b29cecebcd0b44a050017d574a02f3842f2ea430` completed with exit 0 on
+`test.oblak.host`, cPanel `11.138.0.19`. The artifact is
+[`2026-10-30-mysql-section.json`](evidence/2026-10-30-mysql-section.json), SHA-256
+`df7ba98f8233e77583e5070113f95e1536928f917e9f4c748fd922c5fce875c2`.
+
+All 57 observations passed: one WHM version call plus 28 lifecycle phases on each
+UAPI route, covering 42 distinct MySQL operation/route pairs (21 functions).
+The strict assessment found no missing, duplicate, out-of-order, unsuccessful,
+provenance-mismatched or discrepant observations. It uses no acknowledgments.
+The grant/read/revoke/read sequence observed exactly `SELECT` then an empty list
+separately on both routes. Password results, linked inventories, database and
+user rename readbacks, empty checks/repairs/routines and schema payload validation
+passed. The fixture also invoked the account-wide privilege update on the
+designated test account. Both routes' database and user resources are cleaned;
+final inventories establish original and renamed names absent. No raw identities,
+SQL, passwords or arbitrary upstream messages are saved.
+
+Access is revoked before rename and both databases are empty. The rename readbacks
+establish name changes and cleanup only; they do not observe grant or stored-code
+recreation. This limitation also applies to the immutable artifact above. The
+current recipe reports it explicitly; no operation was replayed to update the
+historical evidence.
+
+The artifact's 820 structural paths, all 57 effective-contract hashes, source/map/
+generator/overlay provenance, version binding and complete assessment were audited
+without replaying requests. No new compatibility correction was required. These
+results cover the exact operations, routes, arguments and server version exercised;
+the four excluded live operations and other stated limitations remain explicit.
+
+Before capture, `composer validate`, `composer check` (4,493 tests / 33,833
+assertions), PHPCS, maximum-level PHPStan and `composer api-map:check` passed.
+A fresh whole-branch reviewer independently inspected the exact code revision,
+including all 15 pinned contracts, guards, cleanup, sanitization, provenance and
+credential traces; it reported no actionable findings and independently passed
+521 focused tests / 2,985 assertions. This is an independent local review, not a
+separate-account GitHub approval. Actual external PR approval remains a merge gate.
+
+The code commit changed 22 files: 19 manual files with 2,497 additions / 17
+removals, and three generated files with 718 additions / two removals. That includes
+overlay, runtime trace protection, independent tests, standalone fixture tooling
+and documentation. Evidence and this runtime addendum are separate. Two review
+passes were used (contract audit, then whole-branch review); the first led to
+source-caveat documentation and the returned-secret regression, and the second
+found no remaining issue. No measured review-time saving is claimed.

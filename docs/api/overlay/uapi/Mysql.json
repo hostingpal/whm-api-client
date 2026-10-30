@@ -233,6 +233,349 @@
         ],
         "expected": "success"
       }
+    },
+    "uapi:Mysql/add_host": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Authorizes the supplied remote host for this account. Wildcards and CIDR ranges can broaden access; choose the host deliberately."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mysql/add_host GET variant declares x-readonly=false. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Mysql/add_host_note": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 74 and later. Disabling the MySQL role disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "The host must already be authorized. Disabling the MySQL role disables this function."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mysql/add_host_note GET variant declares x-readonly=false. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Mysql/check_database": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns per-table diagnostic messages; callers should inspect msg_type and msg_text even when the API envelope reports success. The pinned operation is classified as mutating and is sent as form POST."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mysql/check_database GET variant declares x-readonly=false. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Mysql/delete_host": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the supplied remote host from this account. The operation declares no rollback; verify the exact target."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mysql/delete_host GET variant declares x-readonly=false. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Mysql/dump_database_schema": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns SQL schema text, which can contain database and object identifiers. Treat it as payload data; this method does not execute the SQL."
+        }
+      ]
+    },
+    "uapi:Mysql/get_host_notes": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 74 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a map keyed by remote hostnames or IP addresses. Values remain strings, including empty notes; dynamic host keys are payload data."
+        }
+      ]
+    },
+    "uapi:Mysql/list_routines": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting databaseUser lists routines for all database users in this account. An empty result is an empty list; routine names remain strings."
+        }
+      ]
+    },
+    "uapi:Mysql/locate_server": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "is_remote is an integer flag. remote_host is optional and is not inferred when absent. This operation returns host information, not credentials."
+        }
+      ]
+    },
+    "uapi:Mysql/rename_database": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "This moves data and recreates grants and stored code before deleting the original database. Back up first. Even a successful result can include warnings about an undeleted original database or grants; inspect responseMeta()->uapiWarnings(). No automatic retry is performed."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        },
+        {
+          "kind": "documented",
+          "text": "When database prefixing is enabled, newName must include the account prefix and underscore. The documented name limit is 64 characters with each underscore counted twice (63 visible characters with the prefix underscore, fewer with additional underscores). Failure during creation, data movement or grant recreation triggers an attempted restoration; restoration failures are included in the API error response."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mysql/rename_database GET variant declares x-readonly=false. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ],
+      "params": {
+        "oldname": {
+          "php": "oldName"
+        },
+        "newname": {
+          "php": "newName"
+        }
+      },
+      "order": [
+        "oldname",
+        "newname"
+      ]
+    },
+    "uapi:Mysql/rename_user": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Renames the account database user. Username and prefix limits depend on the database server. The operation declares no rollback; verify both names before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        },
+        {
+          "kind": "documented",
+          "text": "The documented username limits are 16 characters on MySQL 5.6, 32 on MySQL 5.7 and later, and 47 on MariaDB. The account prefix uses up to the first eight account-name characters plus an underscore, consuming up to nine characters of that limit."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mysql/rename_user GET variant declares x-readonly=false. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ],
+      "params": {
+        "oldname": {
+          "php": "oldName"
+        },
+        "newname": {
+          "php": "newName"
+        }
+      },
+      "order": [
+        "oldname",
+        "newname"
+      ]
+    },
+    "uapi:Mysql/repair_database": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns per-table repair messages; callers must inspect msg_type and msg_text alongside the API outcome. The operation declares no rollback and does not provide a backup."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mysql/repair_database GET variant declares x-readonly=false. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Mysql/revoke_access_to_database": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Revokes the database user privileges on the named database. Use the account prefix where required. The operation declares no rollback; a later grant is a separate operation."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mysql/revoke_access_to_database GET variant declares x-readonly=false. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Mysql/set_password": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "The returned optional failures list contains per-host error records (error, host). The pinned text does not say whether failures can accompany status 1, so check both. Error text and hostnames are payload data. Omitted failures stays omitted."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mysql/set_password GET variant declares x-readonly=false. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ],
+      "order": [
+        "user",
+        "password"
+      ]
+    },
+    "uapi:Mysql/setup_db_and_user": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.116 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates a database and user with generated names and returns a generated password. Treat the entire result as sensitive. The optional application prefix should be at most six alphanumeric characters; longer prefixes reduce random-name entropy. Preserve optional fields and the string port. If the response is lost, do not blindly retry creation."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mysql/setup_db_and_user GET variant declares x-readonly=false. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
+    },
+    "uapi:Mysql/update_privileges": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Disabling the MySQL/MariaDB role disables this operation when remote MySQL is not configured."
+        },
+        {
+          "kind": "documented",
+          "text": "Updates privileges for all databases and users in this cPanel account, not only a named pair. The operation declares no rollback; verify the account scope before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is not accepted as null. Existing empty-map compatibility accepts an empty JSON list but rejects nonempty lists."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /Mysql/update_privileges GET variant declares x-readonly=false. Generated-client policy sends mutations and secret-bearing parameters as form POST to keep operation parameters out of access-log query strings."
+        }
+      ]
     }
   }
 }

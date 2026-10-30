@@ -61,3 +61,11 @@ scoped to the exact contracts, revisions and routes recorded in each file.
   are confirmed absent; exit 0 retains the two Quota acknowledgments and no new
   discrepancies. Empty privilege lists, disabled prefixes, SQL enforcement and
   alternate server configurations remain unobserved.
+
+- [Complete MySQL section](2026-10-30-mysql-section.json): 57 observations
+  (33 GET, 24 POST) at `b29cecebcd0b44a050017d574a02f3842f2ea430` on
+  `11.138.0.19`, covering 21 MySQL functions through both UAPI routes plus WHM
+  version. All outcomes and expectations pass with zero discrepancies; original
+  and renamed resources are confirmed absent. Four remote-host/random-setup
+  functions remain unobserved. Empty databases and revocation before rename
+  establish no grant or stored-code recreation, SQL enforcement or login.
