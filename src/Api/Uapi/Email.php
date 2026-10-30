@@ -354,10 +354,16 @@ use SensitiveParameter;
  *         command?: string,
  *         mailbox?: string,
  *         message?: string,
+ *         mx?: list<string>,
  *         result?: string,
  *         type?: string,
  *     }|list<array{
+ *         aliasfile?: string,
+ *         command?: string,
+ *         mailbox?: string,
+ *         message?: string,
  *         mx?: list<string>,
+ *         result?: string,
  *         type?: string,
  *     }>,
  *     type?: string,
@@ -2318,27 +2324,31 @@ final readonly class Email
      *
      * Observed: On cPanel 11.138.0.19, the MB result (asBytes=false) arrived as a numeric string through both direct
      * and bridged UAPI. Canonical integer strings within PHP integer bounds normalize to int. The unit selection
-     * remains unchanged; explicit null, absent data and literal unlimited remain rejected.
+     * remains unchanged; explicit null and absent data remain rejected.
      *
      * Observed: The same-response diagnostic subsequently established zero-only fixed-point fractions on both routes.
      * integral-fixed-point-string accepts a canonical signed integer part within PHP integer bounds followed by a dot
      * and one or more zeros. It normalizes losslessly to int without floats or rounding; negative zero, nonzero
      * fractions, exponents, whitespace, plus signs, leading zeros and overflow are rejected.
      *
+     * Observed: Reviewer inspection on cPanel 11.138.0.19 observes exact unlimited for an unlimited mailbox in MB
+     * units, and integer 0 with asBytes=true, through both UAPI routes. The result is int or the literal unlimited,
+     * without inferring other strings.
+     *
      * API-map identity: uapi:Email/get_pop_quota#GET (wire name get_pop_quota).
      *
      * @param string $email The email account username.
      * @param bool|null $asBytes Whether to return the quota as bytes. Null omits it.
      * @param string|null $domain The email account's domain. Null omits it.
-     * @return int
+     * @return int|'unlimited'
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-accounts/email-get_pop_quota
      */
-    public function getPopQuota(string $email, ?bool $asBytes = null, ?string $domain = null): int
+    public function getPopQuota(string $email, ?bool $asBytes = null, ?string $domain = null): int|string
     {
-        /** @var int $result Validated against EmailSpec::GET_POP_QUOTA. */
+        /** @var int|'unlimited' $result Validated against EmailSpec::GET_POP_QUOTA. */
         $result = ($this->run)(EmailSpec::GET_POP_QUOTA, [
             'email' => $email,
             'asBytes' => $asBytes,
@@ -3638,8 +3648,11 @@ final readonly class Email
      * Documented: The pinned operation declares no rollback. Verify the account and target before calling.
      *
      * Documented: The pinned response documents a metadata-only envelope resembling WHM and no data payload. The typed
-     * method still requires the shared UAPI outcome envelope and returns null; the real envelope has not been live
-     * verified.
+     * method still requires the shared UAPI outcome envelope and returns null.
+     *
+     * Observed: Reviewer live calls on cPanel 11.138.0.19 return the normal UAPI envelope with status 1 on both routes.
+     * The metadata-only pinned envelope is a documentation discrepancy; no separate runtime envelope is inferred. This
+     * reviewer observation is not bound to an artifact.
      *
      * API-map identity: uapi:Email/terminate_mailbox_sessions#GET (wire name terminate_mailbox_sessions).
      *
@@ -3658,10 +3671,9 @@ final readonly class Email
      *
      * Documented: Available in cPanel 84.
      *
-     * Documented: The seven formal destination alternatives preserve their declared optional fields using a merged
-     * object shape or remote-delivery list shape. The pinned routed example contains nested destination trees not
-     * defined by the formal alternatives; recursive routed behavior remains unverified and is not inferred from that
-     * example. Type strings are preserved, without a closed enum or discriminator validation.
+     * Documented: Both object and list destination forms preserve the same pinned optional leaf fields, including
+     * message and MX lists. Reviewer live inspection observes the list form through both routes. Recursive routed trees
+     * remain outside the formal leaf contract; type strings are preserved without enum or discriminator validation.
      *
      * API-map identity: uapi:Email/trace_delivery#GET (wire name trace_delivery).
      *

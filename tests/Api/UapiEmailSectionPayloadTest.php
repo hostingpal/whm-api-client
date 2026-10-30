@@ -153,6 +153,45 @@ final class UapiEmailSectionPayloadTest extends TestCase
         ], $client->uapi()->email()->traceDelivery('user@example.test'));
     }
 
+    public function testTraceListRetainsThePinnedRoutedExampleFields(): void
+    {
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            [$client, $http] = MysqlTestSupport::client($route);
+            // Copied from the pinned trace_delivery data example, independently of generated specs.
+            $data = '{"address":"username@example.com","destinations":[{"address":"username@example.com",'
+                . '"aliasfile":"/etc/valiases/example.com","destinations":[{"mailbox":"username@example.com",'
+                . '"type":"local_delivery"}],"type":"routed"}],"type":"routed"}';
+            $result = '{"status":1,"data":' . $data . '}';
+            $http->addResponse(new Response(200, [], $route === 'bridge'
+                ? '{"metadata":{"result":1},"data":{"uapi":' . $result . '}}'
+                : ($route === 'bare' ? $result : '{"result":' . $result . '}')));
+            self::assertSame(['address' => 'username@example.com',
+                'destinations' => [['aliasfile' => '/etc/valiases/example.com', 'type' => 'routed']],
+                'type' => 'routed'], $client->uapi('exampleuser')->email()->traceDelivery('username@example.com'));
+        }
+    }
+
+    public function testTraceListAndObjectKeepTheSamePinnedLeafFields(): void
+    {
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach ([false, true] as $list) {
+                [$client, $http] = MysqlTestSupport::client($route);
+                // Leaf examples from the pinned bounce/error/command/discard/local/remote schemas.
+                $leaf = ['aliasfile' => '/etc/valiases/example.com', 'command' => '/usr/local/cpanel/bin/autorespond',
+                    'mailbox' => 'user@example.com', 'message' => 'The system rejected the message.',
+                    'mx' => ['host.example.com [10.0.0.1] MX=20 dnssec=no'],
+                    'result' => 'DNS lookup of example2.com (MX) gave HOST_NOT_FOUND', 'type' => 'error'];
+                $payload = ['address' => 'user@example.com',
+                    'destinations' => $list ? [$leaf] : $leaf, 'type' => 'error'];
+                $result = json_encode(['status' => 1, 'data' => $payload], JSON_THROW_ON_ERROR);
+                $http->addResponse(new Response(200, [], $route === 'bridge'
+                    ? '{"metadata":{"result":1},"data":{"uapi":' . $result . '}}'
+                    : ($route === 'bare' ? $result : '{"result":' . $result . '}')));
+                self::assertSame($payload, $client->uapi('exampleuser')->email()->traceDelivery('user@example.com'));
+            }
+        }
+    }
+
     #[DataProvider('structuralBoundaries')]
     /** @param Closure(Email): mixed $call */
     public function testMeaningfulPayloadBoundaries(Closure $call, string $payload, mixed $expected): void

@@ -21,9 +21,13 @@ trait UapiGroups
 
     private ?Features $featuresGroup = null;
 
+    private ?Ftp $ftpGroup = null;
+
     private ?LangPhp $langPhpGroup = null;
 
     private ?Mysql $mysqlGroup = null;
+
+    private ?Postgresql $postgresqlGroup = null;
 
     private ?Quota $quotaGroup = null;
 
@@ -70,6 +74,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the Ftp operations without making a request.
+     *
+     * The Ftp module for UAPI.
+     */
+    public function ftp(): Ftp
+    {
+        return $this->ftpGroup ??= new Ftp($this->run(...));
+    }
+
+    /**
      * Select the LangPHP operations without making a request.
      *
      * The LangPHP module for UAPI.
@@ -87,6 +101,16 @@ trait UapiGroups
     public function mysql(): Mysql
     {
         return $this->mysqlGroup ??= new Mysql($this->run(...));
+    }
+
+    /**
+     * Select the Postgresql operations without making a request.
+     *
+     * The Postgresql module for UAPI.
+     */
+    public function postgresql(): Postgresql
+    {
+        return $this->postgresqlGroup ??= new Postgresql($this->run(...));
     }
 
     /**

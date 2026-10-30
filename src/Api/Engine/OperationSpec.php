@@ -19,7 +19,9 @@ use LogicException;
  * - method: 'GET' or 'POST'.
  * - outcome: 'flag' or 'unchecked'.
  * - params: PHP argument name => array{name: wire name, encoding: 'scalar'|
- *   'bool'|'repeat'|'numbered'}, in signature order.
+ *   'bool'|'repeat'|'numbered'|'suffix-numbered'|'suffix-numbered-scalar'}, in
+ *   signature order. Suffix encodings replace terminal * with one-based indices
+ *   (action1, action2); the scalar form also permits integer list items.
  * - returns: required key; a type spec (see ShapeValidator for the grammar), or
  *   an explicit null for a void operation.
  * - unwrap: optional string naming a field declared in an object "returns";

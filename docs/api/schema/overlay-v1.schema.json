@@ -57,6 +57,7 @@
       "type": "object",
       "properties": {
         "type": {"enum": ["string", "int", "number", "bool", "flag", "mixed", "list", "map", "object", "union"]},
+        "literal": {"type": "string"},
         "nullable": {"type": "boolean"},
         "accept": {"type": "array", "items": {"enum": ["numeric-string", "integral-fixed-point-string", "string-flag", "int-flag", "bool", "empty-string"]}, "uniqueItems": true},
         "preserve": {"type": "boolean"},
@@ -69,6 +70,7 @@
       "required": ["type"],
       "additionalProperties": false,
       "allOf": [
+        {"if": {"required": ["literal"]}, "then": {"properties": {"type": {"const": "string"}}}},
         {"if": {"properties": {"type": {"const": "list"}}}, "then": {"required": ["items"]}},
         {"if": {"properties": {"type": {"const": "map"}}}, "then": {"required": ["values"]}},
         {"if": {"properties": {"type": {"const": "union"}}}, "then": {"required": ["anyOf"]}},

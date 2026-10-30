@@ -98,6 +98,9 @@ final class EmailSectionServer implements ClientInterface
                 break;
             case 'get_pop_quota':
                 $payload = $this->mailboxes[$address]['quota'];
+                if ($payload === 0 && self::parameter($parameters, 'as_bytes') !== '1') {
+                    $payload = 'unlimited';
+                }
                 break;
             case 'passwd_pop':
                 $this->mailboxes[$address]['password'] = self::parameter($parameters, 'password');
@@ -106,13 +109,25 @@ final class EmailSectionServer implements ClientInterface
                 $payload = (int) ($this->mailboxes[$address]['password'] === self::parameter($parameters, 'password'));
                 break;
             case 'edit_pop_quota':
-                $this->mailboxes[$address]['quota'] = 64;
+                $quota = self::parameter($parameters, 'quota');
+                if (!in_array($quota, ['64', '0'], true)) {
+                    throw new LogicException('Unexpected synthetic quota change.');
+                }
+                $this->mailboxes[$address]['quota'] = (int) $quota;
                 break;
             case 'suspend_login':
                 $this->mailboxes[$address]['suspended'] = 1;
                 break;
             case 'unsuspend_login':
                 $this->mailboxes[$address]['suspended'] = 0;
+                break;
+            case 'trace_delivery':
+                $recipient = self::parameter($parameters, 'recipient');
+                if (!preg_match('/\Awem[a-f0-9]{6}[db](?:-missing)?@npr\.rs\z/', $recipient)) {
+                    throw new LogicException('Trace escaped owned local recipients.');
+                }
+                $payload = ['address' => $recipient, 'destinations' => [[
+                    'message' => 'private delivery diagnostic', 'type' => 'bounce']], 'type' => 'bounce'];
                 break;
             case 'delete_pop':
                 unset($this->mailboxes[$address]);

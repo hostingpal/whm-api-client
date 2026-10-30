@@ -1,0 +1,3981 @@
+{
+    "schema_version": 1,
+    "mysql_section": {
+        "recipe": "mysql-npr-complete-section-v1",
+        "status": "passed",
+        "probes": [
+            {
+                "operation": "whm1:version",
+                "variant": "whm1:version#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:10Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "a3b55069b379516f20fcf82f959226d68b68ac515a7e55c0bde8842d39effd60",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.version": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.version": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "version",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_databases",
+                "variant": "uapi:Mysql/list_databases#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:10Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "8a84ac55ab562bb3f4da4f53773b5336c9cb727ff9a00ccfa847fd78644e17fb",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "empty-list"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "initial_databases",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_users",
+                "variant": "uapi:Mysql/list_users#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:11Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "796b56b1b6479728031532c7f34e880c1404f14cc071909f60d5c468bc248d5f",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "empty-list"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "initial_users",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/get_host_notes",
+                "variant": "uapi:Mysql/get_host_notes#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:11Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "33571f4dfc32c959f8567029b9c3c5af3492623cb53265318a6503b138da09f0",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "empty-object"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-object"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "get_host_notes",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/get_restrictions",
+                "variant": "uapi:Mysql/get_restrictions#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:12Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "c4fe7c7ded0f8c3b2844c34e21a68cdbc248caf66c04bc8f48ca35987f165c1b",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.max_database_name_length": [
+                        "int"
+                    ],
+                    "$.data.max_username_length": [
+                        "int"
+                    ],
+                    "$.data.prefix": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.max_database_name_length": [
+                        "int"
+                    ],
+                    "$.max_username_length": [
+                        "int"
+                    ],
+                    "$.prefix": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "get_restrictions",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/get_server_information",
+                "variant": "uapi:Mysql/get_server_information#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:13Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "6355c9be536454e71c19204356ad8ccbceaa13a1860f5f177523caee23338310",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.host": [
+                        "string"
+                    ],
+                    "$.data.is_remote": [
+                        "int"
+                    ],
+                    "$.data.version": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.host": [
+                        "string"
+                    ],
+                    "$.is_remote": [
+                        "int"
+                    ],
+                    "$.version": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "get_server_information",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/locate_server",
+                "variant": "uapi:Mysql/locate_server#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:13Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "c0b3e69a0fa01410f376e831f6da484403ec469594fb1cff9edb40809fbe911f",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.is_remote": [
+                        "int"
+                    ],
+                    "$.data.remote_host": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.is_remote": [
+                        "int"
+                    ],
+                    "$.remote_host": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "locate_server",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/create_database",
+                "variant": "uapi:Mysql/create_database#GET",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:14Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "e7d5ff5b0191f93a6ce2e74f388ee3563e169834c371d78bf7c917d9aa151dba",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "null"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "create_database",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/create_user",
+                "variant": "uapi:Mysql/create_user#GET",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:14Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "753a9b0f52422d3696fc3a6597e711ce570dc16db52ac85e4a355b03e69c27b8",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "null"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "create_user",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/set_privileges_on_database",
+                "variant": "uapi:Mysql/set_privileges_on_database#GET",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:15Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "6ae3701c952af18ef113c1648cc1bc615cf8761006130f834bd2cbd14102ee42",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "null"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "assign_select",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/get_privileges_on_database",
+                "variant": "uapi:Mysql/get_privileges_on_database#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:15Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "48437a9c1d4cd789e7f0dfd102a01cac310e8d9ca9c5fe8edf0c21a8ff615279",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_select",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_databases",
+                "variant": "uapi:Mysql/list_databases#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:16Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "8a84ac55ab562bb3f4da4f53773b5336c9cb727ff9a00ccfa847fd78644e17fb",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].database": [
+                        "string"
+                    ],
+                    "$.data[].disk_usage": [
+                        "int"
+                    ],
+                    "$.data[].users": [
+                        "list"
+                    ],
+                    "$.data[].users[]": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].database": [
+                        "string"
+                    ],
+                    "$[].disk_usage": [
+                        "int"
+                    ],
+                    "$[].users": [
+                        "list"
+                    ],
+                    "$[].users[]": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "linked_databases",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_users",
+                "variant": "uapi:Mysql/list_users#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:16Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "796b56b1b6479728031532c7f34e880c1404f14cc071909f60d5c468bc248d5f",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].databases": [
+                        "list"
+                    ],
+                    "$.data[].databases[]": [
+                        "string"
+                    ],
+                    "$.data[].shortuser": [
+                        "string"
+                    ],
+                    "$.data[].user": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].databases": [
+                        "list"
+                    ],
+                    "$[].databases[]": [
+                        "string"
+                    ],
+                    "$[].shortuser": [
+                        "string"
+                    ],
+                    "$[].user": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "linked_users",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/set_password",
+                "variant": "uapi:Mysql/set_password#GET",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:16Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "249a9e4a5017eedb59b5fd427a0abe683e0c7562413c73481b3e6cd2f5ff5101",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.failures": [
+                        "empty-list"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.failures": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "set_password",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/check_database",
+                "variant": "uapi:Mysql/check_database#GET",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:17Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "b31a750900c7f4d5ba3d8e5f706cb7ef49b36d8a39f44ca0e976cee0f942a9dc",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "empty-list"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "check_database",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/repair_database",
+                "variant": "uapi:Mysql/repair_database#GET",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:17Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "7e9922726fbde3303e544797b60644c4cde29cdee2ee5661787018917e216a6e",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "empty-list"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "repair_database",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_routines",
+                "variant": "uapi:Mysql/list_routines#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:18Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "eab96191f1dc82df6623dbda1339250cddc5b72197f4a682e539b5e6b2b4519b",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "empty-list"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "list_routines",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/dump_database_schema",
+                "variant": "uapi:Mysql/dump_database_schema#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:18Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "ef47ea4c147ee062684833cce02a7a5def66ef9833f7555f7149539b22cf903c",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "dump_database_schema",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/revoke_access_to_database",
+                "variant": "uapi:Mysql/revoke_access_to_database#GET",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:18Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "d4b6ac6942ab9b2a4f022f91e370a2255f68ad5edb20aa4fcc609118e2944c35",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "null"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "revoke_access",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/get_privileges_on_database",
+                "variant": "uapi:Mysql/get_privileges_on_database#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:19Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "48437a9c1d4cd789e7f0dfd102a01cac310e8d9ca9c5fe8edf0c21a8ff615279",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "empty-list"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_revoked",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/rename_database",
+                "variant": "uapi:Mysql/rename_database#GET",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:19Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "642efbf0fc3ceb19a27395793a824ef805b44768914edf92e851effcf4f5ccee",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "null"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "rename_database",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_databases",
+                "variant": "uapi:Mysql/list_databases#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:20Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "8a84ac55ab562bb3f4da4f53773b5336c9cb727ff9a00ccfa847fd78644e17fb",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].database": [
+                        "string"
+                    ],
+                    "$.data[].disk_usage": [
+                        "int"
+                    ],
+                    "$.data[].users": [
+                        "empty-list"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].database": [
+                        "string"
+                    ],
+                    "$[].disk_usage": [
+                        "int"
+                    ],
+                    "$[].users": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "renamed_databases",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/rename_user",
+                "variant": "uapi:Mysql/rename_user#GET",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:20Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "cf9c5e6c5015fecd13fbd6cdc9c3b3af72a218f8ed0c0ca233fa13312e132d6e",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "null"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "rename_user",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_users",
+                "variant": "uapi:Mysql/list_users#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:21Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "796b56b1b6479728031532c7f34e880c1404f14cc071909f60d5c468bc248d5f",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "list"
+                    ],
+                    "$.data[]": [
+                        "object"
+                    ],
+                    "$.data[].databases": [
+                        "empty-list"
+                    ],
+                    "$.data[].shortuser": [
+                        "string"
+                    ],
+                    "$.data[].user": [
+                        "string"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].databases": [
+                        "empty-list"
+                    ],
+                    "$[].shortuser": [
+                        "string"
+                    ],
+                    "$[].user": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "renamed_users",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/update_privileges",
+                "variant": "uapi:Mysql/update_privileges#GET",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:21Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "604a783c650cee19b908b7cd9304378c37e3a85003202ab95480a147ec7a1880",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "null"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "update_privileges",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/delete_user",
+                "variant": "uapi:Mysql/delete_user#GET",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:22Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "1aaa2eb76a93f1d0f722ea9ca24854fd0ff877d5bbc4c1545efccb857179c099",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "null"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "cleanup_user",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/delete_database",
+                "variant": "uapi:Mysql/delete_database#GET",
+                "route": "direct-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:22Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "88be8200478248d96fd329bda8fc1ddd2bf0c2f8e7cd42e949be8b141bb9433c",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "null"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "empty-object"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "cleanup_database",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_databases",
+                "variant": "uapi:Mysql/list_databases#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:22Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "8a84ac55ab562bb3f4da4f53773b5336c9cb727ff9a00ccfa847fd78644e17fb",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "empty-list"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "final_databases",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_users",
+                "variant": "uapi:Mysql/list_users#GET",
+                "route": "direct-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:23Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "796b56b1b6479728031532c7f34e880c1404f14cc071909f60d5c468bc248d5f",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "empty-list"
+                    ],
+                    "$.errors": [
+                        "null"
+                    ],
+                    "$.messages": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.*": [
+                        "int"
+                    ],
+                    "$.result": [
+                        "missing"
+                    ],
+                    "$.status": [
+                        "int"
+                    ],
+                    "$.warnings": [
+                        "null"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "final_users",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_databases",
+                "variant": "uapi:Mysql/list_databases#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:23Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "8a84ac55ab562bb3f4da4f53773b5336c9cb727ff9a00ccfa847fd78644e17fb",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "empty-list"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "initial_databases",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_users",
+                "variant": "uapi:Mysql/list_users#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:24Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "796b56b1b6479728031532c7f34e880c1404f14cc071909f60d5c468bc248d5f",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "empty-list"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "initial_users",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/get_host_notes",
+                "variant": "uapi:Mysql/get_host_notes#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:24Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "33571f4dfc32c959f8567029b9c3c5af3492623cb53265318a6503b138da09f0",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-object"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "get_host_notes",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/get_restrictions",
+                "variant": "uapi:Mysql/get_restrictions#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:25Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "c4fe7c7ded0f8c3b2844c34e21a68cdbc248caf66c04bc8f48ca35987f165c1b",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.max_database_name_length": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.max_username_length": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.prefix": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.max_database_name_length": [
+                        "int"
+                    ],
+                    "$.max_username_length": [
+                        "int"
+                    ],
+                    "$.prefix": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "get_restrictions",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/get_server_information",
+                "variant": "uapi:Mysql/get_server_information#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:25Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "6355c9be536454e71c19204356ad8ccbceaa13a1860f5f177523caee23338310",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.host": [
+                        "string"
+                    ],
+                    "$.data.uapi.data.is_remote": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.version": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.host": [
+                        "string"
+                    ],
+                    "$.is_remote": [
+                        "int"
+                    ],
+                    "$.version": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "get_server_information",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/locate_server",
+                "variant": "uapi:Mysql/locate_server#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:26Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "c0b3e69a0fa01410f376e831f6da484403ec469594fb1cff9edb40809fbe911f",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.is_remote": [
+                        "int"
+                    ],
+                    "$.data.uapi.data.remote_host": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.is_remote": [
+                        "int"
+                    ],
+                    "$.remote_host": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "locate_server",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/create_database",
+                "variant": "uapi:Mysql/create_database#GET",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:26Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "e7d5ff5b0191f93a6ce2e74f388ee3563e169834c371d78bf7c917d9aa151dba",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "null"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "create_database",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/create_user",
+                "variant": "uapi:Mysql/create_user#GET",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:27Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "753a9b0f52422d3696fc3a6597e711ce570dc16db52ac85e4a355b03e69c27b8",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "null"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "create_user",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/set_privileges_on_database",
+                "variant": "uapi:Mysql/set_privileges_on_database#GET",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:27Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "6ae3701c952af18ef113c1648cc1bc615cf8761006130f834bd2cbd14102ee42",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "null"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "assign_select",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/get_privileges_on_database",
+                "variant": "uapi:Mysql/get_privileges_on_database#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:28Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "48437a9c1d4cd789e7f0dfd102a01cac310e8d9ca9c5fe8edf0c21a8ff615279",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_select",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_databases",
+                "variant": "uapi:Mysql/list_databases#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:28Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "8a84ac55ab562bb3f4da4f53773b5336c9cb727ff9a00ccfa847fd78644e17fb",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].database": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].disk_usage": [
+                        "int"
+                    ],
+                    "$.data.uapi.data[].users": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[].users[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].database": [
+                        "string"
+                    ],
+                    "$[].disk_usage": [
+                        "int"
+                    ],
+                    "$[].users": [
+                        "list"
+                    ],
+                    "$[].users[]": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "linked_databases",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_users",
+                "variant": "uapi:Mysql/list_users#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:29Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "796b56b1b6479728031532c7f34e880c1404f14cc071909f60d5c468bc248d5f",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].databases": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[].databases[]": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].shortuser": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].user": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].databases": [
+                        "list"
+                    ],
+                    "$[].databases[]": [
+                        "string"
+                    ],
+                    "$[].shortuser": [
+                        "string"
+                    ],
+                    "$[].user": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "linked_users",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/set_password",
+                "variant": "uapi:Mysql/set_password#GET",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:29Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "249a9e4a5017eedb59b5fd427a0abe683e0c7562413c73481b3e6cd2f5ff5101",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "object"
+                    ],
+                    "$.data.uapi.data.failures": [
+                        "empty-list"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.failures": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "set_password",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/check_database",
+                "variant": "uapi:Mysql/check_database#GET",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:30Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "b31a750900c7f4d5ba3d8e5f706cb7ef49b36d8a39f44ca0e976cee0f942a9dc",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "empty-list"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "check_database",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/repair_database",
+                "variant": "uapi:Mysql/repair_database#GET",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:30Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "7e9922726fbde3303e544797b60644c4cde29cdee2ee5661787018917e216a6e",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "empty-list"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "repair_database",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_routines",
+                "variant": "uapi:Mysql/list_routines#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:31Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "eab96191f1dc82df6623dbda1339250cddc5b72197f4a682e539b5e6b2b4519b",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "empty-list"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "list_routines",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/dump_database_schema",
+                "variant": "uapi:Mysql/dump_database_schema#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:31Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "ef47ea4c147ee062684833cce02a7a5def66ef9833f7555f7149539b22cf903c",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "dump_database_schema",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/revoke_access_to_database",
+                "variant": "uapi:Mysql/revoke_access_to_database#GET",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:32Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "d4b6ac6942ab9b2a4f022f91e370a2255f68ad5edb20aa4fcc609118e2944c35",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "null"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "revoke_access",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/get_privileges_on_database",
+                "variant": "uapi:Mysql/get_privileges_on_database#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:32Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "48437a9c1d4cd789e7f0dfd102a01cac310e8d9ca9c5fe8edf0c21a8ff615279",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "empty-list"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "read_revoked",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/rename_database",
+                "variant": "uapi:Mysql/rename_database#GET",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:33Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "642efbf0fc3ceb19a27395793a824ef805b44768914edf92e851effcf4f5ccee",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "null"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "rename_database",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_databases",
+                "variant": "uapi:Mysql/list_databases#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:33Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "8a84ac55ab562bb3f4da4f53773b5336c9cb727ff9a00ccfa847fd78644e17fb",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].database": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].disk_usage": [
+                        "int"
+                    ],
+                    "$.data.uapi.data[].users": [
+                        "empty-list"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].database": [
+                        "string"
+                    ],
+                    "$[].disk_usage": [
+                        "int"
+                    ],
+                    "$[].users": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "renamed_databases",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/rename_user",
+                "variant": "uapi:Mysql/rename_user#GET",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:34Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "cf9c5e6c5015fecd13fbd6cdc9c3b3af72a218f8ed0c0ca233fa13312e132d6e",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "null"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "rename_user",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_users",
+                "variant": "uapi:Mysql/list_users#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:35Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "796b56b1b6479728031532c7f34e880c1404f14cc071909f60d5c468bc248d5f",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "list"
+                    ],
+                    "$.data.uapi.data[]": [
+                        "object"
+                    ],
+                    "$.data.uapi.data[].databases": [
+                        "empty-list"
+                    ],
+                    "$.data.uapi.data[].shortuser": [
+                        "string"
+                    ],
+                    "$.data.uapi.data[].user": [
+                        "string"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "list"
+                    ],
+                    "$[]": [
+                        "object"
+                    ],
+                    "$[].databases": [
+                        "empty-list"
+                    ],
+                    "$[].shortuser": [
+                        "string"
+                    ],
+                    "$[].user": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "renamed_users",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/update_privileges",
+                "variant": "uapi:Mysql/update_privileges#GET",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:35Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "604a783c650cee19b908b7cd9304378c37e3a85003202ab95480a147ec7a1880",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "null"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "update_privileges",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/delete_user",
+                "variant": "uapi:Mysql/delete_user#GET",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:35Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "1aaa2eb76a93f1d0f722ea9ca24854fd0ff877d5bbc4c1545efccb857179c099",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "null"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "cleanup_user",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/delete_database",
+                "variant": "uapi:Mysql/delete_database#GET",
+                "route": "bridged-uapi",
+                "method": "POST",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:36Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "88be8200478248d96fd329bda8fc1ddd2bf0c2f8e7cd42e949be8b141bb9433c",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "null"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "empty-object"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "cleanup_database",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_databases",
+                "variant": "uapi:Mysql/list_databases#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:36Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "8a84ac55ab562bb3f4da4f53773b5336c9cb727ff9a00ccfa847fd78644e17fb",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "empty-list"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "final_databases",
+                "expectation": "passed"
+            },
+            {
+                "operation": "uapi:Mysql/list_users",
+                "variant": "uapi:Mysql/list_users#GET",
+                "route": "bridged-uapi",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-30T09:34:37Z",
+                "revision": "b29cecebcd0b44a050017d574a02f3842f2ea430",
+                "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "8c4fda388e4425a2946319aa167940be8deef470",
+                "overlay_sha256": "7961d0e01d6c2201e840212e2825aff0876975c6349dd7aff68ea2a6592ba2b8",
+                "effective_contract_sha256": "796b56b1b6479728031532c7f34e880c1404f14cc071909f60d5c468bc248d5f",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.uapi": [
+                        "object"
+                    ],
+                    "$.data.uapi.data": [
+                        "empty-list"
+                    ],
+                    "$.data.uapi.errors": [
+                        "null"
+                    ],
+                    "$.data.uapi.messages": [
+                        "null"
+                    ],
+                    "$.data.uapi.metadata": [
+                        "object"
+                    ],
+                    "$.data.uapi.metadata.*": [
+                        "int"
+                    ],
+                    "$.data.uapi.status": [
+                        "int"
+                    ],
+                    "$.data.uapi.warnings": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": [],
+                "phase": "final_users",
+                "expectation": "passed"
+            }
+        ],
+        "assessment": {
+            "status": "passed",
+            "findings": []
+        },
+        "resources": {
+            "direct-uapi": {
+                "database": "cleaned",
+                "user": "cleaned"
+            },
+            "bridged-uapi": {
+                "database": "cleaned",
+                "user": "cleaned"
+            }
+        },
+        "failures": [],
+        "unobserved": {
+            "uapi:Mysql/add_host": "authorized_host_absence_not_established",
+            "uapi:Mysql/add_host_note": "authorized_host_absence_not_established",
+            "uapi:Mysql/delete_host": "authorized_host_absence_not_established",
+            "uapi:Mysql/setup_db_and_user": "partial_failure_generated_identity_ownership_unavailable"
+        },
+        "limitations": [
+            "empty_database_check_and_repair_do_not_observe_table_results",
+            "empty_routine_lists_do_not_observe_routine_items",
+            "schema_dump_values_are_not_persisted",
+            "privilege_readback_does_not_establish_sql_enforcement",
+            "password_result_does_not_establish_sql_authentication",
+            "update_privileges_is_account_wide_on_the_designated_test_account",
+            "unconfirmed_resources_require_manual_review_and_are_not_adopted"
+        ]
+    }
+}

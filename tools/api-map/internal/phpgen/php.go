@@ -92,6 +92,9 @@ func unionShape(spec effective.TypeSpec, indent string) string {
 func baseShape(spec effective.TypeSpec, indent string) string {
 	switch spec.Type {
 	case "string":
+		if spec.Literal != nil {
+			return escapeDoc(phpString(*spec.Literal))
+		}
 		return "string"
 	case "int":
 		return "int"
@@ -252,6 +255,9 @@ func specLiteralAt(spec effective.TypeSpec, indent string, prefix int) string {
 	inner := indent + "    "
 	at := func(key string) int { return len(inner) + len(phpString(key)) + len(" => ") }
 	pairs := []pair{{"type", phpString(spec.Type)}}
+	if spec.Literal != nil {
+		pairs = append(pairs, pair{"literal", phpString(*spec.Literal)})
+	}
 	if spec.Nullable {
 		pairs = append(pairs, pair{"nullable", "true"})
 	}

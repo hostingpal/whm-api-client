@@ -14,12 +14,14 @@ use Psr\Http\Message\RequestInterface;
 
 final class UapiEmailPopQuotaTest extends TestCase
 {
-    /** @return iterable<string, array{string, ?bool, string, int, string}> */
+    /** @return iterable<string, array{string, ?bool, string, int|string, string}> */
     public static function quotas(): iterable
     {
         foreach (['direct', 'bare', 'bridge'] as $route) {
             yield $route . ' omitted units and integer zero' => [$route, null, '0', 0, ''];
             yield $route . ' MB string zero' => [$route, false, '"0"', 0, '&as_bytes=0'];
+            yield $route . ' MB unlimited literal' => [$route, false, '"unlimited"', 'unlimited', '&as_bytes=0'];
+            yield $route . ' bytes unlimited zero' => [$route, true, '0', 0, '&as_bytes=1'];
             yield $route . ' MB integer quota' => [$route, false, '32', 32, '&as_bytes=0'];
             yield $route . ' MB string quota' => [$route, false, '"32"', 32, '&as_bytes=0'];
             yield $route . ' MB exact zero fraction' => [
@@ -44,7 +46,7 @@ final class UapiEmailPopQuotaTest extends TestCase
         string $route,
         ?bool $asBytes,
         string $wireValue,
-        int $expected,
+        int|string $expected,
         string $unitQuery,
     ): void {
         [$client, $http] = MysqlTestSupport::client($route);
@@ -71,7 +73,8 @@ final class UapiEmailPopQuotaTest extends TestCase
     {
         yield 'absent data is not null' => [null];
         yield 'explicit null is not zero' => ['null'];
-        yield 'literal unlimited is not a pinned result' => ['"unlimited"'];
+        yield 'unknown string is not unlimited' => ['"Unlimited"'];
+        yield 'unlimited with whitespace is not literal' => ['"unlimited "'];
         yield 'fractional numeric string' => ['"32.5"'];
         yield 'exponent numeric string' => ['"32e1"'];
         yield 'leading whitespace' => ['" 32"'];

@@ -854,7 +854,13 @@ final class EmailSpec
             'asBytes' => ['name' => 'as_bytes', 'encoding' => 'bool'],
             'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
         ],
-        'returns' => ['type' => 'int', 'accept' => ['numeric-string', 'integral-fixed-point-string']],
+        'returns' => [
+            'type' => 'union',
+            'anyOf' => [
+                ['type' => 'int', 'accept' => ['numeric-string', 'integral-fixed-point-string']],
+                ['type' => 'string', 'literal' => 'unlimited'],
+            ],
+        ],
     ];
 
     public const GET_SPAM_SETTINGS = [
@@ -1546,6 +1552,7 @@ final class EmailSpec
                                 'command' => ['type' => 'string'],
                                 'mailbox' => ['type' => 'string'],
                                 'message' => ['type' => 'string'],
+                                'mx' => ['type' => 'list', 'items' => ['type' => 'string']],
                                 'result' => ['type' => 'string'],
                                 'type' => ['type' => 'string'],
                             ],
@@ -1555,7 +1562,12 @@ final class EmailSpec
                             'items' => [
                                 'type' => 'object',
                                 'fields' => [
+                                    'aliasfile' => ['type' => 'string'],
+                                    'command' => ['type' => 'string'],
+                                    'mailbox' => ['type' => 'string'],
+                                    'message' => ['type' => 'string'],
                                     'mx' => ['type' => 'list', 'items' => ['type' => 'string']],
+                                    'result' => ['type' => 'string'],
                                     'type' => ['type' => 'string'],
                                 ],
                             ],

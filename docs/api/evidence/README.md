@@ -62,6 +62,39 @@ scoped to the exact contracts, revisions and routes recorded in each file.
   discrepancies. Empty privilege lists, disabled prefixes, SQL enforcement and
   alternate server configurations remain unobserved.
 
+- [Complete MySQL section](2026-10-30-mysql-section.json): 57 observations
+  (33 GET, 24 POST) at `b29cecebcd0b44a050017d574a02f3842f2ea430` on
+  `11.138.0.19`, covering 21 MySQL functions through both UAPI routes plus WHM
+  version. All outcomes and expectations pass with zero discrepancies; original
+  and renamed resources are confirmed absent. Four remote-host/random-setup
+  functions remain unobserved. Empty databases and revocation before rename
+  establish no grant or stored-code recreation, SQL enforcement or login.
+
+- [FTP initial capture](2026-10-30-ftp-section.json): 39 observations at
+  `dd82a734` on `11.138.0.19`; finite quota integers on both routes mismatched the
+  pinned string schema. Both temporary accounts were cleaned. The unchanged
+  failed artifact supports the targeted `getQuota()` string/integer correction.
+- [FTP corrected-contract capture](2026-10-30-ftp-section-corrected.json): all
+  41 HTTP/API/payload/expectation observations at `cd7bdb6` passed, covering
+  16 Ftp functions on both UAPI routes plus WHM version, with cleanup confirmed.
+  The strict assessment still fails for two disk-inventory unknown-field
+  observations; masked string fields remain untyped and tracked in `8x0.2.11`.
+  Settings/session operations remain live-unobserved under `8x0.2.10`.
+
+- [PostgreSQL service preflight](2026-10-30-postgresql-section.json): seven GETs
+  at `6539db7` on `11.138.0.19`. WHM version passes; all six PostgreSQL reads
+  return HTTP 200 with API failures. No mutation ran and every resource remains
+  `not_started`; this failed artifact establishes no successful PostgreSQL payload
+  or lifecycle observations. It remains immutable.
+- [PostgreSQL enabled-service lifecycle](2026-10-30-postgresql-section-enabled.json):
+  57 observations (33 GET, 24 POST) at `61a9f3e` on `11.138.0.19`, following the
+  reviewer's owner-requested PostgreSQL installation. All 14 functions pass on
+  direct and bridged UAPI, with zero discrepancies and a passing strict assessment.
+  Both databases and both users are cleaned; original and renamed identities are
+  confirmed absent. All mutation payloads are explicit null. This establishes no
+  SQL enforcement/login or new-table grant synchronization; non-null mutation
+  payloads remain offline-only.
+
 - [Initial DomainInfo/Features/LangPHP capture](2026-10-30-domain-features-php.json):
   67 GET probes at `c79ed1d` on `11.138.0.19`; 59 pass and eight payload mismatches
   remain in this immutable evidence. No mutations ran.
@@ -71,13 +104,22 @@ scoped to the exact contracts, revisions and routes recorded in each file.
 - [Corrected DomainInfo/Features/LangPHP capture](2026-10-30-domain-features-php-corrected.json):
   67 API/payload checks pass at `7b172f3`; strict assessment still fails for eight
   unknown-field observations and two stale Quota acknowledgments. This historical
-  capture does not establish the later reviewed domain contracts; a final-head
-  capture remains required after stack integration. PHP setters remain offline-only.
+  capture does not establish the later reviewed domain contracts; the separate
+  reviewed capture below covers the integrated code. PHP setters remain offline-only.
 - [Email preflight count discrepancy](2026-10-30-email-section-quota-corrected.json):
   immutable artifact imported with the narrow `countPops()` correction from `8533e95`.
   All 17 requests were GET, mailbox-count payloads were numeric strings through
   both UAPI routes, and no fixture resource was started. Its failures are preserved.
 
+- [Reviewed integrated DomainInfo/Features/LangPHP capture](2026-10-30-domain-features-php-reviewed.json):
+  one 67-probe GET-only run across 37 operations at
+  `27abfe6de3626e321a2a806d126d9b7f2f20fcc1` on `11.138.0.19`, after the
+  MySQL/FTP/PostgreSQL sections were merged. All HTTP/API/payload checks pass,
+  including both mailbox counts. Strict assessment remains failed with 12
+  unknown-field entries across 10 unexpected observations, zero acknowledgments
+  and two stale Quota acknowledgments. No mutation ran; PHP setters and the
+  omitted empty-string userdirprotect variant remain offline/documentation coverage.
+  SHA-256: `f9ba559c0496b88c0c98082435f3e76235e2b8459ebe01d229127cfa2d3e50a8`.
 
 ## Complete Email slice (2026-10-30)
 

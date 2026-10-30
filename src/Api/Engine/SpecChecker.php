@@ -76,6 +76,10 @@ final class SpecChecker
         }
 
         $kind = $type['type'];
+        if (array_key_exists('literal', $type) && ($kind !== 'string' || !is_string($type['literal']))) {
+            throw new LogicException('Invalid string literal spec.');
+        }
+
         self::flag($type, 'nullable');
         $accept = $type['accept'] ?? [];
         if (!is_array($accept) || !array_is_list($accept)) {

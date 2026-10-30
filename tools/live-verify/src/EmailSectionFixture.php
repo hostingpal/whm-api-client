@@ -22,6 +22,7 @@ use Throwable;
  * sent: welcome mail is disabled and no delivery, forwarding, autoresponder or outbound queue action
  * belongs to the recipe. Password verification is API readback, not an IMAP/SMTP authentication claim.
  *
+ * @phpstan-import-type Alternative from EvidenceRunner
  * @phpstan-import-type Context from EvidenceRunner
  * @phpstan-import-type Route from EmailSectionRecipe
  * @phpstan-type ScalarEncoding 'canonical-integer'|'integral-fixed-point'|'fractional-fixed-point'
@@ -33,7 +34,8 @@ use Throwable;
  *     overlay_sha256: string, effective_contract_sha256: string, http_status: int|null,
  *     api_outcome: string, payload_validation: string, probe_outcome: string, failure_kind: string|null,
  *     response_paths: array<string, list<string>>, payload_paths: array<string, list<string>>,
- *     discrepancies: list<array{path: string, kind: string}>, scalar_encoding?: ScalarEncoding
+ *     discrepancies: list<array{path: string, kind: string}>, scalar_encoding?: ScalarEncoding,
+ *     payload_alternatives?: list<Alternative>
  * }
  * @phpstan-type State 'not_started'|'owned'|'cleaned'|'uncertain'
  * @phpstan-type Report array{
@@ -197,6 +199,16 @@ final class EmailSectionFixture
         $this->expect($this->require('verify_password', $route) === 1);
         $this->require('change_quota', $route);
         $this->expect($this->require('changed_quota', $route) === 64);
+        $this->require('make_unlimited', $route);
+        $this->expect($this->require('unlimited_quota', $route) === 'unlimited');
+        $this->expect($this->require('unlimited_bytes', $route) === 0);
+        foreach (
+            ['trace_mailbox' => $address,
+            'trace_missing' => str_replace('@', '-missing@', $address)] as $phase => $recipient
+        ) {
+            $trace = $this->require($phase, $route);
+            $this->expect(is_array($trace) && ($trace['address'] ?? null) === $recipient);
+        }
         $this->require('suspend_login', $route);
         $this->suspended($this->inventory('suspended_mailboxes', $route), $address, 1);
         $this->require('unsuspend_login', $route);
@@ -416,7 +428,7 @@ final class EmailSectionFixture
         $cleaned = $this->resources === ['direct-uapi' => 'cleaned', 'bridged-uapi' => 'cleaned'];
 
         return [
-            'recipe' => 'email-npr-owned-mailboxes-v1',
+            'recipe' => 'email-npr-owned-mailboxes-v2',
             'status' => $this->failures === [] && $cleaned && $finished['assessment']['status'] === 'passed'
                 ? 'passed' : 'failed',
             ...$finished, 'resources' => $this->resources, 'failures' => array_values(array_unique($this->failures)),
@@ -427,6 +439,7 @@ final class EmailSectionFixture
                 'quota_api_readback_does_not_establish_delivery_or_disk_limit_enforcement',
                 'only_catalogued_functions_and_actual_routes_are_live_observed',
                 'empty_lists_do_not_observe_item_fields',
+                'trace_calls_send_no_mail_and_do_not_establish_delivery_or_recursive_destination_contracts',
                 'unconfirmed_creations_require_manual_review_and_are_not_adopted',
                 'preflight_failure_is_failed_evidence_not_successful_skip',
             ],
