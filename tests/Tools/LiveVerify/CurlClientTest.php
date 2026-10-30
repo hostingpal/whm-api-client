@@ -89,6 +89,27 @@ final class CurlClientTest extends TestCase
         ], $result);
     }
 
+    public function testMultipartOptInPreservesBoundaryAndRawBodyWithoutFormEncoding(): void
+    {
+        $type = 'multipart/form-data; boundary=whm-api-fixture-boundary';
+        $body = "--whm-api-fixture-boundary\r\nContent-Disposition: form-data; name=\"key\"\r\n\r\n"
+            . "private+&=\r\n--whm-api-fixture-boundary--\r\n";
+        $result = self::sendWithCurlDouble(
+            new Request(
+                'POST',
+                'https://test.oblak.host:2083/execute/SSL/upload_key',
+                ['Content-Type' => $type],
+                $body,
+            ),
+            false,
+            allowMultipartPost: true,
+        );
+        self::assertIsArray($result);
+        self::assertSame(1, $result['executed']);
+        self::assertSame($body, $result['body']);
+        self::assertSame(['Authorization: ', 'Accept: application/json', 'Content-Type: ' . $type], $result['headers']);
+    }
+
     /** @return iterable<string, array{string}> */
     public static function fixtureRoutes(): iterable
     {
@@ -252,6 +273,7 @@ final class CurlClientTest extends TestCase
         string $live = '1',
         string $mutations = '1',
         bool $failExecution = false,
+        bool $allowMultipartPost = false,
     ): mixed {
         $code = <<<'PHP'
 namespace HostingPal\WhmApiClient\Tools\LiveVerify;
@@ -290,7 +312,8 @@ function curl_getinfo($handle, $option) {
     return 201;
 }
 try {
-    $client = $input['allow_form_post'] === null ? new CurlClient() : new CurlClient($input['allow_form_post']);
+    $client = $input['allow_form_post'] === null
+        ? new CurlClient() : new CurlClient($input['allow_form_post'], $input['allow_multipart_post']);
     $response = $client->sendRequest(new \Nyholm\Psr7\Request(
         $input['method'], $input['uri'], $input['headers'], $input['body'],
     ));
@@ -328,6 +351,7 @@ PHP;
         $process = proc_open(
             [PHP_BINARY, '-r', $code, $root . '/vendor/autoload.php', json_encode([
                 'allow_form_post' => $allowFormPost,
+                'allow_multipart_post' => $allowMultipartPost,
                 'fail_execution' => $failExecution,
                 'method' => $request->getMethod(),
                 'uri' => (string) $request->getUri(),

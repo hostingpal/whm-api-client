@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 13 typed groups cover 95 operations:
+and cPanel UAPI surface. The 13 typed groups cover 230 operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -180,6 +180,19 @@ typed or live-verified coverage. The 2026-10-13 spec's
 [scaling decision (typed core plus generic calls)](docs/superpowers/specs/2026-10-13-php-client-design.md#scaling-decision-typed-core-plus-generic-calls)
 is superseded: its hand-written-group decision is replaced by the generated-client
 design (bead `whm-api-client-8x0.10`).
+The SSL module exposes all 49 nondeprecated functions. Typed fetch-key/cabundle,
+upload-cert and upload-key calls use reviewed multipart string fields, configured
+by an explicit body: multipart spec. Generic calls remain form-only; JSON and
+arbitrary file/multipart uploads are unsupported. Multipart names/values are
+validated after metadata reset, all value-bearing frames are sensitive, routing
+stays in the URL and a collision-free delimiter preserves field bytes. Generator
+body_fields corrections require evidence and compatible duplicate schemas.
+The upload_key key/crt contradiction is explicit pending successful live evidence.
+The optional install_ssl domain_dcv_method map is omitted until its serialization
+is established (8x0.2.16). SSL selector alternatives use evidenced required:false;
+preserve opaque/null/missing payload distinctions and private PEM data. Only fresh
+owned SSL fixture resources may be deleted in live verification; never install or
+replace account certificates as part of that fixture.
 DomainInfo (5), Features (5), and LangPHP (11) cover their complete pinned modules.
 Domain details preserve list/hash alternatives and documented quoted flag variants.
 PHP vhost versions preserve list/single-record variants. INI writes and PHP version

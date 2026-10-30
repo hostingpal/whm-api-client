@@ -1,0 +1,206 @@
+<?php
+
+declare(strict_types=1);
+
+namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
+
+use HostingPal\WhmApiClient\Tools\LiveVerify\SslSectionFixture;
+use HostingPal\WhmApiClient\Tools\LiveVerify\SslSectionMaterial;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
+use ReflectionProperty;
+
+final class SslSectionFixtureTest extends TestCase
+{
+    /** @var array<string, string|false> */
+    private array $environment = [];
+
+    protected function setUp(): void
+    {
+        foreach (
+            ['WHM_API_LIVE' => '1', 'WHM_API_LIVE_MUTATIONS' => '1',
+            'WHM_API_LIVE_ACCOUNT' => 'npr', 'WHM_API_LIVE_DOMAIN' => 'npr.rs'] as $name => $value
+        ) {
+            $this->environment[$name] = getenv($name);
+            putenv($name . '=' . $value);
+        }
+    }
+
+    protected function tearDown(): void
+    {
+        foreach ($this->environment as $name => $value) {
+            putenv($value === false ? $name : $name . '=' . $value);
+        }
+    }
+
+    public function testBothRoutesUploadFetchAndCleanOnlyOwnedResources(): void
+    {
+        self::assertTrue(class_exists(SslSectionFixture::class), 'Missing bounded SSL fixture.');
+        $server = new SslSectionServer();
+        $fixture = self::fixture($server);
+        $report = $fixture->run();
+        self::assertSame('passed', $report['status']);
+        $multipart = 0;
+        $deletions = 0;
+        foreach ($report['probes'] as $probe) {
+            $record = $probe['record'];
+            if (
+                in_array($record['operation'], [
+                'uapi:SSL/upload_key', 'uapi:SSL/upload_cert', 'uapi:SSL/fetch_key_and_cabundle_for_certificate',
+                ], true)
+            ) {
+                ++$multipart;
+                self::assertSame($record['operation'] . '#POST', $record['variant']);
+                self::assertSame('POST', $record['method']);
+            }
+            if (in_array($record['operation'], ['uapi:SSL/delete_key', 'uapi:SSL/delete_cert'], true)) {
+                ++$deletions;
+                self::assertSame($record['operation'] . '#GET', $record['variant']);
+                self::assertSame('POST', $record['method']);
+            }
+        }
+        self::assertSame(6, $multipart);
+        self::assertSame(4, $deletions);
+        self::assertSame([], $server->keys);
+        self::assertSame([], $server->certificates);
+        self::assertSame(2, $server->counts['upload_key'] ?? 0);
+        self::assertSame(2, $server->counts['upload_cert'] ?? 0);
+        self::assertSame(2, $server->counts['fetch_key_and_cabundle_for_certificate'] ?? 0);
+        self::assertSame(2, $server->counts['delete_key'] ?? 0);
+        self::assertSame(2, $server->counts['delete_cert'] ?? 0);
+        $json = json_encode($report, JSON_THROW_ON_ERROR);
+        foreach (['BEGIN', 'PRIVATE', 'owned-key-', 'owned-cert-', 'fixture-token'] as $secret) {
+            self::assertStringNotContainsString($secret, $json);
+        }
+        $before = array_sum($server->counts);
+        self::assertSame('failed', $fixture->run()['status']);
+        self::assertSame($before, array_sum($server->counts));
+    }
+
+    #[DataProvider('falseAttributions')]
+    public function testAssessmentRejectsFalseSourceVariantOrActualMethod(string $key, string $value): void
+    {
+        $fixture = self::fixture(new SslSectionServer());
+        $report = $fixture->run();
+        self::assertSame('passed', $report['status']);
+        $records = $report['probes'];
+        foreach ($records as &$record) {
+            if ($record['record']['operation'] === 'uapi:SSL/upload_key') {
+                $record['record'][$key] = $value;
+                break;
+            }
+        }
+        (new ReflectionProperty($fixture, 'records'))->setValue($fixture, $records);
+        $assessment = (new ReflectionMethod($fixture, 'report'))->invoke($fixture);
+        self::assertIsArray($assessment);
+        self::assertSame('failed', $assessment['status']);
+    }
+
+    /** @return iterable<string,array{string,string}> */
+    public static function falseAttributions(): iterable
+    {
+        yield 'source variant' => ['variant', 'uapi:SSL/upload_key#GET'];
+        yield 'actual method' => ['method', 'GET'];
+        yield 'operation identity' => ['operation', 'uapi:SSL/unreviewed'];
+    }
+
+    public function testConfirmedUploadWithMalformedPayloadStillCleansExactOriginalIdentity(): void
+    {
+        $server = new SslSectionServer('key_payload');
+        $report = self::fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertSame([], $server->keys);
+        self::assertSame(2, $server->counts['delete_key'] ?? 0);
+        self::assertSame(0, $server->counts['upload_cert'] ?? 0);
+    }
+
+    public function testFailedCreationNeverAdoptsReturnedIdentityOrStartsSecondRoute(): void
+    {
+        $server = new SslSectionServer('key_api');
+        $report = self::fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertSame(1, $server->counts['upload_key'] ?? 0);
+        self::assertSame(0, $server->counts['delete_key'] ?? 0);
+        self::assertSame(0, $server->counts['upload_cert'] ?? 0);
+        self::assertSame('uncertain', $report['resources']['direct-uapi']['key']);
+    }
+
+    public function testFailedPreflightRetainsFailedEvidenceWithoutMutation(): void
+    {
+        $server = new SslSectionServer('preflight');
+        $report = self::fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertSame(0, $server->counts['upload_key'] ?? 0);
+        self::assertCount(5, $report['probes']);
+    }
+
+    #[DataProvider('uncertainCreations')]
+    public function testAmbiguousOriginalUploadIdentityIsNeverAdopted(string $mode): void
+    {
+        $server = new SslSectionServer($mode);
+        $report = self::fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertSame('uncertain', $report['resources']['direct-uapi']['key']);
+        self::assertSame(1, $server->counts['upload_key'] ?? 0);
+        self::assertSame(0, $server->counts['delete_key'] ?? 0);
+    }
+
+    /** @return iterable<string,array{string}> */
+    public static function uncertainCreations(): iterable
+    {
+        yield 'missing ID' => ['key_missing_id'];
+        yield 'duplicate identities' => ['key_duplicate'];
+    }
+
+    public function testFetchFailureStillCleansEveryConfirmedOwnedResource(): void
+    {
+        $server = new SslSectionServer('fetch');
+        $report = self::fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertSame([], $server->keys);
+        self::assertSame([], $server->certificates);
+        self::assertSame(2, $server->counts['delete_key'] ?? 0);
+        self::assertSame(2, $server->counts['delete_cert'] ?? 0);
+    }
+
+    public function testCleanupFailureRetainsFailedEvidenceAndNeverRetriesDelete(): void
+    {
+        $server = new SslSectionServer('cert_cleanup');
+        $report = self::fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertSame('uncertain', $report['resources']['direct-uapi']['cert']);
+        self::assertSame([], $server->keys);
+        self::assertCount(1, $server->certificates);
+        self::assertSame(1, $server->counts['delete_cert'] ?? 0);
+        self::assertSame(1, $server->counts['upload_key'] ?? 0);
+    }
+
+    public function testUnrelatedPreexistingStoredKeyIsRetained(): void
+    {
+        $server = new SslSectionServer();
+        $server->keys['existing'] = ['id' => 'existing', 'modulus' => 'deadbeef', 'pem' => 'not read'];
+        self::assertSame('passed', self::fixture($server)->run()['status']);
+        self::assertSame(['existing'], array_keys($server->keys));
+    }
+
+    public function testMissingOptInPreventsAnyRequest(): void
+    {
+        putenv('WHM_API_LIVE_MUTATIONS=0');
+        $server = new SslSectionServer();
+        self::assertSame('failed', self::fixture($server)->run()['status']);
+        self::assertSame([], $server->counts);
+    }
+
+    private static function fixture(SslSectionServer $server): SslSectionFixture
+    {
+        return new SslSectionFixture($server, ['whm' => 'fixture-token', 'cpanel' => 'fixture-token'], [
+            'direct-uapi' => SslSectionMaterial::generate(),
+            'bridged-uapi' => SslSectionMaterial::generate(),
+        ], [
+            'revision' => str_repeat('a', 40), 'source_hashes' => ['whm1' => str_repeat('b', 64),
+                'uapi' => str_repeat('c', 64)], 'map_sha256' => str_repeat('d', 64),
+            'generator_tree' => str_repeat('e', 40), 'overlay_sha256' => str_repeat('f', 64),
+        ]);
+    }
+}

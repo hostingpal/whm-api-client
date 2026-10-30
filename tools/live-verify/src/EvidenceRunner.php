@@ -159,7 +159,7 @@ final readonly class EvidenceRunner
     {
         return [
             'operation' => $probe->operation,
-            'variant' => $probe->operation . '#GET',
+            'variant' => $probe->sourceVariant ?? $probe->operation . '#GET',
             'route' => $probe->route,
             'method' => null,
             'server_version' => null,

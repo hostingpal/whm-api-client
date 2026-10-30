@@ -304,3 +304,41 @@ the equivalent combined comparison is 667 versus 659 lines. This avoids three
 repeated mechanics and saves eight lines in that comparison, while adding a
 shared helper to review. No elapsed review-time saving or broader adoption is
 claimed. Wrong authentication and prefix encoding still fail independent tests.
+
+## Owned SSL multipart storage recipe
+
+`php tools/live-verify/ssl-section.php --output=PATH` requires committed inputs,
+PHP cURL and OpenSSL, both test tokens, `WHM_API_LIVE=1`,
+`WHM_API_LIVE_MUTATIONS=1`, `WHM_API_LIVE_ACCOUNT=npr`, and
+`WHM_API_LIVE_DOMAIN=npr.rs`. The output must be a new path. Complete structural
+reports are retained in a protected recovery file if new-only publication fails.
+
+The recipe generates independent RSA-2048 private keys and self-signed npr.rs
+certificates for the two routes, retaining PEM contents only in process memory.
+It captures WHM version and key/certificate inventories through both routes before
+any upload. Comparable IDs, public moduli and friendly names must establish that
+neither fresh resource exists. It uploads each new key and certificate, fetches
+the matching key and CA bundle, and deletes only exact IDs confirmed by successful
+original creation responses. Matching public moduli bind returned private keys
+without persisting private material. Payload validation failures still permit
+cleanup when the successful original response establishes an unambiguous owned ID;
+failed or ambiguous creation never adopts an ID from a later inventory.
+
+The one-shot guard checks exact opt-ins, account, credentials, routing, fields,
+headers and multipart bytes. No request is retried. Each confirmed owned ID gets
+one cleanup attempt, followed by inventory checks for ID and public-modulus
+absence. Uncertain creations remain unresolved and stop later route lifecycles.
+Existing unrelated resources are retained. No certificates are installed and no
+TLS service certificates, AutoSSL exclusions, SSL defaults, redirects or mail SNI
+configuration are changed. Successful storage calls do not establish HTTPS or
+trust behavior.
+
+Successful evidence contains 23 original observations: version, four initial
+inventories, and nine lifecycle/cleanup observations on each route. Reports keep
+structural paths and provenance from `EvidenceRunner`, separate semantic
+expectations and resource states, and no private key, certificate, resource ID or
+arbitrary upstream error text. Any failed observation, expectation, missing stage,
+unknown-field discrepancy or unconfirmed cleanup makes the report fail. A failed
+preflight remains failed evidence, not a successful skip. The documented
+`upload_key` body-field contradiction remains a candidate until its exact
+multipart request succeeds in this reviewed fixture.

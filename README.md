@@ -3,15 +3,16 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 13 generated typed groups cover 95 operations (see
+The 13 generated typed groups cover 230 operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
-features, Email inventory, SSL/AutoSSL inventory, disk quotas and MySQL inventory,
+features, the complete Email and SSL modules, disk quotas and MySQL inventory,
 database/user creation, privilege assignment and deletion.
 Generic `call()` methods provide GET and form-encoded POST access without a typed
 group, subject to the operation's parameter, route and envelope requirements.
-JSON and multipart request bodies are not supported. The library provides token
+Generic calls do not support JSON or multipart bodies. Three typed SSL methods
+support reviewed multipart string fields. The library provides token
 authentication, direct and WHM-routed UAPI, typed array payloads, API exceptions,
 and per-client response metadata over a PSR HTTP transport.
 
@@ -235,6 +236,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->domainInfo()` | All 5 operations: `domainsData()`, `singleDomainData()`, `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
 | `uapi()->langPhp()` | All 11 operations: installed/default/vhost PHP versions, domain handlers and impacted domains, INI paths/basic directives/content reads, and `phpIniSetUserBasicDirectives()`, `phpIniSetUserContent()`, `phpSetVhostVersions()` |
 | `uapi()->features()` | All 5 operations: `getFeatureMetadata()`, `hasFeature()`, `hasFeaturesLike()`, `listFeatures()`, `listFeaturesLike()` |
+| `uapi()->ssl()` | All 49 nondeprecated functions, including certificate/key/CSR inventory and lifecycle, installation, AutoSSL, SNI and redirects; see [generated methods](src/Api/Uapi/Ssl.php). |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
 | `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
@@ -256,6 +258,25 @@ result: 1 means enabled; 0 means absent or disabled. This method accepts UAPI st
 
 `uapi()->dns()->fetchCpanelGeneratedDomains()` requires cPanel 120 and preserves
 trailing dots; `lookup()` returns textual lines or explicit `null`.
+
+The SSL module exposes 49 nondeprecated functions; `check_shared_cert` remains
+excluded upstream. Private keys and PEM inputs are sensitive, and writes use POST.
+`uploadKey(key: $pem)`, `uploadCert(crt: $pem)`, and
+`fetchKeyAndCabundleForCertificate(certificate: $pem)` send inline string fields as
+multipart bodies. Routing and authentication remain unchanged on both routes;
+these methods do not accept filesystem paths or file handles. Generic `call()`
+continues to support form bodies only.
+
+For `fetchCertInfo()`, `setCsrFriendlyName()` and `setKeyFriendlyName()`, provide
+one documented selector (`id` or `friendlyName`); neither selector is forced by
+the PHP signature. `installSsl()` exposes the documented scalar parameters and
+repeated vhost names. Its optional `domain_dcv_method` map is omitted because the
+pinned source does not specify its wire encoding (follow-up `8x0.2.16`). The
+`upload_key` page disagrees about `key` versus `crt`; the generated request uses
+`key` from its parameter contract, with live verification reported separately.
+Certificate deletion/installation, account-wide AutoSSL and redirect changes take
+effect immediately. Live verification is bounded to fresh owned fixture material,
+without installing certificates or changing existing hosted services.
 
 The DNS methods are read-only (GET):
 

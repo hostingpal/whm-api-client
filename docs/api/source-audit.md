@@ -1224,3 +1224,35 @@ binding npr/npr.rs, domain hash output, home INI scope and fixed feature searche
 It now contains 67 probes across 37 operations. This is a runnable recipe count;
 live outcomes are recorded separately. The three LangPHP mutations are offline
 contract coverage until a dedicated reversible configuration fixture is observed.
+
+
+## 2026-10-30 complete SSL contracts and multipart request support
+
+The third stacked slice adds 43 typed SSL functions, covering all 49 nondeprecated
+functions (check_shared_cert stays excluded). Together with the preceding Email
+and DomainInfo/Features/LangPHP slices, this branch generates 230 operations in
+13 groups. Pinned source snapshots remain unchanged. Independent request and
+payload fixtures cover direct wrapped, direct bare and WHM-bridged execution.
+
+Three source-declared multipart operations now use explicitly reviewed inline
+string bodies: fetch_key_and_cabundle_for_certificate, upload_cert and upload_key.
+The shared lifecycle retains exact routing, per-attempt metadata clearing, no
+retries and sensitive frames. Boundary selection preserves arbitrary field bytes;
+unsafe field names and non-string values fail locally. This adds no generic JSON,
+file-handle or multipart escape hatch. Generator checks reject unreviewed multipart
+bodies and incompatible query/body duplicate declarations. The upload_key page's
+body crt versus query key contradiction is represented by an evidence-required
+body-field correction; actual key acceptance is a separately recorded live claim.
+
+The source's prose requires either ID or friendly name for three selectors despite
+marking both required in its schema; evidence-bound requiredness corrections expose
+both alternatives. install_ssl's optional domain_dcv_method object remains omitted
+with a generated caveat because no authoritative form encoding is specified.
+Follow-up8x0.2.16 owns this contract gap. Opaque/no-data operations preserve their
+respective null/field/absence contracts instead of inventing mutation return types.
+
+The SSL fixture uses independently generated, fresh in-memory PEM material for each
+route. It never installs certificates or changes existing hosted services. Every
+cleanup target must have confirmed creation and an unambiguous new identity;
+uncertain uploads remain failed evidence and are never adopted from later reads.
+Actual multipart results and resource cleanup are documented after execution.

@@ -20,7 +20,7 @@ use Throwable;
  *
  * Every send requires WHM_API_LIVE=1 and PHP cURL. TLS peer/host verification is
  * mandatory, redirects are disabled, and connect/total timeouts are 10/30 seconds.
- * GET is the default; explicitly enabled form POST also requires
+ * GET is the default; explicitly enabled form or multipart POST also requires
  * WHM_API_LIVE_MUTATIONS=1. RequestGuard or a fixture-specific guard supplies the
  * narrower operation/account/argument restriction.
  * Response status, headers and body are retained; transport failures expose only
@@ -28,8 +28,8 @@ use Throwable;
  */
 final readonly class CurlClient implements ClientInterface
 {
-    /** Enable form POST only for fixture clients protected by their own exact request guard. */
-    public function __construct(private bool $allowFormPost = false)
+    /** Enable form or multipart POST only for fixture clients protected by their own exact request guard. */
+    public function __construct(private bool $allowFormPost = false, private bool $allowMultipartPost = false)
     {
     }
 
@@ -47,8 +47,15 @@ final readonly class CurlClient implements ClientInterface
             && $this->allowFormPost
             && getenv('WHM_API_LIVE_MUTATIONS') === '1'
             && $request->getHeaderLine('Content-Type') === 'application/x-www-form-urlencoded';
+        $multipartPost = $method === 'POST' && $this->allowMultipartPost
+            && getenv('WHM_API_LIVE_MUTATIONS') === '1'
+            && preg_match(
+                '/\Amultipart\/form-data; boundary=[A-Za-z0-9_-]{20,70}\z/',
+                $request->getHeaderLine('Content-Type'),
+            ) === 1;
+        $post = $formPost || $multipartPost;
         if (
-            ($method !== 'GET' && !$formPost)
+            ($method !== 'GET' && !$post)
             || $uri->getScheme() !== 'https'
             || $uri->getHost() !== 'test.oblak.host'
             || !in_array($uri->getPort(), [2083, 2087], true)
@@ -75,8 +82,8 @@ final readonly class CurlClient implements ClientInterface
                 'Authorization: ' . $request->getHeaderLine('Authorization'),
                 'Accept: application/json',
             ];
-            if ($formPost) {
-                $requestHeaders[] = 'Content-Type: application/x-www-form-urlencoded';
+            if ($post) {
+                $requestHeaders[] = 'Content-Type: ' . $request->getHeaderLine('Content-Type');
             }
             $options = [
                 CURLOPT_RETURNTRANSFER => true,
@@ -109,7 +116,7 @@ final readonly class CurlClient implements ClientInterface
                     return strlen($line);
                 },
             ];
-            if ($formPost) {
+            if ($post) {
                 $options[CURLOPT_POST] = true;
                 $options[CURLOPT_POSTFIELDS] = $requestBody;
             } else {
