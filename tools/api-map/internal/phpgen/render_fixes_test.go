@@ -67,3 +67,13 @@ func TestFamilyDirsCoverEveryRenderedFolder(t *testing.T) {
 		}
 	}
 }
+
+func TestRenderCarriesExplicitMultipartBodyToRuntimeSpec(t *testing.T) {
+	result := goldenResult()
+	result.Groups[0].Operations[0].Body = "multipart"
+	files := Render(result)
+	body := string(files["src/Api/Uapi/Spec/DomainInfoSpec.php"])
+	if !strings.Contains(body, "'body' => 'multipart'") {
+		t.Fatal("missing multipart body format in generated spec")
+	}
+}

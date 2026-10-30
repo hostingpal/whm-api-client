@@ -3,7 +3,19 @@
   "family": "uapi",
   "group": "SSL",
   "operations": {
-    "uapi:SSL/check_shared_cert": {"exclude": {"reason": "Deprecated without a successor.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true."}]}},
+    "uapi:SSL/check_shared_cert": {
+      "exclude": {
+        "reason": "Deprecated without a successor.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-13",
+            "note": "Flagged deprecated: true."
+          }
+        ]
+      }
+    },
     "uapi:SSL/installed_hosts": {
       "notes": [
         {
@@ -18,7 +30,10 @@
       "probe": {
         "phase": "read-only",
         "arguments": {},
-        "routes": ["direct-uapi", "bridged-uapi"],
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
         "expected": "success"
       }
     },
@@ -26,7 +41,10 @@
       "probe": {
         "phase": "read-only",
         "arguments": {},
-        "routes": ["direct-uapi", "bridged-uapi"],
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
         "expected": "success"
       }
     },
@@ -40,7 +58,10 @@
       "probe": {
         "phase": "read-only",
         "arguments": {},
-        "routes": ["direct-uapi", "bridged-uapi"],
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
         "expected": "success"
       }
     },
@@ -58,7 +79,10 @@
       "probe": {
         "phase": "read-only",
         "arguments": {},
-        "routes": ["direct-uapi", "bridged-uapi"],
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
         "expected": "success"
       }
     },
@@ -72,7 +96,10 @@
       "probe": {
         "phase": "read-only",
         "arguments": {},
-        "routes": ["direct-uapi", "bridged-uapi"],
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
         "expected": "success"
       }
     },
@@ -93,10 +120,760 @@
       ],
       "probe": {
         "phase": "read-only",
-        "arguments": {"domain": "npr.rs"},
-        "routes": ["direct-uapi", "bridged-uapi"],
+        "arguments": {
+          "domain": "npr.rs"
+        },
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
         "expected": "success"
       }
+    },
+    "uapi:SSL/add_autossl_excluded_domains": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/delete_cert": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Identify the stored account resource with its ID or friendly name as described upstream. Omitted selector arguments are not filled from another account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the certificate from SSL storage only. Use deleteSsl to end domain SSL coverage."
+        }
+      ]
+    },
+    "uapi:SSL/delete_csr": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Identify the stored account resource with its ID or friendly name as described upstream. Omitted selector arguments are not filled from another account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/delete_key": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Identify the stored account resource with its ID or friendly name as described upstream. Omitted selector arguments are not filled from another account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/delete_ssl": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Ends SSL coverage by removing domains from the current certificate. It does not delete certificates from SSL storage; deleteCert serves that purpose."
+        }
+      ]
+    },
+    "uapi:SSL/disable_mail_sni": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Mail SNI is always enabled. Disabling fails without changes; enabling succeeds with a warning. Rebuild the mail SNI configuration after a status change."
+        }
+      ]
+    },
+    "uapi:SSL/enable_mail_sni": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Mail SNI is always enabled. Enabling succeeds with a warning; disabling fails without changes. Mail SNI does not apply to Webmail, which uses the cPanel service certificate."
+        }
+      ]
+    },
+    "uapi:SSL/fetch_best_for_domain": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "The returned payload can contain private key material. Treat the result as sensitive and avoid logging or persisting it."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/fetch_cert_info": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "The returned payload can contain private key material. Treat the result as sensitive and avoid logging or persisting it."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply either friendlyName or id to select the stored resource. Each selector is optional individually because the upstream prose defines alternatives despite marking both required in its parameter schema."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ],
+      "params": {
+        "friendly_name": {
+          "required": false
+        },
+        "id": {
+          "required": false
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /SSL/fetch_cert_info operation description states: \"You must call either the friendly_name or id parameter.\" Both parameters incorrectly carry required:true in the same source. They are alternative selectors, so each is optional in the public signature; the caller must supply one. The required new_friendly_name, where present, is unchanged."
+        }
+      ]
+    },
+    "uapi:SSL/fetch_certificates_for_fqdns": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "The returned payload can contain private key material. Treat the result as sensitive and avoid logging or persisting it."
+        }
+      ]
+    },
+    "uapi:SSL/find_certificates_for_key": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Identify the stored account resource with its ID or friendly name as described upstream. Omitted selector arguments are not filled from another account."
+        }
+      ]
+    },
+    "uapi:SSL/find_csrs_for_key": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Identify the stored account resource with its ID or friendly name as described upstream. Omitted selector arguments are not filled from another account."
+        }
+      ]
+    },
+    "uapi:SSL/generate_cert": {
+      "params": {
+        "key_id": {
+          "sensitive": false
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "key_id is a stored resource identifier or algorithm/size selector, not private key material."
+        }
+      ]
+    },
+    "uapi:SSL/generate_csr": {
+      "params": {
+        "key_id": {
+          "sensitive": false
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires a valid key in the selected account's ssl directory; generateKey can create one."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "key_id is a stored resource identifier or algorithm/size selector, not private key material."
+        }
+      ]
+    },
+    "uapi:SSL/generate_key": {
+      "params": {
+        "keysize": {
+          "sensitive": false
+        },
+        "keytype": {
+          "sensitive": false
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "The returned payload can contain private key material. Treat the result as sensitive and avoid logging or persisting it."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Use keytype or keysize, never both. Omission keeps the upstream default key selection; keysize is the legacy option."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "keysize is a stored resource identifier or algorithm/size selector, not private key material. keytype is a stored resource identifier or algorithm/size selector, not private key material."
+        }
+      ]
+    },
+    "uapi:SSL/get_cabundle": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/get_cn_name": {},
+    "uapi:SSL/installed_host": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/is_mail_sni_supported": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Checks the sslinstall feature. Mail SNI is always enabled; it does not apply to Webmail, which uses the cPanel service certificate."
+        }
+      ]
+    },
+    "uapi:SSL/is_sni_supported": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/list_certs": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/list_csrs": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/list_keys": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/list_ssl_items": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/mail_sni_status": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Mail SNI is always enabled; it does not apply to Webmail, which uses the cPanel service certificate. Disabling fails without changes; enabling succeeds with a warning."
+        }
+      ]
+    },
+    "uapi:SSL/rebuild_mail_sni_config": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Run after changing mail SNI status. Mail SNI is always enabled: enabling succeeds with a warning and disabling fails without changes. Omitting reloadDovecot keeps the upstream default of reloading Dovecot."
+        }
+      ]
+    },
+    "uapi:SSL/rebuildssldb": {
+      "name": "rebuildSslDb",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned data schema is unconstrained. Preserve the returned payload without assigning it a field schema; absent data remains distinct from explicit null."
+        }
+      ]
+    },
+    "uapi:SSL/remove_autossl_excluded_domains": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/set_autossl_excluded_domains": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting domains removes all existing AutoSSL exclusions for the selected account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Replaces the complete account exclusion list. Use addAutosslExcludedDomains for an additive change."
+        }
+      ]
+    },
+    "uapi:SSL/set_cert_friendly_name": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/set_csr_friendly_name": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply either friendlyName or id to select the stored resource. Each selector is optional individually because the upstream prose defines alternatives despite marking both required in its parameter schema."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ],
+      "params": {
+        "friendly_name": {
+          "required": false
+        },
+        "id": {
+          "required": false
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /SSL/set_csr_friendly_name operation description states: \"You must call either the friendly_name or id parameter.\" Both parameters incorrectly carry required:true in the same source. They are alternative selectors, so each is optional in the public signature; the caller must supply one. The required new_friendly_name, where present, is unchanged."
+        }
+      ]
+    },
+    "uapi:SSL/set_default_key_type": {
+      "void": true,
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned set_default_key_type 200 response result declares status/errors/messages/metadata/warnings but no data member; this operation has no documented payload."
+        }
+      ]
+    },
+    "uapi:SSL/set_key_friendly_name": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply either friendlyName or id to select the stored resource. Each selector is optional individually because the upstream prose defines alternatives despite marking both required in its parameter schema."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ],
+      "params": {
+        "friendly_name": {
+          "required": false
+        },
+        "id": {
+          "required": false
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "The pinned /SSL/set_key_friendly_name operation description states: \"You must call either the friendly_name or id parameter.\" Both parameters incorrectly carry required:true in the same source. They are alternative selectors, so each is optional in the public signature; the caller must supply one. The required new_friendly_name, where present, is unchanged."
+        }
+      ]
+    },
+    "uapi:SSL/set_primary_ssl": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/show_cert": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Identify the stored account resource with its ID or friendly name as described upstream. Omitted selector arguments are not filled from another account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/show_csr": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Identify the stored account resource with its ID or friendly name as described upstream. Omitted selector arguments are not filled from another account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/show_key": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "The returned payload can contain private key material. Treat the result as sensitive and avoid logging or persisting it."
+        },
+        {
+          "kind": "documented",
+          "text": "Identify the stored account resource with its ID or friendly name as described upstream. Omitted selector arguments are not filled from another account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/start_autossl_check": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/toggle_ssl_redirect_for_domains": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The upstream operation provides no rollback. Calls execute immediately for the selected cPanel account."
+        }
+      ]
+    },
+    "uapi:SSL/fetch_key_and_cabundle_for_certificate": {
+      "body": "multipart",
+      "params": {
+        "certificate": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /SSL/fetch_key_and_cabundle_for_certificate POST requestBody declares multipart/form-data with inline string properties. Query declarations repeat the fields; the public signature retains their requiredness and sends the reviewed fields once in the multipart body. Empty JSON x-codeSamples do not establish an alternative request encoding."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Sends inline multipart string fields. Request routing supports direct UAPI and the WHM bridge; this construction alone does not establish live operation coverage on either route."
+        },
+        {
+          "kind": "documented",
+          "text": "The returned payload can contain a private key; do not log or persist the result."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires POST because certificate contents exceed GET field limits. The upstream documentation excludes cPanel and Webmail session URLs for this operation."
+        }
+      ]
+    },
+    "uapi:SSL/upload_cert": {
+      "body": "multipart",
+      "params": {
+        "crt": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /SSL/upload_cert POST requestBody declares multipart/form-data with inline string properties. Query declarations repeat the fields; the public signature retains their requiredness and sends the reviewed fields once in the multipart body. Empty JSON x-codeSamples do not establish an alternative request encoding."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Sends inline multipart string fields. Request routing supports direct UAPI and the WHM bridge; this construction alone does not establish live operation coverage on either route."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
+    },
+    "uapi:SSL/upload_key": {
+      "body": "multipart",
+      "params": {
+        "key": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /SSL/upload_key POST requestBody declares multipart/form-data with inline string properties. Query declarations repeat the fields; the public signature retains their requiredness and sends the reviewed fields once in the multipart body. Empty JSON x-codeSamples do not establish an alternative request encoding. The pinned upload_key query parameter is named key and described as the private key contents, while the multipart schema calls the same pem-private-key field crt. The reviewed candidate resolves the contradictory body field name to key, following the operation-specific parameter definition. This is a documentation-based candidate pending owned-resource live verification, not an observed correction."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Sends inline multipart string fields. Request routing supports direct UAPI and the WHM bridge; this construction alone does not establish live operation coverage on either route."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned multipart field crt contradicts the required key parameter. This method sends key as the reviewed candidate; successful runtime acceptance is not yet established. The private key input remains sensitive."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires POST because key contents exceed GET field limits. The upstream documentation excludes cPanel and Webmail session URLs for this operation."
+        }
+      ],
+      "body_fields": {
+        "crt": "key"
+      }
+    },
+    "uapi:SSL/install_ssl": {
+      "params": {
+        "domain_dcv_method": {
+          "omit": true
+        },
+        "vhost_names": {
+          "encoding": "repeat"
+        },
+        "key": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-30",
+          "note": "Pinned /SSL/install_ssl GET parameter vhost_names explicitly permits duplicate or incremented parameter names; use duplicate names in the form POST body. The optional domain_dcv_method parameter is an object map but its description and examples define no wire serialization. It is omitted from the typed signature pending source or runtime evidence; no JSON or bracketed encoding is inferred."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Installs or replaces an account certificate immediately. Certificate, bundle and private-key values are plain strings encoded by the client; do not pre-encode them."
+        },
+        {
+          "kind": "documented",
+          "text": "The optional upstream domain_dcv_method map is not exposed because its wire serialization is unspecified in the pinned contract. vhostNames sends repeated vhost_names fields. Do not infer installation DCV behavior from omission of the map."
+        },
+        {
+          "kind": "documented",
+          "text": "Disabling the Calendars and Contacts, Receive Mail, Web Disk, Webmail, and Web Server roles disables this operation."
+        }
+      ]
     }
   }
 }

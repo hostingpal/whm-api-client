@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Api\Engine;
 
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
+use HostingPal\WhmApiClient\Api\RequestBodyFormat;
 use HostingPal\WhmApiClient\Api\RequestMethod;
 use LogicException;
 
@@ -18,6 +19,7 @@ use LogicException;
  * - module: the UAPI module (UAPI operations only).
  * - method: 'GET' or 'POST'.
  * - outcome: 'flag' or 'unchecked'.
+ * - body: optional 'form' (default) or 'multipart'; multipart is UAPI POST only.
  * - params: PHP argument name => array{name: wire name, encoding: 'scalar'|
  *   'bool'|'repeat'|'numbered'}, in signature order.
  * - returns: required key; a type spec (see ShapeValidator for the grammar), or
@@ -50,6 +52,21 @@ final class OperationSpec
     {
         return RequestMethod::tryFrom(self::text($spec, 'method'))
             ?? throw new LogicException('Unsupported operation method.');
+    }
+
+    /**
+     * Read a generated operation's body encoding; older specs keep form encoding.
+     *
+     * @param array<mixed> $spec
+     * @throws LogicException If the body format is unknown or not a string.
+     */
+    public static function body(array $spec): RequestBodyFormat
+    {
+        if (!array_key_exists('body', $spec)) {
+            return RequestBodyFormat::Form;
+        }
+        return RequestBodyFormat::tryFrom(self::text($spec, 'body'))
+            ?? throw new LogicException('Unsupported operation body format.');
     }
 
     /**

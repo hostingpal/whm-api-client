@@ -53,6 +53,7 @@ type Operation struct {
 	Module      string
 	Function    string
 	Method      string
+	Body        string
 	Outcome     string
 	PHPName     string
 	Constant    string

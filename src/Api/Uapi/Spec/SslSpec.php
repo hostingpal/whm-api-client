@@ -13,6 +13,17 @@ namespace HostingPal\WhmApiClient\Api\Uapi\Spec;
  */
 final class SslSpec
 {
+    public const ADD_AUTOSSL_EXCLUDED_DOMAINS = [
+        'function' => 'add_autossl_excluded_domains',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
     public const CAN_SSL_REDIRECT = [
         'function' => 'can_ssl_redirect',
         'module' => 'SSL',
@@ -20,6 +31,428 @@ final class SslSpec
         'outcome' => 'flag',
         'params' => [],
         'returns' => ['type' => 'flag'],
+    ];
+
+    public const DELETE_CERT = [
+        'function' => 'delete_cert',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+            'id' => ['name' => 'id', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'created' => ['type' => 'int'],
+                    'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                    'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                    'friendly_name' => ['type' => 'string'],
+                    'id' => ['type' => 'string'],
+                    'is_self_signed' => ['type' => 'flag'],
+                    'issuer.commonName' => ['type' => 'string'],
+                    'issuer.organizationName' => ['type' => 'string'],
+                    'issuer_text' => ['type' => 'string'],
+                    'key_algorithm' => ['type' => 'string'],
+                    'modulus' => ['type' => 'string', 'nullable' => true],
+                    'modulus_length' => ['type' => 'int', 'nullable' => true],
+                    'not_after' => ['type' => 'int'],
+                    'not_before' => ['type' => 'int'],
+                    'serial' => ['type' => 'string'],
+                    'signature_algorithm' => ['type' => 'string'],
+                    'subject.commonName' => ['type' => 'string'],
+                    'subject_text' => ['type' => 'string'],
+                    'validation_type' => ['type' => 'string', 'nullable' => true],
+                ],
+            ],
+        ],
+    ];
+
+    public const DELETE_CSR = [
+        'function' => 'delete_csr',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+            'id' => ['name' => 'id', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'commonName' => ['type' => 'string'],
+                    'created' => ['type' => 'int'],
+                    'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                    'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                    'friendly_name' => ['type' => 'string'],
+                    'id' => ['type' => 'string'],
+                    'key_algorithm' => ['type' => 'string'],
+                    'modulus' => ['type' => 'string', 'nullable' => true],
+                ],
+            ],
+        ],
+    ];
+
+    public const DELETE_KEY = [
+        'function' => 'delete_key',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+            'id' => ['name' => 'id', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'created' => ['type' => 'int'],
+                    'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                    'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                    'friendly_name' => ['type' => 'string'],
+                    'key_algorithm' => ['type' => 'string'],
+                    'modulus' => ['type' => 'string', 'nullable' => true],
+                    'modulus_length' => ['type' => 'int', 'nullable' => true],
+                ],
+            ],
+        ],
+    ];
+
+    public const DELETE_SSL = [
+        'function' => 'delete_ssl',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const DISABLE_MAIL_SNI = [
+        'function' => 'disable_mail_sni',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'failed_domains' => ['type' => 'map', 'values' => ['type' => 'string']],
+                'updated_domains' => ['type' => 'map', 'values' => ['type' => 'flag']],
+            ],
+        ],
+    ];
+
+    public const ENABLE_MAIL_SNI = [
+        'function' => 'enable_mail_sni',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'failed_domains' => ['type' => 'map', 'values' => ['type' => 'string']],
+                'updated_domains' => ['type' => 'map', 'values' => ['type' => 'flag']],
+            ],
+        ],
+    ];
+
+    public const FETCH_BEST_FOR_DOMAIN = [
+        'function' => 'fetch_best_for_domain',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'cab' => ['type' => 'string'],
+                'crt' => ['type' => 'string'],
+                'crt_origin' => ['type' => 'string'],
+                'domain' => ['type' => 'string'],
+                'ip' => ['type' => 'string'],
+                'key' => ['type' => 'string'],
+                'key_origin' => ['type' => 'string'],
+                'searched_users' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'status' => ['type' => 'flag'],
+                'statusmsg' => ['type' => 'string'],
+                'user' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const FETCH_CERT_INFO = [
+        'function' => 'fetch_cert_info',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+            'id' => ['name' => 'id', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'cabundle' => ['type' => 'string', 'nullable' => true],
+                'certificate' => ['type' => 'string'],
+                'is_self_signed' => ['type' => 'flag'],
+                'key' => ['type' => 'string'],
+                'subject.commonName_ip' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const FETCH_CERTIFICATES_FOR_FQDNS = [
+        'function' => 'fetch_certificates_for_fqdns',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'cab' => ['type' => 'string'],
+                    'created' => ['type' => 'int'],
+                    'crt' => ['type' => 'string'],
+                    'domain_is_configured' => ['type' => 'flag'],
+                    'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                    'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                    'friendly_name' => ['type' => 'string'],
+                    'id' => ['type' => 'string'],
+                    'is_self_signed' => ['type' => 'flag'],
+                    'issuer.commonName' => ['type' => 'string'],
+                    'issuer.organizationName' => ['type' => 'string'],
+                    'issuer_text' => ['type' => 'string'],
+                    'key' => ['type' => 'string'],
+                    'key_algorithm' => ['type' => 'string'],
+                    'modulus' => ['type' => 'string', 'nullable' => true],
+                    'modulus_length' => ['type' => 'int', 'nullable' => true],
+                    'not_after' => ['type' => 'int'],
+                    'not_before' => ['type' => 'int'],
+                    'serial' => ['type' => 'string'],
+                    'signature_algorithm' => ['type' => 'string'],
+                    'subject.commonName' => ['type' => 'string'],
+                    'subject_text' => ['type' => 'string'],
+                    'validation_type' => ['type' => 'string'],
+                    'verify_error' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const FETCH_KEY_AND_CABUNDLE_FOR_CERTIFICATE = [
+        'function' => 'fetch_key_and_cabundle_for_certificate',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'body' => 'multipart',
+        'outcome' => 'flag',
+        'params' => [
+            'certificate' => ['name' => 'certificate', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'cab' => ['type' => 'string'],
+                'crt' => ['type' => 'string'],
+                'crt_origin' => ['type' => 'string'],
+                'domain' => ['type' => 'string'],
+                'ip' => ['type' => 'string'],
+                'key' => ['type' => 'string'],
+                'key_origin' => ['type' => 'string'],
+                'searched_users' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'status' => ['type' => 'flag'],
+                'statusmsg' => ['type' => 'string'],
+                'user' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const FIND_CERTIFICATES_FOR_KEY = [
+        'function' => 'find_certificates_for_key',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+            'id' => ['name' => 'id', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'created' => ['type' => 'int'],
+                    'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                    'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                    'friendly_name' => ['type' => 'string'],
+                    'id' => ['type' => 'string'],
+                    'is_self_signed' => ['type' => 'flag'],
+                    'issuer.commonName' => ['type' => 'string'],
+                    'issuer.organizationName' => ['type' => 'string'],
+                    'issuer_text' => ['type' => 'string'],
+                    'key_algorithm' => ['type' => 'string'],
+                    'modulus' => ['type' => 'string', 'nullable' => true],
+                    'modulus_length' => ['type' => 'int', 'nullable' => true],
+                    'not_after' => ['type' => 'int'],
+                    'not_before' => ['type' => 'int'],
+                    'signature_algorithm' => ['type' => 'string'],
+                    'subject.commonName' => ['type' => 'string'],
+                    'subject_text' => ['type' => 'string'],
+                    'validation_type' => ['type' => 'string', 'nullable' => true],
+                ],
+            ],
+        ],
+    ];
+
+    public const FIND_CSRS_FOR_KEY = [
+        'function' => 'find_csrs_for_key',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+            'id' => ['name' => 'id', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'commonName' => ['type' => 'string'],
+                    'created' => ['type' => 'int'],
+                    'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                    'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                    'friendly_name' => ['type' => 'string'],
+                    'id' => ['type' => 'string'],
+                    'key_algorithm' => ['type' => 'string'],
+                    'modulus' => ['type' => 'string', 'nullable' => true],
+                ],
+            ],
+        ],
+    ];
+
+    public const GENERATE_CERT = [
+        'function' => 'generate_cert',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'countryName' => ['name' => 'countryName', 'encoding' => 'scalar'],
+            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'keyId' => ['name' => 'key_id', 'encoding' => 'scalar'],
+            'localityName' => ['name' => 'localityName', 'encoding' => 'scalar'],
+            'organizationName' => ['name' => 'organizationName', 'encoding' => 'scalar'],
+            'stateOrProvinceName' => ['name' => 'stateOrProvinceName', 'encoding' => 'scalar'],
+            'emailAddress' => ['name' => 'emailAddress', 'encoding' => 'scalar'],
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+            'organizationalUnitName' => ['name' => 'organizationalUnitName', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'created' => ['type' => 'int'],
+                'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                'friendly_name' => ['type' => 'string'],
+                'id' => ['type' => 'string'],
+                'is_self_signed' => ['type' => 'flag'],
+                'issuer.commonName' => ['type' => 'string'],
+                'issuer.organizationName' => ['type' => 'string'],
+                'key_algorithm' => ['type' => 'string'],
+                'modulus' => ['type' => 'string', 'nullable' => true],
+                'modulus_length' => ['type' => 'int', 'nullable' => true],
+                'not_after' => ['type' => 'int'],
+                'not_before' => ['type' => 'int'],
+                'serial' => ['type' => 'string'],
+                'signature_algorithm' => ['type' => 'string'],
+                'subject.commonName' => ['type' => 'string'],
+                'text' => ['type' => 'string'],
+                'validation_type' => ['type' => 'string', 'nullable' => true],
+            ],
+        ],
+    ];
+
+    public const GENERATE_CSR = [
+        'function' => 'generate_csr',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'countryName' => ['name' => 'countryName', 'encoding' => 'scalar'],
+            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'keyId' => ['name' => 'key_id', 'encoding' => 'scalar'],
+            'localityName' => ['name' => 'localityName', 'encoding' => 'scalar'],
+            'organizationName' => ['name' => 'organizationName', 'encoding' => 'scalar'],
+            'stateOrProvinceName' => ['name' => 'stateOrProvinceName', 'encoding' => 'scalar'],
+            'emailAddress' => ['name' => 'emailAddress', 'encoding' => 'scalar'],
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+            'organizationalUnitName' => ['name' => 'organizationalUnitName', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'commonName' => ['type' => 'string'],
+                'created' => ['type' => 'int'],
+                'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                'friendly_name' => ['type' => 'string'],
+                'id' => ['type' => 'string'],
+                'key_algorithm' => ['type' => 'string'],
+                'modulus' => ['type' => 'string', 'nullable' => true],
+                'text' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const GENERATE_KEY = [
+        'function' => 'generate_key',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+            'keysize' => ['name' => 'keysize', 'encoding' => 'scalar'],
+            'keytype' => ['name' => 'keytype', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'created' => ['type' => 'int'],
+                'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                'friendly_name' => ['type' => 'string'],
+                'id' => ['type' => 'string'],
+                'key_algorithm' => ['type' => 'string'],
+                'modulus' => ['type' => 'string', 'nullable' => true],
+                'modulus_length' => ['type' => 'int', 'nullable' => true],
+                'text' => ['type' => 'string'],
+            ],
+        ],
     ];
 
     public const GET_AUTOSSL_EXCLUDED_DOMAINS = [
@@ -73,6 +506,122 @@ final class SslSpec
                 'is_active' => ['type' => 'flag'],
                 'is_excluded' => ['type' => 'flag'],
                 'will_renew' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const GET_CABUNDLE = [
+        'function' => 'get_cabundle',
+        'module' => 'SSL',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'cert' => ['name' => 'cert', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'bundle' => ['type' => 'string'],
+                'cab' => ['type' => 'string'],
+                'domain' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const GET_CN_NAME = [
+        'function' => 'get_cn_name',
+        'module' => 'SSL',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'service' => ['name' => 'service', 'encoding' => 'scalar'],
+            'addMailSubdomain' => ['name' => 'add_mail_subdomain', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'cert_match_method' => ['type' => 'string'],
+                'cert_valid_not_after' => ['type' => 'int'],
+                'is_currently_valid' => ['type' => 'flag'],
+                'is_self_signed' => ['type' => 'flag'],
+                'is_wild_card' => ['type' => 'flag'],
+                'ssldomain' => ['type' => 'string'],
+                'ssldomain_matches_cert' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const INSTALL_SSL = [
+        'function' => 'install_ssl',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'cert' => ['name' => 'cert', 'encoding' => 'scalar'],
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'cabundle' => ['name' => 'cabundle', 'encoding' => 'scalar'],
+            'key' => ['name' => 'key', 'encoding' => 'scalar'],
+            'orderItemId' => ['name' => 'order_item_id', 'encoding' => 'scalar'],
+            'originatingCertificateId' => ['name' => 'originating_certificate_id', 'encoding' => 'scalar'],
+            'parentCertExpiry' => ['name' => 'parent_cert_expiry', 'encoding' => 'scalar'],
+            'vhostNames' => ['name' => 'vhost_names', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'action' => ['type' => 'string'],
+                'cert_id' => ['type' => 'string'],
+                'domain' => ['type' => 'string'],
+                'extra_certificate_domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'html' => ['type' => 'string'],
+                'ip' => ['type' => 'string'],
+                'key_id' => ['type' => 'string'],
+                'message' => ['type' => 'string'],
+                'statusmsg' => ['type' => 'string'],
+                'user' => ['type' => 'string'],
+                'warning_domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'working_domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+            ],
+        ],
+    ];
+
+    public const INSTALLED_HOST = [
+        'function' => 'installed_host',
+        'module' => 'SSL',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'verifyCertificate' => ['name' => 'verify_certificate', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'certificate' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                        'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                        'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                        'id' => ['type' => 'string'],
+                        'is_self_signed' => ['type' => 'flag'],
+                        'issuer.commonName' => ['type' => 'string'],
+                        'issuer.organizationName' => ['type' => 'string'],
+                        'issuer_text' => ['type' => 'string'],
+                        'key_algorithm' => ['type' => 'string'],
+                        'modulus' => ['type' => 'string', 'nullable' => true],
+                        'modulus_length' => ['type' => 'int', 'nullable' => true],
+                        'not_after' => ['type' => 'int'],
+                        'not_before' => ['type' => 'int'],
+                        'signature_algorithm' => ['type' => 'string'],
+                        'subject.commonName' => ['type' => 'string'],
+                        'subject_text' => ['type' => 'string'],
+                        'validation_type' => ['type' => 'string', 'nullable' => true],
+                        'verify_error' => ['type' => 'string'],
+                    ],
+                ],
+                'host' => ['type' => 'string'],
             ],
         ],
     ];
@@ -134,5 +683,464 @@ final class SslSpec
         'outcome' => 'flag',
         'params' => [],
         'returns' => ['type' => 'flag'],
+    ];
+
+    public const IS_MAIL_SNI_SUPPORTED = [
+        'function' => 'is_mail_sni_supported',
+        'module' => 'SSL',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'flag'],
+    ];
+
+    public const IS_SNI_SUPPORTED = [
+        'function' => 'is_sni_supported',
+        'module' => 'SSL',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'flag'],
+    ];
+
+    public const LIST_CERTS = [
+        'function' => 'list_certs',
+        'module' => 'SSL',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'created' => ['type' => 'int'],
+                    'domain_is_configured' => ['type' => 'flag'],
+                    'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                    'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                    'friendly_name' => ['type' => 'string'],
+                    'id' => ['type' => 'string'],
+                    'is_self_signed' => ['type' => 'flag'],
+                    'issuer.commonName' => ['type' => 'string'],
+                    'issuer.organizationName' => ['type' => 'string'],
+                    'issuer_text' => ['type' => 'string'],
+                    'key_algorithm' => ['type' => 'string'],
+                    'modulus' => ['type' => 'string', 'nullable' => true],
+                    'modulus_length' => ['type' => 'int', 'nullable' => true],
+                    'not_after' => ['type' => 'int'],
+                    'not_before' => ['type' => 'int'],
+                    'serial' => ['type' => 'string'],
+                    'signature_algorithm' => ['type' => 'string'],
+                    'subject.commonName' => ['type' => 'string'],
+                    'subject_text' => ['type' => 'string'],
+                    'validation_type' => ['type' => 'string', 'nullable' => true],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_CSRS = [
+        'function' => 'list_csrs',
+        'module' => 'SSL',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'commonName' => ['type' => 'string'],
+                    'created' => ['type' => 'int'],
+                    'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                    'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                    'friendly_name' => ['type' => 'string'],
+                    'id' => ['type' => 'string'],
+                    'key_algorithm' => ['type' => 'string'],
+                    'modulus' => ['type' => 'string', 'nullable' => true],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_KEYS = [
+        'function' => 'list_keys',
+        'module' => 'SSL',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'created' => ['type' => 'int'],
+                    'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                    'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                    'friendly_name' => ['type' => 'string'],
+                    'id' => ['type' => 'string'],
+                    'key_algorithm' => ['type' => 'string'],
+                    'modulus' => ['type' => 'string', 'nullable' => true],
+                    'modulus_length' => ['type' => 'int', 'nullable' => true],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_SSL_ITEMS = [
+        'function' => 'list_ssl_items',
+        'module' => 'SSL',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'item' => ['name' => 'item', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'host' => ['type' => 'string'],
+                    'id' => ['type' => 'string'],
+                    'type' => ['type' => 'string'],
+                ],
+            ],
+        ],
+    ];
+
+    public const MAIL_SNI_STATUS = [
+        'function' => 'mail_sni_status',
+        'module' => 'SSL',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'enabled' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const REBUILD_MAIL_SNI_CONFIG = [
+        'function' => 'rebuild_mail_sni_config',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'reloadDovecot' => ['name' => 'reload_dovecot', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'success' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const REBUILDSSLDB = [
+        'function' => 'rebuildssldb',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'mixed'],
+    ];
+
+    public const REMOVE_AUTOSSL_EXCLUDED_DOMAINS = [
+        'function' => 'remove_autossl_excluded_domains',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const SET_AUTOSSL_EXCLUDED_DOMAINS = [
+        'function' => 'set_autossl_excluded_domains',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const SET_CERT_FRIENDLY_NAME = [
+        'function' => 'set_cert_friendly_name',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+            'newFriendlyName' => ['name' => 'new_friendly_name', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const SET_CSR_FRIENDLY_NAME = [
+        'function' => 'set_csr_friendly_name',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'newFriendlyName' => ['name' => 'new_friendly_name', 'encoding' => 'scalar'],
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+            'id' => ['name' => 'id', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const SET_DEFAULT_KEY_TYPE = [
+        'function' => 'set_default_key_type',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'type' => ['name' => 'type', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const SET_KEY_FRIENDLY_NAME = [
+        'function' => 'set_key_friendly_name',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'newFriendlyName' => ['name' => 'new_friendly_name', 'encoding' => 'scalar'],
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+            'id' => ['name' => 'id', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const SET_PRIMARY_SSL = [
+        'function' => 'set_primary_ssl',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'servername' => ['name' => 'servername', 'encoding' => 'scalar'],
+        ],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const SHOW_CERT = [
+        'function' => 'show_cert',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+            'id' => ['name' => 'id', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'cert' => ['type' => 'string'],
+                'details' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                        'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                        'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                        'friendly_name' => ['type' => 'string'],
+                        'id' => ['type' => 'string'],
+                        'is_self_signed' => ['type' => 'flag'],
+                        'issuer' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'commonName' => ['type' => 'string'],
+                                'countryName' => ['type' => 'string'],
+                                'emailAddress' => ['type' => 'string'],
+                                'localityName' => ['type' => 'string'],
+                                'organizationName' => ['type' => 'string'],
+                                'stateOrProvinceName' => ['type' => 'string'],
+                            ],
+                        ],
+                        'key_algorithm' => ['type' => 'string'],
+                        'modulus' => ['type' => 'string', 'nullable' => true],
+                        'not_after' => ['type' => 'int'],
+                        'not_before' => ['type' => 'int'],
+                        'signature_algorithm' => ['type' => 'string'],
+                        'subject' => [
+                            'type' => 'object',
+                            'fields' => [
+                                'commonName' => ['type' => 'string'],
+                                'countryName' => ['type' => 'string'],
+                                'emailAddress' => ['type' => 'string'],
+                                'localityName' => ['type' => 'string'],
+                                'organizationName' => ['type' => 'string'],
+                                'stateOrProvinceName' => ['type' => 'string'],
+                            ],
+                        ],
+                        'validation_type' => ['type' => 'string', 'nullable' => true],
+                    ],
+                ],
+                'text' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const SHOW_CSR = [
+        'function' => 'show_csr',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+            'id' => ['name' => 'id', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'csr' => ['type' => 'string'],
+                'details' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'commonName' => ['type' => 'string'],
+                        'countryName' => ['type' => 'string'],
+                        'created' => ['type' => 'int'],
+                        'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                        'emailAddress' => ['type' => 'string'],
+                        'friendly_name' => ['type' => 'string'],
+                        'id' => ['type' => 'string'],
+                        'key_algorithm' => ['type' => 'string'],
+                        'localityName' => ['type' => 'string'],
+                        'modulus' => ['type' => 'string', 'nullable' => true],
+                        'organizationName' => ['type' => 'string'],
+                        'organizationalUnitName' => ['type' => 'string'],
+                        'stateOrProvinceName' => ['type' => 'string'],
+                    ],
+                ],
+                'text' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const SHOW_KEY = [
+        'function' => 'show_key',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+            'id' => ['name' => 'id', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'details' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'created' => ['type' => 'int'],
+                        'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                        'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                        'friendly_name' => ['type' => 'string'],
+                        'id' => ['type' => 'string'],
+                        'key' => ['type' => 'string'],
+                        'key_algorithm' => ['type' => 'string'],
+                        'modulus' => ['type' => 'string', 'nullable' => true],
+                        'modulus_length' => ['type' => 'int', 'nullable' => true],
+                    ],
+                ],
+                'text' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const START_AUTOSSL_CHECK = [
+        'function' => 'start_autossl_check',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+    ];
+
+    public const TOGGLE_SSL_REDIRECT_FOR_DOMAINS = [
+        'function' => 'toggle_ssl_redirect_for_domains',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domains', 'encoding' => 'scalar'],
+            'state' => ['name' => 'state', 'encoding' => 'bool'],
+        ],
+        'returns' => ['type' => 'list', 'items' => ['type' => 'string']],
+    ];
+
+    public const UPLOAD_CERT = [
+        'function' => 'upload_cert',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'body' => 'multipart',
+        'outcome' => 'flag',
+        'params' => [
+            'crt' => ['name' => 'crt', 'encoding' => 'scalar'],
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'created' => ['type' => 'int'],
+                    'domains' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                    'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                    'friendly_name' => ['type' => 'string'],
+                    'id' => ['type' => 'string'],
+                    'is_self_signed' => ['type' => 'flag'],
+                    'issuer.commonName' => ['type' => 'string'],
+                    'issuer.organizationName' => ['type' => 'string'],
+                    'key_algorithm' => ['type' => 'string'],
+                    'modulus' => ['type' => 'string', 'nullable' => true],
+                    'modulus_length' => ['type' => 'int', 'nullable' => true],
+                    'not_after' => ['type' => 'int'],
+                    'not_before' => ['type' => 'int'],
+                    'signature_algorithm' => ['type' => 'string'],
+                    'subject.commonName' => ['type' => 'string'],
+                    'validation_type' => ['type' => 'string', 'nullable' => true],
+                ],
+            ],
+        ],
+    ];
+
+    public const UPLOAD_KEY = [
+        'function' => 'upload_key',
+        'module' => 'SSL',
+        'method' => 'POST',
+        'body' => 'multipart',
+        'outcome' => 'flag',
+        'params' => [
+            'key' => ['name' => 'key', 'encoding' => 'scalar'],
+            'friendlyName' => ['name' => 'friendly_name', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'list',
+            'items' => [
+                'type' => 'object',
+                'fields' => [
+                    'created' => ['type' => 'int'],
+                    'ecdsa_curve_name' => ['type' => 'string', 'nullable' => true],
+                    'ecdsa_public' => ['type' => 'string', 'nullable' => true],
+                    'friendly_name' => ['type' => 'string'],
+                    'id' => ['type' => 'string'],
+                    'key_algorithm' => ['type' => 'string'],
+                    'modulus' => ['type' => 'string', 'nullable' => true],
+                    'modulus_length' => ['type' => 'int', 'nullable' => true],
+                ],
+            ],
+        ],
     ];
 }

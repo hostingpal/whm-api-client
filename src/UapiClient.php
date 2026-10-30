@@ -8,6 +8,7 @@ use HostingPal\WhmApiClient\Api\AbstractApiClient;
 use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
 use HostingPal\WhmApiClient\Api\Engine\OperationSpec;
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
+use HostingPal\WhmApiClient\Api\RequestBodyFormat;
 use HostingPal\WhmApiClient\Api\RequestMethod;
 use HostingPal\WhmApiClient\Api\Uapi\UapiGroups;
 use HostingPal\WhmApiClient\Authentication\TokenCredentials;
@@ -28,8 +29,8 @@ use SensitiveParameter;
  * Both routes share this handle type and expose the same endpoint groups.
  * Typed groups are generated from the pinned API map and overlay (see docs/api/coverage.md);
  * call() provides GET and form-encoded POST access without a typed group through
- * the same routing, authentication, and envelope handling. JSON and multipart
- * request bodies are not supported on either route.
+ * the same routing, authentication, and envelope handling. Reviewed generated
+ * operations can select multipart string fields; generic calls remain form-only.
  *
  * @phpstan-import-type Parameters from AbstractApiClient
  */
@@ -163,6 +164,7 @@ final class UapiClient extends AbstractApiClient
             $parameters,
             OperationSpec::method($spec),
             OperationSpec::outcome($spec),
+            OperationSpec::body($spec),
         );
     }
 
@@ -174,7 +176,8 @@ final class UapiClient extends AbstractApiClient
      * and are removed from caller parameters. Execution clears metadata before
      * parameter validation or I/O, then retains usable envelope metadata before
      * API or group-level payload errors. Post keeps the routing fields in the
-     * query string and form-encodes the operation parameters.
+     * query string and encodes operation parameters in the selected form or
+     * multipart body. Multipart routing support does not imply live coverage.
      *
      * @param Parameters $parameters
      */
@@ -185,6 +188,7 @@ final class UapiClient extends AbstractApiClient
         array $parameters,
         RequestMethod $method,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
+        RequestBodyFormat $bodyFormat = RequestBodyFormat::Form,
     ): ApiResponse {
         if ($this->isBridged()) {
             $reserved = [
@@ -198,14 +202,14 @@ final class UapiClient extends AbstractApiClient
             $route = ResponseRoute::BridgedUapi;
 
             return $method === RequestMethod::Post
-                ? $this->executePost('/json-api/uapi_cpanel', $reserved, $parameters, $route, $outcome)
+                ? $this->executePost('/json-api/uapi_cpanel', $reserved, $parameters, $route, $outcome, $bodyFormat)
                 : $this->executeGet('/json-api/uapi_cpanel', $reserved + $parameters, $route, $outcome);
         }
 
         $path = '/execute/' . $module . '/' . $operation;
 
         return $method === RequestMethod::Post
-            ? $this->executePost($path, [], $parameters, ResponseRoute::DirectUapi, $outcome)
+            ? $this->executePost($path, [], $parameters, ResponseRoute::DirectUapi, $outcome, $bodyFormat)
             : $this->executeGet($path, $parameters, ResponseRoute::DirectUapi, $outcome);
     }
 }

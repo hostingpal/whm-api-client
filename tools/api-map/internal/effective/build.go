@@ -165,7 +165,7 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	// Query parameters and form-encoded body fields are generated; any other
 	// documented body (multipart or JSON, possibly carrying secrets) must
 	// never be dropped silently.
-	body, ok := b.formBody(op, v, node)
+	body, ok := b.formBody(op, v, ov, node)
 	if !ok {
 		return Operation{}, "", false
 	}
@@ -178,6 +178,7 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		Family:      op.Family,
 		Function:    op.Function,
 		Outcome:     firstNonEmpty(ov.Outcome, "flag"),
+		Body:        ov.Body,
 		Summary:     sentence(text(node["summary"])),
 		Description: firstParagraph(text(node["description"])),
 		Subcategory: subcategory(op.Family, node),
@@ -197,7 +198,7 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	result.Constant = b.constant(op, result.PHPName)
 	result.Alias = Pascal(result.PHPName) + "Result"
 	result.Params = b.params(op, v, ov, body)
-	result.Method = b.method(op, v, ov, result.Params, len(body) > 0)
+	result.Method = b.method(op, v, ov, result.Params, len(body) > 0 || ov.Body != "")
 	if payload.issue != "" && !ov.Void {
 		b.problem(op.ID + ": " + payload.issue + "; declare void with evidence or exclude the operation")
 	}
@@ -267,7 +268,10 @@ func (b *builder) methodName(op model.Operation, ov overlay.Operation) string {
 // request body as parameters (in "body"), in name order. A field is required
 // only when the body is required and its schema requires the field. It reports
 // false, with a problem, for any other body, which is never dropped silently.
-func (b *builder) formBody(op model.Operation, v model.Variant, node map[string]any) ([]model.Parameter, bool) {
+func (b *builder) formBody(op model.Operation, v model.Variant, ov overlay.Operation, node map[string]any) ([]model.Parameter, bool) {
+	if ov.Body == "multipart" {
+		return b.multipartBody(op, v, ov, node)
+	}
 	raw, documented := node["requestBody"]
 	if !documented {
 		return nil, true
@@ -377,6 +381,9 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		}
 		if used[param.PHP] {
 			b.problem(op.ID + ": duplicate argument name " + param.PHP)
+		}
+		if ov.Body == "multipart" && (param.Encoding != "scalar" || param.PHPType != "string") {
+			b.problem(op.ID + ": multipart fields require scalar string parameters")
 		}
 		used[param.PHP] = true
 		if param.Required {

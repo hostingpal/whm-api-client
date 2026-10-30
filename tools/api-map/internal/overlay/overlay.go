@@ -40,11 +40,13 @@ type Operation struct {
 	Name string `json:"name,omitempty"`
 	// Variant selects the documented variant (by HTTP method) of an operation
 	// the map documents with several variants.
-	Variant string `json:"variant,omitempty"`
-	Method  string `json:"method,omitempty"`
-	Outcome string `json:"outcome,omitempty"`
-	Unwrap  string `json:"unwrap,omitempty"`
-	Void    bool   `json:"void,omitempty"`
+	Variant    string            `json:"variant,omitempty"`
+	Method     string            `json:"method,omitempty"`
+	Body       string            `json:"body,omitempty"`
+	BodyFields map[string]string `json:"body_fields,omitempty"`
+	Outcome    string            `json:"outcome,omitempty"`
+	Unwrap     string            `json:"unwrap,omitempty"`
+	Void       bool              `json:"void,omitempty"`
 	// OptionalPayload makes an omitted or null data member a valid response
 	// that the generated method returns as null.
 	OptionalPayload bool                  `json:"optional_payload,omitempty"`
