@@ -1170,7 +1170,7 @@ final class EmailSpec
                                 'domain' => ['type' => 'string'],
                                 'entrycount' => ['type' => 'int'],
                                 'mx' => ['type' => 'string'],
-                                'priority' => ['type' => 'int'],
+                                'priority' => ['type' => 'int', 'accept' => ['numeric-string']],
                                 'row' => ['type' => 'string'],
                             ],
                         ],

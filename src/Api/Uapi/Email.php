@@ -2780,6 +2780,10 @@ final readonly class Email
      *
      * Documented: Available in cPanel 11.42.
      *
+     * Observed: On cPanel 11.138.0.19, entries[].priority arrived as a numeric string through both direct and bridged
+     * UAPI. This field accepts canonical integer strings within PHP integer bounds and normalizes them to int; omitted
+     * priorities remain absent. Decimal, exponent, whitespace, leading-zero and overflowing strings remain rejected.
+     *
      * API-map identity: uapi:Email/list_mxs#GET (wire name list_mxs).
      *
      * @param string|null $domain The domain to query. Null omits it.
