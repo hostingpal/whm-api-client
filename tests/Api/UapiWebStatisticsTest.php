@@ -109,6 +109,41 @@ final class UapiWebStatisticsTest extends TestCase
         };
     }
 
+    /** @param list<array{month_start?: int}> $expected */
+    #[DataProvider('canonicalMonthStarts')]
+    public function testMonthStartCanonicalIntegerStringsNormalizeLosslessly(
+        string $route,
+        string $payload,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        self::assertSame($expected, $account->stats()->getBandwidth(timezone: 'America/Chicago'));
+        self::assertRequest($http, $route, 'get_bandwidth');
+        self::assertSame(1, $account->responseMeta()?->uapiStatus());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, list<array{month_start?: int}>}> */
+    public static function canonicalMonthStarts(): iterable
+    {
+        $cases = [
+            'quoted timestamp' => ['[{"month_start":"1561957200"}]', [['month_start' => 1561957200]]],
+            'mixed native and quoted zero' => ['[{"month_start":1561957200},{"month_start":"0"}]',
+                [['month_start' => 1561957200], ['month_start' => 0]]],
+            'optional omission' => ['[{}, {"month_start":"1561957200"}]', [[], ['month_start' => 1561957200]]],
+            'negative integer' => ['[{"month_start":"-1"}]', [['month_start' => -1]]],
+            'integer maximum' => ['[{"month_start":"' . PHP_INT_MAX . '"}]', [['month_start' => PHP_INT_MAX]]],
+            'integer minimum' => ['[{"month_start":"' . PHP_INT_MIN . '"}]', [['month_start' => PHP_INT_MIN]]],
+        ];
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach ($cases as $name => [$payload, $expected]) {
+                yield "$route $name" => [$route, $payload, $expected];
+            }
+        }
+    }
+
     #[DataProvider('invalidPayloads')]
     public function testMalformedOrAbsentDataRetainsConfirmedMetadata(
         string $route,
@@ -182,7 +217,27 @@ final class UapiWebStatisticsTest extends TestCase
                         }
                     }
                     foreach ($integers as $field) {
-                        foreach (['null', '"0"', 'true', '1.0', '[]', '{}'] as $bad) {
+                        $badValues = ['null', 'true', '1.0', '[]', '{}'];
+                        if ($function === 'get_bandwidth' && $field === 'month_start') {
+                            array_push(
+                                $badValues,
+                                '"1.0"',
+                                '"1.5"',
+                                '"01"',
+                                '"+1"',
+                                '"-0"',
+                                '"-01"',
+                                '"1e3"',
+                                '" 1"',
+                                '"1 "',
+                                '""',
+                                '"' . PHP_INT_MAX . '0"',
+                                '"' . PHP_INT_MIN . '0"',
+                            );
+                        } else {
+                            $badValues[] = '"0"';
+                        }
+                        foreach ($badValues as $bad) {
                             $cases[] = '[{"' . $field . '":' . $bad . '}]';
                         }
                     }

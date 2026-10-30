@@ -47,7 +47,7 @@ final class StatsBarSpec
                     'name' => ['type' => 'string'],
                     'near_limit_phrase' => ['type' => 'string'],
                     'normalized' => ['type' => 'flag'],
-                    'percent' => ['type' => 'int'],
+                    'percent' => ['type' => 'int', 'accept' => ['numeric-string']],
                     'percent10' => ['type' => 'int'],
                     'percent20' => ['type' => 'int'],
                     'percent5' => ['type' => 'int'],

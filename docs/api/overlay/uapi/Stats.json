@@ -13,6 +13,10 @@
         {
           "kind": "documented",
           "text": "Omitting timezone uses the server timezone; supplied Olson timezone text is forwarded unchanged. bytes is integer bandwidth usage in bytes and month_start is an integer Unix timestamp. domain is returned only for http protocol records. The pinned row schema declares every field optional; omitted fields remain absent and zero bytes stays zero."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, the saved capture returned month_start as native integers and numeric strings directly, while the WHM bridge returned native integers. Only this field accepts canonical integer strings within PHP integer bounds and normalizes them losslessly to int. Its optional presence is preserved; sibling numeric fields retain their pinned contracts. This correction does not change the original failed capture or establish a live quoted-integer variant on the bridge."
         }
       ],
       "evidence": [
@@ -21,8 +25,31 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /Stats/get_bandwidth GET declares x-readonly=true; query parameters and the response data schema are inline in cpanel.openapi.json.gz. Preserve the source GET method, requiredness, optional fields and exact scalar types."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "The immutable docs/api/evidence/2026-10-31-resource-statistics.json capture at revision fb4f9c9eb03e094d89a41806e927c4cbf0c60432 records direct-uapi Stats/get_bandwidth month_start as int and numeric-string at $.data[].month_start, with a $[].month_start type_mismatch; the bridged-uapi response has native integer month_start and passed payload validation. Apply existing lossless canonical integer-string normalization only to [].month_start. Preserve native integers and optional omission; reject noncanonical strings, fractions, exponent notation, booleans, null and integer overflow. Other integer fields stay unchanged. Cross-route string and boundary tests are synthetic compatibility checks, not additional live observations. The original failed artifact remains unchanged.",
+          "fingerprint": "docs/api/evidence/2026-10-31-resource-statistics.json"
         }
-      ]
+      ],
+      "response": {
+        "[].month_start": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "The immutable docs/api/evidence/2026-10-31-resource-statistics.json capture at revision fb4f9c9eb03e094d89a41806e927c4cbf0c60432 records direct-uapi Stats/get_bandwidth month_start as int and numeric-string at $.data[].month_start, with a $[].month_start type_mismatch; the bridged-uapi response has native integer month_start and passed payload validation. Apply existing lossless canonical integer-string normalization only to [].month_start. Preserve native integers and optional omission; reject noncanonical strings, fractions, exponent notation, booleans, null and integer overflow. Other integer fields stay unchanged. Cross-route string and boundary tests are synthetic compatibility checks, not additional live observations. The original failed artifact remains unchanged.",
+              "fingerprint": "docs/api/evidence/2026-10-31-resource-statistics.json"
+            }
+          ]
+        }
+      }
     },
     "uapi:Stats/get_site_errors": {
       "method": "GET",

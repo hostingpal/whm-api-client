@@ -413,6 +413,11 @@ zero and omission remain separate. Dynamic domain/date/grouping keys remain keys
 in returned arrays and are wildcarded in structural evidence. The pinned
 Bandwidth query schema describes nested objects with opaque deepest values;
 it does not establish numeric scalar leaves or every grouping-depth variant.
+The observed two-level `domain|protocol` query additionally preserves integer
+leaves. Resource maximum/usage, StatsBar percent and bandwidth month-start values
+accept lossless canonical integer strings only in their reviewed fields. A null
+resource URL remains distinct from omission; fractional strings are not rounded
+or silently coerced. The live/error-log follow-up is `8x0.2.25`.
 
 Statistics require the documented features, roles and analyzer availability.
 `getSiteErrors()` returns log text as payload data; report URLs are returned

@@ -12,6 +12,61 @@
         {
           "kind": "documented",
           "text": "formatter may be null or a string, including a third-party formatter name. Do not infer a closed formatter or resource-id enum. Resource availability depends on server profile and services: filesusage requires the stats-bar File Usage display setting, cachedpostgresdiskusage requires PostgreSQL, mailing_lists requires Mailman, ftp_accounts requires FTP accounts, and mysql_databases requires MySQL."
+        },
+        {
+          "kind": "observed",
+          "text": "The original 2026-10-31-resource-statistics.json capture at fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on cPanel 11.138.0.19 observed numeric strings at $[].maximum and $[].usage and null at $[].url through both routes. Only canonical integer strings that round-trip within the PHP integer range normalize to integers; fractions, alternate spellings and overflow stay rejected. maximum null remains unlimited, nullable url stays distinct from an omitted url, and all fields retain optional presence. The structural capture does not establish the exact numeric-string grammar of every live row."
+        }
+      ],
+      "response": {
+        "[].maximum": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Original immutable docs/api/evidence/2026-10-31-resource-statistics.json (SHA-256 6114814a2c39e52080d34c90cf0790380c16b86d3dca87677cb00fea50a407f3), captured at revision fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on cPanel 11.138.0.19 from pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records HTTP 200 and API success on direct-uapi and bridged-uapi GET routes. Payload $[].maximum has int, null and numeric-string types, $[].usage has int and numeric-string types, and $[].url has null and string types. The original type_mismatch findings affect precisely $[].maximum, $[].url and $[].usage under effective contract fe6717b93b97ce215f515b073edb4f5c15048a925ba28d9bfe3dafdd9e71dae8. Admit only the existing canonical bounded integer-string conversion for maximum and usage, preserving maximum nullability, and admit explicit null only for url. Numeric-string fingerprints do not reveal spelling or fractional format: unsupported fractions/noncanonical strings remain rejected, rather than broadening the integer fields. Optional presence and all sibling fields stay unchanged. Preserve the original failed artifact unchanged.",
+              "fingerprint": "docs/api/evidence/2026-10-31-resource-statistics.json"
+            }
+          ]
+        },
+        "[].usage": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Original immutable docs/api/evidence/2026-10-31-resource-statistics.json (SHA-256 6114814a2c39e52080d34c90cf0790380c16b86d3dca87677cb00fea50a407f3), captured at revision fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on cPanel 11.138.0.19 from pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records HTTP 200 and API success on direct-uapi and bridged-uapi GET routes. Payload $[].maximum has int, null and numeric-string types, $[].usage has int and numeric-string types, and $[].url has null and string types. The original type_mismatch findings affect precisely $[].maximum, $[].url and $[].usage under effective contract fe6717b93b97ce215f515b073edb4f5c15048a925ba28d9bfe3dafdd9e71dae8. Admit only the existing canonical bounded integer-string conversion for maximum and usage, preserving maximum nullability, and admit explicit null only for url. Numeric-string fingerprints do not reveal spelling or fractional format: unsupported fractions/noncanonical strings remain rejected, rather than broadening the integer fields. Optional presence and all sibling fields stay unchanged. Preserve the original failed artifact unchanged.",
+              "fingerprint": "docs/api/evidence/2026-10-31-resource-statistics.json"
+            }
+          ]
+        },
+        "[].url": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Original immutable docs/api/evidence/2026-10-31-resource-statistics.json (SHA-256 6114814a2c39e52080d34c90cf0790380c16b86d3dca87677cb00fea50a407f3), captured at revision fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on cPanel 11.138.0.19 from pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records HTTP 200 and API success on direct-uapi and bridged-uapi GET routes. Payload $[].maximum has int, null and numeric-string types, $[].usage has int and numeric-string types, and $[].url has null and string types. The original type_mismatch findings affect precisely $[].maximum, $[].url and $[].usage under effective contract fe6717b93b97ce215f515b073edb4f5c15048a925ba28d9bfe3dafdd9e71dae8. Admit only the existing canonical bounded integer-string conversion for maximum and usage, preserving maximum nullability, and admit explicit null only for url. Numeric-string fingerprints do not reveal spelling or fractional format: unsupported fractions/noncanonical strings remain rejected, rather than broadening the integer fields. Optional presence and all sibling fields stay unchanged. Preserve the original failed artifact unchanged.",
+              "fingerprint": "docs/api/evidence/2026-10-31-resource-statistics.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Original immutable docs/api/evidence/2026-10-31-resource-statistics.json (SHA-256 6114814a2c39e52080d34c90cf0790380c16b86d3dca87677cb00fea50a407f3), captured at revision fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on cPanel 11.138.0.19 from pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records HTTP 200 and API success on direct-uapi and bridged-uapi GET routes. Payload $[].maximum has int, null and numeric-string types, $[].usage has int and numeric-string types, and $[].url has null and string types. The original type_mismatch findings affect precisely $[].maximum, $[].url and $[].usage under effective contract fe6717b93b97ce215f515b073edb4f5c15048a925ba28d9bfe3dafdd9e71dae8. Admit only the existing canonical bounded integer-string conversion for maximum and usage, preserving maximum nullability, and admit explicit null only for url. Numeric-string fingerprints do not reveal spelling or fractional format: unsupported fractions/noncanonical strings remain rejected, rather than broadening the integer fields. Optional presence and all sibling fields stay unchanged. Preserve the original failed artifact unchanged.",
+          "fingerprint": "docs/api/evidence/2026-10-31-resource-statistics.json"
         }
       ]
     }

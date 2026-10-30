@@ -73,6 +73,12 @@ final readonly class Stats
      * for http protocol records. The pinned row schema declares every field optional; omitted fields remain absent and
      * zero bytes stays zero.
      *
+     * Observed: On cPanel 11.138.0.19, the saved capture returned month_start as native integers and numeric strings
+     * directly, while the WHM bridge returned native integers. Only this field accepts canonical integer strings within
+     * PHP integer bounds and normalizes them losslessly to int. Its optional presence is preserved; sibling numeric
+     * fields retain their pinned contracts. This correction does not change the original failed capture or establish a
+     * live quoted-integer variant on the bridge.
+     *
      * API-map identity: uapi:Stats/get_bandwidth#GET (wire name get_bandwidth).
      *
      * @param string|null $timezone The timezone in which to report the data, in Olson tz format. Null omits it.

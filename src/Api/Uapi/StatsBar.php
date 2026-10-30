@@ -79,6 +79,13 @@ final readonly class StatsBar
      * Documented: The pinned second response example contains langkey without declaring it in the formal item
      * properties. It remains an unmodeled field and is not added to the typed contract from an example alone.
      *
+     * Observed: The original 2026-10-31-resource-statistics.json capture at fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on
+     * cPanel 11.138.0.19 observed numeric strings at $[].percent through both routes. The pinned field is integer, so
+     * only canonical bounded integer strings normalize losslessly; native floats and fractional or noncanonical strings
+     * remain rejected. The structural capture does not reveal precise spelling or fractional formatting, which remains
+     * an unresolved live compatibility limit. No percentage string is cast through float or rounded, and neighboring
+     * percentage fields and flags are unchanged.
+     *
      * API-map identity: uapi:StatsBar/get_stats#GET (wire name get_stats).
      *
      * @param string $display A pipe-delimited list of the account's statistics.

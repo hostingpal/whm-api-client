@@ -59,9 +59,15 @@ final class BandwidthSpec
             'values' => [
                 'type' => 'map',
                 'values' => [
-                    'type' => 'map',
+                    'type' => 'union',
                     'nullable' => true,
-                    'values' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+                    'anyOf' => [
+                        ['type' => 'int'],
+                        [
+                            'type' => 'map',
+                            'values' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],
+                        ],
+                    ],
                 ],
             ],
         ],

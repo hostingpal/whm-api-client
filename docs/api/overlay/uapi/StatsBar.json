@@ -20,6 +20,10 @@
         {
           "kind": "documented",
           "text": "The pinned second response example contains langkey without declaring it in the formal item properties. It remains an unmodeled field and is not added to the typed contract from an example alone."
+        },
+        {
+          "kind": "observed",
+          "text": "The original 2026-10-31-resource-statistics.json capture at fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on cPanel 11.138.0.19 observed numeric strings at $[].percent through both routes. The pinned field is integer, so only canonical bounded integer strings normalize losslessly; native floats and fractional or noncanonical strings remain rejected. The structural capture does not reveal precise spelling or fractional formatting, which remains an unresolved live compatibility limit. No percentage string is cast through float or rounded, and neighboring percentage fields and flags are unchanged."
         }
       ],
       "params": {
@@ -38,7 +42,32 @@
         "warnout": {
           "php": "warnOut"
         }
-      }
+      },
+      "response": {
+        "[].percent": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Original immutable docs/api/evidence/2026-10-31-resource-statistics.json (SHA-256 6114814a2c39e52080d34c90cf0790380c16b86d3dca87677cb00fea50a407f3), captured at revision fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on cPanel 11.138.0.19 from pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records HTTP 200 and API success on direct-uapi and bridged-uapi GET routes. Payload $[].percent is numeric-string with type_mismatch at $[].percent under effective contract 398c459b94f43e08c7c9c43fa2458630146539eb3b84fcdf4b18e0201e5359b3. The pinned percent schema is integer and its examples use 0, with no documented fractional support. Apply only the existing canonical bounded integer-string conversion at this field; no native floats, fractional/fixed-point strings, coercion through float, overflow or alternate spellings are admitted. Structural evidence cannot establish whether every live percentage spelling fits this conservative boundary; retain fractional-format compatibility as unresolved. percent5, percent10, percent20, flags and formatted strings remain unchanged. Preserve the original failed artifact unchanged.",
+              "fingerprint": "docs/api/evidence/2026-10-31-resource-statistics.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Original immutable docs/api/evidence/2026-10-31-resource-statistics.json (SHA-256 6114814a2c39e52080d34c90cf0790380c16b86d3dca87677cb00fea50a407f3), captured at revision fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on cPanel 11.138.0.19 from pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records HTTP 200 and API success on direct-uapi and bridged-uapi GET routes. Payload $[].percent is numeric-string with type_mismatch at $[].percent under effective contract 398c459b94f43e08c7c9c43fa2458630146539eb3b84fcdf4b18e0201e5359b3. The pinned percent schema is integer and its examples use 0, with no documented fractional support. Apply only the existing canonical bounded integer-string conversion at this field; no native floats, fractional/fixed-point strings, coercion through float, overflow or alternate spellings are admitted. Structural evidence cannot establish whether every live percentage spelling fits this conservative boundary; retain fractional-format compatibility as unresolved. percent5, percent10, percent20, flags and formatted strings remain unchanged. Preserve the original failed artifact unchanged.",
+          "fingerprint": "docs/api/evidence/2026-10-31-resource-statistics.json"
+        }
+      ]
     }
   }
 }

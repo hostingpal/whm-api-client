@@ -36,9 +36,54 @@
         {
           "kind": "documented",
           "text": "The pinned result schema is a dynamic hierarchy: first-group values are objects, second- and third-group values may be null, and the deepest object has unspecified properties. The prose describes bandwidth bytes, but it does not establish numeric scalar leaves or the exact shape for fewer grouping levels. Preserve opaque deepest values without inventing a numeric contract; live behavior remains separate evidence."
+        },
+        {
+          "kind": "observed",
+          "text": "The original 2026-10-31-resource-statistics.json capture at fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on cPanel 11.138.0.19 observed integer byte leaves at $.*.* for grouping=domain|protocol through both routes. The effective second grouping value accepts integers alongside the documented nullable map alternative; first grouping values remain objects and the documented deeper alternative stays intact. Other grouping-depth scalar variants are not established."
         }
       ],
-      "name": "query"
+      "name": "query",
+      "response": {
+        "{}{}": {
+          "replace": {
+            "type": "union",
+            "nullable": true,
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "map",
+                "values": {
+                  "type": "map",
+                  "nullable": true,
+                  "values": {
+                    "type": "mixed"
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Original immutable docs/api/evidence/2026-10-31-resource-statistics.json (SHA-256 6114814a2c39e52080d34c90cf0790380c16b86d3dca87677cb00fea50a407f3), captured at revision fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on cPanel 11.138.0.19 from pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records HTTP 200 and API success on direct-uapi and bridged-uapi GET routes. For the fixed catalog grouping=domain|protocol, payload paths $ and $.* are objects and $.*.* is int, with type_mismatch at $.*.* under effective contract 199c3cd48f4dd5e801bc785c94a7d192bf6c54a8c06556def0211cb23892f1fc. Add an int alternative only at the second grouping value; retain the original nullable map and its nullable deeper map with opaque properties. Do not infer first- or third-group scalar leaves, string/floating-point byte values, new keys, or arbitrary grouping-depth schemas. Preserve the original failed artifact unchanged.",
+              "fingerprint": "docs/api/evidence/2026-10-31-resource-statistics.json"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Original immutable docs/api/evidence/2026-10-31-resource-statistics.json (SHA-256 6114814a2c39e52080d34c90cf0790380c16b86d3dca87677cb00fea50a407f3), captured at revision fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on cPanel 11.138.0.19 from pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records HTTP 200 and API success on direct-uapi and bridged-uapi GET routes. For the fixed catalog grouping=domain|protocol, payload paths $ and $.* are objects and $.*.* is int, with type_mismatch at $.*.* under effective contract 199c3cd48f4dd5e801bc785c94a7d192bf6c54a8c06556def0211cb23892f1fc. Add an int alternative only at the second grouping value; retain the original nullable map and its nullable deeper map with opaque properties. Do not infer first- or third-group scalar leaves, string/floating-point byte values, new keys, or arbitrary grouping-depth schemas. Preserve the original failed artifact unchanged.",
+          "fingerprint": "docs/api/evidence/2026-10-31-resource-statistics.json"
+        }
+      ]
     }
   }
 }

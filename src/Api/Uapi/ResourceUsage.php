@@ -24,7 +24,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     formatter?: string|null,
  *     id?: string,
  *     maximum?: int|null,
- *     url?: string,
+ *     url?: string|null,
  *     usage?: int,
  * }>
  */
@@ -53,6 +53,13 @@ final readonly class ResourceUsage
      * formatter or resource-id enum. Resource availability depends on server profile and services: filesusage requires
      * the stats-bar File Usage display setting, cachedpostgresdiskusage requires PostgreSQL, mailing_lists requires
      * Mailman, ftp_accounts requires FTP accounts, and mysql_databases requires MySQL.
+     *
+     * Observed: The original 2026-10-31-resource-statistics.json capture at fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on
+     * cPanel 11.138.0.19 observed numeric strings at $[].maximum and $[].usage and null at $[].url through both routes.
+     * Only canonical integer strings that round-trip within the PHP integer range normalize to integers; fractions,
+     * alternate spellings and overflow stay rejected. maximum null remains unlimited, nullable url stays distinct from
+     * an omitted url, and all fields retain optional presence. The structural capture does not establish the exact
+     * numeric-string grammar of every live row.
      *
      * API-map identity: uapi:ResourceUsage/get_usages#GET (wire name get_usages).
      *

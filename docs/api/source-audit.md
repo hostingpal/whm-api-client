@@ -2762,6 +2762,11 @@ zero and omission remain separate. Dynamic domain/date/grouping keys remain keys
 in returned arrays and are wildcarded in structural evidence. The pinned
 Bandwidth query schema describes nested objects with opaque deepest values;
 it does not establish numeric scalar leaves or every grouping-depth variant.
+The observed two-level `domain|protocol` query additionally preserves integer
+leaves. Resource maximum/usage, StatsBar percent and bandwidth month-start values
+accept lossless canonical integer strings only in their reviewed fields. A null
+resource URL remains distinct from omission; fractional strings are not rounded
+or silently coerced. The live/error-log follow-up is `8x0.2.25`.
 
 Statistics require the documented features, roles and analyzer availability.
 `getSiteErrors()` returns log text as payload data; report URLs are returned
@@ -2777,3 +2782,22 @@ name contains a typo; no guessed combination validation is added. StatsBar's
 example-only `langkey` remains unmodeled. Daily-stat key prose and examples also
 differ, so no date-key grammar is enforced. Pinned snapshots and existing
 runtime, generator and evidence policies remain unchanged.
+
+### Initial resource/statistics capture
+
+The immutable [initial capture](evidence/2026-10-31-resource-statistics.json)
+at `fb4f9c9eb03e094d89a41806e927c4cbf0c60432` on `11.138.0.19` records 23 GET
+observations. All return HTTP 200; 21 API outcomes succeed, fourteen payload and
+probe checks pass, seven payload checks fail, and two error-log requests fail
+at the API layer. Both `Stats/get_site_errors` calls use the documented `log=error`
+and `maxlines=1`; their failure does not establish a log-row contract. No
+configuration or log content is changed. Follow-up `8x0.2.25` retains that gap.
+
+The two-level Bandwidth query returns integer leaves at `$.*.*` on both routes.
+ResourceUsage reports numeric strings for `maximum` and `usage`, and nullable
+`url`, on both routes. StatsBar reports numeric-string `percent` on both routes.
+Direct Stats bandwidth reports integer and numeric-string `month_start`; the
+bridge reports native integers. These are structural classifications, not raw
+values or proof of a particular numeric-string spelling. Preserve the original
+failed artifact, SHA-256
+`6114814a2c39e52080d34c90cf0790380c16b86d3dca87677cb00fea50a407f3`.

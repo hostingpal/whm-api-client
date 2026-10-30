@@ -28,7 +28,7 @@ final class StatsSpec
                 'fields' => [
                     'bytes' => ['type' => 'int'],
                     'domain' => ['type' => 'string'],
-                    'month_start' => ['type' => 'int'],
+                    'month_start' => ['type' => 'int', 'accept' => ['numeric-string']],
                     'protocol' => ['type' => 'string'],
                 ],
             ],

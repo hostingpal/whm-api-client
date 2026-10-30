@@ -123,6 +123,64 @@ final class UapiResourceReportingTest extends TestCase
         }
     }
 
+    /** @param array<array-key, mixed> $expected */
+    #[DataProvider('observedCompatiblePayloads')]
+    public function testObservedRepresentationsUseOnlyTheReviewedCompatibility(
+        string $route,
+        string $operation,
+        string $payload,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('exampleuser');
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        $result = $operation === 'Bandwidth/query'
+            ? $account->bandwidth()->query(grouping: 'domain|protocol')
+            : self::invoke($account, $operation);
+
+        self::assertSame($expected, $result);
+        self::assertRequest(
+            $http,
+            $route,
+            $operation,
+            $operation === 'Bandwidth/query' ? 'grouping=domain%7Cprotocol' : null,
+        );
+        self::assertCount(1, $http->getRequests());
+        self::assertSame(1, $account->responseMeta()?->uapiStatus());
+    }
+
+    /** @return iterable<string, array{string, string, string, array<array-key, mixed>}> */
+    public static function observedCompatiblePayloads(): iterable
+    {
+        // Original capture records structural types only. Values here are synthetic, independent oracles.
+        $cases = [
+            'two grouping integer bytes' => ['Bandwidth/query',
+                '{"example.test":{"http":0,"smtp":1048577},"UNKNOWN":{"ftp":3}}',
+                ['example.test' => ['http' => 0, 'smtp' => 1048577], 'UNKNOWN' => ['ftp' => 3]]],
+            'documented alternatives remain alongside integer leaves' => ['Bandwidth/query',
+                '{"example.test":{"http":0,"ftp":null,"smtp":{"2026":{"bytes":1}},"imap":{"2025":null}}}',
+                ['example.test' => ['http' => 0, 'ftp' => null, 'smtp' => [2026 => ['bytes' => 1]],
+                    'imap' => [2025 => null]]]],
+            'resource integer strings and nullable URL' => ['ResourceUsage/get_usages',
+                '[{"maximum":"15","usage":"0","url":null},{"maximum":null,"usage":"1048577"},'
+                . '{"maximum":"0"},{"url":"sql/index.html"}]',
+                [
+            ['maximum' => 15, 'url' => null, 'usage' => 0], ['maximum' => null, 'usage' => 1048577],
+                    ['maximum' => 0], ['url' => 'sql/index.html']]],
+            'conservative percentage integer strings' => ['StatsBar/get_stats',
+                '[{"percent":"0"},{"percent":"100"},{}]', [['percent' => 0], ['percent' => 100], []]],
+        ];
+        foreach (['maximum', 'usage'] as $field) {
+            $cases['resource ' . $field . ' maximum integer boundary'] = ['ResourceUsage/get_usages',
+                '[{"' . $field . '":"' . PHP_INT_MAX . '"}]', [[$field => PHP_INT_MAX]]];
+        }
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach ($cases as $name => [$operation, $payload, $expected]) {
+                yield $route . ' ' . $name => [$route, $operation, $payload, $expected];
+            }
+        }
+    }
+
     #[DataProvider('routes')]
     public function testPipeStringsAndExplicitFalseZeroAreEncodedOnce(string $route): void
     {
@@ -222,7 +280,7 @@ final class UapiResourceReportingTest extends TestCase
                 $cases[] = [$operation, $payload];
             }
         }
-        foreach (['{"x":null}', '{"x":1}', '{"x":{"y":1}}', '{"x":{"y":{"z":1}}}'] as $payload) {
+        foreach (['{"x":null}', '{"x":1}', '{"x":{"y":{"z":1}}}'] as $payload) {
             $cases[] = ['Bandwidth/query', $payload];
         }
         $fields = [
@@ -231,8 +289,8 @@ final class UapiResourceReportingTest extends TestCase
             ],
             'ResourceUsage/get_usages' => [
                 'description' => ['null', '0'], 'error' => ['0', 'false'], 'formatter' => ['0', 'false'],
-                'id' => ['null', '0'], 'maximum' => ['"0"', '1.5', 'true'],
-                'url' => ['null', '0'], 'usage' => ['null', '"0"', '1.5', 'false'],
+                'id' => ['null', '0'], 'maximum' => ['1.5', 'true'],
+                'url' => ['0'], 'usage' => ['null', '1.5', 'false'],
             ],
             'StatsBar/get_stats' => [],
         ];
@@ -245,8 +303,27 @@ final class UapiResourceReportingTest extends TestCase
         foreach (['_maxed', 'condition', 'is_maxed', 'normalized', 'zeroisunlimited'] as $field) {
             $fields['StatsBar/get_stats'][$field] = ['null', '"0"', 'true', '2', '1.5'];
         }
-        foreach (['percent', 'percent5', 'percent10', 'percent20'] as $field) {
+        $fields['StatsBar/get_stats']['percent'] = ['null', 'true', '1.5'];
+        foreach (['percent5', 'percent10', 'percent20'] as $field) {
             $fields['StatsBar/get_stats'][$field] = ['null', '"0"', 'true', '1.5'];
+        }
+        foreach (['"0"', '"1"', '1.5', 'true', 'false', '[0]', '"1.25"'] as $value) {
+            $cases[] = ['Bandwidth/query', '{"example.test":{"http":' . $value . '}}'];
+        }
+        foreach (['maximum', 'usage'] as $field) {
+            foreach (
+                ['""', '"00"', '"+1"', '"-0"', '"1.0"', '"0.25"', '"1e3"', '" 1"',
+                '"1 "', '"1x"', '"99999999999999999999"', '"-99999999999999999999"'] as $value
+            ) {
+                $cases[] = ['ResourceUsage/get_usages', '[{"' . $field . '":' . $value . '}]'];
+            }
+        }
+        // Structural numeric-string evidence does not establish fractional percentages or alternate spellings.
+        foreach (
+            ['""', '"00"', '"+1"', '"-0"', '"1.0"', '"0.12345678901234567890"', '"1e3"',
+            '" 1"', '"1 "', '"1x"', '"NaN"', '"Infinity"', '"99999999999999999999"'] as $value
+        ) {
+            $cases[] = ['StatsBar/get_stats', '[{"percent":' . $value . '}]'];
         }
         foreach ($fields as $operation => $leaves) {
             foreach ($leaves as $field => $values) {
