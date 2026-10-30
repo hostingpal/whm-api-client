@@ -639,3 +639,30 @@ unknown-field discrepancy or unconfirmed cleanup makes the report fail. A failed
 preflight remains failed evidence, not a successful skip. The pinned `upload_key` body-field contradiction remains documented. The final
 2026-10-30 fixture at 64d5266 observed successful use of the key field through
 both routes on 11.138.0.19; this does not amend the pinned source.
+
+## mime-section read-only section
+
+The standalone `mime-section.php` entrypoint executes its fixed reviewed catalog:
+WHM version followed by both UAPI routes for all 6 selected read operations
+(13 GET observations). It requires committed source, tools, overlays and pinned
+inputs, both test tokens and exact account/domain opt-ins:
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/mime-section.php \
+  --output=docs/api/evidence/mime-section-new.json
+```
+
+The shared command binds `test.oblak.host`, direct cPanel user `npr` and the WHM
+bridge target `npr`. The existing exact-URI GET guard rejects other requests before
+HTTP dispatch. It captures each original response once and stores structural
+paths/types only. Strict assessment requires every ordered observation to pass
+HTTP, API, payload and provenance checks with zero discrepancies; it inherits no
+acknowledgments from historical baseline evidence. All 8 mutations remain
+offline-only. Empty read results establish no populated row-field behavior.
+
+Use a new output path. The command reserves a protected 0600 temporary file before
+network I/O and publishes the completed report with a new-only atomic link. If a
+destination race or unsupported link prevents publication, the complete protected
+report remains at the JSON-encoded recovery path printed to stderr. Partial or
+failed initial writes remain covered by follow-up `8x0.2.13`.

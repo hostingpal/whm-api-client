@@ -25,6 +25,8 @@ trait UapiGroups
 
     private ?LangPhp $langPhpGroup = null;
 
+    private ?Mime $mimeGroup = null;
+
     private ?Mysql $mysqlGroup = null;
 
     private ?Postgresql $postgresqlGroup = null;
@@ -91,6 +93,16 @@ trait UapiGroups
     public function langPhp(): LangPhp
     {
         return $this->langPhpGroup ??= new LangPhp($this->run(...));
+    }
+
+    /**
+     * Select the Mime operations without making a request.
+     *
+     * The Mime module for UAPI.
+     */
+    public function mime(): Mime
+    {
+        return $this->mimeGroup ??= new Mime($this->run(...));
     }
 
     /**

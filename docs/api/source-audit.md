@@ -2192,3 +2192,33 @@ account label. The new file was created with mode0600 and no capture temporary
 files remain. Pre-capture code passed Composer validation/check (**11,094 tests /
 75,675 assertions**), offline API-map checks and Go tests/vet. Only evidence and
 documentation follow this capture; no additional live request was made.
+
+
+## 2026-10-30 mime-section section
+
+This independent slice adds 14 generated operations to master a91cb0d,
+bringing its branch to 293 typed operations across 16 groups. Pinned source
+snapshots remain unchanged. Independent literal fixtures exercise wrapped direct,
+bare direct and WHM-bridged calls through the real generated contracts. The source
+has field examples but no full response examples for these operations; assembled
+fixtures are identified accordingly. No engine or generator behavior changed.
+
+The Mime group covers all 14 pinned functions: six reads use GET and eight
+mutations use form POST. Hotlink configuration is account-wide; deleting it has no
+domain selector. MIME deletion targets the MIME type, while handler deletion
+targets extensions. Redirect filtering, defaults and source/destination behavior
+follow each method's pinned PHPDoc. These calls do not test HTTP redirect delivery.
+
+Mutation results generally preserve nullable opaque objects. The pinned
+`add_handler` and `add_mime` schemas additionally declare a null-only enum; the
+current effective validator keeps their nullable object boundary without enforcing
+that enum. Missing payloads still fail. `deleteHotlink()` has an unspecified data
+schema, so its payload remains mixed rather than acquiring invented fields.
+
+The reviewed read-only catalog has 13 exact GET probes: WHM version and all
+6 read operations through both UAPI routes on npr/npr.rs. Shared command
+infrastructure reuses EvidenceRunner, its exact-URI GET guard and structural
+sanitization without repeating the historical baseline. The strict assessment
+requires the complete ordered catalog, matching provenance and zero discrepancies.
+All 8 mutations remain offline-only in this slice; read observations cannot
+establish their effects. Live capture outcomes are recorded separately.

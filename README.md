@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 15 generated typed groups cover 279 documented operations (see
+The 16 generated typed groups cover 293 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -313,6 +313,7 @@ An empty live list does not verify the types of records it never returned.
 
 | Handle and accessor | Methods |
 | --- | --- |
+| `uapi()->mime()` | Complete MIME types, handlers, redirects and hotlink configuration (14). |
 | `uapi()->domainInfo()` | All 5 operations: `domainsData()`, `singleDomainData()`, `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
 | `uapi()->langPhp()` | All 11 operations: installed/default/vhost PHP versions, domain handlers and impacted domains, INI paths/basic directives/content reads, and `phpIniSetUserBasicDirectives()`, `phpIniSetUserContent()`, `phpSetVhostVersions()` |
 | `uapi()->features()` | All 5 operations: `getFeatureMetadata()`, `hasFeature()`, `hasFeaturesLike()`, `listFeatures()`, `listFeaturesLike()` |
@@ -345,6 +346,18 @@ result: 1 means enabled; 0 with no errors means absent or disabled. Nonempty
 `responseMeta()->uapiErrors()` means the call failed, not that the feature is disabled.
 This typed method requires integer status 0 or 1 and accepts 0 as an access result.
 Outer WHM bridge failures still throw.
+
+The Mime group covers all 14 pinned functions: six reads use GET and eight
+mutations use form POST. Hotlink configuration is account-wide; deleting it has no
+domain selector. MIME deletion targets the MIME type, while handler deletion
+targets extensions. Redirect filtering, defaults and source/destination behavior
+follow each method's pinned PHPDoc. These calls do not test HTTP redirect delivery.
+
+Mutation results generally preserve nullable opaque objects. The pinned
+`add_handler` and `add_mime` schemas additionally declare a null-only enum; the
+current effective validator keeps their nullable object boundary without enforcing
+that enum. Missing payloads still fail. `deleteHotlink()` has an unspecified data
+schema, so its payload remains mixed rather than acquiring invented fields.
 
 `uapi()->dns()->fetchCpanelGeneratedDomains()` requires cPanel 120 and preserves
 trailing dots; `lookup()` returns textual lines or explicit `null`.
