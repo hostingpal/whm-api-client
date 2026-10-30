@@ -2533,3 +2533,42 @@ separate preference/catalog assessments. The integrated correction passes
 15,662 tests / 110,316 assertions, PHPCS, maximum PHPStan, strict Composer
 validation, Go tests/vet and the offline source/map/generation gate. These checks
 do not establish a live outcome for the new recipe; its final capture is separate.
+
+### Required-score correction capture at 6f3e0cb
+
+The single requested final capture at
+`6f3e0cb530c04874dc504b9b291a4401ea80f187` on `11.138.0.19` is preserved as
+[`2026-10-30-mail-protection-review-final.json`](evidence/2026-10-30-mail-protection-review-final.json),
+SHA-256 `7c0c9b67e1bc79e3c3e39d0406013e846c0d715c0837d038dd304fcb5244014c`.
+It contains 26 observations (24 GET, two POST), all HTTP 200 with successful API
+outcomes and payload validation. Direct threshold set and readback expectations
+pass with a numeric-string score. The original preference object had no
+`required_score`; the omission-based restoration reply contains an empty
+`required_score` list instead of omitting the field, so its exact-object
+expectation fails. This is a response-versus-state distinction, not a payload
+contract failure.
+
+Both subsequent restoration reads and both final catalog preference reads match
+the complete original object, with the field absent. The immutable artifact still
+records direct restoration as `uncertain`, bridge mutation as `not_started`, and
+failed preference assessment. No mutation was retried and no bridge write ran.
+The final 19-GET catalog retains the two masked PTR unknown-field failures without
+waiver. Their masked structures match the earlier capture; this does not identify
+the underlying unknown key names. `8x0.2.23.1` tracks review of the removal reply
+expectation and remaining bridge evidence before any further mutation.
+
+Committed captures now observe 23 of the 47 new functions, adding direct
+`update_user_preference` execution to the prior 22. That count does not establish
+bridged preference mutation coverage, successful strict final assessment or mail
+filtering enforcement. All earlier artifacts remain byte-identical.
+
+The follow-up fixture correction accepts an empty-list removal reply only when
+`required_score` was originally absent, and only for the restoration POST
+response. All other preference fields must still match exactly; configured
+original values stay exact. Both restoration getters and final catalog getters
+still require the original object with the field absent. Lost-response uncertainty
+and failed API/payload outcomes remain failures. Independent literal regressions
+cover the observed response variant, strict getters, unrelated changes and
+uncertain outcomes. The full offline gate passes 15,680 tests / 110,389 assertions.
+No second live capture has run; the first artifact is neither rewritten nor
+reclassified. Claude assessment is pending before remaining bridge evidence.

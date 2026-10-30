@@ -98,7 +98,7 @@ at `a063db0` passes API/payload checks and retains two strict PTR unknown-field
 findings. The [final BoxTrapper capture](../../docs/api/evidence/2026-10-30-boxtrapper-section-final.json)
 at `3ea2166` passes all 45 observations and strict assessment with zero
 discrepancies and both mailboxes cleaned. Initial failed captures remain intact.
-The observations cover 22 of the 47 new functions; other operations and variants
+Those initial captures cover 22 of the 47 new functions; other operations and variants
 remain under `whm-api-client-8x0.2.23`.
 
 ### Required-score restoration fixture
@@ -124,7 +124,9 @@ generated API contract is unchanged.
 The fixture sets one different threshold and reads it back through each route,
 then restores the exact original value (or removes only `required_score` when it
 was originally absent). Both routes confirm the complete original preference set
-after restoration, including all unrelated settings. Original values and custom
+after restoration, including all unrelated settings. Only the restoration POST
+reply may retain an empty `required_score` list for original absence; getters
+must still show the field absent and every unrelated setting unchanged. Original values and custom
 key names stay in memory; the artifact contains sanitized structure only.
 
 A dispatched mutation is never repeated. Cleanup sends one distinct restoration
@@ -136,6 +138,17 @@ mail-protection catalog. The threshold phase and restoration are assessed
 separately from strict catalog discrepancies. Known PTR findings remain failures
 and receive no waiver. This recipe does not replay the BoxTrapper mailbox fixture
 or establish filtering or delivery enforcement.
+
+The [correction capture](../../docs/api/evidence/2026-10-30-mail-protection-review-final.json)
+at `6f3e0cb` stopped after 26 observations (24 GET, two POST), all successful at
+HTTP/API/payload level. Removal returned an empty `required_score` list, failing
+the exact reply expectation against original absence. Both restoration reads and
+both final catalog reads matched the complete original state. The artifact keeps
+its failed assessment and direct `uncertain` / bridge `not_started` states; the
+bridge write did not run. `8x0.2.23.1` tracks reviewer assessment before any further
+mutation. The two PTR strict findings remain unwaived. This adds direct preference
+mutation execution to committed coverage (23/47), without claiming full fixture
+completion or bridged mutation evidence. Do not rerun to clear these findings.
 
 ### Complete FTP section fixture
 

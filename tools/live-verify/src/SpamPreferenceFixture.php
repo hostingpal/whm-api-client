@@ -170,7 +170,7 @@ final class SpamPreferenceFixture
         $restored = true;
         try {
             $this->require('restore_' . $name);
-            $this->expect($state->matches($this->raw(), $route));
+            $this->expect($state->matchesRestorationResponse($this->raw(), $route));
         } catch (Throwable) {
             $restored = false;
             $this->failures[] = $route . ':restore_failure';

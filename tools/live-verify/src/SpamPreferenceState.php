@@ -65,6 +65,23 @@ final readonly class SpamPreferenceState
         return self::canonical($expected) === self::canonical(self::payload($raw, $route));
     }
 
+    /**
+     * Match only the restoration POST response, whose observed removal reply may retain an empty list.
+     *
+     * For an originally absent setting, accept the complete original object or that same object plus
+     * required_score: []. Configured originals still require exact values. This reply does not establish
+     * restored state: subsequent getters must use matches() and show actual original field absence.
+     */
+    public function matchesRestorationResponse(#[SensitiveParameter] string $raw, string $route): bool
+    {
+        $actual = self::payload($raw, $route);
+        if ($this->original === null && ($actual->required_score ?? null) === []) {
+            unset($actual->required_score);
+        }
+
+        return self::canonical($this->preferences) === self::canonical($actual);
+    }
+
     private static function payload(#[SensitiveParameter] string $raw, string $route): stdClass
     {
         $document = json_decode($raw, false, 512, JSON_THROW_ON_ERROR);

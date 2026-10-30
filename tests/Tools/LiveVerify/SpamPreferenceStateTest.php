@@ -32,6 +32,50 @@ final class SpamPreferenceStateTest extends TestCase
         }
     }
 
+    /** @return iterable<string,array{string,bool,bool}> */
+    public static function removalPayloads(): iterable
+    {
+        yield 'original absent' => ['{"custom":["unchanged"]}', true, true];
+        yield 'observed empty list' => ['{"custom":["unchanged"],"required_score":[]}', true, false];
+        yield 'nonempty list' => ['{"custom":["unchanged"],"required_score":["5.1"]}', false, false];
+        yield 'wrong scalar' => ['{"custom":["unchanged"],"required_score":0}', false, false];
+        yield 'null' => ['{"custom":["unchanged"],"required_score":null}', false, false];
+        yield 'object' => ['{"custom":["unchanged"],"required_score":{}}', false, false];
+        yield 'unrelated drift' => ['{"custom":["changed"],"required_score":[]}', false, false];
+        yield 'other field missing' => ['{"required_score":[]}', false, false];
+        yield 'new field' => ['{"custom":["unchanged"],"required_score":[],"new":true}', false, false];
+    }
+
+    #[DataProvider('removalPayloads')]
+    public function testOnlyTheRemovalResponseAllowsTheObservedEmptyList(
+        string $payload,
+        bool $responseMatches,
+        bool $getterMatches,
+    ): void {
+        $state = new SpamPreferenceState('{"status":1,"data":{"custom":["unchanged"]}}', 'direct-uapi');
+        $direct = '{"status":1,"data":' . $payload . '}';
+        $bridge = '{"metadata":{"result":1},"data":{"uapi":' . $direct . '}}';
+        foreach (['direct-uapi' => $direct, 'bridged-uapi' => $bridge] as $route => $raw) {
+            self::assertSame($responseMatches, $state->matchesRestorationResponse($raw, $route));
+            self::assertSame($getterMatches, $state->matches($raw, $route));
+        }
+    }
+
+    public function testConfiguredOriginalStillRequiresTheExactValueInTheRestorationResponse(): void
+    {
+        $state = new SpamPreferenceState('{"status":1,"data":{"required_score":["5.0"]}}', 'direct-uapi');
+        self::assertTrue($state->matchesRestorationResponse(
+            '{"status":1,"data":{"required_score":["5.0"]}}',
+            'direct-uapi',
+        ));
+        foreach (['{}', '{"required_score":[]}', '{"required_score":["5"]}', '{"required_score":[5.0]}'] as $payload) {
+            self::assertFalse($state->matchesRestorationResponse(
+                '{"status":1,"data":' . $payload . '}',
+                'direct-uapi',
+            ));
+        }
+    }
+
     /** @return iterable<string,array{string,string}> */
     public static function originals(): iterable
     {

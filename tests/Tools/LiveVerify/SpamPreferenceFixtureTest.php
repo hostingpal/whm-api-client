@@ -67,6 +67,89 @@ final class SpamPreferenceFixtureTest extends TestCase
         ], self::bodies($server));
     }
 
+    public function testEmptyRemovalRepliesThenAbsentGettersRestoreBothRoutes(): void
+    {
+        $server = new SpamPreferenceServer();
+        unset($server->preferences['required_score']);
+        $reply = '{"private_custom_name":["private_value"],"required_score":[]}';
+        $server->overrides['update_user_preference/direct/2'] = $reply;
+        $server->overrides['update_user_preference/bridge/2'] = $reply;
+        $report = self::fixture($server)->run();
+        self::assertSame('passed', $report['status']);
+        self::assertSame('passed', $report['preference_assessment']['status']);
+        self::assertSame(['direct-uapi' => 'restored', 'bridged-uapi' => 'restored'], $report['restoration']);
+        self::assertCount(31, $report['probes']);
+        self::assertSame(['private_custom_name' => ['private_value']], $server->preferences);
+        self::assertSame([
+            'preference=required_score&value=5.1', 'preference=required_score',
+            'preference=required_score&value=5.1', 'preference=required_score',
+        ], self::bodies($server));
+        foreach ([4, 9] as $index) {
+            self::assertSame(['empty-list'], $report['probes'][$index]['payload_paths']['$.required_score']);
+            self::assertSame([], $report['probes'][$index]['discrepancies']);
+        }
+    }
+
+    /** @return iterable<string,array{string}> */
+    public static function invalidRemovalReplies(): iterable
+    {
+        yield 'nonempty list' => ['{"private_custom_name":["private_value"],"required_score":["5.1"]}'];
+        yield 'wrong scalar' => ['{"private_custom_name":["private_value"],"required_score":0}'];
+        yield 'null' => ['{"private_custom_name":["private_value"],"required_score":null}'];
+        yield 'unrelated drift' => ['{"private_custom_name":["changed"],"required_score":[]}'];
+    }
+
+    #[DataProvider('invalidRemovalReplies')]
+    public function testRemovalReplyAllowanceDoesNotAcceptWrongValuesOrOtherChanges(string $reply): void
+    {
+        $server = new SpamPreferenceServer();
+        unset($server->preferences['required_score']);
+        $server->overrides['update_user_preference/direct/2'] = $reply;
+        $report = self::fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertSame(['direct-uapi' => 'uncertain', 'bridged-uapi' => 'not_started'], $report['restoration']);
+        self::assertCount(2, self::bodies($server));
+    }
+
+    /** @return iterable<string,array{int}> */
+    public static function getterAbsenceChecks(): iterable
+    {
+        yield 'restoration getter' => [3];
+        yield 'final catalog getter' => [5];
+    }
+
+    #[DataProvider('getterAbsenceChecks')]
+    public function testGetterEmptyListStillFailsExactOriginalAbsence(int $occurrence): void
+    {
+        $server = new SpamPreferenceServer();
+        unset($server->preferences['required_score']);
+        $reply = '{"private_custom_name":["private_value"],"required_score":[]}';
+        $server->overrides['update_user_preference/direct/2'] = $reply;
+        $server->overrides['update_user_preference/bridge/2'] = $reply;
+        $server->overrides['get_user_preferences/direct/' . $occurrence] = $reply;
+        $report = self::fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertContains(
+            $occurrence === 3 ? 'direct-uapi:restoration_unconfirmed' : 'catalog_failure',
+            $report['failures'],
+        );
+        self::assertCount($occurrence === 3 ? 2 : 4, self::bodies($server));
+    }
+
+    public function testEmptyRemovalReplyCannotResolveEarlierTransportUncertainty(): void
+    {
+        $server = new SpamPreferenceServer();
+        unset($server->preferences['required_score']);
+        $server->failures['update_user_preference/direct/1'] = 'lost';
+        $server->overrides['update_user_preference/direct/2'] =
+            '{"private_custom_name":["private_value"],"required_score":[]}';
+        $report = self::fixture($server)->run();
+        self::assertSame('failed', $report['status']);
+        self::assertSame(['direct-uapi' => 'uncertain', 'bridged-uapi' => 'not_started'], $report['restoration']);
+        self::assertContains('unresolved_mutation', $report['failures']);
+        self::assertCount(2, self::bodies($server));
+    }
+
     public function testExistingTargetUsesADistinctValueAndRestoresPrecisely(): void
     {
         $server = new SpamPreferenceServer();

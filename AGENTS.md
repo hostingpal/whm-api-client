@@ -401,8 +401,20 @@ It observes 14 BoxTrapper functions through both routes while protection stays
 disabled. queue_days and log date accept canonical integer strings only where
 explicitly corrected; direct-only observed log date strings do not establish
 that variant on the bridge. Empty logs/queues prove no message-row schema or
-filtering/delivery behavior. Combined new live coverage is 22/47 functions;
+filtering/delivery behavior. Initial captures cover 22/47 functions;
 remaining operations/variants stay in 8x0.2.23. Preserve all earlier captures.
+The correction capture at 6f3e0cb adds direct preference mutation execution
+(23/47 combined) but stops at 26 observations: all HTTP/API/payload pass, removal
+reply expectation fails on empty-list versus original omission. Both restoration
+reads and final catalog reads match the original complete state. Keep the artifact
+failed, direct restoration uncertain and bridge not_started; no mutation retry or
+bridge write occurred. Review 8x0.2.23.1 before more mutations. PTR findings remain
+strict failures and unwaived; historical evidence is immutable.
+The subsequent fixture-only correction permits the observed empty-list removal
+reply for original absence; getter equality and lost-outcome rules remain strict.
+It is offline-tested but no second capture has run. Seek Claude assessment before
+remaining bridge evidence; never replay the completed direct phase just to clear
+the original artifact.
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.
