@@ -1474,7 +1474,8 @@ is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
 
 The Customizations, UserData and InProductSurvey groups add five source-backed
 methods. Only retrieveCustomizations() uses GET; deletion, scoped-data read/write
-and survey retrieval use source-declared form POST. Customizations requires
+and survey retrieval use form POST according to their source `x-readonly=false`
+classification. Customizations requires
 cPanel 100 and Jupiter; scoped data/survey functions require 86. Application,
 theme and selective dot-path arguments are forwarded unchanged.
 
