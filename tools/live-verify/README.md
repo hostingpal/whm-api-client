@@ -906,3 +906,26 @@ at `06001e0` on `11.138.0.19` passes all seven GETs, both-route identity/zero ch
 and strict assessment with zero discrepancies. Both information responses contain
 the preserved empty-string size. No content was read or resource changed. Earlier
 captures remain unchanged; do not repeat the run just for handoff.
+
+## WHM backup and restoration inventory
+
+`backup-restoration.php` binds `backup-restoration-v1` to eleven WHM GETs: version,
+backup configuration, users/domains with backup metadata, users with backup metadata,
+archive inventory, restoration module summary, queue-active status, active/completed/
+pending queue lists and combined queue state. Every request is parameterless apart
+from `api.version=1`, and uses the existing exact URI/method/body guard.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/backup-restoration.php \
+  --output=docs/api/evidence/backup-restoration-new.json
+```
+
+The shared command requires committed inputs and both test tokens, although this
+catalog sends only WHM requests. Structural-only captures never persist account,
+domain, archive path, log or configuration values. Dynamic keys are wildcarded.
+No destination/OAuth credential read, backup creation, restoration, queue mutation,
+migration, archive deletion or configuration write occurs. Other readonly functions
+requiring identifiers are excluded without guessing identifiers. Strict assessment
+accepts no discrepancies or historical acknowledgments; failures remain failures.
+Follow-up `8x0.2.29` retains all unobserved operations and variants.

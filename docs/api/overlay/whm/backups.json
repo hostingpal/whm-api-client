@@ -1,0 +1,328 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "Backups",
+  "accessor": "backups",
+  "operations": {
+    "whm1:backup_config_get": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Backup configuration flags remain integer 0/1. disable_metadata=1 disables metadata, while keeplocal=0 deletes local backups. Omitted configuration fields remain absent."
+        }
+      ]
+    },
+    "whm1:backup_config_set": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Changes server-wide backup settings stored in /var/cpanel/backups/config. Omitted options retain server defaults; explicit false and zero are sent. disableMetadata=true disables metadata, and strict pruning can enforce retention without a successful backup."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned backup_monthly_dates parameter has an integer schema despite prose permitting a comma-delimited list. This signature preserves the formal integer boundary; multiple monthly dates are not established by this typed parameter."
+        },
+        {
+          "kind": "documented",
+          "text": "backupaccts, backupenable, backupmount and disableMetadata affect File and Directory Restoration availability. Backup and restoration timeouts can terminate their respective jobs. Directory arguments identify server paths, not local files."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned keeplocal parameter prose says 1 deletes local backups and 0 does not, but backup_config_get documents the opposite return meanings (1 retains, 0 deletes). The client forwards this flag without inversion; deletion semantics require source clarification and live verification under whm-api-client-8x0.2.29."
+        }
+      ]
+    },
+    "whm1:backup_date_list": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This inventory or status operation uses form POST because the pinned source marks x-readonly=false; it is not included in an explicit GET-only live catalog."
+        }
+      ]
+    },
+    "whm1:backup_destination_add": {
+      "order": [
+        "name",
+        "type",
+        "disabled"
+      ],
+      "params": {
+        "application_key": {
+          "required": false,
+          "sensitive": true
+        },
+        "application_key_id": {
+          "required": false,
+          "sensitive": true
+        },
+        "authtype": {
+          "required": false
+        },
+        "aws_access_key_id": {
+          "required": false,
+          "sensitive": true
+        },
+        "bucket": {
+          "required": false
+        },
+        "bucket_id": {
+          "required": false
+        },
+        "bucket_name": {
+          "required": false
+        },
+        "client_id": {
+          "required": false
+        },
+        "client_secret": {
+          "required": false,
+          "sensitive": true
+        },
+        "host": {
+          "required": false
+        },
+        "password": {
+          "required": false,
+          "sensitive": true
+        },
+        "script": {
+          "required": false
+        },
+        "username": {
+          "required": false
+        },
+        "passphrase": {
+          "sensitive": true
+        },
+        "privatekey": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned /backup_destination_add/get query declarations mark all provider fields required, but each overridden field description explicitly says it is only valid for named backup types: application_key/application_key_id/bucket_id/bucket_name for Backblaze; authtype for SFTP/Rsync; aws_access_key_id/bucket for AmazonS3/S3Compatible; client_id/client_secret for GoogleDrive; host for Custom/FTP/SFTP/Rsync/WebDAV/S3Compatible; password for AmazonS3/Custom/FTP/SFTP/Rsync/WebDAV/S3Compatible; script for Custom; username for Custom/FTP/SFTP/Rsync/WebDAV. Their global required flags cannot apply to other types. Only these thirteen global flags become optional. name, type and disabled remain required; path remains formally optional with its Local conditional requirement documented. Credential keys, passwords and private-key inputs are sensitive."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Supply the fields required by the selected provider; the client does not enforce cross-parameter provider conditions. The thirteen provider-only fields are optional globally because the pinned descriptions explicitly restrict their valid backup types. The Local type requires path. name, type and disabled remain required."
+        },
+        {
+          "kind": "documented",
+          "text": "Private-key and script paths identify files on the server; they do not upload local files. Passphrase and privatekey are only valid for SFTP/Rsync key authentication. Omitted options retain the provider defaults; no value is synthesized for an omitted path."
+        },
+        {
+          "kind": "documented",
+          "text": "Use an encrypted transport for system backups as the source warns. Creating a destination changes the server backup configuration; this call does not establish successful backup delivery."
+        }
+      ]
+    },
+    "whm1:backup_destination_delete": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Removes the destination from the backup configuration file. The source does not specify deletion of backup archives; no archive-deletion behavior is inferred."
+        }
+      ]
+    },
+    "whm1:backup_destination_get": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This inventory or status operation uses form POST because the pinned source marks x-readonly=false; it is not included in an explicit GET-only live catalog."
+        },
+        {
+          "kind": "documented",
+          "text": "Provider alternatives retain all documented fields, including later GoogleDrive and SFTP fields. Credential values returned by the server are sensitive payload data. The source provides no required response fields."
+        }
+      ]
+    },
+    "whm1:backup_destination_list": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This inventory or status operation uses form POST because the pinned source marks x-readonly=false; it is not included in an explicit GET-only live catalog."
+        },
+        {
+          "kind": "documented",
+          "text": "Provider alternatives retain their documented fields, including client_secret. Returned credentials are sensitive payload data. An empty list does not establish populated provider variants."
+        }
+      ]
+    },
+    "whm1:backup_destination_set": {
+      "exclude": {
+        "reason": "The formal form body uses anyOf/allOf provider schemas rather than supported plain properties; composed form-body support and the conflicting JSON code samples require review under whm-api-client-8x0.1.22.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "The pinned /backup_destination_set/post requestBody content is application/x-www-form-urlencoded with a $ref to BackupDestinationSetParameterType: anyOf ten BackupDestinationSetParameter provider schemas, each composed with allOf and the Base. The CLI sample uses --input=json and the HTTP sample declares application/json. Existing body_fields applies only to multipart field-name corrections and cannot flatten these form alternatives. No transport or fields are inferred."
+          }
+        ]
+      }
+    },
+    "whm1:backup_destination_validate": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Validation may disable the destination when disableonfail=true. This is a form POST even when disableonfail=false; a successful validation does not establish backup restoration or delivery."
+        }
+      ]
+    },
+    "whm1:backup_does_client_id_have_google_credentials": {},
+    "whm1:backup_generate_google_oauth_uri": {
+      "params": {
+        "client_secret": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The returned OAuth URI is payload data and may carry authentication context. The client returns it without fetching it or performing an OAuth flow."
+        }
+      ]
+    },
+    "whm1:backup_get_transport_status": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This inventory or status operation uses form POST because the pinned source marks x-readonly=false; it is not included in an explicit GET-only live catalog."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting state or transportId returns all applicable transports. The pinned prose mentions transport_name but declares no such parameter, so this method exposes only state and transportId. Returned timestamps remain strings."
+        }
+      ]
+    },
+    "whm1:backup_list_transported": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This inventory or status operation uses form POST because the pinned source marks x-readonly=false; it is not included in an explicit GET-only live catalog."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned map keys are transport IDs and account names; their values are lists of backup dates. Omitting transport requests information for all transports."
+        }
+      ]
+    },
+    "whm1:backup_set_list": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This inventory or status operation uses form POST because the pinned source marks x-readonly=false; it is not included in an explicit GET-only live catalog."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned backup_set schema declares an object with empty properties and misplaced items describing user/backup_date. Preserve that opaque object without inferring a list or named row fields; source clarification and live shape verification remain under whm-api-client-8x0.2.29."
+        }
+      ]
+    },
+    "whm1:backup_set_list_combined": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This inventory or status operation uses form POST because the pinned source marks x-readonly=false; it is not included in an explicit GET-only live catalog."
+        },
+        {
+          "kind": "documented",
+          "text": "Account names and destination IDs remain dynamic map keys. The where strings identify local or remote backup locations; the client does not fetch backup files."
+        }
+      ]
+    },
+    "whm1:backup_skip_users_all": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Changes backup enablement for every user for the selected backupversion. state=true enables that backup type, while false disables it. The result has no documented data payload; configuration progress is available separately."
+        }
+      ]
+    },
+    "whm1:backup_skip_users_all_status": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This inventory or status operation uses form POST because the pinned source marks x-readonly=false; it is not included in an explicit GET-only live catalog."
+        },
+        {
+          "kind": "documented",
+          "text": "The payload reason object reports configuration progress; it is distinct from the outer WHM metadata.reason message. running remains an integer 0/1 flag."
+        }
+      ]
+    },
+    "whm1:backup_user_list": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This inventory or status operation uses form POST because the pinned source marks x-readonly=false; it is not included in an explicit GET-only live catalog."
+        }
+      ]
+    },
+    "whm1:convert_and_migrate_from_legacy_config": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Migrates the server backup configuration. The pinned no_convert name is counterintuitive: its prose says 1 converts and 0 does not, while the documented default is 0. The client forwards the flag without inverting it; this behavior remains unverified live."
+        }
+      ]
+    },
+    "whm1:fetch_pkgacct_master_log": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Returns master log text as payload data without parsing embedded JSON or following any log URL. The source says users should not directly call live_tail_log.cgi."
+        }
+      ]
+    },
+    "whm1:get_pkgacct_session_state": {},
+    "whm1:get_users_and_domains_with_backup_metadata": {},
+    "whm1:get_users_with_backup_metadata": {},
+    "whm1:list_cparchive_files": {},
+    "whm1:start_background_pkgacct": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Starts a background account backup and can write an archive on the server. incremental=true updates the destination and removes content that no longer exists on the account; it creates an uncompressed archive. tarroot is a server directory path, not a local upload."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted compressionsetting retains the documented null default; explicit null is omitted by scalar encoding and does not transmit a JSON null. useBackups may reuse the last successful backup. Exclusion flags change archive contents; skipapitokens and skipauthnlinks omit sensitive account credentials."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned log names and session IDs are payload data. Do not directly call live_tail_log.cgi; the API client does not stream logs or establish successful archive completion from this start response."
+        }
+      ]
+    },
+    "whm1:start_local_cpmove_restore": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Performs a full account restoration from a server-side cpmove archive or extracted directory. overwrite=true may replace an existing account; deleteArchive=true deletes the source archive or directory after restoration. This is not a local file upload."
+        },
+        {
+          "kind": "documented",
+          "text": "restricted is experimental and is not an effective security control. Restricted restores require PostgreSQL 8.4 or newer for PostgreSQL databases, force unsupported shells to noshell, and skip invalid backup parts with log warnings. A dedicated IP requires an available address."
+        },
+        {
+          "kind": "documented",
+          "text": "mailLocation accepts .local, .existing or a linked-node alias; failed existing/alias placement falls back to .local. updateARecords controls all original-IP occurrences versus basic cPanel records. A transfer session ID starts background work and does not prove restoration completion."
+        }
+      ]
+    },
+    "whm1:toggle_user_backup_state": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Toggles the selected account backup state and can enable or disable backups. Omitting legacy selects the standard backup system; false is forwarded as 0. Returned toggle_status remains an integer 0/1 flag."
+        }
+      ]
+    }
+  }
+}

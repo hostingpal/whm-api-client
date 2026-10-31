@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 30 typed groups cover 385 documented operations:
+and cPanel UAPI surface. The 32 typed groups cover 427 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -475,6 +475,47 @@ routes on 11.138.0.19, restoring user_prefs byte-identically. PR36 merged as
 52af23a with green CI and the same tree. No further capture is required; keep
 8x0.2.23.1 open for future committed both-route evidence, and never rerun just
 to clear the original artifact.
+
+The WHM backup and restoration groups expose 42 methods: 26 in `backups()` and
+all sixteen in `accountRestoration()`. Fourteen explicit source reads use GET;
+28 operations use form POST, including inventory-like backup methods whose pinned
+`x-readonly` value is false. `backup_destination_set` remains excluded under
+`8x0.1.22`: its composed provider-specific form schema is not supported by the
+current generator, and its JSON examples conflict with the formal form content.
+Generic compatible form access does not establish typed destination-update coverage.
+
+Destination creation requires name, type and disabled; provider-specific inputs
+are optional in the PHP signature only where pinned prose makes their requirement
+conditional. Supply the fields required by the selected provider. Credentials,
+private keys, passwords and OAuth secrets remain sensitive. Returned secrets and
+OAuth URLs are payload data; the client does not fetch them. Archive and staging
+paths refer to server-side files, not local uploads.
+
+Omitted settings retain server defaults; false and zero are sent explicitly.
+The backup setter's `keeplocal` prose contradicts the getter's retention meaning;
+the client forwards the flag without inversion. The integer monthly-dates input
+also conflicts with comma-separated prose, so multiple dates are not established
+by that typed argument. Migration's `no_convert` name conflicts with its positive
+conversion prose; the documented flag is forwarded unchanged. The malformed
+`backup_set_list.backup_set` row description remains an opaque object. These
+source gaps remain under `8x0.2.29`.
+
+Backup configuration and strict retention can affect stored archives. Packaging
+and restoration can overwrite account content; restoration may delete its source
+archive when requested. Queue activation acts on queued accounts, while each
+clear method documents the tasks it removes. Restricted restoration carries the
+source's experimental limitations. Session identifiers do not establish completion.
+The client does not retry or roll back these operations. Metadata-only operations,
+including username conflict verification, return void and use API errors for
+failure. Completed queue records preserve nullable counts/warnings, integer result
+codes and string timestamps; omitted fields remain absent.
+
+All 42 methods have offline contract coverage. The fixed live catalog selects WHM
+version, four parameterless backup reads and six restoration status/module reads
+(11 GETs). It excludes destination credentials, OAuth requests, session logs,
+backup creation, account restoration, queue changes, migration and configuration
+writes. Populated variants and all remaining live behavior stay in `8x0.2.29`.
+
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.
