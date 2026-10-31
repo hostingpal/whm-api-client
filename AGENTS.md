@@ -1438,6 +1438,13 @@ functions through both routes. It reads no private configuration, contacts,
 calendars or delegations and makes no setting/collection changes. Remaining
 operations, populated variants and controlled lifecycle stay under `8x0.2.56`.
 
+
+The DAV capture at 628c46e on 11.138.0.19 records seven HTTP-200 observations:
+version and both service-state reads pass; both shared-addressbook and Horde
+reads fail at the API layer. Zero schema discrepancies does not clear the failed
+strict assessment. No failure cause or flag value is inferred; no private data,
+delegation, collection or settings change ran. Keep remaining live work in 8x0.2.56.
+
 ## Architecture and Conventions
 
 - Follow the [agreed PHP client interface](docs/superpowers/specs/2026-10-13-php-client-design.md):

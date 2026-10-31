@@ -1387,3 +1387,9 @@ Seven fixed GETs read version and shared-addressbook/DAV/Horde status on both UA
 routes. Existing opt-in, committed-input, exact request guard, TLS and immutable
 structural-output rules apply. No private configuration, contacts, calendars or
 delegations are read and no settings/collections are changed. Keep gaps under `8x0.2.56`.
+
+The DAV capture at 628c46e on 11.138.0.19 records seven HTTP-200 observations:
+version and both service-state reads pass; both shared-addressbook and Horde
+reads fail at the API layer. Zero schema discrepancies does not clear the failed
+strict assessment. No failure cause or flag value is inferred; no private data,
+delegation, collection or settings change ran. Keep remaining live work in 8x0.2.56.

@@ -4455,3 +4455,20 @@ seven-GET catalog reads version and three DAV service/shared-addressbook status
 functions through both routes. It reads no private configuration, contacts,
 calendars or delegations and makes no setting/collection changes. Remaining
 operations, populated variants and controlled lifecycle stay under `8x0.2.56`.
+
+## DAV service-status evidence
+
+The [DAV status capture](evidence/2026-10-31-dav-calendar.json) at
+`628c46eec9608e31a5bc32dedb1d374f25d6b1ac` on `11.138.0.19` records seven
+HTTP-200 observations. Version and is_dav_service_enabled on both routes pass;
+shared-global-addressbook and Horde status return API failures on both routes,
+so those payloads are not validated. There are zero schema discrepancies, but
+strict assessment remains failed because of those four API failures. The sanitized
+artifact does not establish their cause. No contract is loosened or failure waived.
+
+The successful service-state payload contains an integer enabled field; the
+structural artifact does not establish a particular value or client behavior.
+No private configuration, contacts, calendars or delegations were read and no
+setting/collection mutation or DAV-client authentication ran. The failed capture
+is immutable; remaining operations/variants stay under `8x0.2.56`. SHA-256:
+`e4cec00d478951bd22f0cc1e82609ebcdcac2041709111a08a8034007770b19a`.
