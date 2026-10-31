@@ -267,6 +267,9 @@
     },
     "uapi:ClamScanner/start_scan": {
       "method": "POST",
+      "params": {
+        "scan_type": {"type": "string"}
+      },
       "notes": [
         {
           "kind": "documented",
@@ -286,6 +289,14 @@
         }
       ],
       "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The selected GET parameter has neither type nor format: its enum and directory prose specify only home, mail, public_html and public_ftp. Correct the native input to string, preserving requiredness, literal enum PHPDoc, nonsensitive scalar form encoding and the existing POST override. Unknown strings still forward unchanged; this is native PHP typing, not enum-membership validation. Strict-caller integers now fail before metadata reset; ordinary weak-caller scalar coercion remains PHP behavior. No live scan is established.",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1ClamScanner~1start_scan/get/parameters/0/schema"
+        },
         {
           "kind": "doc",
           "version": "pinned 2026-10-13",

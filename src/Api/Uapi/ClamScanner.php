@@ -238,14 +238,14 @@ final readonly class ClamScanner
      *
      * API-map identity: uapi:ClamScanner/start_scan#GET (wire name start_scan).
      *
-     * @param string|int $scanType The type of directory to scan.
+     * @param 'home'|'mail'|'public_html'|'public_ftp' $scanType The type of directory to scan.
      * @return StartScanResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/antivirus-protection-(clamav)/clamscanner-start_scan
      */
-    public function startScan(string|int $scanType): ?array
+    public function startScan(string $scanType): ?array
     {
         /** @var StartScanResult $result Validated against ClamScannerSpec::START_SCAN. */
         $result = ($this->run)(ClamScannerSpec::START_SCAN, ['scanType' => $scanType]);

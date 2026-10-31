@@ -450,6 +450,32 @@ func (s schemas) envelopeData(op model.Operation, sourceID string, envelope map[
 	return payloadInfo{issue: "the 200 envelope documents neither properties nor alternatives"}
 }
 
+// enumOnlyString admits only a plain enum-only scalar schema. It deliberately
+// does not follow references, lower typeless schemas globally or infer formats.
+func (s schemas) enumOnlyString(node any) bool {
+	obj, ok := asObject(node)
+	if !ok {
+		return false
+	}
+	for key := range obj {
+		switch key {
+		case "enum", "example", "description", "title":
+		default:
+			return false
+		}
+	}
+	values, ok := obj["enum"].([]any)
+	if !ok || len(values) == 0 {
+		return false
+	}
+	for _, value := range values {
+		if _, ok := value.(string); !ok {
+			return false
+		}
+	}
+	return true
+}
+
 // presenceOnlyInteger identifies only the concrete source schema supported by
 // the reviewed presence-input correction. It does not infer input behavior.
 func (s schemas) presenceOnlyInteger(sourceID string, node any) bool {

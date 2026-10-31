@@ -485,6 +485,27 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 			} else {
 				param.PHPType, param.DocType, param.Encoding = "true", "true", "bool"
 			}
+		} else if o.Type == "string" {
+			bound := p.Locator.Pointer != nil && v.OperationLocator.Pointer != nil &&
+				p.Locator.SourceSHA256 != "" && p.Locator.SourceSHA256 == v.OperationLocator.SourceSHA256 &&
+				p.Locator.SourceID == v.OperationLocator.SourceID &&
+				strings.HasPrefix(*p.Locator.Pointer, *v.OperationLocator.Pointer+"/parameters/")
+			matched := false
+			if bound {
+				for _, e := range ov.Evidence {
+					matched = matched || (e.Kind == "doc" && e.SourceSHA256 == p.Locator.SourceSHA256 &&
+						e.Pointer == *p.Locator.Pointer+"/schema")
+				}
+			}
+			if !matched {
+				b.problem(op.ID + ": parameter " + p.Name + ": string type correction needs doc evidence matching selected operation source_sha256 and exact parameter schema pointer")
+			}
+			if !b.schemas.enumOnlyString(decl["schema"]) || hasContent || o.Wire != "" || o.Collection != nil ||
+				(o.Encoding != "" && o.Encoding != "scalar") || param.Encoding != "scalar" {
+				b.problem(op.ID + ": parameter " + p.Name + ": string type correction requires a concrete nonnullable enum-only string source without type, format, wire correction or changed encoding")
+			} else {
+				param.PHPType, param.DocType = "string", firstNonEmpty(enumDoc, "string")
+			}
 		} else if o.Type != "" {
 			// Numeric corrections retain the source's numeric types and cannot
 			// replace boolean or multiple-value encodings.

@@ -16,6 +16,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use ReflectionClass;
+use ReflectionMethod;
+use TypeError;
 
 /** Independent literal contracts from pinned BlockIP, ModSecurity and ClamScanner operations. */
 final class UapiWebSecurityTest extends TestCase
@@ -341,6 +343,66 @@ final class UapiWebSecurityTest extends TestCase
             $request = $http->getLastRequest();
             self::assertInstanceOf(RequestInterface::class, $request);
             self::assertStringEndsWith('last_id=0', (string) $request->getUri());
+        }
+    }
+
+    public function testClamScanSelectorsUseExactFormValues(): void
+    {
+        foreach (['direct', 'bridge'] as $route) {
+            foreach (
+                ['home' => 'scan_type=home', 'mail' => 'scan_type=mail',
+                'public_html' => 'scan_type=public_html', 'public_ftp' => 'scan_type=public_ftp',
+                'future & +%' => 'scan_type=future%20%26%20%2B%25'] as $selector => $body
+            ) {
+                [$client, $http] = self::client($route);
+                $account = $client->uapi('npr');
+                $http->addResponse(new Response(200, [], self::envelope($route, '{"opaque":false}')));
+                // Unknown strings deliberately reach the server: PHPDoc is not enum validation.
+                // @phpstan-ignore argument.type (Verify unchanged forwarding beyond the documented enum.)
+                self::assertSame(['opaque' => false], $account->clamScanner()->startScan($selector));
+                $request = $http->getLastRequest();
+                self::assertInstanceOf(RequestInterface::class, $request);
+                self::assertSame('POST', $request->getMethod());
+                self::assertSame('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
+                self::assertSame($body, (string) $request->getBody());
+                self::assertSame($route === 'bridge'
+                    ? 'https://api.example.test:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                        . '&cpanel.module=ClamScanner&cpanel.function=start_scan'
+                    : 'https://api.example.test:2083/execute/ClamScanner/start_scan', (string) $request->getUri());
+                self::assertCount(1, $http->getRequests());
+                self::assertSame(1, $account->responseMeta()?->uapiStatus());
+            }
+        }
+    }
+
+    public function testClamScanNativeStringBoundaryPrecedesMetadataReset(): void
+    {
+        foreach (['direct', 'bridge'] as $route) {
+            [$client, $http] = self::client($route);
+            $account = $client->uapi('npr');
+            $http->addResponse(new Response(200, [], self::envelope($route, 'null')));
+            self::assertNull($account->clamScanner()->startScan('home'));
+            $previous = $account->responseMeta();
+            self::assertNotNull($previous);
+            $http->addResponse(new Response(200, [], self::envelope($route, 'null')));
+            $caught = false;
+            try {
+                // @phpstan-ignore argument.type (Exercise native strict-caller rejection before dispatch.)
+                $account->clamScanner()->startScan(1);
+            } catch (TypeError) {
+                $caught = true;
+            }
+            self::assertTrue($caught, 'Integer scan types must fail at the native string boundary.');
+            self::assertSame($previous, $account->responseMeta());
+            self::assertCount(1, $http->getRequests());
+            $method = new ReflectionMethod($account->clamScanner(), 'startScan');
+            self::assertSame('string', (string) $method->getParameters()[0]->getType());
+            self::assertFalse($method->getParameters()[0]->isOptional());
+            self::assertSame('?array', (string) $method->getReturnType());
+            self::assertStringContainsString(
+                "@param 'home'|'mail'|'public_html'|'public_ftp' $" . 'scanType',
+                (string) $method->getDocComment(),
+            );
         }
     }
 

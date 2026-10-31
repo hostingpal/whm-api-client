@@ -154,6 +154,19 @@ Operation entries (all keys optional):
   inputs cannot use it, and duplicate final wire names fail generation. Overlay
   keys and `order` still use the pinned source name; the public PHP name, type,
   requiredness and sensitivity retain their existing rules.
+  `type: "string"` narrowly corrects a concrete enum-only scalar schema with no
+  `type` or `format`, a nonempty all-string enum, and only optional `example`,
+  `description` or `title` annotations. Nullable, composed, referenced, object,
+  list, mixed/numeric/null enums and content-based JSON parameters are rejected.
+  It requires `doc` evidence with the exact parameter `/schema` pointer and
+  `source_sha256`, bound to the selected operation source and parameter pointer.
+  A POST method override does not change that source-variant binding. Encoding
+  must be absent or `scalar`; wire corrections and collections cannot combine.
+  It preserves literal enum PHPDoc, requiredness, sensitivity and existing scalar
+  form encoding; unannotated typeless/format-only sources retain their fallback.
+  This is native PHP typing, not runtime enum-membership validation. Strict-caller
+  integers fail before dispatch or metadata reset; normal weak-caller scalar
+  coercion remains PHP behavior.
   `type: "string|int"` widens a documented scalar string or integer parameter
   with matching scalar encoding, for reviewed identifier variants or
   comma-delimited values. `type: "string|int|float"` applies only to a documented
