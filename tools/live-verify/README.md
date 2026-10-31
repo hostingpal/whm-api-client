@@ -1418,6 +1418,28 @@ configuration or link data was requested, and no state changed. It establishes
 no login, TFA challenge, SSH access or mutation compatibility. `8x0.2.40` remains
 open for all unobserved functions and variants.
 
+## DAV service and shared-addressbook status
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/dav-calendar.php --output=docs/api/evidence/YYYY-MM-DD-dav-calendar.json` only for an explicitly requested capture.
+
+The fixed seven-GET catalog is diagnostic: version, then shared-addressbook,
+DAV service and Horde status through both UAPI routes. Order, exact URIs, account
+binding, opt-in, committed-input guard, TLS and immutable structural output remain
+unchanged. It reads no private configurations, contacts, calendars or delegations
+and changes no setting/collection. It is no availability guarantee.
+
+The original `628c46e` capture on `11.138.0.19` has seven HTTP 200 observations:
+version and two service-state passes, four shared/Horde API failures with payload
+`not_checked`. Strict status remains failed despite zero schema discrepancies;
+there is no waiver. Separate reviewer report 5721214794 attributes the shared read
+to a return-0 stub and Horde to a missing handler on that version. Two misleading
+overlay success recipes are removed; the fixed catalog retains both diagnostic
+failures. The runner does not reinterpret errors as success, infer false, or
+accept expected-error recipes. No new capture ran for this correction.
+
+The reviewer separately used npr reads on both routes and disposable-account
+writes; those are outside this artifact. Keep remaining live work in `8x0.2.56`.
+
 ## GPG public inventory and two-factor status
 
 Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/gpg-two-factor.php --output=docs/api/evidence/YYYY-MM-DD-gpg-two-factor.json`.

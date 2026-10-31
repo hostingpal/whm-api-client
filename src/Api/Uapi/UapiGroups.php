@@ -33,7 +33,11 @@ trait UapiGroups
 
     private ?ContactUs $contactUsGroup = null;
 
+    private ?CpDavd $cpDavdGroup = null;
+
     private ?CpGreyList $cpGreyListGroup = null;
+
+    private ?Dav $davGroup = null;
 
     private ?DirectoryIndexes $directoryIndexesGroup = null;
 
@@ -246,6 +250,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the CPDAVD operations without making a request.
+     *
+     * The CPDAVD module for UAPI.
+     */
+    public function cpDavd(): CpDavd
+    {
+        return $this->cpDavdGroup ??= new CpDavd($this->run(...));
+    }
+
+    /**
      * Select the cPGreyList operations without making a request.
      *
      * The cPGreyList module for UAPI.
@@ -253,6 +267,16 @@ trait UapiGroups
     public function cpGreyList(): CpGreyList
     {
         return $this->cpGreyListGroup ??= new CpGreyList($this->run(...));
+    }
+
+    /**
+     * Select the DAV operations without making a request.
+     *
+     * The DAV module for UAPI.
+     */
+    public function dav(): Dav
+    {
+        return $this->davGroup ??= new Dav($this->run(...));
     }
 
     /**
