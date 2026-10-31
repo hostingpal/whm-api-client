@@ -99,7 +99,7 @@
         },
         {
           "kind": "documented",
-          "text": "keyName selects an existing SSH key; it is not private-key content. keyPassphrase is required and sensitive. The pinned source requires at least four characters and does not document key generation/import as part of this operation."
+          "text": "keyName selects an existing SSH key; it is not private-key content. The pinned key_name documentation names UAPI SSL::generate_key for creating a private SSH key and cPanel API 2 SSH::importkey for importing an existing key. This backup call does not perform those prerequisite operations. keyPassphrase is required and sensitive; its pinned minimum length is four characters."
         }
       ],
       "evidence": [
@@ -114,6 +114,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /Backup/fullbackup_to_scp_with_key parameter key_name is described as 'The SSH key\u2019s name' and its example is examplesshkey, while key_passphrase is separately described as the SSH key password. key_name selects an existing key by name and contains no key material; keep this identifier non-sensitive and the password sensitive."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Backup/fullbackup_to_scp_with_key key_name text explicitly names UAPI SSL::generate_key and cPanel API 2 SSH::importkey. Preserve this prerequisite guidance; no key creation/import or SCP transfer was exercised by this correction. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
         }
       ],
       "order": [

@@ -139,16 +139,16 @@ final readonly class BackupInfo
      * record. It is idempotent and does not cancel a running backup, delete an archive or prove completion; progress
      * then reports live state. The client does not invoke this cleanup automatically.
      *
-     * Documented: cleared is a JSON boolean, not an integer 0/1 flag.
+     * Observed: On cPanel 11.138.0.19, the reviewer observed integer cleared=1 after the state was cleared. The pinned
+     * boolean remains the public result; integer 0 and 1 normalize to false and true. Other integers, strings, floats
+     * and null remain payload mismatches. A successful cleanup is not retried automatically.
      *
      * Documented: All declared response fields are optional: omission stays distinct from zero, false, an empty string
      * and explicit documented null. A missing or null data member is a payload mismatch. No general response-string
      * enum or cross-field invariant validation is inferred.
      *
-     * Documented: The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively
-     * uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred.
-     * This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload
-     * verification.
+     * Documented: The pinned operation omits x-readonly. The generated client conservatively uses form POST; no
+     * read-only GET override is inferred.
      *
      * API-map identity: uapi:BackupInfo/reset#GET (wire name reset).
      *

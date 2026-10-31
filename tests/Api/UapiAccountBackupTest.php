@@ -54,6 +54,9 @@ final class UapiAccountBackupTest extends TestCase
     public static function operations(): iterable
     {
         $cases = [
+            ['BackupInfo', 'reset', 'POST', '', '{"cleared":true}'],
+            ['ExtractInfo', 'finish', 'POST', '', '{"cleared":false}'],
+            ['ExtractInfo', 'start', 'POST', 'archive=archive.tar.gz&directory=public_html', '{"started":true}'],
             ['Backup', 'fullbackup_to_ftp', 'POST', 'host=remote.example.test&password=Backup%2BSecret%26%3D%25'
                 . '&username=remote%20user&directory=%2Fpublic_ftp%2Fbackup%20path&email=notify%2Bbackup%40example.test'
                 . '&homedir=skip&port=2121&variant=passive', '{"pid":"02857"}'],
@@ -98,6 +101,82 @@ final class UapiAccountBackupTest extends TestCase
         }
     }
 
+    #[DataProvider('clearedFlags')]
+    public function testClearedFlagsNormalizeOnlyReviewedIntegerValues(
+        string $route,
+        string $group,
+        string $function,
+        string $payload,
+        bool $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $http->addResponse(new Response(200, [], self::envelope($route, $group, $function, $payload)));
+        self::assertSame(['cleared' => $expected], self::invoke($client->uapi('exampleuser'), $group, $function));
+        self::assertRequest($http, $route, $group, $function, 'POST', '');
+        self::assertCount(1, $http->getRequests());
+        self::assertSame(1, $client->uapi('exampleuser')->responseMeta()?->uapiStatus());
+    }
+
+    /** @return iterable<string, array{string, string, string, string, bool}> */
+    public static function clearedFlags(): iterable
+    {
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach ([['BackupInfo', 'reset'], ['ExtractInfo', 'finish']] as [$group, $function]) {
+                foreach ([['1', true], ['0', false], ['true', true], ['false', false]] as [$wire, $expected]) {
+                    yield $route . ' ' . $group . ' ' . $wire => [
+                        $route, $group, $function, '{"cleared":' . $wire . '}', $expected,
+                    ];
+                }
+            }
+        }
+    }
+
+    #[DataProvider('wordPressProgressLayouts')]
+    public function testWordPressProgressPreservesFlatAndNestedPinnedFields(
+        string $route,
+        string $payload,
+        mixed $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $http->addResponse(new Response(200, [], self::envelope($route, 'WordPressRestore', 'any_running', $payload)));
+        self::assertSame($expected, $client->uapi('exampleuser')->wordPressRestore()->anyRunning());
+        self::assertRequest($http, $route, 'WordPressRestore', 'any_running', 'GET', '');
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, mixed}> */
+    public static function wordPressProgressLayouts(): iterable
+    {
+        // Literal pinned InProgress and NotInProgress examples, independent of generated specs.
+        $inProgress = '{"any_running":1,"sites":[{"id":null,"site":"example.com","type":"restore"}]}';
+        $inProgressExpected = ['any_running' => 1,
+            'sites' => [['id' => null, 'site' => 'example.com', 'type' => 'restore']]];
+        $notInProgress = '{"any_running":0,"last_outcome":{"error":"","have_outcome":1,'
+            . '"site":"example.com","status":"success"},"sites":[]}';
+        $notInProgressExpected = ['any_running' => 0, 'last_outcome' => ['error' => '', 'have_outcome' => 1,
+            'site' => 'example.com', 'status' => 'success'], 'sites' => []];
+        $cases = [
+            'flat InProgress' => [$inProgress, $inProgressExpected],
+            'flat NotInProgress' => [$notInProgress, $notInProgressExpected],
+            'items InProgress' => ['{"items":' . $inProgress . '}', ['items' => $inProgressExpected]],
+            'items NotInProgress' => ['{"items":' . $notInProgress . '}', ['items' => $notInProgressExpected]],
+            // Both placements must survive, including distinct values, without first-match union loss.
+            'both placements' => ['{"any_running":1,"last_outcome":{"error":null,"have_outcome":0},'
+                . '"sites":[{"id":"restore-one","site":"first.example","type":"restore"},{"site":"second.example"}],'
+                . '"items":' . $notInProgress . '}', ['any_running' => 1, 'items' => $notInProgressExpected,
+                    'last_outcome' => ['error' => null, 'have_outcome' => 0],
+                    'sites' => [
+                        ['id' => 'restore-one', 'site' => 'first.example', 'type' => 'restore'],
+                        ['site' => 'second.example']]]],
+            'flat formal opaque object' => ['{"any_running":0,"sites":{}}', ['any_running' => 0, 'sites' => []]],
+        ];
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach ($cases as $name => [$payload, $expected]) {
+                yield $route . ' ' . $name => [$route, $payload, $expected];
+            }
+        }
+    }
+
     #[DataProvider('optionalPayloads')]
     public function testOptionalFieldsNullsAndEmptyCollectionsRemainDistinct(
         string $route,
@@ -116,6 +195,9 @@ final class UapiAccountBackupTest extends TestCase
     public static function optionalPayloads(): iterable
     {
         $cases = [
+            ['BackupInfo', 'reset', '{}', []],
+            ['ExtractInfo', 'finish', '{}', []],
+            ['ExtractInfo', 'start', '{}', []],
             ['Backup', 'fullbackup_to_ftp', '{}', []],
             ['Backup', 'list_backups', '[]', []],
             ['Restore', 'get_users', '[]', []],
@@ -226,6 +308,25 @@ final class UapiAccountBackupTest extends TestCase
         ) {
             $cases[] = $case;
         }
+        foreach ([['BackupInfo', 'reset'], ['ExtractInfo', 'finish']] as [$group, $function]) {
+            foreach (['2', '-1', '1.0', '"1"', '"0"', 'null', '[]', '{}'] as $value) {
+                $cases[] = [$group, $function, '{"cleared":' . $value . '}'];
+            }
+        }
+        foreach (['0', '1', '"1"', 'null'] as $value) {
+            $cases[] = ['ExtractInfo', 'start', '{"started":' . $value . '}'];
+        }
+        foreach (
+            [
+            '{"any_running":2}', '{"any_running":"0"}', '{"any_running":true}',
+            '{"last_outcome":null}', '{"last_outcome":{"have_outcome":"1"}}',
+            '{"last_outcome":{"error":false}}', '{"sites":null}', '{"sites":[{"id":1}]}',
+            '{"sites":[{"site":false}]}', '{"sites":[{"type":1}]}', '{"sites":[false]}',
+            ] as $payload
+        ) {
+            $cases[] = ['WordPressRestore', 'any_running', $payload];
+            $cases[] = ['WordPressRestore', 'any_running', '{"items":' . $payload . '}'];
+        }
         foreach (['cancel', 'start'] as $function) {
             foreach (['null', 'false', '0', '1.5', '{}', '[]', '["example.test"]'] as $site) {
                 $cases[] = ['WordPressBackup', $function, '{"site":' . $site . '}'];
@@ -333,6 +434,9 @@ final class UapiAccountBackupTest extends TestCase
                 self::SECRET, 'remote user', directory: '/remote path',
                 email: 'notify+backup@example.test', homedir: 'skip', port: 2222,
             ),
+            'BackupInfo/reset' => $account->backupInfo()->reset(),
+            'ExtractInfo/finish' => $account->extractInfo()->finish(),
+            'ExtractInfo/start' => $account->extractInfo()->start('archive.tar.gz', 'public_html'),
             'Backup/list_backups' => $account->backup()->listBackups(),
             'Restore/directory_listing' => $account->restore()->directoryListing('/public_html/backup path/'),
             'Restore/get_users' => $account->restore()->getUsers(),

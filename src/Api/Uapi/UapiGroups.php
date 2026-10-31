@@ -13,6 +13,8 @@ namespace HostingPal\WhmApiClient\Api\Uapi;
  */
 trait UapiGroups
 {
+    private ?AccountEnhancements $accountEnhancementsGroup = null;
+
     private ?AddonDomain $addonDomainGroup = null;
 
     private ?Backup $backupGroup = null;
@@ -21,7 +23,15 @@ trait UapiGroups
 
     private ?Bandwidth $bandwidthGroup = null;
 
+    private ?BlockIp $blockIpGroup = null;
+
     private ?BoxTrapper $boxTrapperGroup = null;
+
+    private ?ClamScanner $clamScannerGroup = null;
+
+    private ?ContactInformation $contactInformationGroup = null;
+
+    private ?ContactUs $contactUsGroup = null;
 
     private ?CpGreyList $cpGreyListGroup = null;
 
@@ -43,9 +53,13 @@ trait UapiGroups
 
     private ?DynamicDns $dynamicDnsGroup = null;
 
+    private ?Ea4 $ea4Group = null;
+
     private ?Email $emailGroup = null;
 
     private ?EmailAuth $emailAuthGroup = null;
+
+    private ?ExternalAuthentication $externalAuthenticationGroup = null;
 
     private ?ExtractInfo $extractInfoGroup = null;
 
@@ -55,15 +69,27 @@ trait UapiGroups
 
     private ?Ftp $ftpGroup = null;
 
+    private ?KnownHosts $knownHostsGroup = null;
+
     private ?LangPhp $langPhpGroup = null;
+
+    private ?LastLogin $lastLoginGroup = null;
+
+    private ?Locale $localeGroup = null;
 
     private ?Mime $mimeGroup = null;
 
+    private ?ModSecurity $modSecurityGroup = null;
+
     private ?Mysql $mysqlGroup = null;
+
+    private ?Notifications $notificationsGroup = null;
 
     private ?Park $parkGroup = null;
 
     private ?PassengerApps $passengerAppsGroup = null;
+
+    private ?PasswdStrength $passwdStrengthGroup = null;
 
     private ?Postgresql $postgresqlGroup = null;
 
@@ -73,7 +99,11 @@ trait UapiGroups
 
     private ?Restore $restoreGroup = null;
 
+    private ?ServerInformation $serverInformationGroup = null;
+
     private ?SpamAssassin $spamAssassinGroup = null;
+
+    private ?Ssh $sshGroup = null;
 
     private ?Ssl $sslGroup = null;
 
@@ -85,9 +115,23 @@ trait UapiGroups
 
     private ?SubDomain $subDomainGroup = null;
 
+    private ?Team $teamGroup = null;
+
+    private ?TeamRoles $teamRolesGroup = null;
+
+    private ?Themes $themesGroup = null;
+
+    private ?UserManager $userManagerGroup = null;
+
+    private ?Users $usersGroup = null;
+
+    private ?Variables $variablesGroup = null;
+
     private ?VersionControl $versionControlGroup = null;
 
     private ?VersionControlDeployment $versionControlDeploymentGroup = null;
+
+    private ?WebDisk $webDiskGroup = null;
 
     private ?WebVhosts $webVhostsGroup = null;
 
@@ -96,6 +140,16 @@ trait UapiGroups
     private ?WordPressBackup $wordPressBackupGroup = null;
 
     private ?WordPressRestore $wordPressRestoreGroup = null;
+
+    /**
+     * Select the AccountEnhancements operations without making a request.
+     *
+     * UAPI AccountEnhancements module functions.
+     */
+    public function accountEnhancements(): AccountEnhancements
+    {
+        return $this->accountEnhancementsGroup ??= new AccountEnhancements($this->run(...));
+    }
 
     /**
      * Select the AddonDomain operations without making a request.
@@ -138,6 +192,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the BlockIP operations without making a request.
+     *
+     * The BlockIP module for UAPI.
+     */
+    public function blockIp(): BlockIp
+    {
+        return $this->blockIpGroup ??= new BlockIp($this->run(...));
+    }
+
+    /**
      * Select the BoxTrapper operations without making a request.
      *
      * The BoxTrapper module for UAPI.
@@ -145,6 +209,36 @@ trait UapiGroups
     public function boxTrapper(): BoxTrapper
     {
         return $this->boxTrapperGroup ??= new BoxTrapper($this->run(...));
+    }
+
+    /**
+     * Select the ClamScanner operations without making a request.
+     *
+     * The ClamScanner module provides methods for ClamAV® virus scans and disinfection.
+     */
+    public function clamScanner(): ClamScanner
+    {
+        return $this->clamScannerGroup ??= new ClamScanner($this->run(...));
+    }
+
+    /**
+     * Select the ContactInformation operations without making a request.
+     *
+     * The ContactInformation module for UAPI.
+     */
+    public function contactInformation(): ContactInformation
+    {
+        return $this->contactInformationGroup ??= new ContactInformation($this->run(...));
+    }
+
+    /**
+     * Select the Contactus operations without making a request.
+     *
+     * The Contactus module for UAPI.
+     */
+    public function contactUs(): ContactUs
+    {
+        return $this->contactUsGroup ??= new ContactUs($this->run(...));
     }
 
     /**
@@ -248,6 +342,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the EA4 operations without making a request.
+     *
+     * The EA4 module for UAPI.
+     */
+    public function ea4(): Ea4
+    {
+        return $this->ea4Group ??= new Ea4($this->run(...));
+    }
+
+    /**
      * Select the Email operations without making a request.
      *
      * The Email module for UAPI.
@@ -265,6 +369,16 @@ trait UapiGroups
     public function emailAuth(): EmailAuth
     {
         return $this->emailAuthGroup ??= new EmailAuth($this->run(...));
+    }
+
+    /**
+     * Select the ExternalAuthentication operations without making a request.
+     *
+     * The ExternalAuthentication module for UAPI.
+     */
+    public function externalAuthentication(): ExternalAuthentication
+    {
+        return $this->externalAuthenticationGroup ??= new ExternalAuthentication($this->run(...));
     }
 
     /**
@@ -308,6 +422,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the KnownHosts operations without making a request.
+     *
+     * The KnownHosts module for UAPI.
+     */
+    public function knownHosts(): KnownHosts
+    {
+        return $this->knownHostsGroup ??= new KnownHosts($this->run(...));
+    }
+
+    /**
      * Select the LangPHP operations without making a request.
      *
      * The LangPHP module for UAPI.
@@ -315,6 +439,26 @@ trait UapiGroups
     public function langPhp(): LangPhp
     {
         return $this->langPhpGroup ??= new LangPhp($this->run(...));
+    }
+
+    /**
+     * Select the LastLogin operations without making a request.
+     *
+     * The LastLogin module for UAPI.
+     */
+    public function lastLogin(): LastLogin
+    {
+        return $this->lastLoginGroup ??= new LastLogin($this->run(...));
+    }
+
+    /**
+     * Select the Locale operations without making a request.
+     *
+     * The Locale module for UAPI.
+     */
+    public function locale(): Locale
+    {
+        return $this->localeGroup ??= new Locale($this->run(...));
     }
 
     /**
@@ -328,6 +472,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the ModSecurity operations without making a request.
+     *
+     * The ModSecurity module for UAPI.
+     */
+    public function modSecurity(): ModSecurity
+    {
+        return $this->modSecurityGroup ??= new ModSecurity($this->run(...));
+    }
+
+    /**
      * Select the Mysql operations without making a request.
      *
      * The Mysql module for UAPI.
@@ -335,6 +489,16 @@ trait UapiGroups
     public function mysql(): Mysql
     {
         return $this->mysqlGroup ??= new Mysql($this->run(...));
+    }
+
+    /**
+     * Select the Notifications operations without making a request.
+     *
+     * The Notifications module for UAPI.
+     */
+    public function notifications(): Notifications
+    {
+        return $this->notificationsGroup ??= new Notifications($this->run(...));
     }
 
     /**
@@ -355,6 +519,16 @@ trait UapiGroups
     public function passengerApps(): PassengerApps
     {
         return $this->passengerAppsGroup ??= new PassengerApps($this->run(...));
+    }
+
+    /**
+     * Select the PasswdStrength operations without making a request.
+     *
+     * The PasswdStrength module for UAPI.
+     */
+    public function passwdStrength(): PasswdStrength
+    {
+        return $this->passwdStrengthGroup ??= new PasswdStrength($this->run(...));
     }
 
     /**
@@ -398,6 +572,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the ServerInformation operations without making a request.
+     *
+     * The ServerInformation module for UAPI.
+     */
+    public function serverInformation(): ServerInformation
+    {
+        return $this->serverInformationGroup ??= new ServerInformation($this->run(...));
+    }
+
+    /**
      * Select the SpamAssassin operations without making a request.
      *
      * The SpamAssassin module for UAPI.
@@ -405,6 +589,16 @@ trait UapiGroups
     public function spamAssassin(): SpamAssassin
     {
         return $this->spamAssassinGroup ??= new SpamAssassin($this->run(...));
+    }
+
+    /**
+     * Select the SSH operations without making a request.
+     *
+     * The SSH module for UAPI.
+     */
+    public function ssh(): Ssh
+    {
+        return $this->sshGroup ??= new Ssh($this->run(...));
     }
 
     /**
@@ -458,6 +652,66 @@ trait UapiGroups
     }
 
     /**
+     * Select the Team operations without making a request.
+     *
+     * UAPI Team module functions.
+     */
+    public function team(): Team
+    {
+        return $this->teamGroup ??= new Team($this->run(...));
+    }
+
+    /**
+     * Select the TeamRoles operations without making a request.
+     *
+     * UAPI TeamRoles module functions.
+     */
+    public function teamRoles(): TeamRoles
+    {
+        return $this->teamRolesGroup ??= new TeamRoles($this->run(...));
+    }
+
+    /**
+     * Select the Themes operations without making a request.
+     *
+     * The Themes module for UAPI.
+     */
+    public function themes(): Themes
+    {
+        return $this->themesGroup ??= new Themes($this->run(...));
+    }
+
+    /**
+     * Select the UserManager operations without making a request.
+     *
+     * The UserManager module for UAPI.
+     */
+    public function userManager(): UserManager
+    {
+        return $this->userManagerGroup ??= new UserManager($this->run(...));
+    }
+
+    /**
+     * Select the Users operations without making a request.
+     *
+     * The Users module for UAPI.
+     */
+    public function users(): Users
+    {
+        return $this->usersGroup ??= new Users($this->run(...));
+    }
+
+    /**
+     * Select the Variables operations without making a request.
+     *
+     * The Variables module for UAPI.
+     */
+    public function variables(): Variables
+    {
+        return $this->variablesGroup ??= new Variables($this->run(...));
+    }
+
+    /**
      * Select the VersionControl operations without making a request.
      *
      * The VersionControl module for UAPI.
@@ -475,6 +729,16 @@ trait UapiGroups
     public function versionControlDeployment(): VersionControlDeployment
     {
         return $this->versionControlDeploymentGroup ??= new VersionControlDeployment($this->run(...));
+    }
+
+    /**
+     * Select the WebDisk operations without making a request.
+     *
+     * The WebDisk module for UAPI.
+     */
+    public function webDisk(): WebDisk
+    {
+        return $this->webDiskGroup ??= new WebDisk($this->run(...));
     }
 
     /**

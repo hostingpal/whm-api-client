@@ -108,10 +108,10 @@ final readonly class WebsiteBackup
      * and explicit documented null. A missing or null data member is a payload mismatch. No general response-string
      * enum or cross-field invariant validation is inferred.
      *
-     * Documented: The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively
-     * uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred.
-     * This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload
-     * verification.
+     * Documented: The pinned operation explicitly uses POST with an application/x-www-form-urlencoded request body and
+     * documents a state-changing operation. The client sends the supplied arguments in that form body and performs no
+     * automatic retry. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains committed
+     * transport and payload verification.
      *
      * API-map identity: uapi:WebsiteBackup/create_backup#POST (wire name create_backup).
      *
@@ -154,10 +154,10 @@ final readonly class WebsiteBackup
      * and explicit documented null. A missing or null data member is a payload mismatch. No general response-string
      * enum or cross-field invariant validation is inferred.
      *
-     * Documented: The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively
-     * uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred.
-     * This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload
-     * verification.
+     * Documented: The pinned operation explicitly uses POST with an application/x-www-form-urlencoded request body and
+     * documents a state-changing operation. The client sends the supplied arguments in that form body and performs no
+     * automatic retry. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains committed
+     * transport and payload verification.
      *
      * API-map identity: uapi:WebsiteBackup/delete_backup#POST (wire name delete_backup).
      *
@@ -200,6 +200,12 @@ final readonly class WebsiteBackup
      * This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload
      * verification.
      *
+     * Observed: On 11.138.0.19, the reviewer observed estimatedBytes as a digit string through direct UAPI and an
+     * integer through the WHM bridge. Canonical decimal strings within PHP integer bounds normalize losslessly to int
+     * for estimatedBytes and availableBytes. The availableBytes compatibility is inferred from the reported source
+     * family, not a separately observed string value. Malformed and overflowing strings remain invalid; optional fields
+     * stay omitted and the two flags retain their strict integer 0/1 types.
+     *
      * API-map identity: uapi:WebsiteBackup/disk_quota_check#GET (wire name disk_quota_check).
      *
      * @param string $domain The website whose backup size to estimate.
@@ -237,10 +243,10 @@ final readonly class WebsiteBackup
      * and explicit documented null. A missing or null data member is a payload mismatch. No general response-string
      * enum or cross-field invariant validation is inferred.
      *
-     * Documented: The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively
-     * uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred.
-     * This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload
-     * verification.
+     * Documented: The pinned operation explicitly uses POST with an application/x-www-form-urlencoded request body and
+     * documents a state-changing operation. The client sends the supplied arguments in that form body and performs no
+     * automatic retry. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains committed
+     * transport and payload verification.
      *
      * API-map identity: uapi:WebsiteBackup/extract_backup#POST (wire name extract_backup).
      *
@@ -394,13 +400,15 @@ final readonly class WebsiteBackup
      * rollback is added by the client.
      *
      * Documented: Omitting clean uses a merge: archive files overwrite counterparts while newer files are retained.
-     * clean=1 selects a snapshot and removes files added since backup; clean=0 requests merge. This parameter is a
-     * pinned integer, not a boolean or the string false. The client preserves omitted defaults and explicit zero.
+     * Pass true to send clean=1, select a snapshot and remove files added since backup; false sends clean=0 for merge.
+     * This switch governs website files only. The nullable boolean argument preserves omitted defaults and explicit
+     * false, and never sends the unsafe string false.
      *
-     * Documented: Omitting restoreDatabases restores archive databases by default. Send integer 0 to leave every
-     * database untouched; the string false is unsafe upstream because Perl treats it as true. Restored databases are
-     * reset to their backed-up state, dropping later objects. The server documents a rollback snapshot for a failed
-     * database restore; the client does not promise whole-site atomicity.
+     * Documented: Omitting restoreDatabases restores archive databases by default. Pass false to send
+     * restore_databases=0 and leave every database untouched; true sends 1. The string false is unsafe upstream because
+     * Perl treats it as true, so the typed argument is a nullable boolean. Restored databases are reset to their
+     * backed-up state, dropping later objects. The server documents a rollback snapshot for a failed database restore;
+     * the client does not promise whole-site atomicity.
      *
      * Documented: database is repeatable and selects an archive subset; omit it while restoring databases to restore
      * them all. id is not checked against domain, so use a backup listed for the intended domain. Paths and archive
@@ -410,20 +418,27 @@ final readonly class WebsiteBackup
      * and explicit documented null. A missing or null data member is a payload mismatch. No general response-string
      * enum or cross-field invariant validation is inferred.
      *
-     * Documented: The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively
-     * uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred.
-     * This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload
-     * verification.
+     * Documented: The pinned operation explicitly uses POST with an application/x-www-form-urlencoded request body and
+     * documents a state-changing operation. The client sends the supplied arguments in that form body and performs no
+     * automatic retry. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains committed
+     * transport and payload verification.
      *
      * API-map identity: uapi:WebsiteBackup/restore_backup#POST (wire name restore_backup).
      *
      * @param string $domain The website to restore in place.
      * @param string $id Identifier of the backup to restore, as returned by the `WebsiteBackup::list_backups` function.
-     * @param int|null $clean Send the integer `1` to restore the website files as a snapshot, which rebuilds the
-     *     document root from the archive and removes anything added since the backup. Null omits it.
+     * @param bool|null $clean Whether to restore website files as a snapshot. Pass true to send integer 1, rebuild the
+     *     document root from the archive and remove files added since the backup. Omit or pass null for the default
+     *     merge, which keeps those files; false sends integer 0 for the same merge. This switch governs website files
+     *     only. The pinned API warns that the string false is truthy in Perl and would select the destructive snapshot;
+     *     the typed boolean argument sends only 0 or 1. Null omits it.
      * @param string|list<string>|null $database A database from the archive to restore. Null omits it.
-     * @param int|null $restoreDatabases Send the integer `0` to restore website files only and leave every database
-     *     untouched. Null omits it.
+     * @param bool|null $restoreDatabases Whether to restore the archive databases. Omit or pass null for the server
+     *     default 1. Pass false to send integer 0 and restore website files only, leaving every database untouched;
+     *     true sends integer 1. Database restoration resets each database to its backed-up state and drops objects
+     *     created since. The pinned API warns that the string false is truthy in Perl and would restore databases; the
+     *     typed boolean argument sends only 0 or 1. To leave databases untouched, set this argument to false and omit
+     *     database. Null omits it.
      * @return RestoreBackupResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
@@ -434,9 +449,9 @@ final readonly class WebsiteBackup
     public function restoreBackup(
         string $domain,
         string $id,
-        ?int $clean = null,
+        ?bool $clean = null,
         string|array|null $database = null,
-        ?int $restoreDatabases = null,
+        ?bool $restoreDatabases = null,
     ): array {
         /** @var RestoreBackupResult $result Validated against WebsiteBackupSpec::RESTORE_BACKUP. */
         $result = ($this->run)(WebsiteBackupSpec::RESTORE_BACKUP, [

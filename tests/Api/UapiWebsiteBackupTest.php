@@ -16,6 +16,7 @@ use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
+use TypeError;
 
 /** Literal request and response oracles for the pinned BackupInfo, ExtractInfo and WebsiteBackup operations. */
 final class UapiWebsiteBackupTest extends TestCase
@@ -157,11 +158,17 @@ final class UapiWebsiteBackupTest extends TestCase
                 }
                 foreach (self::example($module, $function) as $field => $value) {
                     $bad = match (true) {
+                        $field === 'cleared' && in_array($module . '/' . $function, [
+                            'BackupInfo/reset', 'ExtractInfo/finish',
+                        ], true) => ['null', '-1', '2', '"0"', '"1"', '"true"', '1.0', '[]', '{}'],
                         is_bool($value) => ['null', '0', '1', '"true"', '[]'],
                         is_int($value) && in_array($field, ['ok', 'unlimited', 'includesDatabases'], true) =>
                             ['null', '"0"', '"1"', '2', '-1', '1.0', 'true', '[]'],
                         in_array($field, ['estimatedPercent', 'percent', 'progressPct'], true) =>
                             ['null', '"0"', '"1.5"', 'true', '[]'],
+                        $module === 'WebsiteBackup' && $function === 'disk_quota_check'
+                            && in_array($field, ['availableBytes', 'estimatedBytes'], true) =>
+                            ['null', '"00"', '"1.5"', '1.5', 'true', '[]'],
                         is_int($value) => ['null', '"0"', '"1.5"', '1.5', 'true', '[]'],
                         $value === null => ['"0"', '1.5', 'true', '[]'],
                         is_array($value) => ['null', '{}', '[null]', '[0]', '[false]', '[{}]'],
@@ -205,7 +212,7 @@ final class UapiWebsiteBackupTest extends TestCase
     }
 
     #[DataProvider('routes')]
-    public function testOmittedBackupOptionsAndExplicitZeroRestoreOptions(string $route): void
+    public function testOmittedBackupOptionsAndExplicitFalseRestoreOptions(string $route): void
     {
         [$client, $http] = self::client($route);
         $group = $client->uapi('npr')->websiteBackup();
@@ -216,9 +223,152 @@ final class UapiWebsiteBackupTest extends TestCase
         $group->restoreBackup(domain: 'example.com', id: 'backup-id');
         self::assertBody($http, 'domain=example.com&id=backup-id');
         $http->addResponse(new Response(200, [], self::envelope($route, '{}')));
-        $group->restoreBackup(domain: 'example.com', id: 'backup-id', clean: 0, restoreDatabases: 0);
+        $group->restoreBackup(domain: 'example.com', id: 'backup-id', clean: false, restoreDatabases: false);
         self::assertBody($http, 'domain=example.com&id=backup-id&clean=0&restore_databases=0');
         self::assertCount(3, $http->getRequests());
+    }
+
+    #[DataProvider('restoreSwitches')]
+    public function testRestoreSwitchesPreserveOmissionAndEncodeOnlyZeroOrOne(
+        string $route,
+        ?bool $clean,
+        ?bool $restoreDatabases,
+        string $suffix,
+    ): void {
+        [$client, $http] = self::client($route);
+        $http->addResponse(new Response(200, [], self::envelope($route, '{"operationId":"queued"}')));
+        self::assertSame(['operationId' => 'queued'], $client->uapi('npr')->websiteBackup()->restoreBackup(
+            domain: 'example.com',
+            id: 'backup-id',
+            clean: $clean,
+            restoreDatabases: $restoreDatabases,
+        ));
+        self::assertBody($http, 'domain=example.com&id=backup-id' . $suffix);
+        self::assertCount(1, $http->getRequests());
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('POST', $request->getMethod());
+        self::assertSame('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
+        self::assertStringNotContainsString('clean=', $request->getUri()->getQuery());
+        self::assertStringNotContainsString('restore_databases=', $request->getUri()->getQuery());
+    }
+
+    /** @return iterable<string, array{string, bool|null, bool|null, string}> */
+    public static function restoreSwitches(): iterable
+    {
+        $cases = [
+            [null, null, ''],
+            [null, false, '&restore_databases=0'],
+            [null, true, '&restore_databases=1'],
+            [false, null, '&clean=0'],
+            [false, false, '&clean=0&restore_databases=0'],
+            [false, true, '&clean=0&restore_databases=1'],
+            [true, null, '&clean=1'],
+            [true, false, '&clean=1&restore_databases=0'],
+            [true, true, '&clean=1&restore_databases=1'],
+        ];
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach ($cases as $index => [$clean, $restoreDatabases, $suffix]) {
+                yield "$route $index" => [$route, $clean, $restoreDatabases, $suffix];
+            }
+        }
+    }
+
+    #[DataProvider('invalidRestoreSwitches')]
+    public function testRestoreRejectsNonBooleanSwitchesBeforeAnyRequest(
+        string $route,
+        string $method,
+        string $parameter,
+        mixed $value,
+    ): void {
+        [$client, $http] = self::client($route);
+        $http->addResponse(new Response(200, [], self::envelope($route, '{}')));
+        $group = $client->uapi('npr')->websiteBackup();
+        try {
+            // Dynamic dispatch exercises invalid native arguments from this strict-types caller.
+            $group->$method(...['domain' => 'example.com', 'id' => 'backup-id', $parameter => $value]);
+            self::fail('A non-boolean restore switch must never reach the server.');
+        } catch (TypeError) {
+            self::assertSame([], $http->getRequests());
+        }
+    }
+
+    /** @return iterable<string, array{string, string, string, mixed}> */
+    public static function invalidRestoreSwitches(): iterable
+    {
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (['clean', 'restoreDatabases'] as $parameter) {
+                foreach ([0, 1, 2, -1, PHP_INT_MAX, '', '0', '1', 'false', 1.0, []] as $index => $value) {
+                    yield "$route $parameter $index" => [$route, 'restoreBackup', $parameter, $value];
+                }
+            }
+        }
+    }
+
+    #[DataProvider('quotaByteCounts')]
+    public function testQuotaByteCountsNormalizeCanonicalIntegerStringsLosslessly(
+        string $route,
+        string $field,
+        int|string $wire,
+        int $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $payload = json_encode([$field => $wire, 'ok' => 1, 'unlimited' => 0], JSON_THROW_ON_ERROR);
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        $result = $client->uapi('npr')->websiteBackup()->diskQuotaCheck(domain: 'example.com');
+        self::assertSame([$field => $expected, 'ok' => 1, 'unlimited' => 0], $result);
+        self::assertRequest($http, $route, 'WebsiteBackup', 'disk_quota_check');
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, int|string, int}> */
+    public static function quotaByteCounts(): iterable
+    {
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (['availableBytes', 'estimatedBytes'] as $field) {
+                foreach ([0, 104857600, PHP_INT_MAX, -1, PHP_INT_MIN] as $value) {
+                    yield "$route $field integer $value" => [$route, $field, $value, $value];
+                    yield "$route $field string $value" => [$route, $field, (string) $value, $value];
+                }
+            }
+        }
+    }
+
+    #[DataProvider('invalidQuotaBytes')]
+    public function testQuotaByteCorrectionRejectsMalformedAndOverflowStrings(
+        string $route,
+        string $field,
+        mixed $wire,
+    ): void {
+        [$client, $http] = self::client($route);
+        $http->addResponse(new Response(200, [], self::envelope(
+            $route,
+            json_encode([$field => $wire], JSON_THROW_ON_ERROR),
+        )));
+        try {
+            $client->uapi('npr')->websiteBackup()->diskQuotaCheck(domain: 'example.com');
+            self::fail('Malformed byte strings must not be coerced or rounded.');
+        } catch (PayloadMismatchException $error) {
+            self::assertTrue($error->outcomeConfirmed);
+            self::assertSame([$field => $wire], $error->payload);
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, mixed}> */
+    public static function invalidQuotaBytes(): iterable
+    {
+        $invalid = [
+            '', '00', '01', '-0', '+1', ' 1', '1 ', "1\n", '1.0', '1e3', 'false',
+            (string) PHP_INT_MAX . '0', (string) PHP_INT_MIN . '0', null, false, true, 1.5, [],
+        ];
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (['availableBytes', 'estimatedBytes'] as $field) {
+                foreach ($invalid as $index => $wire) {
+                    yield "$route $field $index" => [$route, $field, $wire];
+                }
+            }
+        }
     }
 
     #[DataProvider('routes')]
@@ -331,9 +481,9 @@ final class UapiWebsiteBackupTest extends TestCase
             default => $account->websiteBackup()->restoreBackup(
                 domain: 'example.com',
                 id: 'backup-id',
-                clean: 1,
+                clean: true,
                 database: ['db_one', 'db_two'],
-                restoreDatabases: 0,
+                restoreDatabases: false,
             ),
         };
     }

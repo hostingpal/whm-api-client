@@ -1,0 +1,860 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Team",
+  "operations": {
+    "uapi:Team/add_roles": {
+      "method": "POST",
+      "order": [
+        "role",
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 108 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Adds the supplied role or roles. Current documented roles are admin, database, email and web; the client does not impose a closed enum or split the string. This can grant team owner level privileges."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields; preserve opaque object fields and explicit null. An absent data member is a payload mismatch. The source declares no rollback; the client does not retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Team/add_roles declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned response and parameter requiredness/types are retained without widening."
+        }
+      ]
+    },
+    "uapi:Team/add_team_user": {
+      "method": "POST",
+      "order": [
+        "email1",
+        "user",
+        "activation_email",
+        "email2",
+        "expire_date",
+        "expire_reason",
+        "notes",
+        "password",
+        "roles",
+        "services.email.enabled",
+        "services.email.quota",
+        "services.ftp.enabled",
+        "services.ftp.homedir",
+        "services.webdisk.enabled",
+        "services.webdisk.enabledigest",
+        "services.webdisk.homedir",
+        "services.webdisk.perms",
+        "services.webdisk.private"
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 104 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates the team user. Supply either password or activation_email; activation_email=1 sends an email allowing the team user to set a password. The client does not enforce this cross-parameter condition or send a message independently. Password is sensitive and stays in the form POST body."
+        },
+        {
+          "kind": "documented",
+          "text": "roles is a comma-separated string; this operation rejects the singular role parameter. A team user without roles cannot use any features. Adding a team user can grant team owner level privileges. notes must not contain private information and is documented with a 100-character maximum."
+        },
+        {
+          "kind": "documented",
+          "text": "expire_date is an integer Unix Epoch Time or a string offset such as 120days. When returned, the response is the resulting Unix timestamp. Optional service flags default to 0 upstream; Web Disk permissions default to rw. Email quota is a string in MB; 0 or unlimited means unlimited and the system maximum still applies. Omitting quota retains the defined system value."
+        },
+        {
+          "kind": "documented",
+          "text": "A subaccount is always created, without service subaccounts by default. FTP and Web Disk home directories are relative to the cPanel account home. The FTP directory must exist; the source says its homedir parameter is required if services.ftp.homedir is enabled, a self-referential condition retained without inventing client validation. Web Disk homedir is required when Web Disk is enabled. Web Disk private selects 0700 versus public 0755. Digest authentication is discouraged and only documented for compatibility on certain Windows clients with self-signed cpsrvd/cpdavd certificates."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source on cPanel 11.138.0.19 returns null when expire_date is omitted and an expiration timestamp when supplied. Canonical integer-string timestamps normalize to int within PHP's integer range; explicit null stays null and absent data is a payload mismatch. Team was unavailable on that server, so this correction has source and offline replay evidence only."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Team/add_team_user declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned parameter requiredness/types are retained; the response correction is separately supported by reviewed upstream source."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "int",
+            "accept": [
+              "numeric-string"
+            ],
+            "nullable": true
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "upstream source 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer source inspection https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990 against b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87: Cpanel/API/Team.pm add_team_user sets result data only when expire_date was supplied, so the normal response is null. A supplied epoch string is returned as a digit string. Preserve explicit null and normalize only canonical integer strings within PHP's integer range; an absent payload still fails. Team is unavailable on that server; this is upstream-source evidence with offline replay, not a live Team result."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:Team/cancel_expire": {
+      "method": "POST",
+      "order": [
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Stops the named team user from expiring."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields; preserve opaque object fields and explicit null. An absent data member is a payload mismatch. The source declares no rollback; the client does not retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Team/cancel_expire declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned response and parameter requiredness/types are retained without widening."
+        }
+      ]
+    },
+    "uapi:Team/edit_team_user": {
+      "method": "POST",
+      "order": [
+        "user",
+        "add_role",
+        "email1",
+        "email2",
+        "expire_reason",
+        "notes",
+        "password",
+        "remove_role",
+        "services.email.enabled",
+        "services.email.quota",
+        "services.ftp.enabled",
+        "services.ftp.homedir",
+        "services.webdisk.enabled",
+        "services.webdisk.enabledigest",
+        "services.webdisk.homedir",
+        "services.webdisk.perms",
+        "services.webdisk.private",
+        "set_expire",
+        "set_role"
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Modifies only supplied options. The documented 0 service flags remove associated email, FTP or Web Disk subaccounts; 1 creates and associates them. Upstream flag defaults are 0 and Web Disk permissions default to rw; omitted arguments are not filled in by this client. Password is sensitive. notes must not contain private information."
+        },
+        {
+          "kind": "documented",
+          "text": "set_expire accepts an integer epoch or a string day offset; add_role, remove_role and set_role remain strings. Email quota is in MB as a string; 0 or unlimited means unlimited, defaults to the system value, and cannot exceed the system maximum."
+        },
+        {
+          "kind": "documented",
+          "text": "FTP and Web Disk directories are relative to the account home; the FTP directory must exist. The source repeats a self-referential FTP homedir requiredness condition, so no cross-field validation is inferred. Web Disk homedir is required when enabled. private chooses 0700 versus 0755. Digest authentication is discouraged and documented only for certain Windows compatibility with self-signed cpsrvd/cpdavd certificates."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields; preserve opaque object fields and explicit null. An absent data member is a payload mismatch. The source declares no rollback; the client does not retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Team/edit_team_user declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned response and parameter requiredness/types are retained without widening."
+        }
+      ]
+    },
+    "uapi:Team/get_team_users_with_roles_count": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 118 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "max is the package-stored maximum number of team users with roles; used is the current count. Both are optional integers, with zero distinct from omission. These are payload values, not UAPI outcome flags."
+        }
+      ]
+    },
+    "uapi:Team/list_team": {
+      "order": [
+        "format"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 104 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a list by default or an object with a username-keyed users map when format is hash. Both forms retain the same optional record fields. Reviewed upstream source uses contact_email and secondary_contact_email; the pinned hyphenated spellings remain supported as separate optional keys. No contact-key renaming is performed."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned TeamArray and TeamHash info records include a password string. It is sensitive payload data and is returned intact; consumers must protect the result. This method is excluded from the bounded live evidence catalog to avoid collecting passwords. Roles remain string lists and services retains the pinned email string, ftp integer and webdisk string. Empty and omitted values remain distinct."
+        },
+        {
+          "kind": "documented",
+          "text": "Cpanel/Team/Config.pm from cPanel 11.138.0.19 supports exact empty strings for created, expire_date, suspend_date and lastlogin. Canonical integer strings normalize to int within PHP's integer range; those four fields preserve an exact empty string. AdminBin serialization was not traced, so integer timestamps remain accepted. These corrections rely on source inspection and offline replay because Team is unavailable on that server."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source supplies optional string version on the hash result and string subacct_guid in user records; both retain exact empty strings. The source currently uses v1.1, but no closed version enum is inferred. Null and nonstring values do not match these fields."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "contact-email": {
+                      "type": "string"
+                    },
+                    "contact_email": {
+                      "type": "string"
+                    },
+                    "created": {
+                      "type": "union",
+                      "anyOf": [
+                        {
+                          "type": "int",
+                          "accept": [
+                            "numeric-string"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "literal": ""
+                        }
+                      ]
+                    },
+                    "expire_date": {
+                      "type": "union",
+                      "anyOf": [
+                        {
+                          "type": "int",
+                          "accept": [
+                            "numeric-string"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "literal": ""
+                        }
+                      ]
+                    },
+                    "expire_reason": {
+                      "type": "string"
+                    },
+                    "lastlogin": {
+                      "type": "union",
+                      "anyOf": [
+                        {
+                          "type": "int",
+                          "accept": [
+                            "numeric-string"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "literal": ""
+                        }
+                      ]
+                    },
+                    "locale": {
+                      "type": "string"
+                    },
+                    "notes": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "roles": {
+                      "type": "list",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "secondary-contact-email": {
+                      "type": "string"
+                    },
+                    "secondary_contact_email": {
+                      "type": "string"
+                    },
+                    "services": {
+                      "type": "object",
+                      "fields": {
+                        "email": {
+                          "type": "string"
+                        },
+                        "ftp": {
+                          "type": "int"
+                        },
+                        "webdisk": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "subacct_guid": {
+                      "type": "string"
+                    },
+                    "suspend_date": {
+                      "type": "union",
+                      "anyOf": [
+                        {
+                          "type": "int",
+                          "accept": [
+                            "numeric-string"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "literal": ""
+                        }
+                      ]
+                    },
+                    "suspend_reason": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "fields": {
+                  "owner": {
+                    "type": "string"
+                  },
+                  "users": {
+                    "type": "map",
+                    "values": {
+                      "type": "object",
+                      "fields": {
+                        "contact-email": {
+                          "type": "string"
+                        },
+                        "contact_email": {
+                          "type": "string"
+                        },
+                        "created": {
+                          "type": "union",
+                          "anyOf": [
+                            {
+                              "type": "int",
+                              "accept": [
+                                "numeric-string"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "literal": ""
+                            }
+                          ]
+                        },
+                        "expire_date": {
+                          "type": "union",
+                          "anyOf": [
+                            {
+                              "type": "int",
+                              "accept": [
+                                "numeric-string"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "literal": ""
+                            }
+                          ]
+                        },
+                        "expire_reason": {
+                          "type": "string"
+                        },
+                        "lastlogin": {
+                          "type": "union",
+                          "anyOf": [
+                            {
+                              "type": "int",
+                              "accept": [
+                                "numeric-string"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "literal": ""
+                            }
+                          ]
+                        },
+                        "locale": {
+                          "type": "string"
+                        },
+                        "notes": {
+                          "type": "string"
+                        },
+                        "password": {
+                          "type": "string"
+                        },
+                        "roles": {
+                          "type": "list",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "secondary-contact-email": {
+                          "type": "string"
+                        },
+                        "secondary_contact_email": {
+                          "type": "string"
+                        },
+                        "services": {
+                          "type": "object",
+                          "fields": {
+                            "email": {
+                              "type": "string"
+                            },
+                            "ftp": {
+                              "type": "int"
+                            },
+                            "webdisk": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "subacct_guid": {
+                          "type": "string"
+                        },
+                        "suspend_date": {
+                          "type": "union",
+                          "anyOf": [
+                            {
+                              "type": "int",
+                              "accept": [
+                                "numeric-string"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "literal": ""
+                            }
+                          ]
+                        },
+                        "suspend_reason": {
+                          "type": "string"
+                        },
+                        "username": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "version": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "upstream source 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer source inspection https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990 against b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87: Cpanel/Team/Config.pm load_array emits contact_email and secondary_contact_email, not the hyphenated keys in pinned TeamArray/TeamHash. The reviewed row has empty strings for unset expire_date and suspend_date, lastlogin falls back to an empty string, and created is read from a text file. Hash output users is keyed by username, not literal username/info fields. Both alternatives use the same precise optional record shape. Keep pinned hyphenated contact spellings optional, normalize canonical integer timestamp strings and preserve exact empty unset dates. Other record fields retain pinned types. Team is unavailable on that server; this is upstream-source evidence with offline replay, not a live Team result."
+            },
+            {
+              "kind": "doc",
+              "version": "upstream source 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer source clarification https://github.com/hostingpal/whm-api-client/pull/43#issuecomment-6537241960: Cpanel/Team/Config.pm _parse_config returns version as a string, including an empty string when the header has no second token; Cpanel/Team/Constants.pm:62 currently supplies v1.1. Config.pm _decode always returns a string for subacct_guid, including an empty string. validate_config_fields accepts created as an empty string or ten digits, and the reviewer confirmed empty lastlogin/expire_date/suspend_date fallbacks. AdminBin serialization was not traced, so both integer and canonical integer-string timestamps remain accepted alongside exact empty strings; no new ten-digit runtime constraint is inferred. Keep all added fields optional. These are source findings and offline replays only: Team is unavailable on that server."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:Team/password_reset_request": {
+      "method": "POST",
+      "order": [
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 108 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Sends the team user a password reset request link. This has an email side effect and must not be used by read-only checks or tests against a live account."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields; preserve opaque object fields and explicit null. An absent data member is a payload mismatch. The source declares no rollback; the client does not retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Team/password_reset_request declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned response and parameter requiredness/types are retained without widening."
+        }
+      ]
+    },
+    "uapi:Team/reinstate_team_user": {
+      "method": "POST",
+      "order": [
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 108 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes suspended and expired statuses and clears the reason field."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields; preserve opaque object fields and explicit null. An absent data member is a payload mismatch. The source declares no rollback; the client does not retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Team/reinstate_team_user declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned response and parameter requiredness/types are retained without widening."
+        }
+      ]
+    },
+    "uapi:Team/remove_roles": {
+      "method": "POST",
+      "order": [
+        "role",
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 108 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the supplied role or roles from the team user. The role string is forwarded unchanged."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields; preserve opaque object fields and explicit null. An absent data member is a payload mismatch. The source declares no rollback; the client does not retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Team/remove_roles declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned response and parameter requiredness/types are retained without widening."
+        }
+      ]
+    },
+    "uapi:Team/remove_team_user": {
+      "method": "POST",
+      "order": [
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 108 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the named team user immediately; no rollback is documented."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields; preserve opaque object fields and explicit null. An absent data member is a payload mismatch. The source declares no rollback; the client does not retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Team/remove_team_user declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned response and parameter requiredness/types are retained without widening."
+        }
+      ]
+    },
+    "uapi:Team/set_contact_email": {
+      "method": "POST",
+      "order": [
+        "user",
+        "email1",
+        "email2"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Sets or changes the primary and secondary contact email addresses. Omitted email options are not replaced by defaults; explicit empty strings are forwarded."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields; preserve opaque object fields and explicit null. An absent data member is a payload mismatch. The source declares no rollback; the client does not retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Team/set_contact_email declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned response and parameter requiredness/types are retained without widening."
+        }
+      ]
+    },
+    "uapi:Team/set_expire": {
+      "method": "POST",
+      "order": [
+        "date",
+        "user",
+        "reason"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Replaces an existing expiration date and reason. date accepts integer Unix Epoch Time or a string offset in days such as 120days; the result is the resulting integer Unix timestamp, not a status flag. An omitted reason remains omitted and an empty reason is sent."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source on cPanel 11.138.0.19 can return the supplied epoch as a digit string. Canonical integer strings normalize to int within PHP's integer range; null and absent data fail. Team was unavailable, so this is source and offline replay evidence only."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Team/set_expire declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned parameter requiredness/types are retained; the response correction is separately supported by reviewed upstream source."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "int",
+            "accept": [
+              "numeric-string"
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "upstream source 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer source inspection https://github.com/hostingpal/whm-api-client/pull/43#pullrequestreview-5720337990 against b40a9e3158c7e6dd2ff139c5e76a03536fa9ce87: Cpanel/API/Team.pm set_expire returns a supplied epoch as a digit string. The pinned integer timestamp remains supported; normalize only canonical integer strings within PHP's integer range, without accepting null or an absent payload. Team is unavailable on that server; this is upstream-source evidence with offline replay, not a live Team result."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:Team/set_locale": {
+      "method": "POST",
+      "order": [
+        "locale",
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 108 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Sets the supplied locale for the named team user."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields; preserve opaque object fields and explicit null. An absent data member is a payload mismatch. The source declares no rollback; the client does not retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Team/set_locale declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned response and parameter requiredness/types are retained without widening."
+        }
+      ]
+    },
+    "uapi:Team/set_notes": {
+      "method": "POST",
+      "order": [
+        "notes",
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 110 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Replaces the current notes field with the supplied text. Team-user notes should not contain private information."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields; preserve opaque object fields and explicit null. An absent data member is a payload mismatch. The source declares no rollback; the client does not retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Team/set_notes declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned response and parameter requiredness/types are retained without widening."
+        }
+      ]
+    },
+    "uapi:Team/set_password": {
+      "method": "POST",
+      "order": [
+        "password",
+        "user"
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 106 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Replaces the current password. The password argument is sensitive and is sent in the form POST body."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields; preserve opaque object fields and explicit null. An absent data member is a payload mismatch. The source declares no rollback; the client does not retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Team/set_password declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned response and parameter requiredness/types are retained without widening."
+        }
+      ]
+    },
+    "uapi:Team/set_roles": {
+      "method": "POST",
+      "order": [
+        "user",
+        "role"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 108 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Replaces every current role. Omitting role removes all roles, leaving the user unable to use any features. An explicit empty role is sent rather than omitted. Current roles include admin, database, email and web; the client keeps the documented string boundary. This can grant team owner level privileges."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields; preserve opaque object fields and explicit null. An absent data member is a payload mismatch. The source declares no rollback; the client does not retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Team/set_roles declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned response and parameter requiredness/types are retained without widening."
+        }
+      ]
+    },
+    "uapi:Team/suspend_team_user": {
+      "method": "POST",
+      "order": [
+        "user",
+        "reason"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 108 and later; operates on the selected cPanel account. Omitted optional arguments, including null, remain omitted; explicit empty strings, false and zero are sent according to their parameter types. No client-side defaults are substituted."
+        },
+        {
+          "kind": "documented",
+          "text": "Immediately suspends the named team user, optionally recording a reason. Omitted reason and an explicit empty reason remain distinct."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields; preserve opaque object fields and explicit null. An absent data member is a payload mismatch. The source declares no rollback; the client does not retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Team/suspend_team_user declares x-readonly=false. Use form POST for this selected-account mutation; password inputs, where present, are sensitive. Pinned response and parameter requiredness/types are retained without widening."
+        }
+      ]
+    }
+  }
+}

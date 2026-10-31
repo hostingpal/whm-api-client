@@ -88,13 +88,16 @@ final readonly class Restore
      *
      * This function lists a reseller's users that have existing backup metadata.
      *
-     * Documented: Available from cPanel 68 for the selected account. Disabling the File Storage role disables this
+     * Documented: Available from cPanel 72 for the selected account. Disabling the File Storage role disables this
      * function. Paths are forwarded unchanged, with no client path normalization or archive fetching. Optional fields
      * stay absent; integer flags remain 0|1, with no quoted-number or boolean coercion. Null or absent data is a
      * payload mismatch.
      *
      * Documented: Lists reseller users with existing backup metadata. The response is a string list, including an empty
      * list; the client does not infer account ownership or backup availability beyond the returned metadata.
+     *
+     * Observed: On cPanel 11.138.0.19 with server backups disabled, the reviewed direct and bridged getUsers calls
+     * still returned an empty list. This does not establish that backup files or metadata are available.
      *
      * API-map identity: uapi:Restore/get_users#GET (wire name get_users).
      *
@@ -126,6 +129,10 @@ final readonly class Restore
      * as 1. The response exists field is conditional on the request, and fileSize appears only for files. File sizes
      * are integer bytes and mtime is an integer timestamp; omission and zero remain distinct. backupID strings retain
      * daily, weekly/monthly and incremental forms.
+     *
+     * Observed: On cPanel 11.138.0.19 with server backups disabled, the reviewed direct and bridged calls failed with
+     * the upstream Backup Status is currently disabled error. This installation setting prevents the operation; the
+     * client surfaces ApiErrorException without retrying. A real backup restoration was not exercised.
      *
      * API-map identity: uapi:Restore/query_file_info#GET (wire name query_file_info).
      *
@@ -164,6 +171,10 @@ final readonly class Restore
      * Documented: backupId accepts documented daily date, incremental, weekly/date, monthly/date, weekly/incremental
      * and monthly/incremental selectors. The optional payload success flag describes the overwrite outcome separately
      * from UAPI status; inspect both and retain success=0.
+     *
+     * Observed: On cPanel 11.138.0.19 with server backups disabled, the reviewed direct and bridged calls failed with
+     * the upstream Backup Status is currently disabled error. This installation setting prevents the operation; the
+     * client surfaces ApiErrorException without retrying. A real backup restoration was not exercised.
      *
      * API-map identity: uapi:Restore/restore_file#GET (wire name restore_file).
      *

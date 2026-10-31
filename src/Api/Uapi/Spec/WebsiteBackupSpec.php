@@ -63,8 +63,8 @@ final class WebsiteBackupSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'availableBytes' => ['type' => 'int'],
-                'estimatedBytes' => ['type' => 'int'],
+                'availableBytes' => ['type' => 'int', 'accept' => ['numeric-string']],
+                'estimatedBytes' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'ok' => ['type' => 'flag'],
                 'unlimited' => ['type' => 'flag'],
             ],
@@ -176,9 +176,9 @@ final class WebsiteBackupSpec
         'params' => [
             'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
             'id' => ['name' => 'id', 'encoding' => 'scalar'],
-            'clean' => ['name' => 'clean', 'encoding' => 'scalar'],
+            'clean' => ['name' => 'clean', 'encoding' => 'bool'],
             'database' => ['name' => 'database', 'encoding' => 'repeat'],
-            'restoreDatabases' => ['name' => 'restore_databases', 'encoding' => 'scalar'],
+            'restoreDatabases' => ['name' => 'restore_databases', 'encoding' => 'bool'],
         ],
         'returns' => [
             'type' => 'object',

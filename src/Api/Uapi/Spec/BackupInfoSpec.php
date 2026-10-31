@@ -65,7 +65,7 @@ final class BackupInfoSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'cleared' => ['type' => 'bool'],
+                'cleared' => ['type' => 'bool', 'accept' => ['int-flag']],
             ],
         ],
     ];

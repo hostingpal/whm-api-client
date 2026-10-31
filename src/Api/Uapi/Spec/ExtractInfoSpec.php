@@ -22,7 +22,7 @@ final class ExtractInfoSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'cleared' => ['type' => 'bool'],
+                'cleared' => ['type' => 'bool', 'accept' => ['int-flag']],
             ],
         ],
     ];

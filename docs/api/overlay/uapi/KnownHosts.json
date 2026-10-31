@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "KnownHosts",
+  "accessor": "knownHosts",
+  "operations": {
+    "uapi:KnownHosts/create": {
+      "name": "create",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 74 and later; operates on the selected account known_hosts file. hostName is forwarded as host_name without client-side hostname or IP normalization. Omit port to retain the documented server default of 22; an explicitly supplied zero is sent unchanged and is not omission."
+        },
+        {
+          "kind": "documented",
+          "text": "Registers a host public key in the selected account known_hosts file and changes SSH authentication trust."
+        },
+        {
+          "kind": "documented",
+          "text": "This mutation uses form POST. The source declares clean rollback; the client performs no automatic rollback or retry."
+        },
+        {
+          "kind": "documented",
+          "text": "The host list and its nested host, key, line and metadata fields retain optional presence. Public keys, raw key bodies and fingerprints remain returned payload data; the client does not validate fingerprints or fetch further resources."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, the reviewer supplied a host without a public key and create() returned host key material through both routes. Review the target and returned fingerprint before relying on the trust entry. This creation observation does not establish network-contact behavior for verify() or update()."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /KnownHosts/create: x-readonly=false and x-rollback=clean. Use form POST for this trust-file mutation; preserve source request types, defaults and response optionality."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720388941 against 12f57c20c78c7727b73205cea028fa5cb6fe94ed exercised KnownHosts calls only against this server through both routes. create returned key material when no key was supplied. Attribute this as an observation rather than pinned documentation; do not extend the network-contact claim to verify or update. No key values are persisted in this evidence.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
+        }
+      ]
+    },
+    "uapi:KnownHosts/delete": {
+      "name": "delete",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 74 and later; operates on the selected account known_hosts file. hostName is forwarded as host_name without client-side hostname or IP normalization. Omit port to retain the documented server default of 22; an explicitly supplied zero is sent unchanged and is not omission."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the selected account known_hosts entry and changes SSH authentication trust. This removes the stored trust record; it does not remove the remote host or revoke a user key."
+        },
+        {
+          "kind": "documented",
+          "text": "This mutation uses form POST. The source declares clean rollback; the client performs no automatic rollback or retry."
+        },
+        {
+          "kind": "documented",
+          "text": "The data payload is a nullable object without pinned fields. Preserve opaque object fields and explicit null; a missing data member is a payload mismatch."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /KnownHosts/delete: x-readonly=false and x-rollback=clean. Use form POST for this trust-file mutation; preserve source request types, defaults and response optionality."
+        }
+      ]
+    },
+    "uapi:KnownHosts/update": {
+      "name": "update",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 74 and later; operates on the selected account known_hosts file. hostName is forwarded as host_name without client-side hostname or IP normalization. Omit port to retain the documented server default of 22; an explicitly supplied zero is sent unchanged and is not omission."
+        },
+        {
+          "kind": "documented",
+          "text": "Updates the selected account known_hosts entry and changes SSH authentication trust."
+        },
+        {
+          "kind": "documented",
+          "text": "This mutation uses form POST. The source declares clean rollback; the client performs no automatic rollback or retry."
+        },
+        {
+          "kind": "documented",
+          "text": "The host list and its nested host, key, line and metadata fields retain optional presence. Public keys, raw key bodies and fingerprints remain returned payload data; the client does not validate fingerprints or fetch further resources."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /KnownHosts/update: x-readonly=false and x-rollback=clean. Use form POST for this trust-file mutation; preserve source request types, defaults and response optionality."
+        }
+      ]
+    },
+    "uapi:KnownHosts/verify": {
+      "name": "verify",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 74 and later; operates on the selected account known_hosts file. hostName is forwarded as host_name without client-side hostname or IP normalization. Omit port to retain the documented server default of 22; an explicitly supplied zero is sent unchanged and is not omission."
+        },
+        {
+          "kind": "documented",
+          "text": "Checks the host public key against the selected account known_hosts file. This does not establish successful SSH authentication or server identity beyond the API result."
+        },
+        {
+          "kind": "documented",
+          "text": "Payload status is an optional integer 0/1 flag: 1 means the host exists; 0 means it is absent or must be registered again. failure_type distinguishes new and changed hosts. Payload errors are distinct from UAPI envelope errors; UAPI status=0 remains a failure. Host records, fingerprints and status fields retain optional presence; no nullable fields are inferred."
+        }
+      ]
+    }
+  }
+}

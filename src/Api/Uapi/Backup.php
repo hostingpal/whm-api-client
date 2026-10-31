@@ -168,9 +168,10 @@ final readonly class Backup
      * differs from the FTP maximum 65535; preserve this source caveat without inventing validation beyond the generated
      * scalar contract.
      *
-     * Documented: keyName selects an existing SSH key; it is not private-key content. keyPassphrase is required and
-     * sensitive. The pinned source requires at least four characters and does not document key generation/import as
-     * part of this operation.
+     * Documented: keyName selects an existing SSH key; it is not private-key content. The pinned key_name documentation
+     * names UAPI SSL::generate_key for creating a private SSH key and cPanel API 2 SSH::importkey for importing an
+     * existing key. This backup call does not perform those prerequisite operations. keyPassphrase is required and
+     * sensitive; its pinned minimum length is four characters.
      *
      * API-map identity: uapi:Backup/fullbackup_to_scp_with_key#GET (wire name fullbackup_to_scp_with_key).
      *

@@ -24,7 +24,16 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload verification."
+          "text": "The pinned operation explicitly uses POST with an application/x-www-form-urlencoded request body and documents a state-changing operation. The client sends the supplied arguments in that form body and performs no automatic retry. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains committed transport and payload verification."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /WebsiteBackup/create_backup/post: the requestBody is application/x-www-form-urlencoded. The operation description documents the mutation; missing x-readonly does not make this explicit POST a conservative fallback. Retain the pinned mutation semantics and form body."
         }
       ]
     },
@@ -44,7 +53,16 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload verification."
+          "text": "The pinned operation explicitly uses POST with an application/x-www-form-urlencoded request body and documents a state-changing operation. The client sends the supplied arguments in that form body and performs no automatic retry. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains committed transport and payload verification."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /WebsiteBackup/delete_backup/post: the requestBody is application/x-www-form-urlencoded. The operation description documents the mutation; missing x-readonly does not make this explicit POST a conservative fallback. Retain the pinned mutation semantics and form body."
         }
       ]
     },
@@ -65,6 +83,56 @@
         {
           "kind": "documented",
           "text": "The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload verification."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, the reviewer observed estimatedBytes as a digit string through direct UAPI and an integer through the WHM bridge. Canonical decimal strings within PHP integer bounds normalize losslessly to int for estimatedBytes and availableBytes. The availableBytes compatibility is inferred from the reported source family, not a separately observed string value. Malformed and overflowing strings remain invalid; optional fields stay omitted and the two flags retain their strict integer 0/1 types."
+        }
+      ],
+      "response": {
+        "availableBytes": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer 5720426019 identifies availableBytes as coming from the same kind of server source as estimatedBytes in Cpanel/API/WebsiteBackup.pm and requests the same canonical integer-string compatibility. This field widening is a source-family inference from that report, not an observation of availableBytes as a string. Preserve the pinned integer type and optional presence, using bounded lossless normalization only.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019"
+            }
+          ]
+        },
+        "estimatedBytes": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer 5720426019 against e1425e688904c7751401cb5ddf58c902d571f573 observed estimatedBytes as a digit string through direct UAPI and an integer through the WHM bridge in the same run on a disposable account. Accept canonical decimal strings only within PHP integer bounds and normalize losslessly to the pinned integer. Preserve optional presence; do not widen ok, unlimited or other operations. This attributed reviewer observation is separate from committed evidence; no new capture was run.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720426019 against e1425e688904c7751401cb5ddf58c902d571f573 observed estimatedBytes as a digit string through direct UAPI and an integer through the WHM bridge in the same run on a disposable account. Accept canonical decimal strings only within PHP integer bounds and normalize losslessly to the pinned integer. Preserve optional presence; do not widen ok, unlimited or other operations. This attributed reviewer observation is separate from committed evidence; no new capture was run.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720426019 identifies availableBytes as coming from the same kind of server source as estimatedBytes in Cpanel/API/WebsiteBackup.pm and requests the same canonical integer-string compatibility. This field widening is a source-family inference from that report, not an observation of availableBytes as a string. Preserve the pinned integer type and optional presence, using bounded lossless normalization only.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019"
         }
       ]
     },
@@ -84,7 +152,16 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload verification."
+          "text": "The pinned operation explicitly uses POST with an application/x-www-form-urlencoded request body and documents a state-changing operation. The client sends the supplied arguments in that form body and performs no automatic retry. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains committed transport and payload verification."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /WebsiteBackup/extract_backup/post: the requestBody is application/x-www-form-urlencoded. The operation description documents the mutation; missing x-readonly does not make this explicit POST a conservative fallback. Retain the pinned mutation semantics and form body."
         }
       ]
     },
@@ -156,11 +233,11 @@
         },
         {
           "kind": "documented",
-          "text": "Omitting clean uses a merge: archive files overwrite counterparts while newer files are retained. clean=1 selects a snapshot and removes files added since backup; clean=0 requests merge. This parameter is a pinned integer, not a boolean or the string false. The client preserves omitted defaults and explicit zero."
+          "text": "Omitting clean uses a merge: archive files overwrite counterparts while newer files are retained. Pass true to send clean=1, select a snapshot and remove files added since backup; false sends clean=0 for merge. This switch governs website files only. The nullable boolean argument preserves omitted defaults and explicit false, and never sends the unsafe string false."
         },
         {
           "kind": "documented",
-          "text": "Omitting restoreDatabases restores archive databases by default. Send integer 0 to leave every database untouched; the string false is unsafe upstream because Perl treats it as true. Restored databases are reset to their backed-up state, dropping later objects. The server documents a rollback snapshot for a failed database restore; the client does not promise whole-site atomicity."
+          "text": "Omitting restoreDatabases restores archive databases by default. Pass false to send restore_databases=0 and leave every database untouched; true sends 1. The string false is unsafe upstream because Perl treats it as true, so the typed argument is a nullable boolean. Restored databases are reset to their backed-up state, dropping later objects. The server documents a rollback snapshot for a failed database restore; the client does not promise whole-site atomicity."
         },
         {
           "kind": "documented",
@@ -172,9 +249,41 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload verification."
+          "text": "The pinned operation explicitly uses POST with an application/x-www-form-urlencoded request body and documents a state-changing operation. The client sends the supplied arguments in that form body and performs no automatic retry. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains committed transport and payload verification."
         }
-      ]
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /WebsiteBackup/restore_backup/post: the requestBody is application/x-www-form-urlencoded. The operation description documents the mutation; missing x-readonly does not make this explicit POST a conservative fallback. Retain the pinned mutation semantics and form body."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /WebsiteBackup/restore_backup/post/requestBody/content/application~1x-www-form-urlencoded/schema/properties/clean and restore_databases declare optional integer switches. Their prose specifies clean 1=snapshot/0=merge, omission=merge, and restore_databases 0=leave databases/omission=1. Both warn that literal string false is truthy in Perl. Use the existing bool parameter encoding to expose nullable booleans and send only 0/1 while preserving omission. Updated parameter descriptions retain these source semantics; native strict-types callers reject integer values before any request."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720426019 against e1425e688904c7751401cb5ddf58c902d571f573 reports upstream clean truthiness conversion and confirmed that clean=1 deleted a file added after backup on the disposable account; the default merge preserves it. Both routes were exercised and the account was removed. This supports the pinned destructive-switch caveat and boolean encoding; it is an attributed reviewer report, not a new committed capture.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019"
+        }
+      ],
+      "params": {
+        "clean": {
+          "encoding": "bool",
+          "description": "Whether to restore website files as a snapshot. Pass true to send integer 1, rebuild the document root from the archive and remove files added since the backup. Omit or pass null for the default merge, which keeps those files; false sends integer 0 for the same merge. This switch governs website files only. The pinned API warns that the string false is truthy in Perl and would select the destructive snapshot; the typed boolean argument sends only 0 or 1."
+        },
+        "restore_databases": {
+          "encoding": "bool",
+          "description": "Whether to restore the archive databases. Omit or pass null for the server default 1. Pass false to send integer 0 and restore website files only, leaving every database untouched; true sends integer 1. Database restoration resets each database to its backed-up state and drops objects created since. The pinned API warns that the string false is truthy in Perl and would restore databases; the typed boolean argument sends only 0 or 1. To leave databases untouched, set this argument to false and omit database."
+        }
+      }
     }
   }
 }

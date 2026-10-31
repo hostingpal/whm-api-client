@@ -19,6 +19,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
  * @phpstan-type AnyRunningResult array{
+ *     any_running?: 0|1,
  *     items?: array{
  *         any_running?: 0|1,
  *         last_outcome?: array{
@@ -33,6 +34,17 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *             type?: string,
  *         }>|array<array-key, mixed>,
  *     },
+ *     last_outcome?: array{
+ *         error?: string|null,
+ *         have_outcome?: 0|1,
+ *         site?: string,
+ *         status?: string,
+ *     },
+ *     sites?: list<array{
+ *         id?: string|null,
+ *         site?: string,
+ *         type?: string,
+ *     }>|array<array-key, mixed>,
  * }
  * @phpstan-type StartResult array{
  *     restore_id?: string,
@@ -63,17 +75,22 @@ final readonly class WordPressRestore
      * lists and zero flags. Integer flags remain 0|1 without string or boolean normalization. This method is explicitly
      * read-only in the pinned source and uses GET.
      *
-     * Documented: The pinned formal data schema declares an optional items property containing RestoreInProgress or
-     * RestoreNotInProgress. Preserve that nesting and merge their optional object fields without discarding
-     * last_outcome. sites retains the documented list-of-records or opaque-object alternatives; empty objects/lists and
-     * unknown opaque fields are preserved. The source describes restore-process IDs as unimplemented/null-only, while
-     * the formal id schema remains nullable string. last_outcome.error is nullable string; status is text and
-     * have_outcome is an integer flag. No completed restoration is inferred from any_running=0 alone.
+     * Documented: The pinned full examples place any_running, sites and last_outcome directly under data; the formal
+     * schema places the same fields under optional items. Both placements are preserved in one object, including when
+     * both are present. Their fields remain optional and retain zero flags, explicit documented null and empty
+     * collections. These shapes are supported by pinned documentation and offline replay; no successful live WordPress
+     * response was observed.
      *
-     * Documented: The pinned full response examples place any_running, sites and last_outcome directly under data,
-     * while the formal schema nests these fields under data.items. This unresolved source discrepancy is tracked under
-     * whm-api-client-8x0.2.32. The generated contract follows the formal nesting and does not infer flat fields from
-     * the examples; successful API status alone does not establish compatibility with either live variant.
+     * Documented: sites preserves the known list row shape with optional nullable-string id and string site/type
+     * fields, plus the formal unstructured object alternative, which has only been documented as empty. No populated
+     * keyed-record schema is inferred. The source describes restore-process IDs as unimplemented/null-only while the
+     * formal id schema is nullable string. last_outcome.error is nullable string; status remains text and have_outcome
+     * is a 0|1 integer flag. any_running=0 alone does not establish completed restoration.
+     *
+     * Observed: On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged
+     * UAPI because Cpanel/API/WordPressRestore.pm was missing. The installed cpanel-wpx-plugin did not provide a usable
+     * module. This is an installation-specific capability failure; no successful payload or route incompatibility was
+     * established.
      *
      * API-map identity: uapi:WordPressRestore/any_running#GET (wire name any_running).
      *
@@ -108,6 +125,11 @@ final readonly class WordPressRestore
      * unsuccessful cleanup. It is distinct from the UAPI envelope status. Null and absent payloads are mismatches;
      * cleanup is not a promise to undo restored files or to delete archives.
      *
+     * Observed: On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged
+     * UAPI because Cpanel/API/WordPressRestore.pm was missing. The installed cpanel-wpx-plugin did not provide a usable
+     * module. This is an installation-specific capability failure; no successful payload or route incompatibility was
+     * established.
+     *
      * API-map identity: uapi:WordPressRestore/cleanup#GET (wire name cleanup).
      *
      * @param string $site The WordPress site's URL without the protocol prefix.
@@ -141,6 +163,11 @@ final readonly class WordPressRestore
      * Documented: backupPath is the path to an existing server-side backup archive, forwarded unchanged as backup_path,
      * not a local file upload. Starts restoration of the selected site and returns an optional restore_id. The source
      * declares no rollback. Restoration changes site state and its process ID alone does not establish completion.
+     *
+     * Observed: On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged
+     * UAPI because Cpanel/API/WordPressRestore.pm was missing. The installed cpanel-wpx-plugin did not provide a usable
+     * module. This is an installation-specific capability failure; no successful payload or route incompatibility was
+     * established.
      *
      * API-map identity: uapi:WordPressRestore/start#GET (wire name start).
      *

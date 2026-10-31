@@ -22,6 +22,7 @@ final class WordPressRestoreSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
+                'any_running' => ['type' => 'flag'],
                 'items' => [
                     'type' => 'object',
                     'fields' => [
@@ -52,6 +53,32 @@ final class WordPressRestoreSpec
                                 ['type' => 'map', 'values' => ['type' => 'mixed']],
                             ],
                         ],
+                    ],
+                ],
+                'last_outcome' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'error' => ['type' => 'string', 'nullable' => true],
+                        'have_outcome' => ['type' => 'flag'],
+                        'site' => ['type' => 'string'],
+                        'status' => ['type' => 'string'],
+                    ],
+                ],
+                'sites' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        [
+                            'type' => 'list',
+                            'items' => [
+                                'type' => 'object',
+                                'fields' => [
+                                    'id' => ['type' => 'string', 'nullable' => true],
+                                    'site' => ['type' => 'string'],
+                                    'type' => ['type' => 'string'],
+                                ],
+                            ],
+                        ],
+                        ['type' => 'map', 'values' => ['type' => 'mixed']],
                     ],
                 ],
             ],

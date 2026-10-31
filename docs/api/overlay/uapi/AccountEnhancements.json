@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "AccountEnhancements",
+  "accessor": "accountEnhancements",
+  "class": "AccountEnhancements",
+  "operations": {
+    "uapi:AccountEnhancements/has_enhancement": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 98 and later. Supply an Account Enhancement identifier; WHM list_account_enhancements lists the server identifiers."
+        },
+        {
+          "kind": "documented",
+          "text": "The integer data result is 1 when the enhancement is assigned and 0 when it is not assigned. This is separate from the UAPI status: an unsuccessful UAPI envelope or outer WHM envelope still fails the call."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/AccountEnhancements/has_enhancement declares x-readonly: true and a GET operation. Pinned cpanel.openapi.json.gz decompressed-byte SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; stored gzip SHA-256: ba2ba938969c2e98f9bdb259f4072d182af215ba8a44402846de077ba6b85358."
+        }
+      ]
+    },
+    "uapi:AccountEnhancements/list": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 98 and later. Lists the Account Enhancements this cPanel account can access."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned data schema omits its root type, describes an object and places id/name fields under items. Its container remains unresolved: preserve the opaque payload without inferring a list, map, scalar meaning or guaranteed row contract. An absent data member remains a mismatch."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/AccountEnhancements/list declares x-readonly: true and a GET operation. Pinned cpanel.openapi.json.gz decompressed-byte SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; stored gzip SHA-256: ba2ba938969c2e98f9bdb259f4072d182af215ba8a44402846de077ba6b85358."
+        }
+      ],
+      "name": "listEnhancements"
+    }
+  }
+}

@@ -83,6 +83,11 @@ final readonly class WordPressBackup
      * backup. The source describes site id as unimplemented and null-only, but its formal schema is nullable string;
      * retain that schema without inventing a concrete ID contract. sse_url is returned data and is not followed.
      *
+     * Observed: On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged
+     * UAPI because Cpanel/API/WordPressBackup.pm was missing. The installed cpanel-wpx-plugin did not provide a usable
+     * module. This is an installation-specific capability failure; no successful payload or route incompatibility was
+     * established.
+     *
      * API-map identity: uapi:WordPressBackup/any_running#GET (wire name any_running).
      *
      * @return AnyRunningResult
@@ -122,6 +127,11 @@ final readonly class WordPressBackup
      * input-narrowing limitation is tracked under whm-api-client-8x0.1.23. The optional response site field retains the
      * known source string type and rejects null or non-string values.
      *
+     * Observed: On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged
+     * UAPI because Cpanel/API/WordPressBackup.pm was missing. The installed cpanel-wpx-plugin did not provide a usable
+     * module. This is an installation-specific capability failure; no successful payload or route incompatibility was
+     * established.
+     *
      * API-map identity: uapi:WordPressBackup/cancel#GET (wire name cancel).
      *
      * @param string|int $site The WordPress site's URL without the protocol prefix.
@@ -155,6 +165,11 @@ final readonly class WordPressBackup
      * Documented: Releases system resources from a previous site backup. ok=0 reports a backup still in progress and
      * ok=1 reports resources released. The entire data value is nullable; explicit null is valid, while an absent data
      * member is a mismatch. Do not interpret resource cleanup as deleting the backup archive.
+     *
+     * Observed: On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged
+     * UAPI because Cpanel/API/WordPressBackup.pm was missing. The installed cpanel-wpx-plugin did not provide a usable
+     * module. This is an installation-specific capability failure; no successful payload or route incompatibility was
+     * established.
      *
      * API-map identity: uapi:WordPressBackup/cleanup#GET (wire name cleanup).
      *
@@ -190,6 +205,11 @@ final readonly class WordPressBackup
      * and string file/path/site fields. The source describes file as tar.zip but gives a tar.gz example; forward the
      * returned filename without inferring an extension rule. dir and row path are server-side paths.
      *
+     * Observed: On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged
+     * UAPI because Cpanel/API/WordPressBackup.pm was missing. The installed cpanel-wpx-plugin did not provide a usable
+     * module. This is an installation-specific capability failure; no successful payload or route incompatibility was
+     * established.
+     *
      * API-map identity: uapi:WordPressBackup/get_available_backups#GET (wire name get_available_backups).
      *
      * @param string $site The WordPress site's URL without the protocol prefix.
@@ -222,6 +242,11 @@ final readonly class WordPressBackup
      *
      * Documented: action_id may be explicit null, omitted or a string. is_running=0 means no active backup. A process
      * ID is not evidence of successful completion.
+     *
+     * Observed: On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged
+     * UAPI because Cpanel/API/WordPressBackup.pm was missing. The installed cpanel-wpx-plugin did not provide a usable
+     * module. This is an installation-specific capability failure; no successful payload or route incompatibility was
+     * established.
      *
      * API-map identity: uapi:WordPressBackup/is_running#GET (wire name is_running).
      *
@@ -261,6 +286,11 @@ final readonly class WordPressBackup
      * remains string|int; this does not establish integer site semantics or validate domain/path formats. The
      * input-narrowing limitation is tracked under whm-api-client-8x0.1.23. The optional response site field retains the
      * known source string type and rejects null or non-string values.
+     *
+     * Observed: On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged
+     * UAPI because Cpanel/API/WordPressBackup.pm was missing. The installed cpanel-wpx-plugin did not provide a usable
+     * module. This is an installation-specific capability failure; no successful payload or route incompatibility was
+     * established.
      *
      * API-map identity: uapi:WordPressBackup/start#GET (wire name start).
      *

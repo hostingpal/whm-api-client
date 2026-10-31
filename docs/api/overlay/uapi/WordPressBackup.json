@@ -19,6 +19,10 @@
         {
           "kind": "documented",
           "text": "anyRunning reports active backups on the selected account. sites is populated only while processing a backup. The source describes site id as unimplemented and null-only, but its formal schema is nullable string; retain that schema without inventing a concrete ID contract. sse_url is returned data and is not followed."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged UAPI because Cpanel/API/WordPressBackup.pm was missing. The installed cpanel-wpx-plugin did not provide a usable module. This is an installation-specific capability failure; no successful payload or route incompatibility was established."
         }
       ],
       "evidence": [
@@ -27,6 +31,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /WordPressBackup/any_running GET declares x-readonly=true; use GET for the explicitly read-only operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019 and source-availability clarification https://github.com/hostingpal/whm-api-client/pull/45#issuecomment-6537452942: all WordPressBackup methods failed through both routes on cPanel 11.138.0.19 with a missing Cpanel/API/WordPressBackup.pm module. The files were absent and cpanel-wpx-plugin supplied no backup/restore modules. This records the observed capability failure only; response contracts remain pinned-source/offline evidence."
         }
       ]
     },
@@ -48,6 +58,10 @@
         {
           "kind": "documented",
           "text": "The pinned site input is a string URL without a protocol prefix. Supply a string. The current generator loses the outer type across format-only anyOf alternatives, so the generated native input boundary remains string|int; this does not establish integer site semantics or validate domain/path formats. The input-narrowing limitation is tracked under whm-api-client-8x0.1.23. The optional response site field retains the known source string type and rejects null or non-string values."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged UAPI because Cpanel/API/WordPressBackup.pm was missing. The installed cpanel-wpx-plugin did not provide a usable module. This is an installation-specific capability failure; no successful payload or route incompatibility was established."
         }
       ],
       "evidence": [
@@ -56,6 +70,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /WordPressBackup/cancel GET declares x-readonly=false. Its x-rollback=none classification is retained; use form POST for this state-changing operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019 and source-availability clarification https://github.com/hostingpal/whm-api-client/pull/45#issuecomment-6537452942: all WordPressBackup methods failed through both routes on cPanel 11.138.0.19 with a missing Cpanel/API/WordPressBackup.pm module. The files were absent and cpanel-wpx-plugin supplied no backup/restore modules. This records the observed capability failure only; response contracts remain pinned-source/offline evidence."
         }
       ],
       "name": "cancel",
@@ -89,6 +109,10 @@
         {
           "kind": "documented",
           "text": "Releases system resources from a previous site backup. ok=0 reports a backup still in progress and ok=1 reports resources released. The entire data value is nullable; explicit null is valid, while an absent data member is a mismatch. Do not interpret resource cleanup as deleting the backup archive."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged UAPI because Cpanel/API/WordPressBackup.pm was missing. The installed cpanel-wpx-plugin did not provide a usable module. This is an installation-specific capability failure; no successful payload or route incompatibility was established."
         }
       ],
       "evidence": [
@@ -97,6 +121,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /WordPressBackup/cleanup GET declares x-readonly=false. Its x-rollback=none classification is retained; use form POST for this state-changing operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019 and source-availability clarification https://github.com/hostingpal/whm-api-client/pull/45#issuecomment-6537452942: all WordPressBackup methods failed through both routes on cPanel 11.138.0.19 with a missing Cpanel/API/WordPressBackup.pm module. The files were absent and cpanel-wpx-plugin supplied no backup/restore modules. This records the observed capability failure only; response contracts remain pinned-source/offline evidence."
         }
       ],
       "name": "cleanup"
@@ -115,6 +145,10 @@
         {
           "kind": "documented",
           "text": "available may be null or an empty list, or may be omitted. Backup rows preserve optional integer date and string file/path/site fields. The source describes file as tar.zip but gives a tar.gz example; forward the returned filename without inferring an extension rule. dir and row path are server-side paths."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged UAPI because Cpanel/API/WordPressBackup.pm was missing. The installed cpanel-wpx-plugin did not provide a usable module. This is an installation-specific capability failure; no successful payload or route incompatibility was established."
         }
       ],
       "evidence": [
@@ -123,6 +157,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /WordPressBackup/get_available_backups GET declares x-readonly=true; use GET for the explicitly read-only operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019 and source-availability clarification https://github.com/hostingpal/whm-api-client/pull/45#issuecomment-6537452942: all WordPressBackup methods failed through both routes on cPanel 11.138.0.19 with a missing Cpanel/API/WordPressBackup.pm module. The files were absent and cpanel-wpx-plugin supplied no backup/restore modules. This records the observed capability failure only; response contracts remain pinned-source/offline evidence."
         }
       ]
     },
@@ -140,6 +180,10 @@
         {
           "kind": "documented",
           "text": "action_id may be explicit null, omitted or a string. is_running=0 means no active backup. A process ID is not evidence of successful completion."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged UAPI because Cpanel/API/WordPressBackup.pm was missing. The installed cpanel-wpx-plugin did not provide a usable module. This is an installation-specific capability failure; no successful payload or route incompatibility was established."
         }
       ],
       "evidence": [
@@ -148,6 +192,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /WordPressBackup/is_running GET declares x-readonly=true; use GET for the explicitly read-only operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019 and source-availability clarification https://github.com/hostingpal/whm-api-client/pull/45#issuecomment-6537452942: all WordPressBackup methods failed through both routes on cPanel 11.138.0.19 with a missing Cpanel/API/WordPressBackup.pm module. The files were absent and cpanel-wpx-plugin supplied no backup/restore modules. This records the observed capability failure only; response contracts remain pinned-source/offline evidence."
         }
       ]
     },
@@ -169,6 +219,10 @@
         {
           "kind": "documented",
           "text": "The pinned site input is a string URL without a protocol prefix. Supply a string. The current generator loses the outer type across format-only anyOf alternatives, so the generated native input boundary remains string|int; this does not establish integer site semantics or validate domain/path formats. The input-narrowing limitation is tracked under whm-api-client-8x0.1.23. The optional response site field retains the known source string type and rejects null or non-string values."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged UAPI because Cpanel/API/WordPressBackup.pm was missing. The installed cpanel-wpx-plugin did not provide a usable module. This is an installation-specific capability failure; no successful payload or route incompatibility was established."
         }
       ],
       "evidence": [
@@ -177,6 +231,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /WordPressBackup/start GET declares x-readonly=false. Its x-rollback=none classification is retained; use form POST for this state-changing operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019 and source-availability clarification https://github.com/hostingpal/whm-api-client/pull/45#issuecomment-6537452942: all WordPressBackup methods failed through both routes on cPanel 11.138.0.19 with a missing Cpanel/API/WordPressBackup.pm module. The files were absent and cpanel-wpx-plugin supplied no backup/restore modules. This records the observed capability failure only; response contracts remain pinned-source/offline evidence."
         }
       ],
       "name": "start",
