@@ -6,7 +6,7 @@ namespace HostingPal\WhmApiClient\Tests\Api\Engine;
 
 use HostingPal\WhmApiClient\Api\Engine\ArgumentEncoder;
 use HostingPal\WhmApiClient\Api\Engine\SpecChecker;
-use HostingPal\WhmApiClient\Api\RepeatedList;
+use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -18,16 +18,13 @@ final class OmitEmptySpecTest extends TestCase
         $params = ['tags' => ['name' => 'tag', 'encoding' => 'repeat', 'omit_empty' => true]];
         SpecChecker::check(['function' => 'example', 'method' => 'POST', 'outcome' => 'flag',
             'params' => $params, 'returns' => null]);
-        self::assertSame([], ArgumentEncoder::encode($params, ['tags' => []]));
-        self::assertSame([], ArgumentEncoder::encode($params, ['tags' => null]));
-        foreach (['single', ['a', 'b']] as $value) {
-            $encoded = ArgumentEncoder::encode($params, ['tags' => $value]);
-            self::assertInstanceOf(RepeatedList::class, $encoded['tag']);
-            self::assertSame($value, $encoded['tag']->values);
-        }
-        $ordinary = ArgumentEncoder::encode(['tags' => ['name' => 'tag', 'encoding' => 'repeat']], ['tags' => []]);
-        self::assertInstanceOf(RepeatedList::class, $ordinary['tag']);
-        self::assertSame([], $ordinary['tag']->values);
+        self::assertSame('', ArgumentEncoder::encode($params, ['tags' => []])->encode());
+        self::assertSame('', ArgumentEncoder::encode($params, ['tags' => null])->encode());
+        self::assertSame('tag=single', ArgumentEncoder::encode($params, ['tags' => 'single'])->encode());
+        self::assertSame('tag=a&tag=b', ArgumentEncoder::encode($params, ['tags' => ['a', 'b']])->encode());
+
+        $this->expectException(InvalidArgumentException::class);
+        ArgumentEncoder::encode(['tags' => ['name' => 'tag', 'encoding' => 'repeat']], ['tags' => []]);
     }
 
     /** @return iterable<string, array{mixed, string}> */

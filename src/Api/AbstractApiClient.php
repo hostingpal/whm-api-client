@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Api;
 
 use HostingPal\WhmApiClient\Api\Engine\MultipartEncoder;
+use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
+use HostingPal\WhmApiClient\Api\Engine\ParameterExpander;
 use HostingPal\WhmApiClient\Config\ClientConfig;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\TransportException;
@@ -99,17 +101,17 @@ abstract class AbstractApiClient
      * redirects itself. List values encode repeated parameters in order, without
      * bracketed names; NumberedList values use WHM's name, name-1, ... convention.
      * SuffixNumberedList replaces a terminal wildcard with 1, 2, ... in order.
-     * Empty or malformed lists fail locally after clearing prior metadata, so
-     * operation groups pass caller input through unvalidated.
+     * Generic markers are validated here; generated OrderedFields already carry
+     * validated literal expansions. Both paths follow the handle's metadata reset.
      *
-     * @param Parameters $query
+     * @param Parameters|OrderedFields $query
      * @throws InvalidArgumentException If a parameter value or a multi-value parameter is invalid.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      */
     final protected function executeGet(
         string $path,
         #[SensitiveParameter]
-        array $query,
+        array|OrderedFields $query,
         ResponseRoute $route,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): ApiResponse {
@@ -127,17 +129,17 @@ abstract class AbstractApiClient
      * Secret-bearing operations must use this executor. Encoding rules, lifecycle,
      * and failure handling match executeGet; an empty body is sent as empty content.
      *
-     * @param Parameters $query Routing fields that remain in the URL.
-     * @param Parameters $body Operation parameters sent with the selected form or inline-string multipart encoding.
+     * @param Parameters|OrderedFields $query Routing fields that remain in the URL.
+     * @param Parameters|OrderedFields $body Operation fields sent as form or inline-string multipart content.
      * @throws InvalidArgumentException If a parameter value or a multi-value parameter is invalid.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      */
     final protected function executePost(
         string $path,
         #[SensitiveParameter]
-        array $query,
+        array|OrderedFields $query,
         #[SensitiveParameter]
-        array $body,
+        array|OrderedFields $body,
         ResponseRoute $route,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
         RequestBodyFormat $bodyFormat = RequestBodyFormat::Form,
@@ -148,8 +150,8 @@ abstract class AbstractApiClient
     /**
      * Run the shared lifecycle: reset, encode, send once, read the envelope, record.
      *
-     * @param Parameters $query
-     * @param Parameters $body
+     * @param Parameters|OrderedFields $query
+     * @param Parameters|OrderedFields $body
      * @throws InvalidArgumentException If a parameter value or a multi-value parameter is invalid.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      */
@@ -157,9 +159,9 @@ abstract class AbstractApiClient
         RequestMethod $method,
         string $path,
         #[SensitiveParameter]
-        array $query,
+        array|OrderedFields $query,
         #[SensitiveParameter]
-        array $body,
+        array|OrderedFields $body,
         ResponseRoute $route,
         OutcomePolicy $outcome,
         RequestBodyFormat $bodyFormat = RequestBodyFormat::Form,
@@ -215,18 +217,21 @@ abstract class AbstractApiClient
     /**
      * Encode parameters as RFC 3986 key=value pairs joined by "&", in order.
      *
-     * @param Parameters $parameters
+     * @param Parameters|OrderedFields $parameters
      * @throws InvalidArgumentException If a parameter value or a multi-value parameter is invalid.
      */
-    private static function encode(#[SensitiveParameter] array $parameters): string
+    private static function encode(#[SensitiveParameter] array|OrderedFields $parameters): string
     {
+        if ($parameters instanceof OrderedFields) {
+            return $parameters->encode();
+        }
         $parts = [];
         $seen = [];
         $suffixKeys = [];
         foreach ($parameters as $name => $value) {
             $suffix = $value instanceof SuffixNumberedList;
-            foreach (self::queryValues((string) $name, $value) as $part) {
-                $key = explode('=', $part, 2)[0];
+            foreach (ParameterExpander::expand((string) $name, $value, true) as $field) {
+                $key = $field['name'];
                 if (($suffix && isset($seen[$key])) || isset($suffixKeys[$key])) {
                     throw new InvalidArgumentException('Suffix-numbered parameters overlap another wire name.');
                 }
@@ -234,76 +239,10 @@ abstract class AbstractApiClient
                 if ($suffix) {
                     $suffixKeys[$key] = true;
                 }
-                $parts[] = $part;
+                $parts[] = rawurlencode($key) . '=' . rawurlencode((string) $field['value']);
             }
         }
 
         return implode('&', $parts);
-    }
-
-    /**
-     * Encode scalar, repeated, or numbered values without changing key names.
-     *
-     * List values and RepeatedList values repeat their literal name; NumberedList
-     * values use WHM's name, name-1, name-2, ... convention. SuffixNumberedList
-     * replaces a reviewed terminal wildcard with 1, 2, ...; its scalar variant
-     * also accepts integers. Expanded names must not overlap another parameter.
-     * The mixed boundary
-     * validates PHP array contents supplied to typed methods and generic calls.
-     * Failure messages may name the parameter but never include its value.
-     *
-     * @return non-empty-list<string>
-     * @throws InvalidArgumentException If a value or suffix pattern is unsupported, a list is empty or keyed,
-     *     list entries have unsupported types, or expanded suffix names overlap another parameter.
-     */
-    private static function queryValues(string $name, #[SensitiveParameter] mixed $value): array
-    {
-        if ($value instanceof SuffixNumberedList) {
-            if (preg_match('/^[A-Za-z_][A-Za-z0-9_]*\*$/D', $name) !== 1) {
-                throw new InvalidArgumentException('Suffix-numbered parameters require one terminal wildcard.');
-            }
-            $allowIntegers = $value->allowIntegers;
-            $entries = is_array($value->values) ? $value->values : [$value->values];
-            if (!array_is_list($entries) || $entries === []) {
-                throw new InvalidArgumentException('Suffix-numbered parameters require a nonempty sequential list.');
-            }
-            $parts = [];
-            foreach ($entries as $index => $entry) {
-                if (!is_string($entry) && !($allowIntegers && is_int($entry))) {
-                    throw new InvalidArgumentException('Suffix-numbered parameters contain an unsupported value.');
-                }
-                $key = substr($name, 0, -1) . ($index + 1);
-                $parts[] = rawurlencode($key) . '=' . rawurlencode((string) $entry);
-            }
-
-            return $parts;
-        }
-
-        $numbered = $value instanceof NumberedList;
-        if ($numbered || $value instanceof RepeatedList) {
-            $value = $value->values;
-        }
-        if (is_string($value) || is_int($value)) {
-            return [rawurlencode($name) . '=' . rawurlencode((string) $value)];
-        }
-        // List markers hold a string or an array, so only plain values reach this branch.
-        if (!is_array($value)) {
-            throw new InvalidArgumentException(
-                'Parameter "' . $name . '" must be a string, an integer or a list of strings.',
-            );
-        }
-        if (!array_is_list($value) || $value === []) {
-            throw new InvalidArgumentException('Multi-value parameters require a nonempty list of strings.');
-        }
-        $parts = [];
-        foreach ($value as $index => $entry) {
-            if (!is_string($entry)) {
-                throw new InvalidArgumentException('Multi-value parameters require string values.');
-            }
-            $key = $numbered && $index > 0 ? $name . '-' . $index : $name;
-            $parts[] = rawurlencode($key) . '=' . rawurlencode($entry);
-        }
-
-        return $parts;
     }
 }

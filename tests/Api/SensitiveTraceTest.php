@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tests\Api;
 
 use Closure;
+use HostingPal\WhmApiClient\Api\Engine\ArgumentEncoder;
+use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
+use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
 use HostingPal\WhmApiClient\Api\NumberedList;
 use HostingPal\WhmApiClient\Api\RepeatedList;
 use HostingPal\WhmApiClient\Api\RequestMethod;
@@ -17,8 +20,11 @@ use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
+use HostingPal\WhmApiClient\UapiClient;
+use HostingPal\WhmApiClient\WhmClient;
 use Http\Mock\Client as MockClient;
 use InvalidArgumentException;
+use LogicException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -28,7 +34,9 @@ use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use ReflectionMethod;
 use RuntimeException;
+use SensitiveParameter;
 use SensitiveParameterValue;
 use Throwable;
 
@@ -56,6 +64,7 @@ final class SensitiveTraceTest extends TestCase
 
     private const BUILDER_SECRETS = [
         'private+&=%',
+        'dynamic-map-name-secret',
         'cHJvbXB0+&=%',
         'https://panel.test/route#x',
         'https://user:pass@builder.test/archive+&.zip',
@@ -82,6 +91,141 @@ final class SensitiveTraceTest extends TestCase
     {
         if ($this->ignoreArgs !== false) {
             ini_set('zend.exception_ignore_args', $this->ignoreArgs);
+        }
+    }
+
+    /** @return iterable<string, array{string, string, string}> */
+    public static function generatedLocalFailures(): iterable
+    {
+        foreach (['whm', 'direct', 'bridged'] as $route) {
+            foreach (['GET', 'POST'] as $method) {
+                foreach (['static collision', 'static reserved', 'invalid list', 'runtime reserved'] as $failure) {
+                    yield "$route $method $failure" => [$route, $method, $failure];
+                }
+            }
+            if ($route !== 'whm') {
+                yield "$route multipart runtime reserved" => [$route, 'multipart', 'runtime reserved'];
+            }
+        }
+    }
+
+    #[DataProvider('generatedLocalFailures')]
+    public function testGeneratedLocalFailuresRedactEveryReachableLibraryFrame(
+        string $route,
+        string $method,
+        string $failure,
+    ): void {
+        [$client, $http] = self::client($route === 'direct');
+        $http->addResponse(new Response(200, [], match ($route) {
+            'whm' => '{"metadata":{"result":1}}',
+            'direct' => '{"status":1,"data":null}',
+            default => '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":null}}}',
+        }));
+        $handle = $route === 'whm' ? $client->whm() : $client->uapi($route === 'direct' ? null : 'npr');
+        $route === 'whm' ? $client->whm()->call('probe') : $client->uapi($route === 'direct' ? null : 'npr')
+            ->call('Email', 'probe');
+        self::assertNotNull($handle->responseMeta());
+        $spec = ['function' => 'probe', 'method' => $method === 'multipart' ? 'POST' : $method,
+            'outcome' => 'flag', 'returns' => null,
+            'params' => ['values' => ['name' => 'value', 'encoding' => 'numbered']]];
+        if ($route !== 'whm') {
+            $spec['module'] = 'Email';
+        }
+        if ($method === 'multipart') {
+            $spec['body'] = 'multipart';
+        }
+        if ($failure === 'static collision') {
+            $spec['params']['fixed'] = ['name' => 'value-1', 'encoding' => 'scalar'];
+        } elseif ($failure === 'static reserved') {
+            $spec['params']['fixed'] = ['name' => 'api.filter.enable', 'encoding' => 'scalar'];
+        }
+        try {
+            if ($failure === 'runtime reserved') {
+                // A future expansion can reach this defense. Today's fixed specs cannot:
+                // SpecChecker rejects every statically knowable reservation first.
+                (new ReflectionMethod($handle, 'beginRequest'))->getClosure($handle)();
+                $fields = new OrderedFields();
+                $fields->append('map', 'dynamic-map-name-secret', self::SECRET);
+                $fields->append('map', 'api.dynamic-map-name-secret', self::SECRET);
+                (new ReflectionMethod($handle, 'dispatch'))->getClosure($handle)($spec, $fields);
+            } else {
+                self::invokeGeneratedRun(
+                    $handle,
+                    $spec,
+                    ['values' => $failure === 'invalid list' ? [self::SECRET, null] : [self::SECRET]],
+                );
+            }
+            self::fail('The local failure must precede I/O.');
+        } catch (LogicException $error) {
+            self::assertSame(str_starts_with($failure, 'static') ? LogicException::class
+                : InvalidArgumentException::class, $error::class);
+            self::assertSecretAbsent($error);
+            $frames = array_filter($error->getTrace(), static fn (array $frame): bool =>
+                str_starts_with($frame['class'] ?? '', 'HostingPal\\WhmApiClient\\')
+                && !str_contains($frame['class'], '\\Tests\\'));
+            $functions = array_column($frames, 'function');
+            if ($failure === 'runtime reserved') {
+                self::assertContains('assertNoReserved', $functions);
+                self::assertContains('request', $functions);
+                self::assertContains('dispatch', $functions);
+                self::assertNotContains('run', $functions);
+            } else {
+                self::assertContains('run', $functions);
+                self::assertNotContains('dispatch', $functions);
+                self::assertSame($failure === 'invalid list', in_array('encode', $functions, true));
+                self::assertSame($failure === 'invalid list', in_array(
+                    ArgumentEncoder::class,
+                    array_column($frames, 'class'),
+                    true,
+                ));
+                self::assertContains(OperationRunner::class, array_column($frames, 'class'));
+            }
+            self::assertNull($handle->responseMeta());
+            self::assertCount(1, $http->getRequests(), 'The priming request must remain the only I/O.');
+        }
+    }
+
+    /**
+     * Enter the actual handle callback without adding ReflectionMethod::invoke arguments to the trace.
+     *
+     * @param array<mixed> $spec
+     * @param array<string, mixed> $arguments
+     * @throws LogicException The malformed spec or invalid collection fails locally.
+     */
+    private static function invokeGeneratedRun(
+        WhmClient|UapiClient $handle,
+        array $spec,
+        #[SensitiveParameter] array $arguments,
+    ): void {
+        (new ReflectionMethod($handle, 'run'))->getClosure($handle)($spec, $arguments);
+    }
+
+    public function testDynamicFieldCollisionRedactsNamesAndValuesRecursively(): void
+    {
+        $fields = new OrderedFields();
+        $fields->append('dynamic-map-name-secret', 'dynamic-map-name-secret', self::SECRET);
+        try {
+            $fields->append('another origin', 'dynamic-map-name-secret', self::SECRET);
+            self::fail('Two origins cannot own the same field.');
+        } catch (InvalidArgumentException $error) {
+            self::assertSecretAbsent($error);
+        }
+    }
+
+    public function testTraceSearchDetectsUnmarkedDynamicFieldsAndNames(): void
+    {
+        $fields = new OrderedFields();
+        $fields->append('map', 'dynamic-map-name-secret', self::SECRET);
+        $leak = static function (mixed $fields): never {
+            throw new RuntimeException('Control failure.');
+        };
+        foreach ([$fields, ['dynamic-map-name-secret' => 'ordinary'], 'dynamic-map-name-secret'] as $value) {
+            try {
+                $leak($value);
+            } catch (RuntimeException $error) {
+                $seen = [];
+                self::assertTrue(self::contains($error->getTrace(), $seen));
+            }
         }
     }
 

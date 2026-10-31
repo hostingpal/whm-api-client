@@ -33,10 +33,10 @@ final class RejectEmptyTest extends TestCase
 
     public function testUnflaggedEmptyScalarStillPassesThrough(): void
     {
-        self::assertSame(['domain' => ''], ArgumentEncoder::encode(
+        self::assertSame('domain=', ArgumentEncoder::encode(
             ['domains' => ['name' => 'domain', 'encoding' => 'scalar']],
             ['domains' => ''],
-        ));
+        )->encode());
     }
 
     /** @return iterable<array{mixed, string}> */

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Api\Engine;
 
-use HostingPal\WhmApiClient\Api\AbstractApiClient;
 use HostingPal\WhmApiClient\Api\NumberedList;
 use HostingPal\WhmApiClient\Api\RepeatedList;
 use HostingPal\WhmApiClient\Api\SuffixNumberedList;
 use InvalidArgumentException;
 use LogicException;
 use SensitiveParameter;
+use stdClass;
 
 /**
  * Encode a generated method's named arguments into wire parameters.
@@ -20,15 +20,14 @@ use SensitiveParameter;
  * An explicit omit_empty parameter setting also omits exactly an empty list.
  * Unguarded null arguments are omitted, so explicit null and omission send
  * the same request for those parameters. Flags become 0/1; repeated, WHM-numbered
- * and suffix-numbered values become their marker objects, and finite float scalars are sent as strings that round-trip
- * exactly (see float()), independent of the precision, serialize_precision and
- * locale settings. Unguarded list contents are validated by AbstractApiClient
- * after clearing metadata; explicitly guarded target lists are also checked here.
+ * and suffix-numbered marker rules expand into OrderedFields without collapsing
+ * names or losing their argument origin. Finite float scalars become strings that
+ * round-trip exactly (see float()), independent of precision, serialize_precision
+ * and locale settings. ParameterExpander validates every list before dispatch.
  * A non-finite float has no wire representation and is rejected here. The handles
  * clear metadata before the runner encodes arguments. An argument or encoding the spec does not declare
  * is a generator defect.
  *
- * @phpstan-import-type Parameters from AbstractApiClient
  * @internal
  */
 final class ArgumentEncoder
@@ -39,15 +38,15 @@ final class ArgumentEncoder
      * Each declared parameter with a non-null argument is emitted under its wire
      * name using its declared encoding; explicit omit_empty on repeat skips [].
      * Explicit reject_empty policies check targets before null omission.
-     * Undeclared arguments are rejected.
+     * Undeclared arguments are generator defects; SpecChecker owns declared-name lint.
+     * Expanded collisions are invalid arguments; no partial field set is sent.
      *
      * @param array<mixed> $params Parameter specs keyed by PHP argument name.
      * @param array<string, mixed> $arguments Arguments keyed by PHP argument name.
-     * @return Parameters
      * @throws LogicException If arguments and specs disagree.
-     * @throws InvalidArgumentException If a float is non-finite or an explicitly guarded target is unsafe.
+     * @throws InvalidArgumentException If a float, target, collection or expanded name is invalid.
      */
-    public static function encode(array $params, #[SensitiveParameter] array $arguments): array
+    public static function encode(array $params, #[SensitiveParameter] array $arguments): OrderedFields
     {
         foreach (array_keys($arguments) as $name) {
             if (!array_key_exists($name, $params)) {
@@ -55,7 +54,7 @@ final class ArgumentEncoder
             }
         }
 
-        $encoded = [];
+        $encoded = new OrderedFields();
         foreach ($params as $name => $param) {
             $value = $arguments[$name] ?? null;
             if (is_array($param) && ($param['reject_empty'] ?? false) === true) {
@@ -74,7 +73,7 @@ final class ArgumentEncoder
                 continue;
             }
 
-            $encoded[$wire] = match ($param['encoding'] ?? null) {
+            $encodedValue = match ($param['encoding'] ?? null) {
                 'scalar' => self::scalar($value),
                 'bool' => is_bool($value)
                     ? ($value ? 1 : 0)
@@ -85,6 +84,10 @@ final class ArgumentEncoder
                 'suffix-numbered-scalar' => new SuffixNumberedList($value, true),
                 default => throw new LogicException('Unsupported parameter encoding for ' . $name . '.'),
             };
+            $family = $encodedValue instanceof RepeatedList ? new stdClass() : null;
+            foreach (ParameterExpander::expand($wire, $encodedValue) as $field) {
+                $encoded->append($name, $field['name'], $field['value'], $family, is_string($encodedValue));
+            }
         }
 
         return $encoded;

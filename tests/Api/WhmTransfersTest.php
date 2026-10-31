@@ -376,10 +376,10 @@ final class WhmTransfersTest extends TestCase
         self::assertFalse($parameter->isOptional());
         self::assertFalse($parameter->allowsNull());
         SpecChecker::check(TransfersSpec::CREATE_REMOTE_USER_TRANSFER_SESSION);
-        self::assertSame(['unrestricted_restore' => 1], ArgumentEncoder::encode(
+        self::assertSame('unrestricted_restore=1', ArgumentEncoder::encode(
             TransfersSpec::CREATE_REMOTE_USER_TRANSFER_SESSION['params'],
             ['unrestrictedRestore' => true],
-        ));
+        )->encode());
     }
 
     /** @return iterable<string, array{array<string, mixed>, bool}> */
