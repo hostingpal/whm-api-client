@@ -1,0 +1,747 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "Databases",
+  "accessor": "databases",
+  "operations": {
+    "whm1:background_mysql_upgrade_checker_run": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 88 and later. This function checks your MySQL configuration file and table engine before an upgrade to MySQL 8.0.\n\n**Important:**\n\nWhen you disable the\n[MySQL/MariaDB role](https://docs.cpanel.net/knowledge-base/general-systems-administration/how-to-use-server-profiles/#roles)\n**and** remote MySQL is **not** already configured, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts the background pre-upgrade configuration and table-engine check for MySQL 8.0. The returned PID and log location establish that work started, not that validation or an upgrade completed. The client does not retry or roll back the request."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /background_mysql_upgrade_checker_run GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        }
+      ]
+    },
+    "whm1:background_mysql_upgrade_status": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.48 and later. This function retrieves the status of a background MySQL® or MariaDB® upgrade.\n\n**Important:**\n\n  When you disable the [MySQL/MariaDB](https://go.cpanel.net/serverroles) role and remote MySQL is **not** already configured, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "The required upgrade_id is the logfile name relative to /var/cpanel/logs/. The optional error, error_log, log and state fields report background progress; a successful API envelope alone does not mean an upgrade succeeded. Log text is returned as payload data and is not fetched or interpreted by the client."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /background_mysql_upgrade_status GET declares x-readonly=true. Use an explicit GET for this read."
+        }
+      ]
+    },
+    "whm1:current_mysql_version": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.48 and later. This function retrieves the server's version of MySQL® or MariaDB®.\n\n**Important:**\n\n  When you disable the [MySQL/MariaDB role](https://go.cpanel.net/serverroles) **and** remote MySQL is **not** already configured, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Reports the installed engine and its major.minor version string. This response alone does not establish upgrade availability or compatibility."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /current_mysql_version GET declares x-readonly=true. Use an explicit GET for this read."
+        }
+      ]
+    },
+    "whm1:get_database_optimizations": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. This function retrieves available database optimizations.\n\n**Warning:**\n\nOn some servers, this function may return a large amount of output. We strongly suggest that you [filter](https://go.cpanel.net/WHMAPI1FilterOutput) and [sort](https://go.cpanel.net/WHMAPI1SortOutput) the output.\n\n**Important:**\n\nThe system **disables** this function when you have **not** configured remote MySQL, and you've disabled the MySQL/MariaDB and PostgreSQL [roles](https://go.cpanel.net/serverroles)."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns recommendations, without applying database configuration changes. Large output is possible; the source recommends filtering and sorting. Recommendation values remain strings, including unit suffixes."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_database_optimizations GET declares x-readonly=true. Use an explicit GET for this read."
+        }
+      ]
+    },
+    "whm1:installable_mysql_versions": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.48 and later. This function lists all available versions of MySQL® and MariaDB.\n\n**Important:**\n\nWhen you disable the [MySQL/MariaDB](https://go.cpanel.net/howtouseserverprofiles#roles) role **and** remote MySQL is **not** already configured, the system disables this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Lists versions advertised as installable by the server; the list does not independently establish compatibility, successful installation or completion of an upgrade."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /installable_mysql_versions GET declares x-readonly=true. Use an explicit GET for this read."
+        }
+      ]
+    },
+    "whm1:latest_available_mysql_version": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.48 and later. This function retrieves the latest available version of MySQL® or MariaDB®.\n\n**Important:**\n\nWhen you disable the [MySQL/MariaDB role](https://go.cpanel.net/serverroles) and remote MySQL is **not** already configured, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Reports the latest available engine/version advertised by the server. It does not independently establish compatibility or upgrade completion."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /latest_available_mysql_version GET declares x-readonly=true. Use an explicit GET for this read."
+        }
+      ]
+    },
+    "whm1:list_database_users": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. This function lists the server's database users.\n\n**Warning:**\n\nOn most servers, this function returns a large amount of output. We **strongly** suggest that you filter and sort the output.\n\n**Important:**\n\n  When you disable the [MySQL/MariaDB and PostgreSQL roles](https://go.cpanel.net/serverroles) and remote MySQL is not already configured, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Large output is possible; the source recommends filtering and sorting. Each optional database-user field preserves omission and the source engine labels are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /list_database_users GET declares x-readonly=true. Use an explicit GET for this read."
+        }
+      ]
+    },
+    "whm1:list_databases": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. This function lists the server's databases.\n\n**Warning:**\n\nOn most servers, this function returns a large amount of output. We strongly suggest that you [filter](https://go.cpanel.net/WHMAPI1FilterOutput) and [sort](https://go.cpanel.net/WHMAPI1SortOutput) the output.\n\n**Important:**\n\nWhen you disable the MySQL/MariaDB and PostgreSQL [roles](https://go.cpanel.net/serverroles) and remote MySQL is **not** already configured, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Large output is possible; the source recommends filtering and sorting. Optional database owner, engine and name fields remain optional."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /list_databases GET declares x-readonly=true. Use an explicit GET for this read."
+        }
+      ]
+    },
+    "whm1:list_mysql_databases_and_users": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 56 and later. This function retrieves the MySQL® database and user data for the specified account.\n\n**Important:**\n\nWhen you disable the [MySQL/MariaDB](https://go.cpanel.net/howtouseserverprofiles#roles) role **and** remote MySQL is **not** already configured, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the cPanel account user. mysql_databases retains database names as map keys and each associated string list, including empty user lists. mysql_config preserves the literal mysql-version key, integer prefix length and integer use_db_prefix flag."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /list_mysql_databases_and_users GET declares x-readonly=true. Use an explicit GET for this read."
+        }
+      ]
+    },
+    "whm1:remote_mysql_create_profile": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. This function creates a profile to access a remote MySQL® server."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates a remote database access profile. The host, MySQL password, integer port, MySQL user and profile name are required. Omitting cpcloud retains its documented default 0; omitting setup_via retains User provided MySQL credentials. Explicit zero and empty strings are forwarded."
+        },
+        {
+          "kind": "documented",
+          "text": "Profile operations can affect remote connection configuration and trust. The password input is sensitive, and profile_details may return the MySQL password; treat the returned payload as sensitive and do not log it. Creation is a single attempt without retries or rollback."
+        }
+      ],
+      "params": {
+        "mysql_pass": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_create_profile GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        }
+      ]
+    },
+    "whm1:remote_mysql_create_profile_via_ssh": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. This function uses SSH to create a profile to access a remote MySQL® server."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires host, profile name, SSH port and SSH user. Supply either password or sshkey_name. root_escalation_method is required for a user other than root; root_password is required for su; sshkey_passphrase is required when the named key is password-protected. These conditional requirements remain caller responsibilities; omitted optional parameters retain server defaults."
+        },
+        {
+          "kind": "documented",
+          "text": "sshkey_name identifies a stored SSH key rather than containing private-key material. SSH password, root password and key passphrase inputs are sensitive. The returned profile_details may contain the MySQL password and must be treated as sensitive payload data. SSH setup can affect remote trust, connections and server state; it is not retried or rolled back."
+        }
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        },
+        "root_password": {
+          "sensitive": true
+        },
+        "sshkey_passphrase": {
+          "sensitive": true
+        },
+        "sshkey_name": {
+          "sensitive": false
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_create_profile_via_ssh GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_create_profile_via_ssh parameters sshkey_name is explicitly the name of the SSH key (example VinzClortho), not private-key bytes; its separate sshkey_passphrase is sensitive. Password/key and escalation/passphrase conditions are explicit in the parameter descriptions."
+        }
+      ]
+    },
+    "whm1:remote_mysql_delete_profile": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. This function deletes a specified remote MySQL® profile."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the named remote-access profile. The returned profile_details may contain the MySQL password and must be treated as sensitive payload data. Profile removal can disrupt connections; there is no retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_delete_profile GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        }
+      ]
+    },
+    "whm1:remote_mysql_initiate_profile_activation": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. This function initiates the activation process for a remote MySQL® profile."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts profile activation. The returned process ID establishes initiation only; use the separately exposed monitor method to inspect progress. Activation may change remote trust, network access, credentials and server configuration. The client performs no retries, automatic polling or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_initiate_profile_activation GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        }
+      ]
+    },
+    "whm1:remote_mysql_monitor_profile_activation": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. This function reports the current status of the remote MySQL® profile activation process. The activation process contains several steps that take some time to complete, so so you may need to call this function multiple times multiple times to monitor the progress."
+        },
+        {
+          "kind": "documented",
+          "text": "Activation has several steps and may take time. Inspect job_in_progress and last_job_details, their independent optional timestamps/status fields and step lists. The client performs one read per call and does not poll or infer completion from API success."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_monitor_profile_activation GET declares x-readonly=true. Use an explicit GET for this read."
+        }
+      ]
+    },
+    "whm1:remote_mysql_read_profile": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. This function displays the details of a specified remote MySQL® profile."
+        },
+        {
+          "kind": "documented",
+          "text": "Although this operation displays profile details, the pinned x-readonly=false declaration selects form POST. The profile_details payload may contain the MySQL password; treat it as sensitive and do not log it."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_read_profile GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        }
+      ]
+    },
+    "whm1:remote_mysql_read_profiles": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. This function displays the details of all remote MySQL® profiles available in WHM."
+        },
+        {
+          "kind": "documented",
+          "text": "Although this operation displays profiles, the pinned x-readonly=false declaration selects form POST. Profile names remain dynamic map keys, including empty profile objects. Profile payloads may contain MySQL passwords; treat them as sensitive and do not log them."
+        },
+        {
+          "kind": "documented",
+          "text": "The formal schema places the profile record under a literal properties.additionalProperties member, but its prose explicitly identifies the profile name as the return name and its example shows multiple named profile records. The evidenced effective map retains every pinned profile field. Quoted example flags do not widen the formal integer 0/1 field contracts."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "object",
+              "fields": {
+                "active": {
+                  "type": "flag"
+                },
+                "is_localhost_profile": {
+                  "type": "flag"
+                },
+                "mysql_host": {
+                  "type": "string"
+                },
+                "mysql_pass": {
+                  "type": "string"
+                },
+                "mysql_port": {
+                  "type": "int"
+                },
+                "mysql_user": {
+                  "type": "string"
+                },
+                "mysql_version_is_supported": {
+                  "type": "flag"
+                },
+                "setup_via": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_read_profiles GET responses/200/content/application~1json/schema/properties/data places the record under properties.additionalProperties, but its description says the profile name is the return name and data/example has MyProfile, MyProfile2 and localhost records. Correct only this misplaced container to a root map whose values retain all eight declared optional fields: active, is_localhost_profile, mysql_host, mysql_pass, mysql_port, mysql_user, mysql_version_is_supported and setup_via. Preserve strict integer 0/1 flags despite conflicting quoted example values; no live compatibility or additional fields are inferred."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_read_profiles GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        }
+      ]
+    },
+    "whm1:remote_mysql_update_profile": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. This function updates one or more parameters for a remote MySQL®\nprofile.\n\n**Note:**\nThis function requires the `name` parameter **and** one of more of the `mysql_host` , `mysql_user`, `mysql_pass`, `mysql_port`, or `setup_via` parameters."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires name and at least one of mysql_host, mysql_user, mysql_pass, mysql_port or setup_via. The conditional requirement remains the caller responsibility. Omitted fields remain unchanged by omission; explicit empty strings and zero are forwarded. Updating credentials or connection settings may disrupt access; the client does not retry or roll back."
+        },
+        {
+          "kind": "documented",
+          "text": "The MySQL password input is sensitive. Returned profile_details may contain the MySQL password and must be treated as sensitive payload data; do not log it."
+        }
+      ],
+      "params": {
+        "mysql_pass": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_update_profile GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        }
+      ]
+    },
+    "whm1:remote_mysql_validate_profile": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. This function validates a specified remote MySQL® profile's connection details."
+        },
+        {
+          "kind": "documented",
+          "text": "Validates the named profile connection details. The pinned x-readonly=false declaration selects form POST. A successful validation does not activate the profile, establish upgrade compatibility or guarantee later network access."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_mysql_validate_profile GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        }
+      ]
+    },
+    "whm1:rename_mysql_database": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. This function changes a MySQL® database's name. MySQL does **not** allow you to rename a database. When cPanel & WHM \"renames\" a database, the system performs the following steps:\n1. The system creates a new database.\n2. The system moves data from the old database to the new database.\n3. The system recreates grants and stored code in the new database.\n4. The system deletes the old database and its grants.\n\n**Warning:**\n\n* If **any** of the first three steps fail, the system returns an error and attempts to restore the database's original state. If the restoration process fails, the API function's error response describes these additional failures.\n* In rare cases, the system creates the second database successfully but fails to delete the old database or grants. The system treats the rename action as a success; however, the API function returns warnings that describe the failure to delete the old database or grants.\n\n**Important:**\n\n  When you disable the [*MySQL/MariaDB role*](https://go.cpanel.net/howtouseserverprofiles#roles) **and** remote MySQL is **not** already configured, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "The new name must include the account database prefix when prefixing is enabled. The optional cpuser identifies the owner. Renaming can change application access immediately; the client performs no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response envelope contains metadata only, with no data member or payload schema. This method returns void and relies on the WHM outcome."
+        }
+      ],
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /rename_mysql_database GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /rename_mysql_database GET responses/200/content/application~1json/schema/properties has metadata only and no data property; expose void instead of inventing a payload."
+        }
+      ]
+    },
+    "whm1:rename_mysql_user": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. This function changes a MySQL® database user's name.\n\n**Important:**\n\n  When you disable the [*MySQL/MariaDB role*](https://go.cpanel.net/howtouseserverprofiles#roles) **and** remote MySQL is **not** already configured, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "The new name must include the account database prefix when prefixing is enabled. The optional cpuser identifies the owner. Renaming can change application access immediately; the client performs no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response envelope contains metadata only, with no data member or payload schema. This method returns void and relies on the WHM outcome."
+        }
+      ],
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /rename_mysql_user GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /rename_mysql_user GET responses/200/content/application~1json/schema/properties has metadata only and no data property; expose void instead of inventing a payload."
+        }
+      ]
+    },
+    "whm1:rename_postgresql_database": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. This function changes a PostgreSQL® database's name.\n\n**Warning:**\n\n  The system requires more time to rename larger and more complex databases.\n\n**Important:**\n\n  When you disable the [*PostgreSQL role*](https://go.cpanel.net/howtouseserverprofiles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "The new name must include the account database prefix when prefixing is enabled. Large or complex databases take longer to rename. The optional cpuser identifies the owner. Renaming can change application access immediately; the client performs no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response envelope contains metadata only, with no data member or payload schema. This method returns void and relies on the WHM outcome."
+        }
+      ],
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /rename_postgresql_database GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /rename_postgresql_database GET responses/200/content/application~1json/schema/properties has metadata only and no data property; expose void instead of inventing a payload."
+        }
+      ]
+    },
+    "whm1:rename_postgresql_user": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. This function changes a PostgreSQL® database user's name.\n\n**Important:**\n\n  When you disable the [*PostgreSQL role*](https://go.cpanel.net/howtouseserverprofiles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "The new name must include the account database prefix when prefixing is enabled. The new password is required and sensitive; cpuser optionally identifies the owner. Renaming and credential replacement can change application access immediately; the client performs no retries or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response envelope contains metadata only, with no data member or payload schema. This method returns void and relies on the WHM outcome."
+        }
+      ],
+      "void": true,
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /rename_postgresql_user GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /rename_postgresql_user GET responses/200/content/application~1json/schema/properties has metadata only and no data property; expose void instead of inventing a payload."
+        }
+      ]
+    },
+    "whm1:set_local_mysql_root_password": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. This function resets the root user's password on the local MySQL® server.\n\n**Important:**\n\n  When you disable the [*MySQL/MariaDB role*](https://go.cpanel.net/howtouseserverprofiles#roles) **and** remote MySQL is **not** already configured, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Resets the local MySQL root password. update_config updates /root/.my.cnf and can break MySQL configuration or remote communication. The source says it is always enabled for the active localhost profile and must be specified explicitly for an active remote profile. It also warns that 0 with localhost active, or 1 with a remote host active, stops remote-server communication until the profile password is updated. Preserve these source caveats without inferring an exception."
+        },
+        {
+          "kind": "documented",
+          "text": "The password is sensitive. Omitting update_config preserves its conditional server behavior; explicit false is sent as 0. Optional configs_updated, password_reset and profile_updated are independent integer 0/1 payload flags. Password replacement is a single attempt without retries or rollback."
+        }
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /set_local_mysql_root_password GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        }
+      ]
+    },
+    "whm1:set_mysql_password": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. This function changes a MySQL® database user's password.\n\n**Important:**\n\nWhen you disable the\n[MySQL/MariaDB role](https://go.cpanel.net/howtouseserverprofiles#roles) **and**\nremote MySQL is **not** already configured, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "The required password input is sensitive. user identifies the database user, while optional cpuser identifies its controlling cPanel owner. Credential replacement can break application access; the client does not retry or roll back."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response envelope contains metadata only, with no data member or payload schema. This method returns void and relies on the WHM outcome."
+        }
+      ],
+      "void": true,
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /set_mysql_password GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /set_mysql_password GET responses/200/content/application~1json/schema/properties has metadata only and no data property; expose void instead of inventing a payload."
+        }
+      ]
+    },
+    "whm1:set_postgresql_password": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.44 and later. This function changes a PostgreSQL® database user's password.\n\n**Important:**\n\nWhen you disable the [PostgreSQL role](https://go.cpanel.net/howtouseserverprofiles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "The required password input is sensitive. user identifies the account username and optional cpuser identifies the database user owner as stated in the source. Credential replacement can break application access; the client does not retry or roll back."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response envelope contains metadata only, with no data member or payload schema. This method returns void and relies on the WHM outcome."
+        }
+      ],
+      "void": true,
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /set_postgresql_password GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /set_postgresql_password GET responses/200/content/application~1json/schema/properties has metadata only and no data property; expose void instead of inventing a payload."
+        }
+      ]
+    },
+    "whm1:start_background_mysql_upgrade": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.48 and later. This function upgrades MySQL® or MariaDB® in the background. This will reinstall MySQL® or MariaDB® if the version given is the installed version.\n\n**Important:**\n\nWhen you disable the [MySQL/MariaDB server role](https://docs.cpanel.net/knowledge-base/general-systems-administration/how-to-use-server-profiles/#roles) and remote MySQL® is **not** already configured, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts a background upgrade to the required numeric MySQL or MariaDB version, documented to contain one decimal. Supplying the already installed version reinstalls that engine. This can change database/server state immediately and has no client retries or rollback. The returned upgrade_id is a log location relative to /var/cpanel/logs/; it does not establish successful completion, availability or compatibility. Inspect status separately."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /start_background_mysql_upgrade GET declares x-readonly=false. Use form POST for this operation, including reads marked x-readonly=false; keep routing in the URL."
+        }
+      ]
+    },
+    "whm1:update_sql_config": {
+      "exclude": {
+        "reason": "Requires an application/json request body; typed JSON transport remains tracked under whm-api-client-8x0.1.18. Generic calls support form encoding only.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /update_sql_config GET requestBody/content/application~1json specifies a JSON database configuration body; form encoding cannot represent the documented transport."
+          }
+        ]
+      }
+    }
+  }
+}

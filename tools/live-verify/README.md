@@ -1018,3 +1018,26 @@ payload-schema evidence. All fourteen methods are offline-tested; separate
 reviewer lifecycle observations and their limits are recorded in the source audit.
 Committed lifecycle evidence remains under `8x0.2.27`. This capture changed no
 repository or application state.
+
+## WHM database administration
+
+`whm-databases.php` binds `whm-databases-v1` to nine exact WHM GETs: version,
+current/latest/installable MySQL versions, database optimization information,
+database users, databases, MySQL database/user details for `npr`, and remote profile
+activation status. Only the account-detail read supplies `user=npr`; all others
+have only `api.version=1`. The source-declared status fields include no credentials.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/whm-databases.php \
+  --output=docs/api/evidence/whm-databases-new.json
+```
+
+The shared command requires both tokens and committed inputs even though this
+catalog uses only WHM. Exact URI/method/body guards, verified TLS, no retries and
+new-only output publication remain unchanged. Structural-only evidence wildcards
+database/profile keys and never persists values. Profile credential reads and
+background-upgrade status requiring an ID are excluded; no ID or network target
+is guessed. No upgrade, checker run, profile creation/validation/activation,
+password, rename or configuration mutation occurs. Strict assessment accepts no
+discrepancies or acknowledgments; `8x0.2.33` retains remaining live behavior.

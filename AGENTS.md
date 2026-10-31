@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 40 typed groups cover 427 documented operations:
+and cPanel UAPI surface. The 41 typed groups cover 453 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -644,6 +644,41 @@ routes on 11.138.0.19, restoring user_prefs byte-identically. PR36 merged as
 52af23a with green CI and the same tree. No further capture is required; keep
 8x0.2.23.1 open for future committed both-route evidence, and never rerun just
 to clear the original artifact.
+
+`whm()->databases()` exposes 26 compatible database-administration methods: nine
+explicit reads use GET and seventeen operations use form POST. The JSON
+`update_sql_config` endpoint remains excluded under `8x0.1.18`. Remote profile reads
+marked non-readonly in the pinned source also use POST, and their returned password
+fields remain sensitive payload data.
+
+The profile-list source misplaces `additionalProperties`. Its dynamic-name prose
+and multi-profile example establish a root profile map containing exactly the eight
+documented optional fields. Integer flags remain strict; quoted source examples
+alone are not claimed as live compatibility. Database/profile keys are returned
+unchanged and wildcarded in evidence. Missing and null object payloads remain
+invalid; six explicitly metadata-only rename/password operations return void.
+
+Database passwords, SSH/root passwords and key passphrases remain sensitive.
+Stored SSH key names are identifiers. Optional credentials retain documented
+alternatives and conditional requirements without invented validation. Explicit
+false/zero/empty values remain distinct from omission. Root-password updates retain
+the pinned `update_config` and root client-configuration caveats.
+
+Renames can copy data/grants and delete original resources; inspect upstream
+warnings as well as API outcome. Profile activation can change credentials,
+network access and server configuration. Upgrade checks/starters return initiation
+information, and require separate status inspection. Available versions do not
+establish upgrade compatibility or completion. The client does not poll, retry or
+roll back these operations, and method-specific role/version/prefix caveats remain
+in generated documentation.
+
+All 26 methods have offline contracts. The fixed nine-GET catalog reads WHM
+version, current/latest/installable database versions, optimization information,
+database/user inventory, `npr` database details and profile-activation status.
+It retrieves no profile passwords and guesses no upgrade ID or remote host.
+No upgrade/checker run, profile validation/activation, password change, rename or
+configuration write occurs. Source/live gaps remain under `8x0.2.33`.
+
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.

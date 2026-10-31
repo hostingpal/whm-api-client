@@ -15,6 +15,8 @@ trait WhmGroups
 {
     private ?Accounts $accountsGroup = null;
 
+    private ?Databases $databasesGroup = null;
+
     private ?Dns $dnsGroup = null;
 
     private ?HostingPlans $hostingPlansGroup = null;
@@ -31,6 +33,16 @@ trait WhmGroups
     public function accounts(): Accounts
     {
         return $this->accountsGroup ??= new Accounts($this->run(...));
+    }
+
+    /**
+     * Select the Databases operations without making a request.
+     *
+     * WHM API 1 functions in the documented Databases group.
+     */
+    public function databases(): Databases
+    {
+        return $this->databasesGroup ??= new Databases($this->run(...));
     }
 
     /**
