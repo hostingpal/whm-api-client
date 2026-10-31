@@ -7,7 +7,7 @@ namespace HostingPal\WhmApiClient\Tests\Fixtures;
 use HostingPal\WhmApiClient\Api\Uapi\CallerJson;
 use HostingPal\WhmApiClient\Api\Uapi\StatsManager;
 
-/** The public generated method is called here, so this file controls scalar coercion. */
+/** The public generated method is called here, to exercise native argument binding in this caller mode. */
 final class StrictJsonCaller
 {
     public static function call(CallerJson|StatsManager $group, string $method, mixed $body): mixed

@@ -106,25 +106,24 @@ final class WhmClient extends AbstractApiClient
     /**
      * POST an already serialized JSON document to a WHM API 1 operation.
      *
-     * The configured host and credentials own the request. Valid JSON roots retain
-     * their exact bytes without endpoint schema validation. The case-sensitive api.
-     * prefix is reserved in caller query fields and root object members; the library
-     * adds its fixed api.version in the URL after caller validation.
-     * Query uses the existing parameter representation and is encoded once. Keep
-     * secrets in the body: servers may log the separate query. The untyped result,
-     * outcome policy, envelope errors and metadata follow call(); no retries occur.
-     * The caller must choose a JSON-compatible operation with a standard envelope.
-     * Raw access establishes neither typed coverage nor wrapper compatibility.
+     * The configured host and credentials own the request. The body must be a
+     * valid JSON object; endpoint fields are not schema-validated. The library
+     * inserts "api.version":1 as its first root member, preserving every caller
+     * byte otherwise. The case-sensitive api. prefix is reserved in caller root
+     * members, including escaped names and null values. Nested names remain data.
+     * On cPanel 11.138.0.19 JSON arguments are read only from the body; there is
+     * no separate query. Upstream removes root members beginning with file-.
+     * The untyped result, outcome policy, envelope errors and metadata follow
+     * call(); no retries occur. Choose a JSON-compatible operation with a standard
+     * envelope; raw access establishes neither typed coverage nor wrapper support.
      *
-     * @param Parameters $query Explicit URL query data, never merged into the body.
-     * @throws InvalidArgumentException If a name, JSON document or query is invalid; metadata is cleared first.
+     * @throws InvalidArgumentException If a name or JSON object is invalid; metadata is cleared first.
      * @throws ApiException If transport, HTTP, or the API envelope fails.
      * @see https://api.docs.cpanel.net/whm/introduction
      */
     public function callJson(
         string $operation,
         #[SensitiveParameter] string $json,
-        #[SensitiveParameter] array $query = [],
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): CallResult {
         $this->beginRequest();
@@ -133,13 +132,10 @@ final class WhmClient extends AbstractApiClient
                 'WHM function names contain only letters, digits, underscores, and "/" separators.',
             );
         }
-        $this->validateJsonQuery($query, []);
         $body = JsonBody::present($json);
-        $body->assertNoReservedRoot([]);
 
         return CallResult::fromApiResponse($this->executeJsonPost(
             '/json-api/' . $operation,
-            self::RESERVED + $query,
             $body,
             ResponseRoute::Whm,
             $outcome,
@@ -159,6 +155,9 @@ final class WhmClient extends AbstractApiClient
      * Sources are prepared only after complete local validation. Borrowed streams
      * start at their current cursor and are never rewound, closed or detached;
      * exact remaining lengths are required. Owned files close on every exit.
+     * Preparation failures before HTTP raise a static, unchained
+     * InvalidArgumentException. A recorded body failure during an attempt raises
+     * a static, unchained ApiException; remote state may already have changed.
      * A partial send or failure never retries or establishes remote ownership.
      * Standard envelope, metadata and CallResult semantics follow call(). Flag's
      * API error omits data/per-file reasons; explicit Unchecked retains raw data.
@@ -168,7 +167,7 @@ final class WhmClient extends AbstractApiClient
      * @param list<array{name: string, value: string|Upload}> $parts
      * @param MultipartQuery $query
      * @throws InvalidArgumentException If local input is invalid; metadata clears first and errors omit caller data.
-     * @throws ApiException If transport, HTTP, or the API envelope fails.
+     * @throws ApiException If the attempted body, transport, HTTP, or the API envelope fails.
      */
     public function callMultipart(
         string $operation,
@@ -223,11 +222,8 @@ final class WhmClient extends AbstractApiClient
         #[SensitiveParameter] ?JsonBody $body = null,
     ): ApiResponse {
         if ($body !== null) {
-            $this->validateJsonQuery($parameters, []);
-            $body->assertNoReservedRoot([]);
             return $this->executeJsonPost(
                 '/json-api/' . OperationSpec::text($spec, 'function'),
-                $parameters->withRouting(self::RESERVED),
                 $body,
                 ResponseRoute::Whm,
                 OperationSpec::outcome($spec),
@@ -244,7 +240,7 @@ final class WhmClient extends AbstractApiClient
     /**
      * Execute an operation declared by an internal operation group or call().
      *
-     * Generated fields reject routing collisions before encoding. Generic caller
+     * Generated fields reject the entire case-sensitive api. prefix before encoding. Generic caller
      * arrays retain reserved-field filtering. Metadata is already cleared before
      * argument validation; execution resets it again before I/O. Post keeps
      * api.version in the query string and form-encodes operation parameters.
