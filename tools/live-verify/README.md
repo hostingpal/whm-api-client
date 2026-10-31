@@ -1388,3 +1388,9 @@ routes. Existing opt-in, committed-input, exact request guard, TLS and immutable
 structural-output rules apply. No external account/site creation, private token or
 content retrieval, SSO/OAuth, publishing/restoration or URL fetch runs. Capability
 results do not establish successful creation or rendering. Keep gaps under `8x0.2.57`.
+
+The site-builder capture at fcd979d on 11.138.0.19 records five HTTP-200 reads:
+version and both Sitejet capability reads pass; both Nova capability reads fail
+at the API layer. Strict assessment remains failed with zero schema discrepancies,
+without inferring the cause. No account/site/token/content/publish/restore/SSO
+operation or URL fetch ran. Remaining live work stays under 8x0.2.57.

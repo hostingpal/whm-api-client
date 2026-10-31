@@ -4466,3 +4466,20 @@ The fixed five-GET catalog reads version and Nova/Sitejet domain-creation capabi
 on both routes. It creates no account/site, reads no private token or site content,
 performs no publish/restore/OAuth/SSO operation and fetches no URL. Remaining live
 operations/variants and owned lifecycle work stay under `8x0.2.57`.
+
+## Site-builder domain-capability evidence
+
+The [site-builder capability capture](evidence/2026-10-31-site-builders.json) at
+`fcd979dfce9657c69ac92cb47ef17f3301fa03cb` on `11.138.0.19` records five
+HTTP-200 observations. Version and Sitejet capability on both routes pass; Nova
+capability returns API failure on both routes and its payload is not validated.
+Strict assessment remains failed with zero schema discrepancies. The artifact
+does not establish the failure cause; the documented AI App Builder prerequisite
+alone does not diagnose it. No contract is loosened or failure waived.
+
+Sitejet returns an integer capability value; this structural observation does not
+establish a particular value, successful domain creation or publication. No
+account/site creation, token retrieval, private content, SSO/OAuth, publishing,
+restoration or URL fetch ran. All other operations and variants stay under
+`8x0.2.57`. The failed artifact remains immutable. SHA-256:
+`4094bcd7f3addad45d9ccd76ee56d2d1b2eaa3cfc0a647a9169b37bb2c3fb1d3`.

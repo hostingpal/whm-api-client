@@ -1449,6 +1449,13 @@ on both routes. It creates no account/site, reads no private token or site conte
 performs no publish/restore/OAuth/SSO operation and fetches no URL. Remaining live
 operations/variants and owned lifecycle work stay under `8x0.2.57`.
 
+
+The site-builder capture at fcd979d on 11.138.0.19 records five HTTP-200 reads:
+version and both Sitejet capability reads pass; both Nova capability reads fail
+at the API layer. Strict assessment remains failed with zero schema discrepancies,
+without inferring the cause. No account/site/token/content/publish/restore/SSO
+operation or URL fetch ran. Remaining live work stays under 8x0.2.57.
+
 ## Architecture and Conventions
 
 - Follow the [agreed PHP client interface](docs/superpowers/specs/2026-10-13-php-client-design.md):
