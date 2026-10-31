@@ -173,7 +173,9 @@ func (s schemas) shape(sourceID string, obj map[string]any, key string, flat boo
 
 // formatOnlyScalarAlternatives recognizes annotation-only alternatives under a
 // concrete scalar type. Formats do not replace the outer type; this deliberately does
-// not intersect explicitly typed branches or richer compositions.
+// not intersect explicitly typed branches or richer compositions. shape is shared
+// by inputs and responses, so this also preserves outer response types. A source
+// refresh must review resulting response-shape changes, not assume input-only effects.
 func (s schemas) formatOnlyScalarAlternatives(sourceID string, obj map[string]any, unionKey string, options []any) bool {
 	outerType, _ := obj["type"].(string)
 	switch outerType {
@@ -383,16 +385,41 @@ func (s schemas) payload(op model.Operation, v model.Variant) (payloadInfo, map[
 	if !ok {
 		return payloadInfo{issue: "the 200 response schema cannot be resolved"}, operation, nil
 	}
-	return s.envelopeData(op, envelopeSource, envelope), operation, nil
+	info := s.envelopeData(op, envelopeSource, envelope)
+	info.metadataOnly = op.Family == "whm1" && plainMetadataOnlyEnvelope(envelope)
+	return info, operation, nil
 }
 
 // payloadInfo is the documented success payload. partial marks data that only
 // some envelope alternatives document; issue explains an envelope that could
-// not be resolved (never silently treated as void).
+// not be resolved (never silently treated as void). metadataOnly records only a
+// plain resolved WHM object containing metadata and no payload siblings. It
+// never propagates from an alternative or infers a payload type.
 type payloadInfo struct {
-	spec    *TypeSpec
-	partial bool
-	issue   string
+	metadataOnly bool
+	spec         *TypeSpec
+	partial      bool
+	issue        string
+}
+
+// plainMetadataOnlyEnvelope deliberately excludes compositions and nullable roots.
+// Only this source fact can support an evidenced opaque retrieval restoration;
+// siblings such as needs_reboot remain unsupported envelope payloads.
+func plainMetadataOnlyEnvelope(envelope map[string]any) bool {
+	if envelope["type"] != "object" || isNullable(envelope) || enumHasNull(envelope) {
+		return false
+	}
+	for _, key := range []string{"allOf", "anyOf", "oneOf", "not", "if", "then", "else", "discriminator"} {
+		if _, present := envelope[key]; present {
+			return false
+		}
+	}
+	props, ok := asObject(envelope["properties"])
+	if !ok || len(props) != 1 {
+		return false
+	}
+	_, hasMetadata := props["metadata"]
+	return hasMetadata
 }
 
 // envelopeData reads the data member of a 200 envelope: WHM data, UAPI

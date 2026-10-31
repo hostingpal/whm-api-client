@@ -16,7 +16,7 @@ use SensitiveParameter;
  * object, resource or serialization callback is used. Containers are emitted
  * explicitly: PHP object casting followed by json_encode silently discards
  * leading-NUL member names, while array encoding guesses the wrong kind for
- * empty objects. Native throwing JSON encoding handles every key/scalar token;
+ * empty objects. Native throwing JSON encoding handles keys and non-float scalar tokens;
  * fixed container punctuation preserves all string keys and insertion order.
  * The native validation depth budget is 512: at most 511 nested object/list
  * boundaries, counting the root container as one and scalar leaves as zero.
@@ -35,38 +35,25 @@ final class StructuredJsonEncoder
      * are independent. Additional members require an explicit "values" schema.
      * No decoding, string repair, Unicode normalization or response coercion occurs.
      *
-     * Finite floats retain their value and float kind using shortest round-trip
-     * encoding. serialize_precision is temporarily set to -1 and always restored;
-     * precision and locale are never modified. An unavailable setting fails closed.
+     * Finite floats retain their value and float kind using shared round-trip
+     * decimal encoding, without reading or modifying precision, serialize_precision
+     * or locale settings. See FloatEncoder for the non-minimal digit policy.
      * Returned strings may contain secrets and must not be logged.
      *
      * @param array<mixed> $schema See StructuredJsonSchema for the request grammar.
-     * @throws InvalidArgumentException If any caller value is invalid or too deep.
-     * @throws LogicException If the schema or required encoding setting is invalid.
+     * @throws InvalidArgumentException If any caller value does not match the checked schema.
+     * @throws LogicException If the schema is invalid or encoded syntax validation fails.
      */
     public static function encode(
         #[SensitiveParameter] mixed $value,
         #[SensitiveParameter] array $schema,
     ): string {
         $checked = StructuredJsonSchema::from($schema);
-        $previous = ini_get('serialize_precision');
-        if ($previous === false || !function_exists('ini_set')) {
-            throw new LogicException('Structured JSON requires round-trip float encoding.');
+        $json = self::value($value, $checked, 0);
+        if (!json_validate($json, StructuredJsonSchema::MAX_DEPTH)) {
+            throw new LogicException('Structured JSON encoding failed syntax validation.');
         }
-        try {
-            if (ini_set('serialize_precision', '-1') === false || ini_get('serialize_precision') !== '-1') {
-                throw new LogicException('Structured JSON requires round-trip float encoding.');
-            }
-            $json = self::value($value, $checked, 0);
-            if (!json_validate($json, StructuredJsonSchema::MAX_DEPTH)) {
-                throw new LogicException('Structured JSON encoding failed syntax validation.');
-            }
-            return $json;
-        } finally {
-            if (ini_set('serialize_precision', $previous) === false || ini_get('serialize_precision') !== $previous) {
-                throw new LogicException('Structured JSON could not restore float encoding settings.');
-            }
-        }
+        return $json;
     }
 
     private static function value(
@@ -89,6 +76,7 @@ final class StructuredJsonEncoder
             throw new InvalidArgumentException('Structured JSON value does not match its schema.');
         }
         if (is_array($value)) {
+            // Defensive: the checked schema already bounds every traversable container.
             if ($depth >= StructuredJsonSchema::MAX_DEPTH - 1) {
                 throw new InvalidArgumentException('Structured JSON value exceeds the nesting limit.');
             }
@@ -122,6 +110,9 @@ final class StructuredJsonEncoder
     ): string {
         $parts = [];
         if ($schema->type === 'list') {
+            if ($schema->nonempty && $value === []) {
+                throw new InvalidArgumentException('Structured JSON list must not be empty.');
+            }
             if (!array_is_list($value)) {
                 throw new InvalidArgumentException('Structured JSON lists require sequential arrays.');
             }
@@ -151,6 +142,9 @@ final class StructuredJsonEncoder
 
     private static function token(#[SensitiveParameter] mixed $value): string
     {
+        if (is_float($value)) {
+            return FloatEncoder::encode($value);
+        }
         try {
             return json_encode(
                 $value,
