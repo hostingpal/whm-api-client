@@ -4088,3 +4088,18 @@ metadata/recommendations, EOL PHP counts, FPM capacity and vhost versions. It re
 no INI content or arbitrary file, changes no profile/PHP/FPM setting and fetches
 no returned URL. Capacity estimates do not prove safe conversion or serving
 behavior. Remaining live work stays under `8x0.2.45`.
+
+
+The corrected PHP inventory capture at `b535c57` on `11.138.0.19` records nine
+HTTP/API/payload/probe passes. Three field corrections preserve observed cpanel
+profile versions as string|int|float, recommendation URLs as string|bool, and vhost
+PHP-version sources as the pinned list or a string-valued map. No boolean meaning,
+map key or sibling variant is inferred; string spellings remain unchanged.
+
+Strict assessment remains failed for two masked unknown-field observations:
+`$.cpanel[].*` string values in profiles and `$.*[].*` lists of strings in
+recommendations. No field names or counts are inferred and no waiver is added.
+The original failed artifact remains immutable. No INI content read, profile/PHP
+change, conversion or URL fetch ran; serving and conversion behavior remain
+unverified under `8x0.2.45`. Corrected artifact SHA-256:
+`9bff10d45c4bebe06189c8b0039efe5e625e2f08c6653cdefc40c0785af53d66`.
