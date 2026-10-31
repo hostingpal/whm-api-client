@@ -1018,3 +1018,20 @@ payload-schema evidence. All fourteen methods are offline-tested; separate
 reviewer lifecycle observations and their limits are recorded in the source audit.
 Committed lifecycle evidence remains under `8x0.2.27`. This capture changed no
 repository or application state.
+
+## WHM ModSecurity inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-modsecurity.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-modsecurity.json
+```
+
+The fixed five-GET catalog reads WHM version, `modsec_get_configs`,
+`modsec_get_configs_with_changes_pending`, `modsec_get_vendors` and
+`modsec_is_installed` on the designated test server. It uses the existing exact
+request guard, opt-in, committed-input checks, verified TLS and structural evidence
+capture. It does not read raw configuration/rule text, audit logs or settings that
+may contain an access key. It sends no report, mutation, vendor download or URL
+fetch. Empty inventories establish no populated-row or enforcement behavior.
+Keep failures immutable and remaining coverage under `8x0.2.34`.

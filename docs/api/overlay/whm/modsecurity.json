@@ -1,0 +1,654 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "Web Server Security (ModSecurity)",
+  "accessor": "modSecurity",
+  "class": "ModSecurity",
+  "description": "Server-scoped ModSecurity configuration, staged rules, vendor lifecycle and diagnostics. Requires the Web Server role. Payload rule text, logs, configuration and settings may contain sensitive data. Deployment may restart Apache; API outcomes and per-item results remain distinct.",
+  "operations": {
+    "whm1:modsec_add_rule": {
+      "name": "addRule",
+      "params": {
+        "rule": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Adds only to the staging file; deployAllRuleChanges() is a separate operation. The source leaves config, config_active, staged, vendor_active and vendor_id unconstrained; their values remain mixed."
+        }
+      ]
+    },
+    "whm1:modsec_add_vendor": {
+      "name": "addVendor",
+      "params": {
+        "url": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The server obtains vendor metadata and a compatible rule archive from the supplied URL. This can fetch remote content and install a rule set; a successful call does not establish rule enforcement."
+        }
+      ]
+    },
+    "whm1:modsec_assemble_config_text": {
+      "name": "assembleConfigText",
+      "params": {
+        "text": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "For a single upload, set both init and final. Omitted flags retain server defaults; deploy=false stages without deployment. This call can deploy configuration when deploy=true."
+        }
+      ]
+    },
+    "whm1:modsec_batch_settings": {
+      "name": "batchSettings",
+      "params": {
+        "state": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The typed signature supports a single setting. Indexed setting_id1/state1/remove1 families remain unavailable through this signature (whm-api-client-8x0.1.24). remove=true makes the state value ignored by the server, but the formal source still requires state. State can contain a SecHttpBlKey access key and is sensitive."
+        }
+      ]
+    },
+    "whm1:modsec_check_rule": {
+      "name": "checkRule",
+      "params": {
+        "rule": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "POST follows the pinned x-readonly=false declaration. API success only confirms the check ran; inspect valid and optional problem to decide whether the rule passed validation."
+        }
+      ]
+    },
+    "whm1:modsec_clone_rule": {
+      "name": "cloneRule",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates a copy with a new rule ID. This method accepts an integer ID; disableRule() and undisableRule() instead retain their documented string IDs."
+        }
+      ]
+    },
+    "whm1:modsec_deploy_all_rule_changes": {
+      "name": "deployAllRuleChanges",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Can restart Apache. Inspect every outcomes[].ok and the optional failed list independently of API success; failed validation restores the original configuration and preserves staged changes."
+        }
+      ]
+    },
+    "whm1:modsec_deploy_rule_changes": {
+      "name": "deployRuleChanges",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Can restart Apache. Failed validation restores the original configuration and keeps staged changes. The source declares an unconstrained data node, which remains mixed; an absent payload is distinct."
+        }
+      ]
+    },
+    "whm1:modsec_deploy_settings_changes": {
+      "name": "deploySettingsChanges",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Deploys settings prepared with setSetting() and attempts to restart Apache. Failed validation restores the settings file. The source does not define payload fields; an absent payload remains a mismatch."
+        }
+      ]
+    },
+    "whm1:modsec_disable_rule": {
+      "name": "disableRule",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The ID remains a string as documented, including leading zeros; this differs from the integer identifiers accepted by cloneRule(), editRule() and removeRule(). The source documents no data payload."
+        }
+      ]
+    },
+    "whm1:modsec_disable_vendor": {
+      "name": "disableVendor",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Individually enabled configuration files remain enabled. The empty source data schema remains mixed rather than inventing fields or requiring an object."
+        }
+      ]
+    },
+    "whm1:modsec_disable_vendor_configs": {
+      "name": "disableVendorConfigs",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Inspect outcomes[].active and outcomes[].ok and any exception for each file; API success alone does not establish that every configuration was disabled."
+        }
+      ]
+    },
+    "whm1:modsec_disable_vendor_updates": {
+      "name": "disableVendorUpdates",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        }
+      ]
+    },
+    "whm1:modsec_discard_all_rule_changes": {
+      "name": "discardAllRuleChanges",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Discards staged changes for all configuration files. Inspect per-file outcomes[].ok and the optional failed list independently of API success."
+        }
+      ]
+    },
+    "whm1:modsec_discard_rule_changes": {
+      "name": "discardRuleChanges",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the selected configuration staging file, losing its staged changes. The empty source data schema remains unconstrained."
+        }
+      ]
+    },
+    "whm1:modsec_edit_rule": {
+      "name": "editRule",
+      "params": {
+        "rule": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Writes edits to the staging file only; deployment is a separate operation. Its integer ID contract differs from disableRule() and undisableRule()."
+        }
+      ]
+    },
+    "whm1:modsec_enable_vendor": {
+      "name": "enableVendor",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Individually disabled configuration files remain disabled. Enabling the vendor does not establish effective request blocking."
+        }
+      ]
+    },
+    "whm1:modsec_enable_vendor_configs": {
+      "name": "enableVendorConfigs",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Inspect per-file outcomes[].active, outcomes[].ok and optional exception independently of the API result."
+        }
+      ]
+    },
+    "whm1:modsec_enable_vendor_updates": {
+      "name": "enableVendorUpdates",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        }
+      ]
+    },
+    "whm1:modsec_get_config_text": {
+      "name": "getConfigText",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned configuration text may contain secrets. Treat it as sensitive payload data and avoid logging it."
+        }
+      ]
+    },
+    "whm1:modsec_get_configs": {
+      "name": "getConfigs",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        }
+      ]
+    },
+    "whm1:modsec_get_configs_with_changes_pending": {
+      "name": "getConfigsWithChangesPending",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        }
+      ]
+    },
+    "whm1:modsec_get_log": {
+      "name": "getLog",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Log content may contain request data, IP addresses and sensitive transaction fragments. Keep nullable fields distinct from omission; timezone is an integer here, unlike the string timezone in reportRule() hits."
+        }
+      ]
+    },
+    "whm1:modsec_get_rules": {
+      "name": "getRules",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply config or vendorId as required by the source prose; both formal parameters remain optional to preserve the selector alternatives. Rule text and metadata may contain sensitive data."
+        }
+      ]
+    },
+    "whm1:modsec_get_settings": {
+      "name": "getSettings",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Setting state can contain a SecHttpBlKey access key. Treat settings and validator data as sensitive payloads; returned validators describe frontend checks, not proof that current settings are secure."
+        }
+      ]
+    },
+    "whm1:modsec_get_vendors": {
+      "name": "getVendors",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns metadata only; the client does not fetch returned archive, report or vendor URLs. Installation, update and in-use fields describe different states."
+        }
+      ]
+    },
+    "whm1:modsec_is_installed": {
+      "name": "isInstalled",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The installed flag is nested under data in the API data payload. An installed module does not establish that rules are active or blocking requests."
+        }
+      ]
+    },
+    "whm1:modsec_make_config_active": {
+      "name": "makeConfigActive",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Adds a configuration include. The client does not retry or undo the change; API success does not establish request filtering behavior."
+        }
+      ]
+    },
+    "whm1:modsec_make_config_inactive": {
+      "name": "makeConfigInactive",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes a configuration include. The client does not retry or undo the change."
+        }
+      ]
+    },
+    "whm1:modsec_preview_vendor": {
+      "name": "previewVendor",
+      "params": {
+        "url": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "POST follows the pinned x-readonly=false declaration even though this returns metadata. The supplied metadata URL can cause a server-side fetch; this is not a local parse."
+        }
+      ]
+    },
+    "whm1:modsec_remove_rule": {
+      "name": "removeRule",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the selected rule using the source integer ID contract. No client retry or rollback is provided."
+        }
+      ]
+    },
+    "whm1:modsec_remove_setting": {
+      "name": "removeSetting",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        }
+      ]
+    },
+    "whm1:modsec_remove_vendor": {
+      "name": "removeVendor",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the vendor includes, disablement directives, configuration files and metadata file. The source documents no data payload."
+        }
+      ]
+    },
+    "whm1:modsec_report_rule": {
+      "name": "reportRule",
+      "params": {
+        "email": {
+          "sensitive": true
+        },
+        "message": {
+          "sensitive": true
+        },
+        "type": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "send=true submits event data, message and contact email to a remote receiver; send=false prepares the report without sending. The formal row_ids schema is integer despite comma-separated multi-ID prose and examples, so this typed method accepts one row ID only (whm-api-client-8x0.1.24). Report content may contain sensitive request data. Report hits preserve their string timezone and nullable message separately from getLog()."
+        }
+      ],
+      "response": {
+        "report": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "email": {
+                  "type": "string"
+                },
+                "hits": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "action_desc": {
+                        "type": "string"
+                      },
+                      "handler": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "host": {
+                        "type": "string"
+                      },
+                      "http_method": {
+                        "type": "string"
+                      },
+                      "http_status": {
+                        "type": "int"
+                      },
+                      "http_version": {
+                        "type": "string"
+                      },
+                      "id": {
+                        "type": "int"
+                      },
+                      "ip": {
+                        "type": "string"
+                      },
+                      "justification": {
+                        "type": "string"
+                      },
+                      "meta_file": {
+                        "type": "string"
+                      },
+                      "meta_id": {
+                        "type": "int"
+                      },
+                      "meta_line": {
+                        "type": "int"
+                      },
+                      "meta_logdata": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "meta_msg": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "meta_offset": {
+                        "type": "int"
+                      },
+                      "meta_rev": {
+                        "type": "int",
+                        "nullable": true
+                      },
+                      "meta_severity": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "meta_uri": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "timestamp": {
+                        "type": "string"
+                      },
+                      "timezone": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "message": {
+                  "type": "string"
+                },
+                "rule_text": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.48",
+              "date": "2026-10-31",
+              "note": "Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /modsec_report_rule response data.report explicitly says an array of objects and declares items with these fields, but omits type: array. Restore the evidenced list shape without changing item requiredness or nullable leaves."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:modsec_set_config_text": {
+      "name": "setConfigText",
+      "params": {
+        "text": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Stages the supplied contents; deployRuleChanges() is a separate operation. The source data schema is unconstrained and remains mixed, preserving explicit null separately from an absent payload."
+        }
+      ]
+    },
+    "whm1:modsec_set_setting": {
+      "name": "setSetting",
+      "params": {
+        "state": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Prepares settings for deploySettingsChanges(); changing state is not evidence of deployed enforcement. State can contain a SecHttpBlKey access key and is sensitive. The response state is documented as integer even though the input is string; validation arg and name are unconstrained in this response."
+        }
+      ]
+    },
+    "whm1:modsec_undisable_rule": {
+      "name": "undisableRule",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Enables the selected rule using the documented string ID contract. The source documents no data payload."
+        }
+      ]
+    },
+    "whm1:modsec_update_vendor": {
+      "name": "updateVendor",
+      "params": {
+        "url": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The server obtains current vendor metadata and rules from the supplied URL. Inspect diagnostics and vendor state separately; API success does not establish enforcement."
+        }
+      ]
+    }
+  }
+}

@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 40 generated typed groups cover 427 documented operations (see
+The 41 generated typed groups cover 465 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1288,3 +1288,32 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+## WHM ModSecurity administration
+
+`whm()->modSecurity()` exposes all 38 pinned functions: eight reads use GET and
+thirty mutations or validation helpers use form POST. Rule and configuration text,
+report messages and setting states remain sensitive. A setting state can contain
+an Http:BL access key; treat returned settings and audit log fragments as private
+payload data. Configuration paths are forwarded without rewriting.
+
+Rule staging, deployment and discard are separate operations. Config activation,
+vendor enablement and automatic vendor updates also have distinct effects. API
+success does not establish that a policy has been deployed or blocks HTTP traffic.
+Vendor preview/add/update may fetch remote content, and `reportRule(send: true)`
+can transmit log information and contact details to a third party. The client adds
+no retries, rollback, URL fetching or automatic deployment.
+
+`batchSettings()` currently supports the pinned single-setting arguments. Its
+indexed multi-setting families remain under `8x0.1.24`. `reportRule()` retains the
+formal integer row-ID input; the contradictory prose's comma-separated multi-ID
+form is also deferred there. Missing, explicit null and opaque payloads follow each
+operation's source. The report result's array-of-objects prose repairs its omitted
+container type while preserving every declared hit field and nullable leaf.
+
+All 38 methods have independent offline contract tests. The bounded live recipe
+selects only WHM version, configuration inventory, pending configuration names,
+vendor inventory and installation status. It reads no raw rule/configuration text,
+audit logs or secret-bearing setting states; no protection, vendor, report or
+configuration action runs. Follow-up `8x0.2.34` retains the remaining live behavior
+and source gaps.

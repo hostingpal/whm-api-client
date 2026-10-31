@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 40 typed groups cover 427 documented operations:
+and cPanel UAPI surface. The 41 typed groups cover 465 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -1096,3 +1096,32 @@ Beads block to `CLAUDE.md` (do not run `bd setup claude` to re-add one).
 Preserve the generated Beads blocks and keep project-specific additions outside
 them. If `bd setup` regenerates a Beads block with profile-neutral wording,
 re-apply the team-maintainer wording; the Git Workflow section is authoritative.
+
+## WHM ModSecurity administration
+
+`whm()->modSecurity()` exposes all 38 pinned functions: eight reads use GET and
+thirty mutations or validation helpers use form POST. Rule and configuration text,
+report messages and setting states remain sensitive. A setting state can contain
+an Http:BL access key; treat returned settings and audit log fragments as private
+payload data. Configuration paths are forwarded without rewriting.
+
+Rule staging, deployment and discard are separate operations. Config activation,
+vendor enablement and automatic vendor updates also have distinct effects. API
+success does not establish that a policy has been deployed or blocks HTTP traffic.
+Vendor preview/add/update may fetch remote content, and `reportRule(send: true)`
+can transmit log information and contact details to a third party. The client adds
+no retries, rollback, URL fetching or automatic deployment.
+
+`batchSettings()` currently supports the pinned single-setting arguments. Its
+indexed multi-setting families remain under `8x0.1.24`. `reportRule()` retains the
+formal integer row-ID input; the contradictory prose's comma-separated multi-ID
+form is also deferred there. Missing, explicit null and opaque payloads follow each
+operation's source. The report result's array-of-objects prose repairs its omitted
+container type while preserving every declared hit field and nullable leaf.
+
+All 38 methods have independent offline contract tests. The bounded live recipe
+selects only WHM version, configuration inventory, pending configuration names,
+vendor inventory and installation status. It reads no raw rule/configuration text,
+audit logs or secret-bearing setting states; no protection, vendor, report or
+configuration action runs. Follow-up `8x0.2.34` retains the remaining live behavior
+and source gaps.

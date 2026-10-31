@@ -19,6 +19,8 @@ trait WhmGroups
 
     private ?HostingPlans $hostingPlansGroup = null;
 
+    private ?ModSecurity $modSecurityGroup = null;
+
     private ?Server $serverGroup = null;
 
     private ?WebServer $webServerGroup = null;
@@ -51,6 +53,18 @@ trait WhmGroups
     public function hostingPlans(): HostingPlans
     {
         return $this->hostingPlansGroup ??= new HostingPlans($this->run(...));
+    }
+
+    /**
+     * Select the Web Server Security (ModSecurity) operations without making a request.
+     *
+     * Server-scoped ModSecurity configuration, staged rules, vendor lifecycle and diagnostics. Requires the Web Server
+     * role. Payload rule text, logs, configuration and settings may contain sensitive data. Deployment may restart
+     * Apache; API outcomes and per-item results remain distinct.
+     */
+    public function modSecurity(): ModSecurity
+    {
+        return $this->modSecurityGroup ??= new ModSecurity($this->run(...));
     }
 
     /**
