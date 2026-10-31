@@ -463,7 +463,7 @@
         },
         "json": {
           "type": "object",
-          "properties": {"alias": {"type": "string", "minLength": 1}},
+          "properties": {"alias": {"type": "string", "minLength": 1}, "scalar_map": {"const": true}},
           "required": ["alias"],
           "additionalProperties": false
         }

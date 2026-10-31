@@ -41,8 +41,12 @@ type AdditionalMethod struct {
 	Name   string        `json:"name"`
 	Inputs []MethodInput `json:"inputs"`
 }
+
+// JSONField selects an embedded source schema, or the evidence-bound fixed
+// object of JSON scalar values for a concrete string format:json source.
 type JSONField struct {
-	Alias string `json:"alias"`
+	Alias     string `json:"alias"`
+	ScalarMap *bool  `json:"scalar_map,omitempty"`
 }
 type MethodInput struct {
 	JSON    *JSONField `json:"json,omitempty"`

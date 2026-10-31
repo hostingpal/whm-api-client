@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 97 generated typed groups cover 1,150 documented operations (see
+The 98 generated typed groups cover 1,163 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -3632,3 +3632,98 @@ expunge, encoding or mail-client compatibility. No live API call, mailbox creati
 mail delivery or settings change ran; later live work requires separately owned
 fixtures and cleanup. Required PHP 8.3 CI and the 55 inherited map diagnostics
 remain visible, external-owned and unwaived.
+
+
+### UAPI WebApp (2026-10-31)
+
+`uapi()->webApp()` covers all thirteen pinned WebApp functions from cPanel 138.
+`fetchLogs()`, `getAvailable()`, `hasFeature()` and `listApplications()` use GET;
+the nine lifecycle/configuration mutations use form POST. `stage()` and
+`redeploy()` select the documented POST variant, preserving optional sensitive
+`sshKeyPass` as body-only `sshkeypass` on direct and WHM bridge routes.
+`configureStructured()` is a companion of `configure()`, with the same operation,
+route, outcome and response; it adds no operation to the coverage count.
+
+```php
+$app = $client->uapi('exampleuser')->webApp();
+$current = $app->listApplications(); // Read the current environment separately.
+// Prepare the COMPLETE intended environment; this replaces every old variable.
+$configured = $app->configureStructured('my-app', env: [
+    'NODE_ENV' => 'production',
+    'FEATURE_ENABLED' => true,
+]);
+```
+
+Only supplied configure options change, but `env` and `envText` both replace ALL
+variables. Read the current set and submit the complete intended variables;
+neither method merges or reads implicitly. The server rejects both inputs
+together; the client forwards both if supplied. Structured `env: []`, raw `'{}'`
+and text yielding no variables clear the environment. Optional null omits the
+input. Nonempty settings require `.env` to be untracked and ignored; clearing is
+allowed despite `env_not_editable`. Server limits are 16 KiB JSON, 64 variables,
+names matching `[A-Za-z_][A-Za-z0-9_]*` up to 128 characters, values up to 4096
+characters without control characters, and reserved `PORT`. These remain server
+restrictions rather than new client validation. Text splits at the first `=`,
+later duplicate names win, and quotes/spaces after it remain literal. Leading
+whitespace is trimmed upstream; comments/blank lines are skipped and lines
+without `=` are rejected. Raw JSON and text bytes are otherwise forwarded once.
+
+Structured environment input accepts string keys with string/int/finite-float/
+bool/null values. It sends JSON inside one form field, through the existing
+serializer; it is not a whole JSON request body. Empty input serializes as `{}`;
+null values remain JSON null without promising server conversion, acceptance or
+persistence. Integer keys, nested containers, objects, resources, invalid UTF-8
+and nonfinite floats fail locally before I/O, clearing metadata without exposing
+values in exceptions. The raw string method stays available without auto-parsing.
+
+Stage registers previously uploaded ZIP/tar paths relative to the account home,
+or Git source URLs; it does not deploy, upload, read or fetch the source. Use
+trusted sources because the server builds and executes them. Never embed Git
+credentials: upstream stores that URL in plaintext. Prefer the selected account
+SSH key for `git@` URLs. A staged-name collision overwrites the staged source;
+a deployed-name collision assigns the next free name-N. Use the returned name
+and domain for later calls. Protected-key passphrases stay body-only; omission
+stays omitted. The source accepts modern encrypted OpenSSH keys and rejects
+legacy encrypted PEM keys. The client never prompts for or stores passphrases.
+
+Changing appdir reruns preflight/defaults; empty resets to the source root and
+explicit options take precedence. Empty commands clear overrides; nonstatic apps
+without both commands are undeployable. Empty domain regenerates the default.
+`useExistingDomain: true` confirms takeover and hides the existing website;
+omission does not confirm and false cannot revoke prior confirmation. Changing
+domain releases the prior include; another application's domain stays rejected.
+
+Deploy/redeploy return asynchronous IDs and an SSE URL as payload data. Envelope
+success establishes neither completion nor health. Upstream documents in-flight
+idempotence; the client never retries or polls. A protected-key redeploy pull runs
+synchronously before queueing per source, so latency may increase; upstream says
+its passphrase never persists in task arguments, without live verification here.
+Inspect `listApplications()` last_deploy separately from immediate
+`responseMeta()` metadata.error_category. Only list's last_deploy gains an optional
+mixed error_category, explicitly placed there by deploy/redeploy prose although
+omitted in its formal schema. No field type/enum or sibling correction is inferred.
+Configure/stage do not borrow that field. Known optional and nullable fields,
+native boolean state fields and dynamic string environment maps stay distinct.
+
+`delete(name, verify)` requires explicit confirmation with no default; false
+sends 0 for upstream rejection. It stops/removes the container, moves the directory
+to .bak and removes the registry entry; the domain is unaffected and there is no
+client rollback. Start/stop/restart/setMode apply only to server-category apps
+with a completed deploy. `restarted=0` can retain the mode without finishing a
+restart; inspect it independently. Logs are a private, static oldest-first tail,
+with deployId meaningful only for build logs. Runtime/tag map keys and empty
+manager lists remain intact; runtime apps.used is required when apps is present.
+`hasFeature()` retains normal UAPI failure checking and strict integer data flag.
+
+This slice adds thirteen canonical operations and one group over
+`9e47d959cbf562bf91bd1b32944360297acfbcaf`: 1,163 operations (575 UAPI, 588 WHM),
+98 groups and 199 generated outputs (198 PHP files plus coverage). It adds only
+an opt-in generator `json.scalar_map: true` path with source hash/prose/schema
+binding, plus synchronized published/embedded overlay schema. Existing formal
+content-JSON aliases and PHP runtime remain unchanged. Delivery is
+`whm-api-client-8x0.4.24`; separate live `whm-api-client-8x0.2.66` remains OPEN.
+No live call, source upload/clone, build, deployment, domain takeover, lifecycle
+mutation or URL fetch ran. Offline fixtures establish no server execution,
+persistence, passphrase storage, application health or destructive compatibility.
+Required PHP 8.3 CI and the 55 inherited diagnostics remain external-owned and
+unwaived; local PHP 8.4 does not replace that CI evidence.

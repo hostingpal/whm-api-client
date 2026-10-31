@@ -151,6 +151,8 @@ trait UapiGroups
 
     private ?VersionControlDeployment $versionControlDeploymentGroup = null;
 
+    private ?WebApp $webAppGroup = null;
+
     private ?WebDisk $webDiskGroup = null;
 
     private ?WebVhosts $webVhostsGroup = null;
@@ -850,6 +852,16 @@ trait UapiGroups
     public function versionControlDeployment(): VersionControlDeployment
     {
         return $this->versionControlDeploymentGroup ??= new VersionControlDeployment($this->run(...));
+    }
+
+    /**
+     * Select the WebApp operations without making a request.
+     *
+     * Application staging, environment configuration and asynchronous deployment lifecycle.
+     */
+    public function webApp(): WebApp
+    {
+        return $this->webAppGroup ??= new WebApp($this->run(...));
     }
 
     /**
