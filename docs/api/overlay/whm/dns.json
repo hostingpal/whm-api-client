@@ -816,17 +816,84 @@
       ]
     },
     "whm1:mass_edit_dns_zone": {
-      "exclude": {
-        "reason": "The form parameters add/edit are repeated serialized JSON strings and remove is a repeated integer list; the current repeated-parameter contract accepts string items only. The complete operation is excluded rather than dropping remove or treating this as a JSON request body. Tracked under whm-api-client-8x0.1.30.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. mass_edit_dns_zone: The form parameters add/edit are repeated serialized JSON strings and remove is a repeated integer list; the current repeated-parameter contract accepts string items only. The complete operation is excluded rather than dropping remove or treating this as a JSON request body."
+      "name": "massEditDnsZone",
+      "method": "POST",
+      "params": {
+        "add": {
+          "collection": {
+            "kind": "repeat",
+            "item_type": "string",
+            "allow_scalar": false,
+            "empty": "reject"
+          },
+          "sensitive": true
+        },
+        "edit": {
+          "collection": {
+            "kind": "repeat",
+            "item_type": "string",
+            "allow_scalar": false,
+            "empty": "reject"
+          },
+          "sensitive": true
+        },
+        "remove": {
+          "collection": {
+            "kind": "repeat",
+            "item_type": "int",
+            "allow_scalar": false,
+            "empty": "reject"
           }
-        ]
-      }
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1mass_edit_dns_zone/get/parameters/2",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1mass_edit_dns_zone/get/parameters/2. Optional add is an array with explode:true and strict string items. Use repeated literal add fields; new typed collections require nonempty sequential lists without scalar alternatives. Caller-supplied serialized JSON text is preserved byte-for-byte without parsing; arbitrary record data is sensitive."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1mass_edit_dns_zone/get/parameters/3",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1mass_edit_dns_zone/get/parameters/3. Optional edit is an array with explode:true and strict string items. Use repeated literal edit fields; new typed collections require nonempty sequential lists without scalar alternatives. Caller-supplied serialized JSON text is preserved byte-for-byte without parsing; arbitrary record data is sensitive."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1mass_edit_dns_zone/get/parameters/4",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1mass_edit_dns_zone/get/parameters/4. Optional remove is an array with explode:true and strict int items. Use repeated literal remove fields; new typed collections require nonempty sequential lists without scalar alternatives. Preserve order, duplicates and native integer zero without coercion or index conversion."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "This function updates a DNS zone in one form POST, available from cPanel 96. Temporary domains are unsupported. The supplied SOA serial must match the current zone or the request fails. The documented serial and removal-index minima are zero; the client adds no runtime range guard."
+        },
+        {
+          "kind": "documented",
+          "text": "add and edit contain caller-serialized JSON objects with dname, ttl, record_type and data; edit also requires line_index, the zero-based starting line. data string count and format depend on record_type. These requirements remain prose: strings are forwarded unchanged, including malformed text, without a parsed record schema."
+        },
+        {
+          "kind": "documented",
+          "text": "Each supplied family must be a nonempty sequential list with strict string items for add/edit and integer items for remove. Order and duplicates survive repeated literal keys. Omit unused families or pass null; omitting every family still sends serial and zone. No minimum-one-edit rule or client no-op is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The source says each surviving record occupies the same number of lines after editing, not that line offsets remain unchanged. remove uses source line-index terminology without automatic conversion. The optional new_serial can be used for later edits if callers track lines per record. No automatic reread, serial refresh, retry, rollback, atomicity, deployment or propagation guarantee is provided."
+        },
+        {
+          "kind": "documented",
+          "text": "Typed support is source-backed and tested offline only. No live DNS mutation or no-op probe was performed; addzonerecord/editzonerecord composed forms remain deferred under whm-api-client-8x0.1.30."
+        }
+      ]
     },
     "whm1:remove_zone_key": {
       "method": "POST",

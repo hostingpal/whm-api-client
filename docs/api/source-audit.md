@@ -6483,3 +6483,62 @@ rejection and unchanged API/payload failures. No live report, vendor communicati
 ModSecurity change, source refresh or server/API call ran; remaining live behavior
 stays under `8x0.2.34`. This completes the remaining input correction in `.1.24`;
 publication and external parent acceptance remain separate.
+
+
+### WHM DNS mass-edit typed adoption (2026-10-31)
+
+`whm()->dns()->massEditDnsZone(int $serial, string $zone, ?array $add = null,
+?array $edit = null, ?array $remove = null): array` adopts exactly one canonical
+operation, `whm1:mass_edit_dns_zone`. The pinned
+`docs/api/sources/2026-10-13/whm.openapi.json.gz` decompressed SHA-256 is
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
+The selected `/paths/~1mass_edit_dns_zone/get` is available from cPanel 96,
+sets `x-readonly:false`, and has no requestBody. Its query parameters 0/1 are
+required integer serial and string zone. Source-bound overlay evidence points
+exactly at `/paths/~1mass_edit_dns_zone/get/parameters/2`, `/3` and `/4`: add/edit
+are optional exploded arrays of strings with format=json; remove is an optional
+exploded integer array. The existing mutation policy sends form POST with only
+`api.version=1` in the URL, not a JSON body.
+
+New typed collections deliberately require nonempty sequential lists with no
+scalar alternative. Callers wrap singleton entries and omit unused families or
+pass null. Every supplied item has its native strict type. Empty, sparse and
+associative lists reject after metadata reset and before dispatch. Repeat encoding
+preserves order, duplicates, zero and exact caller-supplied string bytes, including
+malformed JSON text; it performs no parsing, reencoding, joining or index conversion.
+All omitted families still send serial and zone. add/edit are explicitly sensitive;
+remove also inherits the generator's collection trace redaction. No shared runtime,
+generator, generic method, old typed DNS method/spec or source/evidence file changes.
+
+The source requires dname, ttl, record_type and data in each add/edit serialized
+object, plus zero-based starting line_index for edit. data string count/format
+depends on record_type. These are prose requirements, not a new parsed grammar.
+The documented serial and removal-index minima remain documentation; native zero
+and negative integers follow existing scalar forwarding without claiming server
+acceptance. Native top-level wrong types fail PHP argument typing before metadata
+reset; ordinary weak-caller scalar coercion remains PHP behavior.
+
+The supplied SOA serial must match the current zone or the API fails. The source
+says each surviving record occupies the same number of lines after editing; it
+does not promise stable offsets, atomicity or safe automatic reuse of indexes.
+remove retains source line-index terminology without inferred mismatch handling.
+The returned optional integer new_serial supports later edits only when callers
+track lines per record. Temporary domains are unsupported. There is no implicit
+reread, serial refresh, retry, rollback, deployment or DNS propagation proof.
+
+The generated result is an object with optional new_serial, following normal
+response lowering. Empty objects and the existing legacy empty-array compatibility
+are accepted; unknown fields follow existing filtering. Missing/null data,
+nonempty lists and wrong serial types fail payload validation with confirmed
+Flag outcome and preserved metadata. No upload-specific accept_empty_array
+exception, nullable result or stronger live assertion is introduced. Independent
+mock-HTTP fixtures exercise literal requests, optional collections, strict local
+rejection, sensitive library traces, metadata and API/HTTP/transport failures.
+
+Canonical coverage becomes 1,113 operations (525 UAPI, 588 WHM), with 91 groups
+and 185 generated outputs. WHM DNS becomes 41 of 44 functions: sixteen GETs and
+25 form POSTs. Deprecated dumpzone stays excluded; addzonerecord/editzonerecord
+composed forms remain under `8x0.1.30`. This adoption uses existing repeat
+machinery only. No server, DNS mutation, no-op probe, resolver query or live API
+call ran. Historical findings and captures remain unchanged; offline fixtures do
+not establish server acceptance, concurrency behavior or propagation.

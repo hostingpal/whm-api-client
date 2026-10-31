@@ -583,6 +583,52 @@ final class DnsSpec
         ],
     ];
 
+    public const MASS_EDIT_DNS_ZONE = [
+        'function' => 'mass_edit_dns_zone',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'serial' => ['name' => 'serial', 'encoding' => 'scalar'],
+            'zone' => ['name' => 'zone', 'encoding' => 'scalar'],
+            'add' => [
+                'name' => 'add',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'repeat',
+                    'item_type' => 'string',
+                    'allow_scalar' => false,
+                    'empty' => 'reject',
+                ],
+            ],
+            'edit' => [
+                'name' => 'edit',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'repeat',
+                    'item_type' => 'string',
+                    'allow_scalar' => false,
+                    'empty' => 'reject',
+                ],
+            ],
+            'remove' => [
+                'name' => 'remove',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'repeat',
+                    'item_type' => 'int',
+                    'allow_scalar' => false,
+                    'empty' => 'reject',
+                ],
+            ],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'new_serial' => ['type' => 'int'],
+            ],
+        ],
+    ];
+
     public const PARSE_DNS_ZONE = [
         'function' => 'parse_dns_zone',
         'method' => 'GET',

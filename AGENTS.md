@@ -133,11 +133,11 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 91 typed groups cover 1,112 documented operations:
+and cPanel UAPI surface. The 91 typed groups cover 1,113 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
-DNS management surface (40 WHM functions in the `whm()->dns()` group plus 7 UAPI `DNS`
+DNS management surface (41 WHM functions in the `whm()->dns()` group plus 7 UAPI `DNS`
 functions in `uapi()->dns()`).
 `uapi()->email()` covers all 96 pinned functions: mailbox lifecycle, quotas and
 suspension, domain and mailbox forwarders, filters, routing, autoresponders, spam
@@ -1655,12 +1655,42 @@ material read ran. The initial artifact is immutable and `8x0.2.39` remains open
 
 ### WHM DNS management
 
-`whm()->dns()` exposes 40 of the 44 pinned DNS functions: sixteen GET reads and
-24 form POST methods for zone inventory, DNSSEC keys, domains, MX records,
+`whm()->dns()` exposes 41 of the 44 pinned DNS functions: sixteen GET reads and
+25 form POST methods for zone inventory, DNSSEC keys, domains, MX records,
 resolvers, nameservers and maintenance. Deprecated `dumpzone` remains excluded.
-Three record-write operations remain under `8x0.1.30`: `addzonerecord` and
-`editzonerecord` require composed form schemas; `mass_edit_dns_zone` combines
-repeated serialized JSON records and integer removal indices.
+Two record-write operations remain under `8x0.1.30`: `addzonerecord` and
+`editzonerecord` require composed form schemas.
+
+`massEditDnsZone(int $serial, string $zone, ?array $add = null, ?array $edit = null,
+?array $remove = null): array` sends repeated literal form fields in one POST
+(cPanel 96+). Prepare the current SOA serial and record line indexes yourself:
+
+```php
+$result = $client->whm()->dns()->massEditDnsZone(
+    serial: $currentSerial,
+    zone: 'example.test',
+    add: [json_encode([
+        'dname' => 'example.test.', 'ttl' => 14400,
+        'record_type' => 'TXT', 'data' => ['example text'],
+    ], JSON_THROW_ON_ERROR)],
+    remove: [$lineIndex],
+);
+```
+
+`add`/`edit` require nonempty sequential string lists of caller-serialized JSON;
+`remove` requires a nonempty sequential integer list. Order, duplicates, zero and
+string bytes survive without parsing, joining or index conversion. Null or omitted
+families send no fields; omitting all three still sends serial/zone. Empty lists
+reject locally. Record fields and type-dependent data formats remain the caller's
+responsibility; edit's `line_index` is zero-based. All three collection arguments
+receive the generator's existing trace redaction; add/edit may contain private data.
+
+A stale serial fails. Each surviving record retains its line count per the source;
+this does not promise unchanged offsets or safe index reuse. The result has optional
+integer `new_serial`; callers must track lines per record for later edits. Temporary
+domains are unsupported. No reread, retry, rollback, atomicity or DNS propagation
+guarantee is added. This adoption has offline evidence only; no live mutation or
+no-op probe ran.
 
 DNSSEC enable/disable uses repeated domain fields; other selectors retain their
 own scalar contracts. `addZoneKey()` and each `enableDnssecForDomains()` row return
