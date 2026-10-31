@@ -1,0 +1,189 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Stats",
+  "operations": {
+    "uapi:Stats/get_bandwidth": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. Requires the Bandwidth Stats feature. Returns bandwidth use for the selected account, including distributed cPanel account usage."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting timezone uses the server timezone; supplied Olson timezone text is forwarded unchanged. bytes is integer bandwidth usage in bytes and month_start is an integer Unix timestamp. domain is returned only for http protocol records. The pinned row schema declares every field optional; omitted fields remain absent and zero bytes stays zero."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, the saved capture returned month_start as native integers and numeric strings directly, while the WHM bridge returned native integers. Only this field accepts canonical integer strings within PHP integer bounds and normalizes them losslessly to int. Its optional presence is preserved; sibling numeric fields retain their pinned contracts. This correction does not change the original failed capture or establish a live quoted-integer variant on the bridge."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Stats/get_bandwidth GET declares x-readonly=true; query parameters and the response data schema are inline in cpanel.openapi.json.gz. Preserve the source GET method, requiredness, optional fields and exact scalar types."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "The immutable docs/api/evidence/2026-10-31-resource-statistics.json capture at revision fb4f9c9eb03e094d89a41806e927c4cbf0c60432 records direct-uapi Stats/get_bandwidth month_start as int and numeric-string at $.data[].month_start, with a $[].month_start type_mismatch; the bridged-uapi response has native integer month_start and passed payload validation. Apply existing lossless canonical integer-string normalization only to [].month_start. Preserve native integers and optional omission; reject noncanonical strings, fractions, exponent notation, booleans, null and integer overflow. Other integer fields stay unchanged. Cross-route string and boundary tests are synthetic compatibility checks, not additional live observations. The original failed artifact remains unchanged.",
+          "fingerprint": "docs/api/evidence/2026-10-31-resource-statistics.json"
+        }
+      ],
+      "response": {
+        "[].month_start": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "The immutable docs/api/evidence/2026-10-31-resource-statistics.json capture at revision fb4f9c9eb03e094d89a41806e927c4cbf0c60432 records direct-uapi Stats/get_bandwidth month_start as int and numeric-string at $.data[].month_start, with a $[].month_start type_mismatch; the bridged-uapi response has native integer month_start and passed payload validation. Apply existing lossless canonical integer-string normalization only to [].month_start. Preserve native integers and optional omission; reject noncanonical strings, fractions, exponent notation, booleans, null and integer overflow. Other integer fields stay unchanged. Cross-route string and boundary tests are synthetic compatibility checks, not additional live observations. The original failed artifact remains unchanged.",
+              "fingerprint": "docs/api/evidence/2026-10-31-resource-statistics.json"
+            }
+          ]
+        }
+      }
+    },
+    "uapi:Stats/get_site_errors": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. domain is required. Omitted log defaults to error (the Apache error_log); suexec selects suexec_log. Omitted maxLines defaults to 300; the documented range is 1 through 5000 lines. maxLines maps to the pinned wire parameter maxlines. Limits and log selection are server-side semantics."
+        },
+        {
+          "kind": "documented",
+          "text": "date is an integer Unix timestamp and entry is the error log text. Both row fields are optional. Returned log text is payload data and does not establish HTTP error behavior."
+        },
+        {
+          "kind": "observed",
+          "text": "On test.oblak.host running cPanel 11.138.0.19, the reviewer reported that log: 'error' and omitted log failed for npr on both routes because /var/cpanel/cpanel.config was owned by root:root with mode 0600 and unreadable by npr. log: 'suexec' returned populated typed rows on both routes. This is an observed test-server limitation, not a general operation restriction. See https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Stats/get_site_errors GET declares x-readonly=true; query parameters and the response data schema are inline in cpanel.openapi.json.gz. Preserve the source GET method, requiredness, optional fields and exact scalar types."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Stats/get_site_errors parameters/2 names the wire field maxlines and describes the number of lines. Expose the conventional PHP name maxLines while retaining the exact maxlines query name and optional integer schema; no requiredness or encoding change."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer read-only observations on npr at https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412 (reviewed revision 2ed278000f815d5130c812cc8443209239102f7b) attribute getSiteErrors(log: 'error') and default-log API errors on both routes to root-owned mode-0600 /var/cpanel/cpanel.config being unreadable by npr. The reviewer reports populated typed rows for log: 'suexec' on both routes and left the server file unchanged. This records the environment-specific observation without changing request defaults, result validation or the earlier failed captures."
+        }
+      ],
+      "params": {
+        "maxlines": {
+          "php": "maxLines"
+        }
+      }
+    },
+    "uapi:Stats/get_stats_daily": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 132 and later. domain is required and must belong to the selected cPanel account. Returns the documented daily AwStats statistics; this read establishes no statistics-generation behavior."
+        },
+        {
+          "kind": "documented",
+          "text": "stats is a non-null object map of daily statistics. The prose describes YYYY-MM-DD keys, while the pinned example uses verbose JavaScript date strings. Keys are preserved unchanged; no date spelling or ordering rule is inferred. Up to 45 days of history are documented, with gaps from the first available statistic through yesterday filled with zeros by the server."
+        },
+        {
+          "kind": "documented",
+          "text": "Daily bandwidth is integer bytes; hits, pages and visits are integer counts. domain, stats and all daily counter fields remain optional according to the schema. Empty maps and explicit zero counters are preserved. No nullable counter or third-party analyzer behavior is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Stats/get_stats_daily GET declares x-readonly=true; query parameters and the response data schema are inline in cpanel.openapi.json.gz. Preserve the source GET method, requiredness, optional fields and exact scalar types."
+        }
+      ]
+    },
+    "uapi:Stats/list_sites": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. engine is required and documents webalizer or analog. The summary and description call these Analog statistics, while the engine parameter also allows webalizer; preserve both documented selectors without inferring another engine. Omitted traffic defaults to http; ftp is also documented."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns statistics-file paths for the selected account. all_domains and ssl are integer 0/1 payload flags: all_domains=1 identifies an all-domain file and ssl=1 identifies SSL-request statistics. Every row field remains optional. Reading these paths does not retrieve their files or establish analyzer report contents."
+        },
+        {
+          "kind": "observed",
+          "text": "On test.oblak.host running cPanel 11.138.0.19, the reviewer observed ssl as a digit string for listSites(engine: 'analog') directly and as an integer through the WHM bridge. Only ssl additionally accepts exact quoted 0/1 flags and normalizes them to integers, matching existing SSL flag handling. Optional omission and native integer flags are preserved; all_domains retains its pinned integer flag contract. See https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Stats/list_sites GET declares x-readonly=true; query parameters and the response data schema are inline in cpanel.openapi.json.gz. Preserve the source GET method, requiredness, optional fields and exact scalar types."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer read-only observations on npr at https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412 (reviewed revision 2ed278000f815d5130c812cc8443209239102f7b) report listSites(engine: 'analog') ssl as a digit string on direct UAPI, causing PayloadMismatchException, and as an integer through the WHM bridge. The pinned /Stats/list_sites result.data.items.properties.ssl schema explicitly declares integer enum [0, 1]. Apply the existing string-flag normalization only to [].ssl, accepting exact \"0\"/\"1\" alongside native 0/1 and preserving omission. Reject null, booleans, fractional values and other string spellings; all_domains stays strict. Cross-route quoted-flag tests are synthetic compatibility checks, not evidence of quoted values on the bridge. This review evidence is separate from the existing immutable captures."
+        }
+      ],
+      "response": {
+        "[].ssl": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer read-only observations on npr at https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412 (reviewed revision 2ed278000f815d5130c812cc8443209239102f7b) report listSites(engine: 'analog') ssl as a digit string on direct UAPI, causing PayloadMismatchException, and as an integer through the WHM bridge. The pinned /Stats/list_sites result.data.items.properties.ssl schema explicitly declares integer enum [0, 1]. Apply the existing string-flag normalization only to [].ssl, accepting exact \"0\"/\"1\" alongside native 0/1 and preserving omission. Reject null, booleans, fractional values and other string spellings; all_domains stays strict. Cross-route quoted-flag tests are synthetic compatibility checks, not evidence of quoted values on the bridge. This review evidence is separate from the existing immutable captures."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:Stats/list_stats_by_domain": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. domain and engine are required; analog is the only documented engine. Omitted ssl uses the server default 1. Explicit false selects non-SSL requests and is sent as ssl=0; true selects SSL requests and is sent as ssl=1."
+        },
+        {
+          "kind": "documented",
+          "text": "date is an integer Unix timestamp and url identifies the file from which statistics reports are generated. Both fields remain optional. The client returns the file URL without fetching it or inferring report content."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Stats/list_stats_by_domain GET declares x-readonly=true; query parameters and the response data schema are inline in cpanel.openapi.json.gz. Preserve the source GET method, requiredness, optional fields and exact scalar types."
+        }
+      ]
+    }
+  }
+}

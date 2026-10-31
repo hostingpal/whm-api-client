@@ -2744,6 +2744,158 @@ artifact from both merged parents is byte-identical, including failed captures.
 The evidence commit changes only documentation/artifacts; executable code and
 effective contracts remain those of the captured revision.
 
+## Resource and web statistics reads (2026-10-31)
+
+The resource and web statistics slice exposes eleven GET operations across
+`bandwidth()`, `resourceUsage()`, `statsBar()`, `stats()` and `statsManager()`.
+Bandwidth protocols, retention and grouped queries complement resource limits,
+statistics-bar values, domain bandwidth, daily AwStats counters, error logs,
+report-file inventory and analyzer configuration. `StatsManager/save_configuration`
+requires a JSON request body and remains excluded under `8x0.1.18`; generic form
+calls do not provide that transport.
+
+Pipe-separated grouping, domain, protocol and display arguments are supplied as
+strings and encoded once. Omitted options preserve server defaults; explicit
+false flags are sent as zero. Keep bytes, timestamps, per-resource units and
+formatted display strings distinct. Resource `maximum: null` means unlimited;
+zero and omission remain separate. Dynamic domain/date/grouping keys remain keys
+in returned arrays and are wildcarded in structural evidence. The pinned
+Bandwidth grouping prose and response examples establish one to three dynamic
+key levels ending in integer or fractional byte values. The overlay repairs the
+formal schema's object-only leaves while retaining nullable second/third values
+and empty maps; numeric strings and opaque fourth-level leaves are not inferred.
+The result shape does not enforce correspondence with the supplied grouping.
+Resource maximum/usage, StatsBar percent and bandwidth month-start values accept
+lossless canonical integer strings only in their reviewed fields. A null
+resource URL remains distinct from omission; fractional strings are not rounded
+or silently coerced. StatsBar preserves observed null `count` values and string
+or object `role` values whose dynamic values are strings or string lists. The
+role map follows the final structural capture; it does not identify the map keys
+or their meaning. Other percentage and flag rules stay unchanged.
+`listSites()` normalizes only exact quoted `ssl` flags to integer 0/1, preserving
+omission and the native flags. These field corrections follow the
+[PR38 reviewer observations](https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412)
+on cPanel `11.138.0.19`; they do not establish every display or analyzer variant.
+The live/error-log follow-up remains `8x0.2.25`.
+
+Statistics require the documented features, roles and analyzer availability.
+`getSiteErrors()` returns log text as payload data; report URLs are returned
+without being fetched. Analyzer configuration metadata stays in `responseMeta()`.
+The fixed live catalog targets only `npr`/`npr.rs`, bounds the bandwidth query to
+October 2026 UTC, and limits the error-log read to one entry. No configuration,
+statistics generation or log contents are changed by these reads.
+
+On `test.oblak.host` with cPanel `11.138.0.19`, the reviewer found that
+`getSiteErrors(log: 'error')` and the default failed because `npr` could not read
+the root-owned mode-0600 `/var/cpanel/cpanel.config`. The same operation with
+`log: 'suexec'` returned populated typed rows on both routes. This is an attributed
+environment observation, not a general API restriction. The server file was left
+unchanged and the earlier failed artifacts remain failed and unwaived.
+
+All formal optional fields and dynamic maps are covered by independent literal
+fixtures and exact-wire tests on wrapped/bare direct and bridged UAPI. The
+source's grouping prose and time-only example disagree, and its minute-interval
+name contains a typo; no guessed combination validation is added. StatsBar's
+example-only `langkey` remains unmodeled. Daily-stat key prose and examples also
+differ, so no date-key grammar is enforced. Pinned snapshots and existing
+runtime, generator and evidence policies remain unchanged.
+
+### Initial resource/statistics capture
+
+The immutable [initial capture](evidence/2026-10-31-resource-statistics.json)
+at `fb4f9c9eb03e094d89a41806e927c4cbf0c60432` on `11.138.0.19` records 23 GET
+observations. All return HTTP 200; 21 API outcomes succeed, fourteen payload and
+probe checks pass, seven payload checks fail, and two error-log requests fail
+at the API layer. Both `Stats/get_site_errors` calls use the documented `log=error`
+and `maxlines=1`; their failure does not establish a log-row contract. No
+configuration or log content is changed. Follow-up `8x0.2.25` retains that gap.
+
+The two-level Bandwidth query returns integer leaves at `$.*.*` on both routes.
+ResourceUsage reports numeric strings for `maximum` and `usage`, and nullable
+`url`, on both routes. StatsBar reports numeric-string `percent` on both routes.
+Direct Stats bandwidth reports integer and numeric-string `month_start`; the
+bridge reports native integers. These are structural classifications, not raw
+values or proof of a particular numeric-string spelling. Preserve the original
+failed artifact, SHA-256
+`6114814a2c39e52080d34c90cf0790380c16b86d3dca87677cb00fea50a407f3`.
+
+### Corrected resource/statistics capture
+
+The immutable [corrected capture](evidence/2026-10-31-resource-statistics-corrected.json)
+at `a439c3c7791a16207437911c4dda93ee60105ac0` on `11.138.0.19` records all 23 GETs
+with HTTP 200. Twenty-one API, payload and probe checks pass with zero schema
+discrepancies. Both `Stats/get_site_errors` API requests still fail before payload
+validation, so the overall strict assessment remains failed; neither failure is
+waived or reclassified as a skip. The selector and bounds follow the pinned
+source, which supplies no diagnosed cause. Follow-up `8x0.2.25` remains open.
+
+The successful checks establish canonical integer-string compatibility for the
+selected resource rows, percentages and direct month-start timestamps, and
+integer leaves for the selected two-level bandwidth query. They do not establish
+fractional percentages or other grouping depths. Daily-stat maps, site lists,
+report-file lists and analyzer lists are empty, so their populated schemas remain
+offline-tested. Ten of the eleven new functions pass through both routes; error-log
+payloads remain unobserved. No settings, analyzer execution or log mutation ran.
+The original capture stays unchanged. Corrected artifact SHA-256:
+`904c85e93c2774646f68ddbbf38685355164f6bec9c1f19bc8e3d72e96438521`.
+
+
+### Requested varied resource/statistics capture
+
+The immutable [review capture](evidence/2026-10-31-resource-statistics-review-final.json)
+at `294b1cc432bd9a9929a49cade5b2425297c89802` on `11.138.0.19` contains exactly
+27 GET observations. All HTTP statuses are 200 and all API outcomes pass;
+25 payload/probe checks pass. The three Bandwidth query depths each pass on
+both routes with integer leaves. Analog site inventory has populated rows,
+with direct numeric-string and bridged integer SSL flags, and `suexec` returns
+populated typed log rows on both routes. Log contents are not retained.
+
+Both mixed StatsBar observations fail payload/probe validation at `role`: the
+raw structure is `missing|object|string`, with map values `string|list<string>`.
+The first review correction interpreted the review's PHP "array" description as
+a JSON list. This artifact disproves that assumption. The narrow subsequent
+correction replaces that nonempty-list alternative with a bounded map, retains
+scalar strings and omission, and adds independent malformed-value and masking
+regressions. Existing empty-map compatibility remains unchanged. This correction
+is generated and offline-tested; it was not used by this capture.
+
+Both StatsBar observations also retain a separate masked `$[].*` unknown-field
+failure (direct string, bridged null/string). Masking establishes neither key
+names nor counts; no fields or acknowledgments are inferred. The artifact stays
+strictly failed and unwaived under `8x0.2.25`. Empty daily/report/analyzer results
+do not establish populated variants. No server file, configuration, resource or
+log content changed. Earlier captures remain byte-identical; this capture is
+not replayed to clear its status. SHA-256:
+`c3c7ac8302133d4d92212f4e47d6455b95e60710adcb04209cf485e5690aed90`.
+
+The dedicated catalog uses fixed argument-variant labels for its three bandwidth
+depths while retaining each pinned `#GET` variant and the exact URI guard. The
+shared read-only assessor checks ordered labels and rejects missing, extra,
+duplicate or mixed labeled/unlabeled identities. Unlabeled existing catalogs keep
+their evidence format; no discrepancy acknowledgment policy changes.
+
+
+### First capture of the reviewed role-map contract
+
+[Claude's review of `023d2dd`](https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5720098872)
+verified the corrected code, including all 46 StatsBar display keys (28 populated,
+18 empty) through both routes, then requested one capture of the final contract.
+The immutable [reviewed-contract capture](evidence/2026-10-31-resource-statistics-reviewed-contract.json)
+at `023d2dd00f4aee6a6ab06523944c48586f6dc77f` on `11.138.0.19` contains 27 GETs:
+one WHM version read and thirteen reads through each UAPI route. All 27 HTTP,
+API, payload and probe checks pass, including the mixed StatsBar list and its
+role map. No extra request, mutation or log-content persistence occurred.
+
+Strict assessment remains failed solely for the two StatsBar `$[].*` unknown-field
+observations. Their full masked payload fingerprints match the preceding failed
+capture on their respective routes (direct string; bridge null/string); the prior
+role type mismatch is absent under the corrected contract. That structural match
+does not identify unknown names or counts. Both findings remain unmodeled and
+unwaived under `8x0.2.25`; the earlier artifact retains its original failures.
+Daily/report/analyzer collections remain empty. The capture covers the fixed
+catalog, not every possible argument or display combination. SHA-256:
+`9f3548970abc522615faa8822cac7aa8bd28a576cfd1047b4849be056ebba736`.
+
 ## Account environment and preferences (2026-10-31)
 
 The account environment and preference slice exposes twenty compatible methods
