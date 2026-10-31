@@ -49,7 +49,8 @@
         "kind": {
           "enum": [
             "indexed",
-            "repeat"
+            "repeat",
+            "map"
           ]
         },
         "item_type": {
@@ -64,11 +65,14 @@
           "type": "boolean"
         },
         "empty": {
-          "const": "reject"
+          "enum": [
+            "reject",
+            "allow"
+          ]
         },
         "prefix": {
           "type": "string",
-          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+          "pattern": "^([A-Za-z_][A-Za-z0-9_-]*)?$"
         },
         "separator": {
           "enum": [
@@ -80,6 +84,9 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 2147483647
+        },
+        "reject_prefixed_keys": {
+          "const": true
         }
       },
       "required": [
@@ -103,7 +110,15 @@
               "prefix",
               "separator",
               "start"
-            ]
+            ],
+            "properties": {
+              "prefix": {
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+              },
+              "empty": {
+                "const": "reject"
+              }
+            }
           }
         },
         {
@@ -133,6 +148,61 @@
                   ]
                 }
               ]
+            },
+            "properties": {
+              "empty": {
+                "const": "reject"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "map"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "prefix"
+            ],
+            "properties": {
+              "allow_scalar": {
+                "const": false
+              }
+            },
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "separator"
+                  ]
+                },
+                {
+                  "required": [
+                    "start"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "reject_prefixed_keys"
+            ]
+          },
+          "then": {
+            "properties": {
+              "kind": {
+                "const": "map"
+              },
+              "prefix": {
+                "minLength": 1
+              }
             }
           }
         }

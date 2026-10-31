@@ -77,6 +77,33 @@ final class HostingPlansSpec
         ],
     ];
 
+    public const CREATE_FEATURELIST = [
+        'function' => 'create_featurelist',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'featurelist' => ['name' => 'featurelist', 'encoding' => 'scalar'],
+            'features' => [
+                'name' => 'featurelistname',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'map',
+                    'item_type' => 'bool',
+                    'allow_scalar' => false,
+                    'empty' => 'allow',
+                    'prefix' => '',
+                ],
+            ],
+            'overwrite' => ['name' => 'overwrite', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'featurelist' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
     public const DELETE_FEATURELIST = [
         'function' => 'delete_featurelist',
         'method' => 'POST',
@@ -838,6 +865,34 @@ final class HostingPlansSpec
             'features' => ['name' => 'features', 'encoding' => 'scalar'],
         ],
         'returns' => null,
+    ];
+
+    public const UPDATE_FEATURELIST = [
+        'function' => 'update_featurelist',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'featurelist' => ['name' => 'featurelist', 'encoding' => 'scalar'],
+            'features' => [
+                'name' => 'feature name',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'map',
+                    'item_type' => 'bool',
+                    'allow_scalar' => false,
+                    'empty' => 'reject',
+                    'prefix' => '',
+                ],
+            ],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'featurelist' => ['type' => 'string'],
+                'invalid_features' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'updated_features' => ['type' => 'map', 'values' => ['type' => 'flag', 'accept' => ['string-flag']]],
+            ],
+        ],
     ];
 
     public const VERIFY_USER_HAS_FEATURE = [

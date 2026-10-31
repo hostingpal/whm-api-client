@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 99 typed groups cover 1,135 documented operations:
+and cPanel UAPI surface. The 99 typed groups cover 1,142 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -1137,11 +1137,12 @@ was run merely to obtain a passing result. SHA-256:
 ### WHM login and mail protection
 
 `whm()->cpHulk()` implements sixteen pinned cPHulk functions, and
-`whm()->mail()` implements fourteen Greylisting functions. Fifteen reads use GET;
-fifteen mutations use form POST. The JSON batch-record operation remains under
-`8x0.1.18`. The provider-configuration setter is excluded under `8x0.1.25` because
-its `PROVIDERKEY` placeholder represents a dynamic parameter name, not a literal
-wire field. The pre-existing Mail SNI exclusion stays intact.
+`whm()->mail()` implements fifteen Greylisting functions. Fifteen reads use GET;
+sixteen mutations use form POST. The JSON batch-record operation remains under
+`8x0.1.18`. `cpgreylistSaveCommonMailProvidersConfig()` accepts optional `providers`
+as a literal-key bool map. Null or [] sends no provider-specific fields; existing
+provider settings remain unchanged, while omitted autotrust retains default 1.
+The pre-existing Mail SNI exclusion stays intact.
 
 cPHulk configuration can change login protection, firewall blocking and commands
 run after attacks. Command and generic configuration-value inputs remain sensitive.
@@ -1507,10 +1508,13 @@ open for all unobserved functions and variants.
 
 ### WHM SSL certificate management
 
-`whm()->ssl()` exposes 32 of the 34 pinned SSL Certificates operations: ten GET
-reads and 22 form POST calls, including source-classified POST fetch operations.
-Provider reset/selection remains excluded under `8x0.1.28` because `x_*` denotes
-dynamic input names, not a literal parameter. Provider inventories preserve strict
+`whm()->ssl()` exposes all 34 pinned SSL Certificates operations: ten GET
+reads and 24 form POST calls, including source-classified POST fetch operations.
+`resetAutoSslProvider()` and `setAutoSslProvider()` accept optional sensitive
+`parameters` string maps with a literal `x_` prefix added to caller suffix keys.
+Null or [] sends no extra provider fields. Terms URLs require deliberate caller
+acceptance; the client does not fetch URLs or automatically consent. Reset affects
+remote registration; use `disableAutoSsl()` to disable AutoSSL. Provider inventories preserve strict
 named fields and opaque additional values; treat returned provider data as private.
 
 PEM, private-key, CA-bundle and passphrase inputs remain sensitive. Domain exclusion
@@ -1615,18 +1619,23 @@ unchanged.
 
 ### Expanded WHM account management
 
-`whm()->accounts()` covers 45 of the 49 pinned functions. The expanded surface
-preserves the ten existing methods and adds 23 GET and twelve form POST methods
+`whm()->accounts()` covers 47 of the 49 pinned functions. The expanded surface
+preserves the ten existing methods and adds 23 GET and fourteen form POST methods
 for inventories, enhancements, conversion status, quota/bandwidth controls,
 password policy, Digest Authentication and document roots. Password-strength
 calculation uses POST because its password input is sensitive.
 
-JSON personalization calls remain under `8x0.1.18`. Conversion initiation and
-bulk modification remain excluded under `8x0.1.29`: their keyed database-copy and
-MX fields need explicit support. Omitting conversion copy fields copies no MySQL
-databases; the client does not silently drop them. Conversion status supports
-one integer job ID. The pinned examples disagree about the first suffix, but
-[review 5722427592](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+JSON personalization calls remain under `8x0.1.18`. Conversion initiation accepts
+`copyMysqlDatabases` as an old-to-new string map with literal `copymysqldb-` prefix;
+null or [] copies no databases. Purely numeric keys reject after PHP integer-key
+coercion. `moveMysqlDatabases`/`moveMysqlUsers` preserve unsuffixed scalars and use
+one-based suffixes for nonempty lists. `massModifyAccount()` retains 50 fields;
+MXCHECK-* is excluded after the reviewer's scoped no-effect observation. Its
+unchecked result policy returns validated partial/all-failed rows even when outer
+result is 0; callers inspect every per-user result and metadata. No retry,
+polling, completion, cleanup or rollback is added. Conversion remains unobserved.
+Conversion status supports one integer job ID. The pinned examples disagree about
+the first suffix, but [review 5722427592](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
 reports `_parse_job_ids` accepting `job_id` or numeric `job_id-N`, including zero-
 and one-based suffixes, on `11.138.0.19`. This source inspection lifts that
 numbering ambiguity for the reviewed handler/version; list adoption still needs
@@ -2128,12 +2137,19 @@ and groups succeeds with null. Hook edit/delete/reorder remain unobserved under
 
 ### Expanded WHM hosting plans
 
-`whm()->hostingPlans()` exposes twenty of 24 pinned functions, including package
+`whm()->hostingPlans()` exposes 22 of 24 pinned functions, including package
 creation, editing, deletion, extension management, matching, application inventory
 and feature overrides. The original eight methods and two deprecated exclusions
 are retained, with a narrow team-limit response correction in `listPackages()`.
-Dynamic feature-list creation/update fields remain excluded under `8x0.1.31`. The twelve additions use four GET and eight form POST
-methods.
+`createFeaturelist()` and `updateFeaturelist()` require explicit `features` bool
+maps with literal keys. Empty update rejects locally; omitted update keys preserve
+state in the reviewer observation on 11.138.0.19. Empty create still sends the
+fixed request and created an all-disabled list in that version-scoped fixture.
+Create requires reseller Add/Remove Package permission; overwrite can replace a
+list. Updated flags accept native/quoted 0|1 and normalize to integers;
+`invalid_features` is a string list to inspect, without an atomicity guarantee.
+Both methods use form POST. Source contradictions and reviewer provenance are
+recorded separately in the source audit.
 
 Package options preserve exact wire casing, omission, false/zero and literal
 `unlimited` values. Quotas use the source's MB units. `editPackage()` changes
@@ -3003,6 +3019,18 @@ home cleanup were verified; no URL was fetched. These reviewer observations do
 not expand or replace the immutable two-GET capture. Server-hook writes
 `editHook`, `deleteHook` and `reorderHooks` remain unobserved under `8x0.2.49`;
 the depth-limit audit `8x0.10.5` stays open.
+
+The seven named-map WHM adopters add source-backed form POST support for feature
+lists, Greylisting providers, AutoSSL providers, addon conversion and bulk account
+modification. Canonical coverage is 1,142 (548 UAPI, 594 WHM), 99 groups and 201
+files. See README and source-audit for exact contracts and review provenance.
+Required update features are nonempty; create permits [] with version-scoped
+all-disabled evidence. Optional empty/null maps still dispatch. AutoSSL logical
+keys omit x_ and already-prefixed keys reject via explicit descriptor policy;
+other maps preserve literal prefix text. massModifyAccount retains 50 fields,
+excludes MXCHECK-* and returns strict rows under Unchecked with native integer
+0/1 metadata. Reviewer observations do not establish corrected-head live coverage;
+no automatic retry, polling or rollback is added.
 
 ## WHM interface customization and scoped data
 

@@ -382,7 +382,7 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 			}
 			continue
 		}
-		if strings.ContainsAny(p.Name, "*") && !overlay.IsSuffixNumbered(ov.Params[p.Name].Encoding) {
+		if strings.ContainsAny(p.Name, "*") && !overlay.IsSuffixNumbered(ov.Params[p.Name].Encoding) && (ov.Params[p.Name].Collection == nil || ov.Params[p.Name].Collection.Kind != "map") {
 			b.problem(op.ID + ": parameter " + p.Name + " is a name pattern; omit it and use call()")
 			continue
 		}
@@ -532,6 +532,10 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		base := strings.TrimSuffix(p.Wire, "*")
 		expanded := regexp.MustCompile("^" + regexp.QuoteMeta(base) + "[1-9][0-9]*$")
 		for j, other := range params {
+			// Map source placeholders never appear as wire fields.
+			if other.Collection != nil && other.Collection.Kind == "map" {
+				continue
+			}
 			if i == j {
 				continue
 			}

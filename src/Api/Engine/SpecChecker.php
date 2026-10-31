@@ -191,9 +191,11 @@ final class SpecChecker
                 throw new LogicException('Invalid parameter spec for ' . $name . '.');
             }
 
+            $map = false;
             $declared = ['name' => $wire, 'encoding' => $param['encoding']];
             if ($param['encoding'] === 'collection') {
                 $declared['collection'] = CollectionEncoder::check($param['collection'] ?? null);
+                $map = $declared['collection']['kind'] === 'map';
             } elseif (array_key_exists('collection', $param)) {
                 throw new LogicException('Collection metadata requires collection encoding.');
             }
@@ -217,7 +219,7 @@ final class SpecChecker
             $suffix = in_array($param['encoding'], ['suffix-numbered', 'suffix-numbered-scalar'], true);
             if (
                 ($suffix && preg_match('/^[A-Za-z_][A-Za-z0-9_]*\*$/D', $wire) !== 1)
-                || (!$suffix && str_contains($wire, '*'))
+                || (!$suffix && !$map && str_contains($wire, '*'))
             ) {
                 throw new LogicException('Invalid suffix-numbered parameter pattern.');
             }
@@ -228,6 +230,12 @@ final class SpecChecker
                 throw new LogicException('Reserved wire name in the parameter specs.');
             }
             foreach ($wires as $other => $otherParam) {
+                if ($wire === (string) $other) {
+                    throw new LogicException('Duplicate wire name in the parameter specs.');
+                }
+                if ($map || ($otherParam['collection']['kind'] ?? null) === 'map') {
+                    continue;
+                }
                 if (
                     self::overlaps($wire, $param['encoding'], (string) $other, $otherParam['encoding'])
                     || self::overlaps((string) $other, $otherParam['encoding'], $wire, $param['encoding'])

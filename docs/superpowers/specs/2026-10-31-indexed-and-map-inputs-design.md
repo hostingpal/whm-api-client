@@ -138,8 +138,12 @@ entries. It can and must detect collisions introduced during wire expansion.
 
 Preserve key case, dots, hyphens and value bytes. Do not trim, normalize domains,
 strip an apparent prefix, decode percent escapes or convert identifiers. Prefix
-concatenation is literal: a caller who includes `x_` in a logical key will not have
-it stripped automatically. PHPDoc examples must make this convention clear.
+concatenation is literal; the client never strips an apparent prefix. The two
+AutoSSL provider descriptors explicitly reject logical keys already beginning
+`x_` before I/O, preventing accidental `x_x_` fields without rewriting input.
+This is scoped client transport policy, not a blanket named-map rule: database
+names may legitimately begin with `copymysqldb-` and keep those literal bytes.
+PHPDoc examples must make the logical-key convention clear.
 
 As an engineering transport rule, reject invalid UTF-8 keys and control bytes
 (U+0000–U+001F and U+007F). Do not invent a universal feature/provider/domain-name

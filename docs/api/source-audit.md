@@ -6215,3 +6215,107 @@ All five methods have offline contracts and issue one request without retries,
 rollback or interface-rendering guarantees. The three mutating methods remain
 unobserved under `8x0.2.58`; reviewer reads do not establish corrected-head live
 acceptance or other scope/application/theme variants.
+
+## Named-map WHM adopters and PR77 corrections (2026-10-31)
+
+This adoption supersedes the seven typed exclusions under `8x0.1.25`, `.1.28`,
+`.1.29` and `.1.31`; prior source-audit histories, pinned sources and all 105
+historical evidence JSON files remain unchanged. The decompressed WHM source is
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
+No local live request, source refresh, capture replay or cleanup check was run.
+
+All seven new operations use form POST under mutation/secret policy; their pinned
+source variant is GET. Every collection override retains matching source hash and
+parameter/prose pointer evidence. Pointers below are relative to
+`/paths/~1FUNCTION/get/` in the pinned WHM source.
+
+| Function / public method | Parameter pointers | Input contract |
+| --- | --- | --- |
+| create_featurelist / createFeaturelist | `parameters/1` | Required `features: array<string,bool>`; [] sends the fixed request |
+| update_featurelist / updateFeaturelist | `parameters/1` | Required `features: non-empty-array<string,bool>`; [] rejects locally |
+| cpgreylist_save_common_mail_providers_config | `parameters/1` | Optional nullable `providers: array<string,bool>` |
+| reset_autossl_provider / resetAutoSslProvider | `parameters/1` | Optional sensitive string map, logical keys omit `x_`; already-prefixed keys reject |
+| set_autossl_provider / setAutoSslProvider | `parameters/1` | Same explicit prefix policy as reset; no prefix rewriting |
+| convert_addon_initiate_conversion / convertAddonInitiateConversion | `parameters/2`, `parameters/3`, `parameters/4` | Optional `copyMysqlDatabases` old-to-new string map, literal `copymysqldb-`; move lists start at suffix -1, scalars remain unsuffixed |
+| massmodifyacct / massModifyAccount | `parameters/0`; excluded `parameters/26` | Scalar/nonempty-list user, unsuffixed scalar or `user-1` numbering; MXCHECK-* omitted |
+
+All six conversion arguments and 50 of 51 bulk-modification parameters remain.
+Preexisting `modifyAccount()` input behavior is unchanged. PHP numeric-string key
+coercion makes purely numeric copy-map names unrepresentable; reject integer keys
+rather than guessing their original spelling. Database names legitimately sharing
+the literal prefix remain data. Empty/null optional maps emit no dynamic fields
+but still dispatch the fixed request. Strict bool/string/int input semantics,
+zero/false, insertion order, byte preservation and one-pass encoding remain.
+Greylisting's separate autotrust default may act despite omitted provider fields.
+AutoSSL's `reject_prefixed_keys: true` is explicit per-descriptor client policy,
+separate from the upstream x_* syntax; it is not applied to other maps. Provider
+maps remain sensitive, terms URLs are deliberate caller input, and the client
+never fetches them or accepts terms automatically.
+
+The update response correction preserves optional fields and existing null rules:
+`updated_features` is a dynamic integer-flag map accepting only native 0/1 and
+quoted canonical "0"/"1", normalized by existing string-flag machinery.
+`invalid_features` is `list<string>`. Its pinned description says an array of
+invalid names, while the formal items schema declares an object with a placeholder
+flag. This documented contradiction and the reviewer string-list observation
+support the correction; neither is rewritten as a different immutable source.
+Pointers are under `responses/200/content/application~1json/schema/properties/data/`:
+`properties/updated_features/properties/feature name/description` and
+`properties/invalid_features/description`.
+
+[PR77 review 5723287220](https://github.com/hostingpal/whm-api-client/pull/77#pullrequestreview-5723287220)
+of `6ee79fbe51d7299b9390fe54df862fe2b8751be9` reports WHM observations on
+`11.138.0.19` using disposable accounts and feature lists. These observations
+are attributed reviewer evidence, not a new local capture or corrected-head live
+acceptance. The reviewer reports creating and deleting those resources and
+confirming them gone; the root/controller has not independently verified cleanup.
+
+- Feature-list creation and typed payloads passed. An empty create produced an
+  all-disabled list (120/120 features in that fixture). An empty update changed
+  nothing; omitted update keys preserved state, contrary to the pinned no-features
+  disable-all sentence. The PR72 approved design already records the corrected
+  distinction. Unknown names returned in `invalid_features`; the reviewed source
+  dies only when a custom features file exists. Require nonempty updates and
+  inspect invalid names without inferring universal failure or atomicity.
+- Updated dynamic flags arrived as digit strings after changes had applied.
+  An old `PayloadMismatchException` with `outcomeConfirmed=true` did not undo the
+  change. No automatic retry is safe on that basis.
+- Bulk modification changed the real account while returning outer result 0 and
+  two per-user results [1,0] for a real/missing pair. `user-1` numbering and
+  populated `extended` data passed. `massModifyAccount()` uses the existing
+  `OutcomePolicy::Unchecked` and returns validated partial/all-failed rows.
+  Callers inspect every row and response metadata. Native typed WHM unchecked
+  results still require integer 0/1; this extends the existing typed UAPI status
+  check without changing generic unchecked semantics or the bridge's outer check.
+  Required absent/null/malformed payload failures retain metadata/raw payload and
+  have `outcomeConfirmed=false`. No retry, rollback or atomicity is inferred.
+- MXCHECK remote, secondary, local, auto, 10, 1 and 0 inputs succeeded through
+  massmodifyacct and modifyacct while the inspected MXCHECK-domain stayed 0.
+  This version/fixture-scoped no-effect observation and the source's integer/word
+  conflict justify excluding the new bulk parameter; no replacement word contract
+  or universal no-op behavior is claimed.
+- `api.columns.*` caused a server processing error and `api.filter.enable` was
+  consumed as a processing control. The approved parent whole `api.` reservation
+  is retained for all generated WHM/direct/bridge fields. Fixed controls remain
+  owned even when omitted; exact bridge route controls remain protected. Case and
+  lookalike boundaries, legacy generic filtering, no I/O rejection, metadata reset
+  and sensitive traces have independent offline regressions.
+
+No Greylisting, AutoSSL provider write or addon conversion was run by the reviewer.
+Live follow-ups remain `8x0.2.48` (Greylisting), `8x0.2.39` (AutoSSL),
+`8x0.2.41` (accounts/conversion) and `8x0.2.43` (feature lists). The controller
+updates Beads separately. Offline contracts do not close those live follow-ups.
+
+Approved PR75/76 namespace, enum-documentation, and collection/legacy overlap lint
+are integrated. Empty-prefix maps do not statically overlap every fixed name;
+actual expansion respects omitted exact controls and occupied indexed fields.
+Malformed specs raise exact LogicException and invalid map values raise exact
+InvalidArgumentException before I/O. Unobserved source fields stay source/offline
+contracts; no immutable evidence, acknowledgment or response-wide widening changes.
+
+Integration adds seven canonical operations to approved master's 1,135, yielding
+1,142 (548 UAPI, 594 WHM) across 99 groups, with 200 generated PHP files plus
+coverage.md (201 generated outputs). The readable
+mass method is one canonical operation, with no alias. Generic access stays
+separate from typed coverage. No polling, provider registration, conversion
+completion, server cleanup or enforced SQL behavior is established.

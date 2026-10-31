@@ -1544,29 +1544,174 @@
       ]
     },
     "whm1:create_featurelist": {
-      "exclude": {
-        "reason": "Dynamic feature-name request fields require an explicit map encoding under whm-api-client-8x0.1.31; the documented featurelistname is a placeholder, not a literal wire key. Do not expose a method that silently omits feature configuration.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /create_featurelist GET parameters/featurelistname description explicitly states the parameter name is the feature name. The example changemx=1 confirms dynamic names; overwrite can replace a list and reseller Add/Remove Package permission is required."
-          }
-        ]
-      }
+      "method": "POST",
+      "order": [
+        "featurelist",
+        "featurelistname",
+        "overwrite"
+      ],
+      "params": {
+        "featurelistname": {
+          "php": "features",
+          "collection": {
+            "kind": "map",
+            "item_type": "bool",
+            "allow_scalar": false,
+            "empty": "allow",
+            "prefix": ""
+          },
+          "required": true
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /create_featurelist GET parameters/featurelistname description explicitly states the parameter name is the feature name. The example changemx=1 confirms dynamic names; overwrite can replace a list and reseller Add/Remove Package permission is required."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1create_featurelist/get/parameters/1",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1create_featurelist/get/parameters/1. The description explicitly makes the parameter name the feature name. Required PHP features map is a deliberate API safety boundary; explicit [] still dispatches no feature fields."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "createFeaturelist typed payload and empty-create all-disabled behavior passed; reviewer reports creating and deleting disposable feature lists. Reviewer report, not a local capture: https://github.com/hostingpal/whm-api-client/pull/77#pullrequestreview-5723287220"
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Uses form POST. Each call makes one attempt, with no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "features preserves literal feature keys and strict bool values (true=1, false=0). An explicit map is required; [] sends no feature fields. Collisions with fixed and reserved fields reject before dispatch."
+        },
+        {
+          "kind": "observed",
+          "text": "A reseller must possess Add/Remove Package permission. In the reviewer fixture on 11.138.0.19, features: [] created an all-disabled list (120 of 120 features disabled). This is version-scoped evidence; overwrite=true may replace an existing list."
+        }
+      ]
     },
     "whm1:update_featurelist": {
-      "exclude": {
-        "reason": "Dynamic feature-name request fields require an explicit map encoding under whm-api-client-8x0.1.31; the documented feature name is a placeholder, not a literal wire key. Do not expose a method that silently omits feature configuration.",
-        "evidence": [
-          {
-            "kind": "doc",
-            "version": "pinned 2026-10-13",
-            "date": "2026-10-31",
-            "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /update_featurelist GET parameters/feature name description explicitly states the parameter name is the feature name. Omitting feature fields disables all features in the list, and response updated_features/invalid_features also use dynamic feature names."
-          }
-        ]
+      "method": "POST",
+      "order": [
+        "featurelist",
+        "feature name"
+      ],
+      "params": {
+        "feature name": {
+          "php": "features",
+          "collection": {
+            "kind": "map",
+            "item_type": "bool",
+            "allow_scalar": false,
+            "empty": "reject",
+            "prefix": ""
+          },
+          "required": true,
+          "description": "Nonempty map from literal feature names to strict booleans. Omitted keys preserve their current state in the reviewer observation on 11.138.0.19; an empty map is rejected locally."
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; /update_featurelist feature name prose defines dynamic parameter names. Its claim that no features disables all conflicts with the reviewer source inspection and 11.138.0.19 live observation: no supplied features changes nothing."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1update_featurelist/get/parameters/1",
+          "note": "Pinned feature name parameter at this exact hash/pointer defines dynamic booleans. Required nonempty features is a reviewed client safety policy to reject the observed empty-update no-op, distinct from the pinned no-features claim."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Feature-list changes, unknown-name response and empty-update no-op were reviewer observations; no capture was repeated. Reviewer report, not a local capture: https://github.com/hostingpal/whm-api-client/pull/77#pullrequestreview-5723287220"
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Uses form POST. Each call makes one attempt, with no automatic retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "features requires a nonempty map of literal feature keys and strict bool values (true=1, false=0). Empty input and fixed/reserved collisions reject before I/O."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19 the reviewer observed an empty update changing nothing and omitted keys preserving state. This conflicts with the pinned no-features claim. Inspect invalid_features for rejected names; no universal unknown-name failure or atomicity guarantee is inferred."
+        },
+        {
+          "kind": "observed",
+          "text": "The reviewer observed quoted 0/1 updated_features values and a string list of invalid_features. Exact quoted flags normalize to integers; siblings retain their pinned presence/null rules. A previous PayloadMismatchException with outcomeConfirmed=true could follow an applied update; never retry automatically."
+        }
+      ],
+      "response": {
+        "updated_features": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "flag",
+              "accept": [
+                "string-flag"
+              ]
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+              "pointer": "/paths/~1update_featurelist/get/responses/200/content/application~1json/schema/properties/data/properties/updated_features/properties/feature name/description",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1update_featurelist/get/responses/200/content/application~1json/schema/properties/data/properties/updated_features/properties/feature name/description. The feature name is the return name. Replace only this placeholder-based hash with a dynamic map of integer 0|1, including the untyped autoresponders example. Preserve optional presence."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "updated_features dynamic values arrived as quoted canonical flags after changes had applied. Accept only native integer 0/1 and exact quoted 0/1; normalize using the existing string-flag conversion. Reviewer report, not a local capture: https://github.com/hostingpal/whm-api-client/pull/77#pullrequestreview-5723287220"
+            }
+          ]
+        },
+        "invalid_features": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+              "pointer": "/paths/~1update_featurelist/get/responses/200/content/application~1json/schema/properties/data/properties/invalid_features/description",
+              "note": "Pinned invalid_features prose says an array of invalid feature names, while its formal items schema declares an object with an invalid feature placeholder flag. Correct this contradiction to list<string>, consistent with the reviewer observation; retain optional presence and existing nonnullable behavior."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "invalid_features arrived as a list of strings, matching the pinned prose rather than its formal object-item schema. Reviewer report, not a local capture: https://github.com/hostingpal/whm-api-client/pull/77#pullrequestreview-5723287220"
+            }
+          ]
+        }
       }
     }
   }

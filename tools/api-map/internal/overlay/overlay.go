@@ -78,17 +78,20 @@ type Note struct {
 // NoteKinds maps each note kind to the label that starts its docblock line.
 var NoteKinds = map[string]string{"documented": "Documented", "observed": "Observed", "policy": "Policy"}
 
-// Collection declares strict ordinary-list input independently of legacy markers.
+// Collection declares strict ordinary list/map input independently of legacy markers.
 // Indexed names are literal Prefix + Separator + (Start + PHP position).
-// Empty lists always reject; optional top-level null still omits the parameter.
+// Map names are literal Prefix + caller string key; map scalars are forbidden.
+// Empty lists always reject; maps explicitly allow/reject empty input.
+// Optional top-level null still omits the parameter.
 type Collection struct {
-	Kind        string  `json:"kind"`
-	ItemType    string  `json:"item_type"`
-	AllowScalar *bool   `json:"allow_scalar"`
-	Empty       string  `json:"empty"`
-	Prefix      *string `json:"prefix,omitempty"`
-	Separator   *string `json:"separator,omitempty"`
-	Start       *int    `json:"start,omitempty"`
+	RejectPrefixedKeys *bool   `json:"reject_prefixed_keys,omitempty"`
+	Kind               string  `json:"kind"`
+	ItemType           string  `json:"item_type"`
+	AllowScalar        *bool   `json:"allow_scalar"`
+	Empty              string  `json:"empty"`
+	Prefix             *string `json:"prefix,omitempty"`
+	Separator          *string `json:"separator,omitempty"`
+	Start              *int    `json:"start,omitempty"`
 }
 
 // Param renames, re-encodes or omits one documented parameter, keyed by wire

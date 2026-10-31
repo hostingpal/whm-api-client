@@ -19,6 +19,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use ReflectionMethod;
+use Throwable;
 
 final class GeneratedCollectionInputsTest extends TestCase
 {
@@ -176,6 +177,147 @@ final class GeneratedCollectionInputsTest extends TestCase
             self::assertNotNull($handle->responseMeta());
             self::assertCount(1, $http->getRequests());
         }
+    }
+
+    #[DataProvider('routes')]
+    public function testNamedMapLiteralRequestAndEmptyMapStillDispatches(string $route, string $method): void
+    {
+        foreach ([['A.%&=' => '', 'x_test' => 'a%20&='], [], null] as $values) {
+            [$handle, $http] = $this->client($route);
+            $params = self::mapParams() + ['fixed' => ['name' => 'fixed', 'encoding' => 'bool']];
+            $this->invoke($handle, $method, $params, ['values' => $values, 'fixed' => false]);
+            $request = $http->getLastRequest();
+            self::assertInstanceOf(RequestInterface::class, $request);
+            $expected = $values === null || $values === [] ? 'fixed=0'
+                : 'x_A.%25%26%3D=&x_x_test=a%2520%26%3D&fixed=0';
+            $fields = $method === 'POST' ? (string) $request->getBody() : $request->getUri()->getQuery();
+            self::assertStringEndsWith($expected, $fields);
+            self::assertCount(1, $http->getRequests());
+            self::assertNotNull($handle->responseMeta());
+        }
+    }
+
+    #[DataProvider('routes')]
+    public function testLateInvalidMapEntryClearsMetadataAndNeverDispatches(string $route, string $method): void
+    {
+        $cases = [['private-key' => 'private-value', 'late-key' => null], ['private-key' => 'ok', 7 => 'bad']];
+        foreach ($cases as $values) {
+            [$handle, $http] = $this->client($route);
+            $handle instanceof WhmClient ? $handle->call('probe') : $handle->call('Email', 'probe');
+            self::assertNotNull($handle->responseMeta());
+            try {
+                $this->invoke($handle, $method, self::mapParams(), ['values' => $values]);
+                self::fail('Invalid map must fail before I/O.');
+            } catch (InvalidArgumentException $error) {
+                self::assertStringNotContainsString('private', $error->getMessage());
+                self::assertStringNotContainsString('late-key', $error->getMessage());
+                self::assertNull($handle->responseMeta());
+                self::assertCount(1, $http->getRequests());
+            }
+        }
+    }
+
+    #[DataProvider('routes')]
+    public function testNamedMapRoutingCollisionsFailLocally(string $route, string $method): void
+    {
+        if ($route === 'direct') {
+            // Direct UAPI has no query routing fields; literal dotted names survive.
+            [$handle, $http] = $this->client($route);
+            $this->invoke($handle, $method, self::mapParams(''), ['values' => ['cpanel.user' => 'value']]);
+            self::assertCount(1, $http->getRequests());
+            return;
+        }
+        $keys = $route === 'whm' ? ['api.version']
+            : ['api.version', 'cpanel.user', 'cpanel.module', 'cpanel.function'];
+        foreach ($keys as $key) {
+            [$handle, $http] = $this->client($route);
+            try {
+                $this->invoke($handle, $method, self::mapParams(''), ['values' => [$key => 'private-value']]);
+                self::fail('Map cannot overwrite routing.');
+            } catch (InvalidArgumentException $error) {
+                self::assertStringNotContainsString($key, $error->getMessage());
+                self::assertStringNotContainsString('private-value', $error->getMessage());
+                self::assertNull($handle->responseMeta());
+                self::assertCount(0, $http->getRequests());
+            }
+        }
+    }
+
+    #[DataProvider('routes')]
+    public function testNamedMapProcessingControlsRejectAfterMetadataReset(string $route, string $method): void
+    {
+        $keys = ['api.version', 'api.columns.enable', 'api.columns.private-key', 'api.filter.enable',
+            'api.filter.private-key', 'api.sort.enable', 'api.sort.private-key', 'api.chunk.enable', 'api.chunk.size'];
+        if ($route === 'bridge') {
+            array_push($keys, 'cpanel.user', 'cpanel.module', 'cpanel.function');
+        }
+        foreach ($keys as $key) {
+            [$handle, $http] = $this->client($route);
+            $handle instanceof WhmClient ? $handle->call('probe') : $handle->call('Email', 'probe');
+            self::assertNotNull($handle->responseMeta());
+            $previous = ini_set('zend.exception_ignore_args', '0');
+            $error = null;
+            try {
+                $this->invoke(
+                    $handle,
+                    $method,
+                    self::mapParams(''),
+                    ['values' => ['private-key' => 'private-value', $key => 'private-value']],
+                );
+            } catch (Throwable $caught) {
+                $error = $caught;
+            } finally {
+                ini_set('zend.exception_ignore_args', $previous === false ? '1' : $previous);
+            }
+            self::assertNotNull($error);
+            self::assertSame(InvalidArgumentException::class, $error::class);
+            self::assertNull($handle->responseMeta());
+            self::assertCount(1, $http->getRequests());
+            self::assertStringNotContainsString($key, $error->getMessage());
+            self::assertStringNotContainsString('private-value', $error->getMessage());
+            foreach ($error->getTrace() as $frame) {
+                if (
+                    str_starts_with($frame['class'] ?? '', 'HostingPal\\WhmApiClient\\')
+                    && !str_starts_with($frame['class'], 'HostingPal\\WhmApiClient\\Tests\\')
+                ) {
+                    self::assertStringNotContainsString('private-key', print_r($frame['args'] ?? [], true));
+                    self::assertStringNotContainsString('private-value', print_r($frame['args'] ?? [], true));
+                }
+            }
+        }
+    }
+
+    #[DataProvider('routes')]
+    public function testNamedMapCaseAndLookalikeBoundariesPreserveLiteralNames(string $route, string $method): void
+    {
+        [$handle, $http] = $this->client($route);
+        $this->invoke($handle, $method, self::mapParams(''), ['values' => [
+            'API.columns.enable' => '0', 'api' => '', 'api_version' => '1',
+            'apiXfilter.enable' => '0', 'cpanel.user.extra' => 'npr', 'CPANEL.user' => 'case']]);
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        $expected = 'API.columns.enable=0&api=&api_version=1&apiXfilter.enable=0'
+            . '&cpanel.user.extra=npr&CPANEL.user=case';
+        $base = match ($route) {
+            'whm' => 'https://api.example.test:2087/json-api/probe?api.version=1',
+            'bridge' => 'https://api.example.test:2087/json-api/uapi_cpanel?api.version=1'
+                . '&cpanel.user=npr&cpanel.module=Email&cpanel.function=probe',
+            default => 'https://api.example.test:2083/execute/Email/probe',
+        };
+        self::assertSame(
+            $base . ($method === 'POST' ? '' : ($route === 'direct' ? '?' : '&') . $expected),
+            (string) $request->getUri(),
+        );
+        self::assertSame($method === 'POST' ? $expected : '', (string) $request->getBody());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return array<string, mixed> */
+    private static function mapParams(string $prefix = 'x_'): array
+    {
+        return ['values' => ['name' => 'placeholder*', 'encoding' => 'collection', 'collection' => [
+            'kind' => 'map', 'item_type' => 'string', 'allow_scalar' => false,
+            'empty' => 'allow', 'prefix' => $prefix]]];
     }
 
     /** @return array<string, mixed> */
