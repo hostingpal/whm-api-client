@@ -15,15 +15,17 @@ use SensitiveParameter;
 /**
  * Encode a generated method's named arguments into wire parameters.
  *
- * Null arguments are omitted, so an explicit null and an omitted argument send
- * the same request. Flags become 0/1; repeated, WHM-numbered and suffix-numbered
- * values become their
- * marker objects, and finite float scalars are sent as strings that round-trip
+ * An explicit reject_empty policy rejects null, blank/zero strings and invalid
+ * string-list targets before omission/encoding; it never changes unflagged inputs.
+ * An explicit omit_empty parameter setting also omits exactly an empty list.
+ * Unguarded null arguments are omitted, so explicit null and omission send
+ * the same request for those parameters. Flags become 0/1; repeated, WHM-numbered
+ * and suffix-numbered values become their marker objects, and finite float scalars are sent as strings that round-trip
  * exactly (see float()), independent of the precision, serialize_precision and
- * locale settings. List contents are not validated here: AbstractApiClient
- * validates them after clearing metadata. A non-finite float is caller input that
- * no wire form represents and is rejected here; the handles clear metadata before
- * the runner encodes arguments. An argument or encoding the spec does not declare
+ * locale settings. Unguarded list contents are validated by AbstractApiClient
+ * after clearing metadata; explicitly guarded target lists are also checked here.
+ * A non-finite float has no wire representation and is rejected here. The handles
+ * clear metadata before the runner encodes arguments. An argument or encoding the spec does not declare
  * is a generator defect.
  *
  * @phpstan-import-type Parameters from AbstractApiClient
@@ -35,13 +37,15 @@ final class ArgumentEncoder
      * Encode arguments in spec order under their wire names.
      *
      * Each declared parameter with a non-null argument is emitted under its wire
-     * name using its declared encoding; undeclared arguments are rejected.
+     * name using its declared encoding; explicit omit_empty on repeat skips [].
+     * Explicit reject_empty policies check targets before null omission.
+     * Undeclared arguments are rejected.
      *
      * @param array<mixed> $params Parameter specs keyed by PHP argument name.
      * @param array<string, mixed> $arguments Arguments keyed by PHP argument name.
      * @return Parameters
      * @throws LogicException If arguments and specs disagree.
-     * @throws InvalidArgumentException If a float argument is NAN or infinite.
+     * @throws InvalidArgumentException If a float is non-finite or an explicitly guarded target is unsafe.
      */
     public static function encode(array $params, #[SensitiveParameter] array $arguments): array
     {
@@ -54,6 +58,9 @@ final class ArgumentEncoder
         $encoded = [];
         foreach ($params as $name => $param) {
             $value = $arguments[$name] ?? null;
+            if (is_array($param) && ($param['reject_empty'] ?? false) === true) {
+                self::requireTarget($value);
+            }
             if ($value === null) {
                 continue;
             }
@@ -61,6 +68,10 @@ final class ArgumentEncoder
             $wire = is_array($param) ? ($param['name'] ?? null) : null;
             if (!is_array($param) || !is_string($wire)) {
                 throw new LogicException('Invalid parameter spec for ' . $name . '.');
+            }
+
+            if (($param['omit_empty'] ?? false) === true && $param['encoding'] === 'repeat' && $value === []) {
+                continue;
             }
 
             $encoded[$wire] = match ($param['encoding'] ?? null) {
@@ -77,6 +88,27 @@ final class ArgumentEncoder
         }
 
         return $encoded;
+    }
+
+    /**
+     * Reject an absent, blank or Perl-falsey zero target for explicitly guarded inputs.
+     *
+     * This policy does not validate DNS names. Unflagged and generic calls retain
+     * their existing behavior. Handles clear metadata before this check.
+     *
+     * @throws InvalidArgumentException If the target could become server-wide scope.
+     */
+    private static function requireTarget(#[SensitiveParameter] mixed $value): void
+    {
+        $items = is_array($value) ? $value : [$value];
+        if ($items === [] || !array_is_list($items)) {
+            throw new InvalidArgumentException('An explicit nonblank, nonzero target is required.');
+        }
+        foreach ($items as $item) {
+            if (!is_string($item) || trim($item) === '' || trim($item) === '0') {
+                throw new InvalidArgumentException('An explicit nonblank, nonzero target is required.');
+            }
+        }
     }
 
     private static function scalar(#[SensitiveParameter] mixed $value): string|int

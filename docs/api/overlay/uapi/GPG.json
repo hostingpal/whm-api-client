@@ -1,0 +1,444 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "GPG",
+  "class": "Gpg",
+  "accessor": "gpg",
+  "operations": {
+    "uapi:GPG/delete_keypair": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation declares no additional role restriction."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes all keys matching keyId. A public-key ID deletes the public key; a public/private pair ID deletes both. The source points to listSecretKeys() for the desired identifier and declares x-readonly=false with no rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+        },
+        {
+          "kind": "policy",
+          "text": "Preserves the pinned nullable object with no declared fields, including opaque object fields and explicit null. Absent data is a payload mismatch."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5722555389 at 9b34fd5 on 11.138.0.19 reports this typed operation passing on an owned disposable account; no route is specified. Invalid deletion input raised ApiErrorException."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /GPG/delete_keypair: x-readonly=false and x-rollback=none. Use form POST with no retry or rollback; retain the pinned parameter requiredness, defaults and data schema. Sensitive inputs stay out of query strings and library exception trace arguments."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /GPG/delete_keypair: key_id is the documented string identifier selecting the GPG key, not key contents or a passphrase. Explicitly classify this identifier as non-sensitive; secret key_data and passphrase values remain sensitive and secret-bearing export uses form POST."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR66 review 5722555389 of 9b34fd5b791857625f3c7b5085f919a0a81bf124 on cPanel 11.138.0.19, 2026-10-31 (https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389). Review 5722555389 at 9b34fd5 on 11.138.0.19 reports this typed operation passing on an owned disposable account; no route is specified. Invalid deletion input raised ApiErrorException. Reviewer execution evidence is separate from the immutable five-GET capture and corrected offline acceptance. No new live call or capture ran for this correction."
+        }
+      ],
+      "params": {
+        "key_id": {
+          "sensitive": false
+        }
+      }
+    },
+    "uapi:GPG/export_public_key": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation declares no additional role restriction."
+        },
+        {
+          "kind": "documented",
+          "text": "Exports the selected public key. keyId is required; the optional key_data field is a string containing key bytes."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses GET and forwards keyId unchanged. Omitted fields stay omitted; null or absent data is a payload mismatch. The client performs no key parsing or cryptographic validation."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5722555389 at 9b34fd5 on 11.138.0.19 reports this typed operation passing on an owned disposable account; no route is specified."
+        }
+      ],
+      "params": {
+        "key_id": {
+          "sensitive": false
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /GPG/export_public_key: key_id is the documented string identifier selecting the GPG key, not key contents or a passphrase. Explicitly classify this identifier as non-sensitive; secret key_data and passphrase values remain sensitive and secret-bearing export uses form POST."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR66 review 5722555389 of 9b34fd5b791857625f3c7b5085f919a0a81bf124 on cPanel 11.138.0.19, 2026-10-31 (https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389). Review 5722555389 at 9b34fd5 on 11.138.0.19 reports this typed operation passing on an owned disposable account; no route is specified. Reviewer execution evidence is separate from the immutable five-GET capture and corrected offline acceptance. No new live call or capture ran for this correction."
+        }
+      ]
+    },
+    "uapi:GPG/export_secret_key": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation declares no additional role restriction."
+        },
+        {
+          "kind": "documented",
+          "text": "Exports private key material. keyId is required and passphrase is optional. The source declares x-readonly=false and no rollback; the optional key_data string contains private key material."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+        },
+        {
+          "kind": "policy",
+          "text": "Omit passphrase to retain server behavior; an explicit empty string is sent unchanged. Treat the returned payload and PayloadMismatchException::$payload as sensitive; do not log either. Payload content is not copied into responseMeta(). Omitted key_data stays omitted; null or absent data is a mismatch."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5722555389 at 9b34fd5 on 11.138.0.19 reports this typed operation passing on an owned disposable account; no route is specified."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /GPG/export_secret_key: x-readonly=false and x-rollback=none. Use form POST with no retry or rollback; retain the pinned parameter requiredness, defaults and data schema. Sensitive inputs stay out of query strings and library exception trace arguments."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /GPG/export_secret_key: key_id is the documented string identifier selecting the GPG key, not key contents or a passphrase. Explicitly classify this identifier as non-sensitive; secret key_data and passphrase values remain sensitive and secret-bearing export uses form POST."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR66 review 5722555389 of 9b34fd5b791857625f3c7b5085f919a0a81bf124 on cPanel 11.138.0.19, 2026-10-31 (https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389). Review 5722555389 at 9b34fd5 on 11.138.0.19 reports this typed operation passing on an owned disposable account; no route is specified. Reviewer execution evidence is separate from the immutable five-GET capture and corrected offline acceptance. No new live call or capture ran for this correction."
+        }
+      ],
+      "params": {
+        "passphrase": {
+          "sensitive": true
+        },
+        "key_id": {
+          "sensitive": false
+        }
+      },
+      "order": [
+        "key_id",
+        "passphrase"
+      ]
+    },
+    "uapi:GPG/generate_key": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation declares no additional role restriction."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires email, name and passphrase. Creates key material in the selected account .gnupg directory using system entropy; low entropy can cause long generation times or timeouts."
+        },
+        {
+          "kind": "documented",
+          "text": "expire is a string Unix timestamp defaulting to one year from the current date; keysize defaults to 2048 and the pinned request prose calls its unit bytes. noExpire defaults to 0."
+        },
+        {
+          "kind": "policy",
+          "text": "Omit comment, expire, keysize and noExpire to retain server defaults. Explicit false sends 0 and true sends 1. No client-side precedence between expire and noExpire is inferred. A timeout does not establish whether generation completed."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+        },
+        {
+          "kind": "policy",
+          "text": "Preserves the pinned nullable opaque object, including unknown fields and explicit null, and additionally accepts only the exact empty-string result. Missing data, nonempty strings, other scalars and nonempty lists remain payload mismatches. Do not retry automatically after a confirmed API outcome."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5722555389 at 9b34fd5 on 11.138.0.19 reports two generated keys, expiring and non-expiring, with exact empty-string payloads. Both calls raised PayloadMismatchException with outcomeConfirmed=true, yet both keys existed afterward. Retrying could create another key. Empty-string acceptance is an offline-tested correction; successful typed acceptance on the corrected head has not been live-observed."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /GPG/generate_key: x-readonly=false and x-rollback=none. Use form POST with no retry or rollback; retain the pinned parameter requiredness, defaults and data schema. Sensitive inputs stay out of query strings and library exception trace arguments."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR66 review 5722555389 of 9b34fd5b791857625f3c7b5085f919a0a81bf124 on cPanel 11.138.0.19, 2026-10-31 (https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389). Both reviewer key-creation calls returned exact empty strings and raised PayloadMismatchException(outcomeConfirmed=true), while the keys existed afterward. The reviewer source trace reports $result->data($output). No route is inferred for these creations. Reviewer execution evidence is separate from the immutable five-GET capture and corrected offline acceptance. No new live call or capture ran for this correction."
+        }
+      ],
+      "params": {
+        "passphrase": {
+          "sensitive": true
+        }
+      },
+      "order": [
+        "email",
+        "name",
+        "passphrase",
+        "comment",
+        "expire",
+        "keysize",
+        "no_expire"
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "map",
+                "nullable": true,
+                "values": {
+                  "type": "mixed"
+                }
+              },
+              {
+                "type": "string",
+                "literal": ""
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR66 review 5722555389 of 9b34fd5b791857625f3c7b5085f919a0a81bf124 on cPanel 11.138.0.19, 2026-10-31 (https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389). Retain the pinned nullable opaque map and add only the exact empty-string alternative observed on both key creations. Missing payload remains invalid; do not set optional_payload or infer nonempty strings, other scalars or nonempty lists. Reviewer execution evidence is separate from the immutable five-GET capture and corrected offline acceptance. No new live call or capture ran for this correction."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:GPG/import_key": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation declares no additional role restriction."
+        },
+        {
+          "kind": "documented",
+          "text": "You must URI-encode this value."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires keyData, which may contain private key material. The pinned parameter example is already percent-encoded and the URL sample double-encodes it, including %250A."
+        },
+        {
+          "kind": "policy",
+          "text": "Pass raw armored key text to the client, which form-encodes it once as key_data without local decoding, parsing or cryptography. This follows reviewer 5722555389 on 11.138.0.19; the pinned double-encoded example is misleading for that observed behavior. This does not promise exact raw-byte or header preservation or compatibility with every server version."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns an object with optional string key_id."
+        },
+        {
+          "kind": "policy",
+          "text": "Omitted fields stay omitted; null or absent data is a payload mismatch."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5722555389 at 9b34fd5 on 11.138.0.19 reports exporting an owned public key containing 34 + and 33 / characters, deleting it, then reimporting raw armored text through the typed method. The same key ID returned and re-export matched after whitespace/header normalization. The reviewer traced import_key reading key_data without an extra decode; invalid input raised ApiErrorException. No route is inferred for these calls."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /GPG/import_key: x-readonly=false and x-rollback=none. Use form POST with no retry or rollback; retain the pinned parameter requiredness, defaults and data schema. Sensitive inputs stay out of query strings and library exception trace arguments."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR66 review 5722555389 of 9b34fd5b791857625f3c7b5085f919a0a81bf124 on cPanel 11.138.0.19, 2026-10-31 (https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389). Typed raw-armored public-key reimport preserved the same ID and normalized re-export after deletion; the key contained 34 + and 33 / characters. Reviewer source trace says import_key reads key_data without extra decoding. This establishes one form encoding pass for the observed version/fixture, not raw-byte/header identity or all-version behavior. Invalid import input raised ApiErrorException. No route is inferred. Reviewer execution evidence is separate from the immutable five-GET capture and corrected offline acceptance. No new live call or capture ran for this correction."
+        }
+      ],
+      "params": {
+        "key_data": {
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:GPG/list_public_keys": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation declares no additional role restriction."
+        },
+        {
+          "kind": "documented",
+          "text": "Lists public-key metadata with no request arguments. Each row has optional algorithm, bits, created, expires, id, type and user_id fields. created and expires are strings; expires is an empty string when the key never expires. The source describes bits in bits and type as pub."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses GET and preserves empty lists and omitted row fields. This inventory does not export key contents, prove ownership of newly generated keys, or establish signing, encryption or authentication behavior."
+        },
+        {
+          "kind": "observed",
+          "text": "Earlier PR66 review 5721152661 reported empty key lists. Review 5722555389 at 9b34fd5 on 11.138.0.19 instead observed expiring and non-expiring keys through both direct and bridged GET: bits is a digit string in both lists; secret-key created and expiring expires are digit strings, while non-expiring secret-key expires is the exact empty string. The former typed list contracts raised PayloadMismatchException."
+        },
+        {
+          "kind": "policy",
+          "text": "Normalize only the reviewed integer fields from bounded canonical integer strings, preserving native integers and optional omission. Public-key created and expires remain exact strings. Secret-key expires additionally preserves the exact empty string distinctly from integer zero; null and noncanonical or overflowing numeric strings are rejected. Corrected acceptance is offline-tested against the separately reviewed shapes, not live-observed on the corrected head."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Separate PR66 reviewer report 5721152661 at 90c65275313b0f3009aeb2d08321f25eb7b7e558: list_public_keys passed through direct and bridged UAPI GET with empty lists. No populated row or timestamp type is observed. https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5721152661. No live call or capture ran for these corrections."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR66 review 5722555389 of 9b34fd5b791857625f3c7b5085f919a0a81bf124 on cPanel 11.138.0.19, 2026-10-31 (https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389). On disposable wrvgpg, expiring and non-expiring key lists through both routes raised PayloadMismatchException with digit-string bits on both lists, digit-string created and expiring expires on secret-key rows, and exact empty-string expires for non-expiring secret keys. The reviewer revoked the temporary token and confirmed account/home removal. Reviewer execution evidence is separate from the immutable five-GET capture and corrected offline acceptance. No new live call or capture ran for this correction."
+        }
+      ],
+      "response": {
+        "[].bits": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR66 review 5722555389 of 9b34fd5b791857625f3c7b5085f919a0a81bf124 on cPanel 11.138.0.19, 2026-10-31 (https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389). Narrow correction to list_public_keys $[].bits: preserve the pinned integer and native integer behavior; accept bounded canonical integer strings. Sibling fields and optional presence remain unchanged. No new minimum, range or general enum enforcement. Reviewer execution evidence is separate from the immutable five-GET capture and corrected offline acceptance. No new live call or capture ran for this correction."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:GPG/list_secret_keys": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation declares no additional role restriction."
+        },
+        {
+          "kind": "documented",
+          "text": "Lists secret-key metadata with no request arguments. Each row has optional algorithm, bits, created, expires, id, type and user_id fields. The pinned secret-key schema declares integer Unix timestamps for created and expires and describes type as sec; public-key timestamps instead use strings, with empty expiry for non-expiring keys."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses GET and preserves empty lists and omitted fields. Metadata does not export key contents or establish signing, encryption or authentication behavior."
+        },
+        {
+          "kind": "observed",
+          "text": "Earlier PR66 review 5721152661 reported empty key lists. Review 5722555389 at 9b34fd5 on 11.138.0.19 instead observed expiring and non-expiring keys through both direct and bridged GET: bits is a digit string in both lists; secret-key created and expiring expires are digit strings, while non-expiring secret-key expires is the exact empty string. The former typed list contracts raised PayloadMismatchException."
+        },
+        {
+          "kind": "policy",
+          "text": "Normalize only the reviewed integer fields from bounded canonical integer strings, preserving native integers and optional omission. Public-key created and expires remain exact strings. Secret-key expires additionally preserves the exact empty string distinctly from integer zero; null and noncanonical or overflowing numeric strings are rejected. Corrected acceptance is offline-tested against the separately reviewed shapes, not live-observed on the corrected head."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Separate PR66 reviewer report 5721152661 at 90c65275313b0f3009aeb2d08321f25eb7b7e558: list_secret_keys passed through direct and bridged UAPI GET with empty lists. No populated row or timestamp type is observed. https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5721152661. No live call or capture ran for these corrections."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR66 review 5722555389 of 9b34fd5b791857625f3c7b5085f919a0a81bf124 on cPanel 11.138.0.19, 2026-10-31 (https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389). On disposable wrvgpg, expiring and non-expiring key lists through both routes raised PayloadMismatchException with digit-string bits on both lists, digit-string created and expiring expires on secret-key rows, and exact empty-string expires for non-expiring secret keys. The reviewer revoked the temporary token and confirmed account/home removal. Reviewer execution evidence is separate from the immutable five-GET capture and corrected offline acceptance. No new live call or capture ran for this correction."
+        }
+      ],
+      "response": {
+        "[].bits": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR66 review 5722555389 of 9b34fd5b791857625f3c7b5085f919a0a81bf124 on cPanel 11.138.0.19, 2026-10-31 (https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389). Narrow correction to list_secret_keys $[].bits: preserve the pinned integer and native integer behavior; accept bounded canonical integer strings. Sibling fields and optional presence remain unchanged. No new minimum, range or general enum enforcement. Reviewer execution evidence is separate from the immutable five-GET capture and corrected offline acceptance. No new live call or capture ran for this correction."
+            }
+          ]
+        },
+        "[].created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR66 review 5722555389 of 9b34fd5b791857625f3c7b5085f919a0a81bf124 on cPanel 11.138.0.19, 2026-10-31 (https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389). Narrow correction to list_secret_keys $[].created: preserve the pinned integer and native integer behavior; accept bounded canonical integer strings. Sibling fields and optional presence remain unchanged. No new minimum, range or general enum enforcement. Reviewer execution evidence is separate from the immutable five-GET capture and corrected offline acceptance. No new live call or capture ran for this correction."
+            }
+          ]
+        },
+        "[].expires": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              },
+              {
+                "type": "string",
+                "literal": ""
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR66 review 5722555389 of 9b34fd5b791857625f3c7b5085f919a0a81bf124 on cPanel 11.138.0.19, 2026-10-31 (https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389). Narrow correction to list_secret_keys $[].expires: preserve the pinned integer and native integer behavior; accept bounded canonical integer strings and preserve only exact empty string as a separate nonnullable alternative. Sibling fields and optional presence remain unchanged. No new minimum, range or general enum enforcement. Reviewer execution evidence is separate from the immutable five-GET capture and corrected offline acceptance. No new live call or capture ran for this correction."
+            }
+          ]
+        }
+      }
+    }
+  }
+}

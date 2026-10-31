@@ -119,7 +119,7 @@ final readonly class IpAddresses
      * @param string $ips The IPv4 address or address range in Class C CIDR format.
      * @param string $netmask The IPv4 address' netmask.
      * @param string|null $excludes An IPv4 address or comma-delimited list of IPv4 addresses to exclude. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ipv4-address-settings/ips-addips
      */
     public function addIps(string $ips, string $netmask, ?string $excludes = null): void
@@ -149,7 +149,7 @@ final readonly class IpAddresses
      * @param string $range The IPv6 address range and network portion in CIDR format.
      * @param bool|null $enabled Whether the IPv6 address range is available. Null omits it.
      * @param string|null $note A note for the IPv6 address range. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ipv6-address-settings/ipv6-ipv6_range_add
      */
     public function addIpv6Range(string $name, string $range, ?bool $enabled = null, ?string $note = null): void
@@ -178,9 +178,9 @@ final readonly class IpAddresses
      *
      * @param string $ip The local IPv4 address.
      * @return CheckNatIpResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/network-address-translation/nat-nat_checkip
      */
     public function checkNatIp(string $ip): array
@@ -210,7 +210,7 @@ final readonly class IpAddresses
      * @param bool|null $skipIfShutdown Whether to skip removal if the network interface is already down. True sends 1
      *     and prevents removal; false sends 0 and permits removal. Omission retains the documented 0 default. This
      *     switch does not shut down the interface. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ipv4-address-settings/ips-delip
      */
     public function deleteIp(string $ip, ?string $ethernetDev = null, ?bool $skipIfShutdown = null): void
@@ -248,9 +248,9 @@ final readonly class IpAddresses
      *
      * @param string $user A comma delimited list of account names.
      * @return DisableIpv6AccountResult|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ipv6-address-settings/ipv6-ipv6_disable_account
      */
     public function disableIpv6Account(string $user): ?array
@@ -281,7 +281,7 @@ final readonly class IpAddresses
      * @param string $name The IPv6 address range's current name.
      * @param string|null $newName The IPv6 address range's new name. Null omits it.
      * @param string|null $note The IPv6 address range's new note. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ipv6-address-settings/ipv6-ipv6_range_edit
      */
     public function editIpv6Range(string $name, ?string $newName = null, ?string $note = null): void
@@ -311,9 +311,9 @@ final readonly class IpAddresses
      * @param string $range The IPv6 address range's name.
      * @param string $user A comma-delimited list of account names.
      * @return EnableIpv6AccountResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ipv6-address-settings/ipv6-ipv6_enable_account
      */
     public function enableIpv6Account(string $range, string $user): array
@@ -344,9 +344,9 @@ final readonly class IpAddresses
      *
      * @param string $name The IPv6 address range's name.
      * @return GetIpv6RangeUsageResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ipv6-address-settings/ipv6-ipv6_range_usage
      */
     public function getIpv6RangeUsage(string $name): array
@@ -378,9 +378,9 @@ final readonly class IpAddresses
      *
      * @param string $ip A valid public or private IP address to query.
      * @return GetPublicIpResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/network-address-translation/ips-get_public_ip
      */
     public function getPublicIp(string $ip): array
@@ -406,9 +406,9 @@ final readonly class IpAddresses
      *
      * @param string|null $user The WHM user's username. Null omits it.
      * @return GetSharedIpResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ipv4-address-settings/ips-get_shared_ip
      */
     public function getSharedIp(?string $user = null): array
@@ -434,9 +434,9 @@ final readonly class IpAddresses
      * API-map identity: whm1:listips#GET (wire name listips; IPv4 Address Settings).
      *
      * @return ListIpsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ipv4-address-settings/ips-listips
      */
     public function listIps(): array
@@ -470,9 +470,9 @@ final readonly class IpAddresses
      * API-map identity: whm1:ipv6_range_list#GET (wire name ipv6_range_list; IPv6 Address Settings).
      *
      * @return ListIpv6RangesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ipv6-address-settings/ipv6-ipv6_range_list
      */
     public function listIpv6Ranges(): array
@@ -497,9 +497,9 @@ final readonly class IpAddresses
      * API-map identity: whm1:listipv6s#GET (wire name listipv6s; IPv6 Address Settings).
      *
      * @return ListIpv6sResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ipv6-address-settings/ips-listipv6s
      */
     public function listIpv6s(): array
@@ -526,7 +526,7 @@ final readonly class IpAddresses
      * API-map identity: whm1:ipv6_range_remove#GET (wire name ipv6_range_remove; IPv6 Address Settings).
      *
      * @param string $name The IPv6 address range's name.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ipv6-address-settings/ipv6-ipv6_range_remove
      */
     public function removeIpv6Range(string $name): void
@@ -550,7 +550,7 @@ final readonly class IpAddresses
      *
      * @param string $localIp The local IPv4 address.
      * @param string $publicIp The public IPv4 address.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/network-address-translation/nat-nat_set_public_ip
      */
     public function setNatPublicIp(string $localIp, string $publicIp): void
@@ -576,7 +576,7 @@ final readonly class IpAddresses
      * @param string $ip The site's or user's IPv4 address.
      * @param string|null $domain The domain's name. Null omits it.
      * @param string|null $user The user's username. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ipv4-address-settings/accounts-setsiteip
      */
     public function setSiteIp(string $ip, ?string $domain = null, ?string $user = null): void

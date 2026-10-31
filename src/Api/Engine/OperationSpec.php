@@ -21,9 +21,12 @@ use LogicException;
  * - outcome: 'flag' or 'unchecked'.
  * - body: optional 'form' (default) or 'multipart'; multipart is UAPI POST only.
  * - params: PHP argument name => array{name: wire name, encoding: 'scalar'|
- *   'bool'|'repeat'|'numbered'|'suffix-numbered'|'suffix-numbered-scalar'}, in
+ *   'bool'|'repeat'|'numbered'|'suffix-numbered'|'suffix-numbered-scalar', omit_empty?: true}, in
  *   signature order. Suffix encodings replace terminal * with one-based indices
  *   (action1, action2); the scalar form also permits integer list items.
+ *   omit_empty is accepted only with repeat and skips exactly [] before wrapping
+ *   it as a repeated list. Generation restricts this explicit option to optional
+ *   string-list source parameters; absent settings retain empty-list rejection.
  * - returns: required key; a type spec (see ShapeValidator for the grammar), or
  *   an explicit null for a void operation.
  * - unwrap: optional string naming a field declared in an object "returns";

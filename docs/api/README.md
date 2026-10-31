@@ -1,7 +1,7 @@
 # Official API documentation inputs
 
 The source audit for Beads `whm-api-client-gwi.1` covers **WHM API 1** and
-**cPanel UAPI**. The PHP package implements typed groups for 836 documented operations
+**cPanel UAPI**. The PHP package implements typed groups for 1,128 documented operations
 plus generic calls; these documents pin the contracts and do not by themselves
 establish endpoint implementation or live-test coverage. Coverage is generated:
 [coverage.md](coverage.md) lists generated groups and exclusions, and live
@@ -133,3 +133,18 @@ Live verification is a separate optional dimension and was not run to validate t
 toolchain. The [CI workflow](../../.github/workflows/api-map.yml) uses PHP 8.3,
 Go 1.24, locked dependencies, Go formatting/test/vet, Composer validation and
 PHP checks, and this offline gate. It receives no live credentials.
+
+## DAV review compatibility
+
+DAV and CPDAVD each expose six generated operations. PR 67 review 5721214794 on
+11.138.0.19 corrects null write results, principal/collection maps, quoted protected
+flags and connection ports using existing overlay grammar. Updates require explicit
+readonly as client policy. Shared-addressbook stubs, missing Horde, mailbox bridge
+failures and collection truthiness rules are version-attributed in PHPDoc and
+[source audit](source-audit.md#dav-calendars-contacts-and-delegation). The immutable
+seven-GET artifact remains failed/unwaived; the fixed catalog is diagnostic, and
+two misleading success recipes are removed. No sources, runtime or generator changed.
+
+Nova and Sitejet contracts and reviewer-source/live boundaries are recorded in
+[source-audit.md](source-audit.md#nova-and-sitejet-site-builders). Their historical
+five-GET capture remains failed; no corrected-head live acceptance is implied.

@@ -79,9 +79,9 @@ final readonly class Backup
      * @param 'active'|'passive'|null $variant Whether to use the `active` or `passive` FTP variant to connect to the
      *     remote server. Null omits it.
      * @return FullbackupToFtpResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/backup/backup-fullbackup_to_ftp
      */
     public function fullbackupToFtp(
@@ -133,9 +133,9 @@ final readonly class Backup
      *     Null omits it.
      * @param 'include'|'skip'|null $homedir How to manage the home directory in the backup. Null omits it.
      * @return FullbackupToHomedirResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/backup/backup-fullbackup_to_homedir
      */
     public function fullbackupToHomedir(?string $email = null, ?string $homedir = null): array
@@ -184,9 +184,9 @@ final readonly class Backup
      * @param 'include'|'skip'|null $homedir How to manage the home directory in the backup. Null omits it.
      * @param int|null $port The port to use during the transfer. Null omits it.
      * @return FullbackupToScpWithKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/backup/backup-fullbackup_to_scp_with_key
      */
     public function fullbackupToScpWithKey(
@@ -248,9 +248,9 @@ final readonly class Backup
      * @param 'include'|'skip'|null $homedir How to manage the home directory in the backup. Null omits it.
      * @param int|null $port The port to use during the transfer. Null omits it.
      * @return FullbackupToScpWithPasswordResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/backup/backup-fullbackup_to_scp_with_password
      */
     public function fullbackupToScpWithPassword(
@@ -291,9 +291,9 @@ final readonly class Backup
      * API-map identity: uapi:Backup/list_backups#GET (wire name list_backups).
      *
      * @return ListBackupsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/backup/backup-list_backups
      */
     public function listBackups(): array

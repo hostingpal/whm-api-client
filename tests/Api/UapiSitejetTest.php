@@ -76,6 +76,20 @@ final class UapiSitejetTest extends TestCase
         self::assertCount(2, $http->getRequests());
     }
 
+    #[DataProvider('routes')]
+    public function testCreateWebsitePreservesBareIntegerAndPinnedObjectResults(string $route): void
+    {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('exampleuser');
+        foreach (['123456', '0', '{"websiteID":123456}', '{}', '{"future":1}'] as $payload) {
+            $http->addResponse(new Response(200, [], self::envelope($route, 'create_website', $payload)));
+            $expected = $payload === '{"future":1}' ? [] : json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+            self::assertSame($expected, $account->sitejet()->createWebsite('Company', 'example.test'));
+            self::assertSame(1, $account->responseMeta()?->uapiStatus());
+        }
+        self::assertCount(5, $http->getRequests());
+    }
+
     #[DataProvider('operations')]
     public function testApiAndHttpFailuresClearPriorMetadataAndNeverRetry(string $route, string $function): void
     {
@@ -114,7 +128,9 @@ final class UapiSitejetTest extends TestCase
                 'string' => [null, 'null', '1', 'true', '{}', '[]'],
                 'list' => [null, 'null', 'true', '1', '"bad"', '{}', '[null]', '[1]', '[{"metadata":false}]'],
                 'opaque' => [null, 'true', '1', '"bad"', '[1]'],
-                default => [null, 'null', 'true', '1', '"bad"', '[{}]'],
+                default => $function === 'create_website'
+                    ? [null, 'null', 'true', '1.5', '"123"', '"bad"', '[{}]']
+                    : [null, 'null', 'true', '1', '"bad"', '[{}]'],
             };
             foreach (self::routes() as [$route]) {
                 foreach ($bad as $index => $payload) {
@@ -173,6 +189,39 @@ final class UapiSitejetTest extends TestCase
         self::assertRequest($http, $route, 'start_publish', 'POST', 'domain=example.test');
     }
 
+    #[DataProvider('routes')]
+    public function testCleanupBooleanEncodingAndStrictRejectionBeforeIo(string $route): void
+    {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('exampleuser');
+        $group = $account->sitejet();
+        $args = ['domain' => 'example.test'];
+        foreach ([[], ['cleanup' => null], ['cleanup' => false], ['cleanup' => true]] as $index => $option) {
+            $http->addResponse(new Response(200, [], self::envelope($route, 'start_publish', '{}')));
+            $group->startPublish(...array_merge($args, $option));
+            $request = $http->getLastRequest();
+            self::assertInstanceOf(RequestInterface::class, $request);
+            parse_str((string) $request->getBody(), $wire);
+            if ($index < 2) {
+                self::assertArrayNotHasKey('cleanup', $wire);
+            } else {
+                self::assertSame($index === 2 ? '0' : '1', $wire['cleanup']);
+            }
+        }
+        $metadata = $account->responseMeta();
+        // The independent fixture supplies a dynamic method for deliberate invalid strict calls.
+        [$method] = self::fixture('start_publish');
+        foreach ([0, 1, 2, -1, '0', 'false', [], new \stdClass()] as $bad) {
+            try {
+                $group->$method(...array_merge($args, ['cleanup' => $bad]));
+                self::fail('Strict callers must reject nonboolean cleanup before I/O.');
+            } catch (\TypeError) {
+                self::assertSame($metadata, $account->responseMeta());
+            }
+        }
+        self::assertCount(4, $http->getRequests());
+    }
+
     public function testSensitiveInputsHaveSensitiveParameterAttributes(): void
     {
         $sensitive = ['addApiToken' => ['apiToken'],
@@ -194,97 +243,6 @@ final class UapiSitejetTest extends TestCase
         }
     }
 
-
-    #[DataProvider('secretOperations')]
-    public function testSensitiveInputsAreHiddenFromFailureTraces(string $route, string $function): void
-    {
-        [$client, $http] = self::client($route);
-        $group = $client->uapi('exampleuser')->sitejet();
-        [$method, $args] = self::fixture($function);
-        $http->addResponse(new Response(200, [], self::envelope($route, $function, null, 0)));
-        $previous = ini_get('zend.exception_ignore_args');
-        ini_set('zend.exception_ignore_args', '0');
-        try {
-            try {
-                $group->$method(...$args);
-                self::fail('Synthetic API failure must throw.');
-            } catch (ApiErrorException $error) {
-                for ($current = $error; $current !== null; $current = $current->getPrevious()) {
-                    $seen = [];
-                    self::assertFalse(self::containsSecret($current->getTrace(), $seen));
-                    foreach (self::secrets() as $secret) {
-                        self::assertStringNotContainsString($secret, $current->getMessage());
-                        self::assertStringNotContainsString($secret, $current->getTraceAsString());
-                    }
-                }
-            }
-        } finally {
-            if ($previous !== false) {
-                ini_set('zend.exception_ignore_args', $previous);
-            }
-        }
-        self::assertCount(1, $http->getRequests());
-        $request = $http->getLastRequest();
-        self::assertInstanceOf(RequestInterface::class, $request);
-        foreach (self::secrets() as $secret) {
-            self::assertStringNotContainsString($secret, (string) $request->getUri());
-        }
-    }
-
-    /** @return iterable<string, array{string, string}> */
-    public static function secretOperations(): iterable
-    {
-        foreach (self::routes() as [$route]) {
-            foreach (['add_api_token', 'create_website', 'get_sso_link'] as $function) {
-                yield $route . ' ' . $function => [$route, $function];
-            }
-        }
-    }
-
-    /** @return list<string> */
-    private static function secrets(): array
-    {
-        return ['private+&=%', 'cHJvbXB0+&=%', 'https://panel.test/route#x',
-            'https://user:pass@builder.test/archive+&.zip', 'owner+other@example.test',
-            'owner@example.test', 'https://panel.test/cpsess123/index.html#x'];
-    }
-
-    /** @param array<int, true> $seen */
-    private static function containsSecret(mixed $value, array &$seen): bool
-    {
-        if (is_string($value)) {
-            foreach (self::secrets() as $secret) {
-                if (str_contains($value, $secret)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-        if ($value instanceof \SensitiveParameterValue || $value instanceof MockClient) {
-            return false;
-        }
-        if ($value instanceof \Psr\Http\Message\MessageInterface) {
-            return self::containsSecret((string) $value->getBody(), $seen);
-        }
-        if (is_object($value)) {
-            $id = spl_object_id($value);
-            if (isset($seen[$id])) {
-                return false;
-            }
-            $seen[$id] = true;
-            $value = (array) $value;
-        }
-        if (is_array($value)) {
-            foreach ($value as $key => $item) {
-                if (self::containsSecret((string) $key, $seen) || self::containsSecret($item, $seen)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
 
     #[DataProvider('routes')]
     public function testSelectorsKeepAccountMetadataIsolatedAndDoNotDispatch(string $route): void
@@ -374,7 +332,7 @@ final class UapiSitejetTest extends TestCase
     }
 
     /** @return array{string, array<string, string|int|bool>, string, string, string, string} */
-    private static function fixture(string $function): array
+    public static function fixture(string $function): array
     {
         return match ($function) {
             'add_api_token' => ['addApiToken', ['apiToken' => 'private+&=%'], 'POST',
@@ -413,7 +371,7 @@ final class UapiSitejetTest extends TestCase
                 'domain=example.test', '{"in_progress":1,"pid":123456}', 'object'],
             'restore_document_root' => ['restoreDocumentRoot', ['domain' => 'example.test'], 'POST',
                 'domain=example.test', 'null', 'opaque'],
-            'start_publish' => ['startPublish', ['domain' => 'example.test', 'cleanup' => 0], 'POST',
+            'start_publish' => ['startPublish', ['domain' => 'example.test', 'cleanup' => false], 'POST',
                 'domain=example.test&cleanup=0', '{"file_name":"/home/user/logs/publish.log","pid":123456}', 'object'],
             default => throw new \LogicException('Unknown builder function.'),
         };

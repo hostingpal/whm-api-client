@@ -108,9 +108,9 @@ final readonly class KnownHosts
      * @param string $hostName The hostname or IP address to add.
      * @param int|null $port The SSH port to use, if the system uses a non-standard SSH port. Null omits it.
      * @return CreateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/known-ssh-hosts-management/knownhosts-create
      */
     public function create(string $hostName, ?int $port = null): array
@@ -144,9 +144,9 @@ final readonly class KnownHosts
      * @param string $hostName The hostname or IP address of the host to delete.
      * @param int|null $port The SSH port to use. Null omits it.
      * @return DeleteResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/known-ssh-hosts-management/knownhosts-delete
      */
     public function delete(string $hostName, ?int $port = null): ?array
@@ -180,9 +180,9 @@ final readonly class KnownHosts
      * @param string $hostName The host to update.
      * @param int|null $port The SSH port to use. Null omits it.
      * @return UpdateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/known-ssh-hosts-management/knownhosts-update
      */
     public function update(string $hostName, ?int $port = null): array
@@ -216,9 +216,9 @@ final readonly class KnownHosts
      * @param string $hostName The host to query.
      * @param int|null $port The SSH port to use. Null omits it.
      * @return VerifyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/known-ssh-hosts-management/knownhosts-verify
      */
     public function verify(string $hostName, ?int $port = null): array

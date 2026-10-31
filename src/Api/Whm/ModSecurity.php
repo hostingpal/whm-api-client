@@ -358,9 +358,9 @@ final readonly class ModSecurity
      * @param string $config The ModSecurity configuration file.
      * @param string $rule The rule's text.
      * @return AddRuleResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-settings/modsecurity-modsec_add_rule
      */
     public function addRule(
@@ -392,9 +392,9 @@ final readonly class ModSecurity
      * @param string $url The YAML metadata that describes the vendor and how to obtain its rules.
      * @param bool|null $enabled Whether to enable the vendor. Null omits it.
      * @return AddVendorResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-vendor-settings/modsecurity-modsec_add_vendor
      */
     public function addVendor(
@@ -426,7 +426,7 @@ final readonly class ModSecurity
      * @param bool|null $final Whether to add the text as the final upload to the configuration file. Null omits it.
      * @param bool|null $init Whether to add the text as the initial upload to the configuration file. Null omits it.
      * @param string|null $text The text to add to the configuration file. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-settings/modsecurity-modsec_assemble_config_text
      */
     public function assembleConfigText(
@@ -469,9 +469,9 @@ final readonly class ModSecurity
      * @param bool|null $remove Whether to add or remove the configuration setting in the
      *     `/usr/local/apache/conf/modsec2.cpanel.conf` file. Null omits it.
      * @return BatchSettingsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-settings/modsecurity-modsec_batch_settings
      */
     public function batchSettings(
@@ -504,9 +504,9 @@ final readonly class ModSecurity
      *
      * @param string $rule The ModSecurity rule to check.
      * @return CheckRuleResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-settings/modsecurity-modsec_check_rule
      */
     public function checkRule(
@@ -534,9 +534,9 @@ final readonly class ModSecurity
      * @param string $config The rule's ModSecurity configuration file.
      * @param int $id The existing rule's ID.
      * @return CloneRuleResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-settings/modsecurity-modsec_clone_rule
      */
     public function cloneRule(string $config, int $id): array
@@ -563,9 +563,9 @@ final readonly class ModSecurity
      * Settings).
      *
      * @return DeployAllRuleChangesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-settings/modsecurity-modsec_deploy_all_rule_changes
      */
     public function deployAllRuleChanges(): array
@@ -601,9 +601,9 @@ final readonly class ModSecurity
      * @param string $config The ModSecurity configuration file's path and name, relative to the
      *     `/usr/local/apache/conf/` directory.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-settings/modsecurity-modsec_deploy_rule_changes
      */
     public function deployRuleChanges(string $config): mixed
@@ -636,9 +636,9 @@ final readonly class ModSecurity
      * Settings).
      *
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-settings/modsecurity-modsec_deploy_settings_changes
      */
     public function deploySettingsChanges(): mixed
@@ -664,7 +664,7 @@ final readonly class ModSecurity
      *
      * @param string $config The ModSecurity configuration file, relative to the `/etc/apache2/conf.d` directory.
      * @param string|int $id The ModSecurity rule's ID.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-settings/modsecurity-modsec_disable_rule
      */
     public function disableRule(string $config, string|int $id): void
@@ -693,9 +693,9 @@ final readonly class ModSecurity
      *
      * @param string $vendorId The vendor's unique short name.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-vendor-settings/modsecurity-modsec_disable_vendor
      */
     public function disableVendor(string $vendorId): mixed
@@ -721,9 +721,9 @@ final readonly class ModSecurity
      *
      * @param string $vendorId The vendor's unique short name.
      * @return DisableVendorConfigsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-vendor-settings/modsecurity-modsec_disable_vendor_configs
      */
     public function disableVendorConfigs(string $vendorId): array
@@ -753,9 +753,9 @@ final readonly class ModSecurity
      *
      * @param string $vendorId The vendor's unique short name.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-vendor-settings/modsecurity-modsec_disable_vendor_updates
      */
     public function disableVendorUpdates(string $vendorId): mixed
@@ -780,9 +780,9 @@ final readonly class ModSecurity
      * Settings).
      *
      * @return DiscardAllRuleChangesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-settings/modsecurity-modsec_discard_all_rule_changes
      */
     public function discardAllRuleChanges(): array
@@ -819,9 +819,9 @@ final readonly class ModSecurity
      *
      * @param string $config The ModSecurity configuration file in the `/usr/local/cpanel/apache/conf/` directory.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-settings/modsecurity-modsec_discard_rule_changes
      */
     public function discardRuleChanges(string $config): mixed
@@ -850,9 +850,9 @@ final readonly class ModSecurity
      * @param int $id The ModSecurity rule's ID.
      * @param string $rule The new ModSecurity rule.
      * @return EditRuleResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-settings/modsecurity-modsec_edit_rule
      */
     public function editRule(
@@ -888,9 +888,9 @@ final readonly class ModSecurity
      *
      * @param string $vendorId The vendor's unique short name.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-vendor-settings/modsecurity-modsec_enable_vendor
      */
     public function enableVendor(string $vendorId): mixed
@@ -916,9 +916,9 @@ final readonly class ModSecurity
      *
      * @param string $vendorId The vendor's unique short name.
      * @return EnableVendorConfigsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-vendor-settings/modsecurity-modsec_enable_vendor_configs
      */
     public function enableVendorConfigs(string $vendorId): array
@@ -948,9 +948,9 @@ final readonly class ModSecurity
      *
      * @param string $vendorId The vendor's unique short name.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-vendor-settings/modsecurity-modsec_enable_vendor_updates
      */
     public function enableVendorUpdates(string $vendorId): mixed
@@ -972,9 +972,9 @@ final readonly class ModSecurity
      *
      * @param string $config The ModSecurity configuration file's name.
      * @return GetConfigTextResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-settings/modsecurity-modsec_get_config_text
      */
     public function getConfigText(string $config): array
@@ -996,9 +996,9 @@ final readonly class ModSecurity
      * API-map identity: whm1:modsec_get_configs#GET (wire name modsec_get_configs; Server Settings).
      *
      * @return GetConfigsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-settings/modsecurity-modsec_get_configs
      */
     public function getConfigs(): array
@@ -1025,9 +1025,9 @@ final readonly class ModSecurity
      * modsec_get_configs_with_changes_pending; Server Settings).
      *
      * @return GetConfigsWithChangesPendingResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-settings/modsecurity-modsec_get_configs_with_changes_pending
      */
     public function getConfigsWithChangesPending(): array
@@ -1058,9 +1058,9 @@ final readonly class ModSecurity
      * API-map identity: whm1:modsec_get_log#GET (wire name modsec_get_log; Server Settings).
      *
      * @return GetLogResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-settings/modsecurity-modsec_get_log
      */
     public function getLog(): array
@@ -1101,9 +1101,9 @@ final readonly class ModSecurity
      *     directives from the configuration file, and comments that are not associated with a rule. Null omits it.
      * @param string|null $vendorId The vendor's unique short name. Null omits it.
      * @return GetRulesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-settings/modsecurity-modsec_get_rules
      */
     public function getRules(
@@ -1144,9 +1144,9 @@ final readonly class ModSecurity
      * API-map identity: whm1:modsec_get_settings#GET (wire name modsec_get_settings; Server Settings).
      *
      * @return GetSettingsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-settings/modsecurity-modsec_get_settings
      */
     public function getSettings(): array
@@ -1170,9 +1170,9 @@ final readonly class ModSecurity
      * API-map identity: whm1:modsec_get_vendors#GET (wire name modsec_get_vendors; Rule Vendor Settings).
      *
      * @return GetVendorsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-vendor-settings/modsecurity-modsec_get_vendors
      */
     public function getVendors(): array
@@ -1196,9 +1196,9 @@ final readonly class ModSecurity
      * API-map identity: whm1:modsec_is_installed#GET (wire name modsec_is_installed; Server Settings).
      *
      * @return IsInstalledResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-settings/modsecurity-modsec_is_installed
      */
     public function isInstalled(): array
@@ -1232,9 +1232,9 @@ final readonly class ModSecurity
      * @param string $config The ModSecurity configuration file's path and filename, relative to the
      *     `/usr/local/apache/conf/` diretory.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-settings/modsecurity-modsec_make_config_active
      */
     public function makeConfigActive(string $config): mixed
@@ -1267,9 +1267,9 @@ final readonly class ModSecurity
      * @param string $config The ModSecurity configuration file's path and filename, relative to the
      *     `/etc/apache2/conf.d/` directory.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-settings/modsecurity-modsec_make_config_inactive
      */
     public function makeConfigInactive(string $config): mixed
@@ -1294,9 +1294,9 @@ final readonly class ModSecurity
      *
      * @param string $url The YAML metadata's URL, which describes the vendor and how to obtain its rules.
      * @return PreviewVendorResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-vendor-settings/modsecurity-modsec_preview_vendor
      */
     public function previewVendor(
@@ -1332,9 +1332,9 @@ final readonly class ModSecurity
      *     `/usr/local/apache/conf/` directory.
      * @param int $id The rule's ID.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-settings/modsecurity-modsec_remove_rule
      */
     public function removeRule(string $config, int $id): mixed
@@ -1363,9 +1363,9 @@ final readonly class ModSecurity
      *
      * @param int $settingId The setting's ID.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-settings/modsecurity-modsec_remove_setting
      */
     public function removeSetting(int $settingId): mixed
@@ -1390,7 +1390,7 @@ final readonly class ModSecurity
      * API-map identity: whm1:modsec_remove_vendor#GET (wire name modsec_remove_vendor; Rule Vendor Settings).
      *
      * @param string $vendorId The ModSecurity vendor's unique short name.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-vendor-settings/modsecurity-modsec_remove_vendor
      */
     public function removeVendor(string $vendorId): void
@@ -1424,9 +1424,9 @@ final readonly class ModSecurity
      * @param bool $send Whether the function sends the report to the rule's vendor.
      * @param string $type The report's type.
      * @return ReportRuleResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-settings/modsecurity-modsec_report_rule
      */
     public function reportRule(
@@ -1474,9 +1474,9 @@ final readonly class ModSecurity
      * @param string $config The configuration file name.
      * @param string $text The configuration text.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-settings/modsecurity-modsec_set_config_text
      */
     public function setConfigText(
@@ -1508,9 +1508,9 @@ final readonly class ModSecurity
      * @param int $settingId The setting's ID.
      * @param string $state The setting's new state.
      * @return SetSettingResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-settings/modsecurity-modsec_set_setting
      */
     public function setSetting(
@@ -1539,7 +1539,7 @@ final readonly class ModSecurity
      *
      * @param string $config The ModSecurity configuration file.
      * @param string|int $id The ModSecurity rule's ID.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-settings/modsecurity-modsec_undisable_rule
      */
     public function undisableRule(string $config, string|int $id): void
@@ -1561,9 +1561,9 @@ final readonly class ModSecurity
      *
      * @param string $url The vendor metadata file's URL.
      * @return UpdateVendorResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/rule-vendor-settings/modsecurity-modsec_update_vendor
      */
     public function updateVendor(

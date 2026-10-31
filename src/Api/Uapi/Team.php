@@ -119,9 +119,9 @@ final readonly class Team
      * @param string $role The role or roles to add to the team user.
      * @param string $user The username of the team user.
      * @return AddRolesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-add_roles
      */
     public function addRoles(string $role, string $user): ?array
@@ -196,9 +196,9 @@ final readonly class Team
      * @param bool|null $servicesWebdiskPrivate Whether to set the directory's permissions to public or private. Null
      *     omits it.
      * @return int|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-add_team_user
      */
     public function addTeamUser(
@@ -266,9 +266,9 @@ final readonly class Team
      *
      * @param string $user The username of the team user.
      * @return CancelExpireResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-cancel_expire
      */
     public function cancelExpire(string $user): ?array
@@ -338,9 +338,9 @@ final readonly class Team
      *     omits it.
      * @param string|null $setRole The role or roles to set for the team user. Null omits it.
      * @return EditTeamUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-edit_team_user
      */
     public function editTeamUser(
@@ -406,9 +406,9 @@ final readonly class Team
      * API-map identity: uapi:Team/get_team_users_with_roles_count#GET (wire name get_team_users_with_roles_count).
      *
      * @return GetTeamUsersWithRolesCountResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-get_team_users_with_roles_count
      */
     public function getTeamUsersWithRolesCount(): array
@@ -456,9 +456,9 @@ final readonly class Team
      *
      * @param string|null $format The format in which the team data is listed. Null omits it.
      * @return ListTeamResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-list_team
      */
     public function listTeam(?string $format = null): array
@@ -489,9 +489,9 @@ final readonly class Team
      *
      * @param string $user The username of the team user.
      * @return PasswordResetRequestResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-password_reset_request
      */
     public function passwordResetRequest(string $user): ?array
@@ -522,9 +522,9 @@ final readonly class Team
      *
      * @param string $user The username of the team user.
      * @return ReinstateTeamUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-reinstate_team_user
      */
     public function reinstateTeamUser(string $user): ?array
@@ -555,9 +555,9 @@ final readonly class Team
      * @param string $role The role or roles to remove from the team user.
      * @param string $user The username of the team user.
      * @return RemoveRolesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-remove_roles
      */
     public function removeRoles(string $role, string $user): ?array
@@ -587,9 +587,9 @@ final readonly class Team
      *
      * @param string $user The username of the team user.
      * @return RemoveTeamUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-remove_team_user
      */
     public function removeTeamUser(string $user): ?array
@@ -622,9 +622,9 @@ final readonly class Team
      * @param string|null $email1 The primary contact email address to set for the team user. Null omits it.
      * @param string|null $email2 The secondary contact email address to set for the team user. Null omits it.
      * @return SetContactEmailResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-set_contact_email
      */
     public function setContactEmail(string $user, ?string $email1 = null, ?string $email2 = null): ?array
@@ -663,9 +663,9 @@ final readonly class Team
      * @param string $user The username of the team user.
      * @param string|null $reason The reason for expiration. Null omits it.
      * @return int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-set_expire
      */
     public function setExpire(string|int $date, string $user, ?string $reason = null): int
@@ -696,9 +696,9 @@ final readonly class Team
      * @param string $locale The new locale for the team user.
      * @param string $user The username of the team user.
      * @return SetLocaleResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-set_locale
      */
     public function setLocale(string $locale, string $user): ?array
@@ -730,9 +730,9 @@ final readonly class Team
      * @param string $notes The content of the notes field.
      * @param string $user The username of the team user.
      * @return SetNotesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-set_notes
      */
     public function setNotes(string $notes, string $user): ?array
@@ -763,9 +763,9 @@ final readonly class Team
      * @param string $password The password to set for the team user.
      * @param string $user The username of the team user.
      * @return SetPasswordResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-set_password
      */
     public function setPassword(
@@ -801,9 +801,9 @@ final readonly class Team
      * @param string $user The username of the team user.
      * @param string|null $role The role or roles to set for the team user. Null omits it.
      * @return SetRolesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-set_roles
      */
     public function setRoles(string $user, ?string $role = null): ?array
@@ -835,9 +835,9 @@ final readonly class Team
      * @param string $user The username of the team user.
      * @param string|null $reason The reason for suspension. Null omits it.
      * @return SuspendTeamUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/team-users/team-suspend_team_user
      */
     public function suspendTeamUser(string $user, ?string $reason = null): ?array

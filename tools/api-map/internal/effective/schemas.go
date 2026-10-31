@@ -425,6 +425,27 @@ func (s schemas) presenceOnlyInteger(sourceID string, node any) bool {
 	return s.enumDoc(sourceID, node) == "1"
 }
 
+// stringList accepts only a concrete nonnullable array of nonnullable strings.
+// Compositions are deliberately excluded rather than inferred as equivalent.
+func (s schemas) stringList(sourceID string, node any) bool {
+	obj, sourceID, _, ok := s.follow(sourceID, node)
+	if !ok || obj["type"] != "array" || isNullable(obj) || enumHasNull(obj) {
+		return false
+	}
+	item, _, _, itemOK := s.follow(sourceID, obj["items"])
+	if !itemOK || item["type"] != "string" || isNullable(item) || enumHasNull(item) {
+		return false
+	}
+	for _, schema := range []map[string]any{obj, item} {
+		for _, key := range []string{"allOf", "anyOf", "oneOf", "discriminator"} {
+			if _, present := schema[key]; present {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 // enumDoc renders a schema's enum as a PHPStan literal union, or "" when absent.
 func (s schemas) enumDoc(sourceID string, node any) string {
 	obj, _, _, ok := s.follow(sourceID, node)
@@ -538,4 +559,21 @@ func mergeNames(base, extra []string) []string {
 		set[name] = true
 	}
 	return sortedKeys(set)
+}
+
+// targetString admits only concrete unrestricted strings or repeated string lists.
+func (s schemas) targetString(sourceID string, node any, listAllowed bool) bool {
+	obj, nextID, _, ok := s.follow(sourceID, node)
+	if !ok || isNullable(obj) {
+		return false
+	}
+	for _, key := range []string{"enum", "allOf", "anyOf", "oneOf", "discriminator"} {
+		if _, present := obj[key]; present {
+			return false
+		}
+	}
+	if obj["type"] == "string" {
+		return true
+	}
+	return listAllowed && obj["type"] == "array" && s.targetString(nextID, obj["items"], false)
 }

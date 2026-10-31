@@ -208,7 +208,7 @@ final class NovaSpec
             'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
             'signature' => ['name' => 'signature', 'encoding' => 'scalar'],
             'userId' => ['name' => 'userId', 'encoding' => 'scalar'],
-            'cleanup' => ['name' => 'cleanup', 'encoding' => 'scalar'],
+            'cleanup' => ['name' => 'cleanup', 'encoding' => 'bool'],
         ],
         'returns' => [
             'type' => 'object',

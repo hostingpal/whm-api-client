@@ -9,23 +9,11 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "Pinned x-readonly=true."
         },
         {
           "kind": "documented",
-          "text": "This function returns whether the cPanel user has been provisioned on the AI App Builder (Nova), that is, whether the cPanel user file carries a Nova API token. Notes: * This function requires that your package includes the AI App Builder feature."
-        },
-        {
-          "kind": "documented",
-          "text": "Pinned x-readonly=true permits GET."
-        },
-        {
-          "kind": "documented",
-          "text": "This flag reports presence of the Nova token in the cPanel user file, not a successful SSO login or publication."
-        },
-        {
-          "kind": "documented",
-          "text": "Requires the AI App Builder feature in the selected account package; disabling that feature disables this operation."
+          "text": "Requires the AI App Builder feature in the selected account package."
         }
       ],
       "evidence": [
@@ -33,7 +21,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Nova/account_exists Pinned x-readonly=true permits GET. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Nova/account_exists: parameter requiredness, defaults and wire casing remain the source contract. x-readonly=true."
         }
       ]
     },
@@ -42,31 +30,23 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
         },
         {
           "kind": "documented",
-          "text": "This function adds an existing AI App Builder API token to a cPanel user. Notes: * This function requires that your package includes the AI App Builder feature. * You can create an AI App Builder API token with the Nova::create_account function. Important: When you disable the AI App Builder feature, the system disables this function."
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
         },
         {
-          "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+          "kind": "policy",
+          "text": "The nullable opaque result preserves explicit null and unknown object fields; absent data is a mismatch."
         },
         {
-          "kind": "documented",
-          "text": "Requires the AI App Builder feature in the selected account package; disabling that feature disables this operation."
-        },
-        {
-          "kind": "documented",
-          "text": "Stores an existing external-builder API token for this account. Token input stays sensitive. The nullable opaque result preserves explicit null and unknown object fields; absent data is a mismatch."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
-        },
-        {
-          "kind": "documented",
-          "text": "api_token: The AI App Builder API token to add."
+          "kind": "policy",
+          "text": "Token inputs and returned keys/tokens are sensitive; do not log them."
         }
       ],
       "evidence": [
@@ -74,7 +54,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Nova/add_api_token The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Nova/add_api_token: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
         }
       ],
       "params": {
@@ -89,23 +69,11 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "Pinned x-readonly=true."
         },
         {
           "kind": "documented",
-          "text": "This function returns whether a cPanel account can create new subdomains or addon domains. Notes: * This function requires that your package includes the AI App Builder feature. * Creating a new addon domain depends on the creation of subdomains. If the cPanel account has reached its limit for subdomains, you cannot create a new addon domain. Important: When you disable the AI App Builder feature, the system disables this function."
-        },
-        {
-          "kind": "documented",
-          "text": "Pinned x-readonly=true permits GET."
-        },
-        {
-          "kind": "documented",
-          "text": "This capability read does not create a domain. Reaching the subdomain limit also prevents addon-domain creation."
-        },
-        {
-          "kind": "documented",
-          "text": "Requires the AI App Builder feature in the selected account package; disabling that feature disables this operation."
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
         }
       ],
       "evidence": [
@@ -113,7 +81,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Nova/can_create_domains Pinned x-readonly=true permits GET. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Nova/can_create_domains: parameter requiredness, defaults and wire casing remain the source contract. x-readonly=true."
         }
       ]
     },
@@ -122,27 +90,19 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
         },
         {
           "kind": "documented",
-          "text": "This function creates an AI App Builder API token for a cPanel account. Note: This function requires that your package includes the AI App Builder feature. Important: When you disable the AI App Builder feature, the system disables this function."
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
         },
         {
-          "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
-        },
-        {
-          "kind": "documented",
-          "text": "Requires the AI App Builder feature in the selected account package; disabling that feature disables this operation."
-        },
-        {
-          "kind": "documented",
-          "text": "Creates an external-builder API token for this account. Returned key is sensitive payload data; do not log it. This response does not establish successful SSO login."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
+          "kind": "policy",
+          "text": "Token inputs and returned keys/tokens are sensitive; do not log them."
         }
       ],
       "evidence": [
@@ -150,7 +110,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Nova/create_account The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Nova/create_account: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
         }
       ]
     },
@@ -159,23 +119,11 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "Pinned x-readonly=true."
         },
         {
           "kind": "documented",
-          "text": "This function checks whether a user has sufficient free space to back up the domain's document root. Note: This function requires that your package includes the AI App Builder feature. Important: When you disable the AI App Builder feature, the system disables this function."
-        },
-        {
-          "kind": "documented",
-          "text": "Pinned x-readonly=true permits GET."
-        },
-        {
-          "kind": "documented",
-          "text": "Requires the AI App Builder feature in the selected account package; disabling that feature disables this operation."
-        },
-        {
-          "kind": "documented",
-          "text": "domain: The domain to use for the AI App Builder website."
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
         }
       ],
       "evidence": [
@@ -183,7 +131,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Nova/disk_quota_check Pinned x-readonly=true permits GET. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Nova/disk_quota_check: parameter requiredness, defaults and wire casing remain the source contract. x-readonly=true."
         }
       ]
     },
@@ -192,43 +140,27 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
         },
         {
           "kind": "documented",
-          "text": "This function ensures that an AI App Builder account exists for the caller, then returns an SSO URL. The system reuses existing accounts. For entitled accounts of any tier, the system usually provisions the account eagerly, asynchronously, during account creation or package upgrades. This function is a fail-safe: it provisions the account on the spot for any entitled caller the eager provisioning hasn't already covered. Note: This function requires that your package includes the AI App Builder feature. Important: When you disable the AI App Builder feature, the system disables this function."
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
         },
         {
           "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+          "text": "return_url is required for regular accounts and rejected for standalone accounts; its pinned optionality is retained. It must be an HTTPS URL of at most 2048 characters, on the host receiving the request, with path /frontend/meridian/index.html (optionally prefixed by a cPanel session token) and the in-product route in the fragment."
         },
         {
           "kind": "documented",
-          "text": "This call can provision an external Nova account and returns an SSO URL; it is not a passive lookup. The optional return_url is conditionally required for regular accounts and rejected for standalone accounts; source required:false is preserved. Prompt tokens are caller-encoded base64 and are sent once, without local decoding or prompt validation. The client does not follow the SSO URL."
+          "text": "promptToken accepts valid standard or URL-safe base64, with at most 5000 characters after decoding. The system ignores empty or whitespace-only prompts."
         },
         {
-          "kind": "documented",
-          "text": "Requires the AI App Builder feature in the selected account package; disabling that feature disables this operation."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
-        },
-        {
-          "kind": "documented",
-          "text": "colorScheme: The color scheme Meridian is using, so Nova can match it."
-        },
-        {
-          "kind": "documented",
-          "text": "domain: The domain to use for the AI App Builder website."
-        },
-        {
-          "kind": "documented",
-          "text": "promptToken: A base64-encoded prompt token to pre-populate the user's website generation goals. This allows hosting companies to collect user intent before SSO and pass it through to the Nova interface. Requirements: * Valid base64 encoding \u2014 You can use standard or URL-safe variants. * Maximum 5000 characters after the system decodes it. * Non-empty content \u2014 The system ignores empty or whitespace-only prompts. Example use case: A hosting company builds a custom landing page that asks, \"What kind of website do you want to create?\" The user's response is base64-encoded and passed via this parameter, allowing Nova to use it as the initial generation prompt."
-        },
-        {
-          "kind": "documented",
-          "text": "return_url: Where Nova's \"Back to cPanel\" control returns the user. Required for a regular account and rejected for a standalone one. Must be an https URL of at most 2048 characters, on the host the request was made to, with the path \"/frontend/meridian/index.html\" (optionally prefixed by a cPanel session token) and the in-product route in the fragment."
+          "kind": "policy",
+          "text": "Prompt tokens are caller-encoded base64 forwarded once without local decoding or validation. Returned SSO URLs are not followed."
         }
       ],
       "evidence": [
@@ -236,7 +168,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Nova/ensure_account The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Nova/ensure_account: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
         }
       ],
       "params": {
@@ -254,27 +186,19 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "Pinned x-readonly=true."
         },
         {
           "kind": "documented",
-          "text": "This function returns the AI App Builder domains' information for the cPanel account. Note: This function requires that your package includes the AI App Builder feature. Important: When you disable the AI App Builder feature, the system disables this function."
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
         },
         {
           "kind": "documented",
-          "text": "Pinned x-readonly=true permits GET."
+          "text": "Space is in MB; publication/session dates are integer Unix timestamps. A minted session is independent of website existence or publication."
         },
         {
-          "kind": "documented",
-          "text": "The source items schema establishes a list of domain records. Optional nested metadata, quota and status fields retain their documented spelling. Space is in MB and publication/session dates are integer Unix timestamps. A minted session is independent of website existence or publication. The result is sensitive account metadata, and the client does not inspect website files."
-        },
-        {
-          "kind": "documented",
-          "text": "Requires the AI App Builder feature in the selected account package; disabling that feature disables this operation."
-        },
-        {
-          "kind": "documented",
-          "text": "domain: The domain to use for the AI App Builder website. When you specify a domain, the function returns information for that domain only. Otherwise, it returns information for every domain on the account."
+          "kind": "policy",
+          "text": "The bounded domain-record list repair preserves optional nested fields and documented wire spelling without speculative coercion."
         }
       ],
       "evidence": [
@@ -282,7 +206,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Nova/get_all_user_nova_info Pinned x-readonly=true permits GET. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Nova/get_all_user_nova_info: parameter requiredness, defaults and wire casing remain the source contract. x-readonly=true."
         }
       ],
       "response": {
@@ -389,43 +313,27 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
         },
         {
           "kind": "documented",
-          "text": "This function returns an AI App Builder website's SSO URL. Note: This function requires that your package includes the AI App Builder feature. Important: When you disable the AI App Builder feature, the system disables this function."
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
         },
         {
           "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+          "text": "return_url is required for regular accounts and rejected for standalone accounts; its pinned optionality is retained. It must be an HTTPS URL of at most 2048 characters, on the host receiving the request, with path /frontend/meridian/index.html (optionally prefixed by a cPanel session token) and the in-product route in the fragment."
         },
         {
           "kind": "documented",
-          "text": "The source return_url is conditionally required for regular accounts and rejected for standalone accounts; source required:false is preserved. Prompt tokens are caller-encoded base64 and sent once, without local decoding. The client does not follow the SSO URL or establish an interactive login."
+          "text": "promptToken accepts valid standard or URL-safe base64, with at most 5000 characters after decoding. The system ignores empty or whitespace-only prompts."
         },
         {
-          "kind": "documented",
-          "text": "Requires the AI App Builder feature in the selected account package; disabling that feature disables this operation."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
-        },
-        {
-          "kind": "documented",
-          "text": "colorScheme: The color scheme Meridian is using, so Nova can match it."
-        },
-        {
-          "kind": "documented",
-          "text": "domain: The domain to use for the AI App Builder website."
-        },
-        {
-          "kind": "documented",
-          "text": "promptToken: A base64-encoded prompt token to pre-populate the user's website generation goals. This allows hosting companies to collect user intent before SSO and pass it through to the Nova interface. Requirements: * Valid base64 encoding \u2014 You can use standard or URL-safe variants. * Maximum 5000 characters after the system decodes it. * Non-empty content \u2014 The system ignores empty or whitespace-only prompts. Example use case: A hosting company builds a custom landing page that asks, \"What kind of website do you want to create?\" The user's response is base64-encoded and passed via this parameter, allowing Nova to use it as the initial generation prompt."
-        },
-        {
-          "kind": "documented",
-          "text": "return_url: Where Nova's \"Back to cPanel\" control returns the user. Required for a regular account and rejected for a standalone one. Must be an https URL of at most 2048 characters, on the host the request was made to, with the path \"/frontend/meridian/index.html\" (optionally prefixed by a cPanel session token) and the in-product route in the fragment."
+          "kind": "policy",
+          "text": "Prompt tokens are caller-encoded base64 forwarded once without local decoding or validation. Returned SSO URLs are not followed."
         }
       ],
       "evidence": [
@@ -433,7 +341,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Nova/get_sso_link The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Nova/get_sso_link: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
         }
       ],
       "params": {
@@ -451,19 +359,11 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "Pinned x-readonly=true."
         },
         {
           "kind": "documented",
-          "text": "This function returns the cPanel user's AI App Builder (Nova) tier snapshot for tier display and upsell. Notes: * This function requires that your package includes the AI App Builder feature. * The Meridian theme gates the Nova interface on the nova feature itself; this read-only call only feeds tier-aware display."
-        },
-        {
-          "kind": "documented",
-          "text": "Pinned x-readonly=true permits GET."
-        },
-        {
-          "kind": "documented",
-          "text": "Requires the AI App Builder feature in the selected account package; disabling that feature disables this operation."
+          "text": "Requires the AI App Builder feature in the selected account package."
         }
       ],
       "evidence": [
@@ -471,7 +371,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Nova/get_tier Pinned x-readonly=true permits GET. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Nova/get_tier: parameter requiredness, defaults and wire casing remain the source contract. x-readonly=true."
         }
       ]
     },
@@ -480,35 +380,23 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
         },
         {
           "kind": "documented",
-          "text": "This function polls the publishing progress information. Note: This function requires that your package includes the AI App Builder feature. Important: When you disable the AI App Builder feature, the system disables this function."
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
         },
         {
           "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+          "text": "pid must be positive upstream; is_running is 0 unless it belongs to a running process on this account."
         },
         {
-          "kind": "documented",
-          "text": "One call makes one request; the client does not poll repeatedly. file_name is the full log path and is forwarded unchanged. pid must be positive upstream; is_running is 0 unless it belongs to a running process on this account. The source refers to publish, which is exposed by this module. Returned log lines are payload data and are not executed."
-        },
-        {
-          "kind": "documented",
-          "text": "Requires the AI App Builder feature in the selected account package; disabling that feature disables this operation."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
-        },
-        {
-          "kind": "documented",
-          "text": "file_name: The publish process's log file name. Note: This is the full path to the log file."
-        },
-        {
-          "kind": "documented",
-          "text": "pid: The publish action's process ID, as returned by the publish function. Note: This value must be a positive integer. The system reports is_running as 0 unless this process ID belongs to a running process on this account."
+          "kind": "policy",
+          "text": "Log paths are forwarded unchanged; returned log lines are payload data and are not executed."
         }
       ],
       "evidence": [
@@ -516,7 +404,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Nova/poll_publish The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Nova/poll_publish: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
         }
       ],
       "params": {
@@ -530,47 +418,23 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
         },
         {
           "kind": "documented",
-          "text": "This function publishes an AI App Builder website to the document root directory for the selected domain. Note: This function requires that your package includes the AI App Builder feature. Important: When you disable the AI App Builder feature, the system disables this function."
+          "text": "Requires the AI App Builder feature in the selected account package. Disabling that feature disables this operation."
         },
         {
           "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+          "text": "Omitted cleanup retains the pinned default 0. cleanup=1 removes previous document-root files."
         },
         {
-          "kind": "documented",
-          "text": "The server downloads and publishes the archive into the selected domain document root. archiveUrl may contain credentials; archiveUrl and signature are sensitive. The client forwards these strings without downloading, verifying signatures or extracting archives locally. Omitted cleanup retains the source default 0; explicit 0 is sent. cleanup=1 removes previous document-root files. A returned process ID/log path does not prove completed publication; there is no client retry or rollback."
-        },
-        {
-          "kind": "documented",
-          "text": "Requires the AI App Builder feature in the selected account package; disabling that feature disables this operation."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
-        },
-        {
-          "kind": "documented",
-          "text": "archiveUrl: URL to download the website archive from."
-        },
-        {
-          "kind": "documented",
-          "text": "domain: The domain to use for the AI App Builder website."
-        },
-        {
-          "kind": "documented",
-          "text": "signature: Security signature for request validation."
-        },
-        {
-          "kind": "documented",
-          "text": "userId: Unique identifier for the website."
-        },
-        {
-          "kind": "documented",
-          "text": "cleanup: Whether to cleanup the domain's document_root directory during the publication process. * 1 \u2014 Remove previous files in domain's document_root directory during the publication process. * 0 \u2014 Do not remove any files in domain's document_root directory during the publication process. Omission retains the documented server default 0."
+          "kind": "policy",
+          "text": "cleanup uses nullable boolean encoding: null/omission omit, false sends 0 and true sends 1. Archive URLs and signatures remain sensitive; no local download, signature verification or extraction occurs."
         }
       ],
       "evidence": [
@@ -578,7 +442,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Nova/publish The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Nova/publish: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
         }
       ],
       "params": {
@@ -587,9 +451,14 @@
         },
         "signature": {
           "sensitive": true
+        },
+        "cleanup": {
+          "encoding": "bool",
+          "description": "Whether to remove previous document-root files during publication. Omit or pass null to omit the field; false sends 0 and true sends 1 (destructive). The pinned Nova default is 0."
         }
       },
       "name": "publish"
     }
-  }
+  },
+  "description": "Pinned availability is cPanel 110+. Observed: Reviewer 5721328890 on cPanel 11.138.0.19 reports all six Nova reads they called failed on both routes because Cpanel::API::Nova could not load. Reviewer-source inspection found the module file absent. All eleven methods are unavailable for verification on this server. Write failures are expected from the missing module but were not executed. Every Nova response shape, including overlay repairs, remains unobserved. Policy: Each call makes one request without automatic retry, polling, rollback or undo. Returned tokens, SSO URLs and account metadata are sensitive payload data. The client does not fetch returned URLs or inspect website files. API success does not establish publication completion, rendering or interactive SSO login."
 }

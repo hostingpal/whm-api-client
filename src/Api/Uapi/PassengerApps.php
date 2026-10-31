@@ -102,9 +102,9 @@ final readonly class PassengerApps
      *
      * @param string $name The application to disable.
      * @return DisableApplicationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/application-manager/passengerapps-disable_application
      */
     public function disableApplication(string $name): ?array
@@ -164,9 +164,9 @@ final readonly class PassengerApps
      * @param string|null $newName The application’s new name. Null omits it.
      * @param string|null $path The application’s new filepath. Null omits it.
      * @return EditApplicationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/application-manager/passengerapps-edit_application
      */
@@ -226,9 +226,9 @@ final readonly class PassengerApps
      *
      * @param string $name The Passenger application to enable on the account.
      * @return EnableApplicationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/application-manager/passengerapps-enable_application
      */
     public function enableApplication(string $name): ?array
@@ -266,9 +266,9 @@ final readonly class PassengerApps
      * @param string $appPath The application’s filepath.
      * @param 'gem'|'npm'|'pip' $type The application’s type.
      * @return EnsureDepsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/application-manager/passengerapps-ensure_deps
      */
     public function ensureDeps(string $appPath, string $type): array
@@ -311,9 +311,9 @@ final readonly class PassengerApps
      * API-map identity: uapi:PassengerApps/list_applications#GET (wire name list_applications).
      *
      * @return ListApplicationsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/application-manager/passengerapps-list_applications
      */
     public function listApplications(): array
@@ -374,9 +374,9 @@ final readonly class PassengerApps
      * @param string|list<string>|null $envvarNames Environment variables that the application needs. Null omits it.
      * @param string|list<string>|null $envvarValues Each environment variable’s value. Null omits it.
      * @return RegisterApplicationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/application-manager/passengerapps-register_application
      */
@@ -434,9 +434,9 @@ final readonly class PassengerApps
      *
      * @param string $name The application to unregister.
      * @return UnregisterApplicationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/application-manager/passengerapps-unregister_application
      */
     public function unregisterApplication(string $name): ?array

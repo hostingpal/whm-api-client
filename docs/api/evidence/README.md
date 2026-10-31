@@ -784,6 +784,33 @@ ran. The initial failed artifact stays unchanged and `8x0.2.37` remains open.
 Corrected SHA-256:
 `185dd1b1d6728a6aad76ce258f60f1177f08e9f368c85935667e713889a9a552`.
 
+## WHM integration-group read evidence
+
+The [WHM integrations capture](2026-10-31-whm-integrations.json) at
+`7b6f5cee9053ca64d6ac9cf7c522b77eef75d8ad` on `11.138.0.19` passes both
+GET observations and strict assessment with zero discrepancies. Integration-group
+inventory for npr is an empty links list, so populated group fields remain
+unobserved. No hook commands, credential links or user configuration were read;
+no hook/link/token change or URL fetch ran in that capture. Its eleven other
+methods and populated variants remain outside the capture, tracked under `8x0.2.49`. SHA-256:
+`b106dfebd59a1380bfa1cba65182501e49ab13f90f5b0bd4e208b3b4968b9c4c`.
+
+The later PR62 reviewer GET results are separate from this immutable capture.
+They report empty link lists for both `npr` and an unknown user; empty lists
+prove neither account existence nor populated field shapes. Only hook action
+weight and escalation digit strings were independently observed in that earlier
+review. No new capture was made for the corrections.
+
+Separately, [PR62 review 5722110065](https://github.com/hostingpal/whm-api-client/pull/62#pullrequestreview-5722110065)
+at `160fc83` on WHM `11.138.0.19` reports a disposable `wrvint` lifecycle using
+fake tokens: create group/link, get link user config, remove group/link and update
+the link token (six POST methods). Removing a nonexistent group or link also
+succeeded with null, so success does not prove an item was removed. Account and
+home cleanup were verified; no URL was fetched. These reviewer observations do
+not expand or replace the immutable two-GET capture. Server-hook writes
+`editHook`, `deleteHook` and `reorderHooks` remain unobserved under `8x0.2.49`;
+the depth-limit audit `8x0.10.5` stays open.
+
 ## Expanded WHM server inventory capture
 
 The initial [expanded server capture](2026-10-31-whm-server-administration.json)
@@ -818,6 +845,26 @@ No mutation, credential read or URL request ran. Follow-up `8x0.2.38` retains th
 unknown findings and unobserved variants. Corrected SHA-256:
 `db24e53879fff4754369b984969640b51ea483713ad71c735d6d1bb1be88f6b8`.
 
+## WHM NGINX configuration evidence
+
+The [NGINX configuration capture](2026-10-31-whm-nginx.json) at
+`2b36d29b8c535b3199b9cf505b22a3b741921f93` on `11.138.0.19` records three
+HTTP-200 observations. Version passes; both configuration calls return API failure,
+so their payloads are not validated and the strict assessment remains failed.
+The sanitized artifact establishes neither the failure cause nor any successful
+NGINX configuration compatibility. No contract is widened or finding waived.
+
+No cache clearing, rebuild, reset, toggle or service change ran. The client does
+not enable NGINX or retry these calls to obtain passing evidence. All six methods
+remain offline-tested, with live coverage and populated variants open under
+`8x0.2.51`. SHA-256:
+`7678649795f70b7ffeba17a0775715370d3bcd220182557427c897edbbdbd591`.
+
+Separately, PR63 reviewer diagnostic 5721097412 on WHM `11.138.0.19` reports
+both reads failing because required EA4 `ea-nginx` is not installed. It provides
+no successful NGINX payload and no POST observation. This diagnostic is not part
+of the immutable capture; the strict failure remains unwaived under `8x0.2.51`.
+
 ## WHM authentication metadata capture
 
 The [WHM authentication metadata capture](2026-10-31-whm-authentication.json)
@@ -845,6 +892,375 @@ alone does not diagnose it. No contract is loosened or failure waived.
 Sitejet returns an integer capability value; this structural observation does not
 establish a particular value, successful domain creation or publication. No
 account/site creation, token retrieval, private content, SSO/OAuth, publishing,
-restoration or URL fetch ran. All other operations and variants stay under
+restoration or URL fetch ran. Remaining operations and variants stay under
 `8x0.2.57`. The failed artifact remains immutable. SHA-256:
 `4094bcd7f3addad45d9ccd76ee56d2d1b2eaa3cfc0a647a9169b37bb2c3fb1d3`.
+
+Separately, reviewer 5721328890 on `11.138.0.19` found `Cpanel::API::Nova`
+missing and all six Nova reads they called failing on both routes. All eleven
+Nova methods are unavailable for verification; writes were not executed and all
+Nova response shapes remain unobserved. Their Sitejet reads and local disposable
+account writes are attributed in the [source audit](../source-audit.md#nova-and-sitejet-site-builders); remote service calls,
+successful restoration and published metadata remain unobserved. The historical
+capture stays failed/not_checked without a waiver, and no corrected-head capture
+ran. Remaining gaps stay open under `8x0.2.57`.
+
+## Log administration live evidence
+
+The initial [log metadata capture](2026-10-31-log-administration.json)
+at `e5476c1b9fd2d8a94f371ab05caee86b46f4ab37` on `11.138.0.19` records eight
+HTTP/API successes and five payload/probe passes. Seven known-field discrepancies
+occur across three observations: WHM default_retention is a numeric string; UAPI
+get_settings archive_logs, prune_archive and retention_days are numeric strings
+on both routes. Those four original capture-bound corrections use: lossless canonical
+integer strings for the two retention fields, exact quoted 0/1 for the two flags.
+Sibling fields remain strict and public normalized values remain integers. The
+structural artifact does not prove both quoted flag values were observed. Initial
+SHA-256: `093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550`.
+
+The [corrected capture](2026-10-31-log-administration-corrected.json) at
+`dd5e626ae11f0f6c59e353a17d51bee4868aaa96` on `11.138.0.19` passes all eight
+HTTP/API/payload/probe checks and strict assessment with zero discrepancies.
+WHM account rows and archive inventories are populated; account retention days
+are null and using_default is boolean. Error-log inventories are empty on both
+routes, leaving their populated rows unobserved. No existing log content was read,
+no archive was deleted and no setting changed. API metadata does not establish
+actual retention/rotation. The initial failed artifact remains immutable and
+remaining variants/lifecycle stay under `8x0.2.55`. Corrected SHA-256:
+`743a081ee25a8971df4052534a96c60b05cde3483d9ed624857ccd82912e7255`.
+
+Separate review [5721279104](https://github.com/hostingpal/whm-api-client/pull/68#pullrequestreview-5721279104)
+at `984c5c16e47c43741b50e817a6f87149eb2f86d5` on `11.138.0.19` exercised
+all seven methods with synthetic logs/archives on a disposable account, both UAPI
+routes and the single WHM route. Its token was revoked and account/home removed.
+It observed empty direct `view_error_log` with `log_content: []` and string
+`lines_read: "0"`; nonempty direct/bridged counts were integers. This separate
+review observation motivates only that leaf's integer-string compatibility and
+is absent from both committed captures. The review also observed stored false/zero
+settings, unchanged omitted flags after clearing retention, server rejection of
+1000 outside -1..999 and of an empty-argument settings call. Reviewer source
+inspection found WebServer/rawlog requirements in shared `%API`; neither is
+pinned or a disabled-role runtime test. Unreadable/symlink null metadata,
+php_fpm_error_log and actual rotation/pruning remain open under `8x0.2.55`.
+No corrected-head live run is claimed.
+
+## DAV service-status evidence
+
+The [DAV status capture](2026-10-31-dav-calendar.json) at
+`628c46eec9608e31a5bc32dedb1d374f25d6b1ac` on `11.138.0.19` records seven
+HTTP-200 observations. Version and is_dav_service_enabled on both routes pass;
+shared-global-addressbook and Horde status return API failures on both routes,
+so those payloads are not validated. There are zero schema discrepancies, but
+strict assessment remains failed because of those four API failures. The sanitized
+artifact does not establish their cause. No contract is loosened or failure waived.
+
+The successful service-state payload contains an integer enabled field; the
+structural artifact does not establish a particular value or client behavior.
+No private configuration, contacts, calendars or delegations were read and no
+setting/collection mutation or DAV-client authentication ran. The failed capture
+is immutable; remaining operations/variants stay under `8x0.2.56`. SHA-256:
+`e4cec00d478951bd22f0cc1e82609ebcdcac2041709111a08a8034007770b19a`.
+
+The separate PR 67 review 5721214794 at head `2db7f7e` attributes these
+failures on `11.138.0.19` to the shared-addressbook return-0 stub and missing
+`DAV/is_horde_enabled` handler. It separately inspected private config/listUsers
+reads and disposable-account writes; those operations are outside this capture.
+The fixed catalog remains diagnostic and strict API failures stay failures;
+removing two overlay success recipes does not waive this historical artifact.
+
+
+## GPG public-key and two-factor status evidence
+
+The [GPG/two-factor capture](2026-10-31-gpg-two-factor.json) at
+`f213ab81d8e6b775c786a67cba1d518e96718d47` on `11.138.0.19` passes all five
+GET observations and strict assessment with zero discrepancies. Public-key
+inventories are empty on both routes; that capture establishes no populated key
+row or timestamp variants. Two-factor status returns an integer is_enabled with issuer
+omitted on both routes; no specific flag value or login enforcement is inferred
+from the structural artifact.
+
+That capture exported, created, imported and deleted no keys, read no secret-key
+inventory or private/team configuration, and ran no authentication mutation.
+Remaining route/compatibility variants and committed mutation evidence stay under
+`8x0.2.54`. SHA-256:
+`b88fe3ee6f8af6de0676022bb4449d997a2a5a578b2e624688db963702adb127`.
+
+Separate [review 5722555389](https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5722555389)
+at `9b34fd5b791857625f3c7b5085f919a0a81bf124` on `11.138.0.19` used disposable
+`wrvgpg` with token/account/home cleanup confirmed. It observed populated list
+fields through both routes, empty-string generation payload mismatches after keys
+were created, raw-armored import preserving the ID and normalized re-export,
+and leading-zero TOTP API enrollment/removal. Other reviewer routes are unspecified.
+Six POST methods have explicit reviewer execution evidence: GPG generation with
+payload mismatch, secret export, import, deletion, TOTP enrollment and removal.
+The reported fixture secret generation does not separately identify
+`generateUserConfiguration()` or its typed result; team configuration also remains
+unobserved. The narrow response corrections pass offline fixtures; no
+successful typed corrected-head acceptance or login enforcement is claimed.
+This reviewer report does not alter the immutable five-GET artifact or catalog.
+Remaining routes/variants and committed mutation evidence stay under `8x0.2.54`.
+
+## WHM SSL certificate inventory capture
+
+The initial [WHM SSL capture](2026-10-31-whm-ssl.json) at
+`df3a6341a08d85eb9c011e617db7edbcc2c967cc` on `11.138.0.19` records nine
+HTTP/API successes and seven payload/probe passes. The best-service-domain
+expiration is null. Certificate inventory has null owner-list items and literal
+`issuer.organizationName` values, plus numeric-string modulus lengths and expiry
+timestamps. Five operation-specific field rules preserve these observed variants;
+other fields and WHM/UAPI operations remain unchanged. Owner-list null items do
+not make the list itself nullable, and no meaning is assigned to null values.
+
+Integer-string compatibility stays canonical and lossless, rejecting noncanonical
+strings, fractional values and overflow. Structural evidence does not establish
+every accepted canonical spelling. No provider data, private key, component PEM
+or log contents were read and no mutation or URL request ran. The original strict
+assessment stays failed and immutable; `8x0.2.39` retains remaining live behavior.
+Initial SHA-256:
+`f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29`.
+
+The [corrected WHM SSL capture](2026-10-31-whm-ssl-corrected.json) at
+`4317e1af1a4065134fae5e8addbd6c9cf083e985` on `11.138.0.19` passes all nine
+HTTP/API/payload/probe checks and strict assessment with zero discrepancies.
+The five operation-specific corrections pass, with populated certificate inventory.
+No installation, service restart, TLS serving/trust, AutoSSL issuance/renewal,
+provider configuration or key lifecycle behavior is established.
+
+No certificate, exclusion, configuration or scheduling setting changed. No private
+key, component PEM, provider payload or log content was read, and no URL was fetched.
+The original failed artifact stays unchanged; `8x0.2.39` retains unobserved behavior.
+Corrected SHA-256:
+`1e3117fc43dc790b0891b3571313b44f60953ce4b6e0d20305c0bc32ccacb498`.
+
+### Separate WHM SSL review evidence
+
+[Claude review 5720639651](https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651)
+records additional WHM reads and a disposable-account SSL lifecycle on
+`11.138.0.19`, with account cleanup reported. Those observations motivate narrow
+contract corrections and remain separate from the two immutable captures above.
+The service reset/install family and rebuild/enqueue missing-data variants are
+source/offline only. No new capture ran for review fixes; `8x0.2.39` remains open.
+
+## WHM DNS management reviewer evidence
+
+The expanded DNS slice has no new committed live capture. The separate
+[PR54 review](https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698)
+reports selected WHM DNSSEC and disposable-account domain/zone calls on
+`11.138.0.19`, with account, home directory and three throwaway zones cleaned.
+Those reports support the observed key-ID compatibility fixes without changing
+any historical artifact or expanding its scope.
+
+Optional exported private `key_content`, imported `new_key_id` and the
+`parseDnsZone().line_index + 1` deletion mapping are backed by the reviewer's
+upstream source inspection. A focused raw-export/import/remove-record pass was
+denied before execution with `[Modify Shared Resources]` and was not retried.
+No raw export or private key value was captured by these corrections. The denied
+operations, server-wide writes and remaining variants stay under `8x0.2.42`.
+
+## WHM account management, 2026-10-31
+
+- [Initial capture](2026-10-31-whm-account-management.json), revision `1149479`: nine HTTP/API successes, eight payload/probe passes; quota-flag mismatch and a masked maximum-users unknown-field observation. SHA-256 `ad4f89f9606d05366cba3078dbe8ac5c2c9f471a10c6dfdc44b1281f5e29def9`.
+- [Corrected capture](2026-10-31-whm-account-management-corrected.json), revision `af701b1`: nine HTTP/API/payload/probe passes; strict failure retains the masked numeric-string unknown-field observation, with no waiver. SHA-256 `f0fa73efb33994ec4c20e9250d0aec5e94ee99041c7940742c8810ef7f7ceb64`.
+
+Both use fixed GET-only inventory on `11.138.0.19` and retain structural types
+only. No account/configuration mutation or private credential/link read ran;
+`8x0.2.41` tracks remaining live behavior. Empty enhancement/privilege inventories
+do not establish populated row coverage. Wildcards identify neither unknown key
+names nor counts.
+
+[Claude review 5720788777](https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777)
+separately names the observed `maximum_users` string and reports the bandwidth
+and userdata wire variants. These observations support current contract fixes;
+they do not identify or rewrite the old masked finding. No new capture ran for
+those corrections. The populated enhancement list is source/offline evidence,
+and the shared empty-container ambiguity remains open under `8x0.2.50`.
+
+The later [review 5721383444](https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5721383444)
+of `2e52204` separately exercised six account-scoped POST methods on disposable
+`wrvacct` and confirmed account/home cleanup. Its bandwidth-limit and missing
+docroot observations are recorded in the source audit. They do not expand either
+committed nine-GET capture, identify historical masked keys or waive a strict
+finding. No new capture accompanied the corrections.
+
+## WHM hosting plans, 2026-10-31
+
+`2026-10-31-whm-hosting-plans.json` at a5c08af on `11.138.0.19` records two fixed
+GETs, both HTTP/API/payload/probe passes and strict pass with zero discrepancies.
+The package result was empty; this capture establishes no populated fields or
+coverage of the other new methods. No mutation, private configuration read or URL
+fetch ran. Remaining evidence stays under `8x0.2.43`.
+SHA-256 `16cafa35a705d064dabd8e3885b326bcbf6c0defe5b53853fcdc4e21f333bcbb`.
+
+
+[Review 5720810852](https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852)
+separately observed nullable `MAXPARK` in the stock default plan and omitted
+application fields on `11.138.0.19`. It also found an empty selector-free matching
+result while `listPackages()` returned a plan. These reports do not expand the
+committed two-GET artifact or establish its previously unobserved item schema.
+The original empty-container assessment remains immutable; the shared tooling
+ambiguity stays under `8x0.2.50`. All package and feature writes were unobserved by that initial review.
+
+`2026-10-31-whm-hosting-plans-reviewed.json` is the completed, separate review
+capture at `1336c4df3c0d48d41362938af4556991d9b249bd` on `11.138.0.19`.
+Its three GETs (version, stock-default package information and application
+catalog) all pass HTTP/API/payload/probe checks. The strict assessment remains
+failed and unwaived for two masked unknown-field observations at
+`$.groups[].items[].*` and `$.groups[].items[].subitems[].*`; wildcard entries
+establish neither key identities nor underlying field counts. Package limits
+were null, and application groups/items/subitems were populated. No matching
+query, mutation, arbitrary file selection, template execution or URL fetch ran;
+no resources were created or changed. All 85 earlier artifacts are unchanged.
+The capture is complete and must not repeat merely to clear findings. Follow-up:
+`8x0.2.43`; this capture does not observe numeric-limit strings or populated matching.
+SHA-256 `fa47311ac73ed16812b86cd1a6367b921f2b2484dd4ffb0f3c083cc6db3497ab`.
+
+[Review 5721514363](https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5721514363)
+subsequently observed populated packages and numeric-string variants through a
+separate disposable package/account lifecycle. It found team-limit strings in
+list/info reads and string CGI in matching, which require corrections beyond the
+stock-package capture. Package creation/quota edit/deletion passed; an initial
+reviewer cleanup check failed, followed by successful package removal and
+confirmed account/home cleanup. The report establishes no extension, feature-list
+or override write coverage. The reviewer explicitly accepts the two masked
+application findings as nonblocking while keeping them failed and unwaived.
+These later named observations never alter either artifact or establish the
+identities/counts hidden in its wildcards. No capture was rerun for this correction.
+
+## WHM API tools, 2026-10-31
+
+`2026-10-31-whm-api-tools.json` at `465be19` on `11.138.0.19` records five
+GET observations: version plus four typed API-tools reads. All
+HTTP/API/payload/probe checks pass. Strict assessment remains failed and unwaived
+for a masked empty-list unknown-field observation in `get_api_pages`; masking
+establishes neither identity nor underlying field count. Token/function
+inventories were populated and legacy call rows empty. No credential lookup,
+token/session mutation or URL fetch ran. SHA-256:
+`eef3b63351acad16364534ceec676a6ab454f72fb901ded0b72be99e9f3088bc`.
+
+Separate [review 5720856204](https://github.com/hostingpal/whm-api-client/pull/57#pullrequestreview-5720856204)
+names `result` and cites upstream source plus the pinned call-statistics row
+family for the correction. It also reports AppConfig WHM URL arrays, outside
+this capture. These observations do not identify historical wildcard entries,
+expand this artifact's coverage or clear its strict finding. Populated page rows
+remain source/offline; all seven POST methods remain live-unobserved. Follow-up
+`8x0.2.44` remains open. The completed capture is immutable and is not repeated
+merely to obtain a green report.
+
+## WHM PHP/web-server inventory, 2026-10-31
+
+- `2026-10-31-whm-webserver-configuration.json` at `3d43621`: nine HTTP/API successes, six payload/probe passes; three known-field mismatches and two masked unknown observations. SHA-256 `1522b42c63825127dc0f925e953c545f93ae89ad4c9df2c9d8cc99307a35b31b`.
+- `2026-10-31-whm-webserver-configuration-corrected.json` at `b535c57`: nine HTTP/API/payload/probe passes; both masked unknown observations remain strict failures without waivers. SHA-256 `9bff10d45c4bebe06189c8b0039efe5e625e2f08c6653cdefc40c0785af53d66`.
+
+Both captures use fixed GETs on `11.138.0.19`, with no INI content read,
+configuration mutation or URL fetch. Follow-up `8x0.2.45` remains open.
+
+Review 5720977511 separately reports 22 successful WHM GET calls, including
+type-only INI reads, and explicitly accepts the two masked findings as
+nonblocking and unwaived. Typed vhost-source fields, custom/vendor version
+compatibility and optional write results use independently cited source
+contracts; they do not identify historical wildcard keys or rewrite either
+artifact. All ten POST methods remain unobserved. No new capture ran for the
+review corrections or master integration.
+
+## WHM transfer metadata, 2026-10-31
+
+`2026-10-31-whm-transfers.json` at `a5badae` on `11.138.0.19` passes all
+three fixed GET observations and strict assessment, with zero discrepancies.
+Module priorities and designated-user flags were populated; remote and mutation
+behavior remains unobserved under `8x0.2.47`. No remote credential check,
+session/log read, transfer/control/archive mutation or URL fetch ran.
+SHA-256 `8a8d004b5b765c7f79862d8a177d93855757617eada816812a6983b4116a0a1e`.
+
+### Reviewed transfer module schema capture
+
+The new [reviewed transfer capture](2026-10-31-whm-transfers-reviewed.json)
+at `d81e43a8456dc7a9370d5950ac196b226691ae79` on WHM `11.138.0.19`
+contains exactly two GETs: version and `transferModuleSchema(module:
+'FeatureListRemoteRoot')`. Both HTTP/API/payload/probe checks and the strict
+assessment pass, with zero discrepancies. The module schema has populated
+wildcarded key records with string `def` fields and string `primary`/`required`
+lists. Only sanitized paths and types were saved; no key names, definitions or
+list values are retained. Schema text was not executed. This completes the
+requested additional probe and does not replay or replace the original capture.
+No remote host, remote credentials, session ID, log or archive target was supplied;
+no transfer, resource mutation, cleanup operation or URL fetch occurred. All
+eight POST methods and populated session/log/analysis data remain unobserved.
+SHA-256: `ecd22c05ac50d5b2dcfc2ad3c90c0ff6c26b21f059268726b31f163de506bd7e`.
+
+## WHM system-package inventory, 2026-10-31
+
+- `2026-10-31-whm-system-packages.json` at `072dc90`: three HTTP/API successes, two payload/probe passes. list_rpms omitted data. SHA-256 `5b6cc329c55b456106ce0a06a54f0169bb6f58c558267b1960054bf2cfcd8450`.
+- `2026-10-31-whm-system-packages-corrected.json` at `b8ebf87`: three HTTP/API/payload/probe passes; strict assessment still records root missing_required for list_rpms without a waiver. SHA-256 `870dcf28decf6b60de972f9876115506ca2ee129a0b7b3c64e683e73016af1d4`.
+
+Both run fixed GETs on `11.138.0.19`. Present package rows were populated;
+absence does not establish zero missing dependencies. No package action, cache
+repair or log read ran. Follow-up `8x0.2.46` remains open.
+
+
+The historical package `missing_required` finding comes from the evidence tool
+dropping the effective `optional` payload flag. The runtime accepted the absent
+successful payload. The fix applies to newly analyzed responses only; neither
+old artifact nor its failed strict assessment is changed or waived. This is
+a tooling mismatch, not evidence that the server failed or has zero missing RPMs.
+
+### Reviewed package contracts, 2026-10-31
+
+The separately requested review capture is now complete at `dd72691` on
+`11.138.0.19`: exactly five WHM GETs (version, `ea-apache24` information,
+`target_settings`, `rpm_groups`, and action resolution for that package in
+namespace `ea`). All HTTP/API/payload/probe and strict checks pass, with zero
+discrepancies. It observes mixed string/nested-string-list requirements, string
+conflicts and vendor, a string installed version, nested RPM maps with string
+leaves and with string-list leaves, and populated unaffected/uninstall plan
+lists. The plan was returned only; no package action was submitted. Dynamic
+names and all payload values are absent from the artifact. The nested RPM map
+observations now support the previously inferred section-map compatibility.
+This capture does not establish empty installed-version values, literal vendor
+values, zero dependencies or any POST behavior. The separate reviewer report
+retains the empty-string observation and source placeholder attribution.
+
+The new artifact is `2026-10-31-whm-system-packages-reviewed.json`, SHA-256
+`44b3540940eeda781608957a57d12e5b9b5bdf10343c84f4f5a272e071d156ed`.
+It does not rerun either historical inventory probe or alter their findings.
+No mutation, cache repair, build-log read or URL fetch ran. All seven POSTs and
+remaining compatibility stay under `8x0.2.46`; no repeat is needed for integration.
+
+## WHM mail-management read evidence
+
+The initial [WHM mail-management capture](2026-10-31-whm-mail-management.json)
+at `e0237496016fa8546c3cbd310e302b654c9a9396` on `11.138.0.19` records eight
+HTTP/API successes and seven payload/probe passes. Only forward_to differs:
+get_user_email_forward_destination returns literal empty string alongside the
+pinned list-of-strings contract. The correction preserves that exact literal,
+without inferring its meaning. The later PR61 source review supports arbitrary
+strings separately; it adds no new live evidence and null remains invalid. The failed original
+artifact is immutable. Its SHA-256 is
+`3b990bd9f1bb37f7e823cf8c36acc7f0d2f6a8a346213bb272d13a55abc4bcc5`.
+
+The [corrected capture](2026-10-31-whm-mail-management-corrected.json)
+at `437c951` on `11.138.0.19` passes all eight HTTP/API/payload/probe checks
+and strict assessment with zero discrepancies. Blocked-country/domain and mailbox
+lists are empty; they establish no populated rows. Default DMARC, SNI and the
+literal forward destination are read-only API observations, not evidence of DNS,
+mail routing, TLS negotiation or message delivery. No keys, message content,
+queue content or mail configuration were changed or read beyond the fixed catalog.
+All 31 new form POST methods and remaining read variants stay under `8x0.2.48`.
+Corrected SHA-256:
+`f2f0f37ec2fb441a2949728c84cf68d0f9dd2141672bf584e06a88cd500ed6c2`.
+
+## WHM Market provider inventory evidence
+
+The [Market provider capture](2026-10-31-whm-market.json) at
+`38edb29f84902cbe27b81dbfa926571fadaabefb` on `11.138.0.19` passes both GET
+observations and strict assessment with zero discrepancies. Provider rows are
+populated, including integer enabled/supports_commission flags and an integer
+commission divisor. This establishes the observed provider inventory shape, not
+commission configuration, prices, payments, purchases or provider changes.
+
+No commerce route, product payload, commission ID, private token, OAuth exchange
+or mutation was exercised, and no returned URL was fetched. The capture establishes
+no Commerce routing. Separately, PR64 review 5721097744 reports a successful
+Sitejet/get_commerce GET and nullable commission IDs; see
+the Commerce/Market contract notes. All remaining methods/variants stay under
+`8x0.2.52`. SHA-256:
+`8b1b468eb3ab91072cd0a676ac7d9337c3359bbde80497703451b24ecda1ee7d`.

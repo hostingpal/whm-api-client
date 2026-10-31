@@ -48,9 +48,9 @@ final readonly class ContactUs
      * API-map identity: uapi:Contactus/is_enabled#GET (wire name is_enabled).
      *
      * @return IsEnabledResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/contact-information/contactus-is_enabled
      */
     public function isEnabled(): array

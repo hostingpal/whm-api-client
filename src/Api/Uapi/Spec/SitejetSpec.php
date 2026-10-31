@@ -81,9 +81,15 @@ final class SitejetSpec
             'zip' => ['name' => 'zip', 'encoding' => 'scalar'],
         ],
         'returns' => [
-            'type' => 'object',
-            'fields' => [
-                'websiteID' => ['type' => 'int'],
+            'type' => 'union',
+            'anyOf' => [
+                ['type' => 'int'],
+                [
+                    'type' => 'object',
+                    'fields' => [
+                        'websiteID' => ['type' => 'int'],
+                    ],
+                ],
             ],
         ],
     ];
@@ -209,7 +215,7 @@ final class SitejetSpec
         'outcome' => 'flag',
         'params' => [
             'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
-            'cleanup' => ['name' => 'cleanup', 'encoding' => 'scalar'],
+            'cleanup' => ['name' => 'cleanup', 'encoding' => 'bool'],
         ],
         'returns' => [
             'type' => 'object',

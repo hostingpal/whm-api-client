@@ -498,7 +498,7 @@ final readonly class Server
      *
      * API-map identity: whm1:accept_eula#GET (wire name accept_eula; Updates).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/updates/eula-accept_eula
      */
     public function acceptEula(): void
@@ -525,7 +525,7 @@ final readonly class Server
      * @param string $key A truncated version of the server's remote access key.
      * @param string $name The remote configuration cluster server's name.
      * @param string $user The username for the server's `root`-level account.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/configuration-clusters/clusterserver-add_configclusterserver
      */
     public function addConfigClusterServer(
@@ -555,7 +555,7 @@ final readonly class Server
      *
      * @param string|list<string> $processesToKill A process to kill in the `/usr/local/cpanel/etc/sym` directory.
      * @param string|list<string>|null $trustedUsers Unaffected users. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/services/sys-configurebackgroundprocesskiller
      */
@@ -590,7 +590,7 @@ final readonly class Server
      *     connections. Null omits it.
      * @param bool|null $monitored Whether to monitor the service in WHM's *Service Status* interface (*WHM >> Home >>
      *     Server Status >> Service Status*). Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/services/services-configureservice
      */
     public function configureService(
@@ -624,7 +624,7 @@ final readonly class Server
      * Clusters).
      *
      * @param string $name The hostname or IP address of a remote configuration cluster server.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/configuration-clusters/clusterserver-delete_configclusterserver
      */
     public function deleteConfigClusterServer(string $name): void
@@ -652,7 +652,7 @@ final readonly class Server
      *     `/var/cpanel/plugins/` directory.
      * @param 'Whostmgr'|null $namespace A filter that allows you to show plugin-based features for a specific
      *     interface. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/plugin-based-features/local_disable
      */
     public function disableEcosystemFeatureLocally(string $plugin, ?string $namespace = null): void
@@ -680,7 +680,7 @@ final readonly class Server
      *     `/var/cpanel/plugins/` directory.
      * @param 'Whostmgr'|null $namespace A filter that allows you to show plugin-based features for a specific
      *     interface. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/plugin-based-features/local_enable
      */
     public function enableEcosystemFeatureLocally(string $plugin, ?string $namespace = null): void
@@ -703,9 +703,9 @@ final readonly class Server
      * Services).
      *
      * @return EnableMonitorAllEnabledServicesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/services/services-enable_monitor_all_enabled_services
      */
     public function enableMonitorAllEnabledServices(): array
@@ -738,9 +738,9 @@ final readonly class Server
      *
      * @param string $name The name of the connected application.
      * @return FetchConnectedApplicationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/connected-applications/connectedapplications-fetch_connected_application
      */
     public function fetchConnectedApplication(string $name): array
@@ -766,9 +766,9 @@ final readonly class Server
      * API-map identity: whm1:fetch_security_advice#GET (wire name fetch_security_advice; Security).
      *
      * @return FetchSecurityAdviceResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/security/security-fetch_security_advice
      */
     public function fetchSecurityAdvice(): array
@@ -798,9 +798,9 @@ final readonly class Server
      * @param string $nodeAlias The child node’s alias (friendly name).
      * @param string|list<string> $users The usernames of the distributed cPanel accounts to convert.
      * @return ForceDedistributionFromNodeResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-nodes/cpanel-force_dedistribution_from_node
      */
@@ -837,9 +837,9 @@ final readonly class Server
      * API-map identity: whm1:get_all_contact_importances#GET (wire name get_all_contact_importances; Notifications).
      *
      * @return GetAllContactImportancesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/notifications/contact-get_all_contact_importances
      */
     public function getAllContactImportances(): array
@@ -872,9 +872,9 @@ final readonly class Server
      * @param string $app The application module's name.
      * @param string $event The event's name.
      * @return GetApplicationContactEventImportanceResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/notifications/contact-get_application_contact_event_importance
      */
     public function getApplicationContactEventImportance(string $app, string $event): array
@@ -912,9 +912,9 @@ final readonly class Server
      *
      * @param string $app The cPanel & WHM application module's name.
      * @return GetApplicationContactImportanceResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/notifications/contact-get_application_contact_importance
      */
     public function getApplicationContactImportance(string $app): array
@@ -941,9 +941,9 @@ final readonly class Server
      * API-map identity: whm1:get_available_profiles#GET (wire name get_available_profiles; Server Profiles).
      *
      * @return GetAvailableProfilesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-profiles/cpanel-get_available_profiles
      */
     public function getAvailableProfiles(): array
@@ -969,9 +969,9 @@ final readonly class Server
      * API-map identity: whm1:get_available_tiers#GET (wire name get_available_tiers; Updates).
      *
      * @return GetAvailableTiersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/updates/sys-get_available_tiers
      */
     public function getAvailableTiers(): array
@@ -998,9 +998,9 @@ final readonly class Server
      * Updates).
      *
      * @return GetCurrentLtsExpirationStatusResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/updates/update-get_current_lts_expiration_status
      */
     public function getCurrentLtsExpirationStatus(): array
@@ -1027,9 +1027,9 @@ final readonly class Server
      * API-map identity: whm1:get_current_profile#GET (wire name get_current_profile; Server Profiles).
      *
      * @return GetCurrentProfileResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-profiles/cpanel-get_current_profile
      */
     public function getCurrentProfile(): array
@@ -1048,9 +1048,9 @@ final readonly class Server
      * API-map identity: whm1:getdiskusage#GET (wire name getdiskusage; System Information).
      *
      * @return GetDiskUsageResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/system-information/sys-getdiskusage
      */
     public function getDiskUsage(): array
@@ -1069,9 +1069,9 @@ final readonly class Server
      * API-map identity: whm1:gethostname#GET (wire name gethostname; System Information).
      *
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/system-information/sys-gethostname
      */
     public function getHostname(): string
@@ -1097,9 +1097,9 @@ final readonly class Server
      *
      * @param string $alias The name of a linked remote server node.
      * @return GetLinkedServerNodeResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-nodes/cpanel-get_linked_server_node
      */
     public function getLinkedServerNode(string $alias): array
@@ -1118,9 +1118,9 @@ final readonly class Server
      * API-map identity: whm1:systemloadavg#GET (wire name systemloadavg; System Information).
      *
      * @return GetLoadAverageResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/system-information/cpanel-systemloadavg
      */
     public function getLoadAverage(): array
@@ -1147,9 +1147,9 @@ final readonly class Server
      * API-map identity: whm1:get_lts_wexpire#GET (wire name get_lts_wexpire; Updates).
      *
      * @return GetLtsWexpireResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/updates/update-get_lts_wexpire
      */
     public function getLtsWexpire(): array
@@ -1180,9 +1180,9 @@ final readonly class Server
      * @param 'default'|'createacct'|'ftp'|'list'|'mysql'|'passwd'|'postgres'|'sshkey'|'virtual'|null $name The service
      *     for which to display the minimum password value. Null omits it.
      * @return GetMinimumPasswordStrengthsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/security/security-getminimumpasswordstrengths
      */
     public function getMinimumPasswordStrengths(?string $name = null): array
@@ -1218,9 +1218,9 @@ final readonly class Server
      * @param string $username The username required to make API calls to the remote server node.
      * @param bool|null $skipTlsVerification Whether to skip SSL/TLS verification. Null omits it.
      * @return GetServerNodeStatusResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-nodes/cpanel-get_server_node_status
      */
     public function getServerNodeStatus(
@@ -1262,9 +1262,9 @@ final readonly class Server
      *
      * @param 'dovecot' $service The service's name.
      * @return GetServiceConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/services/advconfig-get_service_config
      */
     public function getServiceConfig(string $service): array
@@ -1297,9 +1297,9 @@ final readonly class Server
      * @param string $key The configuration key's name.
      * @param string $service The service's name.
      * @return GetServiceConfigKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/services/advconfig-get_service_config_key
      */
     public function getServiceConfigKey(string $key, string $service): array
@@ -1324,9 +1324,9 @@ final readonly class Server
      *
      * @param string $username The cPanel account's username.
      * @return GetServiceProxyBackendsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/services/accounts-get_service_proxy_backends
      */
     public function getServiceProxyBackends(string $username): array
@@ -1350,9 +1350,9 @@ final readonly class Server
      * API-map identity: whm1:get_tcp4_sockets#GET (wire name get_tcp4_sockets; Connections).
      *
      * @return GetTcp4SocketsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/connections/sys-get_tcp4_sockets
      */
     public function getTcp4Sockets(): array
@@ -1376,9 +1376,9 @@ final readonly class Server
      * API-map identity: whm1:get_tcp6_sockets#GET (wire name get_tcp6_sockets; Connections).
      *
      * @return GetTcp6SocketsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/connections/sys-get_tcp6_sockets
      */
     public function getTcp6Sockets(): array
@@ -1405,9 +1405,9 @@ final readonly class Server
      * @param 'Apache'|'Basic'|'Mail'|'Main'|null $module One of the following *Tweak Settings* module names: * `Apache`
      *     * `Basic` * `Mail` * `Main` Null omits it.
      * @return GetTweakSettingResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/configurations/cpanel-get_tweaksetting
      */
     public function getTweakSetting(string $key, ?string $module = null): array
@@ -1431,9 +1431,9 @@ final readonly class Server
      * API-map identity: whm1:get_udp4_sockets#GET (wire name get_udp4_sockets; Connections).
      *
      * @return GetUdp4SocketsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/connections/sys-get_udp4_sockets
      */
     public function getUdp4Sockets(): array
@@ -1457,9 +1457,9 @@ final readonly class Server
      * API-map identity: whm1:get_udp6_sockets#GET (wire name get_udp6_sockets; Connections).
      *
      * @return GetUdp6SocketsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/connections/sys-get_udp6_sockets
      */
     public function getUdp6Sockets(): array
@@ -1484,9 +1484,9 @@ final readonly class Server
      * API-map identity: whm1:get_update_availability#GET (wire name get_update_availability; Updates).
      *
      * @return GetUpdateAvailabilityResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/updates/update-get_update_availability
      */
     public function getUpdateAvailability(): array
@@ -1513,9 +1513,9 @@ final readonly class Server
      * @param bool|null $packages Whether to list the server's installed RPMs in the function's `cpanel_packages`,
      *     `ea_4_packages`, and `os_packages` arrays. Null omits it.
      * @return InstalledVersionsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/updates/applicationversions-installed_versions
      */
     public function installedVersions(?bool $packages = null): array
@@ -1544,9 +1544,9 @@ final readonly class Server
      * @param 'Whostmgr'|'Cpanel'|null $namespace A filter that allows you to show plugin-based features for a specific
      *     interface. Null omits it.
      * @return IsEcosystemFeatureReadyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/plugin-based-features/is_ready
      */
     public function isEcosystemFeatureReady(string $plugin, ?string $namespace = null): array
@@ -1579,9 +1579,9 @@ final readonly class Server
      *
      * @param string $role The role to check.
      * @return IsRoleEnabledResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-profiles/cpanel-is_role_enabled
      */
     public function isRoleEnabled(string $role): array
@@ -1614,7 +1614,7 @@ final readonly class Server
      * @param string $hostname The remote server node's hostname.
      * @param string $username The username required to make API calls to the remote server node.
      * @param bool|null $skipTlsVerification Whether to skip SSL/TLS verification. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-nodes/cpanel-link_server_node_with_api_token
      */
     public function linkServerNodeWithApiToken(
@@ -1649,9 +1649,9 @@ final readonly class Server
      * Clusters).
      *
      * @return ListConfigClusterServersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/configuration-clusters/clusterserver-list_configclusterservers
      */
     public function listConfigClusterServers(): array
@@ -1680,9 +1680,9 @@ final readonly class Server
      * Applications).
      *
      * @return ListConnectedApplicationsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/connected-applications/connectedapplications-list_connected_applications
      */
     public function listConnectedApplications(): array
@@ -1707,9 +1707,9 @@ final readonly class Server
      * API-map identity: whm1:list_linked_server_nodes#GET (wire name list_linked_server_nodes; Server Nodes).
      *
      * @return ListLinkedServerNodesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-nodes/cpanel-list_linked_server_nodes
      */
     public function listLinkedServerNodes(): array
@@ -1733,9 +1733,9 @@ final readonly class Server
      * API-map identity: whm1:list_user_child_nodes#GET (wire name list_user_child_nodes; Server Nodes).
      *
      * @return ListUserChildNodesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-nodes/cpanel-list_user_child_nodes
      */
     public function listUserChildNodes(): array
@@ -1764,9 +1764,9 @@ final readonly class Server
      * @param 'info'|'list'|'enable'|'disable' $action The function's action.
      * @param string|null $features The feature's ID. Null omits it.
      * @return ManageFeaturesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/updates/managefeatures-manage_features
      */
     public function manageFeatures(string $action, ?string $features = null): array
@@ -1791,7 +1791,7 @@ final readonly class Server
      * API-map identity: whm1:participate_in_analytics#GET (wire name participate_in_analytics; cPanel Analytics).
      *
      * @param bool $enabled Whether to enable Interface Analytics.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-analytics/analytics-participate_in_analytics
      */
     public function participateInAnalytics(bool $enabled): void
@@ -1821,9 +1821,9 @@ final readonly class Server
      * @param bool|null $upgrade Whether the cPanel Store or cPanel Market provider should treat this request as an
      *     upgrade. Null omits it.
      * @return PurchaseALicenseResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/license-management/market-purchase_a_license
      */
     public function purchaseALicense(
@@ -1860,7 +1860,7 @@ final readonly class Server
      * API-map identity: whm1:reboot#GET (wire name reboot; System Information).
      *
      * @param bool|null $force Whether to use a forceful reboot. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/system-information/sys-reboot
      */
     public function reboot(?bool $force = null): void
@@ -1885,7 +1885,7 @@ final readonly class Server
      * Applications).
      *
      * @param string $name The name of the connected application.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/connected-applications/connectedapplications-remove_connected_application
      */
     public function removeConnectedApplication(string $name): void
@@ -1910,9 +1910,9 @@ final readonly class Server
      * @param string $service The service to restart.
      * @param bool|null $queueTask Whether to queue this task. Null omits it.
      * @return RestartServiceResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/services/services-restartservice
      */
     public function restartService(string $service, ?bool $queueTask = null): array
@@ -1941,7 +1941,7 @@ final readonly class Server
      *
      * @param string $module The configuration module's name.
      * @param string $path The absolute path to configuration file.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/configuration-clusters/cpanel-restore_config_from_file
      */
     public function restoreConfigFromFile(
@@ -1966,7 +1966,7 @@ final readonly class Server
      *
      * API-map identity: whm1:run_cpkeyclt#GET (wire name run_cpkeyclt; License Management).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/license-management/sys-run_cpkeyclt
      */
     public function runCpkeyclt(): void
@@ -1993,9 +1993,9 @@ final readonly class Server
      *
      * @param string $url The URL and query string to send in uuencoded format.
      * @return SendTestPostUrlResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/notifications/icontact-send_test_posturl
      */
     public function sendTestPostUrl(
@@ -2025,9 +2025,9 @@ final readonly class Server
      *
      * @param string $accessToken The Pushbullet token to use.
      * @return SendTestPushbulletNoteResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/notifications/icontact-send_test_pushbullet_note
      */
     public function sendTestPushbulletNote(
@@ -2054,9 +2054,9 @@ final readonly class Server
      *
      * @param string|null $service The service for which to view the status. Null omits it.
      * @return ServiceStatusResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/services/services-servicestatus
      */
     public function serviceStatus(?string $service = null): array
@@ -2085,7 +2085,7 @@ final readonly class Server
      * @param string $app The cPanel & WHM application module's name.
      * @param string $event The event's name.
      * @param 'High'|'Medium'|'Low'|'Disabled' $importance The importance level at which to send the notification.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/notifications/contact-set_application_contact_event_importance
      */
     public function setApplicationContactEventImportance(string $app, string $event, string $importance): void
@@ -2114,7 +2114,7 @@ final readonly class Server
      *
      * @param string $app The cPanel & WHM application module's name.
      * @param 'High'|'Medium'|'Low'|'Disabled' $importance The importance level at which to send the notification.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/notifications/contact-set_application_contact_importance
      */
     public function setApplicationContactImportance(string $app, string $importance): void
@@ -2137,9 +2137,9 @@ final readonly class Server
      *
      * @param 'daily'|'manual'|'never' $updates The frequency with which to run cPanel & WHM updates on a server.
      * @return SetCpanelUpdatesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/updates/sys-set_cpanel_updates
      */
     public function setCpanelUpdates(string $updates): array
@@ -2166,7 +2166,7 @@ final readonly class Server
      * API-map identity: whm1:sethostname#GET (wire name sethostname; System Information).
      *
      * @param string $hostname The server's new hostname.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/system-information/hostname-sethostname
      */
     public function setHostname(string $hostname): void
@@ -2198,7 +2198,7 @@ final readonly class Server
      * @param int|null $sshkey The minimum password strength for SSH keys. Null omits it.
      * @param int|null $virtual The minimum password strength for mail, FTP, Web Disk, and WebDAV accounts. Null omits
      *     it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/security/security-setminimumpasswordstrengths
      */
     public function setMinimumPasswordStrengths(
@@ -2242,7 +2242,7 @@ final readonly class Server
      * @param string $servername The `ServerName` value in Apache's `VirtualHost` section to set as primary for the IP
      *     address and port type.
      * @param 'std'|'ssl'|null $type The type of virtual host to set as primary. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/system-information/httpd-set_primary_servername
      */
     public function setPrimaryServername(string $servername, ?string $type = null): void
@@ -2267,7 +2267,7 @@ final readonly class Server
      * @param string $key The configuration key's name.
      * @param string $service The service's name.
      * @param string|int $value The new value for the configuration key.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/services/advconfig-set_service_config_key
      */
     public function setServiceConfigKey(
@@ -2305,7 +2305,7 @@ final readonly class Server
      *     Null omits it.
      * @param string|list<string>|null $serviceGroupBackend The hostname or IP address of the server to assign as the
      *     corresponding `service_group` value's proxy backend server. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/services/accounts-set_service_proxy_backends
      */
@@ -2338,9 +2338,9 @@ final readonly class Server
      *
      * @param 'edge'|'current'|'release'|'stable'|'lts' $tier The support tier to use.
      * @return SetTierResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/updates/sys-set_tier
      */
     public function setTier(string $tier): array
@@ -2371,7 +2371,7 @@ final readonly class Server
      *     Settings* interface (*WHM >>Home >> Server Configuration >> Tweak Settings*).
      * @param 'Apache'|'Basic'|'Mail'|'Main'|null $module The *Tweak Settings* interface section. Null omits it.
      * @param string|null $value The value to assign to the setting. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/configurations/cpanel-set_tweaksetting
      */
     public function setTweakSetting(
@@ -2399,9 +2399,9 @@ final readonly class Server
      *
      * @param string|null $mode The cPanel & WHM update’s mode of operation. Null omits it.
      * @return StartCpanelUpdateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/updates/cpanel-start_cpanel_update
      */
     public function startCpanelUpdate(?string $mode = null): array
@@ -2435,9 +2435,9 @@ final readonly class Server
      * @param string|int|null $optional The optional roles to enable or disable with the profile, in JSON format. Null
      *     omits it.
      * @return StartProfileActivationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-profiles/cpanel-start_profile_activation
      */
     public function startProfileActivation(
@@ -2469,9 +2469,9 @@ final readonly class Server
      * @param 'leave'|'expire_24h'|null $handleApiToken What to do with the linkage’s stored API token on the remote
      *     server node: Null omits it.
      * @return UnlinkServerNodeResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-nodes/cpanel-unlink_server_node
      */
     public function unlinkServerNode(
@@ -2504,7 +2504,7 @@ final readonly class Server
      * Services).
      *
      * @param string $username The cPanel account's username.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/services/accounts-unset_all_service_proxy_backends
      */
     public function unsetAllServiceProxyBackends(string $username): void
@@ -2530,7 +2530,7 @@ final readonly class Server
      * @param string $name The remote configuration cluster server's name or IP address.
      * @param string|null $key The new remote access key. Null omits it.
      * @param string|null $user The server's `root`-level account username. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/configuration-clusters/clusterserver-update_configclusterserver
      */
     public function updateConfigClusterServer(
@@ -2557,7 +2557,7 @@ final readonly class Server
      * API-map identity: whm1:update_contact_email#GET (wire name update_contact_email; Notifications).
      *
      * @param string $contactEmail The contact email address to add as the `wwwacct.conf` file's `CONTACTEMAIL` setting.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/notifications/wwwacct-update_contact_email
      */
     public function updateContactEmail(
@@ -2589,7 +2589,7 @@ final readonly class Server
      * @param bool|null $skipTlsVerification Whether to skip SSL/TLS verification. Null omits it.
      * @param string|null $username The username required to make API calls to the remote cPanel server node. Null omits
      *     it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/server-nodes/cpanel-update_linked_server_node
      */
     public function updateLinkedServerNode(
@@ -2637,7 +2637,7 @@ final readonly class Server
      *     version. Null omits it.
      * @param string|null $stagingDir The absolute directory path to the staging directory for updates. Null omits it.
      * @param string|null $updates When the system will check for updates. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/updates/cpupdate-update_updateconf
      */
     public function updateUpdateconf(
@@ -2681,9 +2681,9 @@ final readonly class Server
      * API-map identity: whm1:verify_posturl_access#GET (wire name verify_posturl_access; Notifications).
      *
      * @return VerifyPostUrlAccessResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/notifications/icontact-verify_posturl_access
      */
     public function verifyPostUrlAccess(): array
@@ -2711,9 +2711,9 @@ final readonly class Server
      * API-map identity: whm1:verify_pushbullet_access#GET (wire name verify_pushbullet_access; Notifications).
      *
      * @return VerifyPushbulletAccessResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/notifications/icontact-verify_pushbullet_access
      */
     public function verifyPushbulletAccess(): array
@@ -2741,9 +2741,9 @@ final readonly class Server
      * API-map identity: whm1:verify_slack_access#GET (wire name verify_slack_access; Notifications).
      *
      * @return VerifySlackAccessResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/notifications/icontact-verify_slack_access
      */
     public function verifySlackAccess(): array
@@ -2762,9 +2762,9 @@ final readonly class Server
      * API-map identity: whm1:version#GET (wire name version; Updates).
      *
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/updates/cpanel-version
      */
     public function version(): string
@@ -2789,9 +2789,9 @@ final readonly class Server
      * API-map identity: whm1:wp_dashboard_get_hostname#GET (wire name wp_dashboard_get_hostname; System Information).
      *
      * @return WpDashboardGetHostnameResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/system-information/wpdashboard-wp_dashboard_get_hostname
      */
     public function wpDashboardGetHostname(): array

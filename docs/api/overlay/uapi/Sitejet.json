@@ -9,27 +9,35 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
+        },
+        {
+          "kind": "policy",
+          "text": "The nullable opaque result preserves explicit null and unknown object fields; absent data is a mismatch."
+        },
+        {
+          "kind": "policy",
+          "text": "Token inputs and returned keys/tokens are sensitive; do not log them."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer 5721328890 on cPanel 11.138.0.19 reports malformed input returning only a generic failure/Error ID."
         },
         {
           "kind": "documented",
-          "text": "This function adds an existing Sitejet API token to a cPanel user. Note: You can create a Sitejet API token with the Sitejet:create_account function."
+          "text": "Reviewer-source: Reviewer 5721328890 on cPanel 11.138.0.19 inspected /^[a-z0-9]{32}\\z/ as the token requirement, with specific Invalid token text written to the server log."
         },
         {
-          "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+          "kind": "policy",
+          "text": "No local token validator or server-log access is added."
         },
         {
-          "kind": "documented",
-          "text": "Stores an existing external-builder API token for this account. Token input stays sensitive. The nullable opaque result preserves explicit null and unknown object fields; absent data is a mismatch."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
-        },
-        {
-          "kind": "documented",
-          "text": "api_token: The Sitejet API token to add."
+          "kind": "observed",
+          "text": "Reviewer 5721328890 on cPanel 11.138.0.19 reports addApiToken returning null and getApiToken returning a string after a valid stored token on both routes. Missing-token and foreign-domain cases raised API errors."
         }
       ],
       "evidence": [
@@ -37,7 +45,21 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Sitejet/add_api_token The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Sitejet/add_api_token: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed external review 5721328890 of dc2c69f0fc5c3dd4f4d553baa1a3450b8c576e95. Reviewer-source: Reviewer 5721328890 on cPanel 11.138.0.19 inspected /^[a-z0-9]{32}\\z/ as the token requirement, with specific Invalid token text written to the server log. No new capture or corrected-head execution is claimed. Unreported HTTP methods and variants remain unestablished.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/69#pullrequestreview-5721328890"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed external review 5721328890 of dc2c69f0fc5c3dd4f4d553baa1a3450b8c576e95. Reviewer 5721328890 on cPanel 11.138.0.19 reports malformed input returning only a generic failure/Error ID. Reviewer 5721328890 on cPanel 11.138.0.19 reports addApiToken returning null and getApiToken returning a string after a valid stored token on both routes. Missing-token and foreign-domain cases raised API errors. No new capture or corrected-head execution is claimed. Unreported HTTP methods and variants remain unestablished.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/69#pullrequestreview-5721328890"
         }
       ],
       "params": {
@@ -52,19 +74,11 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "Pinned x-readonly=true."
         },
         {
-          "kind": "documented",
-          "text": "This function returns whether a cPanel account can create new subdomains or addon domains. Note: Creating a new addon domain is dependent on the creation of subdomains. If the cPanel account has reached its limit for subdomains, you cannot create a new addon domain, even if the limit for addon domains has not been reached."
-        },
-        {
-          "kind": "documented",
-          "text": "Pinned x-readonly=true permits GET."
-        },
-        {
-          "kind": "documented",
-          "text": "This capability read does not create a domain. The source omits type but explicitly enumerates integer 1 and 0; use the existing strict integer flag contract. Reaching the subdomain limit also prevents addon-domain creation."
+          "kind": "policy",
+          "text": "The strict integer flag repair follows the pinned 0/1 enum and prose without string or boolean coercion."
         }
       ],
       "evidence": [
@@ -72,7 +86,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Sitejet/can_create_domains Pinned x-readonly=true permits GET. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Sitejet/can_create_domains: parameter requiredness, defaults and wire casing remain the source contract. x-readonly=true."
         }
       ],
       "response": {
@@ -96,23 +110,15 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
         },
         {
-          "kind": "documented",
-          "text": "This function creates a Sitejet API token for a cPanel account."
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
         },
         {
-          "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
-        },
-        {
-          "kind": "documented",
-          "text": "Creates an external-builder API token for this account. Returned key is sensitive payload data; do not log it. This response does not establish successful SSO login."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
+          "kind": "policy",
+          "text": "Token inputs and returned keys/tokens are sensitive; do not log them."
         }
       ],
       "evidence": [
@@ -120,7 +126,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Sitejet/create_account The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Sitejet/create_account: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
         }
       ]
     },
@@ -129,31 +135,31 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 120 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
+        },
+        {
+          "kind": "policy",
+          "text": "The nullable opaque result preserves explicit null and unknown object fields; absent data is a mismatch."
         },
         {
           "kind": "documented",
-          "text": "This function creates a restore point for a domain's document root and removes the domain's files."
+          "text": "Destructive: restore-point creation removes domain document-root files; restoration changes existing content."
         },
         {
           "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+          "text": "Reviewer-source: Reviewer 5721328890 on cPanel 11.138.0.19 inferred deletion from inspected Sitejet _clean_up(document_root, exclusions) source; live deletion was not witnessed."
         },
         {
-          "kind": "documented",
-          "text": "Creates a restore point AND removes the domain document-root files. Treat this as destructive; the client provides no retry or rollback."
+          "kind": "observed",
+          "text": "Reviewer 5721328890 on cPanel 11.138.0.19 reports createRestorePoint success and restoreDocumentRoot refusal on both routes when the <domain>-files tracking file was absent on a never-published domain. The archive remained at ~/<domain>_<time>.gz; recovery is manual. Successful restoration remains unobserved."
         },
         {
-          "kind": "documented",
-          "text": "The response is a nullable opaque object: preserve explicit null and unknown fields, reject absent data, and retain shared empty-list compatibility for an empty object."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
-        },
-        {
-          "kind": "documented",
-          "text": "domain: A cPanel account's domain."
+          "kind": "policy",
+          "text": "This is not an automatically reversible backup. No automatic recovery, undo or retry is provided."
         }
       ],
       "evidence": [
@@ -161,7 +167,21 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Sitejet/create_restore_point The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Sitejet/create_restore_point: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed external review 5721328890 of dc2c69f0fc5c3dd4f4d553baa1a3450b8c576e95. Reviewer-source: Reviewer 5721328890 on cPanel 11.138.0.19 inferred deletion from inspected Sitejet _clean_up(document_root, exclusions) source; live deletion was not witnessed. No new capture or corrected-head execution is claimed. Unreported HTTP methods and variants remain unestablished.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/69#pullrequestreview-5721328890"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed external review 5721328890 of dc2c69f0fc5c3dd4f4d553baa1a3450b8c576e95. Reviewer 5721328890 on cPanel 11.138.0.19 reports createRestorePoint success and restoreDocumentRoot refusal on both routes when the <domain>-files tracking file was absent on a never-published domain. The archive remained at ~/<domain>_<time>.gz; recovery is manual. Successful restoration remains unobserved. No new capture or corrected-head execution is claimed. Unreported HTTP methods and variants remain unestablished.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/69#pullrequestreview-5721328890"
         }
       ]
     },
@@ -170,83 +190,23 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
         },
         {
           "kind": "documented",
-          "text": "This function creates a Sitejet ID for the specified domain. Note: A unique Sitejet ID is assigned to each domain on the cPanel account."
+          "text": "websiteID is the pinned optional integer object response key; websiteId is the getPreviewUrl request parameter and the pinned integer inventory metadata key. metadata is JSON text in a form field."
         },
         {
           "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+          "text": "Reviewer-source: Reviewer 5721328890 on cPanel 11.138.0.19 inspected Cpanel/API/Sitejet.pm and Cpanel/Sitejet/Connector.pm: Connector returns $ret->{websiteId}, and the handler sets data to the bare ID. Remote createWebsite was not run, so no remote scalar type was observed."
         },
         {
-          "kind": "documented",
-          "text": "Creates an external Sitejet website identifier, with a unique ID per domain. metadata is caller-supplied encoded JSON TEXT in a form field; it is sent once, without JSON body transport, decoding or invented metadata structure. Contact/customer strings and metadata are sensitive. websiteID in this response differs from websiteId in preview parameters and inventory metadata; preserve the exact source casing."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
-        },
-        {
-          "kind": "documented",
-          "text": "company: The name of the company the website represents."
-        },
-        {
-          "kind": "documented",
-          "text": "domain: A cPanel account's domain."
-        },
-        {
-          "kind": "documented",
-          "text": "assignTo: Assign website to other user."
-        },
-        {
-          "kind": "documented",
-          "text": "city: The city where the company or website owner is located."
-        },
-        {
-          "kind": "documented",
-          "text": "country: The country where the company or website owner is located."
-        },
-        {
-          "kind": "documented",
-          "text": "email: The email address of the website owner."
-        },
-        {
-          "kind": "documented",
-          "text": "firstname: The first name of the website owner."
-        },
-        {
-          "kind": "documented",
-          "text": "language: The language to use for the Sitejet Website Builder."
-        },
-        {
-          "kind": "documented",
-          "text": "lastname: The last name of the website owner."
-        },
-        {
-          "kind": "documented",
-          "text": "metadata: Additional metadata for the website."
-        },
-        {
-          "kind": "documented",
-          "text": "note: Additional notes about the website."
-        },
-        {
-          "kind": "documented",
-          "text": "phone: The phone number of the company or website owner."
-        },
-        {
-          "kind": "documented",
-          "text": "street: The street address of the company or website owner."
-        },
-        {
-          "kind": "documented",
-          "text": "title: The website title."
-        },
-        {
-          "kind": "documented",
-          "text": "zip: The zip code where the company or website owner is located."
+          "kind": "policy",
+          "text": "Accept native int alongside the unchanged pinned optional websiteID object using the pinned ID types as the bounded type basis. Preserve the integer or object form/value; string/numeric-string/null/float IDs remain unsupported. Contact/customer strings and metadata stay sensitive; metadata is encoded once without local decoding."
         }
       ],
       "evidence": [
@@ -254,7 +214,14 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Sitejet/create_website The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Sitejet/create_website: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed external review 5721328890 of dc2c69f0fc5c3dd4f4d553baa1a3450b8c576e95. Reviewer-source: Reviewer 5721328890 on cPanel 11.138.0.19 inspected Cpanel/API/Sitejet.pm and Cpanel/Sitejet/Connector.pm: Connector returns $ret->{websiteId}, and the handler sets data to the bare ID. Remote createWebsite was not run, so no remote scalar type was observed. No new capture or corrected-head execution is claimed. Unreported HTTP methods and variants remain unestablished.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/69#pullrequestreview-5721328890"
         }
       ],
       "params": {
@@ -297,6 +264,35 @@
         "zip": {
           "sensitive": true
         }
+      },
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "object",
+                "fields": {
+                  "websiteID": {
+                    "type": "int"
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19 server source; pinned 2026-10-13 ID types",
+              "date": "2026-10-31",
+              "note": "Reviewer 5721328890 inspected Cpanel/API/Sitejet.pm and Cpanel/Sitejet/Connector.pm: Connector returns $ret->{websiteId}, and the handler sets data to the bare ID. Remote createWebsite was not run. This source-based container correction accepts native int alongside the unchanged pinned optional websiteID object; integer typing comes from pinned websiteID and inventory websiteId, not an observed remote scalar. String/numeric-string/null/float IDs remain unsupported.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/69#pullrequestreview-5721328890"
+            }
+          ]
+        }
       }
     },
     "uapi:Sitejet/get_all_user_sitejet_info": {
@@ -304,27 +300,23 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
         },
         {
           "kind": "documented",
-          "text": "This function returns the Sitejet domains' information for the cPanel account."
+          "text": "Space is in MB; latest_publish_date is an integer Unix timestamp. is_empty_docroot differs from Nova is_docroot_empty."
         },
         {
-          "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+          "kind": "policy",
+          "text": "The list repair and strict integer flags use the pinned items/properties/enums; fields remain optional."
         },
         {
-          "kind": "documented",
-          "text": "The source items schema establishes a list of domain records. The source omits type on fullcms, can_backup and is_empty_docroot but enumerates integer 1 and 0; preserve strict integer flags. Space is in MB and latest_publish_date is an integer Unix timestamp. is_empty_docroot differs from Nova is_docroot_empty; preserve both spellings. No files or returned URLs are opened by the client."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
-        },
-        {
-          "kind": "documented",
-          "text": "domain: The single domain to return Sitejet information."
+          "kind": "observed",
+          "text": "Reviewer 5721328890 on cPanel 11.138.0.19 reports quota/status and empty metadata passing with and without domain on both routes. Published-site metadata remains unobserved."
         }
       ],
       "evidence": [
@@ -332,7 +324,14 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Sitejet/get_all_user_sitejet_info The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Sitejet/get_all_user_sitejet_info: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed external review 5721328890 of dc2c69f0fc5c3dd4f4d553baa1a3450b8c576e95. Reviewer 5721328890 on cPanel 11.138.0.19 reports quota/status and empty metadata passing with and without domain on both routes. Published-site metadata remains unobserved. No new capture or corrected-head execution is claimed. Unreported HTTP methods and variants remain unestablished.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/69#pullrequestreview-5721328890"
         }
       ],
       "response": {
@@ -436,23 +435,19 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
         },
         {
-          "kind": "documented",
-          "text": "This function returns the cPanel account's Sitejet API token."
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
         },
         {
-          "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+          "kind": "policy",
+          "text": "Token inputs and returned keys/tokens are sensitive; do not log them."
         },
         {
-          "kind": "documented",
-          "text": "The returned token is sensitive payload data; do not log it. This private-token retrieval uses form POST."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
+          "kind": "observed",
+          "text": "Reviewer 5721328890 on cPanel 11.138.0.19 reports addApiToken returning null and getApiToken returning a string after a valid stored token on both routes. Missing-token and foreign-domain cases raised API errors."
         }
       ],
       "evidence": [
@@ -460,7 +455,14 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Sitejet/get_api_token The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Sitejet/get_api_token: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed external review 5721328890 of dc2c69f0fc5c3dd4f4d553baa1a3450b8c576e95. Reviewer 5721328890 on cPanel 11.138.0.19 reports addApiToken returning null and getApiToken returning a string after a valid stored token on both routes. Missing-token and foreign-domain cases raised API errors. No new capture or corrected-head execution is claimed. Unreported HTTP methods and variants remain unestablished.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/69#pullrequestreview-5721328890"
         }
       ]
     },
@@ -469,27 +471,19 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
         },
         {
           "kind": "documented",
-          "text": "This function returns a Sitejet website's preview URL."
+          "text": "websiteId is the integer request parameter; the result is a URL string."
         },
         {
-          "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
-        },
-        {
-          "kind": "documented",
-          "text": "websiteId remains an integer identifier of unspecified wider meaning. The returned URL is payload data; the client does not fetch it or establish rendered-site compatibility."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
-        },
-        {
-          "kind": "documented",
-          "text": "websiteId: The Sitejet website ID for the domain."
+          "kind": "observed",
+          "text": "Reviewer 5721328890 on cPanel 11.138.0.19 reports this read passing on both routes."
         }
       ],
       "evidence": [
@@ -497,7 +491,14 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Sitejet/get_preview_url The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Sitejet/get_preview_url: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed external review 5721328890 of dc2c69f0fc5c3dd4f4d553baa1a3450b8c576e95. Reviewer 5721328890 on cPanel 11.138.0.19 reports this read passing on both routes. No new capture or corrected-head execution is claimed. Unreported HTTP methods and variants remain unestablished.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/69#pullrequestreview-5721328890"
         }
       ]
     },
@@ -506,35 +507,15 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
         },
         {
-          "kind": "documented",
-          "text": "This function returns a Sitejet website's SSO URL."
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
         },
         {
-          "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
-        },
-        {
-          "kind": "documented",
-          "text": "referrer can include a cPanel session token and stays sensitive. The optional ui_mode source strings are forwarded unchanged. The client does not follow the SSO URL or establish an interactive login."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
-        },
-        {
-          "kind": "documented",
-          "text": "domain: The cPanel account's Sitejet domain."
-        },
-        {
-          "kind": "documented",
-          "text": "referrer: The cPanel interface referral URL."
-        },
-        {
-          "kind": "documented",
-          "text": "ui_mode: Specifies which Sitejet SaaS user interface mode the user will be redirected to."
+          "kind": "policy",
+          "text": "referrer can include a cPanel session token and remains sensitive; the returned URL is not followed."
         }
       ],
       "evidence": [
@@ -542,7 +523,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Sitejet/get_sso_link The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Sitejet/get_sso_link: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
         }
       ],
       "params": {
@@ -559,27 +540,19 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
         },
         {
           "kind": "documented",
-          "text": "This function reports whether a Sitejet publish is currently running for a domain, and under which process ID."
+          "text": "in_progress=0 can coexist with a migration lock and does not establish permission to publish. in_progress=1 can omit pid while the daemon starts; poll_publish is not a pinned Sitejet operation."
         },
         {
-          "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
-        },
-        {
-          "kind": "documented",
-          "text": "in_progress=0 means no publication to follow, not permission to publish: migration can hold the same lock and start_publish can fail. in_progress=1 can omit pid while the daemon starts. This call performs one request with no polling loop. The source mentions poll_publish, which is not a pinned operation in this Sitejet slice; no method is invented."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
-        },
-        {
-          "kind": "documented",
-          "text": "domain: The domain for the Sitejet website."
+          "kind": "observed",
+          "text": "Reviewer 5721328890 on cPanel 11.138.0.19 reports this read passing on both routes."
         }
       ],
       "evidence": [
@@ -587,7 +560,14 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Sitejet/is_publish_in_progress The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Sitejet/is_publish_in_progress: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed external review 5721328890 of dc2c69f0fc5c3dd4f4d553baa1a3450b8c576e95. Reviewer 5721328890 on cPanel 11.138.0.19 reports this read passing on both routes. No new capture or corrected-head execution is claimed. Unreported HTTP methods and variants remain unestablished.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/69#pullrequestreview-5721328890"
         }
       ]
     },
@@ -596,31 +576,31 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 120 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
+        },
+        {
+          "kind": "policy",
+          "text": "The nullable opaque result preserves explicit null and unknown object fields; absent data is a mismatch."
         },
         {
           "kind": "documented",
-          "text": "This function reverts a document root to the restore point."
+          "text": "Destructive: restore-point creation removes domain document-root files; restoration changes existing content."
         },
         {
           "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+          "text": "Reviewer-source: Reviewer 5721328890 on cPanel 11.138.0.19 inferred deletion from inspected Sitejet _clean_up(document_root, exclusions) source; live deletion was not witnessed."
         },
         {
-          "kind": "documented",
-          "text": "Reverts the domain document root to the restore point. Existing content can change; the client provides no retry or rollback."
+          "kind": "observed",
+          "text": "Reviewer 5721328890 on cPanel 11.138.0.19 reports createRestorePoint success and restoreDocumentRoot refusal on both routes when the <domain>-files tracking file was absent on a never-published domain. The archive remained at ~/<domain>_<time>.gz; recovery is manual. Successful restoration remains unobserved."
         },
         {
-          "kind": "documented",
-          "text": "The response is a nullable opaque object: preserve explicit null and unknown fields, reject absent data, and retain shared empty-list compatibility for an empty object."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
-        },
-        {
-          "kind": "documented",
-          "text": "domain: A cPanel account's domain."
+          "kind": "policy",
+          "text": "This is not an automatically reversible backup. No automatic recovery, undo or retry is provided."
         }
       ],
       "evidence": [
@@ -628,7 +608,21 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Sitejet/restore_document_root The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Sitejet/restore_document_root: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed external review 5721328890 of dc2c69f0fc5c3dd4f4d553baa1a3450b8c576e95. Reviewer-source: Reviewer 5721328890 on cPanel 11.138.0.19 inferred deletion from inspected Sitejet _clean_up(document_root, exclusions) source; live deletion was not witnessed. No new capture or corrected-head execution is claimed. Unreported HTTP methods and variants remain unestablished.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/69#pullrequestreview-5721328890"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed external review 5721328890 of dc2c69f0fc5c3dd4f4d553baa1a3450b8c576e95. Reviewer 5721328890 on cPanel 11.138.0.19 reports createRestorePoint success and restoreDocumentRoot refusal on both routes when the <domain>-files tracking file was absent on a never-published domain. The archive remained at ~/<domain>_<time>.gz; recovery is manual. Successful restoration remains unobserved. No new capture or corrected-head execution is claimed. Unreported HTTP methods and variants remain unestablished.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/69#pullrequestreview-5721328890"
         }
       ]
     },
@@ -637,31 +631,23 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 110 and later. Operates on the selected cPanel account."
+          "text": "The pinned source omits x-readonly."
+        },
+        {
+          "kind": "policy",
+          "text": "Use conservative form POST; omission of x-readonly alone does not establish mutation. The reviewer report does not establish this generated HTTP method."
         },
         {
           "kind": "documented",
-          "text": "This function publishes a domain's Sitejet website."
+          "text": "cleanup=1 removes previous document-root files. file_name is deprecated; the prose references poll_publish, which is absent from the pinned Sitejet module."
         },
         {
           "kind": "documented",
-          "text": "The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified."
+          "text": "Reviewer-source: Reviewer 5721328890 on cPanel 11.138.0.19 inspected Sitejet get('cleanup') || 0: omission means zero on that version. The pinned parameter declares no default; remote startPublish was not executed."
         },
         {
-          "kind": "documented",
-          "text": "Starts publication to the domain document root. cleanup=1 removes previous document-root files; omitted cleanup retains the upstream default, which is not specified in this schema. cleanup remains an integer rather than a new boolean input. file_name is deprecated response data; the source says poll_publish derives its path from pid, but that function is absent from the pinned Sitejet module. Returned pid/file_name do not prove completion; no client retry or rollback."
-        },
-        {
-          "kind": "documented",
-          "text": "The client makes exactly one request, without automatic retries or rollback. An API success does not establish completed publication, rendering or interactive SSO login."
-        },
-        {
-          "kind": "documented",
-          "text": "domain: The domain for the Sitejet website."
-        },
-        {
-          "kind": "documented",
-          "text": "cleanup: Whether to cleanup the domain's document_root directory during the publication process. * 1 \u2014 Remove previous files in domain's document_root directory during the publication process. * 0 \u2014 Do not remove any files in domain's document_root directory during the publication process."
+          "kind": "policy",
+          "text": "cleanup uses nullable boolean encoding: null/omission omit, false sends 0 and true sends 1. A process ID or log path does not prove completion."
         }
       ],
       "evidence": [
@@ -669,9 +655,22 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Sitejet/start_publish The pinned source omits x-readonly. Use conservative form POST; omission alone is not evidence that this operation mutates server state. This transport is not live-verified. Parameter requiredness, defaults and wire casing remain pinned; no live execution is implied."
+          "note": "Pinned /Sitejet/start_publish: parameter requiredness, defaults and wire casing remain the source contract. x-readonly is absent; conservative POST is client policy, not a pinned declaration or live HTTP-method observation."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Attributed external review 5721328890 of dc2c69f0fc5c3dd4f4d553baa1a3450b8c576e95. Reviewer-source: Reviewer 5721328890 on cPanel 11.138.0.19 inspected Sitejet get('cleanup') || 0: omission means zero on that version. The pinned parameter declares no default; remote startPublish was not executed. No new capture or corrected-head execution is claimed. Unreported HTTP methods and variants remain unestablished.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/69#pullrequestreview-5721328890"
         }
-      ]
+      ],
+      "params": {
+        "cleanup": {
+          "encoding": "bool",
+          "description": "Whether to remove previous document-root files during publication. Omit or pass null to omit the field; false sends 0 and true sends 1 (destructive). The pinned Sitejet schema declares no default. Reviewer 5721328890 inspected omission as 0 in server source on 11.138.0.19; remote execution remains unobserved."
+        }
+      }
     },
     "uapi:Sitejet/get_templates": {
       "exclude": {
@@ -699,5 +698,6 @@
         ]
       }
     }
-  }
+  },
+  "description": "Policy: Each call makes one request without automatic retry, polling, rollback or undo. Returned tokens, SSO URLs and account metadata are sensitive payload data. The client does not fetch returned URLs or inspect website files. API success does not establish publication completion, rendering or interactive SSO login."
 }

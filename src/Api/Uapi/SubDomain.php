@@ -88,9 +88,9 @@ final readonly class SubDomain
      *     path relative to the user's home directory. Null omits it.
      * @param bool|null $disallowDot Whether to remove the dot (`.`) characters from the `domain` value. Null omits it.
      * @return AddSubdomainResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/subdomain/subdomain-addsubdomain
      */
     public function addSubdomain(
@@ -143,9 +143,9 @@ final readonly class SubDomain
      *     change.
      * @param string $docroot The new document root as a path relative to the user's home directory.
      * @return ChangeDocumentRootResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/subdomains/subdomain-changedocroot
      */
     public function changeDocumentRoot(string $domain, string $docroot): array
@@ -181,7 +181,7 @@ final readonly class SubDomain
      * @param string $domain The subdomain to remove.
      * @param bool|null $disallowDot Whether to remove the dot (`.`) characters from the subdomain label in the `domain`
      *     value. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/subdomain/subdomain-delsubdomain
      */
     public function deleteSubdomain(string $domain, ?bool $disallowDot = null): void
@@ -201,9 +201,9 @@ final readonly class SubDomain
      * API-map identity: uapi:SubDomain/getreservedsubdomains#GET (wire name getreservedsubdomains).
      *
      * @return GetReservedSubdomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/subdomain/subdomain-getreservedsubdomains
      */
     public function getReservedSubdomains(): array
@@ -232,9 +232,9 @@ final readonly class SubDomain
      * @param bool|null $returnHttpsRedirectStatus Whether to include the `can_https_redirect` and
      *     `is_https_redirecting` fields in each entry. Null omits it.
      * @return ListSubdomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/subdomain/subdomain-listsubdomains
      */
     public function listSubdomains(?string $regex = null, ?bool $returnHttpsRedirectStatus = null): array
@@ -261,9 +261,9 @@ final readonly class SubDomain
      * API-map identity: uapi:SubDomain/validregex#GET (wire name validregex).
      *
      * @return ValidRegexResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/subdomain/subdomain-validregex
      */
     public function validRegex(): array

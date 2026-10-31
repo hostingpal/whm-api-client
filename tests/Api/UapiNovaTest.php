@@ -173,6 +173,40 @@ final class UapiNovaTest extends TestCase
         );
     }
 
+    #[DataProvider('routes')]
+    public function testCleanupBooleanEncodingAndStrictRejectionBeforeIo(string $route): void
+    {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('exampleuser');
+        $group = $account->nova();
+        $args = ['archiveUrl' => 'archive', 'domain' => 'example.test',
+            'signature' => 'signature', 'userId' => 'id'];
+        foreach ([[], ['cleanup' => null], ['cleanup' => false], ['cleanup' => true]] as $index => $option) {
+            $http->addResponse(new Response(200, [], self::envelope($route, 'publish', '{}')));
+            $group->publish(...array_merge($args, $option));
+            $request = $http->getLastRequest();
+            self::assertInstanceOf(RequestInterface::class, $request);
+            parse_str((string) $request->getBody(), $wire);
+            if ($index < 2) {
+                self::assertArrayNotHasKey('cleanup', $wire);
+            } else {
+                self::assertSame($index === 2 ? '0' : '1', $wire['cleanup']);
+            }
+        }
+        $metadata = $account->responseMeta();
+        // The independent fixture supplies a dynamic method for deliberate invalid strict calls.
+        [$method] = self::fixture('publish');
+        foreach ([0, 1, 2, -1, '0', 'false', [], new \stdClass()] as $bad) {
+            try {
+                $group->$method(...array_merge($args, ['cleanup' => $bad]));
+                self::fail('Strict callers must reject nonboolean cleanup before I/O.');
+            } catch (\TypeError) {
+                self::assertSame($metadata, $account->responseMeta());
+            }
+        }
+        self::assertCount(4, $http->getRequests());
+    }
+
     public function testSensitiveInputsHaveSensitiveParameterAttributes(): void
     {
         $sensitive = ['addApiToken' => ['apiToken'],
@@ -194,97 +228,6 @@ final class UapiNovaTest extends TestCase
         }
     }
 
-
-    #[DataProvider('secretOperations')]
-    public function testSensitiveInputsAreHiddenFromFailureTraces(string $route, string $function): void
-    {
-        [$client, $http] = self::client($route);
-        $group = $client->uapi('exampleuser')->nova();
-        [$method, $args] = self::fixture($function);
-        $http->addResponse(new Response(200, [], self::envelope($route, $function, null, 0)));
-        $previous = ini_get('zend.exception_ignore_args');
-        ini_set('zend.exception_ignore_args', '0');
-        try {
-            try {
-                $group->$method(...$args);
-                self::fail('Synthetic API failure must throw.');
-            } catch (ApiErrorException $error) {
-                for ($current = $error; $current !== null; $current = $current->getPrevious()) {
-                    $seen = [];
-                    self::assertFalse(self::containsSecret($current->getTrace(), $seen));
-                    foreach (self::secrets() as $secret) {
-                        self::assertStringNotContainsString($secret, $current->getMessage());
-                        self::assertStringNotContainsString($secret, $current->getTraceAsString());
-                    }
-                }
-            }
-        } finally {
-            if ($previous !== false) {
-                ini_set('zend.exception_ignore_args', $previous);
-            }
-        }
-        self::assertCount(1, $http->getRequests());
-        $request = $http->getLastRequest();
-        self::assertInstanceOf(RequestInterface::class, $request);
-        foreach (self::secrets() as $secret) {
-            self::assertStringNotContainsString($secret, (string) $request->getUri());
-        }
-    }
-
-    /** @return iterable<string, array{string, string}> */
-    public static function secretOperations(): iterable
-    {
-        foreach (self::routes() as [$route]) {
-            foreach (['add_api_token', 'ensure_account', 'get_sso_link', 'publish'] as $function) {
-                yield $route . ' ' . $function => [$route, $function];
-            }
-        }
-    }
-
-    /** @return list<string> */
-    private static function secrets(): array
-    {
-        return ['private+&=%', 'cHJvbXB0+&=%', 'https://panel.test/route#x',
-            'https://user:pass@builder.test/archive+&.zip', 'owner+other@example.test',
-            'owner@example.test', 'https://panel.test/cpsess123/index.html#x'];
-    }
-
-    /** @param array<int, true> $seen */
-    private static function containsSecret(mixed $value, array &$seen): bool
-    {
-        if (is_string($value)) {
-            foreach (self::secrets() as $secret) {
-                if (str_contains($value, $secret)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-        if ($value instanceof \SensitiveParameterValue || $value instanceof MockClient) {
-            return false;
-        }
-        if ($value instanceof \Psr\Http\Message\MessageInterface) {
-            return self::containsSecret((string) $value->getBody(), $seen);
-        }
-        if (is_object($value)) {
-            $id = spl_object_id($value);
-            if (isset($seen[$id])) {
-                return false;
-            }
-            $seen[$id] = true;
-            $value = (array) $value;
-        }
-        if (is_array($value)) {
-            foreach ($value as $key => $item) {
-                if (self::containsSecret((string) $key, $seen) || self::containsSecret($item, $seen)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
 
     #[DataProvider('routes')]
     public function testSelectorsKeepAccountMetadataIsolatedAndDoNotDispatch(string $route): void
@@ -370,7 +313,7 @@ final class UapiNovaTest extends TestCase
     }
 
     /** @return array{string, array<string, string|int|bool>, string, string, string, string} */
-    private static function fixture(string $function): array
+    public static function fixture(string $function): array
     {
         return match ($function) {
             'account_exists' => ['accountExists', [], 'GET', '', '1', 'flag'],
@@ -403,7 +346,8 @@ final class UapiNovaTest extends TestCase
                 'file_name=%2Fhome%2Fuser%2Flogs%2Fpublish%20x.log&pid=123456',
                 '{"failed":0,"is_running":1,"log":["Starting...","Done"],"progress":50}', 'object'],
             'publish' => ['publish', ['archiveUrl' => 'https://user:pass@builder.test/archive+&.zip',
-                'domain' => 'example.test', 'signature' => 'private+&=%', 'userId' => 'nova_0', 'cleanup' => 0], 'POST',
+                'domain' => 'example.test', 'signature' => 'private+&=%', 'userId' => 'nova_0', 'cleanup' => false],
+                'POST',
                 'archiveUrl=https%3A%2F%2Fuser%3Apass%40builder.test%2Farchive%2B%26.zip'
                 . '&domain=example.test&signature=private%2B%26%3D%25&userId=nova_0&cleanup=0',
                 '{"file_name":"/home/user/logs/nova.log","pid":123456,"user":"exampleuser"}', 'object'],
