@@ -98,6 +98,13 @@ Operation entries (all keys optional):
   suppresses only the PHPDoc literal enum in favor of the existing native type;
   absent or true keeps the pinned enum. It changes neither encoding nor native
   parameter types and does not resolve disputed upstream values.
+  `type: "string|int"` is the only input type correction: it widens a documented
+  scalar string parameter with matching scalar encoding, for typed identifier
+  interoperability. It cannot target omitted, boolean, repeated or composite
+  inputs. `description` replaces the complete parameter text with a nonblank
+  reviewed description, preserving later sentences. Both settings require
+  operation-level evidence; requiredness, sensitivity and optional null omission
+  retain their existing rules.
 - `order`: wire names moved to the front of the signature in that order;
   required arguments always precede optional ones, so an order that lists an
   optional parameter before a required one, or an omitted parameter, is a problem.
@@ -115,7 +122,8 @@ Operation entries (all keys optional):
 - `evidence`: operation-level evidence, required when the entry sets `variant`, `method`,
   `outcome`, `void` or `optional_payload`, changes a parameter `required` setting,
   suppresses its enum documentation (`enum_doc: false`), sets a parameter `encoding` (it
-  changes the wire request), or marks a parameter `"sensitive": false`.
+  changes the wire request), corrects a parameter `type` or `description`, or marks
+  a parameter `"sensitive": false`.
 - `notes`: docblock lines, each `{"kind", "text"}`. Kind `documented` restates
   the pinned documentation and renders as "Documented:"; kind `observed` records
   runtime behaviour, renders as "Observed:" and needs live operation-level

@@ -377,3 +377,20 @@ The initial artifact and every earlier evidence file remain unchanged. Remaining
 committed populated/mutation evidence stays under `8x0.2.26`; no further read-only
 capture is outstanding from this review request. SHA-256:
 `8be0fe648505873d0f36221e0ef750954b5268469399ac2de804ef8c1e5d3b56`.
+
+### Application inventory capture
+
+The immutable [application-management capture](2026-10-31-application-deployment.json)
+at `344fffc64824bd35098d232dd92226cb222d2a15` on `11.138.0.19` records three GET
+observations, all HTTP 200. WHM version passes. Both `PassengerApps/list_applications`
+requests fail at the API layer with null payloads, so payload validation is not
+performed and strict assessment remains failed. The sanitized evidence does not
+diagnose the capability/configuration cause; neither failure is waived or treated
+as a successful empty inventory. This artifact establishes no successful payload
+coverage for the fourteen new methods. Separate reviewer lifecycle observations
+are recorded in the source audit; committed lifecycle coverage stays under `8x0.2.27`.
+
+No repository, deployment, application configuration or dependency installation
+changed, and no returned URL was fetched. No contract was broadened from an API
+failure, and no repeated capture was run merely to seek a passing status. SHA-256:
+`48b5b71e8feb9107310383e50f311f39d99301a3fb57c4179a00d12c97e44a64`.

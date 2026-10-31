@@ -58,7 +58,8 @@ type Operation struct {
 	Probe           json.RawMessage       `json:"probe,omitempty"`
 	// Evidence backs behaviour-changing settings: variant, method, outcome,
 	// void, optional_payload, a parameter encoding and "sensitive": false on a
-	// parameter, parameter requiredness or suppressed enum documentation.
+	// parameter, parameter requiredness, scalar type/description corrections or
+	// suppressed enum documentation.
 	Evidence []Evidence `json:"evidence,omitempty"`
 }
 
@@ -80,13 +81,18 @@ var NoteKinds = map[string]string{"documented": "Documented", "observed": "Obser
 // reachable through call() and are left out of the generated signature. EnumDoc
 // false suppresses only the literal enum PHPDoc, without changing native types or
 // encoding, and needs evidence. An absent or true value preserves enum PHPDoc.
+// Type permits only the reviewed string|int widening of a scalar string input;
+// Description replaces the parameter text without truncating later sentences.
+// Both corrections require operation evidence and cannot target omitted inputs.
 type Param struct {
-	PHP       string `json:"php,omitempty"`
-	Required  *bool  `json:"required,omitempty"`
-	EnumDoc   *bool  `json:"enum_doc,omitempty"`
-	Encoding  string `json:"encoding,omitempty"`
-	Sensitive *bool  `json:"sensitive,omitempty"`
-	Omit      bool   `json:"omit,omitempty"`
+	Type        string `json:"type,omitempty"`
+	Description string `json:"description,omitempty"`
+	PHP         string `json:"php,omitempty"`
+	Required    *bool  `json:"required,omitempty"`
+	EnumDoc     *bool  `json:"enum_doc,omitempty"`
+	Encoding    string `json:"encoding,omitempty"`
+	Sensitive   *bool  `json:"sensitive,omitempty"`
+	Omit        bool   `json:"omit,omitempty"`
 }
 
 // Correction changes the documented response type at one payload path.
