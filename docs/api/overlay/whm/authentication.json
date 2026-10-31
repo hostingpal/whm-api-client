@@ -674,7 +674,7 @@
         },
         {
           "kind": "policy",
-          "text": "Supply caller-serialized JSON, form-encoded once; do not pass a PHP object. The native string|int boundary is the existing scalar representation of a content-based query parameter and does not establish integer semantics; narrower typing is tracked under whm-api-client-8x0.1.23. Configuration JSON is sensitive. Client policy: send one request without automatic retry or rollback."
+          "text": "Supply caller-serialized JSON, form-encoded once; do not pass a PHP object. The native argument is a string representing the content-based query parameter; JSON syntax is not validated. Configuration JSON is sensitive. Client policy: send one request without automatic retry or rollback."
         }
       ],
       "evidence": [
@@ -682,13 +682,13 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /set_provider_display_configurations declares x-readonly=false; use form POST. The success schema declares only metadata and no data payload. Its configurations query parameter has application/json content with the description JSON-encoded key-value format; preserve the existing scalar string|int representation and require caller-serialized text. Narrow native typing remains whm-api-client-8x0.1.23."
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /set_provider_display_configurations declares x-readonly=false; use form POST. The success schema declares only metadata and no data payload. Its configurations query parameter has application/json content with the description JSON-encoded key-value format; retain scalar encoding and require caller-serialized string text without JSON syntax validation."
         },
         {
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "Pinned /set_provider_display_configurations configurations.content.application/json.schema declares color, display_name, icon, icon_type, label and textcolor string properties. Restore those keys and their meanings in the parameter description; retain its scalar encoding and sensitive-input policy. The content-based scalar typing follow-up is whm-api-client-8x0.1.23. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
+          "note": "Pinned /set_provider_display_configurations configurations.content.application/json.schema declares color, display_name, icon, icon_type, label and textcolor string properties. Restore those keys and their meanings in the parameter description; retain its scalar encoding and sensitive-input policy. The content-based query parameter retains caller-serialized string typing. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530."
         }
       ],
       "void": true,
@@ -696,7 +696,7 @@
         "configurations": {
           "sensitive": true,
           "encoding": "scalar",
-          "description": "Caller-serialized JSON-encoded key-value text for the display configuration. Documented string keys: color (button background RGB color), display_name (identity provider display name), icon (button icon data), icon_type (icon MIME type, default image/svg+xml), label (button text label), textcolor (label RGB color). Pass a JSON string; the existing string|int scalar boundary does not encode PHP objects. Form-encoded exactly once."
+          "description": "Caller-serialized JSON-encoded key-value text for the display configuration. Documented string keys: color (button background RGB color), display_name (identity provider display name), icon (button icon data), icon_type (icon MIME type, default image/svg+xml), label (button text label), textcolor (label RGB color). Pass a JSON string; the client does not encode PHP objects or validate JSON syntax. Form-encoded exactly once."
         }
       }
     },

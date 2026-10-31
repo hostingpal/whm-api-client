@@ -121,11 +121,10 @@ final readonly class WordPressBackup
      * active; ok=1 means it was cancelled. Inspect this flag separately from API status. The source promises no
      * rollback of the backup work already performed.
      *
-     * Documented: The pinned site input is a string URL without a protocol prefix. Supply a string. The current
-     * generator loses the outer type across format-only anyOf alternatives, so the generated native input boundary
-     * remains string|int; this does not establish integer site semantics or validate domain/path formats. The
-     * input-narrowing limitation is tracked under whm-api-client-8x0.1.23. The optional response site field retains the
-     * known source string type and rejects null or non-string values.
+     * Documented: The pinned site input is a string URL without a protocol prefix. The generated native argument
+     * preserves the outer string type across format-only anyOf alternatives. The client does not validate domain or
+     * URL/path formats. The optional response site field retains the known source string type and rejects null or
+     * non-string values.
      *
      * Observed: On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged
      * UAPI because Cpanel/API/WordPressBackup.pm was missing. The installed cpanel-wpx-plugin did not provide a usable
@@ -134,14 +133,14 @@ final readonly class WordPressBackup
      *
      * API-map identity: uapi:WordPressBackup/cancel#GET (wire name cancel).
      *
-     * @param string|int $site The WordPress site's URL without the protocol prefix.
+     * @param string $site The WordPress site's URL without the protocol prefix.
      * @return CancelResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/wordpress-manager-backups/wordpressbackup-cancel
      */
-    public function cancel(string|int $site): array
+    public function cancel(string $site): array
     {
         /** @var CancelResult $result Validated against WordPressBackupSpec::CANCEL. */
         $result = ($this->run)(WordPressBackupSpec::CANCEL, ['site' => $site]);
@@ -281,11 +280,10 @@ final readonly class WordPressBackup
      * Documented: Starts a single WordPress site backup. backup_id and sse_url describe the background process; a
      * successful API response does not establish completed backup creation. The returned SSE path is not followed.
      *
-     * Documented: The pinned site input is a string URL without a protocol prefix. Supply a string. The current
-     * generator loses the outer type across format-only anyOf alternatives, so the generated native input boundary
-     * remains string|int; this does not establish integer site semantics or validate domain/path formats. The
-     * input-narrowing limitation is tracked under whm-api-client-8x0.1.23. The optional response site field retains the
-     * known source string type and rejects null or non-string values.
+     * Documented: The pinned site input is a string URL without a protocol prefix. The generated native argument
+     * preserves the outer string type across format-only anyOf alternatives. The client does not validate domain or
+     * URL/path formats. The optional response site field retains the known source string type and rejects null or
+     * non-string values.
      *
      * Observed: On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged
      * UAPI because Cpanel/API/WordPressBackup.pm was missing. The installed cpanel-wpx-plugin did not provide a usable
@@ -294,14 +292,14 @@ final readonly class WordPressBackup
      *
      * API-map identity: uapi:WordPressBackup/start#GET (wire name start).
      *
-     * @param string|int $site The WordPress site's URL without the protocol prefix.
+     * @param string $site The WordPress site's URL without the protocol prefix.
      * @return StartResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/wordpress-manager-backups/wordpressbackup-start
      */
-    public function start(string|int $site): array
+    public function start(string $site): array
     {
         /** @var StartResult $result Validated against WordPressBackupSpec::START. */
         $result = ($this->run)(WordPressBackupSpec::START, ['site' => $site]);

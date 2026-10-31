@@ -2423,17 +2423,16 @@ final readonly class Server
      * Documented: Activates a server profile, enabling service monitoring for services it enables. Returned log_id
      * identifies activation logs and does not prove completion; the client does not poll or fetch logs.
      *
-     * Documented: optional must be caller-supplied JSON text mapping role names to integer 0/1 values. Existing scalar
-     * encoding exposes a string|int native boundary; integer acceptance does not establish valid JSON-object semantics.
-     * The client does not serialize PHP objects or validate JSON text, and form-encodes supplied text exactly once.
-     * Omission disables the profile optional roles, if any; profiles without optional roles ignore it. Freeform text is
-     * sensitive.
+     * Documented: optional must be caller-supplied JSON text mapping role names to integer 0/1 values. The native
+     * argument is a nullable string; null omits the field. The client does not serialize PHP objects or validate JSON
+     * text, and form-encodes supplied text exactly once. Omission disables the profile optional roles, if any; profiles
+     * without optional roles ignore it. Freeform text is sensitive.
      *
      * API-map identity: whm1:start_profile_activation#GET (wire name start_profile_activation; Server Profiles).
      *
      * @param 'STANDARD'|'DATABASENODE'|'MAILNODE'|'DNSNODE' $code The code value of the server profile.
-     * @param string|int|null $optional The optional roles to enable or disable with the profile, in JSON format. Null
-     *     omits it.
+     * @param string|null $optional The optional roles to enable or disable with the profile, in JSON format. Null omits
+     *     it.
      * @return StartProfileActivationResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
@@ -2443,7 +2442,7 @@ final readonly class Server
     public function startProfileActivation(
         string $code,
         #[SensitiveParameter]
-        string|int|null $optional = null,
+        ?string $optional = null,
     ): array {
         /** @var StartProfileActivationResult $result Validated against ServerSpec::START_PROFILE_ACTIVATION. */
         $result = ($this->run)(ServerSpec::START_PROFILE_ACTIVATION, ['code' => $code, 'optional' => $optional]);

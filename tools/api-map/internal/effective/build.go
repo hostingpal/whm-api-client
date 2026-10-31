@@ -389,6 +389,22 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		}
 		decl := p.Definition
 		spec := b.schemas.specFor(p.Locator.SourceID, decl["schema"], 0, nil)
+		_, hasContent := decl["content"]
+		if hasContent {
+			// Parameter content describes serialized text inside the existing
+			// query/form field, never a request body or an automatic JSON encoder.
+			content, contentOK := asObject(decl["content"])
+			media, mediaOK := asObject(content["application/json"])
+			_, _, _, schemaOK := b.schemas.follow(p.Locator.SourceID, media["schema"])
+			_, hasSchema := decl["schema"]
+			o := ov.Params[p.Name]
+			if p.In != "query" || hasSchema || !contentOK || len(content) != 1 || !mediaOK || !schemaOK ||
+				(o.Encoding != "" && o.Encoding != "scalar") || o.Collection != nil || o.Type != "" {
+				b.problem(op.ID + ": parameter " + p.Name + ": content requires only application/json with a resolvable schema, no sibling schema and scalar serialized-text encoding")
+				continue
+			}
+			spec = TypeSpec{Type: "string"}
+		}
 		param := Param{
 			Source:      p.Name,
 			Wire:        p.Name,

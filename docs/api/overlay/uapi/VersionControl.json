@@ -31,7 +31,7 @@
         },
         {
           "kind": "documented",
-          "text": "sourceRepository must be caller-supplied JSON text describing url and optional remote_name; the documented remote_name default is origin. Omitting sourceRepository creates an empty repository. The client sends that text once as the source_repository form field and does not JSON-encode it again. Existing scalar encoding has a string|int native boundary; integer acceptance does not establish valid JSON-object semantics. Clone URLs can contain credentials, so the argument is sensitive."
+          "text": "sourceRepository must be caller-supplied JSON text describing url and optional remote_name; the documented remote_name default is origin. Omitting sourceRepository creates an empty repository. The client sends that text once as the source_repository form field and does not JSON-encode it again. The native argument is a nullable string; null omits the field and supplied text is not JSON-validated. Clone URLs can contain credentials, so the argument is sensitive."
         },
         {
           "kind": "documented",
@@ -192,7 +192,7 @@
         },
         {
           "kind": "documented",
-          "text": "sourceRepository must be caller-supplied JSON text. The source permits changing remote_name only and expressly forbids modifying url. The text is sent once in the source_repository form field without another JSON encoding step. Existing scalar encoding has a string|int native boundary; integer acceptance does not establish valid JSON-object semantics. Treat the argument as sensitive because source data can contain credentials."
+          "text": "sourceRepository must be caller-supplied JSON text. The source permits changing remote_name only and expressly forbids modifying url. The text is sent once in the source_repository form field without another JSON encoding step. The native argument is a nullable string; null omits the field and supplied text is not JSON-validated. Treat the argument as sensitive because source data can contain credentials."
         },
         {
           "kind": "documented",

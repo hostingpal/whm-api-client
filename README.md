@@ -567,8 +567,14 @@ them `x-readonly=false`.
 
 Repository `sourceRepository` is caller-supplied JSON text, sent once as a form
 parameter. The client does not JSON-encode a PHP object or decode/re-encode the
-string. The existing scalar parameter boundary is `string|int|null`; supply the
-documented serialized JSON string, or omit it. Clone URLs may contain credentials,
+string. The native parameter is `?string`; supply the documented serialized JSON
+string, or omit it. Explicit null omits the field. These scalar JSON-text inputs are not parsed, validated, re-encoded or repaired;
+malformed text and empty strings retain their supplied bytes before form encoding.
+Across the ten corrected string inputs, a strict caller's integer raises native
+`TypeError` before the generated method starts, retaining that handle's prior
+metadata and sending no request. Weak call sites retain normal PHP scalar coercion.
+This closes `8x0.1.23` for these inputs only; other release blockers and live gaps
+remain as documented. Clone URLs may contain credentials,
 so this argument stays sensitive. The pinned source warns that repository deletion
 permanently removes directory contents. The PR40 reviewer instead observed
 registration deletion leaving the directory on the test server; retain the
@@ -1286,10 +1292,10 @@ an empty list. Missing-archive `ExtractInfo::start()` raises `ApiErrorException`
 These installation-specific observations preserve normal error handling.
 
 WordPressBackup `cancel()` and `start()` return an optional string `site`,
-preserving the pinned outer type across format-only alternatives. Their generated
-input currently accepts `string|int`; supply a string site as documented. Integer
-site semantics are not established. The generator limitation is tracked under
-`8x0.1.23`; it does not weaken the response contract.
+preserving the pinned outer type across format-only alternatives. Their native `site`
+input is `string`, preserving the same outer source type without URL/path format
+validation. The scalar input correction under `8x0.1.23` is complete for these
+two parameters; the installation-specific live gap remains.
 
 ### WHM database administration
 
@@ -1647,9 +1653,9 @@ additional properties through the existing object-values mechanism. Treat their
 results and service/configuration values as private payload data.
 
 Profile activation accepts documented serialized JSON text in its optional role
-argument, with one form-encoding pass. Its native `string|int` boundary does not
-establish integer semantics or automatic object encoding; supply a JSON string.
-The typing limitation remains under `8x0.1.23` before release. Available-tier
+argument, with one form-encoding pass. Its native argument is `?string`;
+explicit null omits the field. The scalar input correction under `8x0.1.23` is
+complete for this parameter. Available-tier
 maps preserve the five pinned named fields alongside dynamic values. Both
 service-configuration reads document `dovecot`; undocumented services are outside
 the contract, and null data from such a service can fail validation. Configuration
@@ -1722,9 +1728,9 @@ compatibility, not observations from executing those POST methods.
 
 Provider display configurations accept caller-serialized JSON containing the
 pinned `color`, `display_name`, `icon`, `icon_type`, `label` and `textcolor` keys,
-as a form field encoded once. The native `string|int` boundary has no documented
-integer semantics or automatic object encoding. Before release, `8x0.1.23` must
-also cover this content-based query schema, separately from JSON-body transport.
+as a form field encoded once. The native argument is `string`. The scalar input
+correction under `8x0.1.23` is complete for this parameter; JSON-body transport
+remains separate work.
 TFA removal currently
 supports scalar `user`; the separately documented `user-1`/`user-2` family remains
 under `8x0.1.21`, without assuming equivalence to another numbered encoding.
@@ -1753,8 +1759,8 @@ arrays use documented numbered names; deferred installation uses repeated fields
 whose five lists callers must align by position, including each certificate and
 private key. Neither the client nor its type checks validate equal lengths or
 pairing. An empty bundle requests server-side bundle download. The metadata setter accepts caller-serialized JSON text encoded once as
-a form field; its current native `string|int` boundary does not establish integer
-semantics or automatic object encoding (`8x0.1.23`). This is not a JSON request body.
+a form field; its native argument is `string`. The scalar input correction under
+`8x0.1.23` is complete for this parameter; JSON request bodies remain separate work.
 
 Generation stores key/CSR material even when certificate generation is skipped.
 Service certificate installation requires a separate service restart; the client
@@ -1945,9 +1951,8 @@ do not change existing mailboxes. A package in use cannot be deleted;
 `deletePackage()` returns no value. The client performs no retry or rollback.
 
 Feature overrides accept caller-serialized JSON text in form fields, encoded
-once, rather than a JSON body or automatically serialized PHP arrays. The scalar
-native `string|int` input limitation remains under `8x0.1.23`; integer JSON
-semantics are not established. Extension names and optional variables are
+once, rather than a JSON body or automatically serialized PHP arrays. Both native `features` arguments are `string`; the scalar
+input correction under `8x0.1.23` is complete for these two parameters. Extension names and optional variables are
 case-sensitive. `deletePackageExtension()` removes the named extensions and
 associated variables; the typed input does not invent arbitrary variable fields.
 
@@ -2690,8 +2695,9 @@ strings so values returned by `phpGetHandlers()` can be supplied to
 
 INI content/directives and pool configuration inputs stay sensitive and are
 encoded once. Pool parameters accept caller-serialized JSON text; they do not
-introduce JSON bodies or automatic PHP-array serialization. The native
-string|int limitation remains under `8x0.1.23`.
+introduce JSON bodies or automatic PHP-array serialization. The native pool-parameter
+argument is `?string`, with explicit null omitting the field. The scalar input
+correction under `8x0.1.23` is complete for this parameter.
 
 Impacted-domain selectors are individually optional according to explicit
 either-or-both source prose, but callers must supply a domain or a true

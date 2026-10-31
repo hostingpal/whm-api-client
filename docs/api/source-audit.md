@@ -6406,3 +6406,125 @@ separate rereading, source-description generation and malformed-spec rejection.
 They do not establish live ModSecurity effects, SQL enforcement, PHP 8.3 execution,
 CI results or external approval. ModSecurity writes, report submission and other
 unobserved server operations remain outside this correction.
+
+
+## Scalar input source fidelity (`8x0.1.23`, 2026-10-31)
+
+The pinned UAPI source (decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`)
+and WHM source (`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`)
+contain twelve query parameters declared through `content/application~1json`.
+The table records all twelve, using JSON Pointer locators in the corresponding
+pinned source. No source file or historical live artifact changed.
+
+| Source | Parameter locator | Existing method / disposition | Native argument before → after | Preserved policy |
+| --- | --- | --- | --- | --- |
+| UAPI | `/paths/~1Batch~1strict/get/parameters/0` (`command`) | Unlisted; remains ungenerated | `No typed argument` | No endpoint adoption |
+| UAPI | `/paths/~1Market~1request_ssl_certificates/get/parameters/1` (`certificate`) | Unlisted; remains ungenerated | `No typed argument` | No endpoint adoption |
+| UAPI | `/paths/~1Market~1request_ssl_certificates/get/parameters/3` (`identity_verification`) | Unlisted; remains ungenerated | `No typed argument` | No endpoint adoption |
+| UAPI | `/paths/~1VersionControl~1create/get/parameters/3` (`source_repository`) | versionControl()->create() | `string\|int\|null → ?string` | Sensitive; null omission |
+| UAPI | `/paths/~1VersionControl~1update/get/parameters/3` (`source_repository`) | versionControl()->update() | `string\|int\|null → ?string` | Sensitive; null omission |
+| WHM | `/paths/~1add_override_features_for_user/get/parameters/0` (`features`) | hostingPlans()->addOverrideFeaturesForUser() | `string\|int → string` | Non-sensitive; required |
+| WHM | `/paths/~1php_set_vhost_versions/get/parameters/3` (`php_fpm_pool_parms`) | webServer()->phpSetVhostVersions() | `string\|int\|null → ?string` | Sensitive; null omission |
+| WHM | `/paths/~1remove_override_features_for_user/get/parameters/0` (`features`) | hostingPlans()->removeOverrideFeaturesForUser() | `string\|int → string` | Non-sensitive; required |
+| WHM | `/paths/~1set_autossl_metadata/get/parameters/0` (`metadata_json`) | ssl()->setAutoSslMetadata() | `string\|int → string` | Sensitive; required |
+| WHM | `/paths/~1set_provider_display_configurations/get/parameters/0` (`configurations`) | authentication()->setProviderDisplayConfigurations() | `string\|int → string` | Sensitive; required |
+| WHM | `/paths/~1start_profile_activation/get/parameters/1` (`optional`) | server()->startProfileActivation() | `string\|int\|null → ?string` | Sensitive; null omission |
+| WHM | `/paths/~1update_customizations/post/parameters/1` (`data`) | Explicitly excluded on approved master; remains ungenerated | `No typed argument` | No endpoint adoption |
+
+Unlisted operations are outside the `scope: listed` overlay; they are distinct
+from explicit exclusions. Approved master explicitly excludes `update_customizations`
+under `8x0.1.22`/`8x0.29`; that exclusion is preserved. No Batch orchestration,
+Market certificate-ordering or customization method is adopted here. VersionControl/create's content schema has
+properties and required names without an explicit root type; its parameter content
+and source description still establish caller-serialized text, not structured input.
+
+The four outer-typed format alternatives are all under WordPressBackup:
+
+| Pinned UAPI schema locator | Before → after |
+| --- | --- |
+| `/paths/~1WordPressBackup~1cancel/get/parameters/0/schema` | `cancel(string\|int $site)` → `cancel(string $site)` |
+| `/paths/~1WordPressBackup~1start/get/parameters/0/schema` | `start(string\|int $site)` → `start(string $site)` |
+| `/paths/~1WordPressBackup~1cancel/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/site` | Optional string unchanged; now derived directly from the outer type |
+| `/paths/~1WordPressBackup~1start/get/responses/200/content/application~1json/schema/properties/result/properties/data/properties/site` | Optional string unchanged; now derived directly from the outer type |
+
+Format-only typeless alternatives retain the outer scalar type, including existing
+enum/nullability handling. Explicit branch types, allOf and richer compositions
+keep their prior lowering; this introduces no general schema intersection or URL,
+hostname, range or format validation.
+
+The eight existing JSON-content arguments remain scalar text, preserving supplied
+bytes before the single outer query/form encoding pass. Their method names, argument
+order, POST policy, sensitivity, null omission and results are unchanged. JSON text
+is never parsed, validated, re-encoded, normalized or repaired. Duplicate keys, large
+numbers, malformed text and empty strings stay supplied text. Unknown/multiple media,
+sibling schema/content and collection mappings fail generation instead of being
+silently treated as JSON strings. This adds no runtime input-validation path.
+
+Native strings follow normal PHP call-site typing. A strict caller's integer raises
+native TypeError before the generated method starts, so prior metadata is retained;
+there is no universal weak-caller rejection or pre-TypeError lifecycle reset. Generic
+`call()` keeps its existing scalar representation and encoding. Structured JSON
+companions and JSON request bodies remain separate work.
+
+After normal integration of approved master `e704a6ce33937ea3239b3ab084300460cf56c602` (PR75–78),
+official generation retains 99 groups, 1,142 canonical operations (548 UAPI and
+594 WHM), 37 explicit exclusions and 200 generated PHP files. Every generated spec
+constant, including the existing alternate-input constants, is byte-for-byte equal
+to the base export: response shapes, outcome policy, transport and parameter wire
+metadata are unchanged. Existing indexed, repeat, map, record and additional-method
+coverage remains intact. Validation is offline only; no live API call ran.
+
+
+## PR79 review corrections and response-lowering provenance (2026-10-31)
+
+[Review 5723512741](https://github.com/hostingpal/whm-api-client/pull/79#pullrequestreview-5723512741)
+was applied after normal integration of approved PR78 master
+`e704a6ce33937ea3239b3ab084300460cf56c602`. The complete approved-master source-audit
+history above is preserved verbatim. The scalar-fidelity correction closes `8x0.1.23`
+only for the ten listed inputs. Other blockers, unsupported transports and live gaps
+retain their existing scope. README now describes every affected string boundary.
+
+Metadata belongs to each cached WHM or account-bound UAPI handle (the shared
+transport does not own it). The strict-caller regression primes and inspects the
+actual invoked handle, asserts exact native TypeError, and requires no additional
+HTTP request after the non-null prior snapshot. A temporary test-only negative
+control cleared the selected UAPI snapshot: all four UAPI cases failed their
+identity assertion. The mutation was restored. PHPUnit assertion failures are
+outside the TypeError catch. No runtime lifecycle or weak-call coercion changes.
+
+The two WordPressBackup response `site` replacements are now redundant and removed.
+Before removing them from the overlay, official generation into temporary storage
+with only those rules absent produced exactly the same 99 spec files as approved
+master and the combined candidate, including both optional, nonnullable `site`
+strings. This supersedes historical replacement wording above without changing
+response contracts. The removed rules' original doc-evidence notes are retained
+verbatim here as provenance (both `kind: doc`, version `pinned 2026-10-13`, date
+`2026-10-31`):
+
+- `WordPressBackup/cancel`, response `site`, former `replace: {"type":"string"}`:
+
+  Pinned /WordPressBackup/cancel GET responses.200.content.application/json.schema.properties.result.properties.data.properties.site declares outer type:string. Its oneOf children specify only domain or url-path format/examples and do not override the string type. Replace the effective mixed node with string; preserve optional absence and do not infer nullability, integer sites or format validation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc.
+
+- `WordPressBackup/start`, response `site`, former `replace: {"type":"string"}`:
+
+  Pinned /WordPressBackup/start GET responses.200.content.application/json.schema.properties.result.properties.data.properties.site declares outer type:string. Its oneOf children specify only domain or url-path format/examples and do not override the string type. Replace the effective mixed node with string; preserve optional absence and do not infer nullability, integer sites or format validation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc.
+
+The format-only rule is intentionally shared by inputs and responses; a future
+source refresh must review effective response-shape changes. Tooling documentation
+and the helper comment now make this boundary explicit. Go fixtures set actual
+Collection and Type overrides and directly reach competing-composition checks,
+including empty allOf beside oneOf/anyOf (nonempty allOf is handled earlier).
+Temporary targeted negative controls proved those new assertions detect removal
+of each guard; every mutation was restored.
+
+The reported content-to-multipart bypass is not reachable through full Build:
+`multipartBody` first requires a resolvable source query schema equal to its inline
+body field. A content-only query fails that existing check; a sibling schema/content
+query fails the existing content guard even when its body schema matches. A full
+builder regression covers both cases. Temporarily disabling only the source-schema
+equality check made the content-only regression fail, confirming why that guard
+must survive. No redundant new guard, multipart support or downstream JSON work
+was added. The tooling README now documents sole application/json/scalar-text
+mapping and every generation failure category. All validation remains offline;
+no server operation, source refresh or live capture belongs to this correction.

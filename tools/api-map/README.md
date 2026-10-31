@@ -358,6 +358,25 @@ ModSecurity alias is one extra public method across the existing 1,142 canonical
 operations, 99 groups and 200 generated PHP files (201 outputs with coverage.md).
 It issues one request, without batching loops, automatic reads, retries or rollback.
 
+Query parameters with `content` support exactly one `application/json` media entry
+with a resolvable schema, no sibling `schema`, and absent or `scalar` encoding.
+They become native `string` arguments (`?string` when optional), carrying caller-serialized
+JSON text in the existing query/form field. Collection and type overrides, other or
+multiple media, unresolved/missing schemas, content on body fields and sibling schemas
+fail generation. This mapping does not parse, validate or re-encode JSON, introduce
+structured PHP arguments, or provide JSON request bodies. Null omission and one outer
+form/query encoding pass retain their existing behavior. Strict callers get native
+`TypeError` before the generated method or metadata reset; weak callers retain PHP coercion.
+Unlisted/excluded operations remain ungenerated.
+
+Format-only typeless `oneOf`/`anyOf` alternatives retain a concrete outer scalar type
+without format validation or general schema intersection. This shared lowering also
+applies to responses. A source refresh must review effective response-shape changes;
+input-type review alone is insufficient. Explicitly typed branches, richer constraints
+and competing compositions keep their existing lowering. Multipart mappings retain
+the source-bound query/body schema equality check below; JSON content does not establish
+an inline multipart string contract.
+
 The fields of a documented `application/x-www-form-urlencoded` request body
 become parameters after the query parameters (required only when the body and
 its schema require them) and force POST, which form-encodes every operation

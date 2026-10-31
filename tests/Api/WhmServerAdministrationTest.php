@@ -1105,11 +1105,15 @@ final class WhmServerAdministrationTest extends TestCase
                 }
             }
         }
-        foreach ([['startProfileActivation', 'optional'], ['setServiceConfigKey', 'value']] as [$method, $name]) {
+        $scalarTypes = [
+            ['startProfileActivation', 'optional', '?string'],
+            ['setServiceConfigKey', 'value', 'string|int'],
+        ];
+        foreach ($scalarTypes as [$method, $name, $type]) {
             foreach ((new ReflectionMethod(Server::class, $method))->getParameters() as $parameter) {
                 if ($parameter->getName() === $name) {
                     self::assertSame(
-                        $parameter->isOptional() ? 'string|int|null' : 'string|int',
+                        $type,
                         (string) $parameter->getType(),
                     );
                 }

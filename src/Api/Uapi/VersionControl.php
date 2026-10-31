@@ -156,9 +156,9 @@ final readonly class VersionControl
      *
      * Documented: sourceRepository must be caller-supplied JSON text describing url and optional remote_name; the
      * documented remote_name default is origin. Omitting sourceRepository creates an empty repository. The client sends
-     * that text once as the source_repository form field and does not JSON-encode it again. Existing scalar encoding
-     * has a string|int native boundary; integer acceptance does not establish valid JSON-object semantics. Clone URLs
-     * can contain credentials, so the argument is sensitive.
+     * that text once as the source_repository form field and does not JSON-encode it again. The native argument is a
+     * nullable string; null omits the field and supplied text is not JSON-validated. Clone URLs can contain
+     * credentials, so the argument is sensitive.
      *
      * Documented: The response fields are optional. branch may be null while cloning or when no local branches exist;
      * available_branches is a non-null list here. The source last_update declares a null-only enum without a type; the
@@ -176,8 +176,8 @@ final readonly class VersionControl
      *     the user's `home` directory.
      * @param string $name The new repository's display name.
      * @param 'git' $type The repository type.
-     * @param string|int|null $sourceRepository A JSON-formatted object containing information about the source
-     *     repository that the system will clone. Null omits it.
+     * @param string|null $sourceRepository A JSON-formatted object containing information about the source repository
+     *     that the system will clone. Null omits it.
      * @return CreateResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
@@ -189,7 +189,7 @@ final readonly class VersionControl
         string $name,
         string $type,
         #[SensitiveParameter]
-        string|int|null $sourceRepository = null,
+        ?string $sourceRepository = null,
     ): array {
         /** @var CreateResult $result Validated against VersionControlSpec::CREATE. */
         $result = ($this->run)(VersionControlSpec::CREATE, [
@@ -302,8 +302,8 @@ final readonly class VersionControl
      *
      * Documented: sourceRepository must be caller-supplied JSON text. The source permits changing remote_name only and
      * expressly forbids modifying url. The text is sent once in the source_repository form field without another JSON
-     * encoding step. Existing scalar encoding has a string|int native boundary; integer acceptance does not establish
-     * valid JSON-object semantics. Treat the argument as sensitive because source data can contain credentials.
+     * encoding step. The native argument is a nullable string; null omits the field and supplied text is not
+     * JSON-validated. Treat the argument as sensitive because source data can contain credentials.
      *
      * Documented: All response fields are optional. branch, last_update and last_deployment may be null.
      * available_branches may be null for a bare repository; otherwise it is a list of non-null strings. The pinned
@@ -321,8 +321,8 @@ final readonly class VersionControl
      * @param string $repositoryRoot The absolute directory path that contains the repository to update.
      * @param string|null $branch The new branch to use. Null omits it.
      * @param string|null $name The repository's new display name. Null omits it.
-     * @param string|int|null $sourceRepository A JSON-encoded object containing information about the source
-     *     repository. Null omits it.
+     * @param string|null $sourceRepository A JSON-encoded object containing information about the source repository.
+     *     Null omits it.
      * @return UpdateResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
@@ -334,7 +334,7 @@ final readonly class VersionControl
         ?string $branch = null,
         ?string $name = null,
         #[SensitiveParameter]
-        string|int|null $sourceRepository = null,
+        ?string $sourceRepository = null,
     ): array {
         /** @var UpdateResult $result Validated against VersionControlSpec::UPDATE. */
         $result = ($this->run)(VersionControlSpec::UPDATE, [

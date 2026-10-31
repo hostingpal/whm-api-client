@@ -57,7 +57,7 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned site input is a string URL without a protocol prefix. Supply a string. The current generator loses the outer type across format-only anyOf alternatives, so the generated native input boundary remains string|int; this does not establish integer site semantics or validate domain/path formats. The input-narrowing limitation is tracked under whm-api-client-8x0.1.23. The optional response site field retains the known source string type and rejects null or non-string values."
+          "text": "The pinned site input is a string URL without a protocol prefix. The generated native argument preserves the outer string type across format-only anyOf alternatives. The client does not validate domain or URL/path formats. The optional response site field retains the known source string type and rejects null or non-string values."
         },
         {
           "kind": "observed",
@@ -78,22 +78,7 @@
           "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019 and source-availability clarification https://github.com/hostingpal/whm-api-client/pull/45#issuecomment-6537452942: all WordPressBackup methods failed through both routes on cPanel 11.138.0.19 with a missing Cpanel/API/WordPressBackup.pm module. The files were absent and cpanel-wpx-plugin supplied no backup/restore modules. This records the observed capability failure only; response contracts remain pinned-source/offline evidence."
         }
       ],
-      "name": "cancel",
-      "response": {
-        "site": {
-          "replace": {
-            "type": "string"
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned /WordPressBackup/cancel GET responses.200.content.application/json.schema.properties.result.properties.data.properties.site declares outer type:string. Its oneOf children specify only domain or url-path format/examples and do not override the string type. Replace the effective mixed node with string; preserve optional absence and do not infer nullability, integer sites or format validation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
-            }
-          ]
-        }
-      }
+      "name": "cancel"
     },
     "uapi:WordPressBackup/cleanup": {
       "method": "POST",
@@ -218,7 +203,7 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned site input is a string URL without a protocol prefix. Supply a string. The current generator loses the outer type across format-only anyOf alternatives, so the generated native input boundary remains string|int; this does not establish integer site semantics or validate domain/path formats. The input-narrowing limitation is tracked under whm-api-client-8x0.1.23. The optional response site field retains the known source string type and rejects null or non-string values."
+          "text": "The pinned site input is a string URL without a protocol prefix. The generated native argument preserves the outer string type across format-only anyOf alternatives. The client does not validate domain or URL/path formats. The optional response site field retains the known source string type and rejects null or non-string values."
         },
         {
           "kind": "observed",
@@ -239,22 +224,7 @@
           "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019 and source-availability clarification https://github.com/hostingpal/whm-api-client/pull/45#issuecomment-6537452942: all WordPressBackup methods failed through both routes on cPanel 11.138.0.19 with a missing Cpanel/API/WordPressBackup.pm module. The files were absent and cpanel-wpx-plugin supplied no backup/restore modules. This records the observed capability failure only; response contracts remain pinned-source/offline evidence."
         }
       ],
-      "name": "start",
-      "response": {
-        "site": {
-          "replace": {
-            "type": "string"
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned /WordPressBackup/start GET responses.200.content.application/json.schema.properties.result.properties.data.properties.site declares outer type:string. Its oneOf children specify only domain or url-path format/examples and do not override the string type. Replace the effective mixed node with string; preserve optional absence and do not infer nullability, integer sites or format validation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
-            }
-          ]
-        }
-      }
+      "name": "start"
     }
   }
 }

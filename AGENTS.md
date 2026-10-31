@@ -483,7 +483,7 @@ them `x-readonly=false`.
 
 Repository `sourceRepository` is caller-supplied JSON text, sent once as a form
 parameter. The client does not JSON-encode a PHP object or decode/re-encode the
-string. The existing scalar parameter boundary is `string|int|null`; supply the
+string. The native parameter is `?string`; supply the
 documented serialized JSON string, or omit it. Clone URLs may contain credentials,
 so this argument stays sensitive. The pinned source warns that repository deletion
 permanently removes directory contents. The PR40 reviewer instead observed
@@ -982,9 +982,9 @@ These installation-specific observations preserve normal error handling.
 
 WordPressBackup `cancel()` and `start()` return an optional string `site`,
 preserving the pinned outer type across format-only alternatives. Their generated
-input currently accepts `string|int`; supply a string site as documented. Integer
-site semantics are not established. The generator limitation is tracked under
-`8x0.1.23`; it does not weaken the response contract.
+input is `string`, following the same source type without URL/path format
+validation. The shared lowering derives those response strings directly; the
+redundant response replacements are removed, with provenance retained in the source audit.
 
 ## Account backup and restoration capture
 
@@ -1415,9 +1415,9 @@ additional properties through the existing object-values mechanism. Treat their
 results and service/configuration values as private payload data.
 
 Profile activation accepts documented serialized JSON text in its optional role
-argument, with one form-encoding pass. Its native `string|int` boundary does not
-establish integer semantics or automatic object encoding; supply a JSON string.
-The typing limitation remains under `8x0.1.23` before release. Available-tier
+argument, with one form-encoding pass. Its native `?string` argument accepts
+caller-serialized text, with null omission and no automatic object encoding or
+JSON syntax validation. Available-tier
 maps preserve the five pinned named fields alongside dynamic values. Both
 service-configuration reads document `dovecot`; undocumented services are outside
 the contract, and null data from such a service can fail validation. Configuration
@@ -1498,9 +1498,9 @@ compatibility, not observations from executing those POST methods.
 
 Provider display configurations accept caller-serialized JSON containing the
 pinned `color`, `display_name`, `icon`, `icon_type`, `label` and `textcolor` keys,
-as a form field encoded once. The native `string|int` boundary has no documented
-integer semantics or automatic object encoding. Before release, `8x0.1.23` must
-also cover this content-based query schema, separately from JSON-body transport.
+as a form field encoded once. The native `string` argument preserves supplied
+serialized bytes without automatic object encoding or JSON syntax validation.
+This content-based query schema does not introduce JSON-body transport.
 TFA removal currently
 supports scalar `user`; the separately documented `user-1`/`user-2` family remains
 under `8x0.1.21`, without assuming equivalence to another numbered encoding.
@@ -1536,8 +1536,8 @@ arrays use documented numbered names; deferred installation uses repeated fields
 whose five lists callers must align by position, including each certificate and
 private key. Neither the client nor its type checks validate equal lengths or
 pairing. An empty bundle requests server-side bundle download. The metadata setter accepts caller-serialized JSON text encoded once as
-a form field; its current native `string|int` boundary does not establish integer
-semantics or automatic object encoding (`8x0.1.23`). This is not a JSON request body.
+a form field; its native `string` argument preserves supplied text without JSON
+syntax validation or automatic object encoding. This is not a JSON request body.
 
 Generation stores key/CSR material even when certificate generation is skipped.
 Service certificate installation requires a separate service restart; the client
@@ -2175,9 +2175,8 @@ do not change existing mailboxes. A package in use cannot be deleted;
 `deletePackage()` returns no value. The client performs no retry or rollback.
 
 Feature overrides accept caller-serialized JSON text in form fields, encoded
-once, rather than a JSON body or automatically serialized PHP arrays. The scalar
-native `string|int` input limitation remains under `8x0.1.23`; integer JSON
-semantics are not established. Extension names and optional variables are
+once, rather than a JSON body or automatically serialized PHP arrays. Their native
+arguments are strings; JSON syntax is not validated. Extension names and optional variables are
 case-sensitive. `deletePackageExtension()` removes the named extensions and
 associated variables; the typed input does not invent arbitrary variable fields.
 
@@ -2311,7 +2310,7 @@ strings so values returned by `phpGetHandlers()` can be supplied to
 INI content/directives and pool configuration inputs stay sensitive and are
 encoded once. Pool parameters accept caller-serialized JSON text; they do not
 introduce JSON bodies or automatic PHP-array serialization. The native
-string|int limitation remains under `8x0.1.23`.
+`?string` argument omits null and preserves text without JSON syntax validation.
 
 Impacted-domain selectors are individually optional according to explicit
 either-or-both source prose, but callers must supply a domain or a true
