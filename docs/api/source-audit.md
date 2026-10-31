@@ -6442,3 +6442,44 @@ disinfection, plugin installation, network API call or server change ran. The
 attributed absent-ClamAV reviewer report and historical captures stay unchanged;
 this correction establishes no successful or completed scan. Follow-up `.1.26`
 owns the input correction; controller review/publication remain separate.
+
+
+### ModSecurity report row-ID scalar input (2026-10-31)
+
+`whm()->modSecurity()->reportRule(string $email, string $message, string|int $rowIds,
+bool $send, string $type): array` now accepts an integer single audit-log row ID
+or the documented comma-separated string. The pinned WHM source is
+`docs/api/sources/2026-10-13/whm.openapi.json.gz`, decompressed SHA-256
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`.
+The selected operation is `/paths/~1modsec_report_rule/get` (operationId
+`ModSecurity-modsec_report_rule`); its exact required query parameter is
+`/paths/~1modsec_report_rule/get/parameters/2`, named `row_ids`, with formal
+`schema.type: integer`, `style: form` and `explode: false`. Its `/description`
+permits comma-separated row IDs only when all correspond to the same ModSecurity
+rule. `/examples/single/value` is integer `794828`, while
+`/examples/multiple/value` is string `794828, 794829, 794820`, including spaces.
+The formal schema contradicts that prose and example; it is unchanged.
+
+The evidence-bound overlay uses the established scalar `string|int` correction
+only for this parameter. Existing integer callers remain valid. Caller-provided
+strings are forwarded literally and form-encoded once, with no list wrapper,
+parser, trimming, joining, sorting, deduplication or new ID/range/same-rule
+validation. Callers must supply valid IDs from the same rule; the client does not
+validate that relationship. Empty text, string zero, native zero and encoding sentinels in offline
+fixtures test representation only, not server acceptance. Strict-caller arrays,
+booleans, floats and null fail native argument typing before dispatch or metadata
+reset; ordinary weak-caller PHP coercion remains PHP behavior.
+
+The pinned `x-readonly: false` still lowers to one form POST with `api.version=1`
+in the URL. cPanel 11.48 and the Web Server role caveat remain. `send: false`
+prepares a report; `send: true` transmits event data, message and contact email to
+a third-party vendor. No default, hidden override, retry or automatic submission
+is added. Existing sensitive email/message/type arguments, result and response
+metadata/error behavior remain unchanged. Generated operation specs, canonical
+coverage, pinned sources, historical evidence and the previous audit prefix are
+unchanged. Only the generated public rowIds type and documentation change.
+Independent mock-HTTP fixtures exercise literal bodies, both send flags, native
+rejection and unchanged API/payload failures. No live report, vendor communication,
+ModSecurity change, source refresh or server/API call ran; remaining live behavior
+stays under `8x0.2.34`. This completes the remaining input correction in `.1.24`;
+publication and external parent acceptance remain separate.

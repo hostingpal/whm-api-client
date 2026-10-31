@@ -901,6 +901,10 @@
         "message": {
           "sensitive": true
         },
+        "row_ids": {
+          "type": "string|int",
+          "description": "An integer single audit-log row ID or a caller-provided comma-separated string of row IDs from the modsec hits table. All IDs must correspond to the same ModSecurity rule; strings are forwarded unchanged."
+        },
         "type": {
           "sensitive": true
         }
@@ -912,7 +916,7 @@
         },
         {
           "kind": "documented",
-          "text": "send=true submits event data, message and contact email to a remote receiver; send=false prepares the report without sending. The formal row_ids schema is integer despite comma-separated multi-ID prose and examples, so this typed method accepts one row ID only (whm-api-client-8x0.1.24). Report content may contain sensitive request data. Report hits preserve their string timezone and nullable message separately from getLog()."
+          "text": "send=true submits event data, message and contact email to a remote receiver; send=false prepares the report without sending. The formal row_ids schema is integer, contradicting its comma-separated multi-ID prose and examples. rowIds accepts an integer single ID or literal comma-separated string; all IDs must correspond to the same ModSecurity rule. String bytes are preserved without parsing, trimming, sorting or deduplication. Callers must supply valid IDs from the same rule; the client does not validate that relationship. Report content may contain sensitive request data. Report hits preserve their string timezone and nullable message separately from getLog()."
         },
         {
           "kind": "documented",
@@ -1034,7 +1038,41 @@
             }
           ]
         }
-      }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /modsec_report_rule GET (operationId ModSecurity-modsec_report_rule), parameters/2 is required query row_ids with formal integer schema, style form and explode false. Its description and multiple example contradict the formal integer schema. Widen only this native argument to string|int through the existing scalar boundary, preserving integer callers and caller-provided string bytes; retain x-readonly=false form POST, version 11.48, Web Server role caveat and unchanged response contract. No array convenience API, local ID/same-rule validator or live report is established.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1modsec_report_rule/get/parameters/2"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "This exact parameter prose permits more than one row ID only when comma-separated and all corresponding to the same ModSecurity rule. The string alternative follows this prose rather than changing or claiming support from the formal integer schema.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1modsec_report_rule/get/parameters/2/description"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned single-row example is native integer 794828; retain integer caller compatibility without casting.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1modsec_report_rule/get/parameters/2/examples/single/value"
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned multiple-row example is the literal string '794828, 794829, 794820', including its spaces. Forward supplied text unchanged and form-encode it once; no parsing, trimming, joining, sorting or deduplication is added. Offline representation fixtures do not establish server acceptance of arbitrary strings or IDs.",
+          "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+          "pointer": "/paths/~1modsec_report_rule/get/parameters/2/examples/multiple/value"
+        }
+      ]
     },
     "whm1:modsec_set_config_text": {
       "name": "setConfigText",

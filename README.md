@@ -1427,10 +1427,18 @@ locally. Missing optional fields retain the original one-based row index, and
 input order and duplicate setting IDs are preserved. The entire collection is
 sensitive. Both methods share one canonical response contract and issue one form
 POST, with no retries, rollback or promise of atomic per-setting success.
-`reportRule()` retains the formal integer row-ID input; the contradictory prose's
-comma-separated multi-ID form remains under `8x0.1.24`. The source restricts batch
-setting IDs to 0 through 9; this change adds no client-side ID/range or state enum
-validation. Record input support is source-backed and tested offline only.
+The source restricts batch setting IDs to 0 through 9; this change adds no
+client-side ID/range or state enum validation. Record input support is source-backed
+and tested offline only.
+
+`reportRule(string $email, string $message, string|int $rowIds, bool $send, string $type)`
+accepts an integer single row ID or a comma-separated string. The pinned formal
+integer schema contradicts its multi-ID prose and example; the source-backed
+union preserves both. All IDs must correspond to the same ModSecurity rule.
+Strings retain their exact bytes, including spaces, leading zeros and duplicates;
+the client adds no parsing or ID/same-rule validation. `send: false` prepares the
+report; `send: true` sends it to a third-party vendor. This input correction is
+verified offline only; no report was submitted.
 
 ```php
 $client->whm()->modSecurity()->updateSettings(settings: [
