@@ -1280,3 +1280,30 @@ artifacts and strict assessments without waivers. Do not enable Greylisting or
 repeat the catalog merely to make it pass. Separate reviewer login-history reads
 and source-backed write-result corrections do not expand this eight-GET capture;
 all fifteen server-wide/lockout writes remain unobserved.
+
+## WHM reseller inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-resellers.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-resellers.json
+```
+
+The fixed six GET requests read WHM version, account counts, public contact data,
+reseller IPs, ACL lists and reseller names. Optional user arguments are omitted;
+this does not establish an authenticated-user default. The reviewed root
+`getresellerips` call fails because its source requires an actual user value,
+while a named non-reseller also fails. Preserve this historical recipe and failed
+artifact; do not substitute a guessed selector or rerun merely for green.
+The existing exact request guard,
+opt-in, committed-input checks, verified TLS and structural capture remain active.
+No reseller is selected by a guessed identifier and no account, privilege, limit,
+contact, IP or nameserver is changed. Returned URLs are not fetched. Keep remaining
+variants and lifecycle verification under `8x0.2.36`.
+
+The corrected reseller capture at `e8751c3` passes five of six API/payload/probe
+checks with zero discrepancies. `getresellerips` still fails at the API; the
+separate reviewer report attributes it to the omitted user. Strict status remains
+failed and unwaived. The observed account limit
+empty string is preserved without inferred semantics. ACL/reseller inventories
+are empty. No settings changed; historical evidence and follow-up `8x0.2.36` remain.
