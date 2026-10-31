@@ -3,6 +3,8 @@
 // response type specs matching the PHP engine's spec format.
 package effective
 
+import "github.com/hostingpal/whm-api-client/tools/api-map/internal/overlay"
+
 // TypeSpec mirrors the PHP engine's type spec (see src/Response/ShapeValidator.php).
 type TypeSpec struct {
 	Literal  *string
@@ -36,9 +38,10 @@ type Note struct {
 
 // Param is one generated method argument.
 type Param struct {
+	Collection  *overlay.Collection `json:",omitempty"`
 	Wire        string
 	PHP         string
-	Encoding    string // scalar, bool, repeat, numbered or a suffix-numbered encoding
+	Encoding    string // scalar, bool, legacy list encodings or explicit collection
 	PHPType     string // native type without nullability; list encodings include array
 	DocType     string // PHPStan type without nullability
 	Description string

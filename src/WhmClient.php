@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient;
 use HostingPal\WhmApiClient\Api\AbstractApiClient;
 use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
 use HostingPal\WhmApiClient\Api\Engine\OperationSpec;
+use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Api\RequestMethod;
 use HostingPal\WhmApiClient\Api\Whm\WhmGroups;
@@ -122,9 +123,8 @@ final class WhmClient extends AbstractApiClient
      * Route a generated operation to WHM API 1 with the spec's method and outcome policy.
      *
      * @param array<mixed> $spec
-     * @param Parameters $parameters
      */
-    private function dispatch(array $spec, #[SensitiveParameter] array $parameters): ApiResponse
+    private function dispatch(array $spec, #[SensitiveParameter] OrderedFields $parameters): ApiResponse
     {
         return $this->request(
             OperationSpec::text($spec, 'function'),
@@ -137,26 +137,31 @@ final class WhmClient extends AbstractApiClient
     /**
      * Execute an operation declared by an internal operation group or call().
      *
-     * Groups supply endpoint parameters; the API version cannot be overridden and
-     * is removed from caller parameters. Execution clears metadata before parameter
-     * validation or I/O, so groups pass multi-value input through unvalidated
-     * (see NumberedList). Post keeps api.version in the query string and
-     * form-encodes the operation parameters.
+     * Generated fields reject routing collisions before encoding. Generic caller
+     * arrays retain reserved-field filtering. Metadata is already cleared before
+     * argument validation; execution resets it again before I/O. Post keeps
+     * api.version in the query string and form-encodes operation parameters.
      *
-     * @param Parameters $parameters
+     * @param Parameters|OrderedFields $parameters
      */
     private function request(
         string $operation,
         #[SensitiveParameter]
-        array $parameters,
+        array|OrderedFields $parameters,
         RequestMethod $method,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
     ): ApiResponse {
         $path = '/json-api/' . $operation;
-        $parameters = array_diff_key($parameters, self::RESERVED);
+        if ($parameters instanceof OrderedFields) {
+            $parameters->assertNoReserved(array_keys(self::RESERVED));
+            $query = $method === RequestMethod::Get ? $parameters->withRouting(self::RESERVED) : self::RESERVED;
+        } else {
+            $parameters = array_diff_key($parameters, self::RESERVED);
+            $query = self::RESERVED + $parameters;
+        }
 
         return $method === RequestMethod::Post
             ? $this->executePost($path, self::RESERVED, $parameters, ResponseRoute::Whm, $outcome)
-            : $this->executeGet($path, self::RESERVED + $parameters, ResponseRoute::Whm, $outcome);
+            : $this->executeGet($path, $query, ResponseRoute::Whm, $outcome);
     }
 }

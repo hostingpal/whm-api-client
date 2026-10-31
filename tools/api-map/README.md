@@ -103,6 +103,32 @@ Operation entries (all keys optional):
   suppresses only the PHPDoc literal enum in favor of the existing native type;
   absent or true keeps the pinned enum. It changes neither encoding nor native
   parameter types and does not resolve disputed upstream values.
+  `collection` instead declares an ordinary strict list input without markers:
+  `{"kind":"indexed","item_type":"string","allow_scalar":true,"empty":"reject",
+  "prefix":"domain","separator":"-","start":0}`. Every fact is required;
+  `kind: "repeat"` omits and forbids prefix/separator/start. Item types are `string`,
+  `int`, `bool` (encoded as 1/0), or evidenced `string|int`; floats/null entries are
+  unsupported. Indexed prefixes are literal simple ASCII identifiers, separators
+  are `""` or `"-"`, and starts are integers from 0 through 2147483647. The runtime
+  also rejects index overflow. A permitted scalar keeps the original unsuffixed
+  wire name; even a singleton array uses the declared list pattern. Every list
+  must be nonempty and sequential, preserving order, duplicates, empty strings,
+  zero and false for the selected item type. Optional null still omits the whole
+  argument. Native array/scalar unions and `non-empty-list<T>` PHPDoc are generated;
+  all collection arguments receive `SensitiveParameter` for trace protection,
+  independently of secret-bearing transport classification. Source/overlay secret
+  decisions still require POST; ordinary read-only collection inputs retain GET.
+  Collection descriptors
+  cannot combine with `encoding`, `type`, `wire`, `omit`, `omit_empty` or
+  `reject_empty`. Static indexed overlaps fail generation; expanded collisions
+  fail before dispatch, retaining the ordered-field engine's origin checks.
+  Each collection override needs operation-level `doc` evidence with
+  `source_sha256` matching that source parameter's locator and `pointer` matching
+  its parameter JSON pointer or that pointer plus `/description`. These structured
+  fields are mandatory only for the new collection override; existing evidence
+  entries keep their original contract. A fixture proves grammar support, not
+  endpoint or live compatibility. Inspect the formal source and prose before
+  choosing a pattern; the generator does not infer it from operation names.
   `wire` corrects one scalar string, integer or number parameter's transmitted
   name with operation-level evidence. Both names must be simple ASCII identifiers
   (`[A-Za-z_][A-Za-z0-9_]*`), excluding routing fields (`api.version`, `cpanel.*`),

@@ -6,8 +6,6 @@ namespace HostingPal\WhmApiClient\Tests\Api\Engine;
 
 use HostingPal\WhmApiClient\Api\Engine\ArgumentEncoder;
 use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
-use HostingPal\WhmApiClient\Api\NumberedList;
-use HostingPal\WhmApiClient\Api\RepeatedList;
 use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -20,7 +18,7 @@ final class ArgumentEncoderTest extends TestCase
     private const PARAMS = [
         'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
         'hideTemporary' => ['name' => 'hide_temporary_domains', 'encoding' => 'bool'],
-        'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+        'domains' => ['name' => 'domains', 'encoding' => 'repeat'],
         'users' => ['name' => 'user', 'encoding' => 'numbered'],
         'ratio' => ['name' => 'ratio', 'encoding' => 'scalar'],
     ];
@@ -34,30 +32,27 @@ final class ArgumentEncoderTest extends TestCase
             'ratio' => 1.5,
         ]);
 
-        self::assertSame(['domain', 'hide_temporary_domains', 'user', 'ratio'], array_keys($encoded));
-        self::assertSame('example.test', $encoded['domain']);
-        self::assertSame(0, $encoded['hide_temporary_domains']);
-        self::assertInstanceOf(NumberedList::class, $encoded['user']);
-        self::assertSame(['alice', 'bob'], $encoded['user']->values);
-        self::assertSame('1.5', $encoded['ratio']);
+        self::assertSame(
+            'domain=example.test&hide_temporary_domains=0&user=alice&user-1=bob&ratio=1.5',
+            $encoded->encode(),
+        );
     }
 
-    public function testRepeatedArgumentsBecomeRepeatedLists(): void
+    public function testRepeatedArgumentsPreserveTheirOrder(): void
     {
         $encoded = ArgumentEncoder::encode(self::PARAMS, ['domains' => ['a.test', 'b.test']]);
 
-        self::assertInstanceOf(RepeatedList::class, $encoded['domain']);
-        self::assertSame(['a.test', 'b.test'], $encoded['domain']->values);
+        self::assertSame('domains=a.test&domains=b.test', $encoded->encode());
     }
 
     public function testExplicitNullEqualsOmission(): void
     {
         self::assertSame(
-            ArgumentEncoder::encode(self::PARAMS, ['domain' => 'example.test']),
+            ArgumentEncoder::encode(self::PARAMS, ['domain' => 'example.test'])->encode(),
             ArgumentEncoder::encode(
                 self::PARAMS,
                 ['domain' => 'example.test', 'hideTemporary' => null, 'users' => null],
-            ),
+            )->encode(),
         );
     }
 
@@ -78,12 +73,12 @@ final class ArgumentEncoderTest extends TestCase
     public function testFloatsEncodeIndependentlyOfThePrecisionSetting(): void
     {
         $encoded = ArgumentEncoder::encode(self::PARAMS, ['ratio' => 1234567890.123456]);
-        self::assertSame('1234567890.123456', $encoded['ratio']);
+        self::assertSame('1234567890.123456', $encoded->all()[0]['value']);
 
         $previous = ini_set('precision', '6');
         try {
             $encoded = ArgumentEncoder::encode(self::PARAMS, ['ratio' => 1234567.5]);
-            self::assertSame('1234567.5', $encoded['ratio']);
+            self::assertSame('1234567.5', $encoded->all()[0]['value']);
         } finally {
             ini_set('precision', $previous === false ? '14' : $previous);
         }
@@ -120,7 +115,7 @@ final class ArgumentEncoderTest extends TestCase
                 setlocale(LC_NUMERIC, ['de_DE.UTF-8', 'de_DE', 'fr_FR.UTF-8', 'C']);
                 $encoded = ArgumentEncoder::encode(self::PARAMS, ['ratio' => $value]);
 
-                self::assertSame($expected, $encoded['ratio'], 'serialize_precision ' . $setting);
+                self::assertSame($expected, $encoded->all()[0]['value'], 'serialize_precision ' . $setting);
                 self::assertSame($value, (float) $expected);
             }
         } finally {
@@ -135,7 +130,7 @@ final class ArgumentEncoderTest extends TestCase
         $mismatches = [];
         for ($exponent = -1074; $exponent <= 1023; $exponent++) {
             foreach ([2.0 ** $exponent, -(2.0 ** $exponent)] as $value) {
-                $encoded = ArgumentEncoder::encode(self::PARAMS, ['ratio' => $value])['ratio'];
+                $encoded = ArgumentEncoder::encode(self::PARAMS, ['ratio' => $value])->all()[0]['value'];
                 if (!is_string($encoded) || (float) $encoded !== $value) {
                     $mismatches[] = ($value < 0 ? '-' : '') . '2 ** ' . $exponent;
                 }

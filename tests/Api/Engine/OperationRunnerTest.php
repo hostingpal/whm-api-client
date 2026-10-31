@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Api\Engine;
 
-use HostingPal\WhmApiClient\Api\AbstractApiClient;
 use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
 use HostingPal\WhmApiClient\Api\Engine\OperationSpec;
+use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
 use HostingPal\WhmApiClient\Api\Engine\SpecChecker;
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Api\RequestMethod;
@@ -19,9 +19,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
-/**
- * @phpstan-import-type Parameters from AbstractApiClient
- */
 final class OperationRunnerTest extends TestCase
 {
     private const SPEC = [
@@ -45,16 +42,15 @@ final class OperationRunnerTest extends TestCase
             ['hideTemporaryDomains' => true],
             /**
              * @param array<mixed> $spec
-             * @param Parameters $parameters
              */
-            static function (array $spec, array $parameters) use (&$seen): ApiResponse {
-                $seen = [$spec['function'], $parameters];
+            static function (array $spec, OrderedFields $parameters) use (&$seen): ApiResponse {
+                $seen = [$spec['function'], $parameters->encode()];
 
                 return self::response((object) ['primary_domain' => 'example.test', 'extra' => 1]);
             },
         );
 
-        self::assertSame(['primary_domain', ['hide_temporary_domains' => 1]], $seen);
+        self::assertSame(['primary_domain', 'hide_temporary_domains=1'], $seen);
         self::assertSame(['primary_domain' => 'example.test'], $result);
     }
 
@@ -255,9 +251,8 @@ final class OperationRunnerTest extends TestCase
                 [],
                 /**
                  * @param array<mixed> $spec
-                 * @param Parameters $parameters
                  */
-                static function (array $spec, array $parameters) use (&$calls): ApiResponse {
+                static function (array $spec, OrderedFields $parameters) use (&$calls): ApiResponse {
                     $calls++;
 
                     return self::response(new stdClass());
@@ -381,9 +376,8 @@ final class OperationRunnerTest extends TestCase
                 ['hideTemporaryDomains' => true, 'undeclared' => 'x'],
                 /**
                  * @param array<mixed> $spec
-                 * @param Parameters $parameters
                  */
-                static function (array $spec, array $parameters) use (&$calls): ApiResponse {
+                static function (array $spec, OrderedFields $parameters) use (&$calls): ApiResponse {
                     $calls++;
 
                     return self::response(new stdClass());

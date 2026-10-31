@@ -71,6 +71,14 @@ func Validate(set Set) []string {
 			}
 			problems = append(problems, missingEvidence(id, op)...)
 			for wire, param := range op.Params {
+				if param.Collection != nil {
+					if err := ValidateCollection(param.Collection); err != nil {
+						problems = append(problems, id+": parameter "+wire+": collection "+err.Error())
+					}
+					if param.Omit || param.Encoding != "" || param.Type != "" || param.Wire != "" || param.OmitEmpty != nil || param.RejectEmpty != nil {
+						problems = append(problems, id+": parameter "+wire+": collection cannot combine with omit, encoding, type, wire, omit_empty or reject_empty")
+					}
+				}
 				if param.RejectEmpty != nil {
 					if !*param.RejectEmpty || param.Omit || param.OmitEmpty != nil {
 						problems = append(problems, id+": reject_empty must be true and cannot have omit or omit_empty")
@@ -182,6 +190,9 @@ func missingEvidence(id string, op Operation) []string {
 		if op.Params[wire].OmitEmpty != nil {
 			settings = append(settings, "omit_empty on parameter "+wire)
 		}
+		if op.Params[wire].Collection != nil {
+			settings = append(settings, "collection on parameter "+wire)
+		}
 		if op.Params[wire].Encoding != "" {
 			settings = append(settings, "encoding on parameter "+wire)
 		}
@@ -213,3 +224,22 @@ var correctedWireName = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 
 // qualifiedFunction allows exactly Namespace/function, with no path syntax.
 var qualifiedFunction = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*/[A-Za-z_][A-Za-z0-9_]*$`)
+
+// ValidateCollection checks explicit facts even for callers constructing overlays
+// directly. JSON loading additionally rejects unknown keys and wrong JSON types.
+func ValidateCollection(c *Collection) error {
+	if c == nil || (c.Kind != "indexed" && c.Kind != "repeat") ||
+		(c.ItemType != "string" && c.ItemType != "int" && c.ItemType != "bool" && c.ItemType != "string|int") ||
+		c.AllowScalar == nil || c.Empty != "reject" {
+		return fmt.Errorf("requires kind, strict item_type, allow_scalar and empty reject")
+	}
+	if c.Kind == "repeat" {
+		if c.Prefix != nil || c.Separator != nil || c.Start != nil {
+			return fmt.Errorf("repeat cannot declare index rules")
+		}
+	} else if c.Prefix == nil || !IsCorrectedWireName(*c.Prefix) || c.Separator == nil ||
+		(*c.Separator != "" && *c.Separator != "-") || c.Start == nil || *c.Start < 0 || *c.Start > 2147483647 {
+		return fmt.Errorf("indexed requires identifier prefix, empty/hyphen separator and nonnegative 32-bit start")
+	}
+	return nil
+}

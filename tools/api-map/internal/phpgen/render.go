@@ -35,7 +35,7 @@ func (w *writer) paramDoc(indent string, p effective.Param, description string) 
 	// Enum literals come from the pinned documents and could contain "*/".
 	docType := escapeDoc(paramDocType(p))
 	head := func(t string) string { return indent + " * @param " + t + " $" + p.PHP }
-	if len(head(docType)) > lineWidth {
+	if p.Collection == nil && len(head(docType)) > lineWidth {
 		docType = p.PHPType
 		if isMultiple(p.Encoding) {
 			docType = "string|list<string>"
@@ -187,7 +187,7 @@ func groupClass(g effective.Group) string {
 			if isMultiple(p.Encoding) {
 				uses = append(uses, "InvalidArgumentException")
 			}
-			if p.Sensitive {
+			if redactArgument(p) {
 				uses = append(uses, "SensitiveParameter")
 			}
 		}
@@ -293,7 +293,7 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		omitEmpty = omitEmpty || p.OmitEmpty
 		rejectEmpty = rejectEmpty || p.RejectEmpty
 		multi = multi || isMultiple(p.Encoding)
-		scalarMulti = scalarMulti || p.Encoding == "suffix-numbered-scalar"
+		scalarMulti = scalarMulti || p.Encoding == "suffix-numbered-scalar" || p.Collection != nil
 	}
 	if ret != nil {
 		w.docTag(indent, "@return "+docReturn(op, *ret))
@@ -325,6 +325,11 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	w.line(indent + "}")
 }
 
+// Collection contents are always trace-protected, independently of transport secrecy.
+func redactArgument(p effective.Param) bool {
+	return p.Sensitive || p.Collection != nil
+}
+
 func signature(w *writer, op effective.Operation, ret *effective.TypeSpec) {
 	native := "void"
 	if ret != nil {
@@ -337,7 +342,7 @@ func signature(w *writer, op effective.Operation, ret *effective.TypeSpec) {
 		if !p.Required {
 			parts[i] += " = null"
 		}
-		sensitive = sensitive || p.Sensitive
+		sensitive = sensitive || redactArgument(p)
 	}
 	single := "    public function " + op.PHPName + "(" + strings.Join(parts, ", ") + "): " + native
 	if !sensitive && len(single) <= lineWidth {
@@ -347,7 +352,7 @@ func signature(w *writer, op effective.Operation, ret *effective.TypeSpec) {
 	}
 	w.line("    public function " + op.PHPName + "(")
 	for i, p := range op.Params {
-		if p.Sensitive {
+		if redactArgument(p) {
 			w.line("        #[SensitiveParameter]")
 		}
 		w.line("        " + parts[i] + ",")
@@ -431,13 +436,26 @@ func specClass(g effective.Group) string {
 				}
 				entry := "            " + phpString(p.PHP) + " => ['name' => " + phpString(p.Wire) +
 					", 'encoding' => " + phpString(p.Encoding) + setting + "],"
-				if len(entry) <= lineWidth {
+				if p.Collection == nil && len(entry) <= lineWidth {
 					w.line(entry)
 					continue
 				}
 				w.line("            " + phpString(p.PHP) + " => [")
 				w.line("                'name' => " + phpString(p.Wire) + ",")
 				w.line("                'encoding' => " + phpString(p.Encoding) + ",")
+				if c := p.Collection; c != nil {
+					w.line("                'collection' => [")
+					w.line("                    'kind' => " + phpString(c.Kind) + ",")
+					w.line("                    'item_type' => " + phpString(c.ItemType) + ",")
+					w.line(fmt.Sprintf("                    'allow_scalar' => %t,", *c.AllowScalar))
+					w.line("                    'empty' => 'reject',")
+					if c.Kind == "indexed" {
+						w.line("                    'prefix' => " + phpString(*c.Prefix) + ",")
+						w.line("                    'separator' => " + phpString(*c.Separator) + ",")
+						w.line(fmt.Sprintf("                    'start' => %d,", *c.Start))
+					}
+					w.line("                ],")
+				}
 				if p.OmitEmpty {
 					w.line("                'omit_empty' => true,")
 				}
@@ -564,5 +582,5 @@ func uniqueSorted(values []string) []string {
 
 // isMultiple identifies encodings whose array inputs require element PHPDoc.
 func isMultiple(encoding string) bool {
-	return encoding == "repeat" || encoding == "numbered" || encoding == "suffix-numbered" || encoding == "suffix-numbered-scalar"
+	return encoding == "collection" || encoding == "repeat" || encoding == "numbered" || encoding == "suffix-numbered" || encoding == "suffix-numbered-scalar"
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tests\Api\Engine;
 
 use HostingPal\WhmApiClient\Api\Engine\MultipartEncoder;
+use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -44,6 +45,33 @@ final class MultipartEncoderTest extends TestCase
         foreach (['encode', 'collides'] as $method) {
             $parameter = (new ReflectionMethod(MultipartEncoder::class, $method))->getParameters()[0];
             self::assertCount(1, $parameter->getAttributes(SensitiveParameter::class));
+        }
+    }
+
+    public function testOrderedFieldsPreserveLiteralStringBytesAndOrder(): void
+    {
+        $fields = new OrderedFields();
+        $fields->append('key', 'key', "private%20&=\r\nkey\x00");
+        $fields->append('empty', 'empty', '');
+        [$type, $body] = MultipartEncoder::encode($fields);
+        $boundary = substr($type, strlen('multipart/form-data; boundary='));
+        self::assertSame('--' . $boundary . "\r\nContent-Disposition: form-data; name=\"key\"\r\n\r\n"
+            . "private%20&=\r\nkey\x00\r\n--" . $boundary
+            . "\r\nContent-Disposition: form-data; name=\"empty\"\r\n\r\n\r\n--" . $boundary . "--\r\n", $body);
+    }
+
+    public function testOrderedMultipartStillRejectsNonStringAndExpandedListFields(): void
+    {
+        $cases = [['key', 7, true], ["key\r\nunsafe", 'secret', true], ['key', 'secret', false]];
+        foreach ($cases as [$name, $value, $allowed]) {
+            $fields = new OrderedFields();
+            $fields->append('input', $name, $value, null, $allowed);
+            try {
+                MultipartEncoder::encode($fields);
+                self::fail('Multipart restrictions still apply to ordered fields.');
+            } catch (InvalidArgumentException $error) {
+                self::assertStringNotContainsString('secret', $error->getMessage());
+            }
         }
     }
 

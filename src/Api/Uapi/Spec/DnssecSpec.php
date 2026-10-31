@@ -82,7 +82,19 @@ final class DnssecSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'domain' => [
+                'name' => 'domain',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'indexed',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'prefix' => 'domain',
+                    'separator' => '-',
+                    'start' => 0,
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'object',
@@ -98,7 +110,19 @@ final class DnssecSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'domain' => [
+                'name' => 'domain',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'indexed',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'prefix' => 'domain',
+                    'separator' => '-',
+                    'start' => 0,
+                ],
+            ],
             'active' => ['name' => 'active', 'encoding' => 'bool'],
             'algoNum' => ['name' => 'algo_num', 'encoding' => 'scalar'],
             'keySetup' => ['name' => 'key_setup', 'encoding' => 'scalar'],
@@ -173,7 +197,19 @@ final class DnssecSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
-            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'domain' => [
+                'name' => 'domain',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'indexed',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'prefix' => 'domain',
+                    'separator' => '-',
+                    'start' => 0,
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'map',

@@ -333,8 +333,16 @@ DNSSEC requires the DNS role and retains each method's version and registrar
 requirements. Disabling DNSSEC destroys its keys and requires registrar record
 removal; the client provides no retry or rollback. Dynamic domain/key maps retain
 their returned keys, optional fields and per-domain results separately from the
-API envelope. Single-domain calls use the documented `domain` argument; the
-`domain-0`/`domain-1` family remains tracked under `8x0.1.21`.
+API envelope. `enableDnssec()`, `disableDnssec()` and `fetchDsRecords()` accept
+`domain` as a string or a nonempty sequential string list. Scalars retain `domain`;
+arrays always use zero-based `domain-0`/`domain-1`, including singleton arrays.
+Other DNSSEC methods retain their existing arguments. Remaining indexed families
+and source contradictions stay under `8x0.1.21`. The separate
+[2026-10-31 singleton-list capture](docs/api/evidence/2026-10-31-dnssec-indexed-input.json)
+at `5e0ea6b` on `11.138.0.19` passes three GETs and strict assessment with zero
+discrepancies. It confirms DS singleton-list acceptance on both routes; domain
+detail objects are empty. Multi-domain batches, populated DS fields and mutations
+remain unestablished; no DNS, key, registrar or preference state changed.
 Omitting `keySetup` retains `classic` even with `algoNum: 13`; choose `simple`
 explicitly for the documented combined-key setup above algorithm 8. Key removal
 is irreversible and can break validation while registrar DS records reference it.
@@ -700,8 +708,10 @@ complete preference object; declared fields remain strict. required_score list
 items preserve observed numeric strings alongside native integers and floats.
 The malformed literal additionalProperties source node is not a returned field.
 Fingerprint every dynamic key as a wildcard, even on type failure. Default object
-specs still discard unreviewed fields. The scalar update preference argument does
-not yet cover indexed value-0/value-1 inputs (`8x0.1.20`). Do not infer filtering enforcement
+specs still discard unreviewed fields. updateUserPreference value accepts a scalar
+string or nonempty sequential string list encoded as value-0/value-1. Null/omission
+still removes settings; reject [] before HTTP. Preserve string items, empty strings,
+zero, order and duplicates. Do not infer filtering enforcement
 from API results or execute message delivery/Spam Box clearing as routine tests.
 The corrected mail-protection read catalog at a063db0 on 11.138.0.19 passes all
 19 API/payload checks, while strict status retains two PTR nested unknown-field
@@ -2405,13 +2415,23 @@ remaining compatibility stay under `8x0.2.46`; no repeat is needed for integrati
   handle (WHM and UAPI handles own route construction, with one account-bound UAPI
   helper for direct and bridged execution), validates the payload
   with `ShapeValidator` and the internal `PayloadReader`, which attaches the response
-  snapshot to every failure, and unwraps the result. Reserved bridge fields take
-  precedence over endpoint parameters. Generated multi-value parameters pass caller
-  input through as `RepeatedList` (repeated keys, overlay encoding `repeat`) or
-  `NumberedList` (WHM `name`, `name-1`, ..., encoding `numbered`); generic `call()` also
-  accepts a plain `list<string>` as repeated keys. The shared encoder validates the
-  contents after the metadata reset. Selectors only bind callbacks
-  and cache groups; they perform no I/O or metadata reset.
+  snapshot to every failure, and unwraps the result. `ArgumentEncoder` returns an
+  internal `OrderedFields` accumulator of expanded literal names/values, PHP argument
+  origins and opaque repeat-family identities. Different origins cannot emit the
+  same wire name; only intentional repeats from one family may share it. Handles
+  reject generated collisions with routing reservations before any filtering:
+  WHM reserves `api.version`; bridged UAPI also reserves `cpanel.user`,
+  `cpanel.module` and `cpanel.function`. Direct UAPI keeps its existing route rules.
+  `withRouting()` prepends routing fields while retaining original provenance.
+  Future collection encoders append fields rather than merging associative maps.
+  `ParameterExpander` shares existing marker rules: `RepeatedList` repeats keys,
+  `NumberedList` emits `name`, `name-1`, ... and `SuffixNumberedList` replaces its
+  terminal wildcard with 1, 2, ... . Generic `call()` retains its associative input,
+  plain repeated string lists, reserved-field filtering and suffix-only collision
+  policy. All collection validation follows the metadata reset, before I/O; form
+  names and values are encoded once. SSL multipart retains safe scalar string
+  fields and literal value bytes. Selectors only bind callbacks and cache groups;
+  they perform no I/O or metadata reset.
 - Requests declare their method and outcome policy. `RequestMethod::Get` places
   parameters in the query string; `RequestMethod::Post` keeps the routing fields
   (`api.version`, bridge `cpanel.*`) in the query string and form-encodes the

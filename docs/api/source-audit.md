@@ -2424,9 +2424,9 @@ for every custom preference. Both read and update return the complete preference
 object, so their evidence-backed root replacements retain the same four known
 optional fields and preserve opaque custom values as mixed. The new opt-in object values child preserves those keys without weakening
 known fields; structural evidence masks dynamic keys. Existing closed objects and
-all prior operation specs retain their contracts. Typed scalar preference values
-do not yet implement the separately documented value-0/value-1 family, tracked
-under `whm-api-client-8x0.1.20`.
+all prior response contracts remain unchanged. The subsequently reviewed indexed
+input adoption adds value-0/value-1 lists for one preference per call; see the
+source binding and offline/live boundary below.
 
 The fixed read-only catalog has 19 observations: WHM version plus nine selected
 operations through both routes, bound to npr/npr.rs. BoxTrapper mailbox-specific
@@ -2908,8 +2908,12 @@ DNSSEC requires the DNS role and retains each method's version and registrar
 requirements. Disabling DNSSEC destroys its keys and requires registrar record
 removal; the client provides no retry or rollback. Dynamic domain/key maps retain
 their returned keys, optional fields and per-domain results separately from the
-API envelope. Single-domain calls use the documented `domain` argument; the
-`domain-0`/`domain-1` family remains tracked under `8x0.1.21`.
+API envelope. `enableDnssec()`, `disableDnssec()` and `fetchDsRecords()` accept
+`domain` as a string or a nonempty sequential string list. Scalars retain `domain`;
+arrays always use zero-based `domain-0`/`domain-1`, including singleton arrays.
+Other DNSSEC methods retain their existing arguments. Remaining indexed families
+and source contradictions stay under `8x0.1.21`; this input support adds no live
+batch coverage.
 Omitting `keySetup` retains `classic` even with `algoNum: 13`; choose `simple`
 explicitly for the documented combined-key setup above algorithm 8. Key removal
 is irreversible and can break validation while registrar DS records reference it.
@@ -5944,3 +5948,56 @@ lifecycle is described above and does not modify this historical artifact.
 Remaining route/compatibility variants and committed mutation evidence stay under
 `8x0.2.54`. SHA-256:
 `b88fe3ee6f8af6de0676022bb4449d997a2a5a578b2e624688db963702adb127`.
+
+
+## First zero-based indexed input adopters (2026-10-31)
+
+The reviewed collection grammar now has four production adopters, tracked by
+`whm-api-client-8x0.1.20` and `whm-api-client-8x0.1.21.1`. The pinned UAPI source
+is `docs/api/sources/2026-10-13/cpanel.openapi.json.gz`; its exact decompressed
+SHA-256 remains `172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`,
+matching the manifest and each source parameter locator in the map.
+
+| Operation | Pinned JSON pointer | List wire fields |
+| --- | --- | --- |
+| SpamAssassin/update_user_preference | `/paths/~1SpamAssassin~1update_user_preference/get/parameters/1` | `value-0`, `value-1` |
+| DNSSEC/enable_dnssec | `/paths/~1DNSSEC~1enable_dnssec/get/parameters/0` | `domain-0`, `domain-1` |
+| DNSSEC/disable_dnssec | `/paths/~1DNSSEC~1disable_dnssec/get/parameters/0` | `domain-0`, `domain-1` |
+| DNSSEC/fetch_ds_records | `/paths/~1DNSSEC~1fetch_ds_records/get/parameters/0` | `domain-0`, `domain-1` |
+
+Each source description and multiple-value example establishes the zero-based
+family, and new operation-level doc evidence binds the collection to that hash
+and parameter pointer. The disable/fetch prose copies “enable DNSSEC”; this is
+attributed upstream wording, not newly observed batch behavior. All four source
+variants are GET. Existing client policy keeps the three mutations as form POST
+and fetch_ds_records as GET. Existing evidence entries and response contracts are
+preserved, including their historical scalar-only implementation descriptions.
+Collection arguments receive SensitiveParameter for trace protection independently
+of actual source/overlay secret classification; ordinary inventory inputs do not
+thereby require POST, while secret-bearing inputs still do.
+
+Independent offline tests exercise all four public methods on direct UAPI and
+the WHM bridge: scalar, singleton and multi-item wire bytes, false/zero options,
+omission/null, duplicates, empty/zero strings, escaping, invalid lists, stale
+metadata reset, no-dispatch failures, protected traces and keyed response results.
+Generated operation counts remain UAPI 519 and WHM 579; input variants do not add
+canonical coverage. Remaining indexed families stay under parent `8x0.1.21`.
+
+The separate opt-in `dnssec-indexed-input-v1` catalog in
+`tools/live-verify/dnssec-indexed-input.php` has exactly three GETs: WHM version,
+then direct and bridged fetchDsRecords(domain: ['npr.rs']). Both DS probes carry
+argument variant `singleton-domain-list` and guard literal domain-0=npr.rs URLs.
+It reuses the account/domain opt-ins, exact GET guard, one-attempt runner and
+structural sanitizer. The [new capture](evidence/2026-10-31-dnssec-indexed-input.json)
+at `5e0ea6b3646f6210f0229c0c585f1ac0b3954cad` on `11.138.0.19` passes all three
+HTTP/API/payload/probe checks and strict assessment, with zero discrepancies.
+Both DS results contain empty domain detail objects: keys and nsec_details are
+absent. This establishes singleton-list wire acceptance through direct UAPI and
+the WHM bridge; multiple distinct domains, populated DS variants, mutations, DNS
+propagation and resolver validation remain unestablished. No DNS, key, registrar,
+DDNS or preference state changed. Historical DNS catalogs and evidence remain
+unchanged, and the completed capture must not be repeated merely for integration.
+Artifact SHA-256: `9ba5d1c2f5202e6e897e420b48c621961a97aea2f0611af92710cadfeb9289e8`.
+The controller independently verified source/map/generator/overlay/effective-spec
+hashes, ordered identities and structural-only output. Remaining DNSSEC and
+SpamAssassin mutation evidence stays under `8x0.2.26` and `8x0.2.23.1`.
