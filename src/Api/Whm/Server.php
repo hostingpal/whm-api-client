@@ -98,7 +98,14 @@ use SensitiveParameter;
  *         }>,
  *     }>,
  * }
- * @phpstan-type GetAvailableTiersResult array<array-key, string>
+ * @phpstan-type GetAvailableTiersResult array{
+ *     current?: string,
+ *     edge?: string,
+ *     lts?: string,
+ *     release?: string,
+ *     stable?: string,
+ *     ...<array-key, string>
+ * }
  * @phpstan-type GetCurrentLtsExpirationStatusResult array{
  *     expiration?: int,
  *     expires_in_next_three_months?: 0|1,
@@ -183,7 +190,7 @@ use SensitiveParameter;
  * }
  * @phpstan-type GetServerNodeStatusResult array{
  *     enabled_services?: list<string>,
- *     remote_node_linkages?: list<array<array-key, mixed>>,
+ *     remote_node_linkages?: list<array<array-key, mixed>>|array{},
  *     system_settings?: array<array-key, mixed>,
  *     tls_verified?: 0|1,
  *     version?: string,
@@ -191,7 +198,7 @@ use SensitiveParameter;
  * @phpstan-type GetServiceConfigResult array<array-key, string|int|array<array-key, mixed>>
  * @phpstan-type GetServiceConfigKeyResult array{
  *     mail_process_size?: mixed,
- *     ...<array-key, string>
+ *     ...<array-key, string|int|array<array-key, mixed>>
  * }
  * @phpstan-type GetServiceProxyBackendsResult array{
  *     payload?: list<array{
@@ -854,6 +861,11 @@ final readonly class Server
      * Documented: importance is an integer priority (0 Disabled, 1 High, 2 Medium, 3 Low); inspect it separately from
      * metadata.result. No notification is sent.
      *
+     * Observed: The independent review on cPanel 11.138.0.19 observed importance as a digit string for ChkServd. This
+     * field uses the existing canonical, in-range integer-string normalization; fractional, exponent, noncanonical and
+     * overflowing strings are rejected. The accepted boundary formats are offline-tested policy, not additional live
+     * observations.
+     *
      * API-map identity: whm1:get_application_contact_event_importance#GET (wire name
      * get_application_contact_event_importance; Notifications).
      *
@@ -889,6 +901,11 @@ final readonly class Server
      *
      * Documented: importance is an integer priority (0 Disabled, 1 High, 2 Medium, 3 Low); inspect it separately from
      * metadata.result. No notification is sent.
+     *
+     * Observed: The independent review on cPanel 11.138.0.19 observed importance as a digit string for ChkServd. This
+     * field uses the existing canonical, in-range integer-string normalization; fractional, exponent, noncanonical and
+     * overflowing strings are rejected. The accepted boundary formats are offline-tested policy, not additional live
+     * observations.
      *
      * API-map identity: whm1:get_application_contact_importance#GET (wire name get_application_contact_importance;
      * Notifications).
@@ -1190,6 +1207,10 @@ final readonly class Server
      * requires skipTlsVerification=true. Omission retains the documented false default; disabling TLS verification
      * weakens remote-node identity checks. Returned status does not create linkage.
      *
+     * Documented: remote_node_linkages normally contains a list of opaque child-node objects. The pinned description
+     * also permits an empty object when the parent queries its child. That empty-object alternative declares no fields;
+     * populated linked-node behavior remains unobserved in this review.
+     *
      * API-map identity: whm1:get_server_node_status#GET (wire name get_server_node_status; Server Nodes).
      *
      * @param string $apiToken The required API token to make API calls to the remote server node.
@@ -1228,9 +1249,14 @@ final readonly class Server
      *
      * Documented: Available in cPanel and WHM 58 and later. Uses GET without automatically following returned links.
      *
-     * Documented: Only dovecot is documented. A fresh installation may return only protocols until mailserver
-     * configuration is saved. Dynamic configuration values are strings, integers or opaque objects; configuration and
-     * credentials in returned values are sensitive payload data.
+     * Documented: Only dovecot is documented; undocumented services are outside the reviewed contract. A fresh
+     * installation may return only protocols until mailserver configuration is saved. Dynamic configuration values are
+     * strings, integers or opaque objects. The pinned example includes hulk_auth_passwd: returned configuration and raw
+     * payloads attached to exceptions can contain credential material and must be treated as sensitive.
+     *
+     * Observed: The independent review on cPanel 11.138.0.19 saw the hulk_auth_passwd key name in the unfiltered
+     * dovecot configuration, without inspecting its value. An undocumented exim request returned null data and failed
+     * payload validation; this does not widen the documented service or payload contract.
      *
      * API-map identity: whm1:get_service_config#GET (wire name get_service_config; Services).
      *
@@ -1256,9 +1282,15 @@ final readonly class Server
      *
      * Documented: Available in cPanel and WHM 58 and later. Uses GET without automatically following returned links.
      *
-     * Documented: The field name is the requested key, not the literal source placeholder key name. Other dynamic
-     * values use the documented string type. Preserve the explicitly unspecified mail_process_size field as mixed,
-     * without inventing its type or identifying other dynamic key names. Returned configuration can contain secrets.
+     * Documented: The field name is the requested key, not the literal source placeholder key name. Dynamic values
+     * retain the full configuration string, integer or opaque-object contract. Preserve the explicitly unspecified
+     * mail_process_size field as mixed. The pinned service example is dovecot, the only service documented by the full
+     * configuration function; undocumented services are outside this reviewed contract. Returned configuration and raw
+     * payloads attached to exceptions can contain credential material.
+     *
+     * Observed: The independent review on cPanel 11.138.0.19 observed object-valued quota and namespace_private results
+     * for dovecot. Their contents remain opaque; this observation does not establish other services or identify every
+     * dynamic key.
      *
      * API-map identity: whm1:get_service_config_key#GET (wire name get_service_config_key; Services).
      *
@@ -1539,6 +1571,10 @@ final readonly class Server
      * than independently toggled roles; DNS does not convert a server to DNSOnly. The enabled integer flag is separate
      * from API outcome.
      *
+     * Observed: The independent review on cPanel 11.138.0.19 observed enabled as a digit string for FTP. This flag
+     * additionally accepts the exact strings 0 and 1, normalized to integer flags; other scalar types and flag values
+     * remain invalid.
+     *
      * API-map identity: whm1:is_role_enabled#GET (wire name is_role_enabled; Server Profiles).
      *
      * @param string $role The role to check.
@@ -1718,9 +1754,10 @@ final readonly class Server
      * Documented: Available in cPanel and WHM 11.32 and later. Uses form POST with one request and no automatic retry
      * or rollback.
      *
-     * Documented: action can inspect, list, enable or disable features; uses POST for all actions. features is
-     * comma-separated text. Enabling or disabling changes server feature state; inspect per-feature status
-     * independently of metadata.result. Returned links are not fetched.
+     * Documented: action can inspect, list, enable or disable features; uses POST for all actions. The pinned features
+     * parameter is a feature ID required for enable or disable; no comma-separated or batch encoding is established.
+     * Enabling or disabling changes server feature state; inspect per-feature status independently of metadata.result.
+     * Returned links are not fetched.
      *
      * API-map identity: whm1:manage_features#GET (wire name manage_features; Updates).
      *
@@ -2584,8 +2621,9 @@ final readonly class Server
      *
      * Documented: Requires the root-level ACL and changes /etc/cpupdate.conf. All omitted fields retain existing
      * settings. SECURITY_UPDATES is independent of UPDATES and can apply current-major security updates hourly even
-     * when UPDATES is manual or never. RPMUP/SARULESUP never require administrator updates; the client does not run
-     * them. Freeform configuration values are sensitive.
+     * when UPDATES is manual or never. When RPMUP or SARULESUP is never, the administrator must run
+     * /usr/local/cpanel/scripts/update-packages when updating system packages or SpamAssassin rules, respectively; the
+     * client does not run that script. Freeform configuration values are sensitive.
      *
      * API-map identity: whm1:update_updateconf#POST (wire name update_updateconf; Updates).
      *

@@ -519,6 +519,10 @@
         {
           "kind": "documented",
           "text": "importance is an integer priority (0 Disabled, 1 High, 2 Medium, 3 Low); inspect it separately from metadata.result. No notification is sent."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent review on cPanel 11.138.0.19 observed importance as a digit string for ChkServd. This field uses the existing canonical, in-range integer-string normalization; fractional, exponent, noncanonical and overflowing strings are rejected. The accepted boundary formats are offline-tested policy, not additional live observations."
         }
       ],
       "evidence": [
@@ -527,8 +531,29 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /get_application_contact_event_importance parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: get_application_contact_event_importance for ChkServd returned a digit string at importance and failed the pinned integer spec. Apply the existing canonical, bounded integer-string normalization only at importance. The review does not establish every accepted spelling or integer boundary; name and other fields retain their pinned contracts. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
         }
-      ]
+      ],
+      "response": {
+        "importance": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: get_application_contact_event_importance for ChkServd returned a digit string at importance and failed the pinned integer spec. Apply the existing canonical, bounded integer-string normalization only at importance. The review does not establish every accepted spelling or integer boundary; name and other fields retain their pinned contracts. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
+            }
+          ]
+        }
+      }
     },
     "whm1:get_application_contact_importance": {
       "name": "getApplicationContactImportance",
@@ -541,6 +566,10 @@
         {
           "kind": "documented",
           "text": "importance is an integer priority (0 Disabled, 1 High, 2 Medium, 3 Low); inspect it separately from metadata.result. No notification is sent."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent review on cPanel 11.138.0.19 observed importance as a digit string for ChkServd. This field uses the existing canonical, in-range integer-string normalization; fractional, exponent, noncanonical and overflowing strings are rejected. The accepted boundary formats are offline-tested policy, not additional live observations."
         }
       ],
       "evidence": [
@@ -549,8 +578,29 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /get_application_contact_importance parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: get_application_contact_importance for ChkServd returned a digit string at importance and failed the pinned integer spec. Apply the existing canonical, bounded integer-string normalization only at importance. The review does not establish every accepted spelling or integer boundary; name and other fields retain their pinned contracts. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
         }
-      ]
+      ],
+      "response": {
+        "importance": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: get_application_contact_importance for ChkServd returned a digit string at importance and failed the pinned integer spec. Apply the existing canonical, bounded integer-string normalization only at importance. The review does not establish every accepted spelling or integer boundary; name and other fields retain their pinned contracts. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
+            }
+          ]
+        }
+      }
     },
     "whm1:get_available_profiles": {
       "name": "getAvailableProfiles",
@@ -598,7 +648,24 @@
       "response": {
         "": {
           "replace": {
-            "type": "map",
+            "type": "object",
+            "fields": {
+              "current": {
+                "type": "string"
+              },
+              "edge": {
+                "type": "string"
+              },
+              "lts": {
+                "type": "string"
+              },
+              "release": {
+                "type": "string"
+              },
+              "stable": {
+                "type": "string"
+              }
+            },
             "values": {
               "type": "string"
             }
@@ -608,7 +675,7 @@
               "kind": "doc",
               "version": "pinned 2026-10-13",
               "date": "2026-10-31",
-              "note": "Pinned data names current/edge/lts/release/stable string fields and additionalProperties:{type:string}; prose also lists each available cPanel version. A map of string values preserves all declared fields and dynamic branches with the same value contract. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+              "note": "Pinned data declares current, edge, lts, release and stable as optional named string fields alongside additionalProperties:{type:string}; the example includes dynamic version keys. Preserve all five fields explicitly in the object contract and PHPDoc while retaining string-valued dynamic branches. This source-backed shape correction does not establish live execution of this POST operation. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
             }
           ]
         }
@@ -725,6 +792,10 @@
         {
           "kind": "documented",
           "text": "Uses form POST because apiToken is a root-level credential, despite x-readonly=true. Contacts the remote node using version and get_current_profile; username must also have root-level access. An IP address requires skipTlsVerification=true. Omission retains the documented false default; disabling TLS verification weakens remote-node identity checks. Returned status does not create linkage."
+        },
+        {
+          "kind": "documented",
+          "text": "remote_node_linkages normally contains a list of opaque child-node objects. The pinned description also permits an empty object when the parent queries its child. That empty-object alternative declares no fields; populated linked-node behavior remains unobserved in this review."
         }
       ],
       "evidence": [
@@ -734,7 +805,37 @@
           "date": "2026-10-31",
           "note": "Pinned /get_server_node_status parameters, x-readonly classification and 200 response schema. Sensitive credential or freeform value inputs use form POST and explicit SensitiveParameter decisions. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
-      ]
+      ],
+      "response": {
+        "remote_node_linkages": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "list",
+                "items": {
+                  "type": "map",
+                  "values": {
+                    "type": "mixed"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "fields": {}
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned remote_node_linkages is an array of objects whose item schema has no declared fields; its description additionally promises an empty object when called on a parent for its child node. Preserve list rows as opaque maps and admit an object with no declared fields for that documented branch. This is a source-backed offline correction: review https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254 reports no linked nodes and no POST executions. The existing object grammar does not enforce an object-key count, and this override does not infer populated object fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
     },
     "whm1:get_service_config": {
       "name": "getServiceConfig",
@@ -746,7 +847,11 @@
         },
         {
           "kind": "documented",
-          "text": "Only dovecot is documented. A fresh installation may return only protocols until mailserver configuration is saved. Dynamic configuration values are strings, integers or opaque objects; configuration and credentials in returned values are sensitive payload data."
+          "text": "Only dovecot is documented; undocumented services are outside the reviewed contract. A fresh installation may return only protocols until mailserver configuration is saved. Dynamic configuration values are strings, integers or opaque objects. The pinned example includes hulk_auth_passwd: returned configuration and raw payloads attached to exceptions can contain credential material and must be treated as sensitive."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent review on cPanel 11.138.0.19 saw the hulk_auth_passwd key name in the unfiltered dovecot configuration, without inspecting its value. An undocumented exim request returned null data and failed payload validation; this does not widen the documented service or payload contract."
         }
       ],
       "evidence": [
@@ -755,6 +860,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /get_service_config parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: The unfiltered dovecot configuration contained 53 string-valued keys and five object-valued keys. The reviewer saw the hulk_auth_passwd key name only, not its value. An exim request returned null data and failed payload validation; exim is outside the pinned dovecot contract. No credential value or raw configuration payload is included in this evidence. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
         }
       ]
     },
@@ -773,7 +884,11 @@
         },
         {
           "kind": "documented",
-          "text": "The field name is the requested key, not the literal source placeholder key name. Other dynamic values use the documented string type. Preserve the explicitly unspecified mail_process_size field as mixed, without inventing its type or identifying other dynamic key names. Returned configuration can contain secrets."
+          "text": "The field name is the requested key, not the literal source placeholder key name. Dynamic values retain the full configuration string, integer or opaque-object contract. Preserve the explicitly unspecified mail_process_size field as mixed. The pinned service example is dovecot, the only service documented by the full configuration function; undocumented services are outside this reviewed contract. Returned configuration and raw payloads attached to exceptions can contain credential material."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent review on cPanel 11.138.0.19 observed object-valued quota and namespace_private results for dovecot. Their contents remain opaque; this observation does not establish other services or identify every dynamic key."
         }
       ],
       "evidence": [
@@ -782,6 +897,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /get_service_config_key parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: get_service_config_key for dovecot keys quota and namespace_private returned object-valued entries and failed the previous dynamic string-only spec. These object values match the pinned full configuration string|integer|object family; do not infer a closed list of configuration keys or a schema for opaque object contents. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
         }
       ],
       "response": {
@@ -794,7 +915,21 @@
               }
             },
             "values": {
-              "type": "string"
+              "type": "union",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "int"
+                },
+                {
+                  "type": "map",
+                  "values": {
+                    "type": "mixed"
+                  }
+                }
+              ]
             }
           },
           "evidence": [
@@ -802,7 +937,13 @@
               "kind": "doc",
               "version": "pinned 2026-10-13",
               "date": "2026-10-31",
-              "note": "Pinned data properties key name.description explicitly states this return name equals the supplied key parameter; key name is a placeholder, not a literal fixed field. Its schema is string. The separately declared mail_process_size:{} stays optional mixed, exactly as pinned. Dynamic string values are preserved without guessing names or narrowing the unspecified known field. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+              "note": "Pinned /get_service_config_key data declares key name as the supplied key parameter, not a literal fixed field, and separately declares optional mail_process_size:{} without a type. Preserve that known mixed field. Pinned /get_service_config additionalProperties documents configuration values as string, integer or object; use the same value union for dynamic single-key results, retaining opaque object contents. The single-key source labels its placeholder string; the separately recorded live object results establish that correction. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: get_service_config_key for dovecot keys quota and namespace_private returned object-valued entries and failed the previous dynamic string-only spec. These object values match the pinned full configuration string|integer|object family; do not infer a closed list of configuration keys or a schema for opaque object contents. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
             }
           ]
         }
@@ -1161,6 +1302,10 @@
         {
           "kind": "documented",
           "text": "Role names are case-sensitive. MySQLClient and PostgresClient reflect client configuration rather than independently toggled roles; DNS does not convert a server to DNSOnly. The enabled integer flag is separate from API outcome."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent review on cPanel 11.138.0.19 observed enabled as a digit string for FTP. This flag additionally accepts the exact strings 0 and 1, normalized to integer flags; other scalar types and flag values remain invalid."
         }
       ],
       "evidence": [
@@ -1169,8 +1314,29 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /is_role_enabled parameters, x-readonly classification and 200 response schema. Reviewed naming, parameter encoding and semantic notes retain documented inputs and output fields. WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: is_role_enabled(role: FTP) returned a digit string at enabled and failed the strict flag spec. Accept only the existing string-flag forms 0 and 1 alongside native integer flags; the review does not establish other scalar conversions. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
         }
-      ]
+      ],
+      "response": {
+        "enabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET review of revision e6181e408921547c804736481e26d2da1ca5b88c on cPanel 11.138.0.19: is_role_enabled(role: FTP) returned a digit string at enabled and failed the strict flag spec. Accept only the existing string-flag forms 0 and 1 alongside native integer flags; the review does not establish other scalar conversions. Review: https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254."
+            }
+          ]
+        }
+      }
     },
     "whm1:link_server_node_with_api_token": {
       "name": "linkServerNodeWithApiToken",
@@ -1342,7 +1508,7 @@
         },
         {
           "kind": "documented",
-          "text": "action can inspect, list, enable or disable features; uses POST for all actions. features is comma-separated text. Enabling or disabling changes server feature state; inspect per-feature status independently of metadata.result. Returned links are not fetched."
+          "text": "action can inspect, list, enable or disable features; uses POST for all actions. The pinned features parameter is a feature ID required for enable or disable; no comma-separated or batch encoding is established. Enabling or disabling changes server feature state; inspect per-feature status independently of metadata.result. Returned links are not fetched."
         }
       ],
       "evidence": [
@@ -2091,7 +2257,7 @@
         },
         {
           "kind": "documented",
-          "text": "Requires the root-level ACL and changes /etc/cpupdate.conf. All omitted fields retain existing settings. SECURITY_UPDATES is independent of UPDATES and can apply current-major security updates hourly even when UPDATES is manual or never. RPMUP/SARULESUP never require administrator updates; the client does not run them. Freeform configuration values are sensitive."
+          "text": "Requires the root-level ACL and changes /etc/cpupdate.conf. All omitted fields retain existing settings. SECURITY_UPDATES is independent of UPDATES and can apply current-major security updates hourly even when UPDATES is manual or never. When RPMUP or SARULESUP is never, the administrator must run /usr/local/cpanel/scripts/update-packages when updating system packages or SpamAssassin rules, respectively; the client does not run that script. Freeform configuration values are sensitive."
         }
       ],
       "evidence": [

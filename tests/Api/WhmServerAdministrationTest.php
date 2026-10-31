@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tests\Api;
 
 use HostingPal\WhmApiClient\Api\Whm\Server;
+use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
@@ -873,7 +874,7 @@ final class WhmServerAdministrationTest extends TestCase
             'forceDedistributionFromNode' => ['{"log":[{"indent":"0"}]}', '{"user_info":[{"username":1}]}'],
             'getAllContactImportances' => ['{"importances":[{"importance":"0.5"}]}'],
             'getApplicationContactEventImportance' => ['{"importance":false}'],
-            'getApplicationContactImportance' => ['{"importance":"0"}'],
+            'getApplicationContactImportance' => ['{"importance":"00"}'],
             'getAvailableProfiles' => ['{"profiles":[{"optional_roles":[{"module":1}]}]}',
                 '{"profiles":[{"experimental":"0"}]}'],
             'getAvailableTiers' => ['{"future":1}', '{"current":null}'],
@@ -885,7 +886,7 @@ final class WhmServerAdministrationTest extends TestCase
                 '{"tiers":{"fixture":[{"named":[1]}]}}'],
             'getServerNodeStatus' => ['{"tls_verified":2}', '{"enabled_services":[1]}'],
             'getServiceConfig' => ['{"fixture":null}', '{"fixture":false}', '{"fixture":1.5}'],
-            'getServiceConfigKey' => ['{"fixture_key":1}', '{"fixture_key":null}'],
+            'getServiceConfigKey' => ['{"fixture_key":1.5}', '{"fixture_key":null}'],
             'getServiceProxyBackends' => ['{"payload":[{"backend":null}]}', '{"payload":[{"service_group":1}]}'],
             'getTcp4Sockets' => ['{"payload":[{"dport":"0"}]}'],
             'getTcp6Sockets' => ['{"payload":[{"src":1}]}'],
@@ -896,7 +897,7 @@ final class WhmServerAdministrationTest extends TestCase
             'getMinimumPasswordStrengths' => ['{"default":"01"}', '{"mysql":null}'],
             'installedVersions' => ['{"apache":false}', '{"apache_php_versions":[null]}',
                 '{"cpanel_packages":[1]}', '{"cpanel_and_whm":0}'],
-            'isRoleEnabled' => ['{"enabled":"0"}', '{"enabled":2}'],
+            'isRoleEnabled' => ['{"enabled":"00"}', '{"enabled":2}'],
             'listConfigClusterServers' => ['{"node":{"signature":null}}', '{"node":false}'],
             'listConnectedApplications' => ['{"list":[{"jwt":false}]}', '{"list":[{"token_name":1}]}'],
             'listLinkedServerNodes' => ['{"payload":[{"last_check":"0"}]}', '{"payload":[{"tls_verified":null}]}'],
@@ -1124,6 +1125,12 @@ final class WhmServerAdministrationTest extends TestCase
     private static function observedIntegerFields(): iterable
     {
         yield 'notification priority' => ['getAllContactImportances', 'get_all_contact_importances', 'importance'];
+        yield 'application priority' => [
+            'getApplicationContactImportance', 'get_application_contact_importance', 'importance',
+        ];
+        yield 'application event priority' => [
+            'getApplicationContactEventImportance', 'get_application_contact_event_importance', 'importance',
+        ];
         $fields = ['createacct', 'default', 'ftp', 'list', 'mysql', 'passwd', 'postgres', 'sshkey', 'virtual'];
         foreach ($fields as $field) {
             yield $field => ['getMinimumPasswordStrengths', 'getminimumpasswordstrengths', $field];
@@ -1152,8 +1159,15 @@ final class WhmServerAdministrationTest extends TestCase
         [$client, $http] = self::client();
         $payload = self::integerFieldPayload($method, $field, $wire);
         $http->addResponse(new Response(200, [], self::envelope($function, $payload)));
+        [$arguments, $query] = match ($method) {
+            'getApplicationContactImportance' => [['app' => 'ChkServd'], '&app=ChkServd'],
+            'getApplicationContactEventImportance' => [
+                ['app' => 'ChkServd', 'event' => 'Check'], '&app=ChkServd&event=Check',
+            ],
+            default => [[], ''],
+        };
         try {
-            $actual = self::invoke($client->whm()->server(), $method, []);
+            $actual = self::invoke($client->whm()->server(), $method, $arguments);
         } catch (PayloadMismatchException) {
             self::fail('The reviewed field must accept a lossless canonical integer string.');
         }
@@ -1170,7 +1184,7 @@ final class WhmServerAdministrationTest extends TestCase
         self::assertInstanceOf(RequestInterface::class, $request);
         self::assertSame('GET', $request->getMethod());
         self::assertSame(
-            'https://api.example.test:2087/json-api/' . $function . '?api.version=1',
+            'https://api.example.test:2087/json-api/' . $function . '?api.version=1' . $query,
             (string) $request->getUri(),
         );
         self::assertSame('', (string) $request->getBody());
@@ -1190,7 +1204,7 @@ final class WhmServerAdministrationTest extends TestCase
                 yield $label . ' invalid ' . $index => [$method, self::integerFieldPayload($method, $field, $value)];
             }
         }
-        // Root and sibling contracts stay strict; only the ten observed integer leaves opt in.
+        // Root and sibling contracts stay strict; only the reviewed integer leaves opt in.
         foreach (['"0"', '"25"', 'true', '["1"]'] as $index => $payload) {
             yield 'priority root ' . $index => ['getAllContactImportances', $payload];
             yield 'strength root ' . $index => ['getMinimumPasswordStrengths', $payload];
@@ -1202,8 +1216,8 @@ final class WhmServerAdministrationTest extends TestCase
             ['getAllContactImportances', '{"importances":[{"app":1,"importance":"1"}]}'],
             ['getAllContactImportances', '{"importances":[{"event":null,"importance":"1"}]}'],
             ['getAllContactImportances', '{"importances":[{"name":1,"importance":"1"}]}'],
-            ['getApplicationContactImportance', '{"importance":"1"}'],
-            ['getApplicationContactEventImportance', '{"importance":"1"}'],
+            ['getApplicationContactImportance', '{"importance":"1","name":1}'],
+            ['getApplicationContactEventImportance', '{"importance":"1","name":null}'],
             ['getCurrentLtsExpirationStatus', '{"expiration":"1"}'],
             ['getCurrentLtsExpirationStatus', '{"expires_in_next_three_months":"1"}'],
             ['getCurrentProfile', '{"experimental":"1"}'],
@@ -1246,6 +1260,134 @@ final class WhmServerAdministrationTest extends TestCase
             self::assertSame($expected, self::invoke($client->whm()->server(), $method, []));
         }
         self::assertCount(4, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, mixed}> */
+    public static function reviewedServerPayloads(): iterable
+    {
+        foreach (['0', '1'] as $flag) {
+            yield 'quoted role ' . $flag => ['isRoleEnabled', '{"enabled":"' . $flag . '"}',
+                ['enabled' => (int) $flag]];
+            yield 'native role ' . $flag => ['isRoleEnabled', '{"enabled":' . $flag . '}', ['enabled' => (int) $flag]];
+        }
+        foreach (['getApplicationContactImportance', 'getApplicationContactEventImportance'] as $method) {
+            yield $method . ' optional priority' => [$method, '{"name":"0"}', ['name' => '0']];
+            yield $method . ' name remains a string' => [$method, '{"importance":"0","name":"1"}',
+                ['importance' => 0, 'name' => '1']];
+            yield $method . ' native integer boundary' => [$method, '{"importance":' . PHP_INT_MAX . '}',
+                ['importance' => PHP_INT_MAX]];
+        }
+        foreach (['getServiceConfig', 'getServiceConfigKey'] as $method) {
+            yield $method . ' string retains exact text' => [$method, '{"fixture_key":"001.00"}',
+                ['fixture_key' => '001.00']];
+            yield $method . ' integer zero' => [$method, '{"fixture_key":0}', ['fixture_key' => 0]];
+            yield $method . ' integer bounds' => [$method,
+                '{"first":' . PHP_INT_MIN . ',"second":' . PHP_INT_MAX . '}',
+                ['first' => PHP_INT_MIN, 'second' => PHP_INT_MAX]];
+            yield $method . ' empty object value' => [$method, '{"quota":{}}', ['quota' => []]];
+            yield $method . ' object keys retain opaque nested values' => [$method,
+                '{"quota":{"rule":"*:storage=0","flag":false},"namespace_private":{"prefix":"",'
+                    . '"nested":{"future":[null,1,true]}},"protocol_imap":{"mail_max_userip_connections":20}}',
+                [
+                    'quota' => ['rule' => '*:storage=0', 'flag' => false],
+                    'namespace_private' => ['prefix' => '', 'nested' => ['future' => [null, 1, true]]],
+                    'protocol_imap' => ['mail_max_userip_connections' => 20],
+                ]];
+        }
+        yield 'child node documented empty object' => ['getServerNodeStatus',
+            '{"enabled_services":["exim"],"remote_node_linkages":{},"system_settings":{"Mail":{"flag":0}},'
+                . '"tls_verified":1,"version":"11.138"}',
+            ['enabled_services' => ['exim'], 'remote_node_linkages' => [],
+                'system_settings' => ['Mail' => ['flag' => 0]], 'tls_verified' => 1, 'version' => '11.138']];
+        yield 'node linkages empty list' => ['getServerNodeStatus', '{"remote_node_linkages":[]}',
+            ['remote_node_linkages' => []]];
+        yield 'node linkages retain opaque list row' => ['getServerNodeStatus',
+            '{"remote_node_linkages":[{"alias":"child","enabled_services":["exim"],"last_check":0,'
+                . '"future":{"opaque":[null,true]}}]}',
+            ['remote_node_linkages' => [['alias' => 'child', 'enabled_services' => ['exim'], 'last_check' => 0,
+                'future' => ['opaque' => [null, true]]]]]];
+        yield 'tiers known and version keys coexist' => ['getAvailableTiers',
+            '{"current":"11.90.0.3","edge":"11.90.0.3","lts":"11.86.0.24","release":"11.88.0.13",'
+                . '"stable":"11.88.0.13","11.90":"11.90.0.3","future":"exact text"}',
+            ['current' => '11.90.0.3', 'edge' => '11.90.0.3', 'lts' => '11.86.0.24', 'release' => '11.88.0.13',
+                'stable' => '11.88.0.13', '11.90' => '11.90.0.3', 'future' => 'exact text']];
+        foreach (['current', 'edge', 'lts', 'release', 'stable'] as $field) {
+            yield 'tier optional ' . $field => ['getAvailableTiers', '{"' . $field . '":""}', [$field => '']];
+        }
+    }
+
+    #[DataProvider('reviewedServerPayloads')]
+    public function testReviewedServerVariantsPreserveValuesAndSendOneRequest(
+        string $method,
+        string $payload,
+        mixed $expected,
+    ): void {
+        [$client, $http] = self::client();
+        [$function, $verb, $arguments, $wire] = self::cases()[$method];
+        $http->addResponse(new Response(200, [], self::envelope($function, $payload)));
+
+        self::assertSame(
+            self::ordered($expected),
+            self::ordered(self::invoke($client->whm()->server(), $method, $arguments)),
+        );
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertCount(1, $http->getRequests());
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame($verb, $request->getMethod());
+        self::assertSame($verb === 'POST' ? $wire : '', (string) $request->getBody());
+        self::assertSame(
+            'https://api.example.test:2087/json-api/' . $function . '?api.version=1'
+                . ($verb === 'GET' && $wire !== '' ? '&' . $wire : ''),
+            (string) $request->getUri(),
+        );
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function invalidReviewedServerPayloads(): iterable
+    {
+        foreach (
+            ['"00"', '"01"', '"-0"', '"+1"', '"1.0"', '"1e0"', '" 1"', '"1 "', '""', '"2"',
+            'true', 'false', 'null', '0.0', '1.0', '2', '-1', '[]', '{}'] as $wire
+        ) {
+            yield 'role flag ' . $wire => ['isRoleEnabled', '{"enabled":' . $wire . '}'];
+        }
+        foreach (['getServiceConfig', 'getServiceConfigKey'] as $method) {
+            foreach (['null', 'false', 'true', '1.5', '1.0', '[1]', '[{}]', '["value"]'] as $wire) {
+                yield $method . ' value ' . $wire => [$method, '{"fixture_key":' . $wire . '}'];
+            }
+        }
+        foreach (['null', 'false', 'true', '0', '"text"', '[1]', '[null]', '[false]'] as $wire) {
+            yield 'node linkage ' . $wire => ['getServerNodeStatus', '{"remote_node_linkages":' . $wire . '}'];
+        }
+        foreach (['current', 'edge', 'lts', 'release', 'stable', '11.90', 'future'] as $field) {
+            foreach (['null', '1', 'false', '{}', '[]'] as $wire) {
+                yield 'tier ' . $field . ' ' . $wire => ['getAvailableTiers', '{"' . $field . '":' . $wire . '}'];
+            }
+        }
+    }
+
+    #[DataProvider('invalidReviewedServerPayloads')]
+    public function testReviewedServerCompatibilityKeepsMalformedValuesAndOutcomesStrict(
+        string $method,
+        string $payload,
+    ): void {
+        $this->testPayloadMismatchKeepsConfirmedOutcome($method, $payload);
+    }
+
+    public function testAvailableTiersContractRetainsFivePinnedOptionalFieldsAndDynamicStrings(): void
+    {
+        $returns = ServerSpec::GET_AVAILABLE_TIERS['returns'];
+        self::assertSame('object', $returns['type']);
+        self::assertSame([
+            'current' => ['type' => 'string'],
+            'edge' => ['type' => 'string'],
+            'lts' => ['type' => 'string'],
+            'release' => ['type' => 'string'],
+            'stable' => ['type' => 'string'],
+        ], $returns['fields']);
+        self::assertArrayNotHasKey('required', $returns);
+        self::assertSame(['type' => 'string'], $returns['values']);
     }
 
     private static function integerFieldPayload(string $method, string $field, mixed $value): string

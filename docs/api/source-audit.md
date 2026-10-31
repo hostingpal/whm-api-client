@@ -3541,10 +3541,28 @@ results and service/configuration values as private payload data.
 Profile activation accepts documented serialized JSON text in its optional role
 argument, with one form-encoding pass. Its native `string|int` boundary does not
 establish integer semantics or automatic object encoding; supply a JSON string.
-The typing limitation remains under `8x0.1.23`. Dynamic service-configuration keys
-and available-tier maps retain source-backed corrections without inventing fixed
-names. Per-method availability, role requirements, omission, null and explicit
-false/zero behavior remain in generated PHPDoc.
+The typing limitation remains under `8x0.1.23` before release. Available-tier
+maps preserve the five pinned named fields alongside dynamic values. Both
+service-configuration reads document `dovecot`; undocumented services are outside
+the contract, and null data from such a service can fail validation. Configuration
+values can contain credential material, including the observed key name
+`hulk_auth_passwd`; neither the review nor committed evidence records its value.
+Treat returned values and raw payloads attached to exceptions as sensitive.
+The full configuration and individual-key reads retain the same string, integer
+or nested map values with opaque contents.
+
+On `11.138.0.19`, the reviewer observed quoted role flags and digit strings
+in both application-importance reads. Compatibility uses the established bounded
+canonical-integer normalization policy; the observation does not establish every
+accepted spelling or boundary. Strict flag values and integer bounds remain. The documented empty
+node-linkage object is source-backed and offline-tested; populated linked-node
+behavior remains unobserved. Per-method availability, role requirements,
+omission, null and explicit false/zero behavior remain in generated PHPDoc.
+
+For update preferences, `RPMUP` or `SARULESUP` set to `never` requires the
+administrator to run `scripts/update-packages`; it does not make updates
+unnecessary. Feature-management inputs retain the pinned single feature-ID
+description without an unsupported comma-separated batch claim.
 
 EULA acceptance, license purchase, reboot/restart, updates, profile activation,
 node linking, configuration changes and notification tests are explicit operations.
@@ -3592,3 +3610,21 @@ updates, profile activation, licensing, node connectivity or notification delive
 No mutation, credential read or URL request ran. Follow-up `8x0.2.38` retains the
 unknown findings and unobserved variants. Corrected SHA-256:
 `db24e53879fff4754369b984969640b51ea483713ad71c735d6d1bb1be88f6b8`.
+
+### PR51 reviewed corrections and evidence limits
+
+[Claude review 5720579254](https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254)
+reports type-only WHM reads on `11.138.0.19` covering all 27 GET methods. It
+observes quoted role flags, digit strings for both application
+importance methods, and object-valued Dovecot configuration keys. These reports
+remain separate from the eight-GET structural captures. The empty node-linkage
+object and named tier fields follow the pinned source, not populated node or
+tier observations. Unknown service configuration nulls remain outside the
+documented Dovecot contract; no broad null compatibility is inferred.
+
+All 49 POST methods remain unobserved. Successful linked-server lookup and
+populated linked inventories require linked servers; tweak-setting null/integer
+variants also remain unobserved under `8x0.2.38`. Profile-activation input typing
+remains under `8x0.1.23` before release. No new live call or capture ran for these
+corrections. Both historical captures remain immutable, and their two masked
+unknown-field observations stay strict failures without acknowledgment or waiver.

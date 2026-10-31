@@ -239,7 +239,7 @@ final class ServerSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'importance' => ['type' => 'int'],
+                'importance' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'name' => ['type' => 'string'],
             ],
         ],
@@ -255,7 +255,7 @@ final class ServerSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'importance' => ['type' => 'int'],
+                'importance' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'name' => ['type' => 'string'],
             ],
         ],
@@ -323,7 +323,17 @@ final class ServerSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [],
-        'returns' => ['type' => 'map', 'values' => ['type' => 'string']],
+        'returns' => [
+            'type' => 'object',
+            'values' => ['type' => 'string'],
+            'fields' => [
+                'current' => ['type' => 'string'],
+                'edge' => ['type' => 'string'],
+                'lts' => ['type' => 'string'],
+                'release' => ['type' => 'string'],
+                'stable' => ['type' => 'string'],
+            ],
+        ],
     ];
 
     public const GET_CURRENT_LTS_EXPIRATION_STATUS = [
@@ -556,8 +566,14 @@ final class ServerSpec
             'fields' => [
                 'enabled_services' => ['type' => 'list', 'items' => ['type' => 'string']],
                 'remote_node_linkages' => [
-                    'type' => 'list',
-                    'items' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'list', 'items' => ['type' => 'map', 'values' => ['type' => 'mixed']]],
+                        [
+                            'type' => 'object',
+                            'fields' => [],
+                        ],
+                    ],
                 ],
                 'system_settings' => ['type' => 'map', 'values' => ['type' => 'mixed']],
                 'tls_verified' => ['type' => 'flag'],
@@ -596,7 +612,14 @@ final class ServerSpec
         ],
         'returns' => [
             'type' => 'object',
-            'values' => ['type' => 'string'],
+            'values' => [
+                'type' => 'union',
+                'anyOf' => [
+                    ['type' => 'string'],
+                    ['type' => 'int'],
+                    ['type' => 'map', 'values' => ['type' => 'mixed']],
+                ],
+            ],
             'fields' => [
                 'mail_process_size' => ['type' => 'mixed'],
             ],
@@ -1027,7 +1050,7 @@ final class ServerSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'enabled' => ['type' => 'flag'],
+                'enabled' => ['type' => 'flag', 'accept' => ['string-flag']],
             ],
         ],
     ];
