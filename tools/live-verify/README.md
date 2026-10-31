@@ -926,3 +926,10 @@ structural evidence retains no environment values, application-name keys, paths,
 clone URLs, commit messages or log text. Returned URLs are never fetched. Strict
 assessment requires every original observation to pass without discrepancies or
 acknowledgments. Follow-up `8x0.2.27` owns all unobserved operations and variants.
+
+The [application-management capture](../../docs/api/evidence/2026-10-31-application-deployment.json)
+at `344fffc` on `11.138.0.19` records three HTTP-200 GETs. WHM version passes;
+both Passenger inventory calls fail at the API layer before payload validation,
+so strict assessment remains failed. This is no successful empty-inventory or
+payload-schema evidence. All fourteen methods remain offline-tested, with live
+work under `8x0.2.27`. No repository or application state changed.

@@ -386,6 +386,14 @@ routes. Repository/deployment POST reads, mutations and populated/secret-bearing
 variants remain tracked under `8x0.2.27`. No deployment, dependency installation,
 repository deletion or application configuration change is part of that catalog.
 
+
+The [application-management capture](docs/api/evidence/2026-10-31-application-deployment.json)
+at `344fffc` on `11.138.0.19` records three HTTP-200 GETs. WHM version passes;
+both Passenger inventory calls fail at the API layer before payload validation,
+so strict assessment remains failed. This is no successful empty-inventory or
+payload-schema evidence. All fourteen methods remain offline-tested, with live
+work under `8x0.2.27`. No repository or application state changed.
+
 The Fileman group implements 13 of 14 pinned functions: directory autocomplete,
 file information, file content and directory listings use GET; content saving,
 in-memory transcoding, copy, move, rename, delete, trash, restore and trash purging
