@@ -246,9 +246,9 @@ final readonly class Backups
      * API-map identity: whm1:backup_config_get#GET (wire name backup_config_get; Backup Settings).
      *
      * @return BackupConfigGetResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-settings/backup-backup_config_get
      */
     public function backupConfigGet(): array
@@ -333,7 +333,7 @@ final readonly class Backups
      * @param bool|null $psqlbackup Whether to back up PostgreSQL® databases. Null omits it.
      * @param string|null $remoteRestoreStagingDir The directory that temporarily stores a remote backup's data during a
      *     backup restoration. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-settings/backup-backup_config_set
      */
     public function backupConfigSet(
@@ -428,9 +428,9 @@ final readonly class Backups
      * API-map identity: whm1:backup_date_list#GET (wire name backup_date_list; Backup Settings).
      *
      * @return BackupDateListResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-settings/backup-backup_date_list
      */
     public function backupDateList(): array
@@ -493,9 +493,9 @@ final readonly class Backups
      * @param bool|null $uploadSystemBackup Whether to upload system backups. Null omits it.
      * @param string|null $username The remote server account's username. Null omits it.
      * @return BackupDestinationAddResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-destination/backup-backup_destination_add
      */
     public function backupDestinationAdd(
@@ -581,7 +581,7 @@ final readonly class Backups
      * API-map identity: whm1:backup_destination_delete#GET (wire name backup_destination_delete; Backup Destination).
      *
      * @param string $id The destination's ID.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-destination/backup-backup_destination_delete
      */
     public function backupDestinationDelete(string $id): void
@@ -605,9 +605,9 @@ final readonly class Backups
      *
      * @param string $id The backup destination's ID.
      * @return BackupDestinationGetResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-destination/backup-backup_destination_get
      */
     public function backupDestinationGet(string $id): array
@@ -632,9 +632,9 @@ final readonly class Backups
      * API-map identity: whm1:backup_destination_list#GET (wire name backup_destination_list; Backup Destination).
      *
      * @return BackupDestinationListResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-destination/backup-backup_destination_list
      */
     public function backupDestinationList(): array
@@ -659,9 +659,9 @@ final readonly class Backups
      * @param bool $disableonfail Whether to disable the backup destination if validation fails.
      * @param string $id The destination's ID.
      * @return BackupDestinationValidateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-destination/backup-backup_destination_validate
      */
     public function backupDestinationValidate(bool $disableonfail, string $id): array
@@ -685,9 +685,9 @@ final readonly class Backups
      *
      * @param string $clientId The user's Google Drive client ID.
      * @return BackupDoesClientIdHaveGoogleCredentialsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-destination/backup-backup_does_client_id_have_google_credentials
      */
     public function backupDoesClientIdHaveGoogleCredentials(string $clientId): array
@@ -715,9 +715,9 @@ final readonly class Backups
      * @param string $clientId The Google Drive client ID.
      * @param string $clientSecret The Google Drive client secret.
      * @return BackupGenerateGoogleOauthUriResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-destination/backup-backup_generate_google_oauth_uri
      */
     public function backupGenerateGoogleOauthUri(
@@ -755,9 +755,9 @@ final readonly class Backups
      * @param 'completed'|'failed'|'pending'|'running'|null $state That transport's current state. Null omits it.
      * @param string|null $transportId The transport's identification (ID). Null omits it.
      * @return BackupGetTransportStatusResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-or-restore/backup-backup_get_transport_status
      */
     public function backupGetTransportStatus(?string $state = null, ?string $transportId = null): array
@@ -786,9 +786,9 @@ final readonly class Backups
      *
      * @param string|null $transport The transport ID. Null omits it.
      * @return BackupListTransportedResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-or-restore/backup-backup_list_transported
      */
     public function backupListTransported(?string $transport = null): array
@@ -814,9 +814,9 @@ final readonly class Backups
      * API-map identity: whm1:backup_set_list#GET (wire name backup_set_list; Backup or Restore).
      *
      * @return BackupSetListResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-or-restore/backup-backup_set_list
      */
     public function backupSetList(): array
@@ -845,9 +845,9 @@ final readonly class Backups
      * API-map identity: whm1:backup_set_list_combined#GET (wire name backup_set_list_combined; Backup or Restore).
      *
      * @return BackupSetListCombinedResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-or-restore/backup-backup_set_list_combined
      */
     public function backupSetListCombined(): array
@@ -871,7 +871,7 @@ final readonly class Backups
      *
      * @param 'backup'|'legacy' $backupversion The type of backup.
      * @param bool $state Whether to enable the backup type that the `backupversion` parameter specifies for all users.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-settings/backup-backup_skip_users_all
      */
     public function backupSkipUsersAll(string $backupversion, bool $state): void
@@ -897,9 +897,9 @@ final readonly class Backups
      * Settings).
      *
      * @return BackupSkipUsersAllStatusResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-settings/backup-backup_skip_users_all_status
      */
     public function backupSkipUsersAllStatus(): array
@@ -923,9 +923,9 @@ final readonly class Backups
      *
      * @param string $restorePoint The desired date.
      * @return BackupUserListResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-settings/backup-backup_user_list
      */
     public function backupUserList(string $restorePoint): array
@@ -950,7 +950,7 @@ final readonly class Backups
      *
      * @param bool|null $noConvert Whether to convert the server from the Legacy Backup system to the Backup system.
      *     Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/legacy-migration/backup-convert_and_migrate_from_legacy_config
      */
     public function convertAndMigrateFromLegacyConfig(?bool $noConvert = null): void
@@ -975,9 +975,9 @@ final readonly class Backups
      *
      * @param string $sessionId The `start_background_pkgacct` session ID.
      * @return FetchPkgacctMasterLogResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-or-restore/backup-fetch_pkgacct_master_log
      */
     public function fetchPkgacctMasterLog(string $sessionId): array
@@ -1002,9 +1002,9 @@ final readonly class Backups
      *
      * @param string $sessionId The `start_background_pkgacct` session ID.
      * @return GetPkgacctSessionStateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-or-restore/backup-get_pkgacct_session_state
      */
     public function getPkgacctSessionState(string $sessionId): array
@@ -1024,9 +1024,9 @@ final readonly class Backups
      * get_users_and_domains_with_backup_metadata; Backup or Restore).
      *
      * @return GetUsersAndDomainsWithBackupMetadataResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-or-restore/backup-get_users_and_domains_with_backup_metadata
      */
     public function getUsersAndDomainsWithBackupMetadata(): array
@@ -1049,9 +1049,9 @@ final readonly class Backups
      * Restore).
      *
      * @return GetUsersWithBackupMetadataResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-or-restore/backup-get_users_with_backup_metadata
      */
     public function getUsersWithBackupMetadata(): array
@@ -1073,9 +1073,9 @@ final readonly class Backups
      * API-map identity: whm1:list_cparchive_files#GET (wire name list_cparchive_files; Backup or Restore).
      *
      * @return ListCparchiveFilesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-or-restore/backup-list_cparchive_files
      */
     public function listCparchiveFiles(): array
@@ -1140,9 +1140,9 @@ final readonly class Backups
      * @param bool|null $useBackups Whether to use the account's last known successful backup as a template when the
      *     script creates the cpmove archive, if any exist. Null omits it.
      * @return StartBackgroundPkgacctResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-or-restore/backup-start_background_pkgacct
      */
     public function startBackgroundPkgacct(
@@ -1231,9 +1231,9 @@ final readonly class Backups
      *     address. Null omits it.
      * @param string|null $username The username to give to the restored cPanel account. Null omits it.
      * @return StartLocalCpmoveRestoreResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-or-restore/transfers-start_local_cpmove_restore
      */
     public function startLocalCpmoveRestore(
@@ -1277,9 +1277,9 @@ final readonly class Backups
      * @param string $user The cPanel account's username.
      * @param bool|null $legacy Whether the account should use the legacy backup system. Null omits it.
      * @return ToggleUserBackupStateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/backup-settings/backup-toggle_user_backup_state
      */
     public function toggleUserBackupState(string $user, ?bool $legacy = null): array

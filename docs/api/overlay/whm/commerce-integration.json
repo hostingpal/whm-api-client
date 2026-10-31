@@ -31,7 +31,7 @@
       }
     },
     "whm1:get_commerce": {
-      "method": "POST",
+      "method": "GET",
       "notes": [
         {
           "kind": "documented",
@@ -39,11 +39,15 @@
         },
         {
           "kind": "documented",
-          "text": "The formal OpenAPI path and metadata.command use get_commerce, but pinned CLI and URL examples prepend Sitejet/. This method follows the formal bare operation name. Neither route has verified live compatibility; the formal route may fail on a server. This source discrepancy remains tracked under whm-api-client-8x0.2.52."
+          "text": "Pinned CLI and URL examples use Sitejet/get_commerce, while the formal path and metadata.command example are bare. The canonical API-map identity is retained."
         },
         {
-          "kind": "documented",
-          "text": "Preserve optional is_enabled as an integer 0|1 flag and optional storeurl as a string. The returned storefront URL may contain credentials; treat the result as sensitive and do not fetch it."
+          "kind": "observed",
+          "text": "PR64 review 5721097744 reports bare get_commerce failing and Sitejet/get_commerce succeeding by GET on 11.138.0.19, with string is_enabled and null storeurl. This is separate reviewer evidence."
+        },
+        {
+          "kind": "policy",
+          "text": "This no-argument read uses GET; the pinned source lacks x-readonly. Preserve integer 0|1 and exact string is_enabled values, including empty strings, and nullable storeurl. Returned URLs are payload data and are never fetched."
         }
       ],
       "evidence": [
@@ -51,15 +55,56 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_commerce/get does not declare x-readonly. Use conservative POST; the documented get verb alone does not establish read-only behavior."
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_commerce/get describes returning Sitejet Commerce data and has no x-readonly marker. CLI and URL examples explicitly use Sitejet/get_commerce; formal path and metadata command remain bare. GET is the client selection for this no-argument read, also supported by the reviewer successful GET."
         },
         {
-          "kind": "doc",
-          "version": "pinned 2026-10-13",
+          "kind": "live",
+          "version": "11.138.0.19",
           "date": "2026-10-31",
-          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_commerce/get formal path and responses.200 application/json schema metadata.command example are get_commerce; x-codeSamples CLI uses Sitejet/get_commerce and URL uses /json-api/Sitejet/get_commerce. Follow the formal operation identity without adding unsupported slash routing. No live-route compatibility is established."
+          "note": "Separately reported by PR64 reviewer in review 5721097744 (https://github.com/hostingpal/whm-api-client/pull/64#pullrequestreview-5721097744), GET through WHM. Bare get_commerce returned unknown app; Sitejet/get_commerce succeeded with string is_enabled and null storeurl. Reviewer also cites handler returning the configured sitejet_ecommerce value or empty string. This is reviewer evidence, not a committed runner capture or a new call by this correction."
         }
-      ]
+      ],
+      "function": "Sitejet/get_commerce",
+      "response": {
+        "is_enabled": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "flag"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_commerce response declares integer enum [0,1]. Retain this original flag branch without numeric, boolean or string coercion."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Separately reported by PR64 reviewer in review 5721097744 (https://github.com/hostingpal/whm-api-client/pull/64#pullrequestreview-5721097744), GET through WHM. is_enabled is a string; upstream handler returns the configuration value or empty string. Accept exact strings alongside the original pinned flag. This is reviewer evidence, not a committed runner capture or a new call by this correction."
+            }
+          ]
+        },
+        "storeurl": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Separately reported by PR64 reviewer in review 5721097744 (https://github.com/hostingpal/whm-api-client/pull/64#pullrequestreview-5721097744), GET through WHM. storeurl is null. Preserve optional string|null without changing sibling fields. This is reviewer evidence, not a committed runner capture or a new call by this correction."
+            }
+          ]
+        }
+      }
     },
     "whm1:set_commerce": {
       "method": "POST",
@@ -70,15 +115,15 @@
         },
         {
           "kind": "documented",
-          "text": "The formal OpenAPI path and metadata.command use set_commerce, but pinned CLI and URL examples prepend Sitejet/. This method follows the formal bare operation name. Neither route has verified live compatibility; the formal route may fail on a server. This source discrepancy remains tracked under whm-api-client-8x0.2.52."
+          "text": "Pinned CLI and URL examples use Sitejet/set_commerce, while the formal path and metadata.command example are bare. Omitted storeurl retains the documented Sitejet Commerce store default."
+        },
+        {
+          "kind": "policy",
+          "text": "Use the source-backed Sitejet/set_commerce route with form POST; no successful live set call is established. Explicit false sends allowCommerce=0. Treat supplied storefront URLs as sensitive, encode them once and never fetch them. The client makes one request without retry or rollback."
         },
         {
           "kind": "documented",
-          "text": "Enables or disables Sitejet Commerce for all users. Omitted storeurl retains the documented Sitejet Commerce store default; false is sent as allowCommerce=0. A supplied storefront URL can contain credentials and remains sensitive. URLs are sent as payload data and are never fetched."
-        },
-        {
-          "kind": "documented",
-          "text": "The pinned response documents metadata only and no data payload; this method returns void. The client sends one request with no retry or rollback."
+          "text": "The pinned response documents metadata only and no data payload; this method returns void. Inspect responseMeta() for the WHM outcome."
         }
       ],
       "evidence": [
@@ -86,13 +131,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /set_commerce/get does not declare x-readonly. Use conservative POST; the documented get verb alone does not establish read-only behavior."
-        },
-        {
-          "kind": "doc",
-          "version": "pinned 2026-10-13",
-          "date": "2026-10-31",
-          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /set_commerce/get formal path and responses.200 application/json schema metadata.command example are set_commerce; x-codeSamples CLI uses Sitejet/set_commerce and URL uses /json-api/Sitejet/set_commerce. Follow the formal operation identity without adding unsupported slash routing. No live-route compatibility is established."
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /set_commerce/get enables Sitejet Commerce for all users; CLI and URL examples explicitly use Sitejet/set_commerce. Formal path and metadata.command remain bare. Use form POST for configuration changes; this route is source-backed and has not been live-observed."
         }
       ],
       "params": {
@@ -100,7 +139,8 @@
           "php": "storeUrl",
           "sensitive": true
         }
-      }
+      },
+      "function": "Sitejet/set_commerce"
     },
     "whm1:validate_login_token": {
       "method": "POST",
@@ -110,8 +150,8 @@
           "text": "Available from cPanel & WHM 62. This function validates a login token with the cPanel Store or a cPanel Market provider, and then returns access tokens."
         },
         {
-          "kind": "documented",
-          "text": "Validates the login token with the selected provider and returns optional access_token and refresh_token strings inside the optional payload list. The login token, redirect URL and returned tokens are sensitive. The client does not follow the redirect URL or fetch any provider URL, and never retries token validation."
+          "kind": "policy",
+          "text": "Login-token and redirect-URL inputs and returned tokens are treated as sensitive. Returned access_token and refresh_token strings remain optional inside the optional payload list. The client does not follow URLs or retry token validation. The bare validate_login_token route follows the pinned path and both samples; the Market- operationId is not a wire namespace."
         }
       ],
       "evidence": [
@@ -120,6 +160,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /validate_login_token/get declares x-readonly=false."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /validate_login_token/get has operationId Market-validate_login_token, but formal path, CLI and URL samples consistently use bare validate_login_token. Keep that route; no token call or live success is established."
         }
       ],
       "params": {

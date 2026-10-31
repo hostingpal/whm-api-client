@@ -19,8 +19,8 @@ use SensitiveParameter;
  * responseMeta() before every attempt and records the envelope snapshot before API or payload errors.
  *
  * @phpstan-type GetCommerceResult array{
- *     is_enabled?: 0|1,
- *     storeurl?: string,
+ *     is_enabled?: 0|1|string,
+ *     storeurl?: string|null,
  * }
  * @phpstan-type ValidateLoginTokenResult array{
  *     payload?: list<array{
@@ -48,20 +48,22 @@ final readonly class Commerce
      *
      * Documented: Available from cPanel & WHM 11.122. This function returns Sitejet Commerce data.
      *
-     * Documented: The formal OpenAPI path and metadata.command use get_commerce, but pinned CLI and URL examples
-     * prepend Sitejet/. This method follows the formal bare operation name. Neither route has verified live
-     * compatibility; the formal route may fail on a server. This source discrepancy remains tracked under
-     * whm-api-client-8x0.2.52.
+     * Documented: Pinned CLI and URL examples use Sitejet/get_commerce, while the formal path and metadata.command
+     * example are bare. The canonical API-map identity is retained.
      *
-     * Documented: Preserve optional is_enabled as an integer 0|1 flag and optional storeurl as a string. The returned
-     * storefront URL may contain credentials; treat the result as sensitive and do not fetch it.
+     * Observed: PR64 review 5721097744 reports bare get_commerce failing and Sitejet/get_commerce succeeding by GET on
+     * 11.138.0.19, with string is_enabled and null storeurl. This is separate reviewer evidence.
      *
-     * API-map identity: whm1:get_commerce#GET (wire name get_commerce; Sitejet).
+     * Policy: This no-argument read uses GET; the pinned source lacks x-readonly. Preserve integer 0|1 and exact string
+     * is_enabled values, including empty strings, and nullable storeurl. Returned URLs are payload data and are never
+     * fetched.
+     *
+     * API-map identity: whm1:get_commerce#GET (wire name Sitejet/get_commerce; Sitejet).
      *
      * @return GetCommerceResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/sitejet/get_commerce
      */
     public function getCommerce(): array
@@ -82,23 +84,21 @@ final readonly class Commerce
      * the hosting provider to set a custom URL for their payment platform, which customers can use to purchase the
      * Sitejet Commerce upgrade.
      *
-     * Documented: The formal OpenAPI path and metadata.command use set_commerce, but pinned CLI and URL examples
-     * prepend Sitejet/. This method follows the formal bare operation name. Neither route has verified live
-     * compatibility; the formal route may fail on a server. This source discrepancy remains tracked under
-     * whm-api-client-8x0.2.52.
+     * Documented: Pinned CLI and URL examples use Sitejet/set_commerce, while the formal path and metadata.command
+     * example are bare. Omitted storeurl retains the documented Sitejet Commerce store default.
      *
-     * Documented: Enables or disables Sitejet Commerce for all users. Omitted storeurl retains the documented Sitejet
-     * Commerce store default; false is sent as allowCommerce=0. A supplied storefront URL can contain credentials and
-     * remains sensitive. URLs are sent as payload data and are never fetched.
+     * Policy: Use the source-backed Sitejet/set_commerce route with form POST; no successful live set call is
+     * established. Explicit false sends allowCommerce=0. Treat supplied storefront URLs as sensitive, encode them once
+     * and never fetch them. The client makes one request without retry or rollback.
      *
-     * Documented: The pinned response documents metadata only and no data payload; this method returns void. The client
-     * sends one request with no retry or rollback.
+     * Documented: The pinned response documents metadata only and no data payload; this method returns void. Inspect
+     * responseMeta() for the WHM outcome.
      *
-     * API-map identity: whm1:set_commerce#GET (wire name set_commerce; Sitejet).
+     * API-map identity: whm1:set_commerce#GET (wire name Sitejet/set_commerce; Sitejet).
      *
      * @param bool $allowCommerce * `1` - Sitejet Commerce is enabled.
      * @param string|null $storeUrl The URL for the hosting provider's payment platform. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/sitejet/set_commerce
      */
     public function setCommerce(
@@ -118,10 +118,10 @@ final readonly class Commerce
      * Documented: Available from cPanel & WHM 62. This function validates a login token with the cPanel Store or a
      * cPanel Market provider, and then returns access tokens.
      *
-     * Documented: Validates the login token with the selected provider and returns optional access_token and
-     * refresh_token strings inside the optional payload list. The login token, redirect URL and returned tokens are
-     * sensitive. The client does not follow the redirect URL or fetch any provider URL, and never retries token
-     * validation.
+     * Policy: Login-token and redirect-URL inputs and returned tokens are treated as sensitive. Returned access_token
+     * and refresh_token strings remain optional inside the optional payload list. The client does not follow URLs or
+     * retry token validation. The bare validate_login_token route follows the pinned path and both samples; the Market-
+     * operationId is not a wire namespace.
      *
      * API-map identity: whm1:validate_login_token#GET (wire name validate_login_token; Market Integration).
      *
@@ -130,9 +130,9 @@ final readonly class Commerce
      * @param string $urlAfterLogin The location to which the cPanel Store or cPanel Market provider redirects the
      *     user's browser after they log in.
      * @return ValidateLoginTokenResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/market-integration/market-validate_login_token
      */
     public function validateLoginToken(

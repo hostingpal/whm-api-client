@@ -70,9 +70,9 @@ final readonly class Restore
      *
      * @param string $path A path to a subdirectory within the user's home directory, or any level below it.
      * @return DirectoryListingResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/file-restoration/restore-directory_listing
      */
     public function directoryListing(string $path): array
@@ -102,9 +102,9 @@ final readonly class Restore
      * API-map identity: uapi:Restore/get_users#GET (wire name get_users).
      *
      * @return GetUsersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/file-restoration/restore-get_users
      */
     public function getUsers(): array
@@ -140,9 +140,9 @@ final readonly class Restore
      * @param bool|null $exists Whether to show the `exist` return, which indicates whether the item exists in the local
      *     disk or only in the backup. Null omits it.
      * @return QueryFileInfoResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/file-restoration/restore-query_file_info
      */
     public function queryFileInfo(string $path, ?bool $exists = null): array
@@ -182,9 +182,9 @@ final readonly class Restore
      * @param bool $overwrite Whether to overwrite the file or directory on the disc with its backup replacement.
      * @param string $path The absolute file or directory's path, within a backup, that you wish to restore.
      * @return RestoreFileResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/file-restoration/restore-restore_file
      */
     public function restoreFile(string $backupId, bool $overwrite, string $path): array

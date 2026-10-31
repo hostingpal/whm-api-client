@@ -14,21 +14,27 @@ namespace HostingPal\WhmApiClient\Api\Whm\Spec;
 final class CommerceSpec
 {
     public const GET_COMMERCE = [
-        'function' => 'get_commerce',
-        'method' => 'POST',
+        'function' => 'Sitejet/get_commerce',
+        'method' => 'GET',
         'outcome' => 'flag',
         'params' => [],
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'is_enabled' => ['type' => 'flag'],
-                'storeurl' => ['type' => 'string'],
+                'is_enabled' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'flag'],
+                        ['type' => 'string'],
+                    ],
+                ],
+                'storeurl' => ['type' => 'string', 'nullable' => true],
             ],
         ],
     ];
 
     public const SET_COMMERCE = [
-        'function' => 'set_commerce',
+        'function' => 'Sitejet/set_commerce',
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [

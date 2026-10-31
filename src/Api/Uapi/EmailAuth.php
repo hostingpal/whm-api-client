@@ -143,9 +143,9 @@ final readonly class EmailAuth
      * @param string $policy The DMARC record to apply to the requested domains.
      * @param string|list<string>|null $domains The domain for which to apply the DMARC record. Null omits it.
      * @return ApplyDmarcResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-dns-settings/emailauth-apply_dmarc
      */
@@ -178,9 +178,9 @@ final readonly class EmailAuth
      *
      * @param string|list<string> $domains The domain for which to remove DKIM records on the DNS server.
      * @return DisableDkimResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-dns-settings/emailauth-disable_dkim
      */
@@ -213,9 +213,9 @@ final readonly class EmailAuth
      *
      * @param string|list<string> $domains The domain for which to enable DKIM records on the DNS server.
      * @return EnableDkimResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-dns-settings/emailauth-enable_dkim
      */
@@ -249,9 +249,9 @@ final readonly class EmailAuth
      *
      * @param string|list<string> $domains The domain for which to confirm a valid DKIM key exists.
      * @return EnsureDkimKeysExistResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-dns-settings/emailauth-ensure_dkim_keys_exist
      */
@@ -285,9 +285,9 @@ final readonly class EmailAuth
      *
      * @param string|list<string> $domains The domain for which to retrieve the installed DKIM private key.
      * @return FetchDkimPrivateKeysResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-dns-settings/emailauth-fetch_dkim_private_keys
      */
@@ -328,9 +328,9 @@ final readonly class EmailAuth
      * @param string|list<string> $domains The domain for which to install a DKIM private key on the local server.
      * @param string|list<string> $keys An RSA key in Privacy-Enhanced Mail (PEM) format.
      * @return InstallDkimPrivateKeysResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-dns-settings/emailauth-install_dkim_private_keys
      */
@@ -369,9 +369,9 @@ final readonly class EmailAuth
      * @param string|list<string> $domains The domain for which to install an SPF record on the DNS server.
      * @param string|list<string> $records An SPF record.
      * @return InstallSpfRecordsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-dns-settings/emailauth-install_spf_records
      */
@@ -410,9 +410,9 @@ final readonly class EmailAuth
      *
      * @param string|list<string>|null $domains The domain from which to remove the DMARC record. Null omits it.
      * @return RemoveDmarcResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-dns-settings/emailauth-remove_dmarc
      */
@@ -449,9 +449,9 @@ final readonly class EmailAuth
      *
      * @param string|list<string> $domains The domain for which to check the DKIM records.
      * @return ValidateCurrentDkimsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-dns-settings/emailauth-validate_current_dkims
      */
@@ -492,9 +492,9 @@ final readonly class EmailAuth
      *
      * @param string|list<string>|null $domains The domain for which to check the DMARC record. Null omits it.
      * @return ValidateCurrentDmarcsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-dns-settings/emailauth-validate_current_dmarcs
      */
@@ -538,9 +538,9 @@ final readonly class EmailAuth
      *
      * @param string|list<string> $domains The domain for which to validate the PTR records.
      * @return ValidateCurrentPtrsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-dns-settings/emailauth-validate_current_ptrs
      */
@@ -572,9 +572,9 @@ final readonly class EmailAuth
      *
      * @param string|list<string> $domains The domain for which to check the `SPF` records.
      * @return ValidateCurrentSpfsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/email-dns-settings/emailauth-validate_current_spfs
      */

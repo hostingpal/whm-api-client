@@ -46,10 +46,10 @@ use SensitiveParameter;
  * }
  * @phpstan-type GetProvidersCommissionConfigResult array{
  *     payload?: list<array{
- *         local_commission_id?: string,
+ *         local_commission_id?: string|null,
  *         provider_display_name?: string,
  *         provider_name?: string,
- *         remote_commission_id?: string,
+ *         remote_commission_id?: string|null,
  *     }>,
  * }
  * @phpstan-type GetProvidersListResult array{
@@ -152,7 +152,7 @@ use SensitiveParameter;
  *         price?: string|null,
  *         price_unit?: string,
  *         product?: string,
- *         product_category?: string,
+ *         product_category?: string|null,
  *         product_group?: string,
  *         product_id?: string,
  *         provider_display_name?: string,
@@ -167,12 +167,12 @@ use SensitiveParameter;
  *             options?: list<list<string>>,
  *             pattern?: string,
  *             type?: string,
- *         }>,
+ *         }>|null,
  *         x_max_http_redirects?: int,
  *         x_payment_trigger?: string,
- *         x_price_per_domain?: string,
- *         x_price_per_domain_maximum?: string,
- *         x_price_per_domain_minimum?: string,
+ *         x_price_per_domain?: string|int,
+ *         x_price_per_domain_maximum?: string|int,
+ *         x_price_per_domain_minimum?: string|int,
  *         x_price_per_wildcard_domain?: string,
  *         x_price_per_wildcard_domain_maximum?: string,
  *         x_price_per_wildcard_domain_minimum?: string,
@@ -181,6 +181,7 @@ use SensitiveParameter;
  *         x_validation_type?: string,
  *         x_warn_after?: int,
  *         x_wildcard_parent_domain_free?: 0|1,
+ *         ...<array-key, mixed>
  *     }>,
  * }
  */
@@ -203,16 +204,12 @@ final readonly class Market
      *
      * Documented: Available from cPanel & WHM 56. This function disables a cPanel Market provider.
      *
-     * Documented: Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not
-     * render, execute or fetch them. Every call makes one request without retry or rollback.
-     *
-     * Documented: The pinned response documents metadata only and no data payload; this method returns void. Inspect
-     * responseMeta() for the WHM outcome.
+     * Documented: The pinned response documents metadata only and no data payload; this method returns void.
      *
      * API-map identity: whm1:disable_market_provider#GET (wire name disable_market_provider; Provider Management).
      *
      * @param string $name The cPanel Market provider's name.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/provider-management/market-disable_market_provider
      */
     public function disableProvider(string $name): void
@@ -227,16 +224,12 @@ final readonly class Market
      *
      * Documented: Available from cPanel & WHM 56. This function enables a cPanel Market provider.
      *
-     * Documented: Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not
-     * render, execute or fetch them. Every call makes one request without retry or rollback.
-     *
-     * Documented: The pinned response documents metadata only and no data payload; this method returns void. Inspect
-     * responseMeta() for the WHM outcome.
+     * Documented: The pinned response documents metadata only and no data payload; this method returns void.
      *
      * API-map identity: whm1:enable_market_provider#GET (wire name enable_market_provider; Provider Management).
      *
      * @param string $name The cPanel Market provider's name.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/provider-management/market-enable_market_provider
      */
     public function enableProvider(string $name): void
@@ -253,7 +246,7 @@ final readonly class Market
      * Documented: Available from cPanel & WHM 56. This function lists all available cPanel Market products from enabled
      * providers, with the prices that the adjustments database modifies.
      *
-     * Documented: Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not
+     * Policy: Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not
      * render, execute or fetch them. Every call makes one request without retry or rollback.
      *
      * Documented: Adjusted prices use number values and product_id is an integer. Preserve explicit null prices,
@@ -264,9 +257,9 @@ final readonly class Market
      * get_adjusted_market_providers_products; Product Management).
      *
      * @return GetAdjustedProvidersProductsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/product-management/market-get_adjusted_market_providers_products
      */
     public function getAdjustedProvidersProducts(): array
@@ -288,16 +281,19 @@ final readonly class Market
      * Documented: Available from cPanel & WHM 56. This function returns the commission configuration of all available
      * cPanel Market providers.
      *
-     * Documented: Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not
+     * Policy: Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not
      * render, execute or fetch them. Every call makes one request without retry or rollback.
+     *
+     * Observed: PR64 review 5721097744 reports null local_commission_id and remote_commission_id on 11.138.0.19. Both
+     * remain optional strings when nonnull; provider names remain strict.
      *
      * API-map identity: whm1:get_market_providers_commission_config#GET (wire name
      * get_market_providers_commission_config; Provider Management).
      *
      * @return GetProvidersCommissionConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/provider-management/market-get_market_providers_commission_config
      */
     public function getProvidersCommissionConfig(): array
@@ -318,7 +314,7 @@ final readonly class Market
      *
      * Documented: Available from cPanel & WHM 56. This function lists the available cPanel Market providers.
      *
-     * Documented: Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not
+     * Policy: Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not
      * render, execute or fetch them. Every call makes one request without retry or rollback.
      *
      * Documented: even_commission_divisor is returned only when supports_commission is 1; omitted divisors stay absent.
@@ -327,9 +323,9 @@ final readonly class Market
      * API-map identity: whm1:get_market_providers_list#GET (wire name get_market_providers_list; Provider Management).
      *
      * @return GetProvidersListResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/provider-management/market-get_market_providers_list
      */
     public function getProvidersList(): array
@@ -346,17 +342,12 @@ final readonly class Market
      * This function lists all available cPanel Market providers' products and the attributes of each product that can
      * be managed by an administrator.
      *
-     * Documented: Available from cPanel & WHM 56. This function lists all available cPanel Market providers' products
-     * and the attributes of each product that can be managed by an administrator. The return list includes different
-     * `attribute` data depending the `product_group` for each product. <table> <tr> <th>Product Group</th>
-     * <th>Attributes Returned</th> <th>Description</th> </tr> <tr> <td>ssl_certificate</td>
-     * <td>SSLMarketProviderMetaData</td> <td>Contains additional attributes only applicable to SSL Certificates</td>
-     * </tr> <tr> <td>*</td> <td>MarketProviderMetaData</td> <td>Any products not in a <code>product_group</code> listed
-     * above will include only these attributes.</td> </tr> </table> **Note:** The function does **not** return the
-     * `product_group` name. To get the `product_group` name for a `product_id`, run WHM API 1's
-     * [`get_market_providers_products`](https://go.cpanel.net/Market-get-market-providers-products) function.
+     * Documented: Available from cPanel & WHM 56. The return attributes depend on product_group: ssl_certificate
+     * returns SSLMarketProviderMetaData, containing additional SSL-certificate attributes; all other groups return only
+     * MarketProviderMetaData. The function does not return product_group; use getProvidersProducts() with product_id to
+     * obtain it.
      *
-     * Documented: Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not
+     * Policy: Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not
      * render, execute or fetch them. Every call makes one request without retry or rollback.
      *
      * Documented: The attributes object combines base-product and SSL-product metadata without dropping SSL-only
@@ -367,9 +358,9 @@ final readonly class Market
      * get_market_providers_product_metadata; Product Management).
      *
      * @return GetProvidersProductMetadataResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/product-management/market-get_market_providers_product_metadata
      */
     public function getProvidersProductMetadata(): array
@@ -390,20 +381,25 @@ final readonly class Market
      *
      * Documented: Available from cPanel & WHM 56. This function lists products available in the server's cPanel Market.
      *
-     * Documented: Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not
+     * Policy: Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not
      * render, execute or fetch them. Every call makes one request without retry or rollback.
      *
-     * Documented: Unadjusted product_id and currency prices are strings, unlike the adjusted product response. Preserve
-     * optional and nullable fields, SSL-specific lists and exact quoted requires_ip 0/1 normalization to integer flags.
-     * The SSL validation-type node has a source-backed string repair; other untyped nodes are not widened or coerced.
+     * Documented: Unadjusted product_id and currency prices remain strings, unlike adjusted prices. The pinned 12-row
+     * example uses native integer x_price_per_domain, x_price_per_domain_maximum and x_price_per_domain_minimum values,
+     * and four null x_identity_verification lists. Additional product returns such as base_name and license_term are
+     * retained as opaque values; known fields and deep option labels remain strict.
+     *
+     * Policy: Preserve exact integer/string price values, optional and nullable fields, and source-declared additional
+     * product data. product_category accepts null by alignment with the adjusted read, without claiming a live
+     * observation. Exact quoted requires_ip 0/1 normalization remains limited to that flag.
      *
      * API-map identity: whm1:get_market_providers_products#GET (wire name get_market_providers_products; Product
      * Management).
      *
      * @return GetProvidersProductsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/product-management/market-get_market_providers_products
      */
     public function getProvidersProducts(): array
@@ -422,37 +418,33 @@ final readonly class Market
      * Documented: Available from cPanel & WHM 56. This function sets an attribute for a cPanel Market provider's
      * product.
      *
-     * Documented: Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not
-     * render, execute or fetch them. Every call makes one request without retry or rollback.
+     * Documented: The pinned response documents metadata only and no data payload; this method returns void.
      *
-     * Documented: The pinned response documents metadata only and no data payload; this method returns void. Inspect
-     * responseMeta() for the WHM outcome.
-     *
-     * Documented: Attribute names and values vary by provider and product. Values remain caller-supplied strings,
-     * including empty and zero strings, and are sensitive because they can contain provider credentials. This method
-     * changes the selected product attribute immediately without retry.
+     * Policy: Provider and product identify the target before attribute and value. Values remain exact caller-supplied
+     * strings, including empty and zero strings, and are treated as sensitive. The client sends one form POST without
+     * retry or rollback; no provider credential content is asserted by the source.
      *
      * API-map identity: whm1:set_market_product_attribute#GET (wire name set_market_product_attribute; Product
      * Management).
      *
-     * @param string $attribute The attribute of the cPanel Market provider's product.
-     * @param string $productId The cPanel Market provider product's name.
      * @param string $provider The cPanel Market provider's name.
+     * @param string $productId The cPanel Market provider product's name.
+     * @param string $attribute The attribute of the cPanel Market provider's product.
      * @param string $value The value to set for the attribute.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/product-management/market-set_market_product_attribute
      */
     public function setProductAttribute(
-        string $attribute,
-        string $productId,
         string $provider,
+        string $productId,
+        string $attribute,
         #[SensitiveParameter]
         string $value,
     ): void {
         ($this->run)(MarketSpec::SET_MARKET_PRODUCT_ATTRIBUTE, [
-            'attribute' => $attribute,
-            'productId' => $productId,
             'provider' => $provider,
+            'productId' => $productId,
+            'attribute' => $attribute,
             'value' => $value,
         ]);
     }
@@ -465,28 +457,24 @@ final readonly class Market
      * Documented: Available from cPanel & WHM 56. This function sets the contact ID to which a cPanel Market provider
      * will send commission.
      *
-     * Documented: Returned provider content, icons, schemas, attributes and URLs are payload data; the client does not
-     * render, execute or fetch them. Every call makes one request without retry or rollback.
+     * Documented: The pinned response documents metadata only and no data payload; this method returns void.
      *
-     * Documented: The pinned response documents metadata only and no data payload; this method returns void. Inspect
-     * responseMeta() for the WHM outcome.
-     *
-     * Documented: Changes the contact identifier to which the selected provider sends commissions. The client does not
+     * Policy: Changes the contact identifier to which the selected provider sends commissions. The client does not
      * validate account ownership, perform a purchase or confirm an external commission transfer.
      *
      * API-map identity: whm1:set_market_provider_commission_id#GET (wire name set_market_provider_commission_id;
      * Provider Management).
      *
-     * @param string $commissionId The cPanel Store ID to which to send cPanel Market commissions.
      * @param string $provider The cPanel Market provider's name.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @param string $commissionId The cPanel Store ID to which to send cPanel Market commissions.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/provider-management/market-set_market_provider_commission_id
      */
-    public function setProviderCommissionId(string $commissionId, string $provider): void
+    public function setProviderCommissionId(string $provider, string $commissionId): void
     {
         ($this->run)(MarketSpec::SET_MARKET_PROVIDER_COMMISSION_ID, [
-            'commissionId' => $commissionId,
             'provider' => $provider,
+            'commissionId' => $commissionId,
         ]);
     }
 }

@@ -29,6 +29,39 @@ final class WhmMarketTest extends TestCase
         self::assertContains('market', get_class_methods($client->whm()));
     }
 
+    public function testPinnedTwelveProductExampleRetainsSourceTypesAndAdditionalFields(): void
+    {
+        $payload = file_get_contents(__DIR__ . '/../Fixtures/whm-market-products-pinned.json');
+        self::assertIsString($payload);
+        $expected = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+        self::assertIsArray($expected);
+        self::assertIsArray($expected['products']);
+        self::assertCount(12, $expected['products']);
+        $nullIdentityLists = 0;
+        foreach ($expected['products'] as $row) {
+            self::assertIsArray($row);
+            if ($row['x_identity_verification'] === null) {
+                $nullIdentityLists++;
+            }
+            foreach (['x_price_per_domain', 'x_price_per_domain_maximum', 'x_price_per_domain_minimum'] as $field) {
+                self::assertIsInt($row[$field]);
+            }
+            self::assertArrayHasKey('base_name', $row);
+            self::assertArrayHasKey('license_term', $row);
+        }
+        self::assertSame(4, $nullIdentityLists);
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('get_market_providers_products', $payload)));
+        foreach ($expected['products'] as &$row) {
+            self::assertIsArray($row);
+            self::assertContains($row['requires_ip'], ['0', '1']);
+            $row['requires_ip'] = $row['requires_ip'] === '1' ? 1 : 0;
+        }
+        unset($row);
+        self::assertSame(self::canonical($expected), self::canonical($client->whm()->market()->getProvidersProducts()));
+        self::assertCount(1, $http->getRequests());
+    }
+
     /** @param array<array-key, mixed> $arguments */
     #[DataProvider('operations')]
     public function testExactRequestsAndPopulatedPayloads(
@@ -81,6 +114,13 @@ final class WhmMarketTest extends TestCase
         yield 'commission config' => ['get_market_providers_commission_config', 'getProvidersCommissionConfig', [],
             'GET', '', '{"payload":[{"local_commission_id":"local@example.test","provider_display_name":"Provider",'
                 . '"provider_name":"provider","remote_commission_id":"remote@example.test"},{}]}'];
+        yield 'nullable commission identifiers' => ['get_market_providers_commission_config',
+            'getProvidersCommissionConfig', [], 'GET', '',
+            '{"payload":[{"local_commission_id":null,"remote_commission_id":null}]}'];
+        yield 'extensions and nullable category' => ['get_market_providers_products', 'getProvidersProducts', [],
+            'POST', '', '{"products":[{"base_name":"base","license_term":0,"product_category":null,'
+                . '"x_future":{"zero":0},'
+                . '"x_price_per_domain":0,"x_price_per_domain_maximum":"0","x_price_per_domain_minimum":""}]}'];
         yield 'provider list' => ['get_market_providers_list', 'getProvidersList', [], 'GET', '',
             '{"payload":[{"display_name":"Provider","enabled":0,"even_commission_divisor":6,"name":"provider",'
                 . '"supports_commission":1},{"supports_commission":0}]}'];
@@ -113,12 +153,12 @@ final class WhmMarketTest extends TestCase
                 . '"x_price_per_wildcard_domain_minimum":"0.00","x_ssl_per_domain_pricing":1,"x_supports_dns_dcv":0,'
                 . '"x_validation_type":"future validation","x_warn_after":60,"x_wildcard_parent_domain_free":0},{}]}'];
         yield 'set attribute exact strings' => ['set_market_product_attribute', 'setProductAttribute',
-            ['future_attribute', '00123', 'provider', 'a +&=%/雪'], 'POST',
-            'attribute=future_attribute&product_id=00123&provider=provider&value=a%20%2B%26%3D%25%2F%E9%9B%AA', null];
+            ['provider', '00123', 'future_attribute', 'a +&=%/雪'], 'POST',
+            'provider=provider&product_id=00123&attribute=future_attribute&value=a%20%2B%26%3D%25%2F%E9%9B%AA', null];
         yield 'commission identifier' => ['set_market_provider_commission_id', 'setProviderCommissionId',
-            ['a+tag@example.test', 'provider'], 'POST', 'commission_id=a%2Btag%40example.test&provider=provider', null];
+            ['provider', 'a+tag@example.test'], 'POST', 'provider=provider&commission_id=a%2Btag%40example.test', null];
         yield 'zero attribute value remains a string' => ['set_market_product_attribute', 'setProductAttribute',
-            ['price', '0', 'provider', '0'], 'POST', 'attribute=price&product_id=0&provider=provider&value=0', null];
+            ['provider', '0', 'price', '0'], 'POST', 'provider=provider&product_id=0&attribute=price&value=0', null];
     }
 
     /** @param array<array-key, mixed> $arguments */
@@ -189,8 +229,17 @@ final class WhmMarketTest extends TestCase
             yield "provider $field" => ['getProvidersList', '{"payload":[{"' . $field . '":1}]}'];
         }
         yield 'provider divisor string' => ['getProvidersList', '{"payload":[{"even_commission_divisor":"6"}]}'];
-        foreach (['local_commission_id', 'remote_commission_id', 'provider_name', 'provider_display_name'] as $field) {
+        foreach (['provider_name', 'provider_display_name'] as $field) {
             yield "commission $field" => ['getProvidersCommissionConfig', '{"payload":[{"' . $field . '":null}]}'];
+        }
+        foreach (['local_commission_id', 'remote_commission_id'] as $field) {
+            yield "commission integer $field" => ['getProvidersCommissionConfig', '{"payload":[{"' . $field . '":0}]}'];
+        }
+        foreach (['x_price_per_domain', 'x_price_per_domain_maximum', 'x_price_per_domain_minimum'] as $field) {
+            foreach (['null', '1.5', '[]', '{}'] as $bad) {
+                yield "price neighbor $field $bad" => ['getProvidersProducts',
+                    '{"products":[{"' . $field . '":' . $bad . '}]}'];
+            }
         }
         foreach (['product_id', 'provider_name', 'provider_display_name'] as $field) {
             yield "metadata $field" => ['getProvidersProductMetadata', '{"product_metadata":[{"' . $field . '":1}]}'];
@@ -235,6 +284,9 @@ final class WhmMarketTest extends TestCase
         foreach (['null', '{}', '[1]'] as $bad) {
             yield "certificate term $bad" => ['getProvidersProducts',
                 '{"products":[{"x_certificate_term":' . $bad . '}]}'];
+            if ($bad === 'null') {
+                continue;
+            }
             yield "identity list $bad" => ['getProvidersProducts',
                 '{"products":[{"x_identity_verification":' . $bad . '}]}'];
         }

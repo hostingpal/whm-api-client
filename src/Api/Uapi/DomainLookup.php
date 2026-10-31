@@ -58,9 +58,9 @@ final readonly class DomainLookup
      * API-map identity: uapi:DomainLookup/countbasedomains#GET (wire name countbasedomains).
      *
      * @return CountBaseDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domainlookup/domainlookup-countbasedomains
      */
     public function countBaseDomains(): array
@@ -86,9 +86,9 @@ final readonly class DomainLookup
      * @param bool|null $returnTemporaryDomain Whether to include the account's temporary domains in the result. Null
      *     omits it.
      * @return GetBaseDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domainlookup/domainlookup-getbasedomains
      */
     public function getBaseDomains(?bool $returnTemporaryDomain = null): array
@@ -115,9 +115,9 @@ final readonly class DomainLookup
      *
      * @param string|null $domain The domain to look up. Null omits it.
      * @return GetDocumentRootResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domainlookup/domainlookup-getdocroot
      */
     public function getDocumentRoot(?string $domain = null): array
@@ -140,9 +140,9 @@ final readonly class DomainLookup
      * API-map identity: uapi:DomainLookup/getdocroots#GET (wire name getdocroots).
      *
      * @return GetDocumentRootsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domainlookup/domainlookup-getdocroots
      */
     public function getDocumentRoots(): array

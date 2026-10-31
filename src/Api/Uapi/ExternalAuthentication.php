@@ -71,9 +71,9 @@ final readonly class ExternalAuthentication
      * API-map identity: uapi:ExternalAuthentication/configured_modules#GET (wire name configured_modules).
      *
      * @return ConfiguredModulesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/external-authentication/externalauthentication-configured_modules
      */
     public function configuredModules(): array
@@ -106,9 +106,9 @@ final readonly class ExternalAuthentication
      * API-map identity: uapi:ExternalAuthentication/get_authn_links#GET (wire name get_authn_links).
      *
      * @return GetAuthnLinksResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/external-authentication/externalauthentication-get_authn_links
      */
     public function getAuthnLinks(): array
@@ -140,9 +140,9 @@ final readonly class ExternalAuthentication
      * has_external_auth_modules_configured).
      *
      * @return 0|1
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/external-authentication/externalauthentication-has_external_auth_modules_configured
      */
     public function hasExternalAuthModulesConfigured(): int
@@ -186,9 +186,9 @@ final readonly class ExternalAuthentication
      *     and strings from getAuthnLinks are forwarded without numeric conversion; use a string for an identifier
      *     larger than PHP_INT_MAX.
      * @return RemoveAuthnLinkResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/external-authentication/externalauthentication-remove_authn_link
      */
     public function removeAuthnLink(string $provider, string|int $subjectUniqueIdentifier): ?array

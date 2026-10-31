@@ -140,9 +140,9 @@ final readonly class Dnssec
      * @param string $domain The security key's domain.
      * @param int $keyId The security key's ID.
      * @return ActivateZoneKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns-security/dnssec-activate_zone_key
      */
     public function activateZoneKey(string $domain, int $keyId): array
@@ -183,9 +183,9 @@ final readonly class Dnssec
      * @param bool|null $active Whether to activate the newly-created key. Null omits it.
      * @param int|null $keySize The key's size, in bits. Null omits it.
      * @return AddZoneKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns-security/dnssec-add_zone_key
      */
     public function addZoneKey(
@@ -227,9 +227,9 @@ final readonly class Dnssec
      * @param string $domain The security key's domain.
      * @param int $keyId The security key's ID.
      * @return DeactivateZoneKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns-security/dnssec-deactivate_zone_key
      */
     public function deactivateZoneKey(string $domain, int $keyId): array
@@ -259,9 +259,9 @@ final readonly class Dnssec
      *
      * @param string $domain The domain on which to disable DNSSEC.
      * @return DisableDnssecResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns-security/dnssec-disable_dnssec
      */
     public function disableDnssec(string $domain): array
@@ -315,9 +315,9 @@ final readonly class Dnssec
      * @param bool|null $useNsec3 Whether the domain will use Next Secure Record (NSEC) or NSEC3 semantics. Null omits
      *     it.
      * @return EnableDnssecResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns-security/dnssec-enable_dnssec
      */
     public function enableDnssec(
@@ -372,9 +372,9 @@ final readonly class Dnssec
      * @param string $domain The domain from which to fetch the DNSKEY record value.
      * @param int $keyId The DNSSEC record's ID.
      * @return ExportZoneDnskeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns-security/dnssec-export_zone_dnskey
      */
     public function exportZoneDnskey(string $domain, int $keyId): array
@@ -412,9 +412,9 @@ final readonly class Dnssec
      * @param string $domain The security key's domain.
      * @param int $keyId The security key's ID.
      * @return ExportZoneKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns-security/dnssec-export_zone_key
      */
     public function exportZoneKey(string $domain, int $keyId): array
@@ -457,9 +457,9 @@ final readonly class Dnssec
      *
      * @param string $domain The domain from which to fetch DS records.
      * @return FetchDsRecordsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns-security/dnssec-fetch_ds_records
      */
     public function fetchDsRecords(string $domain): array
@@ -496,9 +496,9 @@ final readonly class Dnssec
      * @param string $keyData The security key data that the `pdnsutil` utility's `export-zone-key` call returns.
      * @param 'ksk'|'zsk' $keyType The security key's type.
      * @return ImportZoneKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns-security/dnssec-import_zone_key
      */
     public function importZoneKey(
@@ -539,9 +539,9 @@ final readonly class Dnssec
      * @param string $domain The security key's domain.
      * @param int $keyId The security key's ID.
      * @return RemoveZoneKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns-security/dnssec-remove_zone_key
      */
     public function removeZoneKey(string $domain, int $keyId): array
@@ -574,9 +574,9 @@ final readonly class Dnssec
      * @param bool $nsec3OptOut Whether the system will create records for all delegations.
      * @param string $nsec3Salt The salt value that PowerDNS uses in the hashes.
      * @return SetNsec3Result
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns-security/dnssec-set_nsec3
      */
     public function setNsec3(
@@ -614,9 +614,9 @@ final readonly class Dnssec
      *
      * @param string $domain The domain on which to disable NSEC3 semantics and use NSEC semantics.
      * @return UnsetNsec3Result
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns-security/dnssec-unset_nsec3
      */
     public function unsetNsec3(string $domain): array

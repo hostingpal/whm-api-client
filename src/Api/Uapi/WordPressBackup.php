@@ -91,9 +91,9 @@ final readonly class WordPressBackup
      * API-map identity: uapi:WordPressBackup/any_running#GET (wire name any_running).
      *
      * @return AnyRunningResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/wordpress-manager-backups/wordpressbackup-any_running
      */
     public function anyRunning(): array
@@ -136,9 +136,9 @@ final readonly class WordPressBackup
      *
      * @param string|int $site The WordPress site's URL without the protocol prefix.
      * @return CancelResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/wordpress-manager-backups/wordpressbackup-cancel
      */
     public function cancel(string|int $site): array
@@ -175,9 +175,9 @@ final readonly class WordPressBackup
      *
      * @param string $site The WordPress site's URL without the protocol prefix.
      * @return CleanupResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/wordpress-manager-backups/wordpressbackup-cleanup
      */
     public function cleanup(string $site): ?array
@@ -214,9 +214,9 @@ final readonly class WordPressBackup
      *
      * @param string $site The WordPress site's URL without the protocol prefix.
      * @return GetAvailableBackupsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/wordpress-manager-backups/wordpressbackup-get_available_backups
      */
     public function getAvailableBackups(string $site): array
@@ -252,9 +252,9 @@ final readonly class WordPressBackup
      *
      * @param string $site The WordPress site's URL without `http://`.
      * @return IsRunningResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/wordpress-manager-backups/wordpressbackup-is_running
      */
     public function isRunning(string $site): array
@@ -296,9 +296,9 @@ final readonly class WordPressBackup
      *
      * @param string|int $site The WordPress site's URL without the protocol prefix.
      * @return StartResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/wordpress-manager-backups/wordpressbackup-start
      */
     public function start(string|int $site): array

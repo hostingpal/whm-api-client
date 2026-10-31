@@ -88,10 +88,10 @@ final class MarketSpec
                     'items' => [
                         'type' => 'object',
                         'fields' => [
-                            'local_commission_id' => ['type' => 'string'],
+                            'local_commission_id' => ['type' => 'string', 'nullable' => true],
                             'provider_display_name' => ['type' => 'string'],
                             'provider_name' => ['type' => 'string'],
-                            'remote_commission_id' => ['type' => 'string'],
+                            'remote_commission_id' => ['type' => 'string', 'nullable' => true],
                         ],
                     ],
                 ],
@@ -302,6 +302,7 @@ final class MarketSpec
                     'type' => 'list',
                     'items' => [
                         'type' => 'object',
+                        'values' => ['type' => 'mixed'],
                         'fields' => [
                             'billing_type' => ['type' => 'string'],
                             'description' => ['type' => 'string'],
@@ -314,7 +315,7 @@ final class MarketSpec
                             'price' => ['type' => 'string', 'nullable' => true],
                             'price_unit' => ['type' => 'string'],
                             'product' => ['type' => 'string'],
-                            'product_category' => ['type' => 'string'],
+                            'product_category' => ['type' => 'string', 'nullable' => true],
                             'product_group' => ['type' => 'string'],
                             'product_id' => ['type' => 'string'],
                             'provider_display_name' => ['type' => 'string'],
@@ -323,6 +324,7 @@ final class MarketSpec
                             'x_certificate_term' => ['type' => 'list', 'items' => ['type' => 'string']],
                             'x_identity_verification' => [
                                 'type' => 'list',
+                                'nullable' => true,
                                 'items' => [
                                     'type' => 'object',
                                     'fields' => [
@@ -341,9 +343,27 @@ final class MarketSpec
                             ],
                             'x_max_http_redirects' => ['type' => 'int'],
                             'x_payment_trigger' => ['type' => 'string'],
-                            'x_price_per_domain' => ['type' => 'string'],
-                            'x_price_per_domain_maximum' => ['type' => 'string'],
-                            'x_price_per_domain_minimum' => ['type' => 'string'],
+                            'x_price_per_domain' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'int'],
+                                ],
+                            ],
+                            'x_price_per_domain_maximum' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'int'],
+                                ],
+                            ],
+                            'x_price_per_domain_minimum' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'int'],
+                                ],
+                            ],
                             'x_price_per_wildcard_domain' => ['type' => 'string'],
                             'x_price_per_wildcard_domain_maximum' => ['type' => 'string'],
                             'x_price_per_wildcard_domain_minimum' => ['type' => 'string'],
@@ -364,9 +384,9 @@ final class MarketSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'attribute' => ['name' => 'attribute', 'encoding' => 'scalar'],
-            'productId' => ['name' => 'product_id', 'encoding' => 'scalar'],
             'provider' => ['name' => 'provider', 'encoding' => 'scalar'],
+            'productId' => ['name' => 'product_id', 'encoding' => 'scalar'],
+            'attribute' => ['name' => 'attribute', 'encoding' => 'scalar'],
             'value' => ['name' => 'value', 'encoding' => 'scalar'],
         ],
         'returns' => null,
@@ -377,8 +397,8 @@ final class MarketSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'commissionId' => ['name' => 'commission_id', 'encoding' => 'scalar'],
             'provider' => ['name' => 'provider', 'encoding' => 'scalar'],
+            'commissionId' => ['name' => 'commission_id', 'encoding' => 'scalar'],
         ],
         'returns' => null,
     ];
