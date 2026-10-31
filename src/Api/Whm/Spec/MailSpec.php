@@ -13,6 +13,62 @@ namespace HostingPal\WhmApiClient\Api\Whm\Spec;
  */
 final class MailSpec
 {
+    public const APPLY_DMARC = [
+        'function' => 'apply_dmarc',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'policies' => ['name' => 'policy', 'encoding' => 'repeat'],
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'domain' => ['type' => 'string'],
+                            'msg' => ['type' => 'string'],
+                            'status' => ['type' => 'flag'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const BLOCK_INCOMING_EMAIL_FROM_COUNTRY = [
+        'function' => 'block_incoming_email_from_country',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'countryCodes' => ['name' => 'country_code', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'updated' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const BLOCK_INCOMING_EMAIL_FROM_DOMAIN = [
+        'function' => 'block_incoming_email_from_domain',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'updated' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
     public const CPGREYLIST_IS_SERVER_NETBLOCK_TRUSTED = [
         'function' => 'cpgreylist_is_server_netblock_trusted',
         'method' => 'GET',
@@ -201,12 +257,593 @@ final class MailSpec
         'returns' => null,
     ];
 
+    public const DISABLE_DKIM = [
+        'function' => 'disable_dkim',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'domain' => ['type' => 'string'],
+                            'msg' => ['type' => 'string'],
+                            'status' => ['type' => 'flag'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const EMAILTRACK_SEARCH = [
+        'function' => 'emailtrack_search',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'defer' => ['name' => 'defer', 'encoding' => 'bool'],
+            'deliveryType' => ['name' => 'deliverytype', 'encoding' => 'scalar'],
+            'failure' => ['name' => 'failure', 'encoding' => 'bool'],
+            'inProgress' => ['name' => 'inprogress', 'encoding' => 'bool'],
+            'maxResultsByType' => ['name' => 'max_results_by_type', 'encoding' => 'scalar'],
+            'success' => ['name' => 'success', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'records' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'actiontime' => ['type' => 'string'],
+                            'actionunixtime' => ['type' => 'int'],
+                            'deliveredto' => ['type' => 'string', 'nullable' => true],
+                            'deliverydomain' => ['type' => 'string', 'nullable' => true],
+                            'deliveryuser' => ['type' => 'string', 'nullable' => true],
+                            'domain' => ['type' => 'string'],
+                            'host' => ['type' => 'string', 'nullable' => true],
+                            'ip' => ['type' => 'string', 'nullable' => true],
+                            'message' => ['type' => 'string'],
+                            'msgid' => ['type' => 'string'],
+                            'recipient' => ['type' => 'string'],
+                            'router' => ['type' => 'string'],
+                            'sender' => ['type' => 'string'],
+                            'senderauth' => ['type' => 'string'],
+                            'senderhost' => ['type' => 'string'],
+                            'senderip' => ['type' => 'string'],
+                            'sendunixtime' => ['type' => 'int'],
+                            'size' => ['type' => 'int'],
+                            'spamscore' => ['type' => 'int'],
+                            'transport' => ['type' => 'string', 'nullable' => true],
+                            'transport_is_remote' => ['type' => 'flag'],
+                            'type' => ['type' => 'string'],
+                            'user' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const EMAILTRACK_STATS = [
+        'function' => 'emailtrack_stats',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'deliveryType' => ['name' => 'deliverytype', 'encoding' => 'scalar'],
+            'endDate' => ['name' => 'enddate', 'encoding' => 'scalar'],
+            'endTime' => ['name' => 'endtime', 'encoding' => 'scalar'],
+            'noSize' => ['name' => 'nosize', 'encoding' => 'bool'],
+            'noSuccess' => ['name' => 'nosuccess', 'encoding' => 'bool'],
+            'startDate' => ['name' => 'startdate', 'encoding' => 'scalar'],
+            'startTime' => ['name' => 'starttime', 'encoding' => 'scalar'],
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'records' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'DEFERCOUNT' => ['type' => 'int'],
+                            'DEFERFAILCOUNT' => ['type' => 'int'],
+                            'FAILCOUNT' => ['type' => 'int'],
+                            'INPROGRESSCOUNT' => ['type' => 'int'],
+                            'SENDCOUNT' => ['type' => 'int'],
+                            'SUCCESSCOUNT' => ['type' => 'int'],
+                            'TOTALSIZE' => ['type' => 'int'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const EMAILTRACK_USER_STATS = [
+        'function' => 'emailtrack_user_stats',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'deliveryType' => ['name' => 'deliverytype', 'encoding' => 'scalar'],
+            'endTime' => ['name' => 'endtime', 'encoding' => 'scalar'],
+            'sender' => ['name' => 'sender', 'encoding' => 'scalar'],
+            'startTime' => ['name' => 'starttime', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'records' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'DEFERCOUNT' => ['type' => 'int'],
+                            'DEFERFAILCOUNT' => ['type' => 'int'],
+                            'DOMAIN' => ['type' => 'string'],
+                            'FAILCOUNT' => ['type' => 'int'],
+                            'OWNER' => ['type' => 'string'],
+                            'PRIMARY_DOMAIN' => ['type' => 'string'],
+                            'REACHED_MAXDEFERFAIL' => ['type' => 'flag'],
+                            'REACHED_MAXEMAILS' => ['type' => 'flag'],
+                            'SENDCOUNT' => ['type' => 'int'],
+                            'SUCCESSCOUNT' => ['type' => 'int'],
+                            'TOTALSIZE' => ['type' => 'int'],
+                            'USER' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
     public const ENABLE_CPGREYLIST = [
         'function' => 'enable_cpgreylist',
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [],
         'returns' => null,
+    ];
+
+    public const ENABLE_DKIM = [
+        'function' => 'enable_dkim',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'domain' => ['type' => 'string'],
+                            'msg' => ['type' => 'string'],
+                            'status' => ['type' => 'flag'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const ENABLE_MAIL_SNI = [
+        'function' => 'enable_mail_sni',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'failed_domains' => ['type' => 'map', 'values' => ['type' => 'string']],
+                'updated_domains' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+            ],
+        ],
+    ];
+
+    public const ENSURE_DKIM_KEYS_EXIST = [
+        'function' => 'ensure_dkim_keys_exist',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'domain' => ['type' => 'string'],
+                            'msg' => ['type' => 'string'],
+                            'status' => ['type' => 'flag'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const EXIM_CONFIGURATION_CHECK = [
+        'function' => 'exim_configuration_check',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'message' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const EXPUNGE_MAILBOX_MESSAGES = [
+        'function' => 'expunge_mailbox_messages',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+            'mailbox' => ['name' => 'mailbox', 'encoding' => 'scalar'],
+            'query' => ['name' => 'query', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const EXPUNGE_MESSAGES_FOR_MAILBOX_GUID = [
+        'function' => 'expunge_messages_for_mailbox_guid',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+            'mailboxGuid' => ['name' => 'mailbox_guid', 'encoding' => 'scalar'],
+            'query' => ['name' => 'query', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const FETCH_DKIM_PRIVATE_KEYS = [
+        'function' => 'fetch_dkim_private_keys',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'numbered'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'domain' => ['type' => 'string'],
+                            'pem' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const FETCH_MAIL_QUEUE = [
+        'function' => 'fetch_mail_queue',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'records' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'frozen' => ['type' => 'flag'],
+                            'msgid' => ['type' => 'string'],
+                            'recipients' => ['type' => 'list', 'items' => ['type' => 'string']],
+                            'sender' => ['type' => 'string'],
+                            'size' => ['type' => 'int'],
+                            'time' => ['type' => 'int'],
+                            'user' => ['type' => 'string', 'nullable' => true],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GENERATE_MOBILECONFIG = [
+        'function' => 'generate_mobileconfig',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+            'useSsl' => ['name' => 'use_ssl', 'encoding' => 'bool'],
+            'selectedAccountServices' => ['name' => 'selected_account_services', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const GET_DEFAULT_DMARC_RECORD = [
+        'function' => 'get_default_dmarc_record',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'record' => ['type' => 'string'],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_MAILBOX_STATUS = [
+        'function' => 'get_mailbox_status',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'map',
+            'values' => [
+                'type' => 'object',
+                'fields' => [
+                    'guid' => ['type' => 'string'],
+                    'messages' => ['type' => 'int'],
+                    'vsize' => ['type' => 'int'],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_MAILBOX_STATUS_LIST = [
+        'function' => 'get_mailbox_status_list',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'account' => ['name' => 'account', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'mailboxes' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'guid' => ['type' => 'string'],
+                            'mailbox' => ['type' => 'string'],
+                            'messages' => ['type' => 'int'],
+                            'vsize' => ['type' => 'int'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_UNIQUE_RECIPIENT_COUNT_PER_SENDER_FOR_USER = [
+        'function' => 'get_unique_recipient_count_per_sender_for_user',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'endTime' => ['name' => 'end_time', 'encoding' => 'scalar'],
+            'startTime' => ['name' => 'start_time', 'encoding' => 'scalar'],
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'sender' => ['type' => 'string'],
+                            'unique_recipient_count' => ['type' => 'int'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_UNIQUE_SENDER_RECIPIENT_COUNT_PER_USER = [
+        'function' => 'get_unique_sender_recipient_count_per_user',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'endTime' => ['name' => 'end_time', 'encoding' => 'scalar'],
+            'startTime' => ['name' => 'start_time', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'unique_sender_recipient_count' => ['type' => 'int'],
+                            'user' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const GET_USER_EMAIL_FORWARD_DESTINATION = [
+        'function' => 'get_user_email_forward_destination',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'forward_to' => ['type' => 'list', 'items' => ['type' => 'string']],
+            ],
+        ],
+    ];
+
+    public const HOLD_OUTGOING_EMAIL = [
+        'function' => 'hold_outgoing_email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const INSTALL_DKIM_PRIVATE_KEYS = [
+        'function' => 'install_dkim_private_keys',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'numbered'],
+            'keys' => ['name' => 'key', 'encoding' => 'numbered'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'domain' => ['type' => 'string'],
+                            'msg' => ['type' => 'string'],
+                            'status' => ['type' => 'flag'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const INSTALL_SPF_RECORDS = [
+        'function' => 'install_spf_records',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'record' => ['name' => 'record', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'domain' => ['type' => 'string'],
+                            'msg' => ['type' => 'string'],
+                            'status' => ['type' => 'flag'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const IS_SNI_SUPPORTED = [
+        'function' => 'is_sni_supported',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'sni' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const LIST_BLOCKED_INCOMING_EMAIL_COUNTRIES = [
+        'function' => 'list_blocked_incoming_email_countries',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'countries' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'country_code' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_BLOCKED_INCOMING_EMAIL_DOMAINS = [
+        'function' => 'list_blocked_incoming_email_domains',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'domains' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'domain' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const LIST_POPS_FOR = [
+        'function' => 'list_pops_for',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'pops' => ['type' => 'list', 'items' => ['type' => 'string']],
+            ],
+        ],
     ];
 
     public const LOAD_CPGREYLIST_CONFIG = [
@@ -233,6 +870,31 @@ final class MailSpec
                 ],
             ],
         ],
+    ];
+
+    public const MAIL_SNI_STATUS = [
+        'function' => 'mail_sni_status',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'enabled' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const NORMALIZE_USER_EMAIL_CONFIGURATION = [
+        'function' => 'normalize_user_email_configuration',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'username' => ['name' => 'username', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
     ];
 
     public const READ_CPGREYLIST_DEFERRED_ENTRIES = [
@@ -294,6 +956,65 @@ final class MailSpec
         ],
     ];
 
+    public const REBUILD_MAIL_SNI_CONFIG = [
+        'function' => 'rebuild_mail_sni_config',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'reloadDovecot' => ['name' => 'reload_dovecot', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'configs_built' => ['type' => 'list', 'items' => ['type' => 'string']],
+                'success' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const RELEASE_OUTGOING_EMAIL = [
+        'function' => 'release_outgoing_email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const REMOVE_DMARC = [
+        'function' => 'remove_dmarc',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'domain' => ['type' => 'string'],
+                            'msg' => ['type' => 'string'],
+                            'status' => ['type' => 'flag'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const REMOVE_IN_PROGRESS_EXIM_CONFIG_EDIT = [
+        'function' => 'remove_in_progress_exim_config_edit',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => null,
+    ];
+
     public const SAVE_CPGREYLIST_CONFIG = [
         'function' => 'save_cpgreylist_config',
         'method' => 'POST',
@@ -322,6 +1043,345 @@ final class MailSpec
                         'purge_interval_mins' => ['type' => 'int'],
                         'record_exp_time_mins' => ['type' => 'int'],
                         'spf_bypass' => ['type' => 'flag'],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const SAVE_SPAMD_CONFIG = [
+        'function' => 'save_spamd_config',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'allowedIps' => ['name' => 'allowedips', 'encoding' => 'scalar'],
+            'maxChildren' => ['name' => 'maxchildren', 'encoding' => 'scalar'],
+            'maxConnPerChild' => ['name' => 'maxconnperchild', 'encoding' => 'scalar'],
+            'pidFile' => ['name' => 'pidfile', 'encoding' => 'scalar'],
+            'timeoutChild' => ['name' => 'timeoutchild', 'encoding' => 'scalar'],
+            'timeoutTcp' => ['name' => 'timeouttcp', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const SET_DEFAULT_DMARC_RECORD = [
+        'function' => 'set_default_dmarc_record',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'record' => ['name' => 'record', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'success' => ['type' => 'int'],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const SET_MANUAL_MX_REDIRECTS = [
+        'function' => 'set_manual_mx_redirects',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'numbered'],
+            'mxHosts' => ['name' => 'mx_host', 'encoding' => 'numbered'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => ['type' => 'map', 'values' => ['type' => 'string', 'nullable' => true]],
+            ],
+        ],
+    ];
+
+    public const SET_USER_EMAIL_FORWARD_DESTINATION = [
+        'function' => 'set_user_email_forward_destination',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'forwardTo' => ['name' => 'forward_to', 'encoding' => 'scalar'],
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const SUSPEND_OUTGOING_EMAIL = [
+        'function' => 'suspend_outgoing_email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const TERMINATE_CPUSER_MAILBOX_SESSIONS = [
+        'function' => 'terminate_cpuser_mailbox_sessions',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'username' => ['name' => 'username', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const UNBLOCK_INCOMING_EMAIL_FROM_COUNTRY = [
+        'function' => 'unblock_incoming_email_from_country',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'countryCodes' => ['name' => 'country_code', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'updated' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const UNBLOCK_INCOMING_EMAIL_FROM_DOMAIN = [
+        'function' => 'unblock_incoming_email_from_domain',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'updated' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const UNSET_MANUAL_MX_REDIRECTS = [
+        'function' => 'unset_manual_mx_redirects',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'numbered'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => ['type' => 'map', 'values' => ['type' => 'string', 'nullable' => true]],
+            ],
+        ],
+    ];
+
+    public const UNSUSPEND_OUTGOING_EMAIL = [
+        'function' => 'unsuspend_outgoing_email',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const VALIDATE_CURRENT_DKIMS = [
+        'function' => 'validate_current_dkims',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'domain' => ['type' => 'string'],
+                            'error' => ['type' => 'string'],
+                            'expected' => ['type' => 'string'],
+                            'records' => [
+                                'type' => 'list',
+                                'items' => [
+                                    'type' => 'object',
+                                    'fields' => [
+                                        'current' => ['type' => 'string'],
+                                        'state' => ['type' => 'string'],
+                                    ],
+                                ],
+                            ],
+                            'state' => ['type' => 'string'],
+                            'validity_cache_update' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const VALIDATE_CURRENT_DMARCS = [
+        'function' => 'validate_current_dmarcs',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'domain' => ['type' => 'string'],
+                            'error' => ['type' => 'string'],
+                            'record' => ['type' => 'string'],
+                            'state' => ['type' => 'string'],
+                            'subdomain' => ['type' => 'string'],
+                            'suggested' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const VALIDATE_CURRENT_INSTALLED_EXIM_CONFIG = [
+        'function' => 'validate_current_installed_exim_config',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'message' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const VALIDATE_CURRENT_PTRS = [
+        'function' => 'validate_current_ptrs',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'arpa_domain' => ['type' => 'string'],
+                            'domain' => ['type' => 'string'],
+                            'error' => ['type' => 'string'],
+                            'helo' => ['type' => 'string'],
+                            'ip_address' => ['type' => 'string'],
+                            'ip_version' => ['type' => 'int'],
+                            'nameservers' => ['type' => 'list', 'items' => ['type' => 'string']],
+                            'ptr_records' => [
+                                'type' => 'list',
+                                'items' => [
+                                    'type' => 'object',
+                                    'fields' => [
+                                        'domain' => ['type' => 'string'],
+                                        'forward_records' => ['type' => 'list', 'items' => ['type' => 'string']],
+                                        'state' => ['type' => 'string'],
+                                    ],
+                                ],
+                            ],
+                            'state' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const VALIDATE_CURRENT_SPFS = [
+        'function' => 'validate_current_spfs',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'payload' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'domain' => ['type' => 'string'],
+                            'error' => ['type' => 'string'],
+                            'expected' => ['type' => 'string'],
+                            'ip_address' => ['type' => 'string'],
+                            'ip_version' => ['type' => 'int'],
+                            'records' => [
+                                'type' => 'list',
+                                'items' => [
+                                    'type' => 'object',
+                                    'fields' => [
+                                        'current' => ['type' => 'string'],
+                                        'reason' => ['type' => 'string'],
+                                        'state' => ['type' => 'string'],
+                                    ],
+                                ],
+                            ],
+                            'state' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const VALIDATE_EXIM_CONFIGURATION_SYNTAX = [
+        'function' => 'validate_exim_configuration_syntax',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'cfgText' => ['name' => 'cfg_text', 'encoding' => 'scalar'],
+            'section' => ['name' => 'section', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'broken_cfg_html' => ['type' => 'string'],
+                'broken_cfg_text' => ['type' => 'string'],
+                'error_line' => ['type' => 'int'],
+                'error_msg' => ['type' => 'string'],
+                'exim_caps' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'add_header' => ['type' => 'flag'],
+                        'archive' => ['type' => 'flag'],
+                        'boxtrapper' => ['type' => 'flag'],
+                        'content_scanning' => ['type' => 'flag'],
+                        'directives' => ['type' => 'map', 'values' => ['type' => 'flag']],
+                        'dkim' => ['type' => 'flag'],
+                        'domainkeys' => ['type' => 'flag'],
+                        'dovecot' => ['type' => 'flag'],
+                        'exiscan' => ['type' => 'flag'],
+                        'force_command' => ['type' => 'flag'],
+                        'maildir' => ['type' => 'flag'],
+                        'mailman' => ['type' => 'flag'],
+                        'no_forward_outbound_spam' => ['type' => 'flag'],
+                        'no_forward_outbound_spam_over_int' => ['type' => 'flag'],
+                        'notquit' => ['type' => 'flag'],
+                        'passwd' => ['type' => 'flag'],
+                        'rewrite_from_all' => ['type' => 'flag'],
+                        'rewrite_from_remote' => ['type' => 'flag'],
+                        'spf' => ['type' => 'flag'],
+                        'srs' => ['type' => 'flag'],
                     ],
                 ],
             ],

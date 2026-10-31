@@ -701,7 +701,1676 @@
           ]
         }
       }
+    },
+    "whm1:apply_dmarc": {
+      "name": "applyDmarc",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /apply_dmarc x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 124. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for policy, domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 124 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes DNS DMARC records and cannot modify temporary domains. Omitted domains selects all domains on the server. One policy applies to every selected domain; multiple policies must match domains positionally. Inspect each payload row status and message separately from the API envelope."
+        },
+        {
+          "kind": "documented",
+          "text": "Policies and domains use repeated policy and domain wire keys. Pass raw DMARC text; the client form-encodes it once."
+        }
+      ],
+      "order": [
+        "policy",
+        "domain"
+      ],
+      "params": {
+        "policy": {
+          "php": "policies",
+          "encoding": "repeat"
+        },
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      }
+    },
+    "whm1:block_incoming_email_from_country": {
+      "name": "blockIncomingEmailFromCountry",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /block_incoming_email_from_country x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 84. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for country_code. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 84 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Blocks incoming mail server-wide. Do not block country code ZZ on a NAT server. The updated flag is 0 when the country is already blocked."
+        }
+      ],
+      "order": [
+        "country_code"
+      ],
+      "params": {
+        "country_code": {
+          "php": "countryCodes",
+          "encoding": "repeat"
+        }
+      }
+    },
+    "whm1:block_incoming_email_from_domain": {
+      "name": "blockIncomingEmailFromDomain",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /block_incoming_email_from_domain x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 84. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 84 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Blocks incoming mail server-wide. Domain labels and TLDs may use an asterisk wildcard. The updated flag is 0 when the domain is already blocked."
+        }
+      ],
+      "order": [
+        "domain"
+      ],
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      }
+    },
+    "whm1:disable_dkim": {
+      "name": "disableDkim",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /disable_dkim x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 78. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 78 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes DKIM DNS records for the selected domains. Per-domain status and message remain separate from the API envelope."
+        }
+      ],
+      "order": [
+        "domain"
+      ],
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      }
+    },
+    "whm1:emailtrack_search": {
+      "name": "emailtrackSearch",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /emailtrack_search x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Retrieves potentially large private delivery records. Zero maxResultsByType means unlimited results. Optional event flags default to 0 and deliveryType defaults to all; omissions retain server defaults."
+        },
+        {
+          "kind": "documented",
+          "text": "The source recommends WHM filter, sort and chunk parameters for large output. Those dynamic api.filter/api.sort/api.chunk families are not declared typed arguments here; use compatible generic calls to provide explicitly prepared scalar fields. No guessed filter-family encoder is added. Nullable delivery destinations, hosts, IPs and transport remain distinct from omitted fields. Sizes are bytes and timestamps are Unix seconds."
+        }
+      ],
+      "order": [
+        "defer",
+        "deliverytype",
+        "failure",
+        "inprogress",
+        "max_results_by_type",
+        "success"
+      ],
+      "params": {
+        "deliverytype": {
+          "php": "deliveryType"
+        },
+        "inprogress": {
+          "php": "inProgress"
+        }
+      }
+    },
+    "whm1:emailtrack_stats": {
+      "name": "emailtrackStats",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /emailtrack_stats x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted user selects all server accounts; omitted deliveryType selects all types. endDate is an alias for endTime and startDate is an alias for startTime. The client forwards supplied aliases independently and does not choose precedence when both are supplied. Omitted end times default to the current time, and start times default to 0. noSize and noSuccess control whether TOTALSIZE and SUCCESSCOUNT are returned. TOTALSIZE is bytes."
+        }
+      ],
+      "order": [
+        "deliverytype",
+        "enddate",
+        "endtime",
+        "nosize",
+        "nosuccess",
+        "startdate",
+        "starttime",
+        "user"
+      ],
+      "params": {
+        "deliverytype": {
+          "php": "deliveryType"
+        },
+        "enddate": {
+          "php": "endDate"
+        },
+        "endtime": {
+          "php": "endTime"
+        },
+        "nosize": {
+          "php": "noSize"
+        },
+        "nosuccess": {
+          "php": "noSuccess"
+        },
+        "startdate": {
+          "php": "startDate"
+        },
+        "starttime": {
+          "php": "startTime"
+        }
+      }
+    },
+    "whm1:emailtrack_user_stats": {
+      "name": "emailtrackUserStats",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /emailtrack_user_stats x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted sender includes all senders and omitted deliveryType includes all types. Times are Unix timestamps and TOTALSIZE is bytes. Returned uppercase names and integer limit flags are preserved."
+        }
+      ],
+      "order": [
+        "deliverytype",
+        "endtime",
+        "sender",
+        "starttime"
+      ],
+      "params": {
+        "deliverytype": {
+          "php": "deliveryType"
+        },
+        "endtime": {
+          "php": "endTime"
+        },
+        "starttime": {
+          "php": "startTime"
+        }
+      }
+    },
+    "whm1:enable_dkim": {
+      "name": "enableDkim",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /enable_dkim x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 78. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 78 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Enables DKIM DNS records for the selected domains. Per-domain status and message remain separate from the API envelope."
+        }
+      ],
+      "order": [
+        "domain"
+      ],
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      }
+    },
+    "whm1:enable_mail_sni": {
+      "name": "enableMailSni",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /enable_mail_sni x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11.48. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Mail SNI is always enabled. This call makes no changes and succeeds with a warning; updated_domains is always empty and failed_domains reports domains not owned by the caller. Disabling Mail SNI always fails."
+        }
+      ],
+      "order": [
+        "domain"
+      ]
+    },
+    "whm1:ensure_dkim_keys_exist": {
+      "name": "ensureDkimKeysExist",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ensure_dkim_keys_exist x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 78. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 78 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "This is a mutation: absent DKIM keys are created and keys that fail server security requirements are replaced. It can alter signing keys. The pinned prose mentions incremented names while its explicit multi-domain example repeats domain; the typed list follows that repeated-key example. Inspect per-domain status and message."
+        }
+      ],
+      "order": [
+        "domain"
+      ],
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      }
+    },
+    "whm1:exim_configuration_check": {
+      "name": "eximConfigurationCheck",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /exim_configuration_check x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Scans Exim configuration and attempts to repair errors; this is not a read-only validation. The optional message describes errors. API failure still raises ApiErrorException before payload validation."
+        }
+      ]
+    },
+    "whm1:expunge_mailbox_messages": {
+      "name": "expungeMailboxMessages",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /expunge_mailbox_messages x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 58. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 58 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Destructively removes messages selected by the Dovecot query. Receive Mail role is required. Mailbox wildcard characters cannot be escaped; prefer expungeMessagesForMailboxGuid() for precise mailbox selection. Search text can contain private information and is sensitive. No automatic expunge, retry or rollback is provided. The pinned response has no data payload."
+        }
+      ],
+      "order": [
+        "account",
+        "mailbox",
+        "query"
+      ],
+      "params": {
+        "query": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:expunge_messages_for_mailbox_guid": {
+      "name": "expungeMessagesForMailboxGuid",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /expunge_messages_for_mailbox_guid x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 64. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 64 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Destructively removes messages selected by the Dovecot query from the named account and mailbox GUID. Receive Mail role is required. Obtain the GUID from getMailboxStatus(). Search text can contain private information and is sensitive. No automatic expunge, retry or rollback is provided. The pinned response has no data payload."
+        }
+      ],
+      "order": [
+        "account",
+        "mailbox_guid",
+        "query"
+      ],
+      "params": {
+        "query": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:fetch_dkim_private_keys": {
+      "name": "fetchDkimPrivateKeys",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /fetch_dkim_private_keys x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 78. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 78 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Exports private DKIM PEM keys; treat returned pem values as secrets. Anyone obtaining these keys could sign mail as the domain. The pinned source marks this operation x-readonly=false, so it uses form POST. Numbered lists emit domain, domain-1, domain-2; alternative starting-index spellings are not inferred or live verified."
+        }
+      ],
+      "order": [
+        "domain"
+      ],
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "numbered"
+        }
+      }
+    },
+    "whm1:fetch_mail_queue": {
+      "name": "fetchMailQueue",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /fetch_mail_queue x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns potentially private queued-message metadata and recipient addresses. A null user remains distinct from omission. Size is bytes and time is a Unix timestamp. The client does not deliver, release or fetch a queued message."
+        }
+      ]
+    },
+    "whm1:generate_mobileconfig": {
+      "name": "generateMobileconfig",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /generate_mobileconfig x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11.52. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Receive Mail role is required. Returns a base64 configuration profile as private payload data; the client does not decode, install or send it. selectedAccountServices is caller-prepared comma-separated email, caldav and carddav; omission retains all three defaults and unsupported values are ignored upstream."
+        }
+      ],
+      "order": [
+        "account",
+        "use_ssl",
+        "selected_account_services"
+      ]
+    },
+    "whm1:get_default_dmarc_record": {
+      "name": "getDefaultDmarcRecord",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_default_dmarc_record x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 124. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 124 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The default DMARC record applies when creating new accounts or applying policies without a custom record. The nested payload record remains optional."
+        }
+      ]
+    },
+    "whm1:get_mailbox_status": {
+      "name": "getMailboxStatus",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_mailbox_status x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 58. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 58 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Receive Mail role is required. Select an email account or cPanel username; _mainaccount@example.com is the documented default-mailbox alias. Mailbox names remain dynamic keys. Message counts and virtual size in bytes remain integers."
+        }
+      ],
+      "order": [
+        "account"
+      ]
+    },
+    "whm1:get_mailbox_status_list": {
+      "name": "getMailboxStatusList",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_mailbox_status_list x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 64. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 64 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Receive Mail role is required. Select an existing email account, cPanel username or _mainaccount@example.com alias. Mailbox row fields remain optional; virtual size is bytes."
+        }
+      ],
+      "order": [
+        "account"
+      ]
+    },
+    "whm1:get_unique_recipient_count_per_sender_for_user": {
+      "name": "getUniqueRecipientCountPerSenderForUser",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_unique_recipient_count_per_sender_for_user x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 80. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 80 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Queries a Unix-timestamp interval for the selected system user and groups unique recipients by sender. Counts and sender addresses are payload data."
+        }
+      ],
+      "order": [
+        "end_time",
+        "start_time",
+        "user"
+      ]
+    },
+    "whm1:get_unique_sender_recipient_count_per_user": {
+      "name": "getUniqueSenderRecipientCountPerUser",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_unique_sender_recipient_count_per_user x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 80. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 80 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Queries a Unix-timestamp interval across all system users and groups unique sender/recipient pair counts by user."
+        }
+      ],
+      "order": [
+        "end_time",
+        "start_time"
+      ]
+    },
+    "whm1:get_user_email_forward_destination": {
+      "name": "getUserEmailForwardDestination",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_user_email_forward_destination x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11.52. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Reads forwarding destinations for a system account. root commonly receives server notices and nobody may receive CGI bounce mail when suexec is unused. Returned destinations are not fetched or sent mail."
+        }
+      ],
+      "order": [
+        "user"
+      ]
+    },
+    "whm1:hold_outgoing_email": {
+      "name": "holdOutgoingEmail",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /hold_outgoing_email x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 56. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 56 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Holds the selected cPanel account outgoing external email in the Exim queue. Cannot target root. Suspension rejects mail before queueing and takes precedence over a hold. No queue release, retry or rollback is performed by the client."
+        }
+      ],
+      "order": [
+        "user"
+      ]
+    },
+    "whm1:install_dkim_private_keys": {
+      "name": "installDkimPrivateKeys",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /install_dkim_private_keys x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 78. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain, key. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 78 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Installs caller-provided RSA private PEM keys without updating local DNS records. If local DNS is authoritative, enableDkim() updates the DNS records separately; the client does not batch or retry calls. Domain and key lists correspond positionally and each domain requires a key. Keys are sensitive and supplied bytes are form-encoded once. Lists emit domain/domain-1 and key/key-1; all-numbered starting-index alternatives are not inferred or live verified. Inspect per-domain status and message."
+        }
+      ],
+      "order": [
+        "domain",
+        "key"
+      ],
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "numbered"
+        },
+        "key": {
+          "php": "keys",
+          "encoding": "numbered",
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:install_spf_records": {
+      "name": "installSpfRecords",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /install_spf_records x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 78. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned /install_spf_records domain parameter documents incremented names, while record only says that it must be provided for every domain. No repeated or numbered record wire spelling is established. Preserve the documented scalar domain and record schemas for the typed method; defer the multi-record encoding under whm-api-client-8x0.1.21 rather than mirror a family by inference. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 78 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Installs the supplied complete SPF record on the DNS server; supply the desired full record rather than a patch. This typed method supports the documented single domain/record pair. The pinned source documents incremented domain names and requires a corresponding record for each domain, but does not establish the repeated record field spelling or positional serialization. Both arguments remain scalar strings; multi-record serialization is deferred under whm-api-client-8x0.1.21. No numbered or repeated record encoder is inferred. Pass raw SPF text and let the client form-encode it once; do not pre-encode the source example. Inspect per-domain status and message separately from API status."
+        }
+      ],
+      "order": [
+        "domain",
+        "record"
+      ]
+    },
+    "whm1:is_sni_supported": {
+      "name": "isSniSupported",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /is_sni_supported x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11.40. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.40 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Mail SNI is always enabled. Functions that enable it succeed with a warning and functions that disable it always fail without changes. The sni flag remains integer 0 or 1."
+        }
+      ]
+    },
+    "whm1:list_blocked_incoming_email_countries": {
+      "name": "listBlockedIncomingEmailCountries",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /list_blocked_incoming_email_countries x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 84. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 84 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Lists server-wide incoming-email country blocks; country codes are returned as payload data."
+        }
+      ]
+    },
+    "whm1:list_blocked_incoming_email_domains": {
+      "name": "listBlockedIncomingEmailDomains",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /list_blocked_incoming_email_domains x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 84. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 84 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Lists server-wide incoming-email domain blocks, including any configured wildcard domains."
+        }
+      ]
+    },
+    "whm1:list_pops_for": {
+      "name": "listPopsFor",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /list_pops_for x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11.50. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.50 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Receive Mail role is required. Reads mailbox inventory as the selected cPanel user rather than root, then compares it with server-wide domain inventory to validate trust and resist symlink exploitation. No mailbox is changed."
+        }
+      ],
+      "order": [
+        "user"
+      ]
+    },
+    "whm1:mail_sni_status": {
+      "name": "mailSniStatus",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /mail_sni_status x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11.48. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Retrieves the selected domain mail SNI flag. Calls that disable Mail SNI always fail and make no changes."
+        }
+      ],
+      "order": [
+        "domain"
+      ]
+    },
+    "whm1:normalize_user_email_configuration": {
+      "name": "normalizeUserEmailConfiguration",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /normalize_user_email_configuration x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 88. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 88 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Repairs email file and directory ownership, permissions and other misconfigured settings for the selected cPanel account. This changes account configuration and has no client retry or rollback."
+        }
+      ],
+      "order": [
+        "username"
+      ]
+    },
+    "whm1:rebuild_mail_sni_config": {
+      "name": "rebuildMailSniConfig",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /rebuild_mail_sni_config x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11.48. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Rebuilds mail SNI configuration files. Omitted reloadDovecot defaults to 0; explicit true reloads the Dovecot service. The client does not perform a separate reload or restart. Inspect the payload success flag separately from API status."
+        }
+      ],
+      "order": [
+        "reload_dovecot"
+      ]
+    },
+    "whm1:release_outgoing_email": {
+      "name": "releaseOutgoingEmail",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /release_outgoing_email x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 56. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 56 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Releases queued outgoing email for the selected cPanel account and can cause delivery. A suspended account still has mail rejected before queueing; releasing a hold does not remove suspension. No automatic release, retry or rollback is performed."
+        }
+      ],
+      "order": [
+        "user"
+      ]
+    },
+    "whm1:remove_dmarc": {
+      "name": "removeDmarc",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /remove_dmarc x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 124. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 124 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes DMARC DNS records and cannot modify temporary domains. Omitting domains removes all DMARC records from all domains on the server. Lists repeat domain wire keys. Inspect per-domain status and message separately from API status."
+        }
+      ],
+      "order": [
+        "domain"
+      ],
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      }
+    },
+    "whm1:remove_in_progress_exim_config_edit": {
+      "name": "removeInProgressEximConfigEdit",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /remove_in_progress_exim_config_edit x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes dry-run Exim configuration files left by a failed update. WHM Advanced Editor may display those dry-run files instead of the ordinary files until they are removed. This changes configuration state."
+        }
+      ]
+    },
+    "whm1:save_spamd_config": {
+      "name": "saveSpamdConfig",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /save_spamd_config x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11.44. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.44 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires Spam Filter role. allowedIps is a comma-separated string; omission allows connections from any IP, while a supplied list must include 127.0.0.1 for chkservd. Child and TCP timeout values of 0 mean never abandon the TCP connection. maxChildren and maxConnPerChild are process/connection limits. The pinned source does not state timeout units, so the client does not invent units. Changing pidFile on systemd requires matching PIDFile in spamd.service or the daemon fails. Options are omitted when not supplied; no client retry or restart is provided."
+        }
+      ],
+      "order": [
+        "allowedips",
+        "maxchildren",
+        "maxconnperchild",
+        "pidfile",
+        "timeoutchild",
+        "timeouttcp"
+      ],
+      "params": {
+        "allowedips": {
+          "php": "allowedIps"
+        },
+        "maxchildren": {
+          "php": "maxChildren"
+        },
+        "maxconnperchild": {
+          "php": "maxConnPerChild"
+        },
+        "pidfile": {
+          "php": "pidFile"
+        },
+        "timeoutchild": {
+          "php": "timeoutChild"
+        },
+        "timeouttcp": {
+          "php": "timeoutTcp"
+        }
+      }
+    },
+    "whm1:set_default_dmarc_record": {
+      "name": "setDefaultDmarcRecord",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_default_dmarc_record x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 124. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 124 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Sets the server default for new accounts and applications without a custom policy. A record must start with v=DMARC1; and include p=none, p=quarantine or p=reject. An explicit empty string clears the custom default and restores the built-in default. Omission remains distinct from an empty string. The returned success is the documented integer, without an invented closed enum."
+        }
+      ],
+      "order": [
+        "record"
+      ]
+    },
+    "whm1:set_manual_mx_redirects": {
+      "name": "setManualMxRedirects",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_manual_mx_redirects x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 90. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain, mx_host. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 90 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Adds manual entries in /etc/manualmx, bypassing DNS MX lookup. Each domain must have a corresponding mxHost (domain, IPv4 or IPv6). Parallel lists emit domain/domain-1 and mx_host/mx_host-1. Preserve per-domain nullable string results separately from API status."
+        }
+      ],
+      "order": [
+        "domain",
+        "mx_host"
+      ],
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "numbered"
+        },
+        "mx_host": {
+          "php": "mxHosts",
+          "encoding": "numbered"
+        }
+      }
+    },
+    "whm1:set_user_email_forward_destination": {
+      "name": "setUserEmailForwardDestination",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_user_email_forward_destination x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11.52. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes a system account forwarding destination. forwardTo is a caller-prepared comma-separated list of system accounts or email addresses. root commonly receives server notices and nobody may receive CGI bounce mail without suexec. This call does not send a welcome or configuration message."
+        }
+      ],
+      "order": [
+        "forward_to",
+        "user"
+      ]
+    },
+    "whm1:suspend_outgoing_email": {
+      "name": "suspendOutgoingEmail",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /suspend_outgoing_email x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 56. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 56 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Suspends and forces failure for the selected cPanel account outgoing external email. Cannot target root. Suspended mail is rejected before queueing; this differs from holding mail for later release. No retry or rollback is provided."
+        }
+      ],
+      "order": [
+        "user"
+      ]
+    },
+    "whm1:terminate_cpuser_mailbox_sessions": {
+      "name": "terminateCpuserMailboxSessions",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /terminate_cpuser_mailbox_sessions x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 90. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 90 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Terminates every IMAP and POP3 connection for every email address in the selected cPanel account, including its default address. No connection retry or polling is performed by the client. The source specifies no data payload."
+        }
+      ],
+      "order": [
+        "username"
+      ]
+    },
+    "whm1:unblock_incoming_email_from_country": {
+      "name": "unblockIncomingEmailFromCountry",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /unblock_incoming_email_from_country x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 84. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for country_code. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 84 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes server-wide incoming-email country blocks. Lists use the explicitly documented repeated country_code spelling; the source also supports incremented names. The pinned parameter omits required:true, so omission remains possible without an invented default or scope."
+        }
+      ],
+      "order": [
+        "country_code"
+      ],
+      "params": {
+        "country_code": {
+          "php": "countryCodes",
+          "encoding": "repeat"
+        }
+      }
+    },
+    "whm1:unblock_incoming_email_from_domain": {
+      "name": "unblockIncomingEmailFromDomain",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /unblock_incoming_email_from_domain x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 84. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 84 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes server-wide incoming-email domain blocks. Domains may include an asterisk wildcard label or TLD. updated is 0 when the domain is already unblocked."
+        }
+      ],
+      "order": [
+        "domain"
+      ],
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      }
+    },
+    "whm1:unset_manual_mx_redirects": {
+      "name": "unsetManualMxRedirects",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /unset_manual_mx_redirects x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 90. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 90 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the selected domains from /etc/manualmx and restores normal DNS MX lookup for them. Lists emit domain, domain-1, domain-2. Per-domain nullable string results remain separate from API status."
+        }
+      ],
+      "order": [
+        "domain"
+      ],
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "numbered"
+        }
+      }
+    },
+    "whm1:unsuspend_outgoing_email": {
+      "name": "unsuspendOutgoingEmail",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /unsuspend_outgoing_email x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 56. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 56 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Unsuspends outgoing mail for the selected cPanel account. This is distinct from releaseOutgoingEmail(), which releases queued held mail."
+        }
+      ],
+      "order": [
+        "user"
+      ]
+    },
+    "whm1:validate_current_dkims": {
+      "name": "validateCurrentDkims",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /validate_current_dkims x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 78. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 78 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Retrieves DKIM records and validates them against the local public key. This source is x-readonly=false and may update validity cache, so it uses form POST. Per-domain lookup errors, aggregate states, record states and validity-cache results remain distinct."
+        }
+      ],
+      "order": [
+        "domain"
+      ],
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "response": {
+        "payload": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "domain": {
+                  "type": "string"
+                },
+                "error": {
+                  "type": "string"
+                },
+                "expected": {
+                  "type": "string"
+                },
+                "records": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "current": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "state": {
+                  "type": "string"
+                },
+                "validity_cache_update": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "The pinned payload node omits type but expressly describes an array of objects, supplies items, and its example is a list. Repair only this missing container type to list, retaining every optional item field and nested type exactly; no scalar/null/opaque widening or live normalization is added. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:validate_current_dmarcs": {
+      "name": "validateCurrentDmarcs",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /validate_current_dmarcs x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 124. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 124 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Retrieves and validates DMARC records. Omitted domains selects all domains on the server. Per-domain DNS errors and SPF/DKIM validation states remain payload data, distinct from the API envelope."
+        }
+      ],
+      "order": [
+        "domain"
+      ],
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "response": {
+        "payload": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "domain": {
+                  "type": "string"
+                },
+                "error": {
+                  "type": "string"
+                },
+                "record": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
+                },
+                "subdomain": {
+                  "type": "string"
+                },
+                "suggested": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "The pinned payload node omits type but expressly describes an array of objects, supplies items, and its example is a list. Repair only this missing container type to list, retaining every optional item field and nested type exactly; no scalar/null/opaque widening or live normalization is added. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:validate_current_installed_exim_config": {
+      "name": "validateCurrentInstalledEximConfig",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /validate_current_installed_exim_config x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Validates current Exim configuration and returns an optional HTML message as payload text. The client does not execute HTML, change configuration or fetch returned links."
+        }
+      ]
+    },
+    "whm1:validate_current_ptrs": {
+      "name": "validateCurrentPtrs",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /validate_current_ptrs x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 78. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 78 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Checks PTR records for sending IPv4/IPv6 addresses, matching A/AAAA records and forward-to-address consistency. DNS records and nameservers remain payload data; the client does not perform separate DNS queries or establish propagation."
+        }
+      ],
+      "order": [
+        "domain"
+      ],
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      }
+    },
+    "whm1:validate_current_spfs": {
+      "name": "validateCurrentSpfs",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /validate_current_spfs x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 78. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 78 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Validates the selected domain SPF record. Preserve aggregate domain state, per-record state/reason, IPv4/IPv6 address and integer ip_version separately. No additional multi-domain encoding is inferred because this pinned parameter does not document one."
+        }
+      ],
+      "order": [
+        "domain"
+      ]
+    },
+    "whm1:validate_exim_configuration_syntax": {
+      "name": "validateEximConfigurationSyntax",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /validate_exim_configuration_syntax x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Evaluates raw Exim configuration syntax. cfgText can contain secrets and uses SensitiveParameter; even though upstream marks the operation read-only, this method uses form POST to keep text out of URLs. Omitted cfgText analyzes the installed configuration; with section, supply only that section text. Validation is distinct from eximConfigurationCheck(), which attempts repairs. Both invalid-configuration details and valid exim_caps fields are retained; dynamic directive names map to strict integer 0/1 flags. No configuration change, restart, retry or live syntax verification is established."
+        }
+      ],
+      "order": [
+        "cfg_text",
+        "section"
+      ],
+      "params": {
+        "cfg_text": {
+          "sensitive": true
+        }
+      }
     }
   },
-  "description": "Server-wide mail operations, including Greylisting policy, trusted hosts, common providers and deferred triplets. Trust and configuration changes alter mail deferral policy. Returned triplets contain sender and recipient addresses; the client does not deliver mail or fetch returned addresses. The cPanel 11.138.0.19 review used GET reads with Greylisting disabled; all fifteen writes across the reviewed cPHulk and Greylisting slice remain unobserved."
+  "description": "Server-wide mail authentication and DNS settings, incoming blocks, account outgoing-mail controls, mailbox and delivery diagnostics, mobile profiles, Exim and spamd configuration, and Greylisting. Mail, private-key, configuration and profile outputs can contain sensitive data. Mutations use form POST, including private-key export and raw Exim syntax validation. Per-domain failures remain separate from API status. No automatic delivery, expunge, retry or rollback is provided. Existing Greylisting service-state observations and exclusions remain unchanged."
 }

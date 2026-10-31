@@ -1280,3 +1280,14 @@ artifacts and strict assessments without waivers. Do not enable Greylisting or
 repeat the catalog merely to make it pass. Separate reviewer login-history reads
 and source-backed write-result corrections do not expand this eight-GET capture;
 all fifteen server-wide/lockout writes remain unobserved.
+
+## Expanded WHM mail inventory
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-mail-management.php --output=docs/api/evidence/YYYY-MM-DD-whm-mail-management.json`.
+
+Eight fixed GETs read version, default DMARC, SNI support/status, incoming-block
+inventories, owned mailbox names and system forwarding destinations. Account/domain
+selectors are fixed to npr/npr.rs. Existing committed-input, exact request guard,
+opt-in, verified TLS and new-only structural output rules apply. No messages,
+queue contents, keys or mobileconfig are read; no mail is delivered and no state
+changes. Follow-up `8x0.2.48` retains unobserved behavior and variants.

@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 75 generated typed groups cover 674 documented operations (see
+The 75 generated typed groups cover 725 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1745,3 +1745,43 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+
+## Expanded WHM mail management
+
+`whm()->mail()` adds 51 methods while preserving all sixteen existing overlay
+entries, including the fourteen typed greylisting methods and two exclusions.
+The group covers 65 of 67 pinned functions. Twenty additions use GET and 31 use
+form POST for mail authentication/DNS, incoming blocks, outgoing-mail controls,
+mailbox state, diagnostics, SNI, spamd/Exim settings and message/session actions.
+
+Private keys, Exim configuration and mailbox search expressions remain sensitive.
+Syntax validation uses POST for private configuration text despite the pinned GET
+declaration; its POST compatibility remains live-unverified. Source-marked mutating
+checks such as DKIM validation and Exim configuration checking also use POST.
+Message, queue, private-key and mobileconfig results remain private payloads.
+No returned URL or configuration text is executed or fetched.
+
+Repeated and numbered families follow each operation's explicit source spelling.
+Paired DKIM key and manual-MX lists retain caller responsibility for positional
+matching. `installSpfRecords()` accepts one scalar domain/record pair: the record
+suffix family is not established and remains under `8x0.1.21`. Tracking filter,
+sort and chunk controls require explicitly prepared generic parameters where
+the typed source surface does not declare them. No dynamic field is invented.
+
+Per-item domain/mailbox results remain separate from API success. DKIM and DMARC
+validation payloads use source-described lists despite missing formal type nodes.
+Other optional, nullable, opaque, absent and void contracts remain strict.
+Each method preserves availability, role restrictions, defaults, units and effects.
+Hold/release and suspend/unsuspend are distinct operations; expunge can permanently
+remove messages. Enabling SNI can succeed with a warning that it is always enabled;
+the deprecated disabling function stays excluded. The client adds no mail sending,
+retry, rollback, automatic expunge or configuration restart.
+
+All 51 additions have independent offline contracts. The fixed eight-GET catalog
+reads version, default DMARC policy, SNI support/status, blocked country/domain
+inventories, owned mailbox names and forwarding destinations for designated
+`npr`/`npr.rs`. It reads no messages, queue contents, private keys or mobileconfig
+and sends no messages or mutations. These reads establish no mail delivery,
+filtering enforcement, TLS serving or key-installation behavior.
+Remaining live work stays under `8x0.2.48`.
