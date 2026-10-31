@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 78 generated typed groups cover 717 documented operations (see
+The 78 generated typed groups cover 789 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1449,6 +1449,64 @@ inventories. It guesses no address or range, performs no NAT check and changes
 no account, address, interface, mapping or network state. Empty inventories do
 not establish populated row schemas. Follow-up `8x0.2.37` retains all unobserved
 variants and lifecycle behavior.
+
+### Expanded WHM server administration
+
+`whm()->server()` now exposes 76 of the 79 pinned Server Administration functions,
+including 72 additions for services, profiles, updates, configuration, linked nodes,
+notifications, licensing and inventory. The new calls use 23 GET requests and 49
+form POST requests. The four existing server methods retain their contracts.
+Missing read-only declarations remain conservative POST calls, including the
+three namespaced EcosystemFeatures functions.
+
+JSON connected-application saving remains under `8x0.1.18`, binary configuration
+upload under `8x0.1.19`, and `system_needs_reboot` under `8x0.1.27`. The latter's
+result fields are envelope siblings outside `data`; neither the typed runner nor
+the generic call currently preserves that result. No misleading void method is
+provided. Connected-application reads preserve declared typed fields and opaque
+additional properties through the existing object-values mechanism. Treat their
+results and service/configuration values as private payload data.
+
+Profile activation accepts documented serialized JSON text in its optional role
+argument, with one form-encoding pass. Its native `string|int` boundary does not
+establish integer semantics or automatic object encoding; supply a JSON string.
+The typing limitation remains under `8x0.1.23` before release. Available-tier
+maps preserve the five pinned named fields alongside dynamic values. Both
+service-configuration reads document `dovecot`; undocumented services are outside
+the contract, and null data from such a service can fail validation. Configuration
+values can contain credential material, including the observed key name
+`hulk_auth_passwd`; neither the review nor committed evidence records its value.
+Treat returned values and raw payloads attached to exceptions as sensitive.
+The full configuration and individual-key reads retain the same string, integer
+or nested map values with opaque contents.
+
+On `11.138.0.19`, the reviewer observed quoted role flags and digit strings
+in both application-importance reads. Compatibility uses the established bounded
+canonical-integer normalization policy; the observation does not establish every
+accepted spelling or boundary. Strict flag values and integer bounds remain. The documented empty
+node-linkage object is source-backed and offline-tested; populated linked-node
+behavior remains unobserved. Per-method availability, role requirements,
+omission, null and explicit false/zero behavior remain in generated PHPDoc.
+
+For update preferences, `RPMUP` or `SARULESUP` set to `never` requires the
+administrator to run `scripts/update-packages`; it does not make updates
+unnecessary. Feature-management inputs retain the pinned single feature-ID
+description without an unsupported comma-separated batch claim.
+
+EULA acceptance, license purchase, reboot/restart, updates, profile activation,
+node linking, configuration changes and notification tests are explicit operations.
+They may have legal, financial, connectivity or service effects; the client adds
+no automatic invocation, retry, rollback or completion polling. Credential, token,
+configuration and notification inputs remain sensitive. API success or a job ID
+does not establish completion, service health or remote connectivity.
+
+Independent offline contracts cover all 72 additions and preserve the original
+four. The bounded eight-GET catalog reads version, contact-event importance,
+available/current profiles, password-strength policy, installed software versions,
+service status and dashboard hostname. Optional selectors are omitted. It reads
+no credentials, linked-node secrets, arbitrary configuration values or sockets,
+and sends no notification, URL probe or mutation. Follow-up `8x0.2.38` retains
+unobserved variants and operational behavior.
 
 ### Generic calls
 

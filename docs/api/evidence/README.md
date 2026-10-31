@@ -783,3 +783,37 @@ NAT behavior, exclusion semantics or network configuration changes. No mutation
 ran. The initial failed artifact stays unchanged and `8x0.2.37` remains open.
 Corrected SHA-256:
 `185dd1b1d6728a6aad76ce258f60f1177f08e9f368c85935667e713889a9a552`.
+
+## Expanded WHM server inventory capture
+
+The initial [expanded server capture](2026-10-31-whm-server-administration.json)
+at `4eecbe249c754341f454db573a1a475731dc8b9c` on `11.138.0.19` records eight
+HTTP/API successes and six payload/probe passes. Contact-event `importance` and
+nine minimum-password-strength fields are numeric strings rather than pinned
+integers. Only those ten leaves gain lossless canonical integer-string
+normalization; other fields and operations retain their contracts. Structural
+numeric-string evidence alone does not establish every spelling accepted by the
+normalization policy; noncanonical strings, fractions and overflow remain invalid.
+
+Installed versions retain one masked unknown-field observation with string values;
+service rows retain one masked unknown object observation with integer/string
+children. Masking identifies neither names nor counts. Both stay untyped and
+unwaived under `8x0.2.38`. Profile, contact-importance and service records are
+populated. No configuration, credential, service, profile, license, notification
+or node operation changed anything, and no secret-bearing read was selected.
+The initial capture remains failed and immutable. SHA-256:
+`69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296`.
+
+The [corrected expanded server capture](2026-10-31-whm-server-administration-corrected.json)
+at `742eaa8419eca4c9021ff0cc87ff6504a08e477e` on `11.138.0.19` passes all eight
+HTTP/API/payload/probe checks. The ten integer-leaf corrections now pass. Strict
+assessment remains failed for the same two masked unknown-field observations in
+installed versions and service rows, with zero acknowledgments and no new typed
+unknown fields. Masking identifies neither underlying names nor field counts.
+
+All original observations and artifacts remain unchanged. These reads establish
+only the selected inventory and policy responses, not service health, completed
+updates, profile activation, licensing, node connectivity or notification delivery.
+No mutation, credential read or URL request ran. Follow-up `8x0.2.38` retains the
+unknown findings and unobserved variants. Corrected SHA-256:
+`db24e53879fff4754369b984969640b51ea483713ad71c735d6d1bb1be88f6b8`.
