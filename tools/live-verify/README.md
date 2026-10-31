@@ -1232,3 +1232,27 @@ passing; retain it and the initial failed artifact. Separate reviewer profile-re
 and disposable-account lifecycle observations in review 5720420360 do not expand
 this catalog. Profile responses and unvalidated exception payloads may contain
 plaintext passwords; the catalog still excludes those credential reads.
+
+## WHM ModSecurity inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-modsecurity.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-modsecurity.json
+```
+
+The fixed five-GET catalog reads WHM version, `modsec_get_configs`,
+`modsec_get_configs_with_changes_pending`, `modsec_get_vendors` and
+`modsec_is_installed` on the designated test server. It uses the existing exact
+request guard, opt-in, committed-input checks, verified TLS and structural evidence
+capture. It does not read raw configuration/rule text, audit logs or settings that
+may contain an access key. It sends no report, mutation, vendor download or URL
+fetch. Empty inventories establish no populated-row or enforcement behavior.
+Keep failures immutable and remaining coverage under `8x0.2.34`.
+
+
+On the reviewed `11.138.0.19` server, the pending-config read returns API result 0
+when there are no pending changes. `Flag` therefore raises `ApiErrorException`
+for this normal idle state as well as other failures; do not match error text or
+waive the immutable capture. Separate reviewer log/settings reads do not expand
+this catalog, and all thirty server-wide write/helper operations remain unobserved.

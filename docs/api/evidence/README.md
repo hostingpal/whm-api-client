@@ -606,3 +606,42 @@ create/update/delete/validate/activate ran. A running activation step's `end_tim
 and the location of partial-rename warnings remain unobserved under `8x0.2.33`.
 The corrected nine-GET artifact already passes; no new capture is needed merely
 to clear discrepancies, and the original failed artifact is preserved.
+
+## WHM ModSecurity inventory capture
+
+The immutable [WHM ModSecurity capture](2026-10-31-whm-modsecurity.json) at
+`cd205ab2452ee9a8f215d579f4f9d69baa2c3e9a` on `11.138.0.19` records five HTTP 200
+observations. WHM version, configuration inventory, vendor inventory and
+installation status pass API, payload and probe checks. Both inventories are
+empty, so their populated rows remain unobserved. The pending-configuration read
+fails at the API layer. The reviewer established that the ordinary idle state
+uses result 0 when no rule changes are pending; it therefore raises the expected
+`ApiErrorException` under `Flag`. Other failures also use result 0, so no error-text
+matching or special success exception is introduced. There are zero payload
+discrepancies, while strict assessment remains failed and unwaived for that API error.
+
+No raw rule/configuration text, audit logs or secret-bearing settings were read.
+No scan, policy, vendor, report, deployment or configuration change ran, and no
+returned URL was fetched. The other thirty-four methods were outside this committed catalog.
+Follow-up `8x0.2.34` retains the failed read and all unobserved behavior; this
+capture does not establish request blocking or enforcement. No repeated capture
+was run merely to obtain a passing result. SHA-256:
+`673fd065ffdf05bdb8a1c1dd5af5bcb770a8280aa556cc4a5f2d9fbbd516ab9c`.
+
+### Independent ModSecurity review observations
+
+[Claude review 5720447657](https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657)
+reports read-only WHM checks on cPanel `11.138.0.19`. The empty log establishes
+its inner `data` wrapper, and all ten populated settings rows had string states.
+The shared set-result record, integer setting alternatives, nullable log/report
+fields and twelve optional mutation payloads are source/offline corrections;
+no server-wide write or populated log row was observed. The reviewer printed
+only keys and type classes, not rule, log or setting values.
+
+Configuration and vendor inventories were empty; installed status and settings
+reads passed. Missing selectors for rules, unknown configuration text and the
+normal idle pending-config state raise API errors. No populated rules/configuration
+text or any of the thirty write/helper operations ran. These reports remain
+separate from the immutable five-GET capture, whose failed idle observation stays
+unwaived under `8x0.2.34`. All existing artifacts are preserved; no new capture was
+run to clear the failure.
