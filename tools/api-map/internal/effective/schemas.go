@@ -153,6 +153,10 @@ func (s schemas) shape(sourceID string, obj map[string]any, key string, flat boo
 			spec.Fields = append(spec.Fields, Field{Name: name, Spec: s.specFor(sourceID, props[name], depth+1, seen)})
 		}
 		spec.Required = requiredNames(obj, props)
+		if extra, ok := obj["additionalProperties"].(bool); ok && extra {
+			// Explicitly open objects validate named fields and retain all extras.
+			spec.Values = &TypeSpec{Type: "mixed"}
+		}
 		if _, dynamic := asObject(obj["additionalProperties"]); dynamic {
 			// The engine's objects drop undeclared keys and its maps type every
 			// value alike, so neither keeps both the declared fields and the

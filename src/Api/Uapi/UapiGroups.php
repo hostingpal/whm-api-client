@@ -59,6 +59,8 @@ trait UapiGroups
 
     private ?DomainLookup $domainLookupGroup = null;
 
+    private ?DomainRecommendations $domainRecommendationsGroup = null;
+
     private ?DynamicDns $dynamicDnsGroup = null;
 
     private ?Ea4 $ea4Group = null;
@@ -393,6 +395,17 @@ trait UapiGroups
     public function domainLookup(): DomainLookup
     {
         return $this->domainLookupGroup ??= new DomainLookup($this->run(...));
+    }
+
+    /**
+     * Select the DomainRecommendations operations without making a request.
+     *
+     * Configured-store domain availability, suggestions, pricing, configuration, enablement, checkout URLs and
+     * supported TLDs.
+     */
+    public function domainRecommendations(): DomainRecommendations
+    {
+        return $this->domainRecommendationsGroup ??= new DomainRecommendations($this->run(...));
     }
 
     /**

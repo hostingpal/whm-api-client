@@ -7112,3 +7112,78 @@ WPX accessor/property and coverage regeneration. Delivery `8x0.4.25` and live
 follow-up `8x0.2.67` stay separate. No live calls, installation/import/login,
 remote-address resolution, quota behavior, token consumption/revocation, language
 or health behavior, deletion or cleanup are established by offline validation.
+
+
+### 2026-11-01: complete generated UAPI DomainRecommendations module
+
+Added all six pinned DomainRecommendations operations through
+`DomainRecommendations` / `uapi()->domainRecommendations()`. Authoritative source
+is `docs/api/sources/2026-10-13/cpanel.openapi.json.gz`, decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`, pinned version
+11.138.0.10. Overlay evidence binds every selected GET variant's description at
+`/paths/~1DomainRecommendations~1<function>/get/description`. The checkout entry
+also binds `/paths/~1DomainRecommendations~1purchase_domain/get/x-readonly` and
+`/paths/~1DomainRecommendations~1purchase_domain/get/x-rollback`.
+The five `x-readonly=true` operations retain GET; `purchase_domain` has
+`x-readonly=false`, `x-rollback=none`, so effective transport is form POST despite
+formal GET. Ordinary Flag outcomes apply to all six. No response, requiredness,
+body metadata or parameter correction is introduced. Live POST acceptance remains
+unverified; documented-GET-only servers can fail until route evidence resolves it.
+
+All six require `domain_recommendation`. Availability, suggestions, store config
+and enablement are cPanel 134; checkout and supported TLDs are cPanel 138.
+Availability/checkout source inputs expect FQDNs. Suggestions are free text,
+normally base names without TLDs; pagination is one-based and omission retains
+store defaults. No local normalization, enum or range restrictions are inferred.
+Values retain bytes and encode once; optional null omits, false/true encode 0/1,
+and explicit zero/empty strings remain supplied.
+
+Server cache duration is up to two minutes: availability per domain, suggestions
+by search/page/page-size/requested-TLD combination, and supported TLDs.
+Omitted useCache retains default 1; false can contact the configured store.
+No TLD parameter is invented from the cache-key prose because pinned parameters
+and examples lack its wire contract. No client cache, fallback, pagination, store
+lookup, merge, retry or rollback is added.
+
+Availability is a nullable object; missing payload still fails. Its three flags
+are booleans, unlike strict integer 0|1 suggestion premium and enablement flags.
+Nullable availability premium data remains opaque. Shared PricingPeriod refs in
+availability pricing, shortest_period allOf and suggestion pricing preserve
+optional integer period, optional nullable register/renew/transfer objects, and
+optional string code/display_value/prefix/suffix/value. Currency precision and
+formatting remain exact; null, omission and empty objects remain distinct.
+No current checkout availability or price is promised.
+
+Suggestion domain and premium registration-term maps retain returned keys and
+empty maps. Every row requires pricing, is_premium and nullable
+premium_cost_pricing, retaining the formal contract despite optional-field prose.
+No flag-dependent fields or domain/term semantic correspondence is inferred.
+Metadata is formally open with additionalProperties:true; declared pagination
+fields still require native integers. Store config is explicitly closed with
+additionalProperties:false; only optional store_type is exposed and an empty
+object can mean unconfigured. WHMCS is not a closed enum. is_enabled=0 is a
+successful payload under status 1, while feature denial stays an API error.
+
+Checkout returns a private URL for caller-controlled use. The method does not
+fetch URLs, navigate, register domains, pay or establish ownership. No commercial
+transaction, configuration change, live/API/SSH call or returned-URL fetch ran in
+this implementation lane. Live/store/purchase behavior and source gaps remain
+open under `whm-api-client-8x0.2.68`; delivery is `whm-api-client-8x0.4.26`.
+
+Compared with baseline `a4d31458ec2763fc1b2261adff47b6fa9a79441d`, generated coverage
+adds exactly six operations: 1,183 total (595 UAPI, 588 WHM), 100 groups and 203
+outputs (202 PHP files plus coverage). Old source evidence, annotations and map
+checksum are preserved. The 55 inherited map diagnostics remain visible and
+unwaived. PHP 8.4 offline validation does not substitute for PHP 8.3 CI.
+
+A controller-authorized generator correction preserves explicit boolean
+`additionalProperties:true` beside named properties as an object with mixed
+extra values, using existing TypeSpec, renderer and runtime support. This fixes
+open suggestion metadata while retaining known-field validation, requiredness
+and nullability. False, omission and schema-valued additionalProperties retain
+their earlier lowering and diagnostic behavior. The pinned scan finds this exact
+boolean-true-plus-properties construct only in the new module; inherited
+generated PHP remains byte-identical apart from the additive cached accessor.
+Focused Go RED/GREEN covers that lowering and rendering. Existing engine
+compatibility accepts empty JSON arrays as empty objects/maps where no required
+members prevent it; this change does not alter that shared behavior.

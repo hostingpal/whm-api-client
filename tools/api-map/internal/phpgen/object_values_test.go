@@ -28,3 +28,19 @@ func TestObjectValuesRenderOpenShapeAndExactRuntimeChild(t *testing.T) {
 		t.Fatalf("fieldless open shape %s", got)
 	}
 }
+
+func TestObjectValuesRenderMixedExtrasAlongsideNamedFields(t *testing.T) {
+	spec := effective.TypeSpec{Type: "object", Fields: []effective.Field{
+		{Name: "page", Spec: effective.TypeSpec{Type: "int"}},
+	}, Values: &effective.TypeSpec{Type: "mixed"}}
+	want := "array{\n    page?: int,\n    ...<array-key, mixed>\n}"
+	if got := shape(spec, ""); got != want {
+		t.Fatalf("named field plus mixed extras: got %q want %q", got, want)
+	}
+	literal := specLiteral(spec, "")
+	for _, part := range []string{"'page' => ['type' => 'int']", "'values' => ['type' => 'mixed']"} {
+		if !strings.Contains(literal, part) {
+			t.Fatalf("missing exact named/mixed child %s in %s", part, literal)
+		}
+	}
+}

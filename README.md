@@ -3825,3 +3825,59 @@ historical audit and evidence remain unchanged. Delivery is tracked by `8x0.4.25
 live follow-up `8x0.2.67` remains open. Independent offline fixtures do not establish
 installation/import/login, source resolution, quota behavior, token consumption or
 revocation, translation/health behavior, or deletion/cleanup on a live server.
+
+
+### UAPI DomainRecommendations (2026-11-01)
+
+`uapi()->domainRecommendations()` covers all six pinned functions for the selected
+account: `domainAvailability()`, `domainSuggestions()`, `getStoreConfig()`,
+`isEnabled()`, `purchaseDomain()` and `supportedTlds()`. All require the
+`domain_recommendation` feature. Availability, suggestions, store configuration and
+enablement require cPanel 134; checkout and supported TLDs require cPanel 138.
+Five methods use GET. `purchaseDomain(string $domain, int $period)` uses form POST
+because its selected formal GET is marked `x-readonly=false`, `x-rollback=none`.
+A server accepting only the documented GET can fail until route-specific evidence
+resolves transport. Offline validation does not establish live POST acceptance.
+
+Availability and checkout expect an FQDN including its TLD. Suggestions accept
+free text, normally a base name without a TLD. Optional `page` is one-based;
+omitted `page` and `pageSize` use store defaults. Strings retain their bytes and
+are encoded once; no local IDN, domain, TLD, range or enum normalization occurs.
+Optional null inputs omit; false becomes 0, true becomes 1, and zero and empty
+strings stay supplied. The server caches availability per domain, suggestions by
+search/page/page-size/requested-TLD combination and supported TLDs for up to two
+minutes. Omitted `useCache` retains server default 1; explicit false bypasses its
+cache and may contact the configured store. The pinned suggestion parameters and
+examples contain no TLD argument despite the cache-key prose; none is invented.
+The client adds no cache, fallback, pagination, store lookup, merge or retry.
+
+Availability preserves explicit null without inferring a reason; missing data is
+a mismatch. Its availability, premium and TLD flags are native booleans, while
+suggestion `is_premium` and enablement `is_enabled` are strict integer 0|1 flags.
+Payload `is_enabled=0` can succeed under envelope status 1; account feature denial
+still raises an API error. Inspect response metadata and warnings separately.
+`getStoreConfig()` exposes only allowlisted `store_type`; credentials, URLs and
+future fields are filtered. An empty object can mean an unconfigured store.
+`WHMCS` is a string value, without a closed store-type enum.
+
+Prices remain exact strings, including decimal precision, formatting, whitespace,
+prefixes and suffixes. Null, empty price objects and omitted fields stay distinct;
+no currency parsing, conversion or rounding occurs. Availability's premium object
+is opaque. Suggestions preserve returned dynamic domain and registration-term
+keys and empty maps; metadata permits unknown fields. Every suggestion row
+requires `pricing`, integer `is_premium` and nullable `premium_cost_pricing`, even
+though source prose calls premium details optional. Omission remains a visible
+mismatch until evidence resolves that discrepancy; no flag-dependent fields are
+inferred. Availability and price at actual checkout are not guaranteed.
+
+`purchaseDomain()` returns an optional private checkout URL for caller-controlled
+use. The method does not fetch it, navigate, register a domain, make payment or
+establish ownership. There is no implicit retry or rollback. Treat the returned
+URL and response snapshots as private payload. Implementation and offline tests
+make no commercial transaction or server-store setting change. Live/store
+configuration/purchase behavior and source gaps remain open under
+`whm-api-client-8x0.2.68`; delivery is `whm-api-client-8x0.4.26`.
+
+Current generated coverage is 1,183 operations (595 UAPI, 588 WHM), 100 groups and
+203 generated outputs (202 PHP files plus coverage), adding exactly these six
+operations to WPX baseline `a4d31458ec2763fc1b2261adff47b6fa9a79441d`.
