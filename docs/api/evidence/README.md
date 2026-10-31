@@ -699,3 +699,13 @@ API failures. Status and configuration still work while it is disabled. No servi
 enablement, mutation or repeat capture ran. Both immutable artifacts retain their
 failed/unwaived status under `8x0.2.35`, and the reviewer reports do not expand the
 committed eight-GET catalog or establish login/mail enforcement.
+
+## WHM API tools, 2026-10-31
+
+`2026-10-31-whm-api-tools.json` at `465be19` on `11.138.0.19` records five
+GET observations, all HTTP/API/payload/probe passes. Strict assessment remains
+failed for one masked empty-list unknown field in get_api_pages; no key or schema
+is inferred. Token/function inventories were populated, legacy call rows empty.
+No secret lookup, token/session mutation or URL fetch ran. Follow-up `8x0.2.44`
+remains open. SHA-256:
+`eef3b63351acad16364534ceec676a6ab454f72fb901ded0b72be99e9f3088bc`.

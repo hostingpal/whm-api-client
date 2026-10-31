@@ -1662,3 +1662,14 @@ with selectors omitted. Token metadata's pinned schema has no raw token field;
 dynamic names and ACL keys are masked in structural evidence. It reads no raw-token
 details or private login links and performs no token/session changes or URL fetch.
 Remaining behavior stays under `8x0.2.44`.
+
+
+The API-tools capture at `465be19` on `11.138.0.19` records five
+HTTP/API/payload/probe passes. Strict assessment remains failed for one masked
+empty-list unknown field at `$.*` in `get_api_pages`; its pinned count, entry and
+timestamp fields were absent. This does not establish an unknown key name or a
+replacement row schema. No waiver or compatibility broadening was added. Token
+metadata and API-function inventory were populated; legacy call rows were empty.
+No token/session mutation, raw-token lookup, login link or URL fetch ran.
+`8x0.2.44` retains the discrepancy and unobserved behavior. Artifact SHA-256:
+`eef3b63351acad16364534ceec676a6ab454f72fb901ded0b72be99e9f3088bc`.
