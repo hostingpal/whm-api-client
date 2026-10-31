@@ -30,9 +30,11 @@ use LogicException;
  * - json_body: only for body=json; {php: argument name, required: bool,
  *   routes: 'direct', schema: strict StructuredJsonSchema descriptor}. The body
  *   argument is separate from params, is always sensitive, and is serialized once.
- *   Optional nonnullable roots use null for absence; required nullable roots encode
- *   explicit null. Optional nullable roots fail as unsupported specs. JSON bodies
- *   support WHM and direct UAPI; bridged UAPI fails locally without I/O.
+ *   Execution requires a nonnullable object root and empty params (no URL query).
+ *   WHM body specs must be required so API version routing cannot disappear.
+ *   Direct-UAPI optional bodies use null for absence; [] is a present empty object.
+ *   WHM inserts library-owned api.version:1 first in the root; direct UAPI keeps
+ *   the encoded object unchanged. Bridged UAPI fails locally without I/O.
  * - params: PHP argument name => array{name: wire name, encoding: 'scalar'|
  *   'bool'|'repeat'|'numbered'|'suffix-numbered'|'suffix-numbered-scalar', omit_empty?: true}, in
  *   signature order. Suffix encodings replace terminal * with one-based indices
@@ -53,6 +55,9 @@ use LogicException;
  *   hyphens); index separator/start fields are forbidden. Each nonempty UTF-8
  *   string key without ASCII control bytes is appended literally to that prefix.
  *   Integer keys (including PHP-coerced numeric strings) and non-array inputs fail.
+ *   Optional reject_prefixed_keys: true requires a nonempty map prefix and rejects
+ *   caller keys beginning with that prefix without stripping or rewriting them.
+ *   It is declared only for the two AutoSSL provider maps. Other maps remain literal.
  *   Empty allowed maps emit no dynamic fields; the request still dispatches.
  *   Map PHPDoc is array<string,T> or non-empty-array<string,T>; top-level null
  *   omits optional arguments. Generated collections receive SensitiveParameter
@@ -74,6 +79,11 @@ use LogicException;
  *   optional nullable roots are unsupported. Malformed descriptors fail before I/O.
  * - returns: required key; a type spec (see ShapeValidator for the grammar), or
  *   an explicit null for a void operation.
+ * - rows: optional nonempty string naming a declared nonnullable list of
+ *   nonnullable objects in a nonnullable object result. Requires UAPI unchecked,
+ *   without optional/unwrap. Status 0 with explicit null or a validated empty list
+ *   raises ApiErrorException; missing data/rows or malformed fields mismatch.
+ *   Nonempty valid rows return normally. Status 1 preserves schema optionality.
  * - unwrap: optional string naming a field declared in an object "returns";
  *   that field of the validated object is returned.
  * - optional: optional boolean (only with a non-null "returns"). When true, an

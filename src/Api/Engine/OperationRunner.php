@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient\Api\Engine;
 use Closure;
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Api\RequestBodyFormat;
+use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
@@ -54,6 +55,7 @@ final class OperationRunner
         array $spec,
         #[SensitiveParameter]
         array $arguments,
+        #[SensitiveParameter]
         Closure $dispatch,
     ): mixed {
         SpecChecker::check($spec);
@@ -65,7 +67,6 @@ final class OperationRunner
         $body = null;
         if (OperationSpec::body($spec) === RequestBodyFormat::Json) {
             $descriptor = OperationSpec::jsonBody($spec);
-            self::jsonQueryNames($params, $arguments, isset($spec['module']));
             $name = $descriptor['php'];
             $present = array_key_exists($name, $arguments);
             if (!$present && $descriptor['required']) {
@@ -91,28 +92,6 @@ final class OperationRunner
     }
 
     /**
-     * Reject reserved names before optional null arguments disappear during encoding.
-     *
-     * @param array<mixed> $params
-     * @param array<string, mixed> $arguments
-     */
-    private static function jsonQueryNames(
-        array $params,
-        #[SensitiveParameter] array $arguments,
-        bool $uapi,
-    ): void {
-        $reserved = $uapi ? ['cpanel.user', 'cpanel.module', 'cpanel.function'] : [];
-        foreach ($params as $argument => $param) {
-            if (!is_string($argument) || !is_array($param) || !is_string($param['name'] ?? null)) {
-                throw new LogicException('Invalid JSON query parameter spec.');
-            }
-            if (array_key_exists($argument, $arguments)) {
-                JsonRouting::assertAllowed($param['name'], $reserved);
-            }
-        }
-    }
-
-    /**
      * Validate the payload against the spec, then apply void, optional or unwrap rules.
      *
      * A spec must declare "returns": an explicit null means a void operation,
@@ -120,31 +99,49 @@ final class OperationRunner
      * defect. When a payload is declared, an omitted data member is invalid; a
      * nullable spec accepts only an explicit null. An "optional" spec instead
      * returns null for an omitted or null data member without validating it. Typed
-     * unchecked UAPI operations still require integer 0/1 status before these
+     * unchecked operations still require integer 0/1 status/result before these
      * result rules; an invalid status raises InvalidResponseException with the
      * captured metadata, outside payload mismatch classification. An
      * unwrapped field must be present in the validated object.
      *
+     * An explicit "rows" policy preserves valid row-bearing status-0 batches, but
+     * classifies explicit null or a fully validated object with an empty row list
+     * as ApiErrorException. Missing data or rows and malformed known fields remain
+     * payload mismatches. Status 1 retains the declared field optionality.
+     *
      * The response reaching this point already passed the envelope checks and the
-     * outcome policy, so every payload failure raises PayloadMismatchException:
+     * outcome policy, so other payload failures raise PayloadMismatchException:
      * outcomeConfirmed is true under the flag policy (the operation took effect)
      * and false when the outcome was not checked. Spec defects stay LogicException.
      * Responses can contain or echo secrets; hide them from trace arguments while
      * retaining the explicit unvalidated payload on PayloadMismatchException.
      *
      * @param array<mixed> $spec
-     * @throws InvalidResponseException If a typed unchecked UAPI status is not integer 0 or 1.
+     * @throws ApiErrorException If the opted-in status-0 result is null or has an empty validated row list.
+     * @throws InvalidResponseException If a typed unchecked status/result is not integer 0 or 1.
      * @throws PayloadMismatchException If the payload does not satisfy the spec.
      * @throws LogicException If the spec is malformed.
      */
     public static function result(array $spec, #[SensitiveParameter] ApiResponse $response): mixed
     {
         $returns = self::returns($spec);
-        if (OperationSpec::outcome($spec) === OutcomePolicy::Unchecked && isset($spec['module'])) {
-            $status = $response->metadata->uapiStatus();
+        if (OperationSpec::outcome($spec) === OutcomePolicy::Unchecked) {
+            $uapi = isset($spec['module']);
+            $status = $uapi ? $response->metadata->uapiStatus() : $response->metadata->whmResult();
             if ($status !== 0 && $status !== 1) {
-                throw new InvalidResponseException('Missing or invalid UAPI outcome.', $response->metadata);
+                throw new InvalidResponseException(
+                    $uapi ? 'Missing or invalid UAPI outcome.' : 'Missing or invalid WHM outcome.',
+                    $response->metadata,
+                );
             }
+        }
+        $rows = $spec['rows'] ?? null;
+        $failedRows = is_string($rows) && $response->metadata->uapiStatus() === 0;
+        if ($failedRows && $response->hasData && $response->data === null) {
+            throw new ApiErrorException(
+                'UAPI operation failed; inspect errors() or response metadata.',
+                $response->metadata,
+            );
         }
         if ($returns === null) {
             return null;
@@ -157,7 +154,19 @@ final class OperationRunner
         $confirmed = OperationSpec::outcome($spec) === OutcomePolicy::Flag;
         $read = new PayloadReader($response->metadata, OperationSpec::text($spec, 'function') . ' payload');
         try {
-            return self::validated($spec, $returns, $response, $read);
+            $value = self::validated($spec, $returns, $response, $read);
+            if ($failedRows) {
+                if (!is_array($value) || !array_key_exists($rows, $value)) {
+                    return $read->fail();
+                }
+                if ($value[$rows] === []) {
+                    throw new ApiErrorException(
+                        'UAPI operation failed; inspect errors() or response metadata.',
+                        $response->metadata,
+                    );
+                }
+            }
+            return $value;
         } catch (InvalidResponseException $exception) {
             throw new PayloadMismatchException(
                 $exception->getMessage(),

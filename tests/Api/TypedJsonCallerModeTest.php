@@ -16,7 +16,6 @@ use InvalidArgumentException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\RequestInterface;
 use ReflectionProperty;
 use Stringable;
 use TypeError;
@@ -24,85 +23,36 @@ use TypeError;
 /** Actual generated native signatures, invoked from ordinary weak and strict calling files. */
 final class TypedJsonCallerModeTest extends TestCase
 {
-    public function testWeakScalarBindingPrecedesStrictSerialization(): void
+    public function testInvalidNativeArrayArgumentsFailBeforeEntryInEitherCallerMode(): void
     {
-        [$handle, $http, $group] = self::fixture();
-        foreach (
-            [
-            ['sendFlag', 'false', 'flag', '1'],
-            ['sendBool', 'false', 'bool', 'true'],
-            ['sendInt', '7', 'int', '7'],
-            ['sendString', 17, 'string', '"17"'],
-            ] as [$method, $input, $function, $wire]
-        ) {
-            $http->addResponse(self::success());
-            self::assertSame(7, WeakJsonCaller::call($group, $method, $input));
-            $request = $http->getLastRequest();
-            self::assertInstanceOf(RequestInterface::class, $request);
-            self::assertSame($wire, (string) $request->getBody());
-            self::assertSame('/execute/CallerJson/' . $function, $request->getUri()->getPath());
-            self::assertSame('application/json', $request->getHeaderLine('Content-Type'));
-            self::assertSame('cpanel alpha:fixture-token', $request->getHeaderLine('Authorization'));
-        }
-        self::assertCount(4, $http->getRequests());
-        self::assertNotNull($handle->responseMeta());
-    }
+        foreach ([StrictJsonCaller::class, WeakJsonCaller::class] as $caller) {
+            [$handle, $http, $group] = self::fixture();
+            $http->addResponse(new Response(200, [], '{"status":1,"data":[]}'));
+            $handle->statsManager()->getConfiguration();
+            $before = $handle->responseMeta();
+            self::assertNotNull($before);
+            $stringable = new class implements Stringable {
+                public int $calls = 0;
 
-    public function testStringableConversionRunsBeforeEntryOnlyForWeakCaller(): void
-    {
-        [$handle, $http, $group] = self::fixture();
-        $http->addResponse(self::success());
-        $group->sendInt(1);
-        $before = $handle->responseMeta();
-        self::assertNotNull($before);
-        $input = new class ($handle) implements Stringable {
-            public int $calls = 0;
-            public bool $sawPriorMetadata = false;
-
-            public function __construct(private readonly UapiClient $handle)
-            {
-            }
-
-            public function __toString(): string
-            {
-                $this->calls++;
-                $this->sawPriorMetadata = $this->handle->responseMeta() !== null;
-                return 'converted';
-            }
-        };
-        try {
-            StrictJsonCaller::call($group, 'sendString', $input);
-            self::fail('Strict caller accepted a Stringable root.');
-        } catch (TypeError) {
-            self::assertSame(0, $input->calls);
-            self::assertSame($before, $handle->responseMeta());
-            self::assertCount(1, $http->getRequests());
-        }
-        $http->addResponse(self::success());
-        self::assertSame(7, WeakJsonCaller::call($group, 'sendString', $input));
-        self::assertSame(1, $input->calls);
-        self::assertTrue($input->sawPriorMetadata);
-        self::assertCount(2, $http->getRequests());
-        self::assertSame('"converted"', (string) $http->getRequests()[1]->getBody());
-    }
-
-    public function testStrictCallerRejectsScalarCoercionsBeforeMetadataReset(): void
-    {
-        [$handle, $http, $group] = self::fixture();
-        $http->addResponse(self::success());
-        $group->sendInt(1);
-        $before = $handle->responseMeta();
-        self::assertNotNull($before);
-        foreach (
-            [['sendFlag', 'false'], ['sendBool', 'false'], ['sendInt', '7'], ['sendString', 17]] as [$method, $input]
-        ) {
-            try {
-                StrictJsonCaller::call($group, $method, $input);
-                self::fail('Strict caller accepted a mismatched native root.');
-            } catch (TypeError) {
+                public function __toString(): string
+                {
+                    $this->calls++;
+                    return 'converted';
+                }
+            };
+            foreach ([null, 'false', 7, false, $stringable] as $input) {
+                $caught = null;
+                try {
+                    $caller::call($group, 'sendObject', $input);
+                } catch (TypeError $error) {
+                    $caught = $error;
+                }
+                self::assertNotNull($caught);
+                self::assertSame(TypeError::class, $caught::class);
                 self::assertSame($before, $handle->responseMeta());
                 self::assertCount(1, $http->getRequests());
             }
+            self::assertSame(0, $stringable->calls);
         }
     }
 

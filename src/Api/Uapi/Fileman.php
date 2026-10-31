@@ -766,8 +766,15 @@ final readonly class Fileman
      * Policy: Files must be a nonempty sequential list of Upload values; no path-string coercion, sparse renumbering or
      * per-file requests. Omitted query options preserve server defaults, including overwrite=false. Inspect
      * responseMeta()->uapiStatus() and all per-file results: either accepted status can include files that were not
-     * stored. The required result object is validated under Unchecked; payload mismatches have outcomeConfirmed=false.
-     * Any error can follow stored files; the client provides no retry, rollback, cleanup or ownership inference.
+     * stored. With status 0, explicit null or a validated object with uploads:[] raises ApiErrorException; valid
+     * nonempty rows return normally, including all-file failure. Missing data or uploads and malformed known fields
+     * remain PayloadMismatchException with outcomeConfirmed=false. Status 1 retains the pinned optional fields and
+     * strict payload validation. Any error can follow stored files; the client provides no retry, rollback, cleanup,
+     * atomicity or ownership inference.
+     *
+     * Observed: The upstream error "You must specify at least one file to upload." can mean insufficient disk space:
+     * the form parser may discard every file before Fileman sees them. This was reported by the PR87 reviewer on cPanel
+     * 11.138.0.19; it does not prove a file was stored.
      *
      * Documented: Optional diskinfo byte limits and usage stay decimal strings, including infinity; inode counts stay
      * int|string. Additional human-readable display strings are retained. Absent fields do not mean zero.
