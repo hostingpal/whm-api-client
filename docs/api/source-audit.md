@@ -3274,6 +3274,122 @@ The correction passed 31,127 offline tests / 233,646 assertions plus formatting,
 maximum PHPStan, strict Composer, source/map/generation and full Go tests/vet.
 No settings or resources were changed, so no mutation cleanup was needed.
 
+## WHM backup and account restoration (2026-10-31)
+
+The WHM backup and restoration groups expose 42 methods: 26 in `backups()` and
+all sixteen in `accountRestoration()`. Fourteen explicit source reads use GET;
+28 operations use form POST, including inventory-like backup methods whose pinned
+`x-readonly` value is false. `backup_destination_set` remains excluded under
+`8x0.1.22`: its composed provider-specific form schema is not supported by the
+current generator, and its JSON examples conflict with the formal form content.
+Generic compatible form access does not establish typed destination-update coverage.
+
+Destination creation requires name, type and disabled; provider-specific inputs
+are optional in the PHP signature only where pinned prose makes their requirement
+conditional. Supply the fields required by the selected provider. Credentials,
+private keys, passwords and OAuth secrets remain sensitive. Returned secrets and
+OAuth URLs are payload data; the client does not fetch them. Archive and staging
+paths refer to server-side files, not local uploads.
+
+Omitted settings retain server defaults; false and zero are sent explicitly.
+The backup setter's `keeplocal` prose contradicts the getter's retention meaning;
+the client forwards the flag without inversion. `backupMonthlyDates` accepts
+an integer or a comma-separated string, following the pinned prose and reviewed
+upstream validator; the weekly day remains a single integer. Migration's
+`no_convert` name conflicts with its positive conversion prose; the flag is
+forwarded unchanged. `backup_set_list.backup_set` preserves a list of user/date
+rows. A combined listing can have a null destination legend, and remote `where`
+values may be transport IDs rather than the pinned `remote` label.
+
+The two pkgacct session GETs were observed to create an empty server directory
+before failing for an unknown session ID. Use only IDs returned by
+`startBackgroundPkgacct()`; other input forms were not tested. These observations
+come from [Claude review 5720277974](https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974),
+not the committed GET capture. Remaining coverage stays in `8x0.2.29`.
+
+Backup configuration and strict retention can affect stored archives. Packaging
+and restoration can overwrite account content; restoration may delete its source
+archive when requested. Queue activation acts on queued accounts, while each
+clear method documents the tasks it removes. Restricted restoration carries the
+source's experimental limitations. Session identifiers do not establish completion.
+The client does not retry or roll back these operations. Metadata-only operations,
+including username conflict verification, return void and use API errors for
+failure. Completed queue records preserve nullable counts/warnings, integer result
+codes and string timestamps; omitted fields remain absent.
+
+All 42 methods have offline contract coverage. The fixed live catalog selects WHM
+version, four parameterless backup reads and six restoration status/module reads
+(11 GETs). It excludes destination credentials, OAuth requests, session logs,
+backup creation, account restoration, queue changes, migration and configuration
+writes. Populated variants and all remaining live behavior stay in `8x0.2.29`.
+
+The initial [backup/restoration capture](evidence/2026-10-31-backup-restoration.json)
+at `88e01bd54f1939e4937fd3673f2b174a6353e7ab` on `11.138.0.19` records eleven
+HTTP-200 and successful WHM API observations. Ten payload/probe checks pass;
+`backup_config_get` has three known-field type mismatches and one masked unknown-field observation with integer values. The getter's `backup_weekly_day` is an integer; its original string
+contract is retained alongside that observed variant. Only `check_min_free_space`
+and `prebackup` gain exact quoted-flag acceptance. No other configuration field
+is widened and the unknown field remains untyped and unwaived.
+
+Backup metadata users/domains, archive inventory and every queue collection are
+empty. Restoration module rows are populated. These reads establish no populated
+backup/queue rows, destination behavior, backup creation, restoration, migration,
+queue mutation or configuration-write semantics. All original findings remain in
+`8x0.2.29`; source contradictions are unresolved. Initial SHA-256:
+`4b788b00b69944d305473bd89004e6199914cf2b366ed90676b3313aac32daca`.
+
+The [corrected backup/restoration capture](evidence/2026-10-31-backup-restoration-corrected.json)
+at `a5b6e3a959185702d9e2146dc6323e0c69ec3cdf` on `11.138.0.19` records eleven
+HTTP/API successes and ten payload/probe passes. The weekday integer and
+`check_min_free_space` quoted flag now pass. `prebackup` still fails its strict
+0/1 contract: the artifact classifies it only as numeric-string, which does not
+establish its spelling or a valid flag value. The optional exact quoted-flag
+acceptance does not make this response compatible. No broader numeric coercion,
+new enum value or guessed sentinel is added. That capture also retains one masked unknown-field observation with integer
+values; wildcard masking establishes neither its name nor field count. Strict status stays failed with no acknowledgments.
+
+Both artifacts remain immutable. Empty inventories/queues establish no populated
+row schemas; the module summary is populated. No mutation, backup creation,
+restoration or configuration behavior is established. Follow-up `8x0.2.29` retains
+the historical `prebackup` mismatch, masked unknown-field observation and
+remaining source/live gaps. Corrected SHA-256:
+`f910fcd3377c881e07d496fd727bec622016bd8df33552cfe381552752acde47`.
+
+
+### Backup/restoration review corrections (2026-10-31)
+
+[Claude review 5720277974](https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974)
+of `712e4b611d79ee065b96010acef56f262cd388fe` supplies new observations on
+`11.138.0.19` and separately identified upstream source evidence. The getter
+preserves the live exact `prebackup` string `-1` and the source-backed empty
+string alongside documented flags; other strings and integer -1 remain invalid.
+The actual optional integer flag `backupsuspendedaccts` is added while preserving
+the documented `backupsuspendedaccounts` spelling independently. Neither correction
+identifies a historical masked wildcard or changes an old artifact's assessment.
+
+Source inspection and pinned row items establish the `backup_set_list` row list;
+the two-row regression is offline evidence, not populated live coverage. Combined
+listings preserve null destination legends. The monthly-date setter accepts
+comma-delimited strings through a narrow evidence-gated scalar parameter override;
+weekly day remains integer. Pinned examples supply optional `upload_system_backup`
+and completed-task `status_info.status`/`statusmsg` fields. No server-wide setting
+write establishes these corrections.
+
+The reviewer observed pkgacct unknown-ID GETs creating empty directories before
+API errors and removed those directories. Both methods now warn to use only IDs
+returned by `startBackgroundPkgacct()`, and no such unknown-ID probes were added.
+Unknown-user toggle success and idle skip-status API failure are documented as
+bounded observations. Remote combined-list `where` values can be transport IDs.
+
+The reviewer separately exercised disposable-account packaging and local restore,
+then removed the account, archive and pkgacct directories and confirmed an empty
+queue. Upstream transfer-session history under `/var/cpanel/transfer_sessions/`
+and its `whmxfer.sqlite` row remain; this is not a claim of complete server cleanup.
+No new live call ran during these corrections. Server-wide writes, populated
+real-backup queue operations and unchecked transport/OAuth operations remain
+unobserved. The original two GET artifacts stay failed, immutable and unwaived;
+follow-up `8x0.2.29` retains remaining committed evidence and source/live gaps.
+
 ## WHM IP address administration
 
 `whm()->ipAddresses()` exposes all sixteen pinned IPv4, IPv6 and NAT functions.

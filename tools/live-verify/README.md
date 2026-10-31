@@ -1096,6 +1096,37 @@ form is established for those seven. No mutation or token retrieval ran. Earlier
 EA4 failures and masked findings remain immutable and unwaived under `8x0.2.28`.
 Reviewer mutation/lifecycle reports remain separate from this committed read capture.
 
+## WHM backup and restoration inventory
+
+`backup-restoration.php` binds `backup-restoration-v1` to eleven WHM GETs: version,
+backup configuration, users/domains with backup metadata, users with backup metadata,
+archive inventory, restoration module summary, queue-active status, active/completed/
+pending queue lists and combined queue state. Every request is parameterless apart
+from `api.version=1`, and uses the existing exact URI/method/body guard.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/backup-restoration.php \
+  --output=docs/api/evidence/backup-restoration-new.json
+```
+
+The shared command requires committed inputs and both test tokens, although this
+catalog sends only WHM requests. Structural-only captures never persist account,
+domain, archive path, log or configuration values. Dynamic keys are wildcarded.
+No destination/OAuth credential read, backup creation, restoration, queue mutation,
+migration, archive deletion or configuration write occurs. Other readonly functions
+requiring identifiers are excluded without guessing identifiers. Strict assessment
+accepts no discrepancies or historical acknowledgments; failures remain failures.
+Follow-up `8x0.2.29` retains all unobserved operations and variants.
+
+The immutable WHM backup/restoration capture at `a5b6e3a` on `11.138.0.19`
+records 11 HTTP/API successes and ten payload/probe passes. Its `prebackup`
+validation failure and one masked unknown-field observation with integer values
+remain strict failures, unwaived under `8x0.2.29`. A wildcard identifies neither
+the underlying name nor field count. Backup and queue inventories are empty,
+module rows populated, and no mutation ran. Later reviewer observations and
+contract corrections are separate from that historical capture.
+
 ## WHM IP address inventory
 
 ```sh

@@ -64,7 +64,6 @@ func TestBuildRejectsIncompatibleParameterTypeCorrections(t *testing.T) {
 		schema  map[string]any
 		setting string
 	}{
-		{"integer", map[string]any{"type": "integer"}, `{"type":"string|int"}`},
 		{"number", map[string]any{"type": "number"}, `{"type":"string|int"}`},
 		{"boolean", map[string]any{"type": "boolean"}, `{"type":"string|int"}`},
 		{"flag", map[string]any{"type": "integer", "enum": []any{0, 1}}, `{"type":"string|int"}`},
@@ -73,6 +72,10 @@ func TestBuildRejectsIncompatibleParameterTypeCorrections(t *testing.T) {
 		{"object scalar", map[string]any{"type": "object"}, `{"type":"string|int","encoding":"scalar"}`},
 		{"repeat", map[string]any{"type": "string"}, `{"type":"string|int","encoding":"repeat"}`},
 		{"numbered", map[string]any{"type": "string"}, `{"type":"string|int","encoding":"numbered"}`},
+		{"integer repeat", map[string]any{"type": "integer"}, `{"type":"string|int","encoding":"repeat"}`},
+		{"integer numbered", map[string]any{"type": "integer"}, `{"type":"string|int","encoding":"numbered"}`},
+		{"integer bool encoding", map[string]any{"type": "integer"}, `{"type":"string|int","encoding":"bool"}`},
+		{"integer omitted", map[string]any{"type": "integer"}, `{"type":"string|int","omit":true}`},
 		{"bool encoding", map[string]any{"type": "string"}, `{"type":"string|int","encoding":"bool"}`},
 		{"unsupported", map[string]any{"type": "string"}, `{"type":"string|float"}`},
 		{"omitted", map[string]any{"type": "string"}, `{"type":"string|int","omit":true}`},
@@ -88,6 +91,59 @@ func TestBuildRejectsIncompatibleParameterTypeCorrections(t *testing.T) {
 			_, problems := buildProblems(t, m, set)
 			if !strings.Contains(problems, "parameter candidate") || !strings.Contains(problems, "type") {
 				t.Fatalf("incompatible type correction accepted: %s", problems)
+			}
+		})
+	}
+}
+
+func TestBuildCorrectsOnlySelectedScalarIntegerParameter(t *testing.T) {
+	for _, required := range []bool{false, true} {
+		name := "optional"
+		if required {
+			name = "required"
+		}
+		t.Run(name, func(t *testing.T) {
+			m := fixtureMap(t)
+			addQueryParameter(t, m, "whm1:createacct", "candidate", map[string]any{"type": "integer"})
+			addQueryParameter(t, m, "whm1:createacct", "sibling", map[string]any{"type": "integer"})
+			for _, op := range m.Operations {
+				if op.ID == "whm1:createacct" {
+					for _, p := range op.Variants[0].Parameters {
+						if p.Name == "candidate" {
+							p.Definition["required"] = required
+						}
+					}
+				}
+			}
+			set := fixtureOverlay("listed")
+			op := set.Files[1].Operations["whm1:createacct"]
+			op.Params = map[string]overlay.Param{"candidate": parameterCorrection(t,
+				`{"type":"string|int","description":"One date or a comma-delimited list. Omission retains the default."}`)}
+			op.Evidence = evidence()
+			set.Files[1].Operations["whm1:createacct"] = op
+			result, problems := buildProblems(t, m, set)
+			if problems != "" {
+				t.Fatal(problems)
+			}
+			found := false
+			for _, p := range groupByClass(t, result, "Accounts").Operations[0].Params {
+				switch p.Wire {
+				case "candidate":
+					found = true
+					if p.PHPType != "string|int" || p.DocType != "string|int" || p.Encoding != "scalar" || p.Required != required || p.Sensitive {
+						t.Fatalf("incorrect integer correction contract: %+v", p)
+					}
+					if p.Description != "One date or a comma-delimited list. Omission retains the default." {
+						t.Fatalf("replacement lost text: %q", p.Description)
+					}
+				case "sibling":
+					if p.PHPType != "int" || p.DocType != "int" || p.Encoding != "scalar" || p.Required {
+						t.Fatalf("unselected integer contract changed: %+v", p)
+					}
+				}
+			}
+			if !found {
+				t.Fatal("corrected parameter missing")
 			}
 		})
 	}
