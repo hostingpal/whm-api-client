@@ -365,3 +365,16 @@ rows are populated; the enhancement list is empty. This read-only capture establ
 no contact, locale, theme, preference or token mutation behavior. Follow-up `8x0.2.28`
 retains all failures, unknown fields and unobserved variants. Original SHA-256:
 `e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd`.
+
+The [corrected account-environment capture](2026-10-31-account-environment-corrected.json)
+at `c85a39ef45f108bfef0264eb3a2e01c5167761a6` on `11.138.0.19` records 27 HTTP
+200 GETs. Twenty-four API/payload/probe checks pass, with no known-field type
+mismatches. Both PHP-recommendation API calls and the general recommendation
+bridge call still fail. Five masked unknown-field observations remain: notification
+preferences on both routes, direct general recommendations and server variables on
+both routes. Strict status remains failed with no waivers or acknowledgments.
+Eleven new functions pass on both routes; general recommendations pass directly.
+The enhancement list is empty and the user read is domain-only. No mutation,
+secret retrieval or broader user-field behavior is established. Follow-up `8x0.2.28`
+remains open. Original evidence is unchanged. Corrected SHA-256:
+`654442a1e360c28534c4b80c320ffdde2ca0d96ffdd87f8342fd1b6b47a3eb78`.

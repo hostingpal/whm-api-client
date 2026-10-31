@@ -1035,3 +1035,10 @@ Beads block to `CLAUDE.md` (do not run `bd setup claude` to re-add one).
 Preserve the generated Beads blocks and keep project-specific additions outside
 them. If `bd setup` regenerates a Beads block with profile-neutral wording,
 re-apply the team-maintainer wording; the Git Workflow section is authoritative.
+
+The corrected account-environment capture at `c85a39e` on `11.138.0.19` passes
+24 of 27 GET API/payload/probe checks, with zero known-field type mismatches.
+Two EA4 API failures, one EA4 bridge failure and five masked unknown-field
+observations keep strict status failed and remain unwaived under `8x0.2.28`.
+Eleven functions pass on both routes and general EA4 recommendations pass directly.
+No mutation or secret retrieval ran; user information remains domain-only.

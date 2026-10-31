@@ -1240,3 +1240,10 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+The corrected account-environment capture at `c85a39e` on `11.138.0.19` passes
+24 of 27 GET API/payload/probe checks, with zero known-field type mismatches.
+Two EA4 API failures, one EA4 bridge failure and five masked unknown-field
+observations keep strict status failed and remain unwaived under `8x0.2.28`.
+Eleven functions pass on both routes and general EA4 recommendations pass directly.
+No mutation or secret retrieval ran; user information remains domain-only.
