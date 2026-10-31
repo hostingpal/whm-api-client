@@ -97,11 +97,13 @@ func indexContains(base string, start int, name string) bool {
 func (b *builder) collectionOverlaps(id string, params []Param) {
 	for i, p := range params {
 		base, start, indexed := indexedBase(p)
-		if !indexed || p.Collection == nil {
+		if !indexed {
 			continue
 		}
 		for j, other := range params {
-			if i == j {
+			// Legacy indexed families must also be checked against new repeats.
+			// Leave comparisons between two legacy-only parameters unchanged.
+			if i == j || (p.Collection == nil && other.Collection == nil) {
 				continue
 			}
 			otherBase, _, otherIndexed := indexedBase(other)

@@ -176,3 +176,42 @@ func TestCollectionRequiresMetadataEvenForDirectBuilderCall(t *testing.T) {
 		t.Fatal("incomplete descriptors accepted by effective builder")
 	}
 }
+
+func TestCollectionRejectsTypedRepeatLegacyNumberedOverlapInBothOrders(t *testing.T) {
+	for _, reverse := range []bool{false, true} {
+		name := "legacy first"
+		if reverse {
+			name = "collection first"
+		}
+		t.Run(name, func(t *testing.T) {
+			m := fixtureMap(t)
+			addQueryParameter(t, m, "whm1:createacct", "username-1", map[string]any{"type": "integer"})
+			for _, sourceOp := range m.Operations {
+				if sourceOp.ID != "whm1:createacct" {
+					continue
+				}
+				params := sourceOp.Variants[0].Parameters
+				// Both optional arguments can appear in either signature order.
+				params[0].Definition["required"] = false
+				params[len(params)-1].Locator = params[0].Locator
+				pointer := "/paths/~1createacct/get/parameters/3"
+				params[len(params)-1].Locator.Pointer = &pointer
+			}
+			set := fixtureOverlay("listed")
+			var op overlay.Operation
+			raw := `{"name":"createAccount","params":{"username":{"encoding":"numbered"},"username-1":{"php":"remove","collection":{"kind":"repeat","item_type":"int","allow_scalar":false,"empty":"reject"}}},"evidence":[{"kind":"doc","version":"synthetic fixture only","date":"2026-10-31","note":"Fixture only: typed repeat overlaps legacy numbered expansion","source_sha256":"y","pointer":"/paths/~1createacct/get/parameters/3"}]}`
+			if err := json.Unmarshal([]byte(raw), &op); err != nil {
+				t.Fatal(err)
+			}
+			op.Order = []string{"username", "username-1"}
+			if reverse {
+				op.Order = []string{"username-1", "username"}
+			}
+			set.Files[1].Operations["whm1:createacct"] = op
+			_, problems := buildProblems(t, m, set)
+			if !strings.Contains(problems, "overlapping") {
+				t.Fatalf("new typed repeat overlapping legacy numbered family accepted; problems=%q", problems)
+			}
+		})
+	}
+}
