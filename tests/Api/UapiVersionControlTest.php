@@ -80,6 +80,10 @@ final class UapiVersionControlTest extends TestCase
             // The null-only enum has no type: the effective contract remains unspecified, not invented as an object.
             ['VersionControl/create', '{"last_update":{"future":[1,null]}}',
                 ['last_update' => ['future' => [1, null]]]],
+            ['VersionControl/create', '{"last_update":{"date":1730419200}}',
+                ['last_update' => ['date' => 1730419200]]],
+            ['VersionControl/create', '{"last_update":{"date":"1730419200"}}',
+                ['last_update' => ['date' => '1730419200']]],
             ['VersionControl/create', '{"available_branches":["main",""],"branch":"","clone_urls":'
                 . '{"read_only":[],"read_write":["ssh://user@example.test/repo"]},"last_update":null,'
                 . '"name":"","repository_root":"/home/exampleuser/repo","source_repository":'
@@ -96,6 +100,11 @@ final class UapiVersionControlTest extends TestCase
             ['VersionControl/retrieve', '[]', []],
             ['VersionControl/retrieve', '[{}, {"available_branches":null,"branch":null,"last_update":null}]',
                 [[], ['available_branches' => null, 'branch' => null, 'last_update' => null]]],
+            ['VersionControl/retrieve', '[{"deployable":"0","last_deployment":null,"last_update":null},'
+                . '{"deployable":"1","last_update":{"date":"1730419200"}}]', [
+                    ['deployable' => 0, 'last_deployment' => null, 'last_update' => null],
+                    ['deployable' => 1, 'last_update' => ['date' => 1730419200]],
+                ]],
             ['VersionControl/retrieve', '[{"available_branches":[],"branch":"main","clone_urls":'
                 . '{"read_only":["https://example.test/repo"],"read_write":[]},"deployable":0,'
                 . '"last_deployment":{"deployment_date":0,"repository_state":{"author":"A",'
@@ -116,9 +125,14 @@ final class UapiVersionControlTest extends TestCase
                         'id' => 'task', 'sse_url' => '/sse/task', 'subsystem' => 'VersionControl']], 'type' => 'git',
                 ]]],
             ['VersionControl/update', '{}', []],
-            ['VersionControl/update', '{"available_branches":[null,"main"],"branch":null,"deployable":1,'
-                . '"last_deployment":null,"last_update":null}', ['available_branches' => [null, 'main'],
+            ['VersionControl/update', '{"available_branches":null,"branch":null,"deployable":1,'
+                . '"last_deployment":null,"last_update":null}', ['available_branches' => null,
                     'branch' => null, 'deployable' => 1, 'last_deployment' => null, 'last_update' => null]],
+            ['VersionControl/update', '{"available_branches":["main",""],"deployable":"0",'
+                . '"last_update":{"date":"0"}}',
+                ['available_branches' => ['main', ''], 'deployable' => 0, 'last_update' => ['date' => 0]]],
+            ['VersionControl/update', '{"deployable":"1","last_update":{"date":"1730419200"}}',
+                ['deployable' => 1, 'last_update' => ['date' => 1730419200]]],
             ['VersionControl/update', '{"available_branches":[],"branch":"main","clone_urls":{"read_only":[], '
                 . '"read_write":[]},"deployable":0,"last_deployment":{"deployment_date":0,"repository_state":'
                 . '{"author":"A","date":0,"identifier":"abc","message":""}},"last_update":{"author":"B",'
@@ -138,6 +152,9 @@ final class UapiVersionControlTest extends TestCase
                         'id' => 'task', 'subsystem' => 'VersionControl']], 'type' => 'git',
                 ]],
             ['VersionControlDeployment/create', '{}', []],
+            ['VersionControlDeployment/create', 'null', null],
+            ['VersionControlDeployment/create', '{"deploy_id":13,"timestamps":{"queued":1730419200.125}}',
+                ['deploy_id' => 13, 'timestamps' => ['queued' => 1730419200.125]]],
             ['VersionControlDeployment/create', '{"deploy_id":"0","log_path":"","repository_root":"/repo",'
                 . '"sse_url":"/sse/task","task_id":"task","timestamps":{"queued":"0.000"}}', [
                     'deploy_id' => '0', 'log_path' => '', 'repository_root' => '/repo', 'sse_url' => '/sse/task',
@@ -145,6 +162,12 @@ final class UapiVersionControlTest extends TestCase
                 ]],
             ['VersionControlDeployment/retrieve', '[]', []],
             ['VersionControlDeployment/retrieve', '[{}]', [[]]],
+            ['VersionControlDeployment/retrieve', '[{"deploy_id":13,"repository_state":{"date":1730419200},'
+                . '"timestamps":{"active":1730419200.25,"queued":1730419200.125,"succeeded":1730419200.5}}]', [[
+                    'deploy_id' => 13, 'repository_state' => ['date' => 1730419200],
+                    'timestamps' => ['active' => 1730419200.25, 'queued' => 1730419200.125,
+                        'succeeded' => 1730419200.5],
+                ]]],
             ['VersionControlDeployment/retrieve', '[{"deploy_id":0,"log_path":"","repository_root":"/repo",'
                 . '"repository_state":{"author":"A","branch":"main","date":0,"identifier":"abc",'
                 . '"message":""},"sse_url":"/sse/task","task_id":"task","timestamps":{"active":"0.1",'
@@ -241,7 +264,7 @@ final class UapiVersionControlTest extends TestCase
             foreach ([null, '0', 'false', '"wrong"', '[null]', '[7]', '[false]'] as $payload) {
                 $cases[] = [$operation, $payload];
             }
-            if (!str_ends_with($operation, '/delete')) {
+            if (!str_ends_with($operation, '/delete') && $operation !== 'VersionControlDeployment/create') {
                 $cases[] = [$operation, 'null'];
             }
             if (str_ends_with($operation, '/retrieve')) {
@@ -261,7 +284,7 @@ final class UapiVersionControlTest extends TestCase
                 'source_repository' => ['null', 'false', '[1]'],
                 'source_repository.remote_name' => ['null', '1', '[]'],
                 'source_repository.url' => ['null', '1', '[]'],
-                'available_branches' => ['false', '{}', '[1]'],
+                'available_branches' => ['false', '{}', '[1]', '[null]'],
                 'tasks' => ['null', '{}', '[null]', '[1]'],
                 'tasks[].action' => ['null', '1', '[]'],
                 'tasks[].args' => ['null', 'false', '[1]'],
@@ -272,26 +295,24 @@ final class UapiVersionControlTest extends TestCase
             ];
             if ($function !== 'update') {
                 $fields['tasks[].sse_url'] = ['null', '1', '[]'];
-                $fields['available_branches'][] = '[null]';
             }
-            if ($function !== 'retrieve') {
+            if ($function === 'create') {
                 $fields['available_branches'][] = 'null';
             }
             if ($function !== 'create') {
-                $fields['deployable'] = ['null', '"0"', '2', 'false', '0.0'];
+                $fields['deployable'] = ['null', '"00"', '"2"', '"1.0"', '2', 'false', '0.0'];
                 $fields['last_update'] = ['1', 'false', '[1]'];
                 $fields['last_deployment'] = ['1', 'false', '[1]'];
                 foreach (['last_update', 'last_deployment.repository_state'] as $prefix) {
                     foreach (['author', 'identifier', 'message'] as $field) {
                         $fields[$prefix . '.' . $field] = ['null', '1', '[]'];
                     }
-                    $fields[$prefix . '.date'] = ['null', '"0"', 'false', '1.5'];
+                    $fields[$prefix . '.date'] = $prefix === 'last_update'
+                        ? ['null', '"01"', '"1.5"', '"1e2"', '"9223372036854775808"', 'false', '1.5']
+                        : ['null', '"0"', 'false', '1.5'];
                 }
                 $fields['last_deployment.deployment_date'] = ['null', '"0"', 'false', '1.5'];
                 $fields['last_deployment.repository_state'] = ['null', '1', '[1]'];
-                if ($function === 'retrieve') {
-                    $fields['last_deployment'][] = 'null';
-                }
             }
             foreach ($fields as $path => $values) {
                 foreach ($values as $value) {
@@ -303,7 +324,8 @@ final class UapiVersionControlTest extends TestCase
         }
         foreach (['create', 'retrieve'] as $function) {
             $fields = [
-                'deploy_id' => $function === 'create' ? ['null', '0', 'false', '[]'] : ['null', '"0"', 'false', '1.5'],
+                'deploy_id' => $function === 'create'
+                    ? ['null', '1.5', 'false', '[]'] : ['null', '"0"', 'false', '1.5'],
                 'timestamps' => ['null', '1', '[1]'],
             ];
             foreach (['log_path', 'repository_root', 'sse_url', 'task_id'] as $field) {
@@ -311,7 +333,10 @@ final class UapiVersionControlTest extends TestCase
             }
             $timestamps = $function === 'create' ? ['queued'] : ['active', 'canceled', 'failed', 'queued', 'succeeded'];
             foreach ($timestamps as $field) {
-                $fields['timestamps.' . $field] = ['null', '0', 'false', '[]'];
+                $fields['timestamps.' . $field] = ['null', 'false', '[]', '{}'];
+                if (in_array($field, ['canceled', 'failed'], true)) {
+                    $fields['timestamps.' . $field][] = '0';
+                }
             }
             if ($function === 'retrieve') {
                 $fields['repository_state'] = ['null', '1', '[1]'];
@@ -333,6 +358,47 @@ final class UapiVersionControlTest extends TestCase
                 yield "$route $operation $index" => [$route, $operation, $payload];
             }
         }
+    }
+
+    #[DataProvider('routes')]
+    public function testRetrievedIntegerDeploymentIdCanBeDeletedUnderStrictTypes(string $route): void
+    {
+        [$client, $http] = self::client($route);
+        $deployments = $client->uapi('exampleuser')->versionControlDeployment();
+        $http->addResponse(new Response(200, [], self::envelope(
+            $route,
+            '[{"deploy_id":13,"task_id":"different-task-id"}]',
+        )));
+        $rows = $deployments->retrieve();
+        self::assertSame([['deploy_id' => 13, 'task_id' => 'different-task-id']], $rows);
+        $http->addResponse(new Response(200, [], self::envelope($route, 'null')));
+        self::assertNull($deployments->delete($rows[0]['deploy_id']));
+        self::assertRequest($http, $route, 'VersionControlDeployment/delete', 'deploy_id=13');
+        self::assertCount(2, $http->getRequests());
+    }
+
+    #[DataProvider('routes')]
+    public function testCreatedDeploymentIdsRemainUsableAsIntegersAndDocumentedStrings(string $route): void
+    {
+        [$client, $http] = self::client($route);
+        $deployments = $client->uapi('exampleuser')->versionControlDeployment();
+        foreach (['{"deploy_id":13}', '{"deploy_id":"0013"}'] as $payload) {
+            $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+            $created = $deployments->create('/repo');
+            self::assertNotNull($created);
+            self::assertArrayHasKey('deploy_id', $created);
+            $deployId = $created['deploy_id'] ?? null;
+            self::assertNotNull($deployId);
+            $http->addResponse(new Response(200, [], self::envelope($route, 'null')));
+            self::assertNull($deployments->delete($deployId));
+            self::assertRequest(
+                $http,
+                $route,
+                'VersionControlDeployment/delete',
+                $payload === '{"deploy_id":13}' ? 'deploy_id=13' : 'deploy_id=0013',
+            );
+        }
+        self::assertCount(4, $http->getRequests());
     }
 
     #[DataProvider('operations')]

@@ -62,7 +62,7 @@ use SensitiveParameter;
  *             identifier?: string,
  *             message?: string,
  *         },
- *     },
+ *     }|null,
  *     last_update?: array{
  *         author?: string,
  *         date?: int,
@@ -88,7 +88,7 @@ use SensitiveParameter;
  *     type?: string,
  * }>
  * @phpstan-type UpdateResult array{
- *     available_branches?: list<string|null>,
+ *     available_branches?: list<string>|null,
  *     branch?: string|null,
  *     clone_urls?: array{
  *         read_only?: list<string>,
@@ -163,7 +163,8 @@ final readonly class VersionControl
      * Documented: The response fields are optional. branch may be null while cloning or when no local branches exist;
      * available_branches is a non-null list here. The source last_update declares a null-only enum without a type; the
      * current effective contract remains mixed and does not enforce that enum. Do not infer a commit object or
-     * successful clone completion from it.
+     * successful clone completion from it. If this opaque value contains a date, its original integer or string
+     * representation remains unchanged; no date normalization or stronger object schema is inferred.
      *
      * Documented: source_repository and tasks are returned only for cloning. Task IDs and SSE URLs are returned data,
      * not evidence of completion; this call does not follow SSE URLs or poll tasks. Clone URL lists can be empty
@@ -219,6 +220,10 @@ final readonly class VersionControl
      * absent data member is a payload mismatch. Existing empty-object compatibility also accepts an empty JSON list,
      * but not a nonempty list.
      *
+     * Observed: The reviewer reported that delete removed the repository registration and left its directory on both
+     * routes. That observation conflicts with the pinned warning that directory contents are permanently deleted;
+     * retain the documented destructive-operation precaution and do not rely on directory preservation.
+     *
      * API-map identity: uapi:VersionControl/delete#GET (wire name delete).
      *
      * @param string $repositoryRoot The absolute directory path in the user's `home` directory containing the
@@ -252,13 +257,17 @@ final readonly class VersionControl
      * cPanel-controlled-directory restrictions follow the pinned description.
      *
      * Documented: All row fields are optional. available_branches may be null for a bare repository, and branch and
-     * last_update may be null. Empty lists, omitted fields and explicit null remain distinct. deployable is the integer
-     * 0 or 1; it describes repository deployability rather than task completion. last_deployment is optional but its
-     * pinned schema is not nullable here.
+     * last_update may be null. Empty lists, omitted fields and explicit null remain distinct. deployable is returned as
+     * integer 0 or 1 and describes repository deployability rather than task completion.
      *
      * Documented: Commit dates and deployment dates are integer Unix timestamps. Tasks may describe create or deploy
      * actions and include optional SSE URLs. These identifiers and URLs are payload data; no polling, deployment or URL
      * fetching is performed. The formal row schema governs nesting despite inconsistent nesting in the pinned examples.
+     *
+     * Observed: Reviewer observations through both routes found last_deployment=null before a first deployment, quoted
+     * 0/1 deployable flags and digit strings for last_update.date. Preserve the null deployment distinctly from
+     * omission; normalize only exact quoted flags to 0|1 and canonical in-range integer date strings to int. Other
+     * commit/deployment date contracts remain unchanged.
      *
      * API-map identity: uapi:VersionControl/retrieve#GET (wire name retrieve).
      *
@@ -296,10 +305,16 @@ final readonly class VersionControl
      * encoding step. Existing scalar encoding has a string|int native boundary; integer acceptance does not establish
      * valid JSON-object semantics. Treat the argument as sensitive because source data can contain credentials.
      *
-     * Documented: All response fields are optional. branch, last_update and last_deployment may be null. Unlike
-     * retrieve, available_branches is not nullable but its string items may be null in this operation. The task schema
-     * has no sse_url field here; do not infer it from create or retrieve. Task IDs and successful API status do not
-     * prove pull or deployment completion.
+     * Documented: All response fields are optional. branch, last_update and last_deployment may be null.
+     * available_branches may be null for a bare repository; otherwise it is a list of non-null strings. The pinned
+     * prose places nullability on the list despite the misplaced items.nullable schema marker. The task schema has no
+     * sse_url field here; do not infer it from create or retrieve. Task IDs and successful API status do not prove pull
+     * or deployment completion.
+     *
+     * Observed: The reviewed repository-field compatibility seen in retrieve also applies to update's identically
+     * documented deployable and last_update.date fields: exact quoted 0/1 flags normalize to integer flags, and
+     * canonical in-range integer date strings normalize to int. This is a compatibility inference from retrieve; the
+     * review reports update success on both routes without separate field-level observations.
      *
      * API-map identity: uapi:VersionControl/update#GET (wire name update).
      *

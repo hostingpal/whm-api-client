@@ -19,7 +19,15 @@
         },
         {
           "kind": "documented",
-          "text": "The response fields are optional. deploy_id is a string here, while retrieve returns integer deploy_id. timestamps.queued is a string and preserves its fractional timestamp spelling. Task IDs, log paths and SSE URLs are payload data; request success does not establish deployment completion and the client does not follow or poll them."
+          "text": "The response fields are optional. Task IDs, log paths and SSE URLs are payload data; request success does not establish deployment completion and the client does not follow or poll them."
+        },
+        {
+          "kind": "observed",
+          "text": "The reviewer observed integer deploy_id and a floating-point queued timestamp after a deployment was queued. Preserve the documented string alternatives unchanged and accept integer identifiers and finite numeric queued timestamps without coercion. A payload mismatch can occur after queuing; do not retry it as though nothing happened."
+        },
+        {
+          "kind": "observed",
+          "text": "For a non-deployable repository the reviewer observed status 1 with explicit null data and no deployment queued. This result returns null. An absent data member remains a payload mismatch, and a non-null task result still does not establish deployment completion."
         }
       ],
       "evidence": [
@@ -28,8 +36,97 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /VersionControlDeployment/create GET variant declares x-readonly=false and x-rollback=none. Preserve that source classification and use form POST. The complete pinned parameters and data schema are retained; parameter content application/json describes serialized parameter text, not a JSON request body."
+        },
+        {
+          "kind": "live",
+          "version": "not recorded in PR40 review 5720064601",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. Deployment create on a deployable repository returned integer deploy_id and floating-point timestamps.queued after queuing; on a non-deployable repository it returned status 1 with explicit null data and nothing queued."
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "nullable": true,
+            "fields": {
+              "deploy_id": {
+                "type": "string"
+              },
+              "log_path": {
+                "type": "string"
+              },
+              "repository_root": {
+                "type": "string"
+              },
+              "sse_url": {
+                "type": "string"
+              },
+              "task_id": {
+                "type": "string"
+              },
+              "timestamps": {
+                "type": "object",
+                "fields": {
+                  "queued": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR40 review 5720064601",
+              "date": "2026-10-31",
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. create POST on a non-deployable repository returned status 1 with data:null and nothing queued. Make only the existing result object nullable; preserve its optional fields and continue rejecting absent data."
+            }
+          ]
+        },
+        "deploy_id": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "int"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR40 review 5720064601",
+              "date": "2026-10-31",
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. create POST returned an integer deploy_id, unlike the pinned string field. Retain the documented string alternative unchanged and accept an integer; preserve optionality and reject null, boolean and fractional IDs. No new identifier format or range is inferred."
+            }
+          ]
+        },
+        "timestamps.queued": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR40 review 5720064601",
+              "date": "2026-10-31",
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. create POST returned a floating-point queued timestamp after queuing the deployment. The pinned string alternative is retained verbatim, including fractional spelling; finite JSON numbers preserve their int/float value without a string/float conversion. Optionality and null rejection stay unchanged."
+            }
+          ]
+        }
+      }
     },
     "uapi:VersionControlDeployment/delete": {
       "name": "delete",
@@ -41,7 +138,7 @@
         },
         {
           "kind": "documented",
-          "text": "Deletes the deployment task identified by the supplied deployId string. This operation is distinct from deleting a repository; it does not claim to undo a deployment. Empty strings and the string 0 are forwarded unchanged."
+          "text": "Deletes the deployment task identified by deploy_id returned by create() or retrieve(), not task_id. This operation is distinct from deleting a repository and does not undo a deployment. Integer IDs and documented string IDs are forwarded as scalar form values; strings, including empty strings and the string 0, remain unchanged."
         },
         {
           "kind": "documented",
@@ -54,8 +151,20 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /VersionControlDeployment/delete GET variant declares x-readonly=false and x-rollback=none. Preserve that source classification and use form POST. The complete pinned parameters and data schema are retained; parameter content application/json describes serialized parameter text, not a JSON request body."
+        },
+        {
+          "kind": "live",
+          "version": "not recorded in PR40 review 5720064601",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. The reviewer reports delete POST succeeded and returned null, and identifies a strict-types interoperability failure because retrieve returns integer deploy_id while delete's pinned parameter is string. Widen only this scalar parameter to string|int so returned IDs can be chained directly. The pinned parameter prose incorrectly calls deploy_id a Task Queue task ID, but create/retrieve expose separate deploy_id and task_id fields. Correct the parameter description to identify deploy_id; do not substitute task_id or change encoding."
         }
-      ]
+      ],
+      "params": {
+        "deploy_id": {
+          "type": "string|int",
+          "description": "The deployment ID (deploy_id) returned by create() or retrieve(), not the Task Queue task_id."
+        }
+      }
     },
     "uapi:VersionControlDeployment/retrieve": {
       "name": "retrieve",
@@ -71,11 +180,15 @@
         },
         {
           "kind": "documented",
-          "text": "All row fields are optional. deploy_id is an integer here, unlike the string returned by create. repository_state.date is an integer Unix timestamp; active, canceled, failed, queued and succeeded timestamps are strings. A status timestamp is returned only when that state occurred according to the pinned source. Preserve omission and string precision; do not invent nullable fields."
+          "text": "All row fields are optional. deploy_id and repository_state.date retain their pinned integer contracts, also reported as integers by the reviewer. A status timestamp is returned only when that state occurred according to the pinned source. Preserve omission and do not infer nullable fields."
         },
         {
           "kind": "documented",
           "text": "Task IDs, log paths and SSE URLs remain payload data. Request success means the status request succeeded, not that deployment succeeded; inspect task state separately. The client performs no polling, log reads or SSE connections."
+        },
+        {
+          "kind": "observed",
+          "text": "The reviewer observed floating-point active, queued and succeeded timestamps. Those three fields preserve documented strings unchanged and additionally accept finite JSON numbers without coercion. Unobserved canceled and failed timestamps retain their string contracts; their numeric variants need separate evidence."
         }
       ],
       "evidence": [
@@ -84,8 +197,79 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /VersionControlDeployment/retrieve GET variant declares x-readonly=false and x-rollback=none. Preserve that source classification and use form POST. The complete pinned parameters and data schema are retained; parameter content application/json describes serialized parameter text, not a JSON request body."
+        },
+        {
+          "kind": "live",
+          "version": "not recorded in PR40 review 5720064601",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. Populated deployment retrieve returned integer deploy_id and repository_state.date, which already match the pinned schemas, and floating-point active, queued and succeeded timestamps. Canceled and failed numeric timestamp variants were not reported."
         }
-      ]
+      ],
+      "response": {
+        "[].timestamps.active": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR40 review 5720064601",
+              "date": "2026-10-31",
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. Populated retrieve POST returned a floating-point active timestamp. This correction is limited to the reviewer-named field. The pinned string alternative is retained verbatim, including fractional spelling; finite JSON numbers preserve their int/float value without a string/float conversion. Optionality and null rejection stay unchanged."
+            }
+          ]
+        },
+        "[].timestamps.queued": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR40 review 5720064601",
+              "date": "2026-10-31",
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. Populated retrieve POST returned a floating-point queued timestamp. This correction is limited to the reviewer-named field. The pinned string alternative is retained verbatim, including fractional spelling; finite JSON numbers preserve their int/float value without a string/float conversion. Optionality and null rejection stay unchanged."
+            }
+          ]
+        },
+        "[].timestamps.succeeded": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR40 review 5720064601",
+              "date": "2026-10-31",
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. Populated retrieve POST returned a floating-point succeeded timestamp. This correction is limited to the reviewer-named field. The pinned string alternative is retained verbatim, including fractional spelling; finite JSON numbers preserve their int/float value without a string/float conversion. Optionality and null rejection stay unchanged."
+            }
+          ]
+        }
+      }
     }
   }
 }

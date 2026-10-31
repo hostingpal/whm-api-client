@@ -45,6 +45,8 @@
       "type": "object",
       "properties": {
         "php": {"type": "string", "pattern": "^[a-z][A-Za-z0-9]*$"},
+        "type": {"enum": ["string|int"]},
+        "description": {"type": "string", "minLength": 1, "pattern": "\\S"},
         "encoding": {"enum": ["scalar", "bool", "repeat", "numbered", "suffix-numbered", "suffix-numbered-scalar"]},
         "sensitive": {"type": "boolean"},
         "omit": {"type": "boolean"},

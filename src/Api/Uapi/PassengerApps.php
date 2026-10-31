@@ -154,8 +154,11 @@ final readonly class PassengerApps
      * @param 'production'|'development'|null $deploymentMode The new server environment in which to run the
      *     application. Null omits it.
      * @param string|null $domain The application’s new domain. Null omits it.
-     * @param bool|null $enabled Whether to enable the application and generate the web server configuration for it.
-     *     Null omits it.
+     * @param bool|null $enabled Whether to enable the application and generate the web server configuration for it. *
+     *     `1` — Enable the application and generate the web server configuration. * `0` — Don’t enable the
+     *     application and generate the web server configuration. Omitting enabled uses the documented default of 1 and
+     *     can re-enable a disabled application, even when only renaming it. Pass false explicitly to keep the
+     *     application disabled. Null omits it.
      * @param string|list<string>|null $envvarNames New set of environment variables for the application. Null omits it.
      * @param string|list<string>|null $envvarValues Each environment variable’s value. Null omits it.
      * @param string|null $newName The application’s new name. Null omits it.
@@ -290,14 +293,19 @@ final readonly class PassengerApps
      * Documented: WebApp is the newer recommended feature for container-based applications and supersedes Application
      * Manager. Use PassengerApps for Application Manager applications; the two application systems are distinct.
      *
-     * Documented: Returns a map keyed by application name, including an empty map when no applications are present.
-     * Declared row fields remain optional. enabled has no pinned schema, so it remains mixed rather than inheriting an
-     * integer flag constraint from mutation responses. envvars is an optional nullable opaque object; unknown
-     * environment names and values remain intact.
+     * Documented: Returns a map keyed by application name. Declared row fields remain optional. enabled has no pinned
+     * schema, so it remains mixed rather than inheriting an integer flag constraint from mutation responses. envvars is
+     * an optional nullable opaque object; unknown environment names and values remain intact.
      *
      * Documented: deps contains optional gem, npm and pip command strings; the documented no-dependency value is the
      * string "0", not integer zero. nodejs, python and ruby appear only for the configured runtimes. Returned commands
      * and paths are data and are not executed or followed. For a WebApp application use WebApp::list.
+     *
+     * Observed: PR40 review 5720064601 of revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9 attributes the test-server
+     * inventory failure to account npr lacking the passengerapps feature and no Passenger packages being installed. All
+     * seven PassengerApps methods remain without successful live observations there. This capability failure
+     * establishes neither an empty application inventory nor a successful response shape. The reviewer did not install
+     * Passenger; the report does not specify the server version.
      *
      * API-map identity: uapi:PassengerApps/list_applications#GET (wire name list_applications).
      *

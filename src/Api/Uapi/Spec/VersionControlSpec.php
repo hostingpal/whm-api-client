@@ -103,9 +103,10 @@ final class VersionControlSpec
                             'read_write' => ['type' => 'list', 'items' => ['type' => 'string']],
                         ],
                     ],
-                    'deployable' => ['type' => 'flag'],
+                    'deployable' => ['type' => 'flag', 'accept' => ['string-flag']],
                     'last_deployment' => [
                         'type' => 'object',
+                        'nullable' => true,
                         'fields' => [
                             'deployment_date' => ['type' => 'int'],
                             'repository_state' => [
@@ -124,7 +125,7 @@ final class VersionControlSpec
                         'nullable' => true,
                         'fields' => [
                             'author' => ['type' => 'string'],
-                            'date' => ['type' => 'int'],
+                            'date' => ['type' => 'int', 'accept' => ['numeric-string']],
                             'identifier' => ['type' => 'string'],
                             'message' => ['type' => 'string'],
                         ],
@@ -177,7 +178,7 @@ final class VersionControlSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'available_branches' => ['type' => 'list', 'items' => ['type' => 'string', 'nullable' => true]],
+                'available_branches' => ['type' => 'list', 'nullable' => true, 'items' => ['type' => 'string']],
                 'branch' => ['type' => 'string', 'nullable' => true],
                 'clone_urls' => [
                     'type' => 'object',
@@ -186,7 +187,7 @@ final class VersionControlSpec
                         'read_write' => ['type' => 'list', 'items' => ['type' => 'string']],
                     ],
                 ],
-                'deployable' => ['type' => 'flag'],
+                'deployable' => ['type' => 'flag', 'accept' => ['string-flag']],
                 'last_deployment' => [
                     'type' => 'object',
                     'nullable' => true,
@@ -208,7 +209,7 @@ final class VersionControlSpec
                     'nullable' => true,
                     'fields' => [
                         'author' => ['type' => 'string'],
-                        'date' => ['type' => 'int'],
+                        'date' => ['type' => 'int', 'accept' => ['numeric-string']],
                         'identifier' => ['type' => 'string'],
                         'message' => ['type' => 'string'],
                     ],

@@ -35,7 +35,7 @@
         },
         {
           "kind": "documented",
-          "text": "The response fields are optional. branch may be null while cloning or when no local branches exist; available_branches is a non-null list here. The source last_update declares a null-only enum without a type; the current effective contract remains mixed and does not enforce that enum. Do not infer a commit object or successful clone completion from it."
+          "text": "The response fields are optional. branch may be null while cloning or when no local branches exist; available_branches is a non-null list here. The source last_update declares a null-only enum without a type; the current effective contract remains mixed and does not enforce that enum. Do not infer a commit object or successful clone completion from it. If this opaque value contains a date, its original integer or string representation remains unchanged; no date normalization or stronger object schema is inferred."
         },
         {
           "kind": "documented",
@@ -66,6 +66,10 @@
         {
           "kind": "documented",
           "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is a payload mismatch. Existing empty-object compatibility also accepts an empty JSON list, but not a nonempty list."
+        },
+        {
+          "kind": "observed",
+          "text": "The reviewer reported that delete removed the repository registration and left its directory on both routes. That observation conflicts with the pinned warning that directory contents are permanently deleted; retain the documented destructive-operation precaution and do not rely on directory preservation."
         }
       ],
       "evidence": [
@@ -74,6 +78,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /VersionControl/delete GET variant declares x-readonly=false and x-rollback=none. Preserve that source classification and use form POST. The complete pinned parameters and data schema are retained; parameter content application/json describes serialized parameter text, not a JSON request body."
+        },
+        {
+          "kind": "live",
+          "version": "not recorded in PR40 review 5720064601",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31. Repository operations used actual POST through direct UAPI and the WHM bridge on the designated npr account. The report does not record a server version; these lifecycle observations are separate from the initial GET-only capture, which did not execute these operations. The reviewer reports registration removal with directory preservation for delete POST through both routes. This conflicts with the pinned /VersionControl/delete warning that the entire directory contents are permanently deleted, even though the review calls its observation 'as pinned'. Preserve both facts and the source warning; the initial GET-only capture contains no deletion."
         }
       ]
     },
@@ -91,11 +101,15 @@
         },
         {
           "kind": "documented",
-          "text": "All row fields are optional. available_branches may be null for a bare repository, and branch and last_update may be null. Empty lists, omitted fields and explicit null remain distinct. deployable is the integer 0 or 1; it describes repository deployability rather than task completion. last_deployment is optional but its pinned schema is not nullable here."
+          "text": "All row fields are optional. available_branches may be null for a bare repository, and branch and last_update may be null. Empty lists, omitted fields and explicit null remain distinct. deployable is returned as integer 0 or 1 and describes repository deployability rather than task completion."
         },
         {
           "kind": "documented",
           "text": "Commit dates and deployment dates are integer Unix timestamps. Tasks may describe create or deploy actions and include optional SSE URLs. These identifiers and URLs are payload data; no polling, deployment or URL fetching is performed. The formal row schema governs nesting despite inconsistent nesting in the pinned examples."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer observations through both routes found last_deployment=null before a first deployment, quoted 0/1 deployable flags and digit strings for last_update.date. Preserve the null deployment distinctly from omission; normalize only exact quoted flags to 0|1 and canonical in-range integer date strings to int. Other commit/deployment date contracts remain unchanged."
         }
       ],
       "evidence": [
@@ -104,8 +118,53 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /VersionControl/retrieve GET variant declares x-readonly=false and x-rollback=none. Preserve that source classification and use form POST. The complete pinned parameters and data schema are retained; parameter content application/json describes serialized parameter text, not a JSON request body."
+        },
+        {
+          "kind": "live",
+          "version": "not recorded in PR40 review 5720064601",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31. Repository operations used actual POST through direct UAPI and the WHM bridge on the designated npr account. The report does not record a server version; these lifecycle observations are separate from the initial GET-only capture, which did not execute these operations. Populated retrieve() and retrieve(fields: '*') returned last_deployment=null for never-deployed repositories, digit-string deployable flags and digit-string last_update.date. The reviewer reported payload mismatches with the original contract."
         }
-      ]
+      ],
+      "response": {
+        "[].last_deployment": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR40 review 5720064601",
+              "date": "2026-10-31",
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31. Repository operations used actual POST through direct UAPI and the WHM bridge on the designated npr account. The report does not record a server version; these lifecycle observations are separate from the initial GET-only capture, which did not execute these operations. retrieve POST returned last_deployment=null before any deployment. Add nullability only to this optional object; preserve its object fields and omission."
+            }
+          ]
+        },
+        "[].deployable": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR40 review 5720064601",
+              "date": "2026-10-31",
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31. Repository operations used actual POST through direct UAPI and the WHM bridge on the designated npr account. The report does not record a server version; these lifecycle observations are separate from the initial GET-only capture, which did not execute these operations. retrieve POST on committed repositories returned deployable as a digit string. Accept only exact quoted 0/1 and normalize to integer flags; reject other strings, booleans and floats."
+            }
+          ]
+        },
+        "[].last_update.date": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR40 review 5720064601",
+              "date": "2026-10-31",
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31. Repository operations used actual POST through direct UAPI and the WHM bridge on the designated npr account. The report does not record a server version; these lifecycle observations are separate from the initial GET-only capture, which did not execute these operations. retrieve POST on committed repositories returned last_update.date as digits. Preserve documented integers and normalize only canonical decimal integer strings within PHP integer range. Preserve parent last_update nullability and field omission; null dates remain invalid."
+            }
+          ]
+        }
+      }
     },
     "uapi:VersionControl/update": {
       "name": "update",
@@ -137,7 +196,11 @@
         },
         {
           "kind": "documented",
-          "text": "All response fields are optional. branch, last_update and last_deployment may be null. Unlike retrieve, available_branches is not nullable but its string items may be null in this operation. The task schema has no sse_url field here; do not infer it from create or retrieve. Task IDs and successful API status do not prove pull or deployment completion."
+          "text": "All response fields are optional. branch, last_update and last_deployment may be null. available_branches may be null for a bare repository; otherwise it is a list of non-null strings. The pinned prose places nullability on the list despite the misplaced items.nullable schema marker. The task schema has no sse_url field here; do not infer it from create or retrieve. Task IDs and successful API status do not prove pull or deployment completion."
+        },
+        {
+          "kind": "observed",
+          "text": "The reviewed repository-field compatibility seen in retrieve also applies to update's identically documented deployable and last_update.date fields: exact quoted 0/1 flags normalize to integer flags, and canonical in-range integer date strings normalize to int. This is a compatibility inference from retrieve; the review reports update success on both routes without separate field-level observations."
         }
       ],
       "evidence": [
@@ -146,8 +209,59 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /VersionControl/update GET variant declares x-readonly=false and x-rollback=none. Preserve that source classification and use form POST. The complete pinned parameters and data schema are retained; parameter content application/json describes serialized parameter text, not a JSON request body."
+        },
+        {
+          "kind": "live",
+          "version": "not recorded in PR40 review 5720064601",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31. Repository operations used actual POST through direct UAPI and the WHM bridge on the designated npr account. The report does not record a server version; these lifecycle observations are separate from the initial GET-only capture, which did not execute these operations. The reviewer reports update POST success on both routes. Numeric compatibility for update's deployable and last_update.date is inferred from the identically documented retrieve fields and its observed wire variants; it is not separate field-level live coverage for update."
         }
-      ]
+      ],
+      "response": {
+        "available_branches": {
+          "replace": {
+            "type": "list",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /VersionControl/update data.available_branches prose explicitly says the list is null for a bare repository and an empty array when no branches exist. Its schema misplaces nullable:true on items. Correct the optional list to nullable with non-null string items, matching the prose and retrieve's correctly placed schema. Preserve empty lists, empty string items and omission. Source decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+            }
+          ]
+        },
+        "deployable": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR40 review 5720064601",
+              "date": "2026-10-31",
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31. Repository operations used actual POST through direct UAPI and the WHM bridge on the designated npr account. The report does not record a server version; these lifecycle observations are separate from the initial GET-only capture, which did not execute these operations. Reviewed compatibility inference from retrieve POST: update has the same pinned integer 0/1 deployable field. Accept exact string 0/1 only and normalize to integer flags. This is not an additional observed update field variant."
+            }
+          ]
+        },
+        "last_update.date": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "not recorded in PR40 review 5720064601",
+              "date": "2026-10-31",
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31. Repository operations used actual POST through direct UAPI and the WHM bridge on the designated npr account. The report does not record a server version; these lifecycle observations are separate from the initial GET-only capture, which did not execute these operations. Reviewed compatibility inference from retrieve POST: update has the same pinned integer HEAD commit date field. Accept canonical in-range integer strings and normalize to int, retaining optional fields, parent nullability and null-date rejection. This is not an additional observed update field variant."
+            }
+          ]
+        }
+      }
     }
   }
 }

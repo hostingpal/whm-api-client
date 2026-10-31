@@ -19,15 +19,15 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  * before every attempt and records the envelope snapshot before API or payload errors.
  *
  * @phpstan-type CreateResult array{
- *     deploy_id?: string,
+ *     deploy_id?: string|int,
  *     log_path?: string,
  *     repository_root?: string,
  *     sse_url?: string,
  *     task_id?: string,
  *     timestamps?: array{
- *         queued?: string,
+ *         queued?: string|int|float,
  *     },
- * }
+ * }|null
  * @phpstan-type DeleteResult array<array-key, mixed>|null
  * @phpstan-type RetrieveResult list<array{
  *     deploy_id?: int,
@@ -43,11 +43,11 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     sse_url?: string,
  *     task_id?: string,
  *     timestamps?: array{
- *         active?: string,
+ *         active?: string|int|float,
  *         canceled?: string,
  *         failed?: string,
- *         queued?: string,
- *         succeeded?: string,
+ *         queued?: string|int|float,
+ *         succeeded?: string|int|float,
  *     },
  * }>
  */
@@ -77,10 +77,17 @@ final readonly class VersionControlDeployment
      * uses --ff-only: HEAD must already be up to date or capable of fast-forwarding. Failed prerequisites disable
      * deployment functionality and hide deployment information.
      *
-     * Documented: The response fields are optional. deploy_id is a string here, while retrieve returns integer
-     * deploy_id. timestamps.queued is a string and preserves its fractional timestamp spelling. Task IDs, log paths and
-     * SSE URLs are payload data; request success does not establish deployment completion and the client does not
-     * follow or poll them.
+     * Documented: The response fields are optional. Task IDs, log paths and SSE URLs are payload data; request success
+     * does not establish deployment completion and the client does not follow or poll them.
+     *
+     * Observed: The reviewer observed integer deploy_id and a floating-point queued timestamp after a deployment was
+     * queued. Preserve the documented string alternatives unchanged and accept integer identifiers and finite numeric
+     * queued timestamps without coercion. A payload mismatch can occur after queuing; do not retry it as though nothing
+     * happened.
+     *
+     * Observed: For a non-deployable repository the reviewer observed status 1 with explicit null data and no
+     * deployment queued. This result returns null. An absent data member remains a payload mismatch, and a non-null
+     * task result still does not establish deployment completion.
      *
      * API-map identity: uapi:VersionControlDeployment/create#GET (wire name create).
      *
@@ -91,7 +98,7 @@ final readonly class VersionControlDeployment
      *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/deployment-settings/versioncontroldeployment-create
      */
-    public function create(string $repositoryRoot): array
+    public function create(string $repositoryRoot): ?array
     {
         /** @var CreateResult $result Validated against VersionControlDeploymentSpec::CREATE. */
         $result = ($this->run)(VersionControlDeploymentSpec::CREATE, ['repositoryRoot' => $repositoryRoot]);
@@ -108,8 +115,9 @@ final readonly class VersionControlDeployment
      * x-readonly=false and x-rollback=none, including retrieval functions; this method uses form POST. The client
      * performs one request with no automatic retry or rollback.
      *
-     * Documented: Deletes the deployment task identified by the supplied deployId string. This operation is distinct
-     * from deleting a repository; it does not claim to undo a deployment. Empty strings and the string 0 are forwarded
+     * Documented: Deletes the deployment task identified by deploy_id returned by create() or retrieve(), not task_id.
+     * This operation is distinct from deleting a repository and does not undo a deployment. Integer IDs and documented
+     * string IDs are forwarded as scalar form values; strings, including empty strings and the string 0, remain
      * unchanged.
      *
      * Documented: The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an
@@ -118,14 +126,15 @@ final readonly class VersionControlDeployment
      *
      * API-map identity: uapi:VersionControlDeployment/delete#GET (wire name delete).
      *
-     * @param string $deployId The Task Queue system's task ID number.
+     * @param string|int $deployId The deployment ID (deploy_id) returned by create() or retrieve(), not the Task Queue
+     *     task_id.
      * @return DeleteResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/deployment-settings/versioncontroldeployment-delete
      */
-    public function delete(string $deployId): ?array
+    public function delete(string|int $deployId): ?array
     {
         /** @var DeleteResult $result Validated against VersionControlDeploymentSpec::DELETE. */
         $result = ($this->run)(VersionControlDeploymentSpec::DELETE, ['deployId' => $deployId]);
@@ -149,14 +158,17 @@ final readonly class VersionControlDeployment
      * branches and a clean working tree; otherwise the server hides deployment information and disables deployment
      * functionality.
      *
-     * Documented: All row fields are optional. deploy_id is an integer here, unlike the string returned by create.
-     * repository_state.date is an integer Unix timestamp; active, canceled, failed, queued and succeeded timestamps are
-     * strings. A status timestamp is returned only when that state occurred according to the pinned source. Preserve
-     * omission and string precision; do not invent nullable fields.
+     * Documented: All row fields are optional. deploy_id and repository_state.date retain their pinned integer
+     * contracts, also reported as integers by the reviewer. A status timestamp is returned only when that state
+     * occurred according to the pinned source. Preserve omission and do not infer nullable fields.
      *
      * Documented: Task IDs, log paths and SSE URLs remain payload data. Request success means the status request
      * succeeded, not that deployment succeeded; inspect task state separately. The client performs no polling, log
      * reads or SSE connections.
+     *
+     * Observed: The reviewer observed floating-point active, queued and succeeded timestamps. Those three fields
+     * preserve documented strings unchanged and additionally accept finite JSON numbers without coercion. Unobserved
+     * canceled and failed timestamps retain their string contracts; their numeric variants need separate evidence.
      *
      * API-map identity: uapi:VersionControlDeployment/retrieve#GET (wire name retrieve).
      *

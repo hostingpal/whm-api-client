@@ -2757,21 +2757,30 @@ Repository `sourceRepository` is caller-supplied JSON text, sent once as a form
 parameter. The client does not JSON-encode a PHP object or decode/re-encode the
 string. The existing scalar parameter boundary is `string|int|null`; supply the
 documented serialized JSON string, or omit it. Clone URLs may contain credentials,
-so this argument stays sensitive. Repository deletion permanently removes the
-repository directory contents. Updating a branch can pull remote changes;
+so this argument stays sensitive. The pinned source warns that repository deletion
+permanently removes directory contents. The PR40 reviewer instead observed
+registration deletion leaving the directory on the test server; retain the
+source's destructive-operation warning rather than relying on that discrepancy.
+Updating a branch can pull remote changes;
 source URLs cannot be changed by the update method.
 
 Deployment requires a clean working tree, branches and a checked-in `.cpanel.yml`.
 Returned task IDs and event/log URLs do not prove completion and are not fetched
-by the client. Preserve the source's distinct create/retrieve deployment-ID
-representations. Creation's unspecified `last_update` schema includes a null-only
+by the client. Reviewed integer deployment IDs are preserved, and `delete()`
+accepts the returned integer or documented string identifier. A status-success
+`create()` response with explicit null was observed for a non-deployable repository
+with no deployment queued; absent data remains a mismatch. A payload error after
+queueing does not undo the deployment and must not trigger a retry. Creation's
+unspecified `last_update` schema includes a null-only
 enum but remains mixed under the current effective validator; no stronger field
 contract is invented.
 
 Passenger registration requires an existing application; unregistering it does
 not delete its files. Environment names and values use matching repeated fields;
 supply one value per name. Editing environment variables replaces the current
-set. Values remain sensitive, and opaque returned environment objects preserve
+set. Omitting `enabled` when editing uses the documented default of 1 and can
+re-enable a disabled application; pass false explicitly to retain disabled state.
+Values remain sensitive, and opaque returned environment objects preserve
 their fields. Inventory `enabled` has an unspecified schema and remains mixed;
 mutation flags retain their declared types. `ensureDeps()` starts asynchronous
 installation. These methods manage Application Manager; the pinned source
@@ -2781,14 +2790,18 @@ The bounded live catalog reads only WHM version and Passenger inventory on both
 routes. Repository/deployment POST reads, mutations and populated/secret-bearing
 variants remain tracked under `8x0.2.27`. No deployment, dependency installation,
 repository deletion or application configuration change is part of that catalog.
+The reviewer diagnosed its Passenger API failures: `npr` lacks the `passengerapps`
+feature and the server has no Passenger packages. No server-wide installation was
+made. All seven Passenger methods remain unobserved, including dependency-result
+and mutation flag/environment variants. The failed capture remains unwaived.
 
-All request encodings and response fields come from the original pinned source.
+Request encodings start from the pinned source; reviewed response corrections
+are recorded separately below.
 `source_repository` declares parameter-level JSON content, not a JSON body;
 explicit scalar encoding preserves pre-serialized text. Passenger form/explode
 array declarations establish repeated environment fields. The edit value field
 omits `explode`, whose form-style default is true; registration states it
-explicitly. Existing transport, generator, validation and evidence policies are
-unchanged. Optional opaque mutation objects preserve null/object/missing
+explicitly. Transport and evidence policies are unchanged. Optional opaque mutation objects preserve null/object/missing
 distinctions; source-specific differences in nullable branches and deployment
 fields are covered by independent literal fixtures.
 
@@ -2800,10 +2813,42 @@ observations, all HTTP 200. WHM version passes. Both `PassengerApps/list_applica
 requests fail at the API layer with null payloads, so payload validation is not
 performed and strict assessment remains failed. The sanitized evidence does not
 diagnose the capability/configuration cause; neither failure is waived or treated
-as a successful empty inventory. All fourteen new methods retain offline-only
-successful-payload coverage under `8x0.2.27`.
+as a successful empty inventory. All fourteen new methods lack successful payload observations in this committed
+capture; later reviewer lifecycle observations are recorded separately below.
 
 No repository, deployment, application configuration or dependency installation
 changed, and no returned URL was fetched. No contract was broadened from an API
 failure, and no repeated capture was run merely to seek a passing status. SHA-256:
 `48b5b71e8feb9107310383e50f311f39d99301a3fb57c4179a00d12c97e44a64`.
+
+
+### Repository/deployment external review corrections
+
+[Claude's review of `9aa3a6c`](https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601)
+used throwaway repositories with a committed `.cpanel.yml` containing only
+`/bin/true`. The reviewer observed repository creation/update/deletion through
+both routes and reports complete cleanup to zero repositories and deployments.
+Full repository retrieval failed for nullable `last_deployment`, digit-string
+`deployable` and numeric `last_update.date`. Queued deployment creation/retrieval
+failed on integer identifiers/dates and fractional timestamp fields. A separate
+non-deployable create returned status success and explicit null without queueing.
+These are attributed reviewer observations; the review supplies no server version.
+They do not expand the initial GET-only artifact's coverage.
+
+Corrections preserve nullable last-deployment state, narrow flag/integer-string
+conversions, integer deployment identifiers and observed numeric timestamps while
+retaining documented strings. Only the named queued/active/succeeded timestamps
+receive numeric alternatives; canceled/failed variants remain unobserved. The
+source's update-branches prose establishes a nullable list with non-null members,
+repairing its misplaced item-level nullable flag. Repository creation's opaque
+`last_update` schema remains mixed rather than inventing fields.
+
+The generator supports an evidence-gated scalar string-to-`string|int` parameter
+correction for deployment deletion and a parameter description replacement for
+its identifier reference and Passenger's enabled default. Other parameter types,
+wire encodings, optional omission and source snapshots remain unchanged. Literal
+regressions cover response shapes, strict typed identifier chaining and malformed
+inputs. The GET-only capture is not repeated: none of the corrected repository
+or deployment contracts were exercised by it, and the reviewer explicitly requires
+no new read-only capture. A future guarded POST-read recipe, remaining timestamp
+variants and the directory-deletion discrepancy stay under `8x0.2.27`.

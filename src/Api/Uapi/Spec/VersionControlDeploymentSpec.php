@@ -23,8 +23,15 @@ final class VersionControlDeploymentSpec
         ],
         'returns' => [
             'type' => 'object',
+            'nullable' => true,
             'fields' => [
-                'deploy_id' => ['type' => 'string'],
+                'deploy_id' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
                 'log_path' => ['type' => 'string'],
                 'repository_root' => ['type' => 'string'],
                 'sse_url' => ['type' => 'string'],
@@ -32,7 +39,13 @@ final class VersionControlDeploymentSpec
                 'timestamps' => [
                     'type' => 'object',
                     'fields' => [
-                        'queued' => ['type' => 'string'],
+                        'queued' => [
+                            'type' => 'union',
+                            'anyOf' => [
+                                ['type' => 'string'],
+                                ['type' => 'number'],
+                            ],
+                        ],
                     ],
                 ],
             ],
@@ -79,11 +92,29 @@ final class VersionControlDeploymentSpec
                     'timestamps' => [
                         'type' => 'object',
                         'fields' => [
-                            'active' => ['type' => 'string'],
+                            'active' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'number'],
+                                ],
+                            ],
                             'canceled' => ['type' => 'string'],
                             'failed' => ['type' => 'string'],
-                            'queued' => ['type' => 'string'],
-                            'succeeded' => ['type' => 'string'],
+                            'queued' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'number'],
+                                ],
+                            ],
+                            'succeeded' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'number'],
+                                ],
+                            ],
                         ],
                     ],
                 ],
