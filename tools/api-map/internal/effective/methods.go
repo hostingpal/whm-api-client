@@ -82,11 +82,11 @@ func (b *builder) additionalMethods(op model.Operation, v model.Variant, ov over
 			if canonical.Body != "" && canonical.Body != "form" {
 				fail("record inputs require the canonical form body")
 			}
-			if !IsClassName(c.Alias) || c.Start == nil || *c.Start < 0 || *c.Start > 2147483647 || c.Separator == nil || (*c.Separator != "" && *c.Separator != "-") || c.Sensitive == nil || len(c.Fields) == 0 {
+			if !IsClassName(c.Alias) || c.Start == nil || *c.Start < 0 || *c.Start > 2147483647 || c.Separator == nil || (*c.Separator != "" && *c.Separator != "-") || c.Sensitive == nil || len(c.Fields) == 0 || (c.FirstUnsuffixed != nil && (!*c.FirstUnsuffixed || *c.Start != 0 || *c.Separator != "-")) {
 				fail("invalid record descriptor")
 				continue
 			}
-			records := &RecordSpec{Alias: c.Alias, Start: *c.Start, Separator: *c.Separator}
+			records := &RecordSpec{Alias: c.Alias, Start: *c.Start, Separator: *c.Separator, FirstUnsuffixed: c.FirstUnsuffixed != nil && *c.FirstUnsuffixed}
 			fields := map[string]bool{}
 			for _, f := range c.Fields {
 				if !IsMethodName(f.PHP) || fields[f.PHP] || !regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`).MatchString(f.Prefix) {
@@ -103,7 +103,10 @@ func (b *builder) additionalMethods(op model.Operation, v model.Variant, ov over
 				if p.Sensitive && !*c.Sensitive {
 					fail("record sensitivity cannot discard source secrecy")
 				}
-				records.Fields = append(records.Fields, RecordField{PHP: f.PHP, Prefix: f.Prefix, Type: p.PHPType, Required: p.Required})
+				if f.Required != nil && !*f.Required {
+					fail("record required override may only strengthen source requiredness")
+				}
+				records.Fields = append(records.Fields, RecordField{PHP: f.PHP, Prefix: f.Prefix, Type: p.PHPType, Required: p.Required || f.Required != nil && *f.Required})
 			}
 			p := Param{PHP: input.PHP, Wire: input.PHP, Encoding: "records", PHPType: "array", DocType: "non-empty-list<" + c.Alias + ">", Required: true, Sensitive: *c.Sensitive, Records: records, Description: "Records in input order; optional fields retain their original row index."}
 			method.Params = append(method.Params, p)
@@ -128,6 +131,7 @@ func (b *builder) additionalMethods(op model.Operation, v model.Variant, ov over
 		}
 		// Flatten each record field into its indexed family for static overlap checks.
 		var expanded []Param
+		bases := map[string]bool{}
 		for _, p := range method.Params {
 			if p.Records == nil {
 				expanded = append(expanded, p)
@@ -135,7 +139,33 @@ func (b *builder) additionalMethods(op model.Operation, v model.Variant, ov over
 			}
 			for _, f := range p.Records.Fields {
 				prefix, sep, start, allow := f.Prefix, p.Records.Separator, p.Records.Start, false
+				if p.Records.FirstUnsuffixed {
+					// The first literal name is separate from the tail family; index zero is never emitted.
+					bases[f.Prefix] = true
+					expanded = append(expanded, Param{PHP: p.PHP + "." + f.PHP, Wire: f.Prefix, Encoding: "scalar"})
+					start = 1
+				}
 				expanded = append(expanded, Param{PHP: p.PHP + "." + f.PHP, Wire: f.Prefix, Encoding: "collection", Collection: &overlay.Collection{Kind: "indexed", ItemType: f.Type, AllowScalar: &allow, Empty: "reject", Prefix: &prefix, Separator: &sep, Start: &start}})
+			}
+		}
+		// The indexed checker does not compare two literal bases, or legacy-only
+		// tails against a literal base. Check each opted-in literal explicitly.
+		for _, p := range expanded {
+			if !bases[p.Wire] || p.Encoding != "scalar" || p.Collection != nil {
+				continue
+			}
+			for _, other := range expanded {
+				if p.PHP == other.PHP && p.Encoding == other.Encoding && p.Wire == other.Wire {
+					continue
+				}
+				exact := !overlay.IsSuffixNumbered(other.Encoding)
+				if other.Collection != nil {
+					exact = other.Collection.Kind == "repeat" || other.Collection.AllowScalar != nil && *other.Collection.AllowScalar
+				}
+				base, start, indexed := indexedBase(other)
+				if exact && p.Wire == other.Wire || indexed && indexContains(base, start, p.Wire) {
+					fail("record has overlapping wire names for parameters " + p.PHP + " and " + other.PHP)
+				}
 			}
 		}
 		b.collectionOverlaps(op.ID, expanded)

@@ -46,6 +46,23 @@ func TestCanonicalRecordAlias(t *testing.T) {
 	if !strings.Contains(spec, "...self::CREATEACCT,") || !strings.Contains(spec, "'encoding' => 'records'") {
 		t.Error("alias must inherit canonical spec")
 	}
+	if strings.Contains(spec, "first_unsuffixed") || !strings.Contains(spec, "'start' => 1,\n                    'separator' => '',\n                    'fields' => [") {
+		t.Error("old generated descriptor changed")
+	}
+	before := spec
+	result.Groups[0].Operations[0].AdditionalMethods[0].Params[0].Records.FirstUnsuffixed = true
+	result.Groups[0].Operations[0].AdditionalMethods[0].Params[0].Records.Start = 0
+	result.Groups[0].Operations[0].AdditionalMethods[0].Params[0].Records.Separator = "-"
+	changed := string(Render(result)["src/Api/Whm/Spec/AccountsSpec.php"])
+	if !strings.Contains(changed, "'first_unsuffixed' => true,") || !strings.Contains(changed, "'start' => 0,") {
+		t.Error("missing opt-in descriptor")
+	}
+	result.Groups[0].Operations[0].AdditionalMethods[0].Params[0].Records.FirstUnsuffixed = false
+	result.Groups[0].Operations[0].AdditionalMethods[0].Params[0].Records.Start = 1
+	result.Groups[0].Operations[0].AdditionalMethods[0].Params[0].Records.Separator = ""
+	if got := string(Render(result)["src/Api/Whm/Spec/AccountsSpec.php"]); got != before {
+		t.Error("default output changed")
+	}
 	if len(result.Groups[0].Operations) != 1 {
 		t.Error("alias inflated canonical operation count")
 	}

@@ -294,6 +294,101 @@ final class SpecChecker
                 $maps[$wire] = true;
             }
         }
+        self::firstUnsuffixedOverlaps($params);
+    }
+
+    /**
+     * Check the opt-in record namespace even when no arguments are supplied.
+     *
+     * Old descriptors retain their existing checks. Unknown map keys are checked
+     * by OrderedFields when their concrete values are prepared.
+     *
+     * @param array<string, array<mixed>> $params
+     */
+    private static function firstUnsuffixedOverlaps(array $params): void
+    {
+        $optedIn = false;
+        foreach ($params as $param) {
+            $record = $param['records'] ?? null;
+            $optedIn = $optedIn || (($param['encoding'] ?? null) === 'records'
+                && is_array($record) && ($record['first_unsuffixed'] ?? false) === true);
+        }
+        if (!$optedIn) {
+            return;
+        }
+        $families = [];
+        foreach ($params as $origin => $param) {
+            $encoding = $param['encoding'] ?? null;
+            $wire = $param['name'] ?? null;
+            if (!is_string($encoding) || !is_string($wire)) {
+                throw new LogicException('Invalid parameter spec.');
+            }
+            $record = $encoding === 'records' ? RecordEncoder::check($param['records'] ?? null) : null;
+            $opted = ($record['first_unsuffixed'] ?? false) === true;
+            $names = [];
+            $tails = [];
+            if ($record !== null) {
+                foreach ($record['fields'] as $field) {
+                    if ($opted) {
+                        $names[] = $field['prefix'];
+                    }
+                    $tails[] = [$field['prefix'] . $record['separator'], $opted ? 1 : $record['start']];
+                }
+            } elseif ($encoding === 'collection') {
+                $collection = CollectionEncoder::check($param['collection'] ?? null);
+                if ($collection['kind'] === 'map') {
+                    continue;
+                }
+                if ($collection['kind'] === 'repeat' || $collection['allow_scalar']) {
+                    $names[] = $wire;
+                }
+                if ($collection['kind'] === 'indexed') {
+                    $tails[] = [$collection['prefix'] . $collection['separator'], $collection['start']];
+                }
+            } elseif (in_array($encoding, ['suffix-numbered', 'suffix-numbered-scalar'], true)) {
+                $tails[] = [substr($wire, 0, -1), 1];
+            } else {
+                $names[] = $wire;
+                if ($encoding === 'numbered') {
+                    $tails[] = [$wire . '-', 1];
+                }
+            }
+            $families[] = ['origin' => $origin, 'opted' => $opted, 'names' => $names, 'tails' => $tails];
+        }
+        foreach ($families as $i => $family) {
+            foreach (array_slice($families, $i + 1) as $other) {
+                if (!$family['opted'] && !$other['opted']) {
+                    continue;
+                }
+                $overlap = array_intersect($family['names'], $other['names']) !== [];
+                foreach ([[$family, $other], [$other, $family]] as [$left, $right]) {
+                    foreach ($left['tails'] as [$base, $start]) {
+                        foreach ($right['names'] as $name) {
+                            $overlap = $overlap || self::indexContains($base, $start, $name);
+                        }
+                        foreach ($right['tails'] as [$otherBase]) {
+                            $overlap = $overlap || $base === $otherBase
+                                || self::indexContains($base, 0, $otherBase . '1')
+                                || self::indexContains($otherBase, 0, $base . '1');
+                        }
+                    }
+                }
+                if ($overlap) {
+                    throw new LogicException('Overlapping wire names in first-unsuffixed record specs.');
+                }
+            }
+        }
+    }
+
+    private static function indexContains(string $base, int $start, string $name): bool
+    {
+        if (preg_match('/^' . preg_quote($base, '/') . '(0|[1-9][0-9]*)$/D', $name, $matches) !== 1) {
+            return false;
+        }
+
+        // A longer canonical integer is necessarily above the small descriptor start.
+        return strlen($matches[1]) > strlen((string) $start)
+            || (strlen($matches[1]) === strlen((string) $start) && strcmp($matches[1], (string) $start) >= 0);
     }
 
     /** Check whether another declared wire name can expand into this pattern. */

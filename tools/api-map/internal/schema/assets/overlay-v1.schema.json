@@ -498,7 +498,11 @@
     },
     "records": {
       "type": "object",
+      "dependentSchemas": {
+        "first_unsuffixed": {"properties": {"start": {"const": 0}, "separator": {"const": "-"}}}
+      },
       "properties": {
+        "first_unsuffixed": {"const": true},
         "alias": {
           "type": "string",
           "minLength": 1
@@ -523,6 +527,7 @@
           "items": {
             "type": "object",
             "properties": {
+              "required": {"const": true},
               "source": {
                 "type": "string",
                 "minLength": 1
