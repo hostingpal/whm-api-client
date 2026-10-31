@@ -427,7 +427,7 @@ use SensitiveParameter;
  *             usage?: int,
  *         }>,
  *         deleted?: 0|1,
- *         limit?: int,
+ *         limit?: int|'unlimited'|'N/A',
  *         maindomain?: string,
  *         owner?: string,
  *         reseller?: 0|1,
@@ -1919,6 +1919,10 @@ final readonly class Accounts
      * SubDomain::changedocroot for addon domains or subdomains. To revert, call this function again with the original
      * path; the client forwards input unchanged and performs no automatic rollback.
      *
+     * Observed: On 11.138.0.19, the independent review received success and documentroot for public_html/nope while
+     * that directory was missing. The pinned existing-directory rule is a caller responsibility: a successful response
+     * does not establish that the target directory exists.
+     *
      * API-map identity: whm1:set_primary_domain_docroot#GET (wire name set_primary_domain_docroot; Account Management).
      *
      * @param string $username The cPanel account username whose primary domain's document root you want to change.
@@ -1953,8 +1957,21 @@ final readonly class Accounts
      *
      * Observed: The independent 11.138.0.19 review observed digit strings for totalused and acct[].bwusage[].usage.
      * These byte counts accept canonical strings within PHP integer bounds and normalize to int, including values
-     * larger than 32-bit integers. Other numeric fields remain strict; bwlimited has no typed contract from this
-     * review.
+     * larger than 32-bit integers. This first review did not establish compatibility for other numeric leaves;
+     * bwlimited has no typed contract from it.
+     *
+     * Observed: A subsequent independent WHM review on 11.138.0.19 observed native integer acct[].limit, digit strings
+     * for explicit limits, and a nonnumeric string for an unset or zero limit. The type-only live output did not
+     * establish the nonnumeric spelling; the literals below are source-based.
+     *
+     * Documented: Source inspection on 11.138.0.19 establishes exact acct[].limit literals unlimited for the stored
+     * zero-limit alternative and N/A in the deleted-users branch. Both pass through the bandwidth conversion unchanged.
+     * These spellings are source-backed; N/A was not observed in the reviewer reads, which establish no timing for
+     * deleted-user rows.
+     *
+     * Policy: Client behavior: acct[].limit accepts native integers and canonical integer strings within PHP integer
+     * bounds, normalizing only the numeric strings to int. Exact unlimited and N/A remain distinct strings, neither
+     * mapped to zero. Omitted limits remain absent, sibling fields keep their contracts, and bwlimited remains untyped.
      *
      * API-map identity: whm1:showbw#GET (wire name showbw; Bandwidth and Disk Quotas).
      *

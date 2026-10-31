@@ -906,3 +906,10 @@ and userdata wire variants. These observations support current contract fixes;
 they do not identify or rewrite the old masked finding. No new capture ran for
 those corrections. The populated enhancement list is source/offline evidence,
 and the shared empty-container ambiguity remains open under `8x0.2.50`.
+
+The later [review 5721383444](https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5721383444)
+of `2e52204` separately exercised six account-scoped POST methods on disposable
+`wrvacct` and confirmed account/home cleanup. Its bandwidth-limit and missing
+docroot observations are recorded in the source audit. They do not expand either
+committed nine-GET capture, identify historical masked keys or waive a strict
+finding. No new capture accompanied the corrections.

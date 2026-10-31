@@ -1523,8 +1523,11 @@ one integer job ID; contradictory indexed examples remain in `8x0.1.21`.
 `getMaximumUsers()` preserves the pinned optional `users` integer and the
 separately observed optional `maximum_users`, normalizing bounded canonical
 integer strings in the latter. Missing fields are not evidence of a zero or
-unlimited license limit. `showBandwidth()` normalizes only the observed
-`totalused` and nested `bwusage[].usage` integer strings; `domainUserData()`
+unlimited license limit. `showBandwidth()` normalizes bounded canonical integer
+strings for `totalused`, nested `bwusage[].usage` and per-account `limit`. The
+source-backed limit literals `unlimited` and `N/A` stay strings, distinct from
+numeric zero; their spellings were not established by a live capture. `N/A`
+deleted-account rows remain unobserved. `domainUserData()`
 normalizes its observed port strings and exact quoted `hascgi` and
 `phpopenbasedirprotect` flags. Other numeric fields stay strict. Reported extras
 `bwlimited` and `phpversion` remain untyped pending field-contract evidence.
@@ -1547,8 +1550,15 @@ does not parse or validate the JSON structure.
 Enhancement, quota, password/digest and document-root writes can affect accounts
 immediately. API success and conversion status do not establish completed
 migration or hosting behavior. The client adds no retry, rollback, polling,
-purchase or notification. All twelve added POST methods and the login-link
-read remain unobserved in this review pass.
+purchase or notification. A separate reviewer lifecycle on `11.138.0.19`
+exercised six account-scoped POST methods and removed its disposable account and
+home directory. Enhancement writes, `untrackAcctId()` and the login-link read
+remain unobserved; these reports do not expand the committed GET captures.
+
+`setPrimaryDomainDocroot()` requires an existing target directory according to
+the pinned contract, but the reviewed server accepted a missing directory and
+returned success. Ensure the target exists before changing the root; API success
+is not an existence check and does not establish that the site can serve files.
 
 The immutable nine-GET catalog reads version, user counts, disk usage, home roots,
 enhancement/user inventories, privileges and quota availability. The corrected
@@ -1558,9 +1568,10 @@ strictly failed for a masked numeric-string unknown-field observation in
 a key name nor a field count. The separate reviewer observation of
 `maximum_users` supports its current contract; it does not identify or rewrite
 the historical masked finding. Both original artifacts remain unchanged and
-unwaived. No new capture, mutation or private-link/password read ran for these
-corrections. Remaining live behavior is tracked in `8x0.2.41`; empty-container
-evidence ambiguity remains `8x0.2.50`.
+unwaived. No new live call or capture was run by the correction agent; the
+separate reviewer lifecycle is described in the source audit. Remaining live
+behavior is tracked in `8x0.2.41`; empty-container evidence ambiguity remains
+`8x0.2.50`.
 
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill

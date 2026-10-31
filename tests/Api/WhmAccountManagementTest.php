@@ -293,8 +293,17 @@ final class WhmAccountManagementTest extends TestCase
                 '{"totalused":' . $value . '}'];
             yield 'domain bandwidth invalid ' . $value => ['showBandwidth', 'showbw', [],
                 '{"acct":[{"bwusage":[{"usage":' . $value . '}]}]}'];
+            yield 'account bandwidth limit invalid ' . $value => ['showBandwidth', 'showbw', [],
+                '{"acct":[{"limit":' . $value . '}]}'];
             yield 'port invalid ' . $value => ['domainUserData', 'domainuserdata', ['fixture.example'],
                 '{"userdata":{"port":' . $value . '}}'];
+        }
+        foreach (
+            ['Unlimited', 'UNLIMITED', 'unlimited ', ' unlimited', 'N/a', 'n/a', 'N/A ', ' N/A',
+            'NA', 'unknown', 'Infinity', '-1.5'] as $value
+        ) {
+            yield 'account bandwidth limit near miss ' . $value => ['showBandwidth', 'showbw', [],
+                '{"acct":[{"limit":' . json_encode($value, JSON_THROW_ON_ERROR) . '}]}'];
         }
         foreach (['hascgi', 'phpopenbasedirprotect'] as $field) {
             foreach (
@@ -316,6 +325,14 @@ final class WhmAccountManagementTest extends TestCase
             '{"maximum_users":"100","users":"100"}'];
         yield 'bandwidth sibling totalbytes remains strict' => ['showBandwidth', 'showbw', [],
             '{"totalused":"12","acct":[{"totalbytes":"12"}]}'];
+        yield 'bandwidth limit sibling totalbytes remains strict' => ['showBandwidth', 'showbw', [],
+            '{"acct":[{"limit":"2048","totalbytes":"12"}]}'];
+        yield 'bandwidth literal sibling deleted remains strict' => ['showBandwidth', 'showbw', [],
+            '{"acct":[{"limit":"N/A","deleted":"1"}]}'];
+        yield 'bandwidth literal does not widen totalused' => ['showBandwidth', 'showbw', [],
+            '{"totalused":"unlimited"}'];
+        yield 'bandwidth literal does not widen domain usage' => ['showBandwidth', 'showbw', [],
+            '{"acct":[{"bwusage":[{"usage":"N/A"}]}]}'];
     }
 
     /** @param array<array-key, mixed> $arguments */
@@ -633,6 +650,9 @@ final class WhmAccountManagementTest extends TestCase
                     ['totalused' => $value, 'acct' => [['user' => 'fixture', 'totalbytes' => 0, 'bwusage' => [
                         ['domain' => 'fixture.example', 'usage' => $value], ['usage' => 0], [],
                     ]]]]];
+                yield 'account bandwidth limit ' . $wire => ['showBandwidth', 'showbw', [],
+                    '{"acct":[{"limit":' . $wire . ',"totalbytes":0},{"user":"omitted"}]}',
+                    ['acct' => [['limit' => $value, 'totalbytes' => 0], ['user' => 'omitted']]]];
                 yield 'userdata port ' . $wire => ['domainUserData', 'domainuserdata', ['fixture.example'],
                     '{"userdata":{"port":' . $wire . ',"userdirprotect":"0"}}',
                     ['userdata' => ['port' => $value, 'userdirprotect' => '0']]];
@@ -643,6 +663,24 @@ final class WhmAccountManagementTest extends TestCase
                 '{"userdata":{"hascgi":"' . $wire . '","phpopenbasedirprotect":"' . $wire . '"}}',
                 ['userdata' => ['hascgi' => $expected, 'phpopenbasedirprotect' => $expected]]];
         }
+        yield 'account bandwidth source unlimited literal' => ['showBandwidth', 'showbw', [],
+            '{"acct":[{"limit":"unlimited"}]}', ['acct' => [['limit' => 'unlimited']]]];
+        yield 'account bandwidth source unavailable literal without sibling constraint' => [
+            'showBandwidth', 'showbw', [], '{"acct":[{"limit":"N/A"}]}', ['acct' => [['limit' => 'N/A']]]];
+        yield 'account bandwidth mixed limits preserve source literals and zero' => ['showBandwidth', 'showbw', [],
+            '{"month":10,"year":2026,"totalused":"0","acct":['
+                . '{"user":"zero","deleted":0,"limit":0,"totalbytes":0},'
+                . '{"user":"limited","deleted":0,"limit":"2048","totalbytes":12},'
+                . '{"user":"unlimited","deleted":0,"limit":"unlimited"},'
+                . '{"user":"deleted","deleted":1,"limit":"N/A"},'
+                . '{"user":"omitted"},{}]}',
+            ['month' => 10, 'year' => 2026, 'totalused' => 0, 'acct' => [
+                ['user' => 'zero', 'deleted' => 0, 'limit' => 0, 'totalbytes' => 0],
+                ['user' => 'limited', 'deleted' => 0, 'limit' => 2048, 'totalbytes' => 12],
+                ['user' => 'unlimited', 'deleted' => 0, 'limit' => 'unlimited'],
+                ['user' => 'deleted', 'deleted' => 1, 'limit' => 'N/A'],
+                ['user' => 'omitted'], [],
+            ]]];
         yield 'observed maximum without pinned users' => ['getMaximumUsers', 'get_maximum_users', [],
             '{"maximum_users":"100"}', ['maximum_users' => 100]];
         yield 'pinned users without observed maximum' => ['getMaximumUsers', 'get_maximum_users', [],

@@ -1200,6 +1200,10 @@
         {
           "kind": "documented",
           "text": "docroot must be relative to the account home directory, begin with public_html/, and name a directory that already exists. This function does not create the directory or move files; ensure the files exist in the new path. Parked domains (ServerAlias entries) inherit the new root. AutoSSL HTTP-01 renewals fail if the new root is empty or missing at renewal time. The returned documentroot is an absolute path. Use UAPI SubDomain::changedocroot for addon domains or subdomains. To revert, call this function again with the original path; the client forwards input unchanged and performs no automatic rollback."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, the independent review received success and documentroot for public_html/nope while that directory was missing. The pinned existing-directory rule is a caller responsibility: a successful response does not establish that the target directory exists."
         }
       ],
       "evidence": [
@@ -1214,6 +1218,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /set_primary_domain_docroot parameter descriptions identify the target account or IDs independently of the setting values. Reviewed client signature order is username, docroot, followed by remaining optional parameters. This puts the target before values without changing wire names, types, sensitivity or parameter omission. No mutation was run in this review. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM review of revision 2e52204e68b02974b9afc03a976fb2ea1e6297e6 on cPanel 11.138.0.19 successfully called setPrimaryDomainDocroot for public_html/nope on its disposable wrvacct account although that directory did not exist. This establishes that success in that observation did not validate directory existence; it does not remove the pinned caller requirement or add local filesystem checks. The reviewer separately reported a real-directory change and restoration and confirmed account/home cleanup. This correction adds the observation without making a live call or changing historical artifacts or earlier evidence. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5721383444."
         }
       ],
       "order": [
@@ -1235,7 +1245,19 @@
         },
         {
           "kind": "observed",
-          "text": "The independent 11.138.0.19 review observed digit strings for totalused and acct[].bwusage[].usage. These byte counts accept canonical strings within PHP integer bounds and normalize to int, including values larger than 32-bit integers. Other numeric fields remain strict; bwlimited has no typed contract from this review."
+          "text": "The independent 11.138.0.19 review observed digit strings for totalused and acct[].bwusage[].usage. These byte counts accept canonical strings within PHP integer bounds and normalize to int, including values larger than 32-bit integers. This first review did not establish compatibility for other numeric leaves; bwlimited has no typed contract from it."
+        },
+        {
+          "kind": "observed",
+          "text": "A subsequent independent WHM review on 11.138.0.19 observed native integer acct[].limit, digit strings for explicit limits, and a nonnumeric string for an unset or zero limit. The type-only live output did not establish the nonnumeric spelling; the literals below are source-based."
+        },
+        {
+          "kind": "documented",
+          "text": "Source inspection on 11.138.0.19 establishes exact acct[].limit literals unlimited for the stored zero-limit alternative and N/A in the deleted-users branch. Both pass through the bandwidth conversion unchanged. These spellings are source-backed; N/A was not observed in the reviewer reads, which establish no timing for deleted-user rows."
+        },
+        {
+          "kind": "policy",
+          "text": "Client behavior: acct[].limit accepts native integers and canonical integer strings within PHP integer bounds, normalizing only the numeric strings to int. Exact unlimited and N/A remain distinct strings, neither mapped to zero. Omitted limits remain absent, sibling fields keep their contracts, and bwlimited remains untyped."
         }
       ],
       "evidence": [
@@ -1250,6 +1272,18 @@
           "version": "11.138.0.19",
           "date": "2026-10-31",
           "note": "Independent WHM GET review of revision 2df933435e23c48c859bd6286546b64a26f19074 on cPanel 11.138.0.19 with type-only output: showbw totalused and acct[].bwusage[].usage were digit strings. Only these two byte-count leaves gain integer-string compatibility; other fields keep their pinned contracts and bwlimited remains untyped. This review is separate evidence from historical masked captures; no raw payload is persisted here. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM review of revision 2e52204e68b02974b9afc03a976fb2ea1e6297e6 on cPanel 11.138.0.19 reported native integer acct[].limit on npr, digit strings after an explicit bandwidth limit on the disposable wrvacct account, and a nonnumeric string when never set or after a zero limit. The original review retained type-only output: it did not establish either literal spelling. The reviewer created and removed the disposable account in that separate lifecycle; this correction performs no live call or capture. The source clarification did not observe deleted-user rows. These are separate observations from the immutable historical masked artifacts. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5721383444. Clarification: https://github.com/hostingpal/whm-api-client/pull/55#issuecomment-6539473950."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "The pinned /showbw acct[].limit schema declares an integer byte count (example 0); pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The reviewer inspected source on 11.138.0.19: Whostmgr/Bandwidth.pm:650 assigns the stored BWLIMIT to the byte limit or the exact literal unlimited, and Whostmgr/Math.pm returns unlimited unchanged while returning native 0 for a falsy input. Bandwidth.pm:390 assigns exact N/A in its deleted-users branch; unsci passes it through unchanged. Both spellings are source-based, not live-proven; N/A was not observed in the clarification reads. Accept only these exact string alternatives alongside native integers and lossless canonical integer strings within PHP bounds, retaining optional presence and strict siblings. No new constraint couples limit to deleted, no value maps to zero, and bwlimited remains untyped. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5721383444. Source clarification: https://github.com/hostingpal/whm-api-client/pull/55#issuecomment-6539473950."
         }
       ],
       "response": {
@@ -1276,6 +1310,41 @@
               "version": "11.138.0.19",
               "date": "2026-10-31",
               "note": "Independent WHM GET review of revision 2df933435e23c48c859bd6286546b64a26f19074 on cPanel 11.138.0.19 with type-only output: showbw returned digit strings at acct[].bwusage[].usage despite its pinned integer byte-count schema. Apply canonical lossless integer-string normalization within PHP integer bounds only to this field, preserving native integers, non-nullability and optional presence. Values beyond a 32-bit range are supported within the running PHP integer range; malformed strings and overflow remain invalid. No type is inferred for the separately reported untyped bwlimited field. This review is separate evidence from historical masked captures; no raw payload is persisted here. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
+            }
+          ]
+        },
+        "acct[].limit": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              },
+              {
+                "type": "string",
+                "literal": "unlimited"
+              },
+              {
+                "type": "string",
+                "literal": "N/A"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM review of revision 2e52204e68b02974b9afc03a976fb2ea1e6297e6 on cPanel 11.138.0.19 reported native integer acct[].limit on npr, digit strings after an explicit bandwidth limit on the disposable wrvacct account, and a nonnumeric string when never set or after a zero limit. The original review retained type-only output: it did not establish either literal spelling. The reviewer created and removed the disposable account in that separate lifecycle; this correction performs no live call or capture. The source clarification did not observe deleted-user rows. These are separate observations from the immutable historical masked artifacts. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5721383444. Clarification: https://github.com/hostingpal/whm-api-client/pull/55#issuecomment-6539473950."
+            },
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "The pinned /showbw acct[].limit schema declares an integer byte count (example 0); pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The reviewer inspected source on 11.138.0.19: Whostmgr/Bandwidth.pm:650 assigns the stored BWLIMIT to the byte limit or the exact literal unlimited, and Whostmgr/Math.pm returns unlimited unchanged while returning native 0 for a falsy input. Bandwidth.pm:390 assigns exact N/A in its deleted-users branch; unsci passes it through unchanged. Both spellings are source-based, not live-proven; N/A was not observed in the clarification reads. Accept only these exact string alternatives alongside native integers and lossless canonical integer strings within PHP bounds, retaining optional presence and strict siblings. No new constraint couples limit to deleted, no value maps to zero, and bwlimited remains untyped. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5721383444. Source clarification: https://github.com/hostingpal/whm-api-client/pull/55#issuecomment-6539473950."
             }
           ]
         }

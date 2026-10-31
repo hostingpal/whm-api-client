@@ -1316,7 +1316,14 @@ final class AccountsSpec
                                 ],
                             ],
                             'deleted' => ['type' => 'flag'],
-                            'limit' => ['type' => 'int'],
+                            'limit' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                    ['type' => 'string', 'literal' => 'N/A'],
+                                ],
+                            ],
                             'maindomain' => ['type' => 'string'],
                             'owner' => ['type' => 'string'],
                             'reseller' => ['type' => 'flag'],
