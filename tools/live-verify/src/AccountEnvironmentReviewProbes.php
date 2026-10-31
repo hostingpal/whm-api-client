@@ -12,7 +12,9 @@ use HostingPal\WhmApiClient\Client;
 final class AccountEnvironmentReviewProbes
 {
     /**
-     * Fixed pinned names; never derive this allowlist from live payloads or future schemas.
+     * Fixed 60 names verified present on npr by reviewer 5720313728 on 11.138.0.19.
+     * Seven other pinned names are absent on this account; they remain client-supported.
+     * Never derive this allowlist from live payloads or future schemas.
      * Changing the source contract requires another explicit review before expanding this recipe.
      *
      * @var list<string>
@@ -39,16 +41,13 @@ final class AccountEnvironmentReviewProbes
         'home',
         'home_directory_links',
         'ip',
-        'lang',
         'last_modified',
         'legacy_backup_enabled',
         'locale',
         'mailbox_format',
         'maximum_addon_domains',
         'maximum_databases',
-        'maximum_defer_fail_percentage',
         'maximum_email_account_disk_quota',
-        'maximum_emails_per_hour',
         'maximum_ftp_accounts',
         'maximum_mail_accounts',
         'maximum_mailing_lists',
@@ -66,15 +65,11 @@ final class AccountEnvironmentReviewProbes
         'notify_autossl_renewal_coverage',
         'notify_autossl_renewal_coverage_reduced',
         'notify_autossl_renewal_uncovered_domains',
-        'notify_bandwidth_limit',
         'notify_contact_address_change',
         'notify_contact_address_change_notification_disabled',
         'notify_disk_limit',
         'notify_password_change',
         'notify_password_change_notification_disabled',
-        'notify_ssl_expiry',
-        'notify_twofactorauth_change',
-        'notify_twofactorauth_change_notification_disabled',
         'owner',
         'package_extensions',
         'plan',
@@ -110,7 +105,7 @@ final class AccountEnvironmentReviewProbes
                 $uri,
                 static fn (Client $client): mixed => $client->uapi($route === 'direct-uapi' ? null : 'npr')
                     ->variables()->getUserInformation(name: self::USER_FIELDS),
-                argumentVariant: 'documented-fields-except-token',
+                argumentVariant: 'reviewed-present-fields-except-token',
             );
         }
 

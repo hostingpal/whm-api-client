@@ -1057,13 +1057,17 @@ No mutation or secret retrieval ran; user information remains domain-only.
 
 `account-environment-review.php` binds three GET observations: WHM version and
 `Variables/get_user_information` on both routes for designated account `npr`.
-Its explicit 67-name allowlist selects every field in the pinned user-information
-schema except `pushbullet_access_token`. The list is fixed in the reviewed catalog;
+Its explicit 60-name allowlist selects the pinned user-information fields verified
+present on `npr`, excluding `pushbullet_access_token` and the seven names absent
+on this account: `lang`, `maximum_defer_fail_percentage`, `maximum_emails_per_hour`, `notify_bandwidth_limit`, `notify_ssl_expiry`, `notify_twofactorauth_change`, `notify_twofactorauth_change_notification_disabled`.
+Those seven remain supported by the client; this capture does not establish their
+wire forms. One absent selector fails the whole request, as documented in
+[review 5720313728](https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720313728). The list is fixed in the reviewed catalog;
 it is never derived from live keys or automatically expanded with a future schema.
 Repeated `name` query keys exercise the typed selector without an unfiltered read.
 
 The recipe label is `account-environment-review-v1`; each user read records the
-fixed argument variant `documented-fields-except-token`. The command requires
+fixed argument variant `reviewed-present-fields-except-token`. The command requires
 committed inputs, `WHM_API_LIVE=1`, exact `npr`/`npr.rs` guards and both test tokens.
 The shared exact-URI guard rejects added token selectors, omitted selectors,
 changed targets, request bodies and mutations before dispatch. Evidence retains

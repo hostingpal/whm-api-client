@@ -184,12 +184,15 @@ final readonly class Variables
      * minimum_password_strength_mysql is inferred from the reviewer-inspected shared %Cpanel::CONF source path; those
      * fields were null locally, not observed with numeric values. Preserve null separately from omission.
      *
-     * Observed: Reviewer inspection of Cpanel/API/Variables.pm on 11.138.0.19 maps disable_analog, disable_awstats,
-     * disable_boxtrapper, disable_mailman, disable_roundcube, disable_spamassassin, disable_spambox, disable_webalizer,
-     * skip_apache_clients_optimizer and skip_mailbox_warnings_check from skip* configuration keys, including
-     * disable_awstats from skipawstats and skip_mailbox_warnings_check from skipboxcheck. These source mappings imply
-     * disable/skip meanings that contradict the pinned 1 - Enabled descriptions. Preserve the returned flags without
-     * inversion; the reviewer checked mappings only, not runtime behavior.
+     * Observed: Reviewer inspection of Cpanel/API/Variables.pm on 11.138.0.19 confirms these internal-key to
+     * public-field mappings: skipanalog to disable_analog; skipawstats to disable_awstats; skipboxtrapper to
+     * disable_boxtrapper; skipmailman to disable_mailman; skiproundcube to disable_roundcube; skipspamassassin to
+     * disable_spamassassin; skipspambox to disable_spambox; skipwebalizer to disable_webalizer;
+     * skipapacheclientsoptimizer to skip_apache_clients_optimizer; skipboxcheck to skip_mailbox_warnings_check;
+     * skipbwlimitcheck to skip_bandwidth_limit_check. The first ten skip mappings conflict with the pinned 1 - Enabled
+     * descriptions. The pinned skip_bandwidth_limit_check text says 1 suspends HTTP service, which also reads opposite
+     * to its skip source key. Preserve the returned flags without inversion: source mappings were checked, but runtime
+     * behavior was not verified. See PR41 clarification 6536895626.
      *
      * API-map identity: uapi:Variables/get_server_information#GET (wire name get_server_information).
      *
@@ -270,6 +273,14 @@ final readonly class Variables
      * empty strings before any contact was set; the alternate contact became null after setting one address, and both
      * became null after unsetting addresses. Preserve null, empty string, populated string and omitted fields
      * distinctly. These observations are attributed to the review, not the committed domain-only capture.
+     *
+     * Observed: On 11.138.0.19, requesting an absent or unknown name raises an API error for the entire
+     * getUserInformation request, both for a scalar name and for any absent member of a repeated-name list. Reviewer
+     * inspection attributes this to _transform_results in Cpanel/API/Variables.pm. Pinned fields need not exist on
+     * every account. Seven pinned fields were absent on designated npr: lang, maximum_defer_fail_percentage,
+     * maximum_emails_per_hour, notify_bandwidth_limit, notify_ssl_expiry, notify_twofactorauth_change,
+     * notify_twofactorauth_change_notification_disabled. They remain supported fields; this account provides no
+     * wire-form evidence for them.
      *
      * API-map identity: uapi:Variables/get_user_information#GET (wire name get_user_information).
      *

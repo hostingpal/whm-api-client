@@ -18,7 +18,7 @@ use Psr\Http\Message\RequestInterface;
 
 final class AccountEnvironmentReviewProbesTest extends TestCase
 {
-    public function testCatalogBindsEveryPinnedUserFieldExceptTheTokenOnBothRoutes(): void
+    public function testCatalogBindsReviewedPresentFieldsAndExcludesTokenOnBothRoutes(): void
     {
         $source = file_get_contents(__DIR__ . '/../../../docs/api/sources/2026-10-13/cpanel.openapi.json.gz');
         self::assertIsString($source);
@@ -39,9 +39,20 @@ final class AccountEnvironmentReviewProbesTest extends TestCase
             $fields[] = $field;
         }
         self::assertCount(68, $fields);
-        $fields = array_values(array_diff($fields, ['pushbullet_access_token']));
+        // Reviewer 5720313728 found these seven pinned names absent on npr.
+        // They remain supported by the client but have no wire evidence in this recipe.
+        $fields = array_values(array_diff($fields, [
+            'pushbullet_access_token',
+            'lang',
+            'maximum_defer_fail_percentage',
+            'maximum_emails_per_hour',
+            'notify_bandwidth_limit',
+            'notify_ssl_expiry',
+            'notify_twofactorauth_change',
+            'notify_twofactorauth_change_notification_disabled',
+        ]));
         sort($fields);
-        self::assertCount(67, $fields);
+        self::assertCount(60, $fields);
         $query = implode('&', array_map(static fn (string $name): string => 'name=' . $name, $fields));
         $probes = AccountEnvironmentReviewProbes::load();
         self::assertCount(3, $probes);
@@ -58,7 +69,7 @@ final class AccountEnvironmentReviewProbesTest extends TestCase
             self::assertSame('GET', $probe->spec['method']);
             self::assertStringNotContainsString('pushbullet', $uri);
             self::assertNull($probe->unavailable);
-            self::assertSame($route === 'whm' ? null : 'documented-fields-except-token', $probe->argumentVariant);
+            self::assertSame($route === 'whm' ? null : 'reviewed-present-fields-except-token', $probe->argumentVariant);
             $factory = new Psr17Factory();
             $http = new MockClient($factory);
             $payload = '{"domain":"fixture.example","uid":"1001","feature":{"fixture":"1"},'

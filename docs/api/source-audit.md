@@ -3222,9 +3222,12 @@ configuration-copy path as its six corrected siblings. Their numeric values were
 not observed on this server, and no server-wide configuration was changed to
 manufacture them. Repeated-name selection for user/server information follows
 reviewed source `get_multiple('name')` and both-route selection observations;
-session information keeps its scalar selector. Notes distinguish pinned inverted
-skip/disable wording from reviewer-inspected source mappings without claiming
-runtime enforcement was measured.
+session information keeps its scalar selector. The [full reviewer mapping clarification](https://github.com/hostingpal/whm-api-client/pull/41#issuecomment-6536895626)
+records all eleven skip/disable source-key mappings, including `skipbwlimitcheck`
+to `skip_bandwidth_limit_check`. Its pinned statement that 1 suspends HTTP service
+also conflicts with the skip-key meaning. The overlay records each exact mapping
+and preserves flags without inversion; only source mappings were inspected, not
+runtime behavior or enforcement.
 
 The first-contact setter now permits omitting `oldAddresses` only for an account
 with no existing contact addresses. The reviewer observed successful explicit-null
@@ -3241,8 +3244,12 @@ notification preference rows contain `onchangeparent`, `type`, `infotext`, and
 `value`, with no literal `additionalProperties`; those unmodeled fields remain
 follow-up `8x0.2.28`, not a new typed schema inferred from masked historical keys.
 
-The new bounded review recipe selects every current documented user field except
-`pushbullet_access_token` on both routes, plus WHM version. It requests no token,
+The new bounded review recipe selects 60 pinned user fields confirmed present on
+`npr` by [review 5720313728](https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720313728),
+plus WHM version. Its fixed list excludes `pushbullet_access_token` and seven
+pinned fields absent on this account: `lang`, `maximum_defer_fail_percentage`, `maximum_emails_per_hour`, `notify_bandwidth_limit`, `notify_ssl_expiry`, `notify_twofactorauth_change`, `notify_twofactorauth_change_notification_disabled`.
+An absent scalar or list selector fails the entire request; the seven fields
+remain client-supported, with no wire-form claim from this capture. It requests no token,
 performs no mutation, and will capture only sanitized structure at the reviewed
 corrected revision. This paragraph describes the recipe, not a completed run.
 The original account-environment artifacts keep their original failures and hashes.

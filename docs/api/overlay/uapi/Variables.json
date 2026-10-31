@@ -22,7 +22,7 @@
         },
         {
           "kind": "observed",
-          "text": "Reviewer inspection of Cpanel/API/Variables.pm on 11.138.0.19 maps disable_analog, disable_awstats, disable_boxtrapper, disable_mailman, disable_roundcube, disable_spamassassin, disable_spambox, disable_webalizer, skip_apache_clients_optimizer and skip_mailbox_warnings_check from skip* configuration keys, including disable_awstats from skipawstats and skip_mailbox_warnings_check from skipboxcheck. These source mappings imply disable/skip meanings that contradict the pinned 1 - Enabled descriptions. Preserve the returned flags without inversion; the reviewer checked mappings only, not runtime behavior."
+          "text": "Reviewer inspection of Cpanel/API/Variables.pm on 11.138.0.19 confirms these internal-key to public-field mappings: skipanalog to disable_analog; skipawstats to disable_awstats; skipboxtrapper to disable_boxtrapper; skipmailman to disable_mailman; skiproundcube to disable_roundcube; skipspamassassin to disable_spamassassin; skipspambox to disable_spambox; skipwebalizer to disable_webalizer; skipapacheclientsoptimizer to skip_apache_clients_optimizer; skipboxcheck to skip_mailbox_warnings_check; skipbwlimitcheck to skip_bandwidth_limit_check. The first ten skip mappings conflict with the pinned 1 - Enabled descriptions. The pinned skip_bandwidth_limit_check text says 1 suspends HTTP service, which also reads opposite to its skip source key. Preserve the returned flags without inversion: source mappings were checked, but runtime behavior was not verified. See PR41 clarification 6536895626."
         }
       ],
       "evidence": [
@@ -66,6 +66,12 @@
           "date": "2026-10-31",
           "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. get_server_information copies %Cpanel::CONF through _build_results unchanged, including minimum_password_strength_mysql, the same path as the six observed numeric-string integers. Both additional keys were absent from the local cpanel.config and seen only as null. Accept canonical PHP-integer-bounded numeric strings as a source-inferred family rule, not a value-specific live observation; keep existing nullable and optional behavior. No server configuration was changed to obtain evidence.",
           "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Claude clarification https://github.com/hostingpal/whm-api-client/pull/41#issuecomment-6536895626 supplies the complete eleven-key mapping from Cpanel/API/Variables.pm on this server and identifies the additional skip_bandwidth_limit_check pinned-wording contradiction. This is attributed inspection of source mappings only, not an observed setting transition or runtime enforcement claim. No flag value is inverted, no executable contract changes, and no new live capture is inferred."
         }
       ],
       "response": {
@@ -704,6 +710,10 @@
         {
           "kind": "observed",
           "text": "On a reviewer-owned disposable account through both routes, contact_email and contact_email_2 were empty strings before any contact was set; the alternate contact became null after setting one address, and both became null after unsetting addresses. Preserve null, empty string, populated string and omitted fields distinctly. These observations are attributed to the review, not the committed domain-only capture."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, requesting an absent or unknown name raises an API error for the entire getUserInformation request, both for a scalar name and for any absent member of a repeated-name list. Reviewer inspection attributes this to _transform_results in Cpanel/API/Variables.pm. Pinned fields need not exist on every account. Seven pinned fields were absent on designated npr: lang, maximum_defer_fail_percentage, maximum_emails_per_hour, notify_bandwidth_limit, notify_ssl_expiry, notify_twofactorauth_change, notify_twofactorauth_change_notification_disabled. They remain supported fields; this account provides no wire-form evidence for them."
         }
       ],
       "evidence": [
@@ -740,6 +750,13 @@
           "date": "2026-10-31",
           "note": "Reviewer lifecycle observations on a disposable account through direct and bridged UAPI establish contact_email_2 can be null: both fields were empty strings on creation, contact_email_2 was null after a one-address set, and both were null after unset_email_addresses. Add explicit null to the existing optional string without conflating omission or empty string. This report is separate from the immutable domain-only capture.",
           "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Claude review 5720313728 of cf35cf85879a64b433a27ef52309743f320d6c13 verified both routes: 67 pinned selectors excluding token fail, the fixed 60 remaining names pass with 60 keys and no token, and domain plus lang fails. Unknown scalar names also fail. The seven absent fields are account-specific omissions, not unsupported operations. Existing source contracts are unchanged.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720313728"
         }
       ],
       "response": {
