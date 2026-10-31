@@ -253,6 +253,70 @@ final class WhmBackupsTest extends TestCase
         );
     }
 
+    /** @return iterable<string, array{array<string, int|string>, array<string, int|string>}> */
+    public static function observedConfigurationRepresentations(): iterable
+    {
+        yield 'weekly day integer zero' => [['backup_weekly_day' => 0], ['backup_weekly_day' => 0]];
+        yield 'weekly day integer' => [['backup_weekly_day' => 3], ['backup_weekly_day' => 3]];
+        yield 'weekly day original string spelling' => [
+            ['backup_weekly_day' => '01'], ['backup_weekly_day' => '01'],
+        ];
+        foreach (['check_min_free_space', 'prebackup'] as $field) {
+            yield $field . ' quoted zero' => [[$field => '0'], [$field => 0]];
+            yield $field . ' quoted one' => [[$field => '1'], [$field => 1]];
+            yield $field . ' native zero' => [[$field => 0], [$field => 0]];
+            yield $field . ' native one' => [[$field => 1], [$field => 1]];
+        }
+        yield 'omitted fields' => [[], []];
+    }
+
+    /**
+     * @param array<string, int|string> $configuration
+     * @param array<string, int|string> $expected
+     */
+    #[DataProvider('observedConfigurationRepresentations')]
+    public function testObservedBackupConfigurationRepresentations(
+        array $configuration,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(
+            'backup_config_get',
+            json_encode(['backup_config' => (object) $configuration], JSON_THROW_ON_ERROR),
+        )));
+        self::assertSame(['backup_config' => $expected], $client->whm()->backups()->backupConfigGet());
+        self::assertRequest($http, 'backup_config_get', 'GET', '');
+        self::assertCount(1, $http->getRequests());
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+    }
+
+    /** @return iterable<string, array{string, mixed}> */
+    public static function invalidConfigurationRepresentations(): iterable
+    {
+        foreach (['check_min_free_space', 'prebackup'] as $field) {
+            foreach (['', '00', '01', '1.0', '1e0', ' 1', '1 ', '2', '-1', 2, -1, 0.0, true, false, null] as $value) {
+                yield $field . ' ' . json_encode($value, JSON_PRESERVE_ZERO_FRACTION) => [$field, $value];
+            }
+        }
+        foreach ([0.5, true, false, null, [], new \stdClass()] as $index => $value) {
+            yield 'weekly day invalid ' . $index => ['backup_weekly_day', $value];
+        }
+        yield 'unrelated backup flag stays strict' => ['backupenable', '0'];
+        yield 'unrelated backup count stays strict' => ['backup_daily_retention', '5'];
+    }
+
+    #[DataProvider('invalidConfigurationRepresentations')]
+    public function testBackupConfigurationCorrectionsStayNarrow(string $field, mixed $value): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(
+            'backup_config_get',
+            json_encode(['backup_config' => [$field => $value]], JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION),
+        )));
+        $this->expectException(PayloadMismatchException::class);
+        $client->whm()->backups()->backupConfigGet();
+    }
+
     public function testEveryBackupConfigurationOptionHasItsDocumentedWireName(): void
     {
         [$client, $http] = self::client();

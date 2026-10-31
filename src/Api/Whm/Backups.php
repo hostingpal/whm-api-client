@@ -25,7 +25,7 @@ use SensitiveParameter;
  *         backup_monthly_dates?: string,
  *         backup_monthly_enable?: 0|1,
  *         backup_monthly_retention?: int,
- *         backup_weekly_day?: string,
+ *         backup_weekly_day?: string|int,
  *         backup_weekly_enable?: 0|1,
  *         backup_weekly_retention?: int,
  *         backupaccts?: 0|1,
@@ -220,6 +220,10 @@ final readonly class Backups
      *
      * Documented: Backup configuration flags remain integer 0/1. disable_metadata=1 disables metadata, while
      * keeplocal=0 deletes local backups. Omitted configuration fields remain absent.
+     *
+     * Observed: On cPanel 11.138.0.19, backup_weekly_day was an integer and check_min_free_space/prebackup were numeric
+     * strings. Preserve weekly days as int|string; normalize only exact quoted 0/1 spellings for these two flags. Other
+     * field contracts, optional presence and setter semantics remain unchanged.
      *
      * API-map identity: whm1:backup_config_get#GET (wire name backup_config_get; Backup Settings).
      *

@@ -377,3 +377,21 @@ The initial artifact and every earlier evidence file remain unchanged. Remaining
 committed populated/mutation evidence stays under `8x0.2.26`; no further read-only
 capture is outstanding from this review request. SHA-256:
 `8be0fe648505873d0f36221e0ef750954b5268469399ac2de804ef8c1e5d3b56`.
+
+## WHM backup and restoration
+
+The initial [backup/restoration capture](2026-10-31-backup-restoration.json)
+at `88e01bd54f1939e4937fd3673f2b174a6353e7ab` on `11.138.0.19` records eleven
+HTTP-200 and successful WHM API observations. Ten payload/probe checks pass;
+`backup_config_get` has three known-field type mismatches and one masked unknown
+integer field. The getter's `backup_weekly_day` is an integer; its original string
+contract is retained alongside that observed variant. Only `check_min_free_space`
+and `prebackup` gain exact quoted-flag acceptance. No other configuration field
+is widened and the unknown field remains untyped and unwaived.
+
+Backup metadata users/domains, archive inventory and every queue collection are
+empty. Restoration module rows are populated. These reads establish no populated
+backup/queue rows, destination behavior, backup creation, restoration, migration,
+queue mutation or configuration-write semantics. All original findings remain in
+`8x0.2.29`; source contradictions are unresolved. Initial SHA-256:
+`4b788b00b69944d305473bd89004e6199914cf2b366ed90676b3313aac32daca`.

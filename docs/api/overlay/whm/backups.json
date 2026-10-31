@@ -9,6 +9,67 @@
         {
           "kind": "documented",
           "text": "Backup configuration flags remain integer 0/1. disable_metadata=1 disables metadata, while keeplocal=0 deletes local backups. Omitted configuration fields remain absent."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, backup_weekly_day was an integer and check_min_free_space/prebackup were numeric strings. Preserve weekly days as int|string; normalize only exact quoted 0/1 spellings for these two flags. Other field contracts, optional presence and setter semantics remain unchanged."
+        }
+      ],
+      "response": {
+        "backup_config.backup_weekly_day": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "int"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "docs/api/evidence/2026-10-31-backup-restoration.json (SHA-256 4b788b00b69944d305473bd89004e6199914cf2b366ed90676b3313aac32daca), whm1:backup_config_get#GET through WHM at 88e01bd54f1939e4937fd3673f2b174a6353e7ab records $.backup_config.backup_weekly_day as an integer despite the pinned string schema. Preserve the documented string and observed integer representations without converting either. The immutable failed artifact and its masked unknown integer remain unchanged and unwaived under whm-api-client-8x0.2.29."
+            }
+          ]
+        },
+        "backup_config.check_min_free_space": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "docs/api/evidence/2026-10-31-backup-restoration.json (SHA-256 4b788b00b69944d305473bd89004e6199914cf2b366ed90676b3313aac32daca), whm1:backup_config_get#GET through WHM at 88e01bd54f1939e4937fd3673f2b174a6353e7ab records $.backup_config.check_min_free_space as numeric-string despite the pinned integer 0/1 flag. Accept only the exact quoted flag spellings 0 and 1, normalizing them to integer flags; broader numeric strings are not inferred. The immutable failed artifact and its masked unknown integer remain unchanged and unwaived under whm-api-client-8x0.2.29."
+            }
+          ]
+        },
+        "backup_config.prebackup": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "docs/api/evidence/2026-10-31-backup-restoration.json (SHA-256 4b788b00b69944d305473bd89004e6199914cf2b366ed90676b3313aac32daca), whm1:backup_config_get#GET through WHM at 88e01bd54f1939e4937fd3673f2b174a6353e7ab records $.backup_config.prebackup as numeric-string despite the pinned integer 0/1 flag. Accept only the exact quoted flag spellings 0 and 1, normalizing them to integer flags; broader numeric strings are not inferred. The immutable failed artifact and its masked unknown integer remain unchanged and unwaived under whm-api-client-8x0.2.29."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "docs/api/evidence/2026-10-31-backup-restoration.json (SHA-256 4b788b00b69944d305473bd89004e6199914cf2b366ed90676b3313aac32daca), whm1:backup_config_get#GET through WHM at 88e01bd54f1939e4937fd3673f2b174a6353e7ab records the three reviewed configuration representation discrepancies described in the response corrections. These observations establish neither a new unknown-field contract nor backup-setting mutation behavior. The immutable failed artifact and its masked unknown integer remain unchanged and unwaived under whm-api-client-8x0.2.29."
         }
       ]
     },
