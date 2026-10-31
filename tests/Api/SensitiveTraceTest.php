@@ -181,6 +181,20 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
+    public function testGuardedTargetsStayOutOfLocalValidationTraceArguments(): void
+    {
+        try {
+            \HostingPal\WhmApiClient\Api\Engine\ArgumentEncoder::encode(
+                ['domains' => ['name' => 'domain', 'encoding' => 'repeat', 'reject_empty' => true]],
+                ['domains' => [self::SECRET, '']],
+            );
+            self::fail('Expected a target-policy failure.');
+        } catch (InvalidArgumentException $exception) {
+            self::assertSecretAbsent($exception);
+            self::assertStringNotContainsString(self::SECRET, $exception->getMessage());
+        }
+    }
+
     public function testPayloadFailuresKeepSecretsOutOfTraceArguments(): void
     {
         [$client, $http] = self::client(false);
@@ -674,6 +688,15 @@ final class SensitiveTraceTest extends TestCase
     /** @return iterable<string, array{'whm'|'direct'|'bridged', Closure(Client): mixed}> */
     private static function secretCalls(): iterable
     {
+        yield 'WHM nonroot transfer password with required true' => [
+            'whm',
+            static fn (Client $client): mixed => $client->whm()->transfers()->createRemoteUserTransferSession(
+                host: 'remote.test',
+                password: self::SECRET,
+                unrestrictedRestore: true,
+            ),
+        ];
+
         foreach (['direct', 'bridged'] as $route) {
             foreach (['cert', 'cabundle'] as $field) {
                 yield $route . ' SSL install ' . $field => [

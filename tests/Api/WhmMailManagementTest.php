@@ -147,7 +147,8 @@ final class WhmMailManagementTest extends TestCase
             'domain=a.example.test&domain=b.example.test',
             '{"payload":[{"domain":"a.example.test","msg":"created","status":1}]}'];
         yield 'Exim check attempts repair' => ['exim_configuration_check', 'eximConfigurationCheck', 'POST',
-            static fn (WhmClient $w): array => $w->mail()->eximConfigurationCheck(), '', '{"message":"repair failed"}'];
+            static fn (WhmClient $w): ?array => $w->mail()->eximConfigurationCheck(), '',
+            '{"message":"repair failed"}'];
         yield 'expunge mailbox name' => ['expunge_mailbox_messages', 'expungeMailboxMessages', 'POST',
             static function (WhmClient $w): void {
                 $w->mail()->expungeMailboxMessages('fixture@example.test', 'INBOX', 'subject "A & B"');
@@ -158,7 +159,7 @@ final class WhmMailManagementTest extends TestCase
             }, 'account=fixture%40example.test&mailbox_guid=fixture-guid&query=savedbefore%2052w', null];
         yield 'private DKIM export' => ['fetch_dkim_private_keys', 'fetchDkimPrivateKeys', 'POST',
             static fn (WhmClient $w): array => $w->mail()->fetchDkimPrivateKeys(['a.example.test', 'b.example.test']),
-            'domain=a.example.test&domain-1=b.example.test',
+            'domain=a.example.test&domain=b.example.test',
             '{"payload":[{"domain":"a.example.test","pem":"synthetic-private-material"}]}'];
         yield 'queue fields' => ['fetch_mail_queue', 'fetchMailQueue', 'GET',
             static fn (WhmClient $w): array => $w->mail()->fetchMailQueue(), '',
@@ -180,13 +181,13 @@ final class WhmMailManagementTest extends TestCase
             '{"mailboxes":[{"guid":"fixture-guid","mailbox":"INBOX","messages":0,"vsize":0}]}'];
         yield 'unique recipients per sender' => ['get_unique_recipient_count_per_sender_for_user',
             'getUniqueRecipientCountPerSenderForUser', 'GET',
-            static fn (WhmClient $w): array => $w->mail()->getUniqueRecipientCountPerSenderForUser(2, 0, 'fixture'),
-            'end_time=2&start_time=0&user=fixture',
+            static fn (WhmClient $w): array => $w->mail()->getUniqueRecipientCountPerSenderForUser('fixture', 0, 2),
+            'user=fixture&start_time=0&end_time=2',
             '{"payload":[{"sender":"fixture@example.test","unique_recipient_count":1}]}'];
         yield 'unique pairs per user' => ['get_unique_sender_recipient_count_per_user',
             'getUniqueSenderRecipientCountPerUser', 'GET',
-            static fn (WhmClient $w): array => $w->mail()->getUniqueSenderRecipientCountPerUser(2, 0),
-            'end_time=2&start_time=0', '{"payload":[{"unique_sender_recipient_count":1,"user":"fixture"}]}'];
+            static fn (WhmClient $w): array => $w->mail()->getUniqueSenderRecipientCountPerUser(0, 2),
+            'start_time=0&end_time=2', '{"payload":[{"unique_sender_recipient_count":1,"user":"fixture"}]}'];
         yield 'system forward destinations' => ['get_user_email_forward_destination', 'getUserEmailForwardDestination',
             'GET', static fn (WhmClient $w): array => $w->mail()->getUserEmailForwardDestination('fixture'),
             'user=fixture', '{"forward_to":["first@example.test","second@example.test"]}'];
@@ -269,8 +270,8 @@ final class WhmMailManagementTest extends TestCase
             '{"payload":{"a.example.test":null,"b.example.test":"failed"}}'];
         yield 'system forward comma list' => ['set_user_email_forward_destination', 'setUserEmailForwardDestination',
             'POST', static function (WhmClient $w): void {
-                $w->mail()->setUserEmailForwardDestination('first@example.test,second@example.test', 'fixture');
-            }, 'forward_to=first%40example.test%2Csecond%40example.test&user=fixture', null];
+                $w->mail()->setUserEmailForwardDestination('fixture', 'first@example.test,second@example.test');
+            }, 'user=fixture&forward_to=first%40example.test%2Csecond%40example.test', null];
         yield 'suspend outgoing email' => ['suspend_outgoing_email', 'suspendOutgoingEmail', 'POST',
             static function (WhmClient $w): void {
                 $w->mail()->suspendOutgoingEmail('fixture');
@@ -367,6 +368,9 @@ final class WhmMailManagementTest extends TestCase
                 continue;
             }
             foreach (['null', 'true', '42', '"wrong"', '[{}]', null] as $index => $invalid) {
+                if ($operation === 'exim_configuration_check' && ($invalid === null || $invalid === 'null')) {
+                    continue;
+                }
                 yield $label . ' root ' . $index => [$operation, $call, $invalid];
             }
         }
@@ -391,10 +395,8 @@ final class WhmMailManagementTest extends TestCase
     /** @return iterable<string, array{string, Call, string}> */
     public static function invalidLeaves(): iterable
     {
-        yield 'DMARC list' => ['apply_dmarc',
-            static fn (WhmClient $w): array => $w->mail()->applyDmarc('v=DMARC1; p=none;'), '{"payload":{}}'];
         yield 'DMARC quoted status' => ['apply_dmarc',
-            static fn (WhmClient $w): array => $w->mail()->applyDmarc('v=DMARC1; p=none;'),
+            static fn (WhmClient $w): array => $w->mail()->applyDmarc('v=DMARC1; p=none;', 'example.test'),
             '{"payload":[{"status":"1"}]}'];
         yield 'country native flag' => ['block_incoming_email_from_country',
             static fn (WhmClient $w): array => $w->mail()->blockIncomingEmailFromCountry('RS'), '{"updated":true}'];
@@ -419,7 +421,7 @@ final class WhmMailManagementTest extends TestCase
             static fn (WhmClient $w): array => $w->mail()->ensureDkimKeysExist('example.test'),
             '{"payload":[{"status":false}]}'];
         yield 'Exim repair message' => ['exim_configuration_check',
-            static fn (WhmClient $w): array => $w->mail()->eximConfigurationCheck(), '{"message":null}'];
+            static fn (WhmClient $w): ?array => $w->mail()->eximConfigurationCheck(), '{"message":null}'];
         yield 'private PEM type' => ['fetch_dkim_private_keys',
             static fn (WhmClient $w): array => $w->mail()->fetchDkimPrivateKeys('example.test'),
             '{"payload":[{"pem":0}]}'];
@@ -432,17 +434,17 @@ final class WhmMailManagementTest extends TestCase
         yield 'default DMARC nested object' => ['get_default_dmarc_record',
             static fn (WhmClient $w): array => $w->mail()->getDefaultDmarcRecord(), '{"payload":{"record":null}}'];
         yield 'mailbox map integer bytes' => ['get_mailbox_status',
-            static fn (WhmClient $w): array => $w->mail()->getMailboxStatus('fixture'), '{"INBOX":{"vsize":"0"}}'];
+            static fn (WhmClient $w): array => $w->mail()->getMailboxStatus('fixture'), '{"INBOX":{"vsize":"00"}}'];
         yield 'mailbox map row object' => ['get_mailbox_status',
             static fn (WhmClient $w): array => $w->mail()->getMailboxStatus('fixture'), '{"INBOX":null}'];
         yield 'mailbox list strict count' => ['get_mailbox_status_list',
             static fn (WhmClient $w): array => $w->mail()->getMailboxStatusList('fixture'),
             '{"mailboxes":[{"messages":1.5}]}'];
         yield 'recipient count strict' => ['get_unique_recipient_count_per_sender_for_user',
-            static fn (WhmClient $w): array => $w->mail()->getUniqueRecipientCountPerSenderForUser(2, 0, 'fixture'),
+            static fn (WhmClient $w): array => $w->mail()->getUniqueRecipientCountPerSenderForUser('fixture', 0, 2),
             '{"payload":[{"unique_recipient_count":"1"}]}'];
         yield 'pair count strict' => ['get_unique_sender_recipient_count_per_user',
-            static fn (WhmClient $w): array => $w->mail()->getUniqueSenderRecipientCountPerUser(2, 0),
+            static fn (WhmClient $w): array => $w->mail()->getUniqueSenderRecipientCountPerUser(0, 2),
             '{"payload":[{"unique_sender_recipient_count":true}]}'];
         yield 'forward list' => ['get_user_email_forward_destination',
             static fn (WhmClient $w): array => $w->mail()->getUserEmailForwardDestination('fixture'),
@@ -468,7 +470,8 @@ final class WhmMailManagementTest extends TestCase
         yield 'SNI rebuilt configs' => ['rebuild_mail_sni_config',
             static fn (WhmClient $w): array => $w->mail()->rebuildMailSniConfig(), '{"configs_built":[1]}'];
         yield 'DMARC remove status' => ['remove_dmarc',
-            static fn (WhmClient $w): array => $w->mail()->removeDmarc(), '{"payload":[{"status":null}]}'];
+            static fn (WhmClient $w): array => $w->mail()->removeDmarc('example.test'),
+            '{"payload":[{"status":null}]}'];
         yield 'default DMARC success integer' => ['set_default_dmarc_record',
             static fn (WhmClient $w): array => $w->mail()->setDefaultDmarcRecord(), '{"payload":{"success":"1"}}'];
         yield 'manual MX map' => ['set_manual_mx_redirects',
@@ -488,7 +491,7 @@ final class WhmMailManagementTest extends TestCase
             static fn (WhmClient $w): array => $w->mail()->validateCurrentDkims('example.test'),
             '{"payload":[{"records":[{"current":null}]}]}'];
         yield 'DMARC repaired list leaf' => ['validate_current_dmarcs',
-            static fn (WhmClient $w): array => $w->mail()->validateCurrentDmarcs(), '{"payload":[{"record":null}]}'];
+            static fn (WhmClient $w): array => $w->mail()->validateCurrentDmarcs(), '{"payload":[{"record":0}]}'];
         yield 'installed Exim message type' => ['validate_current_installed_exim_config',
             static fn (WhmClient $w): array => $w->mail()->validateCurrentInstalledEximConfig(), '{"message":0}'];
         yield 'PTR forward record leaf' => ['validate_current_ptrs',
@@ -519,8 +522,6 @@ final class WhmMailManagementTest extends TestCase
     /** @return iterable<string, array{string, Call}> */
     public static function defaults(): iterable
     {
-        yield 'apply default domain selection' => ['apply_dmarc',
-            static fn (WhmClient $w): array => $w->mail()->applyDmarc('v=DMARC1; p=none;')];
         yield 'search defaults' => ['emailtrack_search',
             static fn (WhmClient $w): array => $w->mail()->emailtrackSearch()];
         yield 'stats defaults' => ['emailtrack_stats',
@@ -529,12 +530,8 @@ final class WhmMailManagementTest extends TestCase
             static fn (WhmClient $w): array => $w->mail()->emailtrackUserStats()];
         yield 'rebuild defaults' => ['rebuild_mail_sni_config',
             static fn (WhmClient $w): array => $w->mail()->rebuildMailSniConfig()];
-        yield 'remove DMARC all domains' => ['remove_dmarc',
-            static fn (WhmClient $w): array => $w->mail()->removeDmarc()];
         yield 'set DMARC omission' => ['set_default_dmarc_record',
             static fn (WhmClient $w): array => $w->mail()->setDefaultDmarcRecord()];
-        yield 'unblock country omission retained' => ['unblock_incoming_email_from_country',
-            static fn (WhmClient $w): array => $w->mail()->unblockIncomingEmailFromCountry()];
         yield 'validate DMARC all domains' => ['validate_current_dmarcs',
             static fn (WhmClient $w): array => $w->mail()->validateCurrentDmarcs()];
         yield 'syntax current configuration defaults' => ['validate_exim_configuration_syntax',
@@ -598,7 +595,7 @@ final class WhmMailManagementTest extends TestCase
         $invalid = [[], [1 => 'example.test'], ['key' => 'example.test'], [0], [null], [['example.test']]];
         foreach ($invalid as $i => $bad) {
             yield 'repeat domains ' . $i => ['enableDkim', [$bad]];
-            yield 'repeat policies ' . $i => ['applyDmarc', [$bad]];
+            yield 'repeat policies ' . $i => ['applyDmarc', [$bad, 'example.test']];
             yield 'repeat countries ' . $i => ['blockIncomingEmailFromCountry', [$bad]];
             yield 'numbered domains ' . $i => ['fetchDkimPrivateKeys', [$bad]];
             yield 'numbered keys ' . $i => ['installDkimPrivateKeys', ['example.test', $bad]];
@@ -633,6 +630,10 @@ final class WhmMailManagementTest extends TestCase
         yield 'empty destination list' => ['{"forward_to":[]}', ['forward_to' => []]];
         yield 'populated pinned list' => ['{"forward_to":["fixture@example.test","fixture"]}',
             ['forward_to' => ['fixture@example.test', 'fixture']]];
+        yield 'source scalar alias' => ['{"forward_to":"fixture@example.test"}',
+            ['forward_to' => 'fixture@example.test']];
+        yield 'scalar zero' => ['{"forward_to":"0"}', ['forward_to' => '0']];
+        yield 'scalar whitespace' => ['{"forward_to":" "}', ['forward_to' => ' ']];
         yield 'observed literal empty string' => ['{"forward_to":""}', ['forward_to' => '']];
     }
 
@@ -653,8 +654,6 @@ final class WhmMailManagementTest extends TestCase
         foreach (
             [
             'null' => 'null', 'boolean' => 'false', 'integer' => '0', 'float' => '1.5',
-            'single address string' => '"fixture@example.test"', 'space string' => '" "',
-            'zero string' => '"0"', 'arbitrary string' => '"unlimited"',
             'nonempty object' => '{"destination":"fixture@example.test"}',
             'nullable list item' => '[null]', 'integer list item' => '[0]', 'nested list item' => '[["fixture"]]',
             ] as $label => $value
@@ -670,10 +669,186 @@ final class WhmMailManagementTest extends TestCase
         $http->addResponse(new Response(200, [], self::envelope('get_user_email_forward_destination', $payload)));
         try {
             $client->whm()->mail()->getUserEmailForwardDestination('fixture');
-            self::fail('Only the pinned string list and the observed literal empty string are accepted.');
+            self::fail('Only strings and string lists are accepted.');
         } catch (PayloadMismatchException $exception) {
             self::assertSame($exception->metadata, $client->whm()->responseMeta());
             self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
+    /** @return iterable<string, array{string, string, string, array<string, mixed>}> */
+    public static function reviewedWireVariants(): iterable
+    {
+        yield 'mailbox counts' => ['get_mailbox_status', 'getMailboxStatus',
+            '{"INBOX":{"messages":"0","vsize":"9223372036854775807"}}',
+            ['INBOX' => ['messages' => 0, 'vsize' => PHP_INT_MAX]]];
+        yield 'mailbox list counts' => ['get_mailbox_status_list', 'getMailboxStatusList',
+            '{"mailboxes":[{"messages":"1","vsize":"0"}]}',
+            ['mailboxes' => [['messages' => 1, 'vsize' => 0]]]];
+        foreach (['Dmarcs', 'Dkims', 'Ptrs', 'Spfs'] as $suffix) {
+            $row = ['error' => null];
+            if ($suffix === 'Dmarcs') {
+                $row['record'] = null;
+            }
+            if (in_array($suffix, ['Ptrs', 'Spfs'], true)) {
+                $row['ip_version'] = 4;
+            }
+            $wire = $row;
+            if (isset($wire['ip_version'])) {
+                $wire['ip_version'] = '4';
+            }
+            yield $suffix => ['validate_current_' . strtolower($suffix), 'validateCurrent' . $suffix,
+                json_encode(['payload' => [$wire]], JSON_THROW_ON_ERROR), ['payload' => [$row]]];
+        }
+    }
+
+    /** @param array<string, mixed> $expected */
+    #[DataProvider('reviewedWireVariants')]
+    public function testReviewedWireVariants(string $operation, string $method, string $payload, array $expected): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($operation, $payload)));
+        $actual = (new ReflectionMethod(Mail::class, $method))->invoke($client->whm()->mail(), 'example.test');
+        self::assertSame($expected, $actual);
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    public function testSuccessfulEximCheckMayOmitPayload(): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('exim_configuration_check', null)));
+        self::assertNull($client->whm()->mail()->eximConfigurationCheck());
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+    }
+
+    public function testCountryUnblockRequiresAnExplicitCountry(): void
+    {
+        [$client, $http] = self::client();
+        try {
+            (new ReflectionMethod(Mail::class, 'unblockIncomingEmailFromCountry'))->invoke($client->whm()->mail());
+            self::fail('A country target is required.');
+        } catch (\ArgumentCountError) {
+            self::assertCount(0, $http->getRequests());
+        }
+    }
+
+    /** @return iterable<string, array{string, list<mixed>}> */
+    public static function unsafeDmarcTargets(): iterable
+    {
+        $targets = ['', ' ', "\t\n", '0', ' 0 ', [], [''], ['ok.test', ' '], ['0'], [1 => 'ok.test'], [null]];
+        foreach ($targets as $i => $target) {
+            yield 'remove ' . $i => ['removeDmarc', [$target]];
+            yield 'apply ' . $i => ['applyDmarc', ['v=DMARC1; p=none;', $target]];
+        }
+    }
+
+    /** @param list<mixed> $arguments */
+    #[DataProvider('unsafeDmarcTargets')]
+    public function testUnsafeDmarcTargetsClearMetadataWithoutIo(string $method, array $arguments): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('is_sni_supported', '{"sni":1}')));
+        $client->whm()->mail()->isSniSupported();
+        try {
+            (new ReflectionMethod(Mail::class, $method))->invokeArgs($client->whm()->mail(), $arguments);
+            self::fail('Unsafe scope must not dispatch.');
+        } catch (InvalidArgumentException $exception) {
+            self::assertSame('An explicit nonblank, nonzero target is required.', $exception->getMessage());
+            self::assertNull($client->whm()->responseMeta());
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
+    public function testMissingAndNullDmarcTargetsRejectBeforeMetadataReset(): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('is_sni_supported', '{"sni":1}')));
+        $client->whm()->mail()->isSniSupported();
+        $before = $client->whm()->responseMeta();
+        foreach (
+            [
+            ['removeDmarc', []], ['removeDmarc', [null]],
+            ['applyDmarc', ['v=DMARC1; p=none;']], ['applyDmarc', ['v=DMARC1; p=none;', null]]] as [$method, $arguments]
+        ) {
+            try {
+                (new ReflectionMethod(Mail::class, $method))->invokeArgs($client->whm()->mail(), $arguments);
+                self::fail('Native required argument must reject.');
+            } catch (\TypeError) {
+                self::assertSame($before, $client->whm()->responseMeta());
+                self::assertCount(1, $http->getRequests());
+            }
+        }
+    }
+
+    public function testWeakFalseyDmarcTargetsCannotBecomeServerWide(): void
+    {
+        [$client, $http] = self::client();
+        foreach ([0, false] as $target) {
+            try {
+                \HostingPal\WhmApiClient\Tests\Fixtures\WeakMailCaller::call(
+                    $client->whm()->mail(),
+                    'removeDmarc',
+                    [$target],
+                );
+                self::fail('Weak falsey targets must reject.');
+            } catch (InvalidArgumentException) {
+                self::assertCount(0, $http->getRequests());
+            }
+        }
+    }
+
+    public function testAllDomainDmarcChoiceUsesExplicitGenericPost(): void
+    {
+        [$client, $http] = self::client();
+        $choices = ['remove_dmarc' => [], 'apply_dmarc' => ['policy' => 'v=DMARC1; p=none;']];
+        foreach ($choices as $operation => $parameters) {
+            $http->addResponse(new Response(200, [], self::envelope($operation, '{"payload":[]}')));
+            self::assertSame(['payload' => []], $client->whm()->call($operation, $parameters)->data);
+            $request = $http->getLastRequest();
+            self::assertInstanceOf(RequestInterface::class, $request);
+            self::assertSame('POST', $request->getMethod());
+            self::assertSame('api.version=1', $request->getUri()->getQuery());
+            self::assertSame(
+                $operation === 'remove_dmarc' ? '' : 'policy=v%3DDMARC1%3B%20p%3Dnone%3B',
+                (string) $request->getBody(),
+            );
+        }
+        self::assertCount(2, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, string}> */
+    public static function malformedReviewedIntegerLeaves(): iterable
+    {
+        foreach (['"00"', '"+1"', '"1.0"', '"1e1"', '"9223372036854775808"', 'true', 'null', '1.5'] as $i => $value) {
+            foreach (['messages', 'vsize'] as $field) {
+                yield 'map ' . $field . $i => ['get_mailbox_status', 'getMailboxStatus',
+                    '{"INBOX":{"' . $field . '":' . $value . '}}'];
+                yield 'list ' . $field . $i => ['get_mailbox_status_list', 'getMailboxStatusList',
+                    '{"mailboxes":[{"' . $field . '":' . $value . '}]}'];
+            }
+            foreach (['Ptrs', 'Spfs'] as $suffix) {
+                yield $suffix . $i => ['validate_current_' . strtolower($suffix), 'validateCurrent' . $suffix,
+                    '{"payload":[{"ip_version":' . $value . '}]}'];
+            }
+        }
+    }
+
+    #[DataProvider('malformedReviewedIntegerLeaves')]
+    public function testMalformedReviewedIntegerLeavesKeepOutcomeMetadata(
+        string $operation,
+        string $method,
+        string $payload,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($operation, $payload)));
+        try {
+            (new ReflectionMethod(Mail::class, $method))->invoke($client->whm()->mail(), 'example.test');
+            self::fail('Noncanonical or out of range counts must reject.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertTrue($exception->outcomeConfirmed);
+            self::assertSame($exception->metadata, $client->whm()->responseMeta());
             self::assertCount(1, $http->getRequests());
         }
     }

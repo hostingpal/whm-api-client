@@ -18,7 +18,10 @@ use SensitiveParameter;
  * delivery diagnostics, mobile profiles, Exim and spamd configuration, and Greylisting. Mail, private-key,
  * configuration and profile outputs can contain sensitive data. Mutations use form POST, including private-key export
  * and raw Exim syntax validation. Per-domain failures remain separate from API status. No automatic delivery, expunge,
- * retry or rollback is provided. Existing Greylisting service-state observations and exclusions remain unchanged.
+ * retry or rollback is provided. Trust and configuration changes alter mail deferral policy. Returned triplets contain
+ * sender and recipient addresses; the client does not deliver mail or fetch returned addresses. The cPanel 11.138.0.19
+ * review used GET reads with Greylisting disabled; all fifteen writes across the reviewed cPHulk and Greylisting slice
+ * remain unobserved.
  *
  * Each method executes one WHM API 1 request immediately with a single attempt and no retries. The handle clears
  * responseMeta() before every attempt and records the envelope snapshot before API or payload errors.
@@ -222,7 +225,7 @@ use SensitiveParameter;
  *     }>,
  * }
  * @phpstan-type GetUserEmailForwardDestinationResult array{
- *     forward_to?: list<string>|'',
+ *     forward_to?: list<string>|string,
  * }
  * @phpstan-type InstallDkimPrivateKeysResult array{
  *     payload?: list<array{
@@ -341,7 +344,7 @@ use SensitiveParameter;
  * @phpstan-type ValidateCurrentDkimsResult array{
  *     payload?: list<array{
  *         domain?: string,
- *         error?: string,
+ *         error?: string|null,
  *         expected?: string,
  *         records?: list<array{
  *             current?: string,
@@ -354,8 +357,8 @@ use SensitiveParameter;
  * @phpstan-type ValidateCurrentDmarcsResult array{
  *     payload?: list<array{
  *         domain?: string,
- *         error?: string,
- *         record?: string,
+ *         error?: string|null,
+ *         record?: string|null,
  *         state?: string,
  *         subdomain?: string,
  *         suggested?: string,
@@ -368,7 +371,7 @@ use SensitiveParameter;
  *     payload?: list<array{
  *         arpa_domain?: string,
  *         domain?: string,
- *         error?: string,
+ *         error?: string|null,
  *         helo?: string,
  *         ip_address?: string,
  *         ip_version?: int,
@@ -384,7 +387,7 @@ use SensitiveParameter;
  * @phpstan-type ValidateCurrentSpfsResult array{
  *     payload?: list<array{
  *         domain?: string,
- *         error?: string,
+ *         error?: string|null,
  *         expected?: string,
  *         ip_address?: string,
  *         ip_version?: int,
@@ -442,6 +445,12 @@ final readonly class Mail
      *
      * This function applies a DMARC record to the specified domain(s).
      *
+     * Policy: Typed calls require explicit target domains and reject null/omission, blank strings/list entries and
+     * trimmed '0'; no DNS validation is implied. To deliberately select every server domain, use
+     * whm()->call('apply_dmarc', ['policy' => $policy]) as an explicit generic POST. Generic calls bypass typed target
+     * validation. Native missing/null argument failures occur before metadata reset; target-policy failures clear
+     * metadata before rejecting without I/O.
+     *
      * Documented: Available in cPanel & WHM 124 and later.
      *
      * Documented: Changes DNS DMARC records and cannot modify temporary domains. Omitted domains selects all domains on
@@ -451,18 +460,22 @@ final readonly class Mail
      * Documented: Policies and domains use repeated policy and domain wire keys. Pass raw DMARC text; the client
      * form-encodes it once.
      *
+     * Policy: OutcomePolicy::Flag is unchanged. On API result=0, ApiErrorException retains metadata but discards
+     * per-domain data rows; the source does not define partial-failure result semantics. Do not retry automatically.
+     * Re-read affected domain state before deciding further action.
+     *
      * API-map identity: whm1:apply_dmarc#GET (wire name apply_dmarc; Mail DNS Settings).
      *
      * @param string|list<string> $policies The DMARC record to apply to the requested domains.
-     * @param string|list<string>|null $domains The domain for which to apply the DMARC record. Null omits it.
+     * @param string|list<string> $domains The domain for which to apply the DMARC record.
      * @return ApplyDmarcResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
-     * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If an explicit target is absent, blank, zero, or an invalid string list.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/emailauth-apply_dmarc
      */
-    public function applyDmarc(string|array $policies, string|array|null $domains = null): array
+    public function applyDmarc(string|array $policies, string|array $domains): array
     {
         /** @var ApplyDmarcResult $result Validated against MailSpec::APPLY_DMARC. */
         $result = ($this->run)(MailSpec::APPLY_DMARC, ['policies' => $policies, 'domains' => $domains]);
@@ -485,9 +498,9 @@ final readonly class Mail
      *
      * @param string|list<string> $countryCodes The country to block.
      * @return BlockIncomingEmailFromCountryResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-management/exim-block_incoming_email_from_country
      */
@@ -517,9 +530,9 @@ final readonly class Mail
      *
      * @param string|list<string> $domains The domain to block.
      * @return BlockIncomingEmailFromDomainResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-management/exim-block_incoming_email_from_domain
      */
@@ -554,9 +567,9 @@ final readonly class Mail
      * cpgreylist_is_server_netblock_trusted; Spam Protection (Greylisting)).
      *
      * @return CpgreylistIsServerNetblockTrustedResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-cpgreylist_is_server_netblock_trusted
      */
     public function cpgreylistIsServerNetblockTrusted(): array
@@ -594,9 +607,9 @@ final readonly class Mail
      *
      * @param string|list<string> $providers The mail provider.
      * @return CpgreylistListEntriesForCommonMailProviderResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-cpgreylist_list_entries_for_common_mail_provider
      */
@@ -631,9 +644,9 @@ final readonly class Mail
      * cpgreylist_load_common_mail_providers_config; Spam Protection (Greylisting)).
      *
      * @return CpgreylistLoadCommonMailProvidersConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-cpgreylist_load_common_mail_providers_config
      */
     public function cpgreylistLoadCommonMailProvidersConfig(): array
@@ -660,9 +673,9 @@ final readonly class Mail
      * API-map identity: whm1:cpgreylist_status#GET (wire name cpgreylist_status; Spam Protection (Greylisting)).
      *
      * @return CpgreylistStatusResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-cpgreylist_status
      */
     public function cpgreylistStatus(): array
@@ -692,9 +705,9 @@ final readonly class Mail
      *
      * @param string|list<string> $providers The mail providers’ names.
      * @return CpgreylistTrustEntriesForCommonMailProviderResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-cpgreylist_trust_entries_for_common_mail_provider
      */
@@ -734,9 +747,9 @@ final readonly class Mail
      *
      * @param string|list<string> $providers The mail provider.
      * @return CpgreylistUntrustEntriesForCommonMailProviderResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-cpgreylist_untrust_entries_for_common_mail_provider
      */
@@ -777,9 +790,9 @@ final readonly class Mail
      * @param string|list<string> $ips The record's IP address, or a range of IP addresses.
      * @param string|null $comment A comment. Null omits it.
      * @return CreateCpgreylistTrustedHostResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-create_cpgreylist_trusted_host
      */
@@ -812,9 +825,9 @@ final readonly class Mail
      *
      * @param string|list<string> $ips The record's IP address, or a range of IP addresses.
      * @return DeleteCpgreylistTrustedHostResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-delete_cpgreylist_trusted_host
      */
@@ -841,7 +854,7 @@ final readonly class Mail
      *
      * API-map identity: whm1:disable_cpgreylist#GET (wire name disable_cpgreylist; Spam Protection (Greylisting)).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-disable_cpgreylist
      */
     public function disableCpgreylist(): void
@@ -863,9 +876,9 @@ final readonly class Mail
      *
      * @param string|list<string> $domains The domain for which to remove DKIM records on the DNS server.
      * @return DisableDkimResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/emailauth-disable_dkim
      */
@@ -902,9 +915,9 @@ final readonly class Mail
      * @param int|null $maxResultsByType The number of results to return for each type. Null omits it.
      * @param bool|null $success Whether to return successful delivery attempts. Null omits it.
      * @return EmailtrackSearchResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/exim-emailtrack_search
      */
     public function emailtrackSearch(
@@ -951,9 +964,9 @@ final readonly class Mail
      * @param int|null $startTime The start time of the search window. Null omits it.
      * @param string|null $user The cPanel username to query. Null omits it.
      * @return EmailtrackStatsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/exim-emailtrack_stats
      */
     public function emailtrackStats(
@@ -999,9 +1012,9 @@ final readonly class Mail
      * @param string|null $sender The sender's email address. Null omits it.
      * @param int|null $startTime The start time of the search window. Null omits it.
      * @return EmailtrackUserStatsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/exim-emailtrack_user_stats
      */
     public function emailtrackUserStats(
@@ -1033,7 +1046,7 @@ final readonly class Mail
      *
      * API-map identity: whm1:enable_cpgreylist#GET (wire name enable_cpgreylist; Spam Protection (Greylisting)).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-enable_cpgreylist
      */
     public function enableCpgreylist(): void
@@ -1051,13 +1064,17 @@ final readonly class Mail
      * Documented: Enables DKIM DNS records for the selected domains. Per-domain status and message remain separate from
      * the API envelope.
      *
+     * Policy: OutcomePolicy::Flag is unchanged. On API result=0, ApiErrorException retains metadata but discards
+     * per-domain data rows; the source does not define partial-failure result semantics. Do not retry automatically.
+     * Re-read affected domain state before deciding further action.
+     *
      * API-map identity: whm1:enable_dkim#GET (wire name enable_dkim; Mail DNS Settings).
      *
      * @param string|list<string> $domains The domain for which to enable DKIM records on the DNS server.
      * @return EnableDkimResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/emailauth-enable_dkim
      */
@@ -1087,9 +1104,9 @@ final readonly class Mail
      *
      * @param string|list<string> $domains The account's domain.
      * @return EnableMailSniResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-server-settings/ssl-enable_mail_sni
      */
@@ -1116,9 +1133,9 @@ final readonly class Mail
      *
      * @param string|list<string> $domains The domain for which to confirm a valid DKIM key exists.
      * @return EnsureDkimKeysExistResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/emailauth-ensure_dkim_keys_exist
      */
@@ -1140,17 +1157,19 @@ final readonly class Mail
      * Documented: Scans Exim configuration and attempts to repair errors; this is not a read-only validation. The
      * optional message describes errors. API failure still raises ApiErrorException before payload validation.
      *
+     * Returns null when the server sends no data.
+     *
      * API-map identity: whm1:exim_configuration_check#GET (wire name exim_configuration_check; Mail Server Settings).
      *
-     * @return EximConfigurationCheckResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @return EximConfigurationCheckResult|null
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-server-settings/exim-exim_configuration_check
      */
-    public function eximConfigurationCheck(): array
+    public function eximConfigurationCheck(): ?array
     {
-        /** @var EximConfigurationCheckResult $result Validated against MailSpec::EXIM_CONFIGURATION_CHECK. */
+        /** @var EximConfigurationCheckResult|null $result Validated against MailSpec::EXIM_CONFIGURATION_CHECK. */
         $result = ($this->run)(MailSpec::EXIM_CONFIGURATION_CHECK, []);
 
         return $result;
@@ -1174,7 +1193,7 @@ final readonly class Mail
      * @param string $account An email account that exists on the server.
      * @param string $mailbox A mailbox name on the account.
      * @param string $query A Dovecot search query to select which messages you wish to remove from the mailbox.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/mailboxes-expunge_mailbox_messages
      */
     public function expungeMailboxMessages(
@@ -1208,7 +1227,7 @@ final readonly class Mail
      * @param string $account The email account's name.
      * @param string $mailboxGuid The mailbox's globally unique identifier (GUID).
      * @param string $query The Dovecot search query to select which messages you wish to remove from the mailbox.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/mailboxes-expunge_messages_for_mailbox_guid
      */
     public function expungeMessagesForMailboxGuid(
@@ -1233,16 +1252,16 @@ final readonly class Mail
      *
      * Documented: Exports private DKIM PEM keys; treat returned pem values as secrets. Anyone obtaining these keys
      * could sign mail as the domain. The pinned source marks this operation x-readonly=false, so it uses form POST.
-     * Numbered lists emit domain, domain-1, domain-2; alternative starting-index spellings are not inferred or live
-     * verified.
+     * Lists repeat domain wire keys, matching the sibling key operation. Repeated and numbered forms are
+     * source-reviewed alternatives; this choice has no new live verification.
      *
      * API-map identity: whm1:fetch_dkim_private_keys#GET (wire name fetch_dkim_private_keys; Mail DNS Settings).
      *
      * @param string|list<string> $domains The queried domain.
      * @return FetchDkimPrivateKeysResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/emailauth-fetch_dkim_private_keys
      */
@@ -1268,9 +1287,9 @@ final readonly class Mail
      * API-map identity: whm1:fetch_mail_queue#GET (wire name fetch_mail_queue; Mail Server Settings).
      *
      * @return FetchMailQueueResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-server-settings/exim-fetch_mail_queue
      */
     public function fetchMailQueue(): array
@@ -1299,9 +1318,9 @@ final readonly class Mail
      * @param string|null $selectedAccountServices A comma-separated list of the email account service's `.mobileconfig`
      *     file names. Null omits it.
      * @return GenerateMobileconfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-server-settings/email-generate_mobileconfig
      */
     public function generateMobileconfig(string $account, bool $useSsl, ?string $selectedAccountServices = null): array
@@ -1329,9 +1348,9 @@ final readonly class Mail
      * API-map identity: whm1:get_default_dmarc_record#GET (wire name get_default_dmarc_record; Mail DNS Settings).
      *
      * @return GetDefaultDmarcRecordResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/emailauth-get_default_dmarc_record
      */
     public function getDefaultDmarcRecord(): array
@@ -1357,9 +1376,9 @@ final readonly class Mail
      *
      * @param string $account An email account or cPanel account's username.
      * @return GetMailboxStatusResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/mailboxes-get_mailbox_status
      */
     public function getMailboxStatus(string $account): array
@@ -1385,9 +1404,9 @@ final readonly class Mail
      *
      * @param string $account The email account's name.
      * @return GetMailboxStatusListResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/mailboxes-get_mailbox_status_list
      */
     public function getMailboxStatusList(string $account): array
@@ -1412,25 +1431,25 @@ final readonly class Mail
      * API-map identity: whm1:get_unique_recipient_count_per_sender_for_user#GET (wire name
      * get_unique_recipient_count_per_sender_for_user; cPanel Account Mail Management).
      *
-     * @param int $endTime An end time to query.
-     * @param int $startTime A start time to query.
      * @param string $user The system user's username.
+     * @param int $startTime A start time to query.
+     * @param int $endTime An end time to query.
      * @return GetUniqueRecipientCountPerSenderForUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/exim-get_unique_recipient_count_per_sender_for_user
      */
-    public function getUniqueRecipientCountPerSenderForUser(int $endTime, int $startTime, string $user): array
+    public function getUniqueRecipientCountPerSenderForUser(string $user, int $startTime, int $endTime): array
     {
         /**
          * @var GetUniqueRecipientCountPerSenderForUserResult $result
          * Validated against MailSpec::GET_UNIQUE_RECIPIENT_COUNT_PER_SENDER_FOR_USER.
          */
         $result = ($this->run)(MailSpec::GET_UNIQUE_RECIPIENT_COUNT_PER_SENDER_FOR_USER, [
-            'endTime' => $endTime,
-            'startTime' => $startTime,
             'user' => $user,
+            'startTime' => $startTime,
+            'endTime' => $endTime,
         ]);
 
         return $result;
@@ -1450,23 +1469,23 @@ final readonly class Mail
      * API-map identity: whm1:get_unique_sender_recipient_count_per_user#GET (wire name
      * get_unique_sender_recipient_count_per_user; cPanel Account Mail Management).
      *
-     * @param int $endTime An end time to query.
      * @param int $startTime A start time to query.
+     * @param int $endTime An end time to query.
      * @return GetUniqueSenderRecipientCountPerUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/exim-get_unique_sender_recipient_count_per_user
      */
-    public function getUniqueSenderRecipientCountPerUser(int $endTime, int $startTime): array
+    public function getUniqueSenderRecipientCountPerUser(int $startTime, int $endTime): array
     {
         /**
          * @var GetUniqueSenderRecipientCountPerUserResult $result
          * Validated against MailSpec::GET_UNIQUE_SENDER_RECIPIENT_COUNT_PER_USER.
          */
         $result = ($this->run)(MailSpec::GET_UNIQUE_SENDER_RECIPIENT_COUNT_PER_USER, [
-            'endTime' => $endTime,
             'startTime' => $startTime,
+            'endTime' => $endTime,
         ]);
 
         return $result;
@@ -1482,19 +1501,22 @@ final readonly class Mail
      * Documented: Reads forwarding destinations for a system account. root commonly receives server notices and nobody
      * may receive CGI bounce mail when suexec is unused. Returned destinations are not fetched or sent mail.
      *
-     * Observed: WHM GET on cPanel 11.138.0.19 returned forward_to as the literal empty string. The result retains
-     * either the pinned string list or that exact empty string, preserving omission separately. Its meaning has not
-     * been established; the client does not interpret it as a forwarding state. Null and other scalar strings remain
-     * invalid. The immutable 2026-10-31-whm-mail-management.json capture remains failed and unwaived.
+     * Observed: WHM GET on 11.138.0.19 observed exactly an empty string, retained without assigning meaning. The
+     * original capture remains failed and unwaived.
+     *
+     * Documented: PR61 reviewer source Cpanel/Email/UserForward.pm returns aliases_ref user value directly for aliases
+     * and a list for .forward. Accept any string or list<string>, retaining omission and rejecting null/nonstring
+     * leaves. Nonempty scalar support is source-derived, not a new live observation. The exact observed empty string
+     * remains verbatim with no semantic mapping; original capture remains failed, immutable and unwaived.
      *
      * API-map identity: whm1:get_user_email_forward_destination#GET (wire name get_user_email_forward_destination;
      * cPanel Account Mail Management).
      *
      * @param string $user The system account name.
      * @return GetUserEmailForwardDestinationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/email-get_user_email_forward_destination
      */
     public function getUserEmailForwardDestination(string $user): array
@@ -1522,7 +1544,7 @@ final readonly class Mail
      * API-map identity: whm1:hold_outgoing_email#GET (wire name hold_outgoing_email; cPanel Account Mail Management).
      *
      * @param string $user The cPanel account.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/accounts-hold_outgoing_email
      */
     public function holdOutgoingEmail(string $user): void
@@ -1550,9 +1572,9 @@ final readonly class Mail
      *     record.
      * @param string|list<string> $keys An RSA key in Privacy-Enhanced Mail (PEM) format.
      * @return InstallDkimPrivateKeysResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/emailauth-install_dkim_private_keys
      */
@@ -1582,14 +1604,18 @@ final readonly class Mail
      * raw SPF text and let the client form-encode it once; do not pre-encode the source example. Inspect per-domain
      * status and message separately from API status.
      *
+     * Policy: OutcomePolicy::Flag is unchanged. On API result=0, ApiErrorException retains metadata but discards
+     * per-domain data rows; the source does not define partial-failure result semantics. Do not retry automatically.
+     * Re-read affected domain state before deciding further action.
+     *
      * API-map identity: whm1:install_spf_records#GET (wire name install_spf_records; Mail DNS Settings).
      *
      * @param string $domain The domain for which to install an SPF record on the DNS server.
      * @param string $record An SPF record.
      * @return InstallSpfRecordsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/emailauth-install_spf_records
      */
     public function installSpfRecords(string $domain, string $record): array
@@ -1613,9 +1639,9 @@ final readonly class Mail
      * API-map identity: whm1:is_sni_supported#GET (wire name is_sni_supported; Mail Server Settings).
      *
      * @return IsSniSupportedResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-server-settings/ssl-is_sni_supported
      */
     public function isSniSupported(): array
@@ -1639,9 +1665,9 @@ final readonly class Mail
      * list_blocked_incoming_email_countries; Spam Management).
      *
      * @return ListBlockedIncomingEmailCountriesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-management/exim-list_blocked_incoming_email_countries
      */
     public function listBlockedIncomingEmailCountries(): array
@@ -1668,9 +1694,9 @@ final readonly class Mail
      * Spam Management).
      *
      * @return ListBlockedIncomingEmailDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-management/exim-list_blocked_incoming_email_domains
      */
     public function listBlockedIncomingEmailDomains(): array
@@ -1702,9 +1728,9 @@ final readonly class Mail
      *
      * @param string $user The cPanel account user for which to list all owned email accounts.
      * @return ListPopsForResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/email-list_pops_for
      */
     public function listPopsFor(string $user): array
@@ -1734,9 +1760,9 @@ final readonly class Mail
      * (Greylisting)).
      *
      * @return LoadCpgreylistConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-load_cpgreylist_config
      */
     public function loadCpgreylistConfig(): array
@@ -1761,9 +1787,9 @@ final readonly class Mail
      *
      * @param string $domain The account's domain.
      * @return MailSniStatusResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-server-settings/ssl-mail_sni_status
      */
     public function mailSniStatus(string $domain): array
@@ -1789,7 +1815,7 @@ final readonly class Mail
      * Server Settings).
      *
      * @param string $username The cPanel account's username.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-server-settings/email-normalize_user_email_configuration
      */
     public function normalizeUserEmailConfiguration(string $username): void
@@ -1813,9 +1839,9 @@ final readonly class Mail
      * Protection (Greylisting)).
      *
      * @return ReadCpgreylistDeferredEntriesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-read_cpgreylist_deferred_entries
      */
     public function readCpgreylistDeferredEntries(): array
@@ -1849,9 +1875,9 @@ final readonly class Mail
      * Protection (Greylisting)).
      *
      * @return ReadCpgreylistTrustedHostsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-read_cpgreylist_trusted_hosts
      */
     public function readCpgreylistTrustedHosts(): array
@@ -1878,9 +1904,9 @@ final readonly class Mail
      * @param bool|null $reloadDovecot Whether to reload the Dovecot service after the system rebuilds the configuration
      *     files. Null omits it.
      * @return RebuildMailSniConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-server-settings/ssl-rebuild_mail_sni_config
      */
     public function rebuildMailSniConfig(?bool $reloadDovecot = null): array
@@ -1906,7 +1932,7 @@ final readonly class Mail
      * Management).
      *
      * @param string $user The cPanel account.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/accounts-release_outgoing_email
      */
     public function releaseOutgoingEmail(string $user): void
@@ -1919,6 +1945,12 @@ final readonly class Mail
      *
      * This function removes the DMARC DNS record from a domain.
      *
+     * Policy: Typed calls require explicit target domains and reject null/omission, blank strings/list entries and
+     * trimmed '0'; no DNS validation is implied. To deliberately select every server domain, use
+     * whm()->call('remove_dmarc', []) as an explicit generic POST. Generic calls bypass typed target validation. Native
+     * missing/null argument failures occur before metadata reset; target-policy failures clear metadata before
+     * rejecting without I/O.
+     *
      * Documented: Available in cPanel & WHM 124 and later.
      *
      * Documented: Removes DMARC DNS records and cannot modify temporary domains. Omitting domains removes all DMARC
@@ -1927,15 +1959,15 @@ final readonly class Mail
      *
      * API-map identity: whm1:remove_dmarc#GET (wire name remove_dmarc; Mail DNS Settings).
      *
-     * @param string|list<string>|null $domains The domain for which to remove the DMARC record. Null omits it.
+     * @param string|list<string> $domains The domain for which to remove the DMARC record.
      * @return RemoveDmarcResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
-     * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If an explicit target is absent, blank, zero, or an invalid string list.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/emailauth-remove_dmarc
      */
-    public function removeDmarc(string|array|null $domains = null): array
+    public function removeDmarc(string|array $domains): array
     {
         /** @var RemoveDmarcResult $result Validated against MailSpec::REMOVE_DMARC. */
         $result = ($this->run)(MailSpec::REMOVE_DMARC, ['domains' => $domains]);
@@ -1958,7 +1990,7 @@ final readonly class Mail
      * API-map identity: whm1:remove_in_progress_exim_config_edit#GET (wire name remove_in_progress_exim_config_edit;
      * Mail Server Settings).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-server-settings/exim-remove_in_progress_exim_config_edit
      */
     public function removeInProgressEximConfigEdit(): void
@@ -2001,9 +2033,9 @@ final readonly class Mail
      *     a re-sent email as coming from a new, unknown triplet. Null omits it.
      * @param bool|null $spfBypass Whether emails with SPF bypass Greylisting. Null omits it.
      * @return SaveCpgreylistConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-save_cpgreylist_config
      */
     public function saveCpgreylistConfig(
@@ -2055,7 +2087,7 @@ final readonly class Mail
      *     connection. Null omits it.
      * @param int|null $timeoutTcp The maximum amount of time that the `spamd` daemon waits before it abandons a TCP
      *     connection. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-management/spamd-save_spamd_config
      */
     public function saveSpamdConfig(
@@ -2092,9 +2124,9 @@ final readonly class Mail
      *
      * @param string|null $record The DMARC record to set as the server default. Null omits it.
      * @return SetDefaultDmarcRecordResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/emailauth-set_default_dmarc_record
      */
     public function setDefaultDmarcRecord(?string $record = null): array
@@ -2124,9 +2156,9 @@ final readonly class Mail
      * @param string|list<string> $mxHosts The domain or IP address (IPv4 or IPv6) to redirect the domain value's emails
      *     to.
      * @return SetManualMxRedirectsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/exim-set_manual_mx_redirects
      */
@@ -2152,14 +2184,14 @@ final readonly class Mail
      * API-map identity: whm1:set_user_email_forward_destination#GET (wire name set_user_email_forward_destination;
      * cPanel Account Mail Management).
      *
-     * @param string $forwardTo The system account name or email address to which you wish to forward email.
      * @param string $user The system account name to forward.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @param string $forwardTo The system account name or email address to which you wish to forward email.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/email-set_user_email_forward_destination
      */
-    public function setUserEmailForwardDestination(string $forwardTo, string $user): void
+    public function setUserEmailForwardDestination(string $user, string $forwardTo): void
     {
-        ($this->run)(MailSpec::SET_USER_EMAIL_FORWARD_DESTINATION, ['forwardTo' => $forwardTo, 'user' => $user]);
+        ($this->run)(MailSpec::SET_USER_EMAIL_FORWARD_DESTINATION, ['user' => $user, 'forwardTo' => $forwardTo]);
     }
 
     /**
@@ -2177,7 +2209,7 @@ final readonly class Mail
      * Management).
      *
      * @param string $user The cPanel account.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/accounts-suspend_outgoing_email
      */
     public function suspendOutgoingEmail(string $user): void
@@ -2200,7 +2232,7 @@ final readonly class Mail
      * Account Mail Management).
      *
      * @param string $username The cPanel account's username.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/mailboxes-terminate_cpuser_mailbox_sessions
      */
     public function terminateCpuserMailboxSessions(string $username): void
@@ -2215,22 +2247,22 @@ final readonly class Mail
      *
      * Documented: Available in cPanel & WHM 84 and later.
      *
-     * Documented: Removes server-wide incoming-email country blocks. Lists use the explicitly documented repeated
-     * country_code spelling; the source also supports incremented names. The pinned parameter omits required:true, so
-     * omission remains possible without an invented default or scope.
+     * Policy: Removes incoming-email country blocks server-wide for explicitly selected countries. The pinned text
+     * defines single and multiple-country forms; the client requires countryCodes rather than emitting an empty POST.
+     * Lists repeat country_code wire keys.
      *
      * API-map identity: whm1:unblock_incoming_email_from_country#GET (wire name unblock_incoming_email_from_country;
      * Spam Management).
      *
-     * @param string|list<string>|null $countryCodes The country to unblock. Null omits it.
+     * @param string|list<string> $countryCodes The country to unblock.
      * @return UnblockIncomingEmailFromCountryResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-management/exim-unblock_incoming_email_from_country
      */
-    public function unblockIncomingEmailFromCountry(string|array|null $countryCodes = null): array
+    public function unblockIncomingEmailFromCountry(string|array $countryCodes): array
     {
         /**
          * @var UnblockIncomingEmailFromCountryResult $result
@@ -2256,9 +2288,9 @@ final readonly class Mail
      *
      * @param string|list<string> $domains The domain to unblock.
      * @return UnblockIncomingEmailFromDomainResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-management/exim-unblock_incoming_email_from_domain
      */
@@ -2288,9 +2320,9 @@ final readonly class Mail
      *
      * @param string|list<string> $domains The domain for which to remove a manual MX redirect entry.
      * @return UnsetManualMxRedirectsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/exim-unset_manual_mx_redirects
      */
@@ -2316,7 +2348,7 @@ final readonly class Mail
      * Management).
      *
      * @param string $user The cPanel account.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-mail-management/accounts-unsuspend_outgoing_email
      */
     public function unsuspendOutgoingEmail(string $user): void
@@ -2339,9 +2371,9 @@ final readonly class Mail
      *
      * @param string|list<string> $domains The domain for which to check the DKIM records.
      * @return ValidateCurrentDkimsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/emailauth-validate_current_dkims
      */
@@ -2367,9 +2399,9 @@ final readonly class Mail
      *
      * @param string|list<string>|null $domains The domain for which to check the DMARC record. Null omits it.
      * @return ValidateCurrentDmarcsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/emailauth-validate_current_dmarcs
      */
@@ -2395,9 +2427,9 @@ final readonly class Mail
      * validate_current_installed_exim_config; Mail Server Settings).
      *
      * @return ValidateCurrentInstalledEximConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-server-settings/exim-validate_current_installed_exim_config
      */
     public function validateCurrentInstalledEximConfig(): array
@@ -2430,9 +2462,9 @@ final readonly class Mail
      *
      * @param string|list<string> $domains The domain for which to validate the PTR records.
      * @return ValidateCurrentPtrsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/emailauth-validate_current_ptrs
      */
@@ -2460,9 +2492,9 @@ final readonly class Mail
      *
      * @param string|list<string> $domains The domain for which to check the SPF records.
      * @return ValidateCurrentSpfsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/emailauth-validate_current_spfs
      */
@@ -2494,9 +2526,9 @@ final readonly class Mail
      * @param string|null $cfgText The Exim configuration file's raw text. Null omits it.
      * @param string|null $section The Exim configuration file's section to check. Null omits it.
      * @return ValidateEximConfigurationSyntaxResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-server-settings/exim-validate_exim_configuration_syntax
      */
     public function validateEximConfigurationSyntax(

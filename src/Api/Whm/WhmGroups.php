@@ -17,6 +17,10 @@ trait WhmGroups
 
     private ?Accounts $accountsGroup = null;
 
+    private ?ApiTools $apiToolsGroup = null;
+
+    private ?Authentication $authenticationGroup = null;
+
     private ?Backups $backupsGroup = null;
 
     private ?CpHulk $cpHulkGroup = null;
@@ -36,6 +40,12 @@ trait WhmGroups
     private ?Resellers $resellersGroup = null;
 
     private ?Server $serverGroup = null;
+
+    private ?Ssl $sslGroup = null;
+
+    private ?SystemPackages $systemPackagesGroup = null;
+
+    private ?Transfers $transfersGroup = null;
 
     private ?WebServer $webServerGroup = null;
 
@@ -57,6 +67,28 @@ trait WhmGroups
     public function accounts(): Accounts
     {
         return $this->accountsGroup ??= new Accounts($this->run(...));
+    }
+
+    /**
+     * Select the API Development Tools operations without making a request.
+     *
+     * WHM token and session management, application inventory and legacy API usage reads. Returned credentials,
+     * identifiers and URLs are private payload data.
+     */
+    public function apiTools(): ApiTools
+    {
+        return $this->apiToolsGroup ??= new ApiTools($this->run(...));
+    }
+
+    /**
+     * Select the Authentication operations without making a request.
+     *
+     * WHM authentication providers, root SSH keys and two-factor policy. Returned credentials, private keys, 2FA
+     * secrets, account links and URLs are private payload data; never log them or fetch URLs automatically.
+     */
+    public function authentication(): Authentication
+    {
+        return $this->authenticationGroup ??= new Authentication($this->run(...));
     }
 
     /**
@@ -129,8 +161,10 @@ trait WhmGroups
      * delivery diagnostics, mobile profiles, Exim and spamd configuration, and Greylisting. Mail, private-key,
      * configuration and profile outputs can contain sensitive data. Mutations use form POST, including private-key
      * export and raw Exim syntax validation. Per-domain failures remain separate from API status. No automatic
-     * delivery, expunge, retry or rollback is provided. Existing Greylisting service-state observations and exclusions
-     * remain unchanged.
+     * delivery, expunge, retry or rollback is provided. Trust and configuration changes alter mail deferral policy.
+     * Returned triplets contain sender and recipient addresses; the client does not deliver mail or fetch returned
+     * addresses. The cPanel 11.138.0.19 review used GET reads with Greylisting disabled; all fifteen writes across the
+     * reviewed cPHulk and Greylisting slice remain unobserved.
      */
     public function mail(): Mail
     {
@@ -172,6 +206,39 @@ trait WhmGroups
     public function server(): Server
     {
         return $this->serverGroup ??= new Server($this->run(...));
+    }
+
+    /**
+     * Select the SSL Certificates operations without making a request.
+     *
+     * WHM API 1 functions in the documented SSL Certificates group.
+     */
+    public function ssl(): Ssl
+    {
+        return $this->sslGroup ??= new Ssl($this->run(...));
+    }
+
+    /**
+     * Select the System Package Management operations without making a request.
+     *
+     * Server RPM metadata, package inventory, plugin processes and queued package actions.
+     */
+    public function systemPackages(): SystemPackages
+    {
+        return $this->systemPackagesGroup ??= new SystemPackages($this->run(...));
+    }
+
+    /**
+     * Select the Transfers operations without making a request.
+     *
+     * Server-scoped transfer modules, remote session creation and credentials, asynchronous session controls and
+     * status, logs and archive deletion. Remote operations can contact hosts and change accounts. Every method performs
+     * one request without retries, polling or rollback. Returned output, analysis, logs and module schemas can contain
+     * sensitive account or configuration data; never execute returned content or fetch embedded URLs.
+     */
+    public function transfers(): Transfers
+    {
+        return $this->transfersGroup ??= new Transfers($this->run(...));
     }
 
     /**

@@ -19,7 +19,7 @@ final class MailSpec
         'outcome' => 'flag',
         'params' => [
             'policies' => ['name' => 'policy', 'encoding' => 'repeat'],
-            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat', 'reject_empty' => true],
         ],
         'returns' => [
             'type' => 'object',
@@ -490,6 +490,7 @@ final class MailSpec
                 'message' => ['type' => 'string'],
             ],
         ],
+        'optional' => true,
     ];
 
     public const EXPUNGE_MAILBOX_MESSAGES = [
@@ -521,7 +522,7 @@ final class MailSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'domains' => ['name' => 'domain', 'encoding' => 'numbered'],
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
         ],
         'returns' => [
             'type' => 'object',
@@ -615,8 +616,8 @@ final class MailSpec
                 'type' => 'object',
                 'fields' => [
                     'guid' => ['type' => 'string'],
-                    'messages' => ['type' => 'int'],
-                    'vsize' => ['type' => 'int'],
+                    'messages' => ['type' => 'int', 'accept' => ['numeric-string']],
+                    'vsize' => ['type' => 'int', 'accept' => ['numeric-string']],
                 ],
             ],
         ],
@@ -639,8 +640,8 @@ final class MailSpec
                         'fields' => [
                             'guid' => ['type' => 'string'],
                             'mailbox' => ['type' => 'string'],
-                            'messages' => ['type' => 'int'],
-                            'vsize' => ['type' => 'int'],
+                            'messages' => ['type' => 'int', 'accept' => ['numeric-string']],
+                            'vsize' => ['type' => 'int', 'accept' => ['numeric-string']],
                         ],
                     ],
                 ],
@@ -653,9 +654,9 @@ final class MailSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
-            'endTime' => ['name' => 'end_time', 'encoding' => 'scalar'],
-            'startTime' => ['name' => 'start_time', 'encoding' => 'scalar'],
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'startTime' => ['name' => 'start_time', 'encoding' => 'scalar'],
+            'endTime' => ['name' => 'end_time', 'encoding' => 'scalar'],
         ],
         'returns' => [
             'type' => 'object',
@@ -679,8 +680,8 @@ final class MailSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
-            'endTime' => ['name' => 'end_time', 'encoding' => 'scalar'],
             'startTime' => ['name' => 'start_time', 'encoding' => 'scalar'],
+            'endTime' => ['name' => 'end_time', 'encoding' => 'scalar'],
         ],
         'returns' => [
             'type' => 'object',
@@ -713,7 +714,7 @@ final class MailSpec
                     'type' => 'union',
                     'anyOf' => [
                         ['type' => 'list', 'items' => ['type' => 'string']],
-                        ['type' => 'string', 'literal' => ''],
+                        ['type' => 'string'],
                     ],
                 ],
             ],
@@ -993,7 +994,7 @@ final class MailSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat', 'reject_empty' => true],
         ],
         'returns' => [
             'type' => 'object',
@@ -1111,8 +1112,8 @@ final class MailSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'forwardTo' => ['name' => 'forward_to', 'encoding' => 'scalar'],
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'forwardTo' => ['name' => 'forward_to', 'encoding' => 'scalar'],
         ],
         'returns' => null,
     ];
@@ -1208,7 +1209,7 @@ final class MailSpec
                         'type' => 'object',
                         'fields' => [
                             'domain' => ['type' => 'string'],
-                            'error' => ['type' => 'string'],
+                            'error' => ['type' => 'string', 'nullable' => true],
                             'expected' => ['type' => 'string'],
                             'records' => [
                                 'type' => 'list',
@@ -1245,8 +1246,8 @@ final class MailSpec
                         'type' => 'object',
                         'fields' => [
                             'domain' => ['type' => 'string'],
-                            'error' => ['type' => 'string'],
-                            'record' => ['type' => 'string'],
+                            'error' => ['type' => 'string', 'nullable' => true],
+                            'record' => ['type' => 'string', 'nullable' => true],
                             'state' => ['type' => 'string'],
                             'subdomain' => ['type' => 'string'],
                             'suggested' => ['type' => 'string'],
@@ -1287,10 +1288,10 @@ final class MailSpec
                         'fields' => [
                             'arpa_domain' => ['type' => 'string'],
                             'domain' => ['type' => 'string'],
-                            'error' => ['type' => 'string'],
+                            'error' => ['type' => 'string', 'nullable' => true],
                             'helo' => ['type' => 'string'],
                             'ip_address' => ['type' => 'string'],
-                            'ip_version' => ['type' => 'int'],
+                            'ip_version' => ['type' => 'int', 'accept' => ['numeric-string']],
                             'nameservers' => ['type' => 'list', 'items' => ['type' => 'string']],
                             'ptr_records' => [
                                 'type' => 'list',
@@ -1327,10 +1328,10 @@ final class MailSpec
                         'type' => 'object',
                         'fields' => [
                             'domain' => ['type' => 'string'],
-                            'error' => ['type' => 'string'],
+                            'error' => ['type' => 'string', 'nullable' => true],
                             'expected' => ['type' => 'string'],
                             'ip_address' => ['type' => 'string'],
-                            'ip_version' => ['type' => 'int'],
+                            'ip_version' => ['type' => 'int', 'accept' => ['numeric-string']],
                             'records' => [
                                 'type' => 'list',
                                 'items' => [

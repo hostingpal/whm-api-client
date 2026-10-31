@@ -717,9 +717,19 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for policy, domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Pinned domain omission selects every domain on the server; PR61 reviewer source EmailAuth.pm branches to all-user domains for falsey domain. Client policy requires explicit nonblank, nonzero targets; typed domain arguments are required and reject trimmed blank/zero entries. This is a safety policy, not DNS validation. Deliberate all-domain access uses explicit generic POST without domain."
         }
       ],
       "notes": [
+        {
+          "kind": "policy",
+          "text": "Typed calls require explicit target domains and reject null/omission, blank strings/list entries and trimmed '0'; no DNS validation is implied. To deliberately select every server domain, use whm()->call('apply_dmarc', ['policy' => $policy]) as an explicit generic POST. Generic calls bypass typed target validation. Native missing/null argument failures occur before metadata reset; target-policy failures clear metadata before rejecting without I/O."
+        },
         {
           "kind": "documented",
           "text": "Available in cPanel & WHM 124 and later."
@@ -731,6 +741,10 @@
         {
           "kind": "documented",
           "text": "Policies and domains use repeated policy and domain wire keys. Pass raw DMARC text; the client form-encodes it once."
+        },
+        {
+          "kind": "policy",
+          "text": "OutcomePolicy::Flag is unchanged. On API result=0, ApiErrorException retains metadata but discards per-domain data rows; the source does not define partial-failure result semantics. Do not retry automatically. Re-read affected domain state before deciding further action."
         }
       ],
       "order": [
@@ -744,7 +758,9 @@
         },
         "domain": {
           "php": "domains",
-          "encoding": "repeat"
+          "encoding": "repeat",
+          "required": true,
+          "reject_empty": true
         }
       }
     },
@@ -1020,6 +1036,10 @@
         {
           "kind": "documented",
           "text": "Enables DKIM DNS records for the selected domains. Per-domain status and message remain separate from the API envelope."
+        },
+        {
+          "kind": "policy",
+          "text": "OutcomePolicy::Flag is unchanged. On API result=0, ApiErrorException retains metadata but discards per-domain data rows; the source does not define partial-failure result semantics. Do not retry automatically. Re-read affected domain state before deciding further action."
         }
       ],
       "order": [
@@ -1119,6 +1139,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /exim_configuration_check x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Pinned response message appears only when configuration errors are found; healthy success may omit data. optional_payload preserves absent/null success and strict object validation when data is present. This is source-only, not observed repair evidence."
         }
       ],
       "notes": [
@@ -1130,7 +1156,8 @@
           "kind": "documented",
           "text": "Scans Exim configuration and attempts to repair errors; this is not a read-only validation. The optional message describes errors. API failure still raises ApiErrorException before payload validation."
         }
-      ]
+      ],
+      "optional_payload": true
     },
     "whm1:expunge_mailbox_messages": {
       "name": "expungeMailboxMessages",
@@ -1211,6 +1238,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR61 reviewer source Cpanel::Form::Param accepts repeated and numbered domain keys; select repeat consistently with the sibling key operation. This is source-reviewed compatibility, not a new live call or a claim that the pinned example uniquely prescribes repeat."
         }
       ],
       "notes": [
@@ -1220,7 +1253,7 @@
         },
         {
           "kind": "documented",
-          "text": "Exports private DKIM PEM keys; treat returned pem values as secrets. Anyone obtaining these keys could sign mail as the domain. The pinned source marks this operation x-readonly=false, so it uses form POST. Numbered lists emit domain, domain-1, domain-2; alternative starting-index spellings are not inferred or live verified."
+          "text": "Exports private DKIM PEM keys; treat returned pem values as secrets. Anyone obtaining these keys could sign mail as the domain. The pinned source marks this operation x-readonly=false, so it uses form POST. Lists repeat domain wire keys, matching the sibling key operation. Repeated and numbered forms are source-reviewed alternatives; this choice has no new live verification."
         }
       ],
       "order": [
@@ -1229,7 +1262,7 @@
       "params": {
         "domain": {
           "php": "domains",
-          "encoding": "numbered"
+          "encoding": "repeat"
         }
       }
     },
@@ -1313,6 +1346,18 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /get_mailbox_status x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 58. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported messages as digits. Accept bounded canonical integer strings losslessly as int, preserving native integers, optionality and strict siblings; reject fractions, exponent notation, leading zeros, booleans, null and overflow. Reviewer observation, no new committed capture."
+        },
+        {
+          "kind": "live",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported vsize as digits. Accept bounded canonical integer strings losslessly as int, preserving native integers, optionality and strict siblings; reject fractions, exponent notation, leading zeros, booleans, null and overflow. Reviewer observation, no new committed capture."
         }
       ],
       "notes": [
@@ -1327,7 +1372,35 @@
       ],
       "order": [
         "account"
-      ]
+      ],
+      "response": {
+        "{}.messages": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "reviewed source family 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported messages as digits. Accept bounded canonical integer strings losslessly as int, preserving native integers, optionality and strict siblings; reject fractions, exponent notation, leading zeros, booleans, null and overflow. Reviewer observation, no new committed capture."
+            }
+          ]
+        },
+        "{}.vsize": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "reviewed source family 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported vsize as digits. Accept bounded canonical integer strings losslessly as int, preserving native integers, optionality and strict siblings; reject fractions, exponent notation, leading zeros, booleans, null and overflow. Reviewer observation, no new committed capture."
+            }
+          ]
+        }
+      }
     },
     "whm1:get_mailbox_status_list": {
       "name": "getMailboxStatusList",
@@ -1338,6 +1411,18 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /get_mailbox_status_list x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 64. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported messages as digits. Accept bounded canonical integer strings losslessly as int, preserving native integers, optionality and strict siblings; reject fractions, exponent notation, leading zeros, booleans, null and overflow. Reviewer observation, no new committed capture."
+        },
+        {
+          "kind": "live",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported vsize as digits. Accept bounded canonical integer strings losslessly as int, preserving native integers, optionality and strict siblings; reject fractions, exponent notation, leading zeros, booleans, null and overflow. Reviewer observation, no new committed capture."
         }
       ],
       "notes": [
@@ -1352,7 +1437,35 @@
       ],
       "order": [
         "account"
-      ]
+      ],
+      "response": {
+        "mailboxes[].messages": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "reviewed source family 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported messages as digits. Accept bounded canonical integer strings losslessly as int, preserving native integers, optionality and strict siblings; reject fractions, exponent notation, leading zeros, booleans, null and overflow. Reviewer observation, no new committed capture."
+            }
+          ]
+        },
+        "mailboxes[].vsize": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "reviewed source family 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported vsize as digits. Accept bounded canonical integer strings losslessly as int, preserving native integers, optionality and strict siblings; reject fractions, exponent notation, leading zeros, booleans, null and overflow. Reviewer observation, no new committed capture."
+            }
+          ]
+        }
+      }
     },
     "whm1:get_unique_recipient_count_per_sender_for_user": {
       "name": "getUniqueRecipientCountPerSenderForUser",
@@ -1376,9 +1489,9 @@
         }
       ],
       "order": [
-        "end_time",
+        "user",
         "start_time",
-        "user"
+        "end_time"
       ]
     },
     "whm1:get_unique_sender_recipient_count_per_user": {
@@ -1403,8 +1516,8 @@
         }
       ],
       "order": [
-        "end_time",
-        "start_time"
+        "start_time",
+        "end_time"
       ]
     },
     "whm1:get_user_email_forward_destination": {
@@ -1421,7 +1534,13 @@
           "kind": "live",
           "version": "11.138.0.19",
           "date": "2026-10-31",
-          "note": "The immutable WHM GET observation whm1:get_user_email_forward_destination#GET at revision e0237496016fa8546c3cbd310e302b654c9a9396 on cPanel 11.138.0.19 records $.forward_to as empty-string. Artifact docs/api/evidence/2026-10-31-whm-mail-management.json SHA-256 3b990bd9f1bb37f7e823cf8c36acc7f0d2f6a8a346213bb272d13a55abc4bcc5; observed_at 2026-10-31T03:32:40Z, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, original effective-contract SHA-256 ee73161c3e3f0d03cacff3cd4ee4676766a558cedce5f6cf3822d3e972db83b0. Preserve the documented list<string> and additionally accept only the exact empty-string literal at this field. Omission remains possible, null and nonempty scalar strings remain invalid. The empty string is retained verbatim; its meaning has not been established. The original capture remains failed and immutable; this correction does not waive its recorded finding."
+          "note": "The immutable WHM GET observation whm1:get_user_email_forward_destination#GET at revision e0237496016fa8546c3cbd310e302b654c9a9396 on cPanel 11.138.0.19 records $.forward_to as empty-string. Artifact docs/api/evidence/2026-10-31-whm-mail-management.json SHA-256 3b990bd9f1bb37f7e823cf8c36acc7f0d2f6a8a346213bb272d13a55abc4bcc5; observed_at 2026-10-31T03:32:40Z, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, original effective-contract SHA-256 ee73161c3e3f0d03cacff3cd4ee4676766a558cedce5f6cf3822d3e972db83b0. The artifact establishes only the exact empty-string variant; separate reviewed source supports arbitrary scalar strings. Omission remains possible and null remains invalid. The empty string is retained verbatim; its meaning has not been established. The original capture remains failed and immutable; this correction does not waive its recorded finding."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR61 reviewer source Cpanel/Email/UserForward.pm returns aliases_ref user value directly for aliases and a list for .forward. Accept any string or list<string>, retaining omission and rejecting null/nonstring leaves. Nonempty scalar support is source-derived, not a new live observation. The exact observed empty string remains verbatim with no semantic mapping; original capture remains failed, immutable and unwaived."
         }
       ],
       "notes": [
@@ -1435,7 +1554,11 @@
         },
         {
           "kind": "observed",
-          "text": "WHM GET on cPanel 11.138.0.19 returned forward_to as the literal empty string. The result retains either the pinned string list or that exact empty string, preserving omission separately. Its meaning has not been established; the client does not interpret it as a forwarding state. Null and other scalar strings remain invalid. The immutable 2026-10-31-whm-mail-management.json capture remains failed and unwaived."
+          "text": "WHM GET on 11.138.0.19 observed exactly an empty string, retained without assigning meaning. The original capture remains failed and unwaived."
+        },
+        {
+          "kind": "documented",
+          "text": "PR61 reviewer source Cpanel/Email/UserForward.pm returns aliases_ref user value directly for aliases and a list for .forward. Accept any string or list<string>, retaining omission and rejecting null/nonstring leaves. Nonempty scalar support is source-derived, not a new live observation. The exact observed empty string remains verbatim with no semantic mapping; original capture remains failed, immutable and unwaived."
         }
       ],
       "order": [
@@ -1453,8 +1576,7 @@
                 }
               },
               {
-                "type": "string",
-                "literal": ""
+                "type": "string"
               }
             ]
           },
@@ -1463,7 +1585,13 @@
               "kind": "live",
               "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "The immutable WHM GET observation whm1:get_user_email_forward_destination#GET at revision e0237496016fa8546c3cbd310e302b654c9a9396 on cPanel 11.138.0.19 records $.forward_to as empty-string. Artifact docs/api/evidence/2026-10-31-whm-mail-management.json SHA-256 3b990bd9f1bb37f7e823cf8c36acc7f0d2f6a8a346213bb272d13a55abc4bcc5; observed_at 2026-10-31T03:32:40Z, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, original effective-contract SHA-256 ee73161c3e3f0d03cacff3cd4ee4676766a558cedce5f6cf3822d3e972db83b0. Preserve the documented list<string> and additionally accept only the exact empty-string literal at this field. Omission remains possible, null and nonempty scalar strings remain invalid. The empty string is retained verbatim; its meaning has not been established. The original capture remains failed and immutable; this correction does not waive its recorded finding."
+              "note": "The immutable WHM GET observation whm1:get_user_email_forward_destination#GET at revision e0237496016fa8546c3cbd310e302b654c9a9396 on cPanel 11.138.0.19 records $.forward_to as empty-string. Artifact docs/api/evidence/2026-10-31-whm-mail-management.json SHA-256 3b990bd9f1bb37f7e823cf8c36acc7f0d2f6a8a346213bb272d13a55abc4bcc5; observed_at 2026-10-31T03:32:40Z, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, original effective-contract SHA-256 ee73161c3e3f0d03cacff3cd4ee4676766a558cedce5f6cf3822d3e972db83b0. The artifact establishes only the exact empty-string variant; separate reviewed source supports arbitrary scalar strings. Omission remains possible and null remains invalid. The empty string is retained verbatim; its meaning has not been established. The original capture remains failed and immutable; this correction does not waive its recorded finding."
+            },
+            {
+              "kind": "doc",
+              "version": "reviewed source family 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR61 reviewer source Cpanel/Email/UserForward.pm returns aliases_ref user value directly for aliases and a list for .forward. Accept any string or list<string>, retaining omission and rejecting null/nonstring leaves. Nonempty scalar support is source-derived, not a new live observation. The exact observed empty string remains verbatim with no semantic mapping; original capture remains failed, immutable and unwaived."
             }
           ]
         }
@@ -1562,6 +1690,10 @@
         {
           "kind": "documented",
           "text": "Installs the supplied complete SPF record on the DNS server; supply the desired full record rather than a patch. This typed method supports the documented single domain/record pair. The pinned source documents incremented domain names and requires a corresponding record for each domain, but does not establish the repeated record field spelling or positional serialization. Both arguments remain scalar strings; multi-record serialization is deferred under whm-api-client-8x0.1.21. No numbered or repeated record encoder is inferred. Pass raw SPF text and let the client form-encode it once; do not pre-encode the source example. Inspect per-domain status and message separately from API status."
+        },
+        {
+          "kind": "policy",
+          "text": "OutcomePolicy::Flag is unchanged. On API result=0, ApiErrorException retains metadata but discards per-domain data rows; the source does not define partial-failure result semantics. Do not retry automatically. Re-read affected domain state before deciding further action."
         }
       ],
       "order": [
@@ -1775,9 +1907,19 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Pinned domain omission selects every domain on the server; PR61 reviewer source EmailAuth.pm branches to all-user domains for falsey domain. Client policy requires explicit nonblank, nonzero targets; typed domain arguments are required and reject trimmed blank/zero entries. This is a safety policy, not DNS validation. Deliberate all-domain access uses explicit generic POST without domain."
         }
       ],
       "notes": [
+        {
+          "kind": "policy",
+          "text": "Typed calls require explicit target domains and reject null/omission, blank strings/list entries and trimmed '0'; no DNS validation is implied. To deliberately select every server domain, use whm()->call('remove_dmarc', []) as an explicit generic POST. Generic calls bypass typed target validation. Native missing/null argument failures occur before metadata reset; target-policy failures clear metadata before rejecting without I/O."
+        },
         {
           "kind": "documented",
           "text": "Available in cPanel & WHM 124 and later."
@@ -1793,7 +1935,9 @@
       "params": {
         "domain": {
           "php": "domains",
-          "encoding": "repeat"
+          "encoding": "repeat",
+          "required": true,
+          "reject_empty": true
         }
       }
     },
@@ -1958,8 +2102,8 @@
         }
       ],
       "order": [
-        "forward_to",
-        "user"
+        "user",
+        "forward_to"
       ]
     },
     "whm1:suspend_outgoing_email": {
@@ -2027,6 +2171,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for country_code. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Pinned prose documents only single and multiple-country forms; required:true is a deliberate client safety policy aligning the country-block siblings, not new live evidence."
         }
       ],
       "notes": [
@@ -2035,8 +2185,8 @@
           "text": "Available in cPanel & WHM 84 and later."
         },
         {
-          "kind": "documented",
-          "text": "Removes server-wide incoming-email country blocks. Lists use the explicitly documented repeated country_code spelling; the source also supports incremented names. The pinned parameter omits required:true, so omission remains possible without an invented default or scope."
+          "kind": "policy",
+          "text": "Removes incoming-email country blocks server-wide for explicitly selected countries. The pinned text defines single and multiple-country forms; the client requires countryCodes rather than emitting an empty POST. Lists repeat country_code wire keys."
         }
       ],
       "order": [
@@ -2045,7 +2195,8 @@
       "params": {
         "country_code": {
           "php": "countryCodes",
-          "encoding": "repeat"
+          "encoding": "repeat",
+          "required": true
         }
       }
     },
@@ -2163,6 +2314,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Source-family compatibility: sibling WHM validate_current_* operations share optional error strings; PR61 reviewer observed null errors in DMARC/PTR. Accept string/null without changing omission or other fields. No independent live observation is claimed for DKIM/SPF."
         }
       ],
       "notes": [
@@ -2228,7 +2385,18 @@
               "kind": "doc",
               "version": "pinned 2026-10-13",
               "date": "2026-10-31",
-              "note": "The pinned payload node omits type but expressly describes an array of objects, supplies items, and its example is a list. Repair only this missing container type to list, retaining every optional item field and nested type exactly; no scalar/null/opaque widening or live normalization is added. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+              "note": "The pinned payload node omits type but expressly describes an array of objects, supplies items, and its example is a list. Repair only this missing container type to list, retaining every optional item field and nested type exactly; the separately evidenced leaf corrections are applied afterward. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "payload[].error": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "reviewed source family 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Source-family compatibility: sibling WHM validate_current_* operations share optional error strings; PR61 reviewer observed null errors in DMARC/PTR. Accept string/null without changing omission or other fields. No independent live observation is claimed for DKIM/SPF."
             }
           ]
         }
@@ -2249,6 +2417,18 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported DMARC record/error and PTR error as null. Accept string/null without changing omission or other fields. No independent live observation is claimed for DKIM/SPF."
+        },
+        {
+          "kind": "live",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported DMARC record/error and PTR error as null. Accept string/null without changing omission or other fields. No independent live observation is claimed for DKIM/SPF."
         }
       ],
       "notes": [
@@ -2303,7 +2483,29 @@
               "kind": "doc",
               "version": "pinned 2026-10-13",
               "date": "2026-10-31",
-              "note": "The pinned payload node omits type but expressly describes an array of objects, supplies items, and its example is a list. Repair only this missing container type to list, retaining every optional item field and nested type exactly; no scalar/null/opaque widening or live normalization is added. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+              "note": "The pinned payload node omits type but expressly describes an array of objects, supplies items, and its example is a list. Repair only this missing container type to list, retaining every optional item field and nested type exactly; the separately evidenced leaf corrections are applied afterward. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "payload[].error": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "reviewed source family 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported DMARC record/error and PTR error as null. Accept string/null without changing omission or other fields. No independent live observation is claimed for DKIM/SPF."
+            }
+          ]
+        },
+        "payload[].record": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "reviewed source family 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported DMARC record/error and PTR error as null. Accept string/null without changing omission or other fields. No independent live observation is claimed for DKIM/SPF."
             }
           ]
         }
@@ -2346,6 +2548,18 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned parameter prose/examples establish repeated or incremented wire fields for domain. The selected existing encoder is recorded explicitly in params and documented in method notes. Lists are sequential and nonempty; supplied values are encoded once. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported DMARC record/error and PTR error as null. Accept string/null without changing omission or other fields. No independent live observation is claimed for DKIM/SPF."
+        },
+        {
+          "kind": "live",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported PTR ip_version as digits and SPF as integer. Source-family compatibility accepts canonical bounded integer strings for both, preserving native integers and rejecting other scalar forms. SPF quoted form is not live-observed."
         }
       ],
       "notes": [
@@ -2366,6 +2580,32 @@
           "php": "domains",
           "encoding": "repeat"
         }
+      },
+      "response": {
+        "payload[].error": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "reviewed source family 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported DMARC record/error and PTR error as null. Accept string/null without changing omission or other fields. No independent live observation is claimed for DKIM/SPF."
+            }
+          ]
+        },
+        "payload[].ip_version": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "reviewed source family 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported PTR ip_version as digits and SPF as integer. Source-family compatibility accepts canonical bounded integer strings for both, preserving native integers and rejecting other scalar forms. SPF quoted form is not live-observed."
+            }
+          ]
+        }
       }
     },
     "whm1:validate_current_spfs": {
@@ -2383,6 +2623,18 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned domain multiple-alternative example is domain=example.com domain=example2.com domain=example3.com. This explicitly establishes repeated same-name domain fields for validation. The separate install_spf_records paired record serialization remains unresolved and is unchanged. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Source-family compatibility: sibling WHM validate_current_* operations share optional error strings; PR61 reviewer observed null errors in DMARC/PTR. Accept string/null without changing omission or other fields. No independent live observation is claimed for DKIM/SPF."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewed source family 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported PTR ip_version as digits and SPF as integer. Source-family compatibility accepts canonical bounded integer strings for both, preserving native integers and rejecting other scalar forms. SPF quoted form is not live-observed."
         }
       ],
       "notes": [
@@ -2402,6 +2654,32 @@
         "domain": {
           "php": "domains",
           "encoding": "repeat"
+        }
+      },
+      "response": {
+        "payload[].error": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "reviewed source family 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Source-family compatibility: sibling WHM validate_current_* operations share optional error strings; PR61 reviewer observed null errors in DMARC/PTR. Accept string/null without changing omission or other fields. No independent live observation is claimed for DKIM/SPF."
+            }
+          ]
+        },
+        "payload[].ip_version": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "reviewed source family 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR61 reviewer on cPanel 11.138.0.19 through WHM reported PTR ip_version as digits and SPF as integer. Source-family compatibility accepts canonical bounded integer strings for both, preserving native integers and rejecting other scalar forms. SPF quoted form is not live-observed."
+            }
+          ]
         }
       }
     },
@@ -2437,5 +2715,5 @@
       }
     }
   },
-  "description": "Server-wide mail authentication and DNS settings, incoming blocks, account outgoing-mail controls, mailbox and delivery diagnostics, mobile profiles, Exim and spamd configuration, and Greylisting. Mail, private-key, configuration and profile outputs can contain sensitive data. Mutations use form POST, including private-key export and raw Exim syntax validation. Per-domain failures remain separate from API status. No automatic delivery, expunge, retry or rollback is provided. Existing Greylisting service-state observations and exclusions remain unchanged."
+  "description": "Server-wide mail authentication and DNS settings, incoming blocks, account outgoing-mail controls, mailbox and delivery diagnostics, mobile profiles, Exim and spamd configuration, and Greylisting. Mail, private-key, configuration and profile outputs can contain sensitive data. Mutations use form POST, including private-key export and raw Exim syntax validation. Per-domain failures remain separate from API status. No automatic delivery, expunge, retry or rollback is provided. Trust and configuration changes alter mail deferral policy. Returned triplets contain sender and recipient addresses; the client does not deliver mail or fetch returned addresses. The cPanel 11.138.0.19 review used GET reads with Greylisting disabled; all fifteen writes across the reviewed cPHulk and Greylisting slice remain unobserved."
 }

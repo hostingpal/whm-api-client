@@ -113,9 +113,9 @@ final readonly class Mysql
      *
      * @param string $host The remote MySQL server's hostname or IP address.
      * @return AddHostResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/remote-databases/mysql-add_host
      */
     public function addHost(string $host): ?array
@@ -144,9 +144,9 @@ final readonly class Mysql
      * @param string $host The remote MySQL server's hostname or IP address.
      * @param string $note note that describes the remote MySQL server.
      * @return AddHostNoteResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/remote-databases/mysql-add_host_note
      */
     public function addHostNote(string $host, string $note): ?array
@@ -172,9 +172,9 @@ final readonly class Mysql
      *
      * @param string $name The database's name.
      * @return CheckDatabaseResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-management/mysql-check_database
      */
     public function checkDatabase(string $name): array
@@ -206,9 +206,9 @@ final readonly class Mysql
      * @param string $name The new database's name.
      * @param 8|16|null $prefixSize The desired prefix size. Null omits it.
      * @return CreateDatabaseResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-management/mysql-create_database
      */
     public function createDatabase(string $name, ?int $prefixSize = null): ?array
@@ -241,9 +241,9 @@ final readonly class Mysql
      * @param string $password The new user's password.
      * @param 8|16|null $prefixSize The desired prefix size. Null omits it.
      * @return CreateUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-create_user
      */
     public function createUser(
@@ -282,9 +282,9 @@ final readonly class Mysql
      *
      * @param string $name The database's name.
      * @return DeleteDatabaseResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-management/mysql-delete_database
      */
     public function deleteDatabase(string $name): ?array
@@ -314,9 +314,9 @@ final readonly class Mysql
      *
      * @param string $host The remote MySQL server's hostname, IP Address, or IP address range.
      * @return DeleteHostResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/remote-databases/mysql-delete_host
      */
     public function deleteHost(string $host): ?array
@@ -347,9 +347,9 @@ final readonly class Mysql
      *
      * @param string $name The MySQL user's name.
      * @return DeleteUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-delete_user
      */
     public function deleteUser(string $name): ?array
@@ -375,9 +375,9 @@ final readonly class Mysql
      *
      * @param string $dbname The database's name.
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-management/mysql-dump_database_schema
      */
     public function dumpDatabaseSchema(string $dbname): string
@@ -402,9 +402,9 @@ final readonly class Mysql
      * API-map identity: uapi:Mysql/get_host_notes#GET (wire name get_host_notes).
      *
      * @return GetHostNotesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/remote-databases/mysql-get_host_notes
      */
     public function getHostNotes(): array
@@ -432,9 +432,9 @@ final readonly class Mysql
      * @param string $database The database name.
      * @param string $user The database user's name.
      * @return GetPrivilegesOnDatabaseResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-get_privileges_on_database
      */
     public function getPrivilegesOnDatabase(string $database, string $user): array
@@ -460,9 +460,9 @@ final readonly class Mysql
      * API-map identity: uapi:Mysql/get_restrictions#GET (wire name get_restrictions).
      *
      * @return GetRestrictionsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-get_restrictions
      */
     public function getRestrictions(): array
@@ -488,9 +488,9 @@ final readonly class Mysql
      * API-map identity: uapi:Mysql/get_server_information#GET (wire name get_server_information).
      *
      * @return GetServerInformationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-information/mysql-get_server_information
      */
     public function getServerInformation(): array
@@ -515,9 +515,9 @@ final readonly class Mysql
      * API-map identity: uapi:Mysql/list_databases#GET (wire name list_databases).
      *
      * @return ListDatabasesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-management/mysql-list_databases
      */
     public function listDatabases(): array
@@ -543,9 +543,9 @@ final readonly class Mysql
      *
      * @param string|null $databaseUser The database user for whom to return MySQL routines. Null omits it.
      * @return ListRoutinesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-list_routines
      */
     public function listRoutines(?string $databaseUser = null): array
@@ -570,9 +570,9 @@ final readonly class Mysql
      * API-map identity: uapi:Mysql/list_users#GET (wire name list_users).
      *
      * @return ListUsersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-list_users
      */
     public function listUsers(): array
@@ -597,9 +597,9 @@ final readonly class Mysql
      * API-map identity: uapi:Mysql/locate_server#GET (wire name locate_server).
      *
      * @return LocateServerResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-information/mysql-locate_server
      */
     public function locateServer(): array
@@ -636,9 +636,9 @@ final readonly class Mysql
      * @param string $oldName The database's current name.
      * @param string $newName The database's new name.
      * @return RenameDatabaseResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-management/mysql-rename_database
      */
     public function renameDatabase(string $oldName, string $newName): ?array
@@ -673,9 +673,9 @@ final readonly class Mysql
      * @param string $oldName The user's current name.
      * @param string $newName The user's new name.
      * @return RenameUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-rename_user
      */
     public function renameUser(string $oldName, string $newName): ?array
@@ -701,9 +701,9 @@ final readonly class Mysql
      *
      * @param string $name The database's name.
      * @return RepairDatabaseResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-management/mysql-repair_database
      */
     public function repairDatabase(string $name): array
@@ -734,9 +734,9 @@ final readonly class Mysql
      * @param string $database The database's name.
      * @param string $user The database user's name.
      * @return RevokeAccessToDatabaseResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-revoke_access_to_database
      */
     public function revokeAccessToDatabase(string $database, string $user): ?array
@@ -764,9 +764,9 @@ final readonly class Mysql
      * @param string $user The MySQL database user.
      * @param string $password The user's new password.
      * @return SetPasswordResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-set_password
      */
     public function setPassword(
@@ -806,9 +806,9 @@ final readonly class Mysql
      *     * `CREATE VIEW` * `DELETE` * `DROP` * `EVENT` * `EXECUTE` * `INDEX` * `INSERT` * `LOCK TABLES` * `REFERENCES`
      *     * `SELECT` * `SHOW VIEW` * `TRIGGER` * `UPDATE` Null omits it.
      * @return SetPrivilegesOnDatabaseResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-set_privileges_on_database
      */
     public function setPrivilegesOnDatabase(string $database, string $user, ?string $privileges = null): ?array
@@ -842,9 +842,9 @@ final readonly class Mysql
      *
      * @param string|null $prefix An optional string to prepend to the randomly generated database name. Null omits it.
      * @return SetupDbAndUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/database-management/mysql-setup_db_and_user
      */
     public function setupDbAndUser(?string $prefix = null): array
@@ -873,9 +873,9 @@ final readonly class Mysql
      * API-map identity: uapi:Mysql/update_privileges#GET (wire name update_privileges).
      *
      * @return UpdatePrivilegesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/user-management/mysql-update_privileges
      */
     public function updatePrivileges(): ?array
