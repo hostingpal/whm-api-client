@@ -29,6 +29,8 @@ trait WhmGroups
 
     private ?IpAddresses $ipAddressesGroup = null;
 
+    private ?Logs $logsGroup = null;
+
     private ?Mail $mailGroup = null;
 
     private ?ModSecurity $modSecurityGroup = null;
@@ -120,6 +122,16 @@ trait WhmGroups
     public function ipAddresses(): IpAddresses
     {
         return $this->ipAddressesGroup ??= new IpAddresses($this->run(...));
+    }
+
+    /**
+     * Select the Logs operations without making a request.
+     *
+     * WHM API 1 functions in the documented Logs group.
+     */
+    public function logs(): Logs
+    {
+        return $this->logsGroup ??= new Logs($this->run(...));
     }
 
     /**

@@ -1355,3 +1355,12 @@ still fails for two masked unknown-field observations in installed versions and
 service rows. They remain untyped and unwaived; no key identity/count is inferred.
 No mutation or private configuration read ran. Historical artifacts remain
 immutable and `8x0.2.38` retains remaining live coverage and unknown findings.
+
+## Log metadata administration
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/log-administration.php --output=docs/api/evidence/YYYY-MM-DD-log-administration.json`.
+
+Eight fixed GETs read version, WHM retention and selected-account settings/archive/
+error-log metadata through both UAPI routes. Existing opt-in, committed-input,
+exact request guard, TLS and immutable structural-output rules apply. No existing
+log contents, archive deletion or settings mutation runs. Keep gaps under `8x0.2.55`.

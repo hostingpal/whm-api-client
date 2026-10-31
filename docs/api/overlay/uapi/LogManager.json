@@ -1,0 +1,138 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "LogManager",
+  "accessor": "logManager",
+  "operations": {
+    "uapi:LogManager/delete_archive": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later. Deletes the named log archive from the authenticated account's ~/logs directory. The source requires that the filename reside in that directory, end in .gz and contain no path traversal characters. The client forwards the file string unchanged and performs no local filesystem access. Deletion can remove archived logs permanently."
+        },
+        {
+          "kind": "documented",
+          "text": "This mutation uses form POST. The pinned data schema is unconstrained: preserve any present JSON value, including null, false, zero, empty strings and opaque objects. An absent data member remains a mismatch. The client performs one request with no retry or rollback. API success does not prove eventual rotation, deletion or retention enforcement."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /LogManager/delete_archive declares x-readonly=false. Query requiredness, wire spelling and response data schema are retained. UAPI source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc. No role restrictions or string-integer response variants are declared in this operation."
+        }
+      ]
+    },
+    "uapi:LogManager/get_settings": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Retrieves the selected account's archival settings. archive_logs, prune_archive and using_default remain strict integer 0/1 flags. retention_days is a number of days; zero retains logs indefinitely. When no custom retention value is set, the returned retention_days is the server-wide default. using_default distinguishes the server default from a custom value. Optional fields remain omitted."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /LogManager/get_settings declares x-readonly=true. Query requiredness, wire spelling and response data schema are retained. UAPI source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc. No role restrictions or string-integer response variants are declared in this operation."
+        }
+      ]
+    },
+    "uapi:LogManager/list_archives": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Lists archive metadata for files in the selected account's ~/logs directory, without reading file contents. file and path are strings forwarded as payload data; mtime is an integer last-modified timestamp. Optional row fields and empty lists remain distinct. The client does not open returned paths."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /LogManager/list_archives declares x-readonly=true. Query requiredness, wire spelling and response data schema are retained. UAPI source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc. No role restrictions or string-integer response variants are declared in this operation."
+        }
+      ]
+    },
+    "uapi:LogManager/list_error_logs": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138 and later. Requires the exact domain selector for a domain owned by the selected account. Returns PHP error log file metadata only, without file contents. file_id identifies php_fpm_error_log (home logs directory), docroot_error_log (website document root) or homedir_error_log (home directory)."
+        },
+        {
+          "kind": "documented",
+          "text": "modified_today is a strict integer 0/1 flag using server local time. mtime is a Unix timestamp and size is bytes; each may explicitly be null. error is an optional nullable string explaining an unavailable file. Other optional fields retain omission. The client forwards domain unchanged and does not open returned paths."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /LogManager/list_error_logs declares x-readonly=true. Query requiredness, wire spelling and response data schema are retained. UAPI source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc. No role restrictions or string-integer response variants are declared in this operation."
+        }
+      ]
+    },
+    "uapi:LogManager/set_settings": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Saves the selected account's log archival settings using form POST. The source requires at least one of archive_logs, prune_archive or retention_days; each parameter remains optional at the native boundary, with server-side cross-field validation."
+        },
+        {
+          "kind": "documented",
+          "text": "archive_logs controls archiving to the home directory after statistics processing. If omitted, its default is archive-logs in ~/.cpanel-logs, or default_archive-logs in cpanel.config when that file is absent. prune_archive controls removing the previous month's archives from ~/logs at month end. Its omitted default is remove-old-archived-logs in ~/.cpanel-logs, or default_remove-old-archive-logs in cpanel.config when the file is absent. Explicit false flags are sent as zero."
+        },
+        {
+          "kind": "documented",
+          "text": "retention_days is in days: zero retains logs indefinitely; -1 clears the per-user override and restores the server default; positive integers retain logs for that many days. Omission preserves the existing value. Pruning and retention can remove archives. No client-side minimum or enum validation is added."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned data schema is unconstrained: preserve any present JSON value, including null, false, zero, empty strings and opaque objects. An absent data member remains a mismatch. The client performs one request with no retry or rollback. API success does not prove eventual rotation, deletion or retention enforcement."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /LogManager/set_settings declares x-readonly=false. Query requiredness, wire spelling and response data schema are retained. UAPI source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc. No role restrictions or string-integer response variants are declared in this operation."
+        }
+      ]
+    },
+    "uapi:LogManager/view_error_log": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 138 and later. Requires domain owned by the selected account and the exact file_id selector: php_fpm_error_log (home logs directory), docroot_error_log (domain document root), or homedir_error_log (home directory). Selectors are strings sent unchanged; the client does not access the local filesystem."
+        },
+        {
+          "kind": "documented",
+          "text": "Reads trailing PHP error log lines in chronological order, oldest first. Omitted limit retains the server default of 100; the documented minimum is 1 and values above 5000 are silently capped by the server. The client sends the supplied integer unchanged."
+        },
+        {
+          "kind": "documented",
+          "text": "log_content is a potentially sensitive string list and is empty for an empty log. Do not log response content or PayloadMismatchException payloads. lines_read is the returned line count; partial=1 means the file exceeds limit. modified_today uses the server date/time. mtime and size come from fstat and remain integer Unix time and bytes. Flags remain strict integer 0/1; optional fields retain omission. Returning API success does not establish HTTP enforcement or log rotation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /LogManager/view_error_log declares x-readonly=true. Query requiredness, wire spelling and response data schema are retained. UAPI source SHA256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc. No role restrictions or string-integer response variants are declared in this operation."
+        }
+      ]
+    }
+  }
+}

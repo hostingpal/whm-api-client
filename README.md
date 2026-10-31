@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 77 generated typed groups cover 783 documented operations (see
+The 79 generated typed groups cover 790 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1889,3 +1889,27 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+## Log administration
+
+`uapi()->logManager()` covers all six pinned functions and `whm()->logs()` the
+account-retention inventory. Five reads use GET and two mutations use form POST.
+Paths, domain names and file identifiers are forwarded unchanged; no existing
+log is read by the client until viewErrorLog() is explicitly called. Log contents
+may contain credentials and remain sensitive payload data.
+
+LogManager's flags remain integer 0|1, while WHM using_default is boolean.
+Nullable retention days and error-log metadata preserve explicit null distinctly
+from omission. Both UAPI mutations have unspecified data schemas: they preserve
+mixed results and reject missing data, without inventing void or object fields.
+Optional settings retain server defaults, including explicit zero/false values.
+Archive deletion, archive/prune settings and retention can affect stored logs;
+read each method's source/version/default caveats. Calls add no retries, rollback
+or guarantees about subsequent rotation/deletion. Existing StatsManager coverage
+is unchanged; its JSON save operation remains deferred under `8x0.1.18`.
+
+All seven methods have offline contracts, including both UAPI routes. The fixed
+eight-GET catalog reads version, account-retention inventory, settings, archives
+and error-log metadata for designated npr.rs. It reads no existing log content,
+deletes no archive and changes no settings. Populated/lifecycle variants and
+actual retention behavior remain under `8x0.2.55`.

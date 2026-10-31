@@ -77,6 +77,8 @@ trait UapiGroups
 
     private ?Locale $localeGroup = null;
 
+    private ?LogManager $logManagerGroup = null;
+
     private ?Mime $mimeGroup = null;
 
     private ?ModSecurity $modSecurityGroup = null;
@@ -459,6 +461,16 @@ trait UapiGroups
     public function locale(): Locale
     {
         return $this->localeGroup ??= new Locale($this->run(...));
+    }
+
+    /**
+     * Select the LogManager operations without making a request.
+     *
+     * The LogManager module for UAPI.
+     */
+    public function logManager(): LogManager
+    {
+        return $this->logManagerGroup ??= new LogManager($this->run(...));
     }
 
     /**

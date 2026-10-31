@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "Logs",
+  "accessor": "logs",
+  "operations": {
+    "whm1:list_accounts_retention": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later. Read-only account-wide WHM inventory lists each cPanel account's web log retention preference alongside the server-wide default from Tweak Settings. This is separate from the selected-account LogManager settings and does not modify settings."
+        },
+        {
+          "kind": "documented",
+          "text": "default_retention and per-account retention_days are integer days; zero means logs are retained indefinitely. An explicit null account retention_days means the account uses the server default, while omission remains absent. using_default remains a native boolean, unlike UAPI LogManager integer flags. Account user/domain strings, optional fields and empty account lists are preserved. API success establishes inventory only and does not prove eventual retention enforcement."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /list_accounts_retention GET declares x-readonly=true with no parameters. Preserve the optional account fields, nullable integer retention_days and native boolean using_default exactly. WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. No role restriction or string-integer response variant is declared."
+        }
+      ]
+    }
+  }
+}
