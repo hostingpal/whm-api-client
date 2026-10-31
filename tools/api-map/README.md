@@ -98,6 +98,13 @@ Operation entries (all keys optional):
   suppresses only the PHPDoc literal enum in favor of the existing native type;
   absent or true keeps the pinned enum. It changes neither encoding nor native
   parameter types and does not resolve disputed upstream values.
+  `wire` corrects one scalar string, integer or number parameter's transmitted
+  name with operation-level evidence. Both names must be simple ASCII identifiers
+  (`[A-Za-z_][A-Za-z0-9_]*`), excluding routing fields (`api.version`, `cpanel.*`),
+  indexed names and wildcard families. Omitted, boolean, repeated and composite
+  inputs cannot use it, and duplicate final wire names fail generation. Overlay
+  keys and `order` still use the pinned source name; the public PHP name, type,
+  requiredness and sensitivity retain their existing rules.
   `type: "string|int"` is the only input type correction: it widens a documented
   scalar string or integer parameter with matching scalar encoding, for reviewed
   identifier variants or comma-delimited values. It cannot target omitted,
@@ -123,7 +130,7 @@ Operation entries (all keys optional):
 - `evidence`: operation-level evidence, required when the entry sets `variant`, `method`,
   `outcome`, `void` or `optional_payload`, changes a parameter `required` setting,
   suppresses its enum documentation (`enum_doc: false`), sets a parameter `encoding` (it
-  changes the wire request), corrects a parameter `type` or `description`, or marks
+  changes the wire request), corrects a parameter `wire`, `type` or `description`, or marks
   a parameter `"sensitive": false`.
 - `notes`: docblock lines, each `{"kind", "text"}`. Kind `documented` restates
   the pinned documentation and renders as "Documented:"; kind `observed` records
