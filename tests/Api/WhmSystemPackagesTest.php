@@ -152,6 +152,9 @@ final class WhmSystemPackagesTest extends TestCase
     {
         foreach (self::operations() as $name => [$method, $operation, , $arguments]) {
             foreach ([null, 'null', 'false', '1', '"text"', '[1]'] as $payload) {
+                if ($method === 'listRpms' && ($payload === null || $payload === 'null')) {
+                    continue;
+                }
                 yield $name . ' root ' . ($payload ?? 'missing') => [$method, $operation, $arguments, $payload];
             }
         }
@@ -172,6 +175,7 @@ final class WhmSystemPackagesTest extends TestCase
         yield 'plugin log null' => ['uninstallRpmPlugin', 'uninstall_rpm_plugin', ['name' => 'p'],
             '{"log_entry":null}'];
         yield 'missing RPM numeric' => ['listRpms', 'list_rpms', [], '{"rpms":[1]}'];
+        yield 'missing RPM list null' => ['listRpms', 'list_rpms', [], '{"rpms":null}'];
         yield 'cache flag string' => ['fixCache', 'package_manager_fixcache', [], '{"cache_seems_ok_now":"1"}'];
         yield 'log content string' => ['getBuildLog', 'package_manager_get_build_log', ['build' => 1, 'offset' => 0],
             '{"content":"line"}'];
@@ -285,6 +289,24 @@ final class WhmSystemPackagesTest extends TestCase
         [$client, $http] = self::client();
         $http->addResponse(new Response(200, [], self::envelope($operation, '{}')));
         self::assertSame([], $client->whm()->systemPackages()->{$method}(...$arguments));
+    }
+
+    /** @return iterable<string, array{string|null}> */
+    public static function optionalRpmPayloads(): iterable
+    {
+        yield 'observed metadata-only success' => [null];
+        yield 'existing optional-payload null boundary, unobserved live' => ['null'];
+    }
+
+    #[DataProvider('optionalRpmPayloads')]
+    public function testMissingRpmPayloadReturnsNullWithoutInferringAnEmptyInventory(?string $payload): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('list_rpms', $payload)));
+        self::assertNull($client->whm()->systemPackages()->listRpms());
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertRequest($http, 'list_rpms', 'GET', '');
+        self::assertCount(1, $http->getRequests());
     }
 
     public function testCacheFailureWithMetadataOnlyIsAnApiError(): void

@@ -407,18 +407,26 @@ final readonly class SystemPackages
      * Documented: Lists required but uninstalled RPM dependencies; it does not list every installed RPM. Omitting
      * target requests all targets, and no packages are installed.
      *
+     * Observed: On cPanel 11.138.0.19, the immutable 2026-10-31 capture observed HTTP/API success with the data member
+     * absent. listRpms() returns null for that metadata-only success while validating the pinned rpms string-list
+     * object whenever non-null data is present. The existing optional-payload mechanism also accepts explicit null
+     * data; that null variant was not observed in this capture. Neither absent nor null data establishes that no RPM
+     * packages are missing. The original capture remains failed and unchanged.
+     *
+     * Returns null when the server sends no data.
+     *
      * API-map identity: whm1:list_rpms#GET (wire name list_rpms; List Package Information).
      *
      * @param string|null $target The target that depends on the uninstalled RPMs. Null omits it.
-     * @return ListRpmsResult
+     * @return ListRpmsResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/list-package-information/rpmversions-list_rpms
      */
-    public function listRpms(?string $target = null): array
+    public function listRpms(?string $target = null): ?array
     {
-        /** @var ListRpmsResult $result Validated against SystemPackagesSpec::LIST_RPMS. */
+        /** @var ListRpmsResult|null $result Validated against SystemPackagesSpec::LIST_RPMS. */
         $result = ($this->run)(SystemPackagesSpec::LIST_RPMS, ['target' => $target]);
 
         return $result;

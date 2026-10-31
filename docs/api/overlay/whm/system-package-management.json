@@ -179,6 +179,10 @@
         {
           "kind": "documented",
           "text": "Lists required but uninstalled RPM dependencies; it does not list every installed RPM. Omitting target requests all targets, and no packages are installed."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, the immutable 2026-10-31 capture observed HTTP/API success with the data member absent. listRpms() returns null for that metadata-only success while validating the pinned rpms string-list object whenever non-null data is present. The existing optional-payload mechanism also accepts explicit null data; that null variant was not observed in this capture. Neither absent nor null data establishes that no RPM packages are missing. The original capture remains failed and unchanged."
         }
       ],
       "evidence": [
@@ -187,8 +191,16 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /list_rpms GET declares x-readonly=true. Use GET for this read."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Immutable docs/api/evidence/2026-10-31-whm-system-packages.json SHA-256 5b6cc329c55b456106ce0a06a54f0169bb6f58c558267b1960054bf2cfcd8450 at revision 072dc900fb51a388fc40211407f05f08f68d6e53, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:list_rpms#GET through the WHM GET route returned HTTP 200 and API success, but response $.data and payload $ were missing, producing missing_required at $. Effective contract SHA-256 e12cd3759cc3d0d99b3324ff4918e27fbab563697b84627dd9ab33d042077922. Enable optional_payload for this operation only, retaining the pinned optional rpms string-list field and strict non-null payload validation. The existing mechanism also accepts explicit null, which this observation does not establish. No empty-inventory meaning, sibling operation, additional field or waiver is inferred; preserve the failed artifact unchanged.",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-system-packages.json"
         }
-      ]
+      ],
+      "optional_payload": true
     },
     "whm1:package_manager_fixcache": {
       "name": "fixCache",

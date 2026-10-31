@@ -219,6 +219,7 @@ final class SystemPackagesSpec
                 'rpms' => ['type' => 'list', 'items' => ['type' => 'string']],
             ],
         ],
+        'optional' => true,
     ];
 
     public const PACKAGE_MANAGER_RESOLVE_ACTIONS = [
