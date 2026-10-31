@@ -13,17 +13,28 @@
         {
           "kind": "documented",
           "text": "Returns display information for the server available and configured identity-provider modules. Provider documentation and configuration URLs and icon bytes are returned payload data; the client neither follows URLs nor decodes or renders icons. Empty lists and omitted record fields remain distinct."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed cPanel 11.138.0.19 installation, the WHM bridge could not load Cpanel/API/ExternalAuthentication.pm because the module file was absent, while direct cPanel calls used the compiled server implementation. The bridge raises ApiErrorException. This is installation/version-specific capability evidence; the client retains bridge routing and does not assume the same limitation on other servers."
         }
       ],
       "probe": {
         "phase": "read-only",
         "arguments": {},
         "routes": [
-          "direct-uapi",
-          "bridged-uapi"
+          "direct-uapi"
         ],
         "expected": "success"
-      }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941 against 12f57c20c78c7727b73205cea028fa5cb6fe94ed: all four ExternalAuthentication methods fail through the WHM bridge because Cpanel/API/ExternalAuthentication.pm is absent; direct calls reach the compiled implementation. The three inventory reads passed directly on npr. Direct remove_authn_link was tested only with made-up identifiers and reached parameter validation; successful unlinking was not established. These observations remain separate from the immutable captures."
+        }
+      ]
     },
     "uapi:ExternalAuthentication/get_authn_links": {
       "notes": [
@@ -33,17 +44,51 @@
         },
         {
           "kind": "documented",
-          "text": "Returns identity-provider links for the current cPanel account. link_time is an optional integer Unix timestamp. The source declares subject_unique_identifier as an optional integer in this response, while removeAuthnLink requires a string input; no shared identifier format or lossless round trip is inferred. Omitted fields remain absent."
+          "text": "Returns identity-provider links for the current cPanel account. link_time remains an optional integer Unix timestamp. subject_unique_identifier preserves either an integer or its exact string representation, including oversized quoted decimal identifiers and leading zeros; it is never converted to a float or normalized from a string. Omitted fields remain absent. The live link list was empty, so this field correction has pinned-source and offline evidence only."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed cPanel 11.138.0.19 installation, the WHM bridge could not load Cpanel/API/ExternalAuthentication.pm because the module file was absent, while direct cPanel calls used the compiled server implementation. The bridge raises ApiErrorException. This is installation/version-specific capability evidence; the client retains bridge routing and does not assume the same limitation on other servers."
         }
       ],
       "probe": {
         "phase": "read-only",
         "arguments": {},
         "routes": [
-          "direct-uapi",
-          "bridged-uapi"
+          "direct-uapi"
         ],
         "expected": "success"
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941 against 12f57c20c78c7727b73205cea028fa5cb6fe94ed: all four ExternalAuthentication methods fail through the WHM bridge because Cpanel/API/ExternalAuthentication.pm is absent; direct calls reach the compiled implementation. The three inventory reads passed directly on npr. Direct remove_authn_link was tested only with made-up identifiers and reached parameter validation; successful unlinking was not established. These observations remain separate from the immutable captures."
+        }
+      ],
+      "response": {
+        "[].subject_unique_identifier": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /ExternalAuthentication/get_authn_links declares integer subject_unique_identifier, while /ExternalAuthentication/remove_authn_link declares string with the 21-digit example 123456789012345678901. Review https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941 identifies the mismatch. Retain integer and exact string forms without numeric coercion; floats, null and composite values remain invalid. Oversized JSON numeric literals decode as floats and remain rejected: represent such identifiers as quoted strings. Empty live link lists establish no populated-field observations."
+            }
+          ]
+        }
       }
     },
     "uapi:ExternalAuthentication/has_external_auth_modules_configured": {
@@ -55,17 +100,28 @@
         {
           "kind": "documented",
           "text": "The data payload is an integer 0/1 flag: 1 means the user enabled an external module and 0 means none is enabled. Payload zero is a successful result when the UAPI envelope status is 1; UAPI status=0 remains an API failure."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed cPanel 11.138.0.19 installation, the WHM bridge could not load Cpanel/API/ExternalAuthentication.pm because the module file was absent, while direct cPanel calls used the compiled server implementation. The bridge raises ApiErrorException. This is installation/version-specific capability evidence; the client retains bridge routing and does not assume the same limitation on other servers."
         }
       ],
       "probe": {
         "phase": "read-only",
         "arguments": {},
         "routes": [
-          "direct-uapi",
-          "bridged-uapi"
+          "direct-uapi"
         ],
         "expected": "success"
-      }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941 against 12f57c20c78c7727b73205cea028fa5cb6fe94ed: all four ExternalAuthentication methods fail through the WHM bridge because Cpanel/API/ExternalAuthentication.pm is absent; direct calls reach the compiled implementation. The three inventory reads passed directly on npr. Direct remove_authn_link was tested only with made-up identifiers and reached parameter validation; successful unlinking was not established. These observations remain separate from the immutable captures."
+        }
+      ]
     },
     "uapi:ExternalAuthentication/remove_authn_link": {
       "notes": [
@@ -75,11 +131,19 @@
         },
         {
           "kind": "documented",
-          "text": "Unlinks the specified external identity-provider account from the selected cPanel account. provider and subjectUniqueIdentifier are required strings; identifiers are forwarded unchanged without numeric conversion, truncation or assumptions about provider-specific formats."
+          "text": "Unlinks the specified external identity-provider account from the selected cPanel account. The required PHP argument provider is encoded as provider_id, correcting the pinned provider wire name. subjectUniqueIdentifier accepts int|string; identifiers are forwarded unchanged without numeric conversion, truncation or assumptions about provider-specific formats. Oversized identifiers must be strings."
         },
         {
           "kind": "documented",
           "text": "This mutation uses form POST. The source declares no rollback; the client performs no automatic retry or rollback. The result is a nullable object without pinned fields: preserve opaque object fields and explicit null, and reject an absent data member."
+        },
+        {
+          "kind": "observed",
+          "text": "On the reviewed cPanel 11.138.0.19 installation, the WHM bridge could not load Cpanel/API/ExternalAuthentication.pm because the module file was absent, while direct cPanel calls used the compiled server implementation. The bridge raises ApiErrorException. This is installation/version-specific capability evidence; the client retains bridge routing and does not assume the same limitation on other servers."
+        },
+        {
+          "kind": "observed",
+          "text": "Direct validation on cPanel 11.138.0.19 requested provider_id when provider was sent. provider_id with a made-up subject reached invalid-subject validation, and provider_id alone requested subject_unique_identifier. This establishes the accepted wire names only; no real link was removed."
         }
       ],
       "method": "POST",
@@ -92,9 +156,30 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /ExternalAuthentication/remove_authn_link: x-readonly=false and x-rollback=none. It unlinks an external account, so use form POST; request subject_unique_identifier remains a required string despite the integer declared by get_authn_links response."
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /ExternalAuthentication/remove_authn_link declares x-readonly=false and x-rollback=none. Use form POST. The request string subject_unique_identifier has the 21-digit example 123456789012345678901, while get_authn_links declares an integer; allow the existing evidence-gated string|int parameter correction for lossless getter-to-remover compatibility, without changing provider-specific semantics."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941 against 12f57c20c78c7727b73205cea028fa5cb6fe94ed: all four ExternalAuthentication methods fail through the WHM bridge because Cpanel/API/ExternalAuthentication.pm is absent; direct calls reach the compiled implementation. The three inventory reads passed directly on npr. Direct remove_authn_link was tested only with made-up identifiers and reached parameter validation; successful unlinking was not established. These observations remain separate from the immutable captures."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941 tested direct remove_authn_link with made-up identifiers: provider plus subject_unique_identifier requests provider_id; provider_id plus subject_unique_identifier reaches invalid-subject validation; provider_id alone requests subject_unique_identifier. Correct only the transmitted provider wire name to provider_id, retaining the public PHP argument provider and source-based ordering. Successful unlinking was not observed."
         }
-      ]
+      ],
+      "params": {
+        "provider": {
+          "wire": "provider_id"
+        },
+        "subject_unique_identifier": {
+          "type": "string|int",
+          "description": "The unique identifier for the user at the identity provider. Integers and strings from getAuthnLinks are forwarded without numeric conversion; use a string for an identifier larger than PHP_INT_MAX."
+        }
+      }
     }
   }
 }

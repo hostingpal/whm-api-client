@@ -68,6 +68,9 @@ func Validate(set Set) []string {
 			}
 			problems = append(problems, missingEvidence(id, op)...)
 			for wire, param := range op.Params {
+				if param.Omit && param.Wire != "" {
+					problems = append(problems, id+": omitted parameter "+wire+" cannot have wire corrections")
+				}
 				if param.Omit && (param.Type != "" || param.Description != "") {
 					problems = append(problems, id+": omitted parameter "+wire+" cannot have type or description corrections")
 				}
@@ -139,6 +142,9 @@ func missingEvidence(id string, op Operation) []string {
 	}
 	sort.Strings(wires)
 	for _, wire := range wires {
+		if op.Params[wire].Wire != "" {
+			settings = append(settings, "wire on parameter "+wire)
+		}
 		if op.Params[wire].Type != "" {
 			settings = append(settings, "type on parameter "+wire)
 		}
@@ -171,3 +177,11 @@ var suffixPattern = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*\*$`)
 func IsSuffixNumbered(encoding string) bool {
 	return encoding == "suffix-numbered" || encoding == "suffix-numbered-scalar"
 }
+
+// IsCorrectedWireName limits wire corrections to simple identifiers. Routing
+// fields (api.version and cpanel.*), indexed names and wildcard families are excluded.
+func IsCorrectedWireName(name string) bool {
+	return correctedWireName.MatchString(name)
+}
+
+var correctedWireName = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)

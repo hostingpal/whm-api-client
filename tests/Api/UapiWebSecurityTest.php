@@ -222,7 +222,7 @@ final class UapiWebSecurityTest extends TestCase
                         $cases,
                         '[{}]',
                         '{"current_file":null}',
-                        '{"time_started":1608593571}',
+                        '{"time_started":true}',
                         '{"infected_files":{}}',
                         '{"infected_files":[0]}',
                     );
@@ -276,7 +276,7 @@ final class UapiWebSecurityTest extends TestCase
                         $cases[] = '{"domain":"example.com"}';
                     }
                     if ($function !== 'list_domains') {
-                        $cases[] = '[{"exception":null}]';
+                        $cases[] = '[{"exception":1}]';
                     }
                 }
                 foreach ($cases as $index => $payload) {

@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Contactus",
+  "accessor": "contactUs",
+  "class": "ContactUs",
+  "operations": {
+    "uapi:Contactus/is_enabled": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later. Reports whether the selected cPanel account can contact its hosting provider through the interface. This does not contact the provider."
+        },
+        {
+          "kind": "documented",
+          "text": "The optional enabled flag stays integer 0 or 1. enabled=0 is a successful disabled result, while envelope status=0 remains an API failure. An omitted enabled field remains absent."
+        }
+      ]
+    }
+  }
+}

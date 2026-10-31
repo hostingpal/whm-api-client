@@ -89,7 +89,13 @@ final class ClamScannerSpec
                 'scan_complete' => ['type' => 'flag'],
                 'scanned_file_count' => ['type' => 'int'],
                 'scanned_file_size' => ['type' => 'int'],
-                'time_started' => ['type' => 'string'],
+                'time_started' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'int'],
+                        ['type' => 'string'],
+                    ],
+                ],
                 'total_file_count' => ['type' => 'int'],
                 'total_file_size_MiB' => ['type' => 'int'],
             ],

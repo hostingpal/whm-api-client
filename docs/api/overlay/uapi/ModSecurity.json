@@ -17,7 +17,11 @@
         },
         {
           "kind": "documented",
-          "text": "Changes ModSecurity protection immediately and has no documented rollback. Per-domain exception text is optional payload data and can report an update error; inspect returned rows as well as the API status. The client performs no automatic retry or rollback."
+          "text": "Changes ModSecurity protection immediately and has no documented rollback. Per-domain exception text is optional payload data that can report an update error. The client performs no automatic retry or rollback."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, successful writes through both routes returned exception: null. Preserve omitted exception, explicit null and string diagnostics distinctly. Source inspection also shows that status 0 can accompany per-domain results after some domains changed. Flag handling raises ApiErrorException and does not return those rows; re-read with listDomains() to establish current state after a failed call. The client never retries or re-reads automatically."
         }
       ],
       "evidence": [
@@ -26,8 +30,36 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /ModSecurity/disable_all_domains GET declares x-readonly=false. Use form POST for this account security mutation; x-rollback=none. Preserve the inline data schema and optional field presence; enabled and installed, where present, are integer 0/1 flags."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report 5720388941 against 12f57c20c78c7727b73205cea028fa5cb6fe94ed observed all four generated form POST writes taking effect on a disposable account through direct UAPI and the WHM bridge on 11.138.0.19, followed by listDomains readback. Cpanel/API/ModSecurity.pm assigns exception from $domain_problems->{$domain}, so successful rows contain explicit null despite pinned string-only error prose. Add null only to exception, preserving omitted fields, strings, every other field and the Flag outcome policy. These are attributed reviewer observations, not a new committed capture.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer inspection of Cpanel/API/ModSecurity.pm reports return $answer->{status} after per-domain rows are set. A failed API call can therefore follow partial changes. Keep Flag and ApiErrorException, document explicit listDomains readback, and do not retry the write automatically.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
         }
-      ]
+      ],
+      "response": {
+        "[].exception": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer report 5720388941 against 12f57c20c78c7727b73205cea028fa5cb6fe94ed observed all four generated form POST writes taking effect on a disposable account through direct UAPI and the WHM bridge on 11.138.0.19, followed by listDomains readback. Cpanel/API/ModSecurity.pm assigns exception from $domain_problems->{$domain}, so successful rows contain explicit null despite pinned string-only error prose. Add null only to exception, preserving omitted fields, strings, every other field and the Flag outcome policy. These are attributed reviewer observations, not a new committed capture.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
+            }
+          ]
+        }
+      }
     },
     "uapi:ModSecurity/disable_domains": {
       "method": "POST",
@@ -42,11 +74,15 @@
         },
         {
           "kind": "documented",
-          "text": "Changes ModSecurity protection immediately and has no documented rollback. Per-domain exception text is optional payload data and can report an update error; inspect returned rows as well as the API status. The client performs no automatic retry or rollback."
+          "text": "Changes ModSecurity protection immediately and has no documented rollback. Per-domain exception text is optional payload data that can report an update error. The client performs no automatic retry or rollback."
         },
         {
           "kind": "documented",
           "text": "domains is a required pre-serialized comma-separated string of domains owned by the authenticated account. Supply the documented comma representation; it is form-encoded once. The list result and the no_domains_provided / invalid_domains_provided object alternatives are preserved. Invalid-domain objects may include invalid_domains; these payload diagnostics remain separate from the API envelope."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, successful writes through both routes returned exception: null. Preserve omitted exception, explicit null and string diagnostics distinctly. Source inspection also shows that status 0 can accompany per-domain results after some domains changed. Flag handling raises ApiErrorException and does not return those rows; re-read with listDomains() to establish current state after a failed call. The client never retries or re-reads automatically."
         }
       ],
       "evidence": [
@@ -55,8 +91,87 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /ModSecurity/disable_domains GET declares x-readonly=false. Use form POST for this account security mutation; x-rollback=none. Preserve the inline data schema and optional field presence; enabled and installed, where present, are integer 0/1 flags."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report 5720388941 against 12f57c20c78c7727b73205cea028fa5cb6fe94ed observed all four generated form POST writes taking effect on a disposable account through direct UAPI and the WHM bridge on 11.138.0.19, followed by listDomains readback. Cpanel/API/ModSecurity.pm assigns exception from $domain_problems->{$domain}, so successful rows contain explicit null despite pinned string-only error prose. Add null only to exception, preserving omitted fields, strings, every other field and the Flag outcome policy. These are attributed reviewer observations, not a new committed capture.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer inspection of Cpanel/API/ModSecurity.pm reports return $answer->{status} after per-domain rows are set. A failed API call can therefore follow partial changes. Keep Flag and ApiErrorException, document explicit listDomains readback, and do not retry the write automatically.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "dependencies": {
+                      "type": "list",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "domain": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "flag"
+                    },
+                    "exception": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "searchhint": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "fields": {
+                  "invalid_domains": {
+                    "type": "list",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "invalid_domains_provided": {
+                    "type": "int"
+                  },
+                  "no_domains_provided": {
+                    "type": "int"
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer report 5720388941 against 12f57c20c78c7727b73205cea028fa5cb6fe94ed observed all four generated form POST writes taking effect on a disposable account through direct UAPI and the WHM bridge on 11.138.0.19, followed by listDomains readback. Cpanel/API/ModSecurity.pm assigns exception from $domain_problems->{$domain}, so successful rows contain explicit null despite pinned string-only error prose. Add null only to exception, preserving omitted fields, strings, every other field and the Flag outcome policy. These are attributed reviewer observations, not a new committed capture.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
+            }
+          ]
+        }
+      }
     },
     "uapi:ModSecurity/enable_all_domains": {
       "method": "POST",
@@ -71,7 +186,11 @@
         },
         {
           "kind": "documented",
-          "text": "Changes ModSecurity protection immediately and has no documented rollback. Per-domain exception text is optional payload data and can report an update error; inspect returned rows as well as the API status. The client performs no automatic retry or rollback."
+          "text": "Changes ModSecurity protection immediately and has no documented rollback. Per-domain exception text is optional payload data that can report an update error. The client performs no automatic retry or rollback."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, successful writes through both routes returned exception: null. Preserve omitted exception, explicit null and string diagnostics distinctly. Source inspection also shows that status 0 can accompany per-domain results after some domains changed. Flag handling raises ApiErrorException and does not return those rows; re-read with listDomains() to establish current state after a failed call. The client never retries or re-reads automatically."
         }
       ],
       "evidence": [
@@ -80,8 +199,36 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /ModSecurity/enable_all_domains GET declares x-readonly=false. Use form POST for this account security mutation; x-rollback=none. Preserve the inline data schema and optional field presence; enabled and installed, where present, are integer 0/1 flags."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report 5720388941 against 12f57c20c78c7727b73205cea028fa5cb6fe94ed observed all four generated form POST writes taking effect on a disposable account through direct UAPI and the WHM bridge on 11.138.0.19, followed by listDomains readback. Cpanel/API/ModSecurity.pm assigns exception from $domain_problems->{$domain}, so successful rows contain explicit null despite pinned string-only error prose. Add null only to exception, preserving omitted fields, strings, every other field and the Flag outcome policy. These are attributed reviewer observations, not a new committed capture.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer inspection of Cpanel/API/ModSecurity.pm reports return $answer->{status} after per-domain rows are set. A failed API call can therefore follow partial changes. Keep Flag and ApiErrorException, document explicit listDomains readback, and do not retry the write automatically.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
         }
-      ]
+      ],
+      "response": {
+        "[].exception": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer report 5720388941 against 12f57c20c78c7727b73205cea028fa5cb6fe94ed observed all four generated form POST writes taking effect on a disposable account through direct UAPI and the WHM bridge on 11.138.0.19, followed by listDomains readback. Cpanel/API/ModSecurity.pm assigns exception from $domain_problems->{$domain}, so successful rows contain explicit null despite pinned string-only error prose. Add null only to exception, preserving omitted fields, strings, every other field and the Flag outcome policy. These are attributed reviewer observations, not a new committed capture.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
+            }
+          ]
+        }
+      }
     },
     "uapi:ModSecurity/enable_domains": {
       "method": "POST",
@@ -96,11 +243,15 @@
         },
         {
           "kind": "documented",
-          "text": "Changes ModSecurity protection immediately and has no documented rollback. Per-domain exception text is optional payload data and can report an update error; inspect returned rows as well as the API status. The client performs no automatic retry or rollback."
+          "text": "Changes ModSecurity protection immediately and has no documented rollback. Per-domain exception text is optional payload data that can report an update error. The client performs no automatic retry or rollback."
         },
         {
           "kind": "documented",
           "text": "domains is a required pre-serialized comma-separated string of domains owned by the authenticated account. Supply the documented comma representation; it is form-encoded once. The list result and the no_domains_provided / invalid_domains_provided object alternatives are preserved. Invalid-domain objects may include invalid_domains; these payload diagnostics remain separate from the API envelope."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, successful writes through both routes returned exception: null. Preserve omitted exception, explicit null and string diagnostics distinctly. Source inspection also shows that status 0 can accompany per-domain results after some domains changed. Flag handling raises ApiErrorException and does not return those rows; re-read with listDomains() to establish current state after a failed call. The client never retries or re-reads automatically."
         }
       ],
       "evidence": [
@@ -109,8 +260,87 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /ModSecurity/enable_domains GET declares x-readonly=false. Use form POST for this account security mutation; x-rollback=none. Preserve the inline data schema and optional field presence; enabled and installed, where present, are integer 0/1 flags."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report 5720388941 against 12f57c20c78c7727b73205cea028fa5cb6fe94ed observed all four generated form POST writes taking effect on a disposable account through direct UAPI and the WHM bridge on 11.138.0.19, followed by listDomains readback. Cpanel/API/ModSecurity.pm assigns exception from $domain_problems->{$domain}, so successful rows contain explicit null despite pinned string-only error prose. Add null only to exception, preserving omitted fields, strings, every other field and the Flag outcome policy. These are attributed reviewer observations, not a new committed capture.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer inspection of Cpanel/API/ModSecurity.pm reports return $answer->{status} after per-domain rows are set. A failed API call can therefore follow partial changes. Keep Flag and ApiErrorException, document explicit listDomains readback, and do not retry the write automatically.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "dependencies": {
+                      "type": "list",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "domain": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "flag"
+                    },
+                    "exception": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "searchhint": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "fields": {
+                  "invalid_domains": {
+                    "type": "list",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "invalid_domains_provided": {
+                    "type": "int"
+                  },
+                  "no_domains_provided": {
+                    "type": "int"
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer report 5720388941 against 12f57c20c78c7727b73205cea028fa5cb6fe94ed observed all four generated form POST writes taking effect on a disposable account through direct UAPI and the WHM bridge on 11.138.0.19, followed by listDomains readback. Cpanel/API/ModSecurity.pm assigns exception from $domain_problems->{$domain}, so successful rows contain explicit null despite pinned string-only error prose. Add null only to exception, preserving omitted fields, strings, every other field and the Flag outcome policy. These are attributed reviewer observations, not a new committed capture.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
+            }
+          ]
+        }
+      }
     },
     "uapi:ModSecurity/has_modsecurity_installed": {
       "method": "GET",
@@ -122,6 +352,10 @@
         {
           "kind": "documented",
           "text": "installed=1 means ModSecurity is installed and 0 means it is not installed. This payload flag is separate from the UAPI success status; omitted installed remains absent."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, hasModsecurityInstalled() and listDomains() failed when the selected account lacked the modsecurity feature. With that feature enabled on a disposable account, both reads passed through direct UAPI and the WHM bridge. This is an account-state capability observation, not a universal route limitation."
         }
       ],
       "evidence": [
@@ -130,6 +364,13 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /ModSecurity/has_modsecurity_installed GET declares x-readonly=true. Preserve the read-only GET. Preserve the inline data schema and optional field presence; enabled and installed, where present, are integer 0/1 flags."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720388941 attributes the existing read failures to missing account feature modsecurity. Enabling it only for the disposable test account made hasModsecurityInstalled and listDomains pass on both routes. Existing artifacts retain their original failed outcomes; no recapture or client capability override is implied.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
         }
       ]
     },
@@ -143,6 +384,10 @@
         {
           "kind": "documented",
           "text": "dependencies lists other domains affected by changes to the selected domain. Preserve dependency lists, domain, enabled, comma-separated searchhint and documented main/sub type values. Empty lists and strings remain empty; fields are optional. enabled is an integer 0/1 payload flag."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, hasModsecurityInstalled() and listDomains() failed when the selected account lacked the modsecurity feature. With that feature enabled on a disposable account, both reads passed through direct UAPI and the WHM bridge. This is an account-state capability observation, not a universal route limitation."
         }
       ],
       "evidence": [
@@ -151,6 +396,13 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /ModSecurity/list_domains GET declares x-readonly=true. Preserve the read-only GET. Preserve the inline data schema and optional field presence; enabled and installed, where present, are integer 0/1 flags."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720388941 attributes the existing read failures to missing account feature modsecurity. Enabling it only for the disposable test account made hasModsecurityInstalled and listDomains pass on both routes. Existing artifacts retain their original failed outcomes; no recapture or client capability override is implied.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
         }
       ]
     }

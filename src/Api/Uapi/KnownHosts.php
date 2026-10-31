@@ -90,8 +90,7 @@ final readonly class KnownHosts
      * server default of 22; an explicitly supplied zero is sent unchanged and is not omission.
      *
      * Documented: Registers a host public key in the selected account known_hosts file and changes SSH authentication
-     * trust. The server may contact the supplied host to obtain its key; review the target and fingerprint before
-     * relying on it.
+     * trust.
      *
      * Documented: This mutation uses form POST. The source declares clean rollback; the client performs no automatic
      * rollback or retry.
@@ -99,6 +98,10 @@ final readonly class KnownHosts
      * Documented: The host list and its nested host, key, line and metadata fields retain optional presence. Public
      * keys, raw key bodies and fingerprints remain returned payload data; the client does not validate fingerprints or
      * fetch further resources.
+     *
+     * Observed: On 11.138.0.19, the reviewer supplied a host without a public key and create() returned host key
+     * material through both routes. Review the target and returned fingerprint before relying on the trust entry. This
+     * creation observation does not establish network-contact behavior for verify() or update().
      *
      * API-map identity: uapi:KnownHosts/create#GET (wire name create).
      *
@@ -163,8 +166,7 @@ final readonly class KnownHosts
      * forwarded as host_name without client-side hostname or IP normalization. Omit port to retain the documented
      * server default of 22; an explicitly supplied zero is sent unchanged and is not omission.
      *
-     * Documented: Updates the selected account known_hosts entry and changes SSH authentication trust. The server may
-     * contact the supplied host to obtain its key; review the target and fingerprint before relying on it.
+     * Documented: Updates the selected account known_hosts entry and changes SSH authentication trust.
      *
      * Documented: This mutation uses form POST. The source declares clean rollback; the client performs no automatic
      * rollback or retry.
@@ -201,9 +203,8 @@ final readonly class KnownHosts
      * forwarded as host_name without client-side hostname or IP normalization. Omit port to retain the documented
      * server default of 22; an explicitly supplied zero is sent unchanged and is not omission.
      *
-     * Documented: Checks the host public key against the selected account known_hosts file. Verification may contact
-     * the supplied SSH host; choosing a host is an explicit network action. This does not establish successful SSH
-     * authentication or server identity beyond the API result.
+     * Documented: Checks the host public key against the selected account known_hosts file. This does not establish
+     * successful SSH authentication or server identity beyond the API result.
      *
      * Documented: Payload status is an optional integer 0/1 flag: 1 means the host exists; 0 means it is absent or must
      * be registered again. failure_type distinguishes new and changed hosts. Payload errors are distinct from UAPI

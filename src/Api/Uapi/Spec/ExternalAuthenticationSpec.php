@@ -53,7 +53,13 @@ final class ExternalAuthenticationSpec
                     'preferred_username' => ['type' => 'string'],
                     'provider_id' => ['type' => 'string'],
                     'provider_protocol' => ['type' => 'string'],
-                    'subject_unique_identifier' => ['type' => 'int'],
+                    'subject_unique_identifier' => [
+                        'type' => 'union',
+                        'anyOf' => [
+                            ['type' => 'int'],
+                            ['type' => 'string'],
+                        ],
+                    ],
                 ],
             ],
         ],
@@ -74,7 +80,7 @@ final class ExternalAuthenticationSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'provider' => ['name' => 'provider', 'encoding' => 'scalar'],
+            'provider' => ['name' => 'provider_id', 'encoding' => 'scalar'],
             'subjectUniqueIdentifier' => ['name' => 'subject_unique_identifier', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'map', 'nullable' => true, 'values' => ['type' => 'mixed']],

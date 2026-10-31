@@ -22,7 +22,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     dependencies?: list<string>,
  *     domain?: string,
  *     enabled?: 0|1,
- *     exception?: string,
+ *     exception?: string|null,
  *     searchhint?: string,
  *     type?: string,
  * }>
@@ -30,7 +30,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     dependencies?: list<string>,
  *     domain?: string,
  *     enabled?: 0|1,
- *     exception?: string,
+ *     exception?: string|null,
  *     searchhint?: string,
  *     type?: string,
  * }>|array{
@@ -42,7 +42,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     dependencies?: list<string>,
  *     domain?: string,
  *     enabled?: 0|1,
- *     exception?: string,
+ *     exception?: string|null,
  *     searchhint?: string,
  *     type?: string,
  * }>
@@ -50,7 +50,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     dependencies?: list<string>,
  *     domain?: string,
  *     enabled?: 0|1,
- *     exception?: string,
+ *     exception?: string|null,
  *     searchhint?: string,
  *     type?: string,
  * }>|array{
@@ -94,8 +94,13 @@ final readonly class ModSecurity
      * remain empty; fields are optional. enabled is an integer 0/1 payload flag.
      *
      * Documented: Changes ModSecurity protection immediately and has no documented rollback. Per-domain exception text
-     * is optional payload data and can report an update error; inspect returned rows as well as the API status. The
-     * client performs no automatic retry or rollback.
+     * is optional payload data that can report an update error. The client performs no automatic retry or rollback.
+     *
+     * Observed: On 11.138.0.19, successful writes through both routes returned exception: null. Preserve omitted
+     * exception, explicit null and string diagnostics distinctly. Source inspection also shows that status 0 can
+     * accompany per-domain results after some domains changed. Flag handling raises ApiErrorException and does not
+     * return those rows; re-read with listDomains() to establish current state after a failed call. The client never
+     * retries or re-reads automatically.
      *
      * API-map identity: uapi:ModSecurity/disable_all_domains#GET (wire name disable_all_domains).
      *
@@ -126,13 +131,18 @@ final readonly class ModSecurity
      * remain empty; fields are optional. enabled is an integer 0/1 payload flag.
      *
      * Documented: Changes ModSecurity protection immediately and has no documented rollback. Per-domain exception text
-     * is optional payload data and can report an update error; inspect returned rows as well as the API status. The
-     * client performs no automatic retry or rollback.
+     * is optional payload data that can report an update error. The client performs no automatic retry or rollback.
      *
      * Documented: domains is a required pre-serialized comma-separated string of domains owned by the authenticated
      * account. Supply the documented comma representation; it is form-encoded once. The list result and the
      * no_domains_provided / invalid_domains_provided object alternatives are preserved. Invalid-domain objects may
      * include invalid_domains; these payload diagnostics remain separate from the API envelope.
+     *
+     * Observed: On 11.138.0.19, successful writes through both routes returned exception: null. Preserve omitted
+     * exception, explicit null and string diagnostics distinctly. Source inspection also shows that status 0 can
+     * accompany per-domain results after some domains changed. Flag handling raises ApiErrorException and does not
+     * return those rows; re-read with listDomains() to establish current state after a failed call. The client never
+     * retries or re-reads automatically.
      *
      * API-map identity: uapi:ModSecurity/disable_domains#GET (wire name disable_domains).
      *
@@ -164,8 +174,13 @@ final readonly class ModSecurity
      * remain empty; fields are optional. enabled is an integer 0/1 payload flag.
      *
      * Documented: Changes ModSecurity protection immediately and has no documented rollback. Per-domain exception text
-     * is optional payload data and can report an update error; inspect returned rows as well as the API status. The
-     * client performs no automatic retry or rollback.
+     * is optional payload data that can report an update error. The client performs no automatic retry or rollback.
+     *
+     * Observed: On 11.138.0.19, successful writes through both routes returned exception: null. Preserve omitted
+     * exception, explicit null and string diagnostics distinctly. Source inspection also shows that status 0 can
+     * accompany per-domain results after some domains changed. Flag handling raises ApiErrorException and does not
+     * return those rows; re-read with listDomains() to establish current state after a failed call. The client never
+     * retries or re-reads automatically.
      *
      * API-map identity: uapi:ModSecurity/enable_all_domains#GET (wire name enable_all_domains).
      *
@@ -196,13 +211,18 @@ final readonly class ModSecurity
      * remain empty; fields are optional. enabled is an integer 0/1 payload flag.
      *
      * Documented: Changes ModSecurity protection immediately and has no documented rollback. Per-domain exception text
-     * is optional payload data and can report an update error; inspect returned rows as well as the API status. The
-     * client performs no automatic retry or rollback.
+     * is optional payload data that can report an update error. The client performs no automatic retry or rollback.
      *
      * Documented: domains is a required pre-serialized comma-separated string of domains owned by the authenticated
      * account. Supply the documented comma representation; it is form-encoded once. The list result and the
      * no_domains_provided / invalid_domains_provided object alternatives are preserved. Invalid-domain objects may
      * include invalid_domains; these payload diagnostics remain separate from the API envelope.
+     *
+     * Observed: On 11.138.0.19, successful writes through both routes returned exception: null. Preserve omitted
+     * exception, explicit null and string diagnostics distinctly. Source inspection also shows that status 0 can
+     * accompany per-domain results after some domains changed. Flag handling raises ApiErrorException and does not
+     * return those rows; re-read with listDomains() to establish current state after a failed call. The client never
+     * retries or re-reads automatically.
      *
      * API-map identity: uapi:ModSecurity/enable_domains#GET (wire name enable_domains).
      *
@@ -232,6 +252,10 @@ final readonly class ModSecurity
      * Documented: installed=1 means ModSecurity is installed and 0 means it is not installed. This payload flag is
      * separate from the UAPI success status; omitted installed remains absent.
      *
+     * Observed: On 11.138.0.19, hasModsecurityInstalled() and listDomains() failed when the selected account lacked the
+     * modsecurity feature. With that feature enabled on a disposable account, both reads passed through direct UAPI and
+     * the WHM bridge. This is an account-state capability observation, not a universal route limitation.
+     *
      * API-map identity: uapi:ModSecurity/has_modsecurity_installed#GET (wire name has_modsecurity_installed).
      *
      * @return HasModsecurityInstalledResult
@@ -259,6 +283,10 @@ final readonly class ModSecurity
      * Documented: dependencies lists other domains affected by changes to the selected domain. Preserve dependency
      * lists, domain, enabled, comma-separated searchhint and documented main/sub type values. Empty lists and strings
      * remain empty; fields are optional. enabled is an integer 0/1 payload flag.
+     *
+     * Observed: On 11.138.0.19, hasModsecurityInstalled() and listDomains() failed when the selected account lacked the
+     * modsecurity feature. With that feature enabled on a disposable account, both reads passed through direct UAPI and
+     * the WHM bridge. This is an account-state capability observation, not a universal route limitation.
      *
      * API-map identity: uapi:ModSecurity/list_domains#GET (wire name list_domains).
      *

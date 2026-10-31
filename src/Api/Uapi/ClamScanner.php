@@ -42,7 +42,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     scan_complete?: 0|1,
  *     scanned_file_count?: int,
  *     scanned_file_size?: int,
- *     time_started?: string,
+ *     time_started?: int|string,
  *     total_file_count?: int,
  *     total_file_size_MiB?: int,
  * }|null
@@ -118,10 +118,11 @@ final readonly class ClamScanner
      * schema is one object with optional id and message strings. id documents home, mail, public_html and public_ftp;
      * the field descriptions describe one path/type record.
      *
-     * Observed: The initial 2026-10-31 capture observed a list of objects on both routes. Its sanitized root-mismatch
-     * paths mask leaf names, so they establish no named live field types. Preserve the formal object and also accept a
-     * list of the same documented optional id/message record as a source-based compatibility inference. No unknown live
-     * fields are added. Null and missing payloads remain invalid.
+     * Observed: The initial 2026-10-31 capture observed a list of objects on both routes but masked leaf names after a
+     * root mismatch. The corrected capture at aee24c1081727cd66b8ef86aced5bd27d7e83375 records named id and message
+     * string fields in list items on both routes. Preserve the pinned object alternative and the reviewed list of
+     * optional id/message records. These observations establish neither every scan type nor record counts; null and
+     * missing payloads remain invalid.
      *
      * API-map identity: uapi:ClamScanner/get_scan_paths#GET (wire name get_scan_paths).
      *
@@ -157,6 +158,11 @@ final readonly class ClamScanner
      * Observed: The initial 2026-10-31 capture returned explicit null data with API success on both routes. Preserve
      * null separately from the documented status object and an absent payload. The capture establishes no reason for
      * null, scan state or completion behavior; no scan was started.
+     *
+     * Observed: On 11.138.0.19, time_started was an integer through both routes after a startScan() attempt, including
+     * a failed attempt while ClamAV was absent. Preserve int|string losslessly; strings are not parsed or narrowed to
+     * float. The other seven fields retain their pinned types. A status record does not establish that a scan
+     * completed.
      *
      * API-map identity: uapi:ClamScanner/get_scan_status#GET (wire name get_scan_status).
      *
@@ -220,6 +226,10 @@ final readonly class ClamScanner
      *
      * Documented: Returns a nullable object without pinned fields. Preserve opaque fields and explicit null; an absent
      * data member is a payload mismatch. No task ID or successful scan completion is inferred from this result.
+     *
+     * Observed: On the reviewed 11.138.0.19 server, startScan() failed because the ClamAV plugin was not installed. The
+     * attempt could still leave a getScanStatus() record. This server-state limitation establishes no completed scan
+     * and does not change API-error handling or authorize an automatic retry.
      *
      * API-map identity: uapi:ClamScanner/start_scan#GET (wire name start_scan).
      *

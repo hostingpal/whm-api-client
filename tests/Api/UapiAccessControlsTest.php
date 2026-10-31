@@ -239,8 +239,9 @@ final class UapiAccessControlsTest extends TestCase
                     $cases[] = '[{"' . $field . '":1}]';
                 }
                 if ($function === 'get_authn_links') {
+                    $cases[] = '[{"link_time":"123"}]';
                     foreach (['link_time', 'subject_unique_identifier'] as $field) {
-                        foreach (['null', '"123"', '1.5', 'false', '{}'] as $bad) {
+                        foreach (['null', '1.5', 'false', '{}'] as $bad) {
                             $cases[] = '[{"' . $field . '":' . $bad . '}]';
                         }
                     }
@@ -370,7 +371,7 @@ final class UapiAccessControlsTest extends TestCase
         $request = $http->getLastRequest();
         self::assertInstanceOf(RequestInterface::class, $request);
         self::assertSame(
-            'provider=&subject_unique_identifier=000123456789012345678901%2B%26%3D%25%2F%E9%9B%AA',
+            'provider_id=&subject_unique_identifier=000123456789012345678901%2B%26%3D%25%2F%E9%9B%AA',
             (string) $request->getBody(),
         );
         self::assertSame('POST', $request->getMethod());
@@ -449,7 +450,7 @@ final class UapiAccessControlsTest extends TestCase
         $parameters = match ($module) {
             'KnownHosts' => 'host_name=host.example.test&port=2222',
             'ExternalAuthentication' => $function === 'remove_authn_link'
-                ? 'provider=example%2Bprovider&subject_unique_identifier=000123456789012345678901' : '',
+                ? 'provider_id=example%2Bprovider&subject_unique_identifier=000123456789012345678901' : '',
             default => '',
         };
         $post = in_array($function, ['create', 'delete', 'update', 'remove_authn_link'], true);

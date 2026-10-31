@@ -1019,14 +1019,152 @@ reviewer lifecycle observations and their limits are recorded in the source audi
 Committed lifecycle evidence remains under `8x0.2.27`. This capture changed no
 repository or application state.
 
+## Account environment and preferences
+
+The `account-environment-v1` catalog contains 27 GET observations: WHM version,
+twelve parameterless account reads and `getUserInformation(name: 'domain')`, each
+account read through direct UAPI and the WHM bridge for `npr`. It covers contact
+notification preferences, contact-us availability, locale attributes/inventory,
+theme inventory, notification count, enhancement inventory, both EA4 recommendation
+reads, server information, Variables server/session information and the user domain.
+The documented `name=domain` selector prevents a broad user-configuration request,
+which can include `pushbullet_access_token`; both exact URIs require that selector.
+Other optional selectors remain omitted. Enhancement lookup by ID, token retrieval
+and every state-changing method are excluded. Other user-field live coverage remains
+under `8x0.2.28`; the full generated user-information contract stays available.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/account-environment.php \
+  --output=docs/api/evidence/account-environment-new.json
+```
+
+Both test tokens and committed inputs are required. The exact URI/method/body
+guard and structural-only evidence rules remain unchanged. No contact, token,
+locale, theme or notification preference is modified; no messages are sent.
+Dynamic keys are wildcarded, and server/session/user values are never persisted.
+Strict assessment requires all original observations to pass with no discrepancies
+or acknowledgments. Follow-up `8x0.2.28` owns unobserved variants and failures.
+
+The corrected account-environment capture at `c85a39e` on `11.138.0.19` passes
+24 of 27 GET API/payload/probe checks, with zero known-field type mismatches.
+Two EA4 API failures, one EA4 bridge failure and five masked unknown-field
+observations keep strict status failed and remain unwaived under `8x0.2.28`.
+Eleven functions pass on both routes and general EA4 recommendations pass directly.
+No mutation or secret retrieval ran; user information remains domain-only.
+
+## Account-environment broad user review capture
+
+`account-environment-review.php` binds three GET observations: WHM version and
+`Variables/get_user_information` on both routes for designated account `npr`.
+Its explicit 60-name allowlist selects the pinned user-information fields verified
+present on `npr`, excluding `pushbullet_access_token` and the seven names absent
+on this account: `lang`, `maximum_defer_fail_percentage`, `maximum_emails_per_hour`, `notify_bandwidth_limit`, `notify_ssl_expiry`, `notify_twofactorauth_change`, `notify_twofactorauth_change_notification_disabled`.
+Those seven remain supported by the client; this capture does not establish their
+wire forms. One absent selector fails the whole request, as documented in
+[review 5720313728](https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720313728). The list is fixed in the reviewed catalog;
+it is never derived from live keys or automatically expanded with a future schema.
+Repeated `name` query keys exercise the typed selector without an unfiltered read.
+
+The recipe label is `account-environment-review-v1`; each user read records the
+fixed argument variant `reviewed-present-fields-except-token`. The command requires
+committed inputs, `WHM_API_LIVE=1`, exact `npr`/`npr.rs` guards and both test tokens.
+The shared exact-URI guard rejects added token selectors, omitted selectors,
+changed targets, request bodies and mutations before dispatch. Evidence retains
+only masked structural types/paths from each original response. No settings,
+contact addresses, locale, theme or token changes; no message sending or returned
+URL fetch. Original account-environment catalogs and captures remain unchanged.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/account-environment-review.php \
+  --output=docs/api/evidence/account-environment-reviewed-new.json
+```
+
+The recipe covers broad user-field wire compatibility, not every account state
+or mutation. Every discrepancy and failed observation remains a strict failure;
+no acknowledgment or retry is added. The requested capture follows review of the
+corrected contracts and writes to a new immutable path.
+
+
+The final [reviewed user-information capture](../../docs/api/evidence/2026-10-31-account-environment-reviewed.json)
+at `c4576669980a1ab22952f96b976a34bf0db7be58` on `11.138.0.19` passes all three
+GET observations: WHM version and the fixed 60-field user selector on both routes.
+All HTTP/API/payload/probe checks and strict assessment pass with zero discrepancies.
+The token selector and seven pinned fields absent on `npr` are excluded; no wire
+form is established for those seven. No mutation or token retrieval ran. Earlier
+EA4 failures and masked findings remain immutable and unwaived under `8x0.2.28`.
+Reviewer mutation/lifecycle reports remain separate from this committed read capture.
+
+## WHM backup and restoration inventory
+
+`backup-restoration.php` binds `backup-restoration-v1` to eleven WHM GETs: version,
+backup configuration, users/domains with backup metadata, users with backup metadata,
+archive inventory, restoration module summary, queue-active status, active/completed/
+pending queue lists and combined queue state. Every request is parameterless apart
+from `api.version=1`, and uses the existing exact URI/method/body guard.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/backup-restoration.php \
+  --output=docs/api/evidence/backup-restoration-new.json
+```
+
+The shared command requires committed inputs and both test tokens, although this
+catalog sends only WHM requests. Structural-only captures never persist account,
+domain, archive path, log or configuration values. Dynamic keys are wildcarded.
+No destination/OAuth credential read, backup creation, restoration, queue mutation,
+migration, archive deletion or configuration write occurs. Other readonly functions
+requiring identifiers are excluded without guessing identifiers. Strict assessment
+accepts no discrepancies or historical acknowledgments; failures remain failures.
+Follow-up `8x0.2.29` retains all unobserved operations and variants.
+
+The immutable WHM backup/restoration capture at `a5b6e3a` on `11.138.0.19`
+records 11 HTTP/API successes and ten payload/probe passes. Its `prebackup`
+validation failure and one masked unknown-field observation with integer values
+remain strict failures, unwaived under `8x0.2.29`. A wildcard identifies neither
+the underlying name nor field count. Backup and queue inventories are empty,
+module rows populated, and no mutation ran. Later reviewer observations and
+contract corrections are separate from that historical capture.
+
+## Team and user management
+
+`team-user-management.php` binds `team-user-management-v1` to nine exact GETs:
+WHM version plus Team role counts, TeamRoles feature descriptions,
+`UserManager/list_users?flat=1` and `PasswdStrength/get_required_strength?app=webdisk`
+through direct UAPI and the WHM bridge for `npr`. The password-policy application
+comes from the pinned enum/example; no user, GUID or service identifier is guessed.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/team-user-management.php \
+  --output=docs/api/evidence/team-user-management-new.json
+```
+
+Team/list_team is excluded because both pinned alternatives include password
+fields. Subaccount inventory has only password-capability/synchronization flags,
+not password material; it stays structural-only in evidence. Existing exact
+URI/method/body guards, committed-input checks, TLS verification, no retries and
+new-only protected publication remain unchanged. Both tokens are required.
+No user/service/role/password changes, invitation, activation or reset messages
+occur. Strict assessment accepts no discrepancies or historical acknowledgments.
+Follow-up `8x0.2.30` retains other operations and unobserved variants.
+
+The corrected team/user-management capture at `9922081` on `11.138.0.19` passes
+four of nine API/payload/probe checks: version, direct subaccount inventory and
+password-strength through both routes. Seven direct inventory null corrections
+pass; five API failures and one masked unknown-field observation with null values
+keep strict status failed and unwaived under `8x0.2.30`. No team listing, password
+retrieval, user/role/service mutation or message sending ran.
+
 ## Security and access controls
 
 `security-access.php` binds `security-access-v1` to 25 exact GET observations:
 WHM version and twelve parameterless account reads, each direct and bridged for
 `npr`. It covers four ClamScanner status/path/infection reads, two ModSecurity reads,
 three ExternalAuthentication reads, both SSH reads and LastLogin. No host, identity,
-file or network target is guessed; KnownHosts/verify is excluded because it may
-contact the target SSH host.
+file or network target is guessed. KnownHosts/verify is excluded from this fixed
+parameterless catalog; the recipe binds no verification target.
 
 ```bash
 WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \

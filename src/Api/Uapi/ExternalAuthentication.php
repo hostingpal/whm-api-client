@@ -34,7 +34,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     preferred_username?: string,
  *     provider_id?: string,
  *     provider_protocol?: string,
- *     subject_unique_identifier?: int,
+ *     subject_unique_identifier?: int|string,
  * }>
  * @phpstan-type RemoveAuthnLinkResult array<array-key, mixed>|null
  */
@@ -63,6 +63,11 @@ final readonly class ExternalAuthentication
      * Provider documentation and configuration URLs and icon bytes are returned payload data; the client neither
      * follows URLs nor decodes or renders icons. Empty lists and omitted record fields remain distinct.
      *
+     * Observed: On the reviewed cPanel 11.138.0.19 installation, the WHM bridge could not load
+     * Cpanel/API/ExternalAuthentication.pm because the module file was absent, while direct cPanel calls used the
+     * compiled server implementation. The bridge raises ApiErrorException. This is installation/version-specific
+     * capability evidence; the client retains bridge routing and does not assume the same limitation on other servers.
+     *
      * API-map identity: uapi:ExternalAuthentication/configured_modules#GET (wire name configured_modules).
      *
      * @return ConfiguredModulesResult
@@ -87,10 +92,16 @@ final readonly class ExternalAuthentication
      * Documented: Available in cPanel 54 and later; uses the selected account context. No request defaults are declared
      * in the pinned operation.
      *
-     * Documented: Returns identity-provider links for the current cPanel account. link_time is an optional integer Unix
-     * timestamp. The source declares subject_unique_identifier as an optional integer in this response, while
-     * removeAuthnLink requires a string input; no shared identifier format or lossless round trip is inferred. Omitted
-     * fields remain absent.
+     * Documented: Returns identity-provider links for the current cPanel account. link_time remains an optional integer
+     * Unix timestamp. subject_unique_identifier preserves either an integer or its exact string representation,
+     * including oversized quoted decimal identifiers and leading zeros; it is never converted to a float or normalized
+     * from a string. Omitted fields remain absent. The live link list was empty, so this field correction has
+     * pinned-source and offline evidence only.
+     *
+     * Observed: On the reviewed cPanel 11.138.0.19 installation, the WHM bridge could not load
+     * Cpanel/API/ExternalAuthentication.pm because the module file was absent, while direct cPanel calls used the
+     * compiled server implementation. The bridge raises ApiErrorException. This is installation/version-specific
+     * capability evidence; the client retains bridge routing and does not assume the same limitation on other servers.
      *
      * API-map identity: uapi:ExternalAuthentication/get_authn_links#GET (wire name get_authn_links).
      *
@@ -120,6 +131,11 @@ final readonly class ExternalAuthentication
      * is enabled. Payload zero is a successful result when the UAPI envelope status is 1; UAPI status=0 remains an API
      * failure.
      *
+     * Observed: On the reviewed cPanel 11.138.0.19 installation, the WHM bridge could not load
+     * Cpanel/API/ExternalAuthentication.pm because the module file was absent, while direct cPanel calls used the
+     * compiled server implementation. The bridge raises ApiErrorException. This is installation/version-specific
+     * capability evidence; the client retains bridge routing and does not assume the same limitation on other servers.
+     *
      * API-map identity: uapi:ExternalAuthentication/has_external_auth_modules_configured#GET (wire name
      * has_external_auth_modules_configured).
      *
@@ -145,25 +161,37 @@ final readonly class ExternalAuthentication
      * Documented: Available in cPanel 54 and later; uses the selected account context. No request defaults are declared
      * in the pinned operation.
      *
-     * Documented: Unlinks the specified external identity-provider account from the selected cPanel account. provider
-     * and subjectUniqueIdentifier are required strings; identifiers are forwarded unchanged without numeric conversion,
-     * truncation or assumptions about provider-specific formats.
+     * Documented: Unlinks the specified external identity-provider account from the selected cPanel account. The
+     * required PHP argument provider is encoded as provider_id, correcting the pinned provider wire name.
+     * subjectUniqueIdentifier accepts int|string; identifiers are forwarded unchanged without numeric conversion,
+     * truncation or assumptions about provider-specific formats. Oversized identifiers must be strings.
      *
      * Documented: This mutation uses form POST. The source declares no rollback; the client performs no automatic retry
      * or rollback. The result is a nullable object without pinned fields: preserve opaque object fields and explicit
      * null, and reject an absent data member.
      *
+     * Observed: On the reviewed cPanel 11.138.0.19 installation, the WHM bridge could not load
+     * Cpanel/API/ExternalAuthentication.pm because the module file was absent, while direct cPanel calls used the
+     * compiled server implementation. The bridge raises ApiErrorException. This is installation/version-specific
+     * capability evidence; the client retains bridge routing and does not assume the same limitation on other servers.
+     *
+     * Observed: Direct validation on cPanel 11.138.0.19 requested provider_id when provider was sent. provider_id with
+     * a made-up subject reached invalid-subject validation, and provider_id alone requested subject_unique_identifier.
+     * This establishes the accepted wire names only; no real link was removed.
+     *
      * API-map identity: uapi:ExternalAuthentication/remove_authn_link#GET (wire name remove_authn_link).
      *
      * @param string $provider The name of the identity provider.
-     * @param string $subjectUniqueIdentifier The unique identifier for the user at the identity provider.
+     * @param string|int $subjectUniqueIdentifier The unique identifier for the user at the identity provider. Integers
+     *     and strings from getAuthnLinks are forwarded without numeric conversion; use a string for an identifier
+     *     larger than PHP_INT_MAX.
      * @return RemoveAuthnLinkResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/external-authentication/externalauthentication-remove_authn_link
      */
-    public function removeAuthnLink(string $provider, string $subjectUniqueIdentifier): ?array
+    public function removeAuthnLink(string $provider, string|int $subjectUniqueIdentifier): ?array
     {
         /** @var RemoveAuthnLinkResult $result Validated against ExternalAuthenticationSpec::REMOVE_AUTHN_LINK. */
         $result = ($this->run)(ExternalAuthenticationSpec::REMOVE_AUTHN_LINK, [

@@ -13,7 +13,7 @@
         },
         {
           "kind": "documented",
-          "text": "Registers a host public key in the selected account known_hosts file and changes SSH authentication trust. The server may contact the supplied host to obtain its key; review the target and fingerprint before relying on it."
+          "text": "Registers a host public key in the selected account known_hosts file and changes SSH authentication trust."
         },
         {
           "kind": "documented",
@@ -22,6 +22,10 @@
         {
           "kind": "documented",
           "text": "The host list and its nested host, key, line and metadata fields retain optional presence. Public keys, raw key bodies and fingerprints remain returned payload data; the client does not validate fingerprints or fetch further resources."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, the reviewer supplied a host without a public key and create() returned host key material through both routes. Review the target and returned fingerprint before relying on the trust entry. This creation observation does not establish network-contact behavior for verify() or update()."
         }
       ],
       "method": "POST",
@@ -31,6 +35,13 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /KnownHosts/create: x-readonly=false and x-rollback=clean. Use form POST for this trust-file mutation; preserve source request types, defaults and response optionality."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer 5720388941 against 12f57c20c78c7727b73205cea028fa5cb6fe94ed exercised KnownHosts calls only against this server through both routes. create returned key material when no key was supplied. Attribute this as an observation rather than pinned documentation; do not extend the network-contact claim to verify or update. No key values are persisted in this evidence.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/44#pullrequestreview-5720388941"
         }
       ]
     },
@@ -73,7 +84,7 @@
         },
         {
           "kind": "documented",
-          "text": "Updates the selected account known_hosts entry and changes SSH authentication trust. The server may contact the supplied host to obtain its key; review the target and fingerprint before relying on it."
+          "text": "Updates the selected account known_hosts entry and changes SSH authentication trust."
         },
         {
           "kind": "documented",
@@ -103,7 +114,7 @@
         },
         {
           "kind": "documented",
-          "text": "Checks the host public key against the selected account known_hosts file. Verification may contact the supplied SSH host; choosing a host is an explicit network action. This does not establish successful SSH authentication or server identity beyond the API result."
+          "text": "Checks the host public key against the selected account known_hosts file. This does not establish successful SSH authentication or server identity beyond the API result."
         },
         {
           "kind": "documented",
