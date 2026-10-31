@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Api;
 
+use HostingPal\WhmApiClient\Api\Engine\CollectionEncoder;
+use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
@@ -54,6 +56,13 @@ final class NamedMapAdoptersTest extends TestCase
         yield 'create' => ['hostingPlans', 'createFeaturelist', 'create_featurelist',
             ['featurelist' => 'A&B', 'features' => ['email' => true, 'ftp' => false], 'overwrite' => false],
             'featurelist=A%26B&email=1&ftp=0&overwrite=0', '{"featurelist":"A&B"}'];
+        yield 'create overwrite true' => ['hostingPlans', 'createFeaturelist', 'create_featurelist',
+            ['featurelist' => 'A', 'features' => ['email' => false], 'overwrite' => true],
+            'featurelist=A&email=0&overwrite=1', '{}'];
+        yield 'grey autotrust true' => ['mail', 'cpgreylistSaveCommonMailProvidersConfig',
+            'cpgreylist_save_common_mail_providers_config',
+            ['autotrustNewCommonMailProviders' => true, 'providers' => ['google' => false]],
+            'autotrust_new_common_mail_providers=1&google=0', '{}'];
         yield 'update' => ['hostingPlans', 'updateFeaturelist', 'update_featurelist',
             ['featurelist' => 'A', 'features' => ['a%&' => false]], 'featurelist=A&a%25%26=0',
             '{"featurelist":"A","invalid_features":[{"bad":0}],"updated_features":{"email":1,"ftp":0}}'];
@@ -192,6 +201,61 @@ final class NamedMapAdoptersTest extends TestCase
         yield 'users empty' => ['accounts', 'massmodifyacct', ['user' => []]];
         yield 'mx string' => ['accounts', 'massmodifyacct', ['user' => 'a', 'mxPriorities' => ['late-secret' => '0']]];
         yield 'mx int key' => ['accounts', 'massmodifyacct', ['user' => 'a', 'mxPriorities' => [0 => 1]]];
+    }
+
+    /** @return iterable<string, array{string, string, array<string, mixed>, string}> */
+    public static function omittedFixedControls(): iterable
+    {
+        foreach ([false, true] as $explicitNull) {
+            $label = $explicitNull ? 'null' : 'omitted';
+            yield "overwrite $label" => ['hostingPlans', 'createFeaturelist',
+                ['featurelist' => 'existing-list', 'features' => ['private-entry' => true, 'overwrite' => true]]
+                    + ($explicitNull ? ['overwrite' => null] : []), 'overwrite'];
+            yield "autotrust $label" => ['mail', 'cpgreylistSaveCommonMailProvidersConfig',
+                ['providers' => ['private-entry' => true, 'autotrust_new_common_mail_providers' => false]]
+                    + ($explicitNull ? ['autotrustNewCommonMailProviders' => null] : []),
+                'autotrust_new_common_mail_providers'];
+        }
+    }
+
+    /** @param array<string, mixed> $args */
+    #[DataProvider('omittedFixedControls')]
+    public function testMapCannotInjectOmittedFixedControl(
+        string $group,
+        string $method,
+        array $args,
+        string $control,
+    ): void {
+        [$whm, $http] = self::client();
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{}}'));
+        $whm->hostingPlans()->createFeaturelist('A', []);
+        self::assertNotNull($whm->responseMeta());
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{}}'));
+        $previous = ini_set('zend.exception_ignore_args', '0');
+        try {
+            $whm->$group()->$method(...$args);
+            self::fail('A map must not inject an omitted fixed control.');
+        } catch (InvalidArgumentException $error) {
+            self::assertNull($whm->responseMeta());
+            self::assertCount(1, $http->getRequests());
+            self::assertStringNotContainsString($control, $error->getMessage());
+            self::assertStringNotContainsString('private-entry', $error->getMessage());
+            self::assertStringNotContainsString('private-entry', $error->getTraceAsString());
+            foreach ($error->getTrace() as $frame) {
+                if (
+                    str_starts_with($frame['class'] ?? '', 'HostingPal\\WhmApiClient\\')
+                    && !str_starts_with($frame['class'], 'HostingPal\\WhmApiClient\\Tests\\')
+                ) {
+                    $text = print_r($frame['args'] ?? [], true);
+                    self::assertStringNotContainsString('private-entry', $text);
+                    if (in_array($frame['class'], [OrderedFields::class, CollectionEncoder::class], true)) {
+                        self::assertStringNotContainsString($control, $text);
+                    }
+                }
+            }
+        } finally {
+            ini_set('zend.exception_ignore_args', $previous === false ? '1' : $previous);
+        }
     }
 
     public function testBothFeatureMapsAreNativeRequiredArguments(): void

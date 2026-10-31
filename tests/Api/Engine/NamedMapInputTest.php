@@ -133,6 +133,95 @@ final class NamedMapInputTest extends TestCase
         }
     }
 
+    /** @return iterable<string, array{array<string, mixed>, array<string, mixed>}> */
+    public static function omittedExactOwners(): iterable
+    {
+        $repeat = ['kind' => 'repeat', 'item_type' => 'string', 'allow_scalar' => false, 'empty' => 'reject'];
+        $indexed = ['kind' => 'indexed', 'item_type' => 'string', 'allow_scalar' => true,
+            'empty' => 'reject', 'prefix' => 'indexed', 'separator' => '-', 'start' => 1];
+        $owners = [
+            'scalar' => ['name' => 'x_private-control', 'encoding' => 'scalar'],
+            'bool' => ['name' => 'x_private-control', 'encoding' => 'bool'],
+            'legacy repeat' => ['name' => 'x_private-control', 'encoding' => 'repeat', 'omit_empty' => true],
+            'legacy numbered first member' => ['name' => 'x_private-control', 'encoding' => 'numbered'],
+            'typed repeat' => ['name' => 'x_private-control', 'encoding' => 'collection', 'collection' => $repeat],
+            'scalar fallback' => ['name' => 'x_private-control', 'encoding' => 'collection', 'collection' => $indexed],
+        ];
+        foreach ($owners as $label => $owner) {
+            yield "$label omitted" => [$owner, []];
+            yield "$label null" => [$owner, ['other' => null]];
+        }
+        yield 'legacy repeat empty omitted' => [$owners['legacy repeat'], ['other' => []]];
+    }
+
+    /** @param array<string, mixed> $owner
+     * @param array<string, mixed> $arguments
+     */
+    #[DataProvider('omittedExactOwners')]
+    public function testMapCannotSupplyAnOmittedExactOwner(array $owner, array $arguments): void
+    {
+        foreach ([false, true] as $reverse) {
+            $params = self::params(['prefix' => 'x_'] + self::MAP) + ['other' => $owner];
+            $params = $reverse ? array_reverse($params, true) : $params;
+            SpecChecker::check(['function' => 'fixture', 'method' => 'POST', 'outcome' => 'flag',
+                'params' => $params, 'returns' => null]);
+            try {
+                ArgumentEncoder::encode($params, ['values' => ['private-control' => 'private-value']] + $arguments);
+                self::fail('Map expansion must respect an omitted exact owner.');
+            } catch (InvalidArgumentException $error) {
+                self::assertStringNotContainsString('private-control', $error->getMessage());
+                self::assertStringNotContainsString('private-value', $error->getMessage());
+            }
+        }
+    }
+
+    public function testOnlyActualExactNamesAreReservedWithoutEmittingOmittedFields(): void
+    {
+        $params = self::params(self::MAP) + [
+            'otherMap' => ['name' => 'other-placeholder*', 'encoding' => 'collection',
+                'collection' => ['prefix' => 'other-'] + self::MAP],
+            'indexed' => ['name' => 'index-placeholder', 'encoding' => 'collection', 'collection' => [
+                'kind' => 'indexed', 'item_type' => 'string', 'allow_scalar' => false, 'empty' => 'reject',
+                'prefix' => 'indexed', 'separator' => '-', 'start' => 1]],
+            'suffix' => ['name' => 'suffix*', 'encoding' => 'suffix-numbered'],
+            'numbered' => ['name' => 'numbered', 'encoding' => 'numbered'],
+            'fixed' => ['name' => 'fixed', 'encoding' => 'bool'],
+        ];
+        SpecChecker::check(['function' => 'fixture', 'method' => 'POST', 'outcome' => 'flag',
+            'params' => $params, 'returns' => null]);
+        self::assertSame(
+            'ordinary=v&placeholder%2A=own&other-placeholder%2A=other&index-placeholder=index'
+                . '&suffix%2A=suffix&suffix1=unused&indexed-1=unused&numbered-1=unused&other-key=normal',
+            ArgumentEncoder::encode($params, ['values' => [
+                'ordinary' => 'v', 'placeholder*' => 'own', 'other-placeholder*' => 'other',
+                'index-placeholder' => 'index', 'suffix*' => 'suffix', 'suffix1' => 'unused',
+                'indexed-1' => 'unused', 'numbered-1' => 'unused'], 'otherMap' => ['key' => 'normal']])->encode(),
+        );
+        self::assertSame('', ArgumentEncoder::encode($params, ['values' => []])->encode());
+    }
+
+    public function testExactOwnersStillEmitNormallyInArgumentOrderAndRepeatFamily(): void
+    {
+        $params = [
+            'first' => ['name' => 'first', 'encoding' => 'scalar'],
+            'values' => self::params(self::MAP)['values'],
+            'flag' => ['name' => 'flag', 'encoding' => 'bool'],
+            'repeat' => ['name' => 'repeat', 'encoding' => 'repeat'],
+            'typed' => ['name' => 'typed', 'encoding' => 'collection', 'collection' => [
+                'kind' => 'repeat', 'item_type' => 'string', 'allow_scalar' => false, 'empty' => 'reject']],
+            'numbered' => ['name' => 'numbered', 'encoding' => 'numbered'],
+            'fallback' => ['name' => 'fallback', 'encoding' => 'collection', 'collection' => [
+                'kind' => 'indexed', 'item_type' => 'string', 'allow_scalar' => true, 'empty' => 'reject',
+                'prefix' => 'fallback', 'separator' => '-', 'start' => 1]],
+        ];
+        self::assertSame(
+            'first=a&dynamic=v&flag=0&repeat=a&repeat=b&typed=a&typed=b&numbered=a&numbered-1=b&fallback=scalar',
+            ArgumentEncoder::encode($params, ['first' => 'a', 'values' => ['dynamic' => 'v'], 'flag' => false,
+                'repeat' => ['a', 'b'], 'typed' => ['a', 'b'], 'numbered' => ['a', 'b'],
+                'fallback' => 'scalar'])->encode(),
+        );
+    }
+
     public function testLateInvalidValueTraceRedactsMapKeysValuesAndFields(): void
     {
         $previous = ini_set('zend.exception_ignore_args', '0');

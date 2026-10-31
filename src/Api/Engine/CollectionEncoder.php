@@ -94,8 +94,8 @@ final class CollectionEncoder
      */
     public static function append(
         #[SensitiveParameter] OrderedFields $fields,
-        string $origin,
-        string $wire,
+        #[SensitiveParameter] string $origin,
+        #[SensitiveParameter] string $wire,
         mixed $spec,
         #[SensitiveParameter] mixed $value,
     ): void {
@@ -137,7 +137,7 @@ final class CollectionEncoder
      */
     private static function appendMap(
         #[SensitiveParameter] OrderedFields $fields,
-        string $origin,
+        #[SensitiveParameter] string $origin,
         array $spec,
         #[SensitiveParameter] mixed $value,
     ): void {
@@ -151,7 +151,7 @@ final class CollectionEncoder
             ) {
                 throw new InvalidArgumentException('Map keys must be nonempty UTF-8 strings without control bytes.');
             }
-            $fields->append($origin, $spec['prefix'] . $key, self::item($spec['item_type'], $item), null, false);
+            $fields->appendMap($origin, $spec['prefix'] . $key, self::item($spec['item_type'], $item));
         }
     }
 

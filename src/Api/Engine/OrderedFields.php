@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Api\Engine;
 
 use InvalidArgumentException;
+use LogicException;
 use SensitiveParameter;
 
 /**
@@ -27,6 +28,35 @@ final class OrderedFields
 
     /** @var array<string, array{origin: string, repeatFamily: object|null}> */
     private array $seen = [];
+
+    /** @var array<string, string> Exact declared wire names and their argument origins. */
+    private array $exactOwners = [];
+
+    /**
+     * Retain an exact declared name without emitting a field or creating a repeat family.
+     *
+     * Only generated argument declarations use this; placeholders and unexpanded
+     * index namespaces have no exact owner. Conflicting declarations are spec defects.
+     */
+    public function reserveExactName(#[SensitiveParameter] string $origin, #[SensitiveParameter] string $name): void
+    {
+        if (isset($this->exactOwners[$name]) && $this->exactOwners[$name] !== $origin) {
+            throw new LogicException('Duplicate exact wire name in the parameter specs.');
+        }
+        $this->exactOwners[$name] = $origin;
+    }
+
+    /** Append a final literal map name only when no other input declares that exact name. */
+    public function appendMap(
+        #[SensitiveParameter] string $origin,
+        #[SensitiveParameter] string $name,
+        #[SensitiveParameter] string|int $value,
+    ): void {
+        if (isset($this->exactOwners[$name]) && $this->exactOwners[$name] !== $origin) {
+            throw new InvalidArgumentException('Generated parameters overlap another wire name.');
+        }
+        $this->append($origin, $name, $value, null, false);
+    }
 
     /**
      * Append one literal field, rejecting overlap before it can overwrite data.

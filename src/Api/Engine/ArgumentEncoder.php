@@ -39,7 +39,9 @@ final class ArgumentEncoder
      * name using its declared encoding; explicit omit_empty on repeat skips [].
      * Explicit reject_empty policies check targets before null omission.
      * Undeclared arguments and duplicate declared names are generator defects.
-     * Expanded collisions are invalid arguments; no partial field set is sent.
+     * Exact declared names retain ownership even when their arguments are omitted.
+     * Maps cannot supply another input's exact name; only actual indexed expansions
+     * own indexed names. Expanded collisions are invalid arguments; no partial field set is sent.
      *
      * @param array<mixed> $params Parameter specs keyed by PHP argument name.
      * @param array<string, mixed> $arguments Arguments keyed by PHP argument name.
@@ -54,17 +56,28 @@ final class ArgumentEncoder
             }
         }
 
+        $encoded = new OrderedFields();
         $wires = [];
-        foreach ($params as $param) {
+        foreach ($params as $name => $param) {
             $wire = is_array($param) ? ($param['name'] ?? null) : null;
             if (is_string($wire)) {
                 if (isset($wires[$wire])) {
                     throw new LogicException('Duplicate wire name in the parameter specs.');
                 }
                 $wires[$wire] = true;
+                if (!is_string($name)) {
+                    throw new LogicException('Invalid parameter argument name.');
+                }
+                $exact = in_array($param['encoding'] ?? null, ['scalar', 'bool', 'repeat', 'numbered'], true);
+                if (($param['encoding'] ?? null) === 'collection') {
+                    $collection = CollectionEncoder::check($param['collection'] ?? null);
+                    $exact = $collection['kind'] === 'repeat' || $collection['allow_scalar'];
+                }
+                if ($exact) {
+                    $encoded->reserveExactName($name, $wire);
+                }
             }
         }
-        $encoded = new OrderedFields();
         foreach ($params as $name => $param) {
             $value = $arguments[$name] ?? null;
             if (is_array($param) && ($param['reject_empty'] ?? false) === true) {
