@@ -6,6 +6,7 @@ namespace HostingPal\WhmApiClient;
 
 use HostingPal\WhmApiClient\Api\AbstractApiClient;
 use HostingPal\WhmApiClient\Api\Engine\JsonBody;
+use HostingPal\WhmApiClient\Api\Engine\MultipartInput;
 use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
 use HostingPal\WhmApiClient\Api\Engine\OperationSpec;
 use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
@@ -31,9 +32,10 @@ use SensitiveParameter;
  * Typed groups are generated from the pinned API map and overlay (see docs/api/coverage.md);
  * call() provides GET and form-encoded POST access without a typed group through
  * the same routing, authentication, and envelope handling. callJson() provides
- * explicit raw JSON POST access; generic multipart bodies remain unsupported.
+ * explicit raw JSON POST access; callMultipart() streams ordered text/file parts.
  *
  * @phpstan-import-type Parameters from AbstractApiClient
+ * @phpstan-import-type MultipartQuery from AbstractApiClient
  */
 final class WhmClient extends AbstractApiClient
 {
@@ -134,6 +136,56 @@ final class WhmClient extends AbstractApiClient
 
         return CallResult::fromApiResponse($this->executeJsonPost(
             '/json-api/' . $operation,
+            $body,
+            ResponseRoute::Whm,
+            $outcome,
+        ));
+    }
+
+    /**
+     * POST ordered text and file parts through this configured handle.
+     *
+     * Strings are literal text, including path-looking strings. Upload descriptors
+     * select files; repeated names and text/file order are preserved. Empty lists
+     * send the closing delimiter. Parts are never form-encoded or renumbered.
+     * Query uses the existing parameter representation plus null omission and is
+     * encoded once. Keep secrets in parts: servers may log the separate query.
+     * The case-sensitive api. prefix is reserved in parts and raw/expanded query
+     * fields, including raw nulls. Emitted query fields cannot share a part name.
+     * Sources are prepared only after complete local validation. Borrowed streams
+     * start at their current cursor and are never rewound, closed or detached;
+     * exact remaining lengths are required. Owned files close on every exit.
+     * Preparation failures before HTTP raise a static, unchained
+     * InvalidArgumentException. A recorded body failure during an attempt raises
+     * a static, unchained ApiException; remote state may already have changed.
+     * A partial send or failure never retries or establishes remote ownership.
+     * Standard envelope, metadata and CallResult semantics follow call(). Flag's
+     * API error omits data/per-file reasons; explicit Unchecked retains raw data.
+     * Choose a multipart-compatible operation with a standard envelope. Generic
+     * access establishes neither typed coverage nor live endpoint compatibility.
+     *
+     * @param list<array{name: string, value: string|Upload}> $parts
+     * @param MultipartQuery $query
+     * @throws InvalidArgumentException If local input is invalid; metadata clears first and errors omit caller data.
+     * @throws ApiException If the attempted body, transport, HTTP, or the API envelope fails.
+     */
+    public function callMultipart(
+        string $operation,
+        #[SensitiveParameter] array $parts,
+        #[SensitiveParameter] array $query = [],
+        OutcomePolicy $outcome = OutcomePolicy::Flag,
+    ): CallResult {
+        $this->beginRequest();
+        if (preg_match('/\A[A-Za-z0-9_]+(?:\/[A-Za-z0-9_]+)*\z/', $operation) !== 1) {
+            throw new InvalidArgumentException(
+                'WHM function names contain only letters, digits, underscores, and "/" separators.',
+            );
+        }
+        $body = MultipartInput::present($parts, $query, []);
+
+        return CallResult::fromApiResponse($this->executeMultipartPost(
+            '/json-api/' . $operation,
+            $body->query->withRouting(self::RESERVED),
             $body,
             ResponseRoute::Whm,
             $outcome,

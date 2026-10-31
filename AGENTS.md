@@ -212,7 +212,9 @@ local byte limits can lag updates and distributed totals differ from local usage
 access for operations compatible with the parameter representation, route and
 envelope handling. These legacy call() methods do not support JSON or multipart
 request bodies. Separate callJson() entrypoints provide raw JSON POST through WHM
-and direct cPanel UAPI; bridged UAPI rejects JSON locally after metadata reset. The
+and direct cPanel UAPI; bridged UAPI rejects JSON locally after metadata reset.
+Separate callMultipart() entrypoints stream ordered text/file parts through WHM
+and direct cPanel UAPI; generic bridged multipart rejects before source I/O. The
 pinned inventory includes 13 JSON operations (8 WHM, 5 UAPI) and 9 multipart
 operations (1 WHM, 8 UAPI). StatsManager/save_configuration is the first typed
 JSON-body adopter; the other 12 JSON endpoints remain deferred, with remaining
@@ -246,7 +248,8 @@ behavior; it does not establish IMAP/SMTP access or live coverage of all 96 meth
 
 The SSL module exposes all 49 nondeprecated functions. Typed fetch-key/cabundle,
 upload-cert and upload-key calls use reviewed multipart string fields, configured
-by an explicit body: multipart spec. Legacy call() remains form-only; arbitrary file/multipart uploads are unsupported.
+by an explicit body: multipart spec. Legacy call() remains form-only;
+callMultipart() provides separate generic streamed file/text parts on WHM and direct UAPI only, without typed SSL adoption.
 The separate callJson() entrypoints do not expand typed SSL coverage. Multipart names/values are
 validated after metadata reset, all value-bearing frames are sensitive, routing
 stays in the URL and a collision-free delimiter preserves field bytes. Generator
@@ -2656,6 +2659,43 @@ remain unobserved under `8x0.2.59`.
   `OutcomePolicy::Unchecked` records the envelope for operations whose status
   carries payload semantics; on the WHM bridge it waives only the UAPI status, and
   the outer WHM result is checked under both policies. Both require a usable envelope.
+- `whm()->callMultipart(operation, parts, query, outcome)` and direct-only
+  `uapi()->callMultipart(module, operation, parts, query, outcome)` use fixed POST
+  and the shared streaming transport/envelope lifecycle. Parts are an exact
+  sequential list of name/value records; safe token names stay literal, strings
+  stay text, Upload values are files, and repeated names/interleaving are preserved.
+  Empty parts send a closing delimiter. MultipartInput validates the complete
+  query/parts declaration, reservations and emitted-query/part collisions before
+  source I/O. Query retains scalar/list markers plus multipart-only null omission;
+  raw reserved keys still reject by presence. Both routes reserve all case-sensitive
+  api. names, including bare api.; direct UAPI also reserves exact
+  cpanel.user/module/function. Token-valid lookalikes remain data. Keep query secrets
+  in parts because URLs may be logged. Local diagnostics and value-bearing library
+  trace frames must omit dynamic names and values.
+  Upload paths initially use POSIX local regular files with caller-supplied
+  stable, reliable size metadata. Virtual/generated files with misleading sizes
+  remain unsupported; metadata truthfulness is a caller prerequisite. Relative
+  paths anchor at factory creation. Borrowed streams start at their call-time
+  cursor, require a known exact remaining length and are never rewound/closed/
+  detached. Reject duplicate borrowed identity; reuse paths/strings independently.
+  Sources must stay stable and callers must avoid resource aliases. No extra-byte
+  probes verify an unknown source's size assertion. Full preparation precedes reads;
+  exact total Content-Length is mandatory. Owned files release on all exits,
+  including partial consumption and pre-transport failures after body creation.
+  Multipart source preparation RuntimeException maps to static unchained
+  InvalidArgumentException before HTTP, with null metadata, zero reads/dispatch,
+  unchanged borrowed cursors and all earlier owned files closed. Keep this catch
+  confined to preparation; internal source/stream failures stay RuntimeException.
+  Recorded streaming-body failure becomes a static unchained ApiException before
+  original PSR client classification, including swallowed/wrapped failures. Healthy
+  body/client exceptions retain existing classification or propagation; do not
+  relabel synthetic errors as original PSR interfaces. Source/stream primitives
+  retain their RuntimeException contract.
+  One invocation is one attempt; never retry, roll back or infer remote ownership.
+  Generic Flag can discard data/per-file reasons on status 0; explicit Unchecked
+  retains raw CallResult data without endpoint schema guarantees. This adds no
+  typed or live coverage; generated Fileman adoption stays separate. Existing
+  operation-specific SSL multipart string bridge calls keep their reviewed path.
 - `whm()->call()` and `uapi()->call()` are generic escape hatches: POST by default
   (GET only when passed explicitly), metadata cleared before name and parameter
   validation, reserved fields removed from caller parameters, `CallResult` with the payload

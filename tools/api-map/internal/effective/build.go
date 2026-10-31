@@ -23,6 +23,7 @@ var (
 		"call": true, "responseMeta": true, "username": true, "isBridged": true, "run": true, "dispatch": true,
 		"request": true, "beginRequest": true, "recordResponseMeta": true, "executeGet": true, "executePost": true,
 		"execute": true, "encode": true, "callJson": true, "executeJsonPost": true,
+		"callMultipart": true, "executeMultipartPost": true,
 	}
 	// reservedArguments are PHP variables a generated method body already uses.
 	reservedArguments = map[string]bool{"this": true, "result": true}

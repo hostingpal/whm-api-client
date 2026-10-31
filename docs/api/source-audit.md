@@ -6861,3 +6861,27 @@ These are attributed reviewer observations, not a new capture or live validation
 of this combined revision. Combined offline integration checks are recorded
 separately; no server request, source refresh or evidence rewrite accompanies
 this integration. Existing platform and source-truthfulness limits remain.
+
+
+## Generic multipart public exception boundary (PR86)
+
+[PR86 review 5724431145](https://github.com/hostingpal/whm-api-client/pull/86#pullrequestreview-5724431145)
+identified a missing-file preparation RuntimeException escaping the public
+callMultipart() contract. The public multipart executor now translates preparation
+RuntimeException to a static, unchained InvalidArgumentException before HTTP.
+Internal source/stream exceptions retain their existing RuntimeException contract.
+Recorded attempted-body failures retain the static, unchained ApiException boundary,
+including swallowed or wrapped body errors; healthy vendor identity and PSR client
+failure classification remain unchanged. A failed attempt never retries or proves
+remote completion, ownership or cleanup.
+
+The same review reports public-method direct UAPI uploads on cPanel `11.138.0.19`
+using a disposable account and temporary token, with stored-byte checks, early-EOF
+failure and reported account/home/token cleanup. Its WHM observations are read-only
+text-part calls with ordinary query parameters, not WHM file-upload coverage.
+These remain attributed, route/version-scoped reviewer observations of generic
+access; they establish neither typed operation coverage nor a new sanitized
+capture or live verification of this combined revision. The correction uses only
+offline regressions, including shared argument-privacy registration for both raw
+routes. No server request, credential access, source refresh or historical evidence
+rewrite accompanies this integration.

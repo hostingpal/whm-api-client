@@ -21,6 +21,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Exception\TransportException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\UapiClient;
+use HostingPal\WhmApiClient\Upload;
 use HostingPal\WhmApiClient\WhmClient;
 use Http\Mock\Client as MockClient;
 use InvalidArgumentException;
@@ -1109,6 +1110,26 @@ final class SensitiveTraceTest extends TestCase
     /** @return iterable<string, array{'whm'|'direct'|'bridged', Closure(Client): mixed}> */
     public static function invalidSecretCalls(): iterable
     {
+        foreach (['whm', 'direct'] as $route) {
+            foreach (['missing path', 'reserved query'] as $failure) {
+                yield $route . ' raw multipart ' . $failure => [
+                    $route,
+                    static function (Client $client) use ($route, $failure): mixed {
+                        $parts = [
+                            ['name' => 'text', 'value' => self::SECRET],
+                            ['name' => 'file', 'value' => Upload::fromPath(
+                                sys_get_temp_dir() . '/missing-multipart-' . self::SECRET . '/file',
+                                self::SECRET,
+                            )],
+                        ];
+                        $query = [$failure === 'reserved query' ? 'api.' . self::SECRET : 'private' => self::SECRET];
+                        return $route === 'whm'
+                            ? $client->whm()->callMultipart('operation', $parts, $query)
+                            : $client->uapi()->callMultipart('Example', 'operation', $parts, $query);
+                    },
+                ];
+            }
+        }
         yield 'WHM raw JSON invalid syntax' => [
             'whm',
             static fn (Client $client): mixed => $client->whm()->callJson('operation', '{"secret":"' . self::SECRET),
@@ -1186,6 +1207,21 @@ final class SensitiveTraceTest extends TestCase
     /** @return iterable<string, array{'whm'|'direct'|'bridged', Closure(Client): mixed}> */
     private static function secretCalls(): iterable
     {
+        foreach (['whm', 'direct'] as $route) {
+            yield $route . ' raw multipart text file and query' => [
+                $route,
+                static function (Client $client) use ($route): mixed {
+                    $parts = [
+                        ['name' => self::SECRET, 'value' => self::SECRET],
+                        ['name' => 'file', 'value' => Upload::fromString(self::SECRET, self::SECRET)],
+                    ];
+                    $query = ['private' => self::SECRET];
+                    return $route === 'whm'
+                        ? $client->whm()->callMultipart('operation', $parts, $query)
+                        : $client->uapi()->callMultipart('Example', 'operation', $parts, $query);
+                },
+            ];
+        }
         yield 'WHM structured provider display JSON field' => [
             'whm',
             static function (Client $client): void {
