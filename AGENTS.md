@@ -1821,7 +1821,8 @@ Logs and analysis may contain private paths or configuration. Unknown-session
 reads exposed internal paths in the separate reviewer report. Treat upstream
 errors and payloads as sensitive. The client does not retry, poll, roll back,
 execute returned text or follow URLs. Archive deletion can remove backup files.
-The original three-GET metadata capture is complete and immutable; all eight
+The original three-GET metadata capture and separate two-GET reviewed module
+schema capture are complete and immutable; both strictly pass. All eight
 POST methods and populated sessions/logs/analysis remain unobserved under
 `8x0.2.47`. See the [source audit](docs/api/source-audit.md#whm-account-transfers)
 for evidence boundaries and input exclusion `8x0.1.22`.

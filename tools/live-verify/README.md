@@ -1500,3 +1500,9 @@ inert and no embedded URLs are followed. This recipe supplies no remote host,
 credential, session ID, log or archive path. It performs no POST or resource
 change. All eight writes and populated session/log/analysis variants remain
 unobserved under `8x0.2.47`. Preserve every historical artifact and discrepancy.
+
+The requested two-GET recipe is complete: `2026-10-31-whm-transfers-reviewed.json`
+at `d81e43a` on `11.138.0.19` strictly passes with zero discrepancies, observing
+populated schema key records and primary/required string lists. SHA-256
+`ecd22c05ac50d5b2dcfc2ad3c90c0ff6c26b21f059268726b31f163de506bd7e`.
+Do not repeat either transfer capture merely for integration or green status.

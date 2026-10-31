@@ -1002,3 +1002,19 @@ Module priorities and designated-user flags were populated; remote and mutation
 behavior remains unobserved under `8x0.2.47`. No remote credential check,
 session/log read, transfer/control/archive mutation or URL fetch ran.
 SHA-256 `8a8d004b5b765c7f79862d8a177d93855757617eada816812a6983b4116a0a1e`.
+
+### Reviewed transfer module schema capture
+
+The new [reviewed transfer capture](2026-10-31-whm-transfers-reviewed.json)
+at `d81e43a8456dc7a9370d5950ac196b226691ae79` on WHM `11.138.0.19`
+contains exactly two GETs: version and `transferModuleSchema(module:
+'FeatureListRemoteRoot')`. Both HTTP/API/payload/probe checks and the strict
+assessment pass, with zero discrepancies. The module schema has populated
+wildcarded key records with string `def` fields and string `primary`/`required`
+lists. Only sanitized paths and types were saved; no key names, definitions or
+list values are retained. Schema text was not executed. This completes the
+requested additional probe and does not replay or replace the original capture.
+No remote host, remote credentials, session ID, log or archive target was supplied;
+no transfer, resource mutation, cleanup operation or URL fetch occurred. All
+eight POST methods and populated session/log/analysis data remain unobserved.
+SHA-256: `ecd22c05ac50d5b2dcfc2ad3c90c0ff6c26b21f059268726b31f163de506bd7e`.
