@@ -41,7 +41,7 @@ use InvalidArgumentException;
  *         package?: string,
  *         pkg_dep?: array{
  *             conflicts?: list<string>,
- *             requires?: list<string>,
+ *             requires?: list<string|list<string>>,
  *         },
  *         pkg_group?: string,
  *         release?: string,
@@ -49,16 +49,17 @@ use InvalidArgumentException;
  *         short_description?: string,
  *         size?: int,
  *         state?: string,
+ *         vendor?: string,
  *         version?: string,
  *         version_installed?: string,
  *         version_latest?: string,
  *     }>,
  * }
  * @phpstan-type GetRpmVersionDataResult array{
- *     ...<array-key, list<string>>
+ *     ...<array-key, string|list<string>>
  * }|array{
  *     ...<array-key, array{
- *         ...<array-key, list<string>>
+ *         ...<array-key, string|list<string>>
  *     }>
  * }
  * @phpstan-type InstallRpmPluginResult array{
@@ -113,9 +114,13 @@ final readonly class SystemPackages
      *
      * Documented: Available in cPanel & WHM 11.32 and later; operates on server package management.
      *
-     * Documented: Changes rpm.versions data rather than installing or removing packages. Upstream strongly recommends
-     * running /usr/local/cpanel/scripts/check_cpanel_pkgs afterward; the client does not execute scripts, retry or roll
-     * back the change. Inspect the returned status flag independently of the API envelope.
+     * Documented: The source compares this operation to /usr/local/cpanel/scripts/update_local_rpm_versions --del
+     * section.key value and strongly recommends /usr/local/cpanel/scripts/check_cpanel_pkgs afterward.
+     *
+     * Policy: Client behavior: a valid returned data.status of 0 does not cause an exception when metadata.result is 1.
+     * Only the WHM envelope outcome is checked; callers must inspect the returned status independently to determine
+     * whether the RPM metadata edit succeeded. The client does not retry or roll back. The source command examples are
+     * documentation only; the client does not execute them.
      *
      * API-map identity: whm1:delete_rpm_version#GET (wire name delete_rpm_version; Package Manager Settings).
      *
@@ -123,9 +128,9 @@ final readonly class SystemPackages
      * @param string $section The RPM's section within the `rpm.versions` file.
      * @param string $value The RPM name.
      * @return DeleteRpmVersionResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/package-manager-settings/rpmversions-delete_rpm_version
      */
     public function deleteRpmVersion(string $key, string $section, string $value): array
@@ -147,9 +152,13 @@ final readonly class SystemPackages
      *
      * Documented: Available in cPanel & WHM 11.32 and later; operates on server package management.
      *
-     * Documented: Changes rpm.versions data rather than installing or removing packages. Upstream strongly recommends
-     * running /usr/local/cpanel/scripts/check_cpanel_pkgs afterward; the client does not execute scripts, retry or roll
-     * back the change. Inspect the returned status flag independently of the API envelope.
+     * Documented: The source compares this operation to /usr/local/cpanel/scripts/update_local_rpm_versions --edit
+     * section.key value and strongly recommends /usr/local/cpanel/scripts/check_cpanel_pkgs afterward.
+     *
+     * Policy: Client behavior: a valid returned data.status of 0 does not cause an exception when metadata.result is 1.
+     * Only the WHM envelope outcome is checked; callers must inspect the returned status independently to determine
+     * whether the RPM metadata edit succeeded. The client does not retry or roll back. The source command examples are
+     * documentation only; the client does not execute them.
      *
      * API-map identity: whm1:edit_rpm_version#GET (wire name edit_rpm_version; Package Manager Settings).
      *
@@ -157,9 +166,9 @@ final readonly class SystemPackages
      * @param string $section The RPM's section.
      * @param string $value The RPM's value.
      * @return EditRpmVersionResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/package-manager-settings/rpmversions-edit_rpm_version
      */
     public function editRpmVersion(string $key, string $section, string $value): array
@@ -190,9 +199,9 @@ final readonly class SystemPackages
      * Settings).
      *
      * @return FixCacheResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/package-manager-settings/packagemanager-package_manager_fixcache
      */
     public function fixCache(): array
@@ -220,9 +229,9 @@ final readonly class SystemPackages
      * @param int $build The build process ID returned by the `package_manager_submit_actions` function.
      * @param int $offset The position in the build log from which you wish to display entries.
      * @return GetBuildLogResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/package-manager-settings/packagemanager-package_manager_get_build_log
      */
     public function getBuildLog(int $build, int $offset): array
@@ -243,23 +252,37 @@ final readonly class SystemPackages
      *
      * Documented: Available in cPanel & WHM 11.52 and later; operates on server package management.
      *
-     * Documented: Supply exactly one selector family: namespaces or packages, each as one string or a nonempty
-     * sequential string list encoded with repeated ns or package keys. The source marks both required but explicitly
-     * makes them alternatives; the client does not infer cross-field validation. Namespace prose permits ea and values
-     * returned by ea4_get_additional_pkg_prefixes, including the altea example, while the formal enum lists only ea.
-     * This discrepancy remains unresolved. Omitted disableExcludes preserves the default 0; explicit false sends 0.
-     * more_info_url may be null; omitted fields remain omitted.
+     * Documented: The source requires exactly one selector family: namespaces or packages, each as one string or a
+     * nonempty sequential string list encoded with repeated ns or package keys. The source marks both required but
+     * explicitly makes them alternatives; both formal required flags conflict with the documented selector
+     * alternatives. Namespace prose permits ea and values returned by ea4_get_additional_pkg_prefixes, including the
+     * altea example, while the formal enum lists only ea. This discrepancy remains unresolved. Omitted disableExcludes
+     * preserves the default 0; explicit false sends 0. more_info_url may be null; omitted fields remain omitted.
+     *
+     * Observed: Independent review clarification on 11.138.0.19 observed ea-apache24 requires containing strings and
+     * nested lists of strings (27 items, including two- or three-string alternatives), and vendor as a string on six
+     * packages. Conflicts remained strings. Four uninstalled packages returned version_installed as an empty string,
+     * while two installed packages returned nonempty strings; null was not observed and is not accepted.
+     *
+     * Documented: The separately inspected package-manager source describes a requirement as a package name or an array
+     * reference of alternatives (an OR-list), and flattens conflicts to package-name strings. Nested requirement lists
+     * preserve alternative package strings, without an invented tuple or closed item count. The dnf vendor source uses
+     * a placeholder, so no vendor identity or literal value is guaranteed.
+     *
+     * Policy: Caller responsibility: provide exactly one of namespaces or packages as required by the source. The
+     * client makes each individually optional so either family is callable; it does not reject an omitted selector or
+     * both families locally. This is not a guarantee that such calls succeed on the server.
      *
      * API-map identity: whm1:package_manager_get_package_info#GET (wire name package_manager_get_package_info; List
      * Package Information).
      *
      * @param string|list<string>|null $namespaces An available RPM package namespace. Null omits it.
      * @param string|list<string>|null $packages An RPM package name on the system. Null omits it.
-     * @param bool|null $disableExcludes Whether the system will disable yum)'s exclude behavior. Null omits it.
+     * @param bool|null $disableExcludes Whether the system will disable yum's exclude behavior. Null omits it.
      * @return GetPackageInfoResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/list-package-information/packagemanager-package_manager_get_package_info
      */
@@ -285,18 +308,24 @@ final readonly class SystemPackages
      *
      * Documented: Available in cPanel & WHM 11.32 and later; operates on server package management.
      *
-     * Documented: Omit key to request all RPM keys in the section; a supplied key requests that key. The pinned
-     * alternatives preserve dynamic key names as a map of string lists, or a section map containing key maps of string
-     * lists. Empty maps and lists remain empty; no recursive or scalar values are inferred.
+     * Documented: Omit key to request all RPM keys in the section; a supplied key requests that key. The pinned source
+     * describes dynamic RPM keys mapped to string lists, either in a key map or in a section map containing key maps.
+     *
+     * Observed: Independent review on 11.138.0.19 observed target_settings as a key map of 46 strings and rpm_groups as
+     * string lists.
+     *
+     * Policy: The client accepts strings or string lists as dynamic leaves in both map families. String leaves in the
+     * source section-map family are a compatibility inference, not an observed section-map response. Empty maps and
+     * lists remain empty. No deeper tree, numeric, boolean or null leaves are accepted.
      *
      * API-map identity: whm1:get_rpm_version_data#GET (wire name get_rpm_version_data; List Package Information).
      *
      * @param string $section The RPM's section.
      * @param string|null $key The RPM's key. Null omits it.
      * @return GetRpmVersionDataResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/list-package-information/rpmversions-get_rpm_version_data
      */
     public function getRpmVersionData(string $section, ?string $key = null): array
@@ -321,9 +350,9 @@ final readonly class SystemPackages
      *
      * @param string $name The name of a plugin RPM to install.
      * @return InstallRpmPluginResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/install-or-uninstall-package/plugins-install_rpm_plugin
      */
     public function installRpmPlugin(string $name): array
@@ -351,9 +380,9 @@ final readonly class SystemPackages
      *
      * @param int $build The process's build number returned by the WHM API 1 `package_manager_submit_actions` function.
      * @return IsPerformingActionsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/list-package-information/packagemanager-package_manager_is_performing_actions
      */
     public function isPerformingActions(int $build): array
@@ -383,9 +412,9 @@ final readonly class SystemPackages
      * @param 'any'|'installed'|'not_installed'|'updatable'|null $state Return RPM packages that exist in a specified
      *     state. Null omits it.
      * @return ListPackagesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/list-package-information/packagemanager-package_manager_list_packages
      */
     public function listPackages(?string $state = null): array
@@ -407,11 +436,16 @@ final readonly class SystemPackages
      * Documented: Lists required but uninstalled RPM dependencies; it does not list every installed RPM. Omitting
      * target requests all targets, and no packages are installed.
      *
+     * Documented: The source compares this operation to /usr/local/cpanel/scripts/check_cpanel_pkgs --list-only
+     * --targets[target].
+     *
      * Observed: On cPanel 11.138.0.19, the immutable 2026-10-31 capture observed HTTP/API success with the data member
      * absent. listRpms() returns null for that metadata-only success while validating the pinned rpms string-list
      * object whenever non-null data is present. The existing optional-payload mechanism also accepts explicit null
      * data; that null variant was not observed in this capture. Neither absent nor null data establishes that no RPM
      * packages are missing. The original capture remains failed and unchanged.
+     *
+     * Policy: The source command example is documentation only; the client does not execute it.
      *
      * Returns null when the server sends no data.
      *
@@ -419,9 +453,9 @@ final readonly class SystemPackages
      *
      * @param string|null $target The target that depends on the uninstalled RPMs. Null omits it.
      * @return ListRpmsResult|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/list-package-information/rpmversions-list_rpms
      */
     public function listRpms(?string $target = null): ?array
@@ -441,23 +475,30 @@ final readonly class SystemPackages
      * Documented: Available in cPanel & WHM 11.52 and later; operates on server package management.
      *
      * Documented: Determines prospective install, uninstall, upgrade and unaffected package lists without submitting
-     * them. packages is required; namespaces is optional. Both accept a string or nonempty sequential string list and
-     * repeat their exact wire keys. Namespace prose permits additional discovered prefixes such as altea despite the
-     * formal ea-only enum. Inspect all returned lists; planning is not installation or completion.
+     * them. The source requires packages and marks namespaces optional. Both accept a string or nonempty sequential
+     * string list and repeat their exact wire keys. Namespace prose permits additional discovered prefixes such as
+     * altea despite the formal ea-only enum. Inspect all returned lists; planning is not installation or completion.
+     *
+     * Observed: Independent review on 11.138.0.19 observed an omitted namespace failing with Namespace is required and
+     * a supplied namespace passing. The pinned source still marks ns optional.
+     *
+     * Policy: The client requires both packages and a non-null namespaces argument before I/O, correcting the source
+     * optional namespace flag from the reviewed server behavior. Other parameter types and repeated-key encoding remain
+     * unchanged.
      *
      * API-map identity: whm1:package_manager_resolve_actions#GET (wire name package_manager_resolve_actions; List
      * Package Information).
      *
      * @param string|list<string> $packages The name of an RPM package.
-     * @param string|list<string>|null $namespaces The RPM namespace that represents a set of packages. Null omits it.
+     * @param string|list<string> $namespaces The RPM namespace that represents a set of packages.
      * @return ResolveActionsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/list-package-information/packagemanager-package_manager_resolve_actions
      */
-    public function resolveActions(string|array $packages, string|array|null $namespaces = null): array
+    public function resolveActions(string|array $packages, string|array $namespaces): array
     {
         /** @var ResolveActionsResult $result Validated against SystemPackagesSpec::PACKAGE_MANAGER_RESOLVE_ACTIONS. */
         $result = ($this->run)(SystemPackagesSpec::PACKAGE_MANAGER_RESOLVE_ACTIONS, [
@@ -480,6 +521,23 @@ final readonly class SystemPackages
      * repeated identical keys. The returned build is a process ID; API success does not establish completion. The
      * client does not poll, retry or roll back package changes.
      *
+     * Policy: Caller responsibility: supply the intended nonempty package actions before calling. The client has no
+     * nonempty combination guard: omitted actions POST an empty body, and empty scalar strings are sent unchanged;
+     * empty lists are rejected locally. Do not rely on server rejection or assume an empty submission is harmless or a
+     * no-op. A returned build does not establish successful package changes.
+     *
+     * Policy: install: omission sends no parameter for this family; an empty string is still sent. Supply an intended
+     * package name or nonempty string list; the client does not enforce a nonempty scalar or a nonempty combination of
+     * action families.
+     *
+     * Policy: uninstall: omission sends no parameter for this family; an empty string is still sent. Supply an intended
+     * package name or nonempty string list; the client does not enforce a nonempty scalar or a nonempty combination of
+     * action families.
+     *
+     * Policy: upgrade: omission sends no parameter for this family; an empty string is still sent. Supply an intended
+     * package name or nonempty string list; the client does not enforce a nonempty scalar or a nonempty combination of
+     * action families.
+     *
      * API-map identity: whm1:package_manager_submit_actions#GET (wire name package_manager_submit_actions; Install or
      * Uninstall Package).
      *
@@ -487,9 +545,9 @@ final readonly class SystemPackages
      * @param string|list<string>|null $uninstall The RPM package that you want to uninstall. Null omits it.
      * @param string|list<string>|null $upgrade The RPM package that you want to upgrade. Null omits it.
      * @return SubmitActionsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/install-or-uninstall-package/packagemanager-package_manager_submit_actions
      */
@@ -522,9 +580,9 @@ final readonly class SystemPackages
      *
      * @param string $name The name of a plugin RPM to uninstall.
      * @return UninstallRpmPluginResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/install-or-uninstall-package/plugins-uninstall_rpm_plugin
      */
     public function uninstallRpmPlugin(string $name): array
@@ -549,9 +607,9 @@ final readonly class SystemPackages
      * Package).
      *
      * @return UpgradeResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/install-or-uninstall-package/packagemanager-package_manager_upgrade
      */
     public function upgrade(): array

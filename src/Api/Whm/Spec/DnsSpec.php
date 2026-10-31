@@ -13,6 +13,198 @@ namespace HostingPal\WhmApiClient\Api\Whm\Spec;
  */
 final class DnsSpec
 {
+    public const ACTIVATE_ZONE_KEY = [
+        'function' => 'activate_zone_key',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'keyId' => ['name' => 'key_id', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const ADDDNS = [
+        'function' => 'adddns',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'ip' => ['name' => 'ip', 'encoding' => 'scalar'],
+            'ipv6' => ['name' => 'ipv6', 'encoding' => 'scalar'],
+            'template' => ['name' => 'template', 'encoding' => 'scalar'],
+            'trueowner' => ['name' => 'trueowner', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const ADD_ZONE_KEY = [
+        'function' => 'add_zone_key',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'algoNum' => ['name' => 'algo_num', 'encoding' => 'scalar'],
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'keyType' => ['name' => 'key_type', 'encoding' => 'scalar'],
+            'active' => ['name' => 'active', 'encoding' => 'bool'],
+            'keySize' => ['name' => 'key_size', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'new_key_id' => ['type' => 'int', 'accept' => ['numeric-string']],
+            ],
+        ],
+    ];
+
+    public const CLUSTER_MEMBER_HAS_TRUST_WITH = [
+        'function' => 'cluster_member_has_trust_with',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'host' => ['name' => 'host', 'encoding' => 'scalar'],
+            'althost' => ['name' => 'althost', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'has_trust' => ['type' => 'flag'],
+            ],
+        ],
+    ];
+
+    public const CREATE_PARKED_DOMAIN_FOR_USER = [
+        'function' => 'create_parked_domain_for_user',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'username' => ['name' => 'username', 'encoding' => 'scalar'],
+            'webVhostDomain' => ['name' => 'web_vhost_domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const CREATE_SUBDOMAIN = [
+        'function' => 'create_subdomain',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'documentRoot' => ['name' => 'document_root', 'encoding' => 'scalar'],
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'useCanonicalName' => ['name' => 'use_canonical_name', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'username' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const DEACTIVATE_ZONE_KEY = [
+        'function' => 'deactivate_zone_key',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'keyId' => ['name' => 'key_id', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const DELETE_DOMAIN = [
+        'function' => 'delete_domain',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'type' => ['type' => 'string', 'nullable' => true],
+                'username' => ['type' => 'string', 'nullable' => true],
+            ],
+        ],
+    ];
+
+    public const DISABLE_DNSSEC_FOR_DOMAINS = [
+        'function' => 'disable_dnssec_for_domains',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'domains' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'disabled' => ['type' => 'flag'],
+                            'domain' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const ENABLE_DNSSEC_FOR_DOMAINS = [
+        'function' => 'enable_dnssec_for_domains',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
+            'active' => ['name' => 'active', 'encoding' => 'bool'],
+            'algoNum' => ['name' => 'algo_num', 'encoding' => 'scalar'],
+            'keySetup' => ['name' => 'key_setup', 'encoding' => 'scalar'],
+            'nsec3Iterations' => ['name' => 'nsec3_iterations', 'encoding' => 'scalar'],
+            'nsec3Narrow' => ['name' => 'nsec3_narrow', 'encoding' => 'bool'],
+            'nsec3OptOut' => ['name' => 'nsec3_opt_out', 'encoding' => 'bool'],
+            'nsec3Salt' => ['name' => 'nsec3_salt', 'encoding' => 'scalar'],
+            'useNsec3' => ['name' => 'use_nsec3', 'encoding' => 'bool'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'domains' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'domain' => ['type' => 'string'],
+                            'enabled' => ['type' => 'flag'],
+                            'new_key_id' => ['type' => 'int', 'accept' => ['numeric-string']],
+                            'nsec_error' => ['type' => 'string'],
+                            'nsec_version' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const EXPORT_ZONE_DNSKEY = [
+        'function' => 'export_zone_dnskey',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'keyId' => ['name' => 'key_id', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'dnskey' => ['type' => 'string'],
+                'key_id' => ['type' => 'int', 'accept' => ['numeric-string']],
+            ],
+        ],
+    ];
+
     public const EXPORT_ZONE_FILES = [
         'function' => 'export_zone_files',
         'method' => 'GET',
@@ -33,6 +225,24 @@ final class DnsSpec
                         ],
                     ],
                 ],
+            ],
+        ],
+    ];
+
+    public const EXPORT_ZONE_KEY = [
+        'function' => 'export_zone_key',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'keyId' => ['name' => 'key_id', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'key_content' => ['type' => 'string'],
+                'key_tag' => ['type' => 'int'],
+                'key_type' => ['type' => 'string'],
             ],
         ],
     ];
@@ -220,6 +430,24 @@ final class DnsSpec
         ],
     ];
 
+    public const IMPORT_ZONE_KEY = [
+        'function' => 'import_zone_key',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'keyData' => ['name' => 'key_data', 'encoding' => 'scalar'],
+            'keyType' => ['name' => 'key_type', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'import_key_id' => ['type' => 'int'],
+                'new_key_id' => ['type' => 'int', 'accept' => ['numeric-string']],
+            ],
+        ],
+    ];
+
     public const IS_ALIAS_AVAILABLE = [
         'function' => 'is_alias_available',
         'method' => 'GET',
@@ -261,6 +489,16 @@ final class DnsSpec
                 'svcb' => ['type' => 'flag'],
             ],
         ],
+    ];
+
+    public const KILLDNS = [
+        'function' => 'killdns',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
     ];
 
     public const LISTMXS = [
@@ -374,6 +612,41 @@ final class DnsSpec
         ],
     ];
 
+    public const REMOVE_ZONE_KEY = [
+        'function' => 'remove_zone_key',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'keyId' => ['name' => 'key_id', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const REMOVEZONERECORD = [
+        'function' => 'removezonerecord',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'line' => ['name' => 'line', 'encoding' => 'scalar'],
+            'zone' => ['name' => 'zone', 'encoding' => 'scalar'],
+            'serialnum' => ['name' => 'serialnum', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const RESETZONE = [
+        'function' => 'resetzone',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'zone' => ['name' => 'zone', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
     public const RESOLVEDOMAINNAME = [
         'function' => 'resolvedomainname',
         'method' => 'GET',
@@ -387,5 +660,151 @@ final class DnsSpec
                 'ip' => ['type' => 'string'],
             ],
         ],
+    ];
+
+    public const SAVEMXS = [
+        'function' => 'savemxs',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'exchange' => ['name' => 'exchange', 'encoding' => 'scalar'],
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+            'preference' => ['name' => 'preference', 'encoding' => 'scalar'],
+            'class' => ['name' => 'class', 'encoding' => 'scalar'],
+            'ttl' => ['name' => 'ttl', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const SET_NAMESERVER = [
+        'function' => 'set_nameserver',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'nameserver' => ['name' => 'nameserver', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'message' => ['type' => 'string'],
+                'nameserver' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const SET_NSEC3_FOR_DOMAINS = [
+        'function' => 'set_nsec3_for_domains',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'nsec3Iterations' => ['name' => 'nsec3_iterations', 'encoding' => 'scalar'],
+            'nsec3Narrow' => ['name' => 'nsec3_narrow', 'encoding' => 'bool'],
+            'nsec3OptOut' => ['name' => 'nsec3_opt_out', 'encoding' => 'bool'],
+            'nsec3Salt' => ['name' => 'nsec3_salt', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'domains' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'domain' => ['type' => 'string'],
+                            'enabled' => ['type' => 'flag'],
+                            'error' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const SETRESOLVERS = [
+        'function' => 'setresolvers',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'nameserver1' => ['name' => 'nameserver1', 'encoding' => 'scalar'],
+            'nameserver2' => ['name' => 'nameserver2', 'encoding' => 'scalar'],
+            'nameserver3' => ['name' => 'nameserver3', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const SET_UP_DNS_RESOLVER_WORKAROUNDS = [
+        'function' => 'set_up_dns_resolver_workarounds',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'flags' => [
+                    'type' => 'object',
+                    'fields' => [
+                        'do-ip6' => ['type' => 'string'],
+                        'do-udp' => ['type' => 'string'],
+                        'edns-buffer-size' => ['type' => 'string'],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const UNSET_NSEC3_FOR_DOMAINS = [
+        'function' => 'unset_nsec3_for_domains',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'domains' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'disabled' => ['type' => 'flag'],
+                            'domain' => ['type' => 'string'],
+                            'error' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const UPDATE_NAMESERVERS_CONFIG = [
+        'function' => 'update_nameservers_config',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'nameserver' => ['name' => 'nameserver', 'encoding' => 'scalar'],
+            'nameserver2' => ['name' => 'nameserver2', 'encoding' => 'scalar'],
+            'nameserver3' => ['name' => 'nameserver3', 'encoding' => 'scalar'],
+            'nameserver4' => ['name' => 'nameserver4', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const UPDATE_REVERSE_DNS_CACHE = [
+        'function' => 'update_reverse_dns_cache',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => null,
+    ];
+
+    public const UPDATEUSERDOMAINS = [
+        'function' => 'updateuserdomains',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [],
+        'returns' => null,
     ];
 }

@@ -160,9 +160,9 @@ final readonly class Mail
      * cpgreylist_is_server_netblock_trusted; Spam Protection (Greylisting)).
      *
      * @return CpgreylistIsServerNetblockTrustedResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-cpgreylist_is_server_netblock_trusted
      */
     public function cpgreylistIsServerNetblockTrusted(): array
@@ -200,9 +200,9 @@ final readonly class Mail
      *
      * @param string|list<string> $providers The mail provider.
      * @return CpgreylistListEntriesForCommonMailProviderResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-cpgreylist_list_entries_for_common_mail_provider
      */
@@ -237,9 +237,9 @@ final readonly class Mail
      * cpgreylist_load_common_mail_providers_config; Spam Protection (Greylisting)).
      *
      * @return CpgreylistLoadCommonMailProvidersConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-cpgreylist_load_common_mail_providers_config
      */
     public function cpgreylistLoadCommonMailProvidersConfig(): array
@@ -266,9 +266,9 @@ final readonly class Mail
      * API-map identity: whm1:cpgreylist_status#GET (wire name cpgreylist_status; Spam Protection (Greylisting)).
      *
      * @return CpgreylistStatusResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-cpgreylist_status
      */
     public function cpgreylistStatus(): array
@@ -298,9 +298,9 @@ final readonly class Mail
      *
      * @param string|list<string> $providers The mail providers’ names.
      * @return CpgreylistTrustEntriesForCommonMailProviderResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-cpgreylist_trust_entries_for_common_mail_provider
      */
@@ -340,9 +340,9 @@ final readonly class Mail
      *
      * @param string|list<string> $providers The mail provider.
      * @return CpgreylistUntrustEntriesForCommonMailProviderResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-cpgreylist_untrust_entries_for_common_mail_provider
      */
@@ -383,9 +383,9 @@ final readonly class Mail
      * @param string|list<string> $ips The record's IP address, or a range of IP addresses.
      * @param string|null $comment A comment. Null omits it.
      * @return CreateCpgreylistTrustedHostResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-create_cpgreylist_trusted_host
      */
@@ -418,9 +418,9 @@ final readonly class Mail
      *
      * @param string|list<string> $ips The record's IP address, or a range of IP addresses.
      * @return DeleteCpgreylistTrustedHostResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-delete_cpgreylist_trusted_host
      */
@@ -447,7 +447,7 @@ final readonly class Mail
      *
      * API-map identity: whm1:disable_cpgreylist#GET (wire name disable_cpgreylist; Spam Protection (Greylisting)).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-disable_cpgreylist
      */
     public function disableCpgreylist(): void
@@ -467,7 +467,7 @@ final readonly class Mail
      *
      * API-map identity: whm1:enable_cpgreylist#GET (wire name enable_cpgreylist; Spam Protection (Greylisting)).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-enable_cpgreylist
      */
     public function enableCpgreylist(): void
@@ -494,9 +494,9 @@ final readonly class Mail
      * (Greylisting)).
      *
      * @return LoadCpgreylistConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-load_cpgreylist_config
      */
     public function loadCpgreylistConfig(): array
@@ -523,9 +523,9 @@ final readonly class Mail
      * Protection (Greylisting)).
      *
      * @return ReadCpgreylistDeferredEntriesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-read_cpgreylist_deferred_entries
      */
     public function readCpgreylistDeferredEntries(): array
@@ -559,9 +559,9 @@ final readonly class Mail
      * Protection (Greylisting)).
      *
      * @return ReadCpgreylistTrustedHostsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-read_cpgreylist_trusted_hosts
      */
     public function readCpgreylistTrustedHosts(): array
@@ -607,9 +607,9 @@ final readonly class Mail
      *     a re-sent email as coming from a new, unknown triplet. Null omits it.
      * @param bool|null $spfBypass Whether emails with SPF bypass Greylisting. Null omits it.
      * @return SaveCpgreylistConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/spam-protection-(greylisting)/cpgreylist-save_cpgreylist_config
      */
     public function saveCpgreylistConfig(

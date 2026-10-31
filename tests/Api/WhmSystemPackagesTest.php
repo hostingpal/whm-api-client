@@ -96,6 +96,17 @@ final class WhmSystemPackagesTest extends TestCase
     /** @return iterable<string, array{string, string, string, array<array-key, mixed>, string, string}> */
     public static function optionalCases(): iterable
     {
+        yield 'mixed RPM leaf families' => ['getRpmVersionData', 'get_rpm_version_data', 'GET',
+            ['section' => 'target_settings'], 'section=target_settings',
+            '{"private-key":"installed","another-key":["rpm"]}'];
+        yield 'section RPM leaf families' => ['getRpmVersionData', 'get_rpm_version_data', 'GET',
+            ['section' => 'target_settings'], 'section=target_settings',
+            '{"target_settings":{"private-key":"installed","another-key":["rpm"]}}'];
+        yield 'populated nested dependencies' => ['getPackageInfo', 'package_manager_get_package_info', 'GET',
+            ['packages' => 'ea-apache24'], 'package=ea-apache24',
+            '{"packages":[{"package":"ea-apache24","pkg_dep":{"conflicts":["other"],'
+            . '"requires":[["private dependency",">=","1"],[],"glibc"]},"vendor":"synthetic vendor",'
+            . '"version_installed":""},{"pkg_dep":{"requires":[]},"vendor":"synthetic vendor"},{}]}'];
         yield 'all RPM categories' => ['getRpmVersionData', 'get_rpm_version_data', 'GET', ['section' => 'rpm_groups'],
             'section=rpm_groups', '{"rpm_groups":{"3rdparty":["cpanel-pcre"],"empty":[]}}'];
         yield 'empty RPM map' => ['getRpmVersionData', 'get_rpm_version_data', 'GET', ['section' => 'rpm_groups'],
@@ -115,10 +126,15 @@ final class WhmSystemPackagesTest extends TestCase
             ['namespaces' => 'altea'], 'ns=altea', '{"packages":[]}'];
         yield 'scalar package' => ['getPackageInfo', 'package_manager_get_package_info', 'GET',
             ['packages' => 'ea-apr-util'], 'package=ea-apr-util', '{}'];
-        yield 'resolve namespace omitted' => ['resolveActions', 'package_manager_resolve_actions', 'GET',
-            ['packages' => 'ea-apr-util'], 'package=ea-apr-util',
+        yield 'resolve scalar namespace' => ['resolveActions', 'package_manager_resolve_actions', 'GET',
+            ['packages' => 'ea-apr-util', 'namespaces' => 'ea'], 'package=ea-apr-util&ns=ea',
             '{"install":[],"unaffected":[],"uninstall":[],"upgrade":[]}'];
-        yield 'submit omitted actions' => ['submitActions', 'package_manager_submit_actions', 'POST', [], '', '{}'];
+        yield 'edit failure flag remains returned payload' => ['editRpmVersion', 'edit_rpm_version', 'POST',
+            ['key' => 'k', 'section' => 's', 'value' => 'v'], 'key=k&section=s&value=v', '{"status":0}'];
+        yield 'submit omitted actions reach wire' => ['submitActions', 'package_manager_submit_actions', 'POST',
+            [], '', '{}'];
+        yield 'submit empty scalar reaches wire' => ['submitActions', 'package_manager_submit_actions', 'POST',
+            ['install' => ''], 'install=', '{}'];
         yield 'submit scalar actions' => ['submitActions', 'package_manager_submit_actions', 'POST',
             ['install' => 'pkg1', 'uninstall' => 'pkg2', 'upgrade' => 'pkg3'],
             'install=pkg1&uninstall=pkg2&upgrade=pkg3', '{"build":0}'];
@@ -162,7 +178,6 @@ final class WhmSystemPackagesTest extends TestCase
             'section' => 's', 'value' => 'v'], '{"status":false}'];
         yield 'RPM status string' => ['editRpmVersion', 'edit_rpm_version', ['key' => 'k',
             'section' => 's', 'value' => 'v'], '{"status":"1"}'];
-        yield 'RPM map scalar' => ['getRpmVersionData', 'get_rpm_version_data', ['section' => 's'], '{"k":"rpm"}'];
         yield 'RPM map numeric member' => ['getRpmVersionData', 'get_rpm_version_data', ['section' => 's'],
             '{"k":[1]}'];
         yield 'RPM nested map null' => ['getRpmVersionData', 'get_rpm_version_data', ['section' => 's'],
@@ -188,6 +203,24 @@ final class WhmSystemPackagesTest extends TestCase
         yield 'package dependency numeric' => ['getPackageInfo', 'package_manager_get_package_info',
             ['namespaces' => 'ea'],
             '{"packages":[{"pkg_dep":{"requires":[1]}}]}'];
+        yield 'package dependency object' => ['getPackageInfo', 'package_manager_get_package_info',
+            ['packages' => 'ea-apache24'], '{"packages":[{"pkg_dep":{"requires":[{"name":"p"}]}}]}'];
+        yield 'package conflict arrays remain unsupported' => ['getPackageInfo', 'package_manager_get_package_info',
+            ['packages' => 'ea-apache24'], '{"packages":[{"pkg_dep":{"conflicts":[["p"]]}}]}'];
+        yield 'installed version numeric' => ['getPackageInfo', 'package_manager_get_package_info',
+            ['packages' => 'ea-apache24'], '{"packages":[{"version_installed":1}]}'];
+        yield 'dependency nested numeric item' => ['getPackageInfo', 'package_manager_get_package_info',
+            ['packages' => 'ea-apache24'], '{"packages":[{"pkg_dep":{"requires":[["p",1]]}}]}'];
+        yield 'dependency nested null item' => ['getPackageInfo', 'package_manager_get_package_info',
+            ['packages' => 'ea-apache24'], '{"packages":[{"pkg_dep":{"requires":[[null]]}}]}'];
+        yield 'dependency nested object item' => ['getPackageInfo', 'package_manager_get_package_info',
+            ['packages' => 'ea-apache24'], '{"packages":[{"pkg_dep":{"requires":[[{"name":"p"}]]}}]}'];
+        yield 'vendor boolean' => ['getPackageInfo', 'package_manager_get_package_info',
+            ['packages' => 'ea-apache24'], '{"packages":[{"vendor":false}]}'];
+        yield 'vendor null' => ['getPackageInfo', 'package_manager_get_package_info',
+            ['packages' => 'ea-apache24'], '{"packages":[{"vendor":null}]}'];
+        yield 'installed version null' => ['getPackageInfo', 'package_manager_get_package_info',
+            ['packages' => 'ea-apache24'], '{"packages":[{"version_installed":null}]}'];
         yield 'package URL boolean' => ['getPackageInfo', 'package_manager_get_package_info', ['namespaces' => 'ea'],
             '{"packages":[{"more_info_url":false}]}'];
         yield 'activity out of range' => ['isPerformingActions', 'package_manager_is_performing_actions',
@@ -197,9 +230,11 @@ final class WhmSystemPackagesTest extends TestCase
             '{"packages":{"package":"p"}}'];
         yield 'package name numeric' => ['listPackages', 'package_manager_list_packages', [],
             '{"packages":[{"package":1}]}'];
-        yield 'action list scalar' => ['resolveActions', 'package_manager_resolve_actions', ['packages' => 'p'],
+        yield 'action list scalar' => ['resolveActions', 'package_manager_resolve_actions',
+            ['packages' => 'p', 'namespaces' => 'ea'],
             '{"install":"p"}'];
-        yield 'action numeric member' => ['resolveActions', 'package_manager_resolve_actions', ['packages' => 'p'],
+        yield 'action numeric member' => ['resolveActions', 'package_manager_resolve_actions',
+            ['packages' => 'p', 'namespaces' => 'ea'],
             '{"uninstall":[1]}'];
         yield 'submitted build string' => ['submitActions', 'package_manager_submit_actions', [], '{"build":"9717"}'];
         yield 'upgraded build null' => ['upgrade', 'package_manager_upgrade', [], '{"build":null}'];
@@ -255,11 +290,37 @@ final class WhmSystemPackagesTest extends TestCase
     {
         yield 'empty namespaces' => ['getPackageInfo', ['namespaces' => []]];
         yield 'nonsequential packages' => ['getPackageInfo', ['packages' => [1 => 'p']]];
-        yield 'numeric package' => ['resolveActions', ['packages' => [1]]];
-        yield 'empty required packages' => ['resolveActions', ['packages' => []]];
+        yield 'numeric package' => ['resolveActions', ['packages' => [1], 'namespaces' => 'ea']];
+        yield 'empty required packages' => ['resolveActions', ['packages' => [], 'namespaces' => 'ea']];
+        yield 'empty required namespaces' => ['resolveActions', ['packages' => 'p', 'namespaces' => []]];
         yield 'empty install' => ['submitActions', ['install' => []]];
         yield 'boolean uninstall' => ['submitActions', ['uninstall' => [false]]];
         yield 'nested upgrade' => ['submitActions', ['upgrade' => [['p']]]];
+    }
+
+    /** @return iterable<string, array{string, array<string, mixed>, class-string<\TypeError>}> */
+    public static function missingNamespaces(): iterable
+    {
+        yield 'omitted namespace' => ['resolveActions', ['packages' => 'ea-apache24'], \ArgumentCountError::class];
+        yield 'null namespace' => ['resolveActions',
+            ['packages' => 'ea-apache24', 'namespaces' => null], \TypeError::class];
+    }
+
+    /**
+     * @param array<string, mixed> $arguments
+     * @param class-string<\TypeError> $exception
+     */
+    #[DataProvider('missingNamespaces')]
+    public function testResolveRequiresNamespaceBeforeIo(string $method, array $arguments, string $exception): void
+    {
+        [$client, $http] = self::client();
+        try {
+            $client->whm()->systemPackages()->{$method}(...$arguments);
+            self::fail('Expected a required non-null namespace.');
+        } catch (\TypeError $error) {
+            self::assertInstanceOf($exception, $error);
+            self::assertSame([], $http->getRequests());
+        }
     }
 
     /** @param array<array-key, mixed> $arguments */

@@ -52,9 +52,9 @@ final readonly class LastLogin
      * get_last_or_current_logged_in_ip).
      *
      * @return GetLastOrCurrentLoggedInIpResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/login-information/lastlogin-get_last_or_current_logged_in_ip
      */
     public function getLastOrCurrentLoggedInIp(): string|array

@@ -39,7 +39,9 @@ final class Fingerprint
      * Analyze one present or omitted payload against its effective wire contract.
      *
      * Omission records missing separately from null and is a required-payload
-     * discrepancy. Optional declared fields also record missing, without a
+     * discrepancy unless the effective payload is optional. An optional payload also
+     * accepts explicit null; present non-null payloads keep full validation.
+     * Optional declared fields also record missing, without a
      * discrepancy. Empty containers supply no evidence about their item types.
      * Union selection follows the client's first validating branch; if no branch
      * validates, only a union-level mismatch is asserted and all keys are hidden.
@@ -49,8 +51,12 @@ final class Fingerprint
      * @return Analysis
      * @throws LogicException If the type spec or decoded JSON input is invalid.
      */
-    public static function analyze(#[SensitiveParameter] mixed $payload, bool $present, array $type): array
-    {
+    public static function analyze(
+        #[SensitiveParameter] mixed $payload,
+        bool $present,
+        array $type,
+        bool $optional = false,
+    ): array {
         SpecChecker::check([
             'function' => 'fingerprint',
             'method' => 'GET',
@@ -59,11 +65,15 @@ final class Fingerprint
             'returns' => $type,
         ]);
         $analysis = new self();
-        if ($present) {
+        if ($present && $payload === null && $optional) {
+            $analysis->record('$', 'null');
+        } elseif ($present) {
             $analysis->visit($payload, $type, '$');
         } else {
             $analysis->record('$', 'missing');
-            $analysis->discrepancy('$', 'missing_required');
+            if (!$optional) {
+                $analysis->discrepancy('$', 'missing_required');
+            }
         }
 
         return $analysis->result();

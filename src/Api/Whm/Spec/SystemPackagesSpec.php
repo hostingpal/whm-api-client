@@ -104,7 +104,16 @@ final class SystemPackagesSpec
                                 'type' => 'object',
                                 'fields' => [
                                     'conflicts' => ['type' => 'list', 'items' => ['type' => 'string']],
-                                    'requires' => ['type' => 'list', 'items' => ['type' => 'string']],
+                                    'requires' => [
+                                        'type' => 'list',
+                                        'items' => [
+                                            'type' => 'union',
+                                            'anyOf' => [
+                                                ['type' => 'string'],
+                                                ['type' => 'list', 'items' => ['type' => 'string']],
+                                            ],
+                                        ],
+                                    ],
                                 ],
                             ],
                             'pkg_group' => ['type' => 'string'],
@@ -113,6 +122,7 @@ final class SystemPackagesSpec
                             'short_description' => ['type' => 'string'],
                             'size' => ['type' => 'int'],
                             'state' => ['type' => 'string'],
+                            'vendor' => ['type' => 'string'],
                             'version' => ['type' => 'string'],
                             'version_installed' => ['type' => 'string'],
                             'version_latest' => ['type' => 'string'],
@@ -136,14 +146,26 @@ final class SystemPackagesSpec
             'anyOf' => [
                 [
                     'type' => 'object',
-                    'values' => ['type' => 'list', 'items' => ['type' => 'string']],
+                    'values' => [
+                        'type' => 'union',
+                        'anyOf' => [
+                            ['type' => 'string'],
+                            ['type' => 'list', 'items' => ['type' => 'string']],
+                        ],
+                    ],
                     'fields' => [],
                 ],
                 [
                     'type' => 'object',
                     'values' => [
                         'type' => 'object',
-                        'values' => ['type' => 'list', 'items' => ['type' => 'string']],
+                        'values' => [
+                            'type' => 'union',
+                            'anyOf' => [
+                                ['type' => 'string'],
+                                ['type' => 'list', 'items' => ['type' => 'string']],
+                            ],
+                        ],
                         'fields' => [],
                     ],
                     'fields' => [],

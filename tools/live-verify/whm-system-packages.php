@@ -11,6 +11,6 @@ require $root . '/vendor/autoload.php';
 exit(ReadOnlySectionCommand::run(
     array_slice($argv, 1),
     $root,
-    'whm-system-packages-v1',
+    'whm-system-packages-v2',
     static fn (): array => WhmSystemPackagesProbes::load(),
 ));

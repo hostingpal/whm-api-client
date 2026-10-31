@@ -17,6 +17,10 @@ trait WhmGroups
 
     private ?Accounts $accountsGroup = null;
 
+    private ?ApiTools $apiToolsGroup = null;
+
+    private ?Authentication $authenticationGroup = null;
+
     private ?Backups $backupsGroup = null;
 
     private ?CpHulk $cpHulkGroup = null;
@@ -27,6 +31,8 @@ trait WhmGroups
 
     private ?HostingPlans $hostingPlansGroup = null;
 
+    private ?IpAddresses $ipAddressesGroup = null;
+
     private ?Mail $mailGroup = null;
 
     private ?ModSecurity $modSecurityGroup = null;
@@ -35,7 +41,11 @@ trait WhmGroups
 
     private ?Server $serverGroup = null;
 
+    private ?Ssl $sslGroup = null;
+
     private ?SystemPackages $systemPackagesGroup = null;
+
+    private ?Transfers $transfersGroup = null;
 
     private ?WebServer $webServerGroup = null;
 
@@ -57,6 +67,28 @@ trait WhmGroups
     public function accounts(): Accounts
     {
         return $this->accountsGroup ??= new Accounts($this->run(...));
+    }
+
+    /**
+     * Select the API Development Tools operations without making a request.
+     *
+     * WHM token and session management, application inventory and legacy API usage reads. Returned credentials,
+     * identifiers and URLs are private payload data.
+     */
+    public function apiTools(): ApiTools
+    {
+        return $this->apiToolsGroup ??= new ApiTools($this->run(...));
+    }
+
+    /**
+     * Select the Authentication operations without making a request.
+     *
+     * WHM authentication providers, root SSH keys and two-factor policy. Returned credentials, private keys, 2FA
+     * secrets, account links and URLs are private payload data; never log them or fetch URLs automatically.
+     */
+    public function authentication(): Authentication
+    {
+        return $this->authenticationGroup ??= new Authentication($this->run(...));
     }
 
     /**
@@ -113,6 +145,16 @@ trait WhmGroups
     }
 
     /**
+     * Select the IP Address Management operations without making a request.
+     *
+     * WHM API 1 functions in the documented IP Address Management group.
+     */
+    public function ipAddresses(): IpAddresses
+    {
+        return $this->ipAddressesGroup ??= new IpAddresses($this->run(...));
+    }
+
+    /**
      * Select the Mail operations without making a request.
      *
      * Server-wide mail operations, including Greylisting policy, trusted hosts, common providers and deferred triplets.
@@ -164,6 +206,16 @@ trait WhmGroups
     }
 
     /**
+     * Select the SSL Certificates operations without making a request.
+     *
+     * WHM API 1 functions in the documented SSL Certificates group.
+     */
+    public function ssl(): Ssl
+    {
+        return $this->sslGroup ??= new Ssl($this->run(...));
+    }
+
+    /**
      * Select the System Package Management operations without making a request.
      *
      * Server RPM metadata, package inventory, plugin processes and queued package actions.
@@ -171,6 +223,19 @@ trait WhmGroups
     public function systemPackages(): SystemPackages
     {
         return $this->systemPackagesGroup ??= new SystemPackages($this->run(...));
+    }
+
+    /**
+     * Select the Transfers operations without making a request.
+     *
+     * Server-scoped transfer modules, remote session creation and credentials, asynchronous session controls and
+     * status, logs and archive deletion. Remote operations can contact hosts and change accounts. Every method performs
+     * one request without retries, polling or rollback. Returned output, analysis, logs and module schemas can contain
+     * sensitive account or configuration data; never execute returned content or fetch embedded URLs.
+     */
+    public function transfers(): Transfers
+    {
+        return $this->transfersGroup ??= new Transfers($this->run(...));
     }
 
     /**

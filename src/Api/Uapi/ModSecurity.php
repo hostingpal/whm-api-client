@@ -105,9 +105,9 @@ final readonly class ModSecurity
      * API-map identity: uapi:ModSecurity/disable_all_domains#GET (wire name disable_all_domains).
      *
      * @return DisableAllDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/modsecurity/modsecurity-disable_all_domains
      */
     public function disableAllDomains(): array
@@ -148,9 +148,9 @@ final readonly class ModSecurity
      *
      * @param string $domains A comma-separated list of domains that the cPanel account owns.
      * @return DisableDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/modsecurity/modsecurity-disable_domains
      */
     public function disableDomains(string $domains): array
@@ -185,9 +185,9 @@ final readonly class ModSecurity
      * API-map identity: uapi:ModSecurity/enable_all_domains#GET (wire name enable_all_domains).
      *
      * @return EnableAllDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/modsecurity/modsecurity-enable_all_domains
      */
     public function enableAllDomains(): array
@@ -228,9 +228,9 @@ final readonly class ModSecurity
      *
      * @param string $domains A comma-separated list of domains for which to enable ModSecurity.
      * @return EnableDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/modsecurity/modsecurity-enable_domains
      */
     public function enableDomains(string $domains): array
@@ -259,9 +259,9 @@ final readonly class ModSecurity
      * API-map identity: uapi:ModSecurity/has_modsecurity_installed#GET (wire name has_modsecurity_installed).
      *
      * @return HasModsecurityInstalledResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/modsecurity/modsecurity-has_modsecurity_installed
      */
     public function hasModsecurityInstalled(): array
@@ -291,9 +291,9 @@ final readonly class ModSecurity
      * API-map identity: uapi:ModSecurity/list_domains#GET (wire name list_domains).
      *
      * @return ListDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/modsecurity/modsecurity-list_domains
      */
     public function listDomains(): array

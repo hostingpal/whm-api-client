@@ -79,9 +79,9 @@ final readonly class Dns
      *
      * @param string|list<string> $domains The domain to check.
      * @return EnsureDomainsResideOnlyLocallyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-ensure_domains_reside_only_locally
      */
@@ -108,9 +108,9 @@ final readonly class Dns
      *
      * @param string|list<string> $domains The domain to check.
      * @return EnsureDomainsUseRecognizedNameserversResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-ensure_domains_use_recognized_nameservers
      */
@@ -135,9 +135,9 @@ final readonly class Dns
      *
      * @param string $domain The domain for which to retrieve cPanel-generated subdomains.
      * @return FetchCpanelGeneratedDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-fetch_cpanel_generated_domains
      */
     public function fetchCpanelGeneratedDomains(string $domain): array
@@ -158,9 +158,9 @@ final readonly class Dns
      * @param string|list<string> $domains The domain to check whether the local server is authoritative for the
      *     domain's DNS records.
      * @return HasLocalAuthorityResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-has_local_authority
      */
@@ -181,9 +181,9 @@ final readonly class Dns
      * API-map identity: uapi:DNS/is_alias_available#GET (wire name is_alias_available).
      *
      * @return IsAliasAvailableResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-is_alias_available
      */
     public function isAliasAvailable(): array
@@ -203,9 +203,9 @@ final readonly class Dns
      * API-map identity: uapi:DNS/is_https_available#GET (wire name is_https_available).
      *
      * @return IsHttpsAvailableResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-is_https_available
      */
     public function isHttpsAvailable(): array
@@ -226,9 +226,9 @@ final readonly class Dns
      * API-map identity: uapi:DNS/is_svcb_available#GET (wire name is_svcb_available).
      *
      * @return IsSvcbAvailableResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-is_svcb_available
      */
     public function isSvcbAvailable(): array
@@ -248,9 +248,9 @@ final readonly class Dns
      *
      * @param string $domain A fully qualified domain name.
      * @return LookupResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-lookup
      */
     public function lookup(string $domain): ?array
@@ -270,9 +270,9 @@ final readonly class Dns
      *
      * @param string $zone The name of one of the user’s DNS zones.
      * @return ParseZoneResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns/dns-parse_zone
      */
     public function parseZone(string $zone): array

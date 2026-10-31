@@ -8,7 +8,7 @@ use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
 use HostingPal\WhmApiClient\Api\Whm\Spec\SystemPackagesSpec;
 use HostingPal\WhmApiClient\Client;
 
-/** Fixed package inventories; no installation, update, cache repair or build-log reads. */
+/** Fixed package inventories and prospective action reads; no installation, update, cache repair or build-log reads. */
 final class WhmSystemPackagesProbes
 {
     /** @return list<Probe> */
@@ -36,6 +36,7 @@ final class WhmSystemPackagesProbes
                 'https://test.oblak.host:2087/json-api/package_manager_list_packages?api.version=1&state=installed',
                 static fn (Client $client): mixed => $client->whm()->systemPackages()->listPackages(state: 'installed'),
             ),
+            ...array_slice(WhmSystemPackagesReviewProbes::load(), 1),
         ];
     }
 }

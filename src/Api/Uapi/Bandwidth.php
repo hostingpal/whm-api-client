@@ -49,9 +49,9 @@ final readonly class Bandwidth
      * API-map identity: uapi:Bandwidth/get_enabled_protocols#GET (wire name get_enabled_protocols).
      *
      * @return GetEnabledProtocolsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/bandwidth/bandwidth-get_enabled_protocols
      */
     public function getEnabledProtocols(): array
@@ -74,9 +74,9 @@ final readonly class Bandwidth
      * API-map identity: uapi:Bandwidth/get_retention_periods#GET (wire name get_retention_periods).
      *
      * @return GetRetentionPeriodsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/bandwidth/bandwidth-get_retention_periods
      */
     public function getRetentionPeriods(): array
@@ -130,9 +130,9 @@ final readonly class Bandwidth
      * @param int|null $start The start date of the report window. Null omits it.
      * @param string|null $timezone The timezone in which to report the data. Null omits it.
      * @return QueryResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/bandwidth/bandwidth-query
      */
     public function query(

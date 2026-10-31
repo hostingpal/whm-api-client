@@ -75,7 +75,6 @@ func TestBuildRejectsIncompatiblePresenceParameterCorrections(t *testing.T) {
 		{"object", `{"type":"true","encoding":"bool"}`, map[string]any{"type": "object"}, false},
 		{"union", `{"type":"true"}`, map[string]any{"type": "integer", "enum": []any{1}, "oneOf": []any{one, one}}, false},
 		{"allOf", `{"type":"true"}`, map[string]any{"type": "integer", "enum": []any{1}, "allOf": []any{one}}, false},
-		{"required source", `{"type":"true"}`, one, true},
 		{"required source made optional", `{"type":"true","required":false}`, one, true},
 		{"optional source made required", `{"type":"true","required":true}`, one, false},
 		{"scalar encoding", `{"type":"true","encoding":"scalar"}`, one, false},
@@ -107,6 +106,42 @@ func TestBuildRejectsIncompatiblePresenceParameterCorrections(t *testing.T) {
 			if !strings.Contains(problems, "parameter candidate") || !strings.Contains(problems, "type") {
 				t.Fatalf("incompatible presence correction accepted: %s", problems)
 			}
+		})
+	}
+}
+
+func TestBuildRequiredTrueCorrectionPreservesRequiredness(t *testing.T) {
+	for _, setting := range []string{`{"type":"true"}`, `{"type":"true","encoding":"bool","required":true}`} {
+		t.Run(setting, func(t *testing.T) {
+			m := fixtureMap(t)
+			addQueryParameter(t, m, "whm1:createacct", "candidate", map[string]any{"type": "integer", "enum": []any{json.Number("1")}})
+			for _, op := range m.Operations {
+				if op.ID == "whm1:createacct" {
+					for _, p := range op.Variants[0].Parameters {
+						if p.Name == "candidate" {
+							p.Definition["required"] = true
+						}
+					}
+				}
+			}
+			set := fixtureOverlay("listed")
+			op := set.Files[1].Operations["whm1:createacct"]
+			op.Params = map[string]overlay.Param{"candidate": parameterCorrection(t, setting)}
+			op.Evidence = evidence()
+			set.Files[1].Operations["whm1:createacct"] = op
+			result, problems := buildProblems(t, m, set)
+			if problems != "" {
+				t.Fatal(problems)
+			}
+			for _, p := range groupByClass(t, result, "Accounts").Operations[0].Params {
+				if p.Wire == "candidate" {
+					if p.PHPType != "true" || p.DocType != "true" || p.Encoding != "bool" || !p.Required {
+						t.Fatalf("required true guard lost: %+v", p)
+					}
+					return
+				}
+			}
+			t.Fatal("required parameter lost")
 		})
 	}
 }
