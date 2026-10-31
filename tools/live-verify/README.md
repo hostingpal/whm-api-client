@@ -1388,3 +1388,9 @@ status through both UAPI routes. Existing opt-in, committed-input, exact request
 guard, TLS and immutable structural-output rules apply. No key export, secret-key
 inventory, private/team configuration, key/authentication mutation or login test
 runs. Keep remaining live coverage under `8x0.2.54`.
+
+The GPG/two-factor capture at f213ab8 on 11.138.0.19 passes five GET checks and
+strict assessment with zero discrepancies. Both public-key lists are empty;
+two-factor status has integer is_enabled with issuer omitted. No key content,
+secret inventory, private/team configuration, key/authentication mutation or
+login enforcement was tested. Remaining live work stays under 8x0.2.54.

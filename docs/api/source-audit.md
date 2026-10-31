@@ -4455,3 +4455,18 @@ five-GET catalog reads version, public-key inventory and two-factor status throu
 both routes. It exports no key, reads no secret-key inventory or private/team
 configuration, and makes no key/authentication changes. Remaining live variants
 and controlled lifecycle verification stay under `8x0.2.54`.
+
+## GPG public-key and two-factor status evidence
+
+The [GPG/two-factor capture](evidence/2026-10-31-gpg-two-factor.json) at
+`f213ab81d8e6b775c786a67cba1d518e96718d47` on `11.138.0.19` passes all five
+GET observations and strict assessment with zero discrepancies. Public-key
+inventories are empty on both routes; populated key rows and timestamp variants
+remain unobserved. Two-factor status returns an integer is_enabled with issuer
+omitted on both routes; no specific flag value or login enforcement is inferred
+from the structural artifact.
+
+No keys were exported, created, imported or deleted; no secret-key inventory,
+private/team configuration or authentication mutation was read or executed.
+The other ten methods and remaining variants stay under `8x0.2.54`. SHA-256:
+`b88fe3ee6f8af6de0676022bb4449d997a2a5a578b2e624688db963702adb127`.

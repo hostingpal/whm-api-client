@@ -1438,6 +1438,13 @@ both routes. It exports no key, reads no secret-key inventory or private/team
 configuration, and makes no key/authentication changes. Remaining live variants
 and controlled lifecycle verification stay under `8x0.2.54`.
 
+
+The GPG/two-factor capture at f213ab8 on 11.138.0.19 passes five GET checks and
+strict assessment with zero discrepancies. Both public-key lists are empty;
+two-factor status has integer is_enabled with issuer omitted. No key content,
+secret inventory, private/team configuration, key/authentication mutation or
+login enforcement was tested. Remaining live work stays under 8x0.2.54.
+
 ## Architecture and Conventions
 
 - Follow the [agreed PHP client interface](docs/superpowers/specs/2026-10-13-php-client-design.md):
