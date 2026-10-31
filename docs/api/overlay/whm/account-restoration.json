@@ -182,6 +182,34 @@
     },
     "whm1:restore_queue_list_completed": {
       "method": "GET",
+      "response": {
+        "restore_job[].status_info.status": {
+          "add": {
+            "type": "int"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "The pinned restore_queue_list_completed response example restore_queue_add_task_function includes status_info.status as integer 2, although the schema omits it. The restorepkg examples omit it, so preserve it as optional; the single example does not establish a closed status enum."
+            }
+          ]
+        },
+        "restore_job[].status_info.statusmsg": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "The pinned restore_queue_list_completed response example restore_queue_add_task_function includes status_info.statusmsg as the string warning, although the schema omits it. The restorepkg examples omit it, so preserve it as optional payload text without interpreting it."
+            }
+          ]
+        }
+      },
       "evidence": [
         {
           "kind": "doc",

@@ -222,6 +222,8 @@ final class AccountRestorationSpec
                                     'result' => ['type' => 'int'],
                                     'skipped_items' => ['type' => 'int', 'nullable' => true],
                                     'started' => ['type' => 'string'],
+                                    'status' => ['type' => 'int'],
+                                    'statusmsg' => ['type' => 'string'],
                                     'transfer_session_id' => ['type' => 'string'],
                                     'warnings' => [
                                         'type' => 'list',

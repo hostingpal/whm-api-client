@@ -57,6 +57,8 @@ trait UapiGroups
 
     private ?Park $parkGroup = null;
 
+    private ?PassengerApps $passengerAppsGroup = null;
+
     private ?Postgresql $postgresqlGroup = null;
 
     private ?Quota $quotaGroup = null;
@@ -74,6 +76,10 @@ trait UapiGroups
     private ?StatsManager $statsManagerGroup = null;
 
     private ?SubDomain $subDomainGroup = null;
+
+    private ?VersionControl $versionControlGroup = null;
+
+    private ?VersionControlDeployment $versionControlDeploymentGroup = null;
 
     private ?WebVhosts $webVhostsGroup = null;
 
@@ -298,6 +304,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the PassengerApps operations without making a request.
+     *
+     * The PassengerApps module for UAPI.
+     */
+    public function passengerApps(): PassengerApps
+    {
+        return $this->passengerAppsGroup ??= new PassengerApps($this->run(...));
+    }
+
+    /**
      * Select the Postgresql operations without making a request.
      *
      * The Postgresql module for UAPI.
@@ -385,6 +401,26 @@ trait UapiGroups
     public function subDomain(): SubDomain
     {
         return $this->subDomainGroup ??= new SubDomain($this->run(...));
+    }
+
+    /**
+     * Select the VersionControl operations without making a request.
+     *
+     * The VersionControl module for UAPI.
+     */
+    public function versionControl(): VersionControl
+    {
+        return $this->versionControlGroup ??= new VersionControl($this->run(...));
+    }
+
+    /**
+     * Select the VersionControlDeployment operations without making a request.
+     *
+     * The VersionControlDeployment module for UAPI.
+     */
+    public function versionControlDeployment(): VersionControlDeployment
+    {
+        return $this->versionControlDeploymentGroup ??= new VersionControlDeployment($this->run(...));
     }
 
     /**

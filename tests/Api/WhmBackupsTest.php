@@ -21,7 +21,7 @@ use ReflectionMethod;
 use SensitiveParameter;
 
 /**
- * Independent request and payload literals from the pinned WHM Backups documentation.
+ * Independent request and payload literals from pinned documentation and the reviewed backup contracts.
  *
  * @phpstan-type BackupCall Closure(Backups): mixed
  * @phpstan-type Operation array{string, string, BackupCall, string, ?string, mixed}
@@ -130,16 +130,34 @@ final class WhmBackupsTest extends TestCase
             static fn (Backups $b): mixed => $b->backupListTransported('fixture'), 'transport=fixture',
             '{"remote_backups":{"fixture":{"alice":["2026-10-01"],"bob":[]},"empty":{}}}',
             ['remote_backups' => ['fixture' => ['alice' => ['2026-10-01'], 'bob' => []], 'empty' => []]]];
-        yield 'local set preserves opaque formal object' => ['backup_set_list', 'POST',
+        yield 'local sets preserve independent account rows' => ['backup_set_list', 'POST',
             static fn (Backups $b): mixed => $b->backupSetList(), '',
-            '{"backup_set":{"user":"alice","backup_date":["2026-10-01"],"opaque":{"zero":0}}}',
-            ['backup_set' => ['user' => 'alice', 'backup_date' => ['2026-10-01'], 'opaque' => ['zero' => 0]]]];
+            '{"backup_set":[{"user":"alice","backup_date":["2026-10-01","2026-10-15"],"extra":true},'
+                . '{"user":"bob","backup_date":[]}]}',
+            ['backup_set' => [
+                ['backup_date' => ['2026-10-01', '2026-10-15'], 'user' => 'alice'],
+                ['backup_date' => [], 'user' => 'bob']]]];
+        yield 'local sets empty' => ['backup_set_list', 'POST',
+            static fn (Backups $b): mixed => $b->backupSetList(), '', '{"backup_set":[]}', ['backup_set' => []]];
+        yield 'local sets omitted' => ['backup_set_list', 'POST',
+            static fn (Backups $b): mixed => $b->backupSetList(), '', '{}', []];
         yield 'combined sets preserve dynamic names' => ['backup_set_list_combined', 'POST',
             static fn (Backups $b): mixed => $b->backupSetListCombined(), '',
-            '{"backup_set":{"alice":[{"when":"2026-10-01","where":"remote"},{}],"bob":[]},'
+            '{"backup_set":{"alice":[{"when":"2026-10-01","where":"fixture"},{}],"bob":[]},'
                 . '"destination_legend":{"fixture":{"name":"remote","type":"SFTP"}}}',
-            ['backup_set' => ['alice' => [['when' => '2026-10-01', 'where' => 'remote'], []], 'bob' => []],
+            ['backup_set' => ['alice' => [['when' => '2026-10-01', 'where' => 'fixture'], []], 'bob' => []],
                 'destination_legend' => ['fixture' => ['name' => 'remote', 'type' => 'SFTP']]]];
+        yield 'combined local sets without destinations' => ['backup_set_list_combined', 'POST',
+            static fn (Backups $b): mixed => $b->backupSetListCombined(), '',
+            '{"backup_set":{"alice":[{"when":"2026-10-01","where":"local"}]},"destination_legend":null}',
+            ['backup_set' => ['alice' => [['when' => '2026-10-01', 'where' => 'local']]],
+                'destination_legend' => null]];
+        yield 'combined sets empty destination object' => ['backup_set_list_combined', 'POST',
+            static fn (Backups $b): mixed => $b->backupSetListCombined(), '',
+            '{"backup_set":{},"destination_legend":{}}', ['backup_set' => [], 'destination_legend' => []]];
+        yield 'combined sets omit destination legend' => ['backup_set_list_combined', 'POST',
+            static fn (Backups $b): mixed => $b->backupSetListCombined(), '',
+            '{"backup_set":{}}', ['backup_set' => []]];
         yield 'disable all users' => ['backup_skip_users_all', 'POST',
             static function (Backups $b): mixed {
                 $b->backupSkipUsersAll('backup', false);
@@ -254,7 +272,7 @@ final class WhmBackupsTest extends TestCase
     }
 
     /** @return iterable<string, array{array<string, int|string>, array<string, int|string>}> */
-    public static function observedConfigurationRepresentations(): iterable
+    public static function reviewedConfigurationRepresentations(): iterable
     {
         yield 'weekly day integer zero' => [['backup_weekly_day' => 0], ['backup_weekly_day' => 0]];
         yield 'weekly day integer' => [['backup_weekly_day' => 3], ['backup_weekly_day' => 3]];
@@ -267,6 +285,17 @@ final class WhmBackupsTest extends TestCase
             yield $field . ' native zero' => [[$field => 0], [$field => 0]];
             yield $field . ' native one' => [[$field => 1], [$field => 1]];
         }
+        yield 'prebackup stock default' => [['prebackup' => '-1'], ['prebackup' => '-1']];
+        yield 'prebackup source empty value' => [['prebackup' => ''], ['prebackup' => '']];
+        yield 'actual suspended spelling disabled' => [['backupsuspendedaccts' => 0], ['backupsuspendedaccts' => 0]];
+        yield 'actual suspended spelling enabled' => [['backupsuspendedaccts' => 1], ['backupsuspendedaccts' => 1]];
+        yield 'documented suspended spelling stays available' => [
+            ['backupsuspendedaccounts' => 1], ['backupsuspendedaccounts' => 1],
+        ];
+        yield 'suspended spellings stay distinct' => [
+            ['backupsuspendedaccounts' => 0, 'backupsuspendedaccts' => 1],
+            ['backupsuspendedaccounts' => 0, 'backupsuspendedaccts' => 1],
+        ];
         yield 'omitted fields' => [[], []];
     }
 
@@ -274,8 +303,8 @@ final class WhmBackupsTest extends TestCase
      * @param array<string, int|string> $configuration
      * @param array<string, int|string> $expected
      */
-    #[DataProvider('observedConfigurationRepresentations')]
-    public function testObservedBackupConfigurationRepresentations(
+    #[DataProvider('reviewedConfigurationRepresentations')]
+    public function testReviewedBackupConfigurationRepresentations(
         array $configuration,
         array $expected,
     ): void {
@@ -294,9 +323,17 @@ final class WhmBackupsTest extends TestCase
     public static function invalidConfigurationRepresentations(): iterable
     {
         foreach (['check_min_free_space', 'prebackup'] as $field) {
-            foreach (['', '00', '01', '1.0', '1e0', ' 1', '1 ', '2', '-1', 2, -1, 0.0, true, false, null] as $value) {
+            foreach (
+                ['00', '01', '1.0', '1e0', ' 1', '1 ', '2', '-01', '-1.0', 'other',
+                    2, -1, 0.0, true, false, null] as $value
+            ) {
                 yield $field . ' ' . json_encode($value, JSON_PRESERVE_ZERO_FRACTION) => [$field, $value];
             }
+        }
+        yield 'free space empty stays invalid' => ['check_min_free_space', ''];
+        yield 'free space negative stays invalid' => ['check_min_free_space', '-1'];
+        foreach (['0', '1', 2, -1, true, false, null] as $index => $value) {
+            yield 'suspended flag invalid ' . $index => ['backupsuspendedaccts', $value];
         }
         foreach ([0.5, true, false, null, [], new \stdClass()] as $index => $value) {
             yield 'weekly day invalid ' . $index => ['backup_weekly_day', $value];
@@ -315,6 +352,34 @@ final class WhmBackupsTest extends TestCase
         )));
         $this->expectException(PayloadMismatchException::class);
         $client->whm()->backups()->backupConfigGet();
+    }
+
+    public function testMonthlyBackupDatesAcceptACommaDelimitedString(): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('backup_config_set', null)));
+        $client->whm()->backups()->backupConfigSet(backupMonthlyDates: '1,15,22', backupWeeklyDay: 3);
+        self::assertRequest($http, 'backup_config_set', 'POST', 'backup_monthly_dates=1%2C15%2C22&backup_weekly_day=3');
+        self::assertCount(1, $http->getRequests());
+    }
+
+    public function testDestinationGetPreservesSystemBackupFlagsAndOmission(): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(
+            'backup_destination_get',
+            '{"upload_system_backup":0}',
+        )));
+        $http->addResponse(new Response(200, [], self::envelope(
+            'backup_destination_get',
+            '{"upload_system_backup":1}',
+        )));
+        $http->addResponse(new Response(200, [], self::envelope('backup_destination_get', '{}')));
+        self::assertSame(['upload_system_backup' => 0], $client->whm()->backups()->backupDestinationGet('fixture'));
+        self::assertSame(['upload_system_backup' => 1], $client->whm()->backups()->backupDestinationGet('fixture'));
+        self::assertSame([], $client->whm()->backups()->backupDestinationGet('fixture'));
+        self::assertRequest($http, 'backup_destination_get', 'POST', 'id=fixture');
+        self::assertCount(3, $http->getRequests());
     }
 
     public function testEveryBackupConfigurationOptionHasItsDocumentedWireName(): void
@@ -466,6 +531,14 @@ final class WhmBackupsTest extends TestCase
         yield 'date numeric item' => [static fn (Backups $b): mixed => $b->backupDateList(), '{"backup_set":[1]}'];
         yield 'destination flag string' => [static fn (Backups $b): mixed => $b->backupDestinationGet('fixture'),
             '{"disabled":"0"}'];
+        yield 'destination system backup string flag' => [
+            static fn (Backups $b): mixed => $b->backupDestinationGet('fixture'), '{"upload_system_backup":"0"}'];
+        yield 'destination system backup null' => [
+            static fn (Backups $b): mixed => $b->backupDestinationGet('fixture'), '{"upload_system_backup":null}'];
+        yield 'destination system backup boolean' => [
+            static fn (Backups $b): mixed => $b->backupDestinationGet('fixture'), '{"upload_system_backup":false}'];
+        yield 'destination system backup outside flags' => [
+            static fn (Backups $b): mixed => $b->backupDestinationGet('fixture'), '{"upload_system_backup":2}'];
         yield 'later provider wrong type' => [static fn (Backups $b): mixed => $b->backupDestinationGet('fixture'),
             '{"privatekey":1}'];
         yield 'list record not object' => [static fn (Backups $b): mixed => $b->backupDestinationList(),
@@ -478,6 +551,16 @@ final class WhmBackupsTest extends TestCase
             '{"remote_backups":{"fixture":{"alice":"2026-10-01"}}}'];
         yield 'combined date number' => [static fn (Backups $b): mixed => $b->backupSetListCombined(),
             '{"backup_set":{"alice":[{"when":0}]}}'];
+        yield 'combined legend scalar' => [static fn (Backups $b): mixed => $b->backupSetListCombined(),
+            '{"destination_legend":false}'];
+        yield 'local set object is not a row list' => [static fn (Backups $b): mixed => $b->backupSetList(),
+            '{"backup_set":{"user":"alice","backup_date":["2026-10-01"]}}'];
+        yield 'local set row is not an object' => [static fn (Backups $b): mixed => $b->backupSetList(),
+            '{"backup_set":["alice"]}'];
+        yield 'local set date is not a list' => [static fn (Backups $b): mixed => $b->backupSetList(),
+            '{"backup_set":[{"user":"alice","backup_date":"2026-10-01"}]}'];
+        yield 'local set date item is not a string' => [static fn (Backups $b): mixed => $b->backupSetList(),
+            '{"backup_set":[{"user":"alice","backup_date":[1]}]}'];
         yield 'status string flag' => [static fn (Backups $b): mixed => $b->backupSkipUsersAllStatus(),
             '{"reason":{"running":"0"}}'];
         yield 'users null name' => [static fn (Backups $b): mixed => $b->backupUserList('2026-10-01'),

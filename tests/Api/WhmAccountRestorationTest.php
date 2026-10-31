@@ -179,6 +179,18 @@ final class WhmAccountRestorationTest extends TestCase
             '{"restore_job":[{"status_info":{"altered_items":"0"}}]}'];
         yield 'completed warning nonstring' => ['restoreQueueListCompleted', 'restore_queue_list_completed', [],
             '{"restore_job":[{"status_info":{"warnings":[1]}}]}'];
+        yield 'completed status null' => ['restoreQueueListCompleted', 'restore_queue_list_completed', [],
+            '{"restore_job":[{"status_info":{"status":null}}]}'];
+        yield 'completed status string' => ['restoreQueueListCompleted', 'restore_queue_list_completed', [],
+            '{"restore_job":[{"status_info":{"status":"2"}}]}'];
+        yield 'completed status boolean' => ['restoreQueueListCompleted', 'restore_queue_list_completed', [],
+            '{"restore_job":[{"status_info":{"status":false}}]}'];
+        yield 'completed status message null' => ['restoreQueueListCompleted', 'restore_queue_list_completed', [],
+            '{"restore_job":[{"status_info":{"statusmsg":null}}]}'];
+        yield 'completed status message integer' => ['restoreQueueListCompleted', 'restore_queue_list_completed', [],
+            '{"restore_job":[{"status_info":{"statusmsg":2}}]}'];
+        yield 'completed status message list' => ['restoreQueueListCompleted', 'restore_queue_list_completed', [],
+            '{"restore_job":[{"status_info":{"statusmsg":["warning"]}}]}'];
         yield 'state jobs nullable' => ['restoreQueueState', 'restore_queue_state', [], '{"active":null}'];
         yield 'state nested user numeric' => ['restoreQueueState', 'restore_queue_state', [],
             '{"pending":[{"user":1}]}'];
@@ -241,6 +253,36 @@ final class WhmAccountRestorationTest extends TestCase
             ['status_info' => ['altered_items' => 0, 'dangerous_items' => null, 'finished' => '001',
                 'result' => 0, 'skipped_items' => 0, 'started' => '0', 'warnings' => []]],
             ['status_info' => []],
+        ]], $client->whm()->accountRestoration()->restoreQueueListCompleted());
+    }
+
+    public function testCompletedJobPreservesStatusFieldsFromThePinnedQueueExample(): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(
+            'restore_queue_list_completed',
+            '{"restore_job":[{"status_info":{"result":2,"status":2,"statusmsg":"warning"}}]}',
+        )));
+
+        self::assertSame(['restore_job' => [
+            ['status_info' => ['result' => 2, 'status' => 2, 'statusmsg' => 'warning']],
+        ]], $client->whm()->accountRestoration()->restoreQueueListCompleted());
+    }
+
+    public function testCompletedJobStatusFieldsPreserveOmissionZeroEmptyTextAndOtherIntegerValues(): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(
+            'restore_queue_list_completed',
+            '{"restore_job":[{"status_info":{}},{"status_info":{"status":0}},'
+            . '{"status_info":{"statusmsg":""}},{"status_info":{"status":37,"statusmsg":"Synthetic status"}}]}',
+        )));
+
+        self::assertSame(['restore_job' => [
+            ['status_info' => []],
+            ['status_info' => ['status' => 0]],
+            ['status_info' => ['statusmsg' => '']],
+            ['status_info' => ['status' => 37, 'statusmsg' => 'Synthetic status']],
         ]], $client->whm()->accountRestoration()->restoreQueueListCompleted());
     }
 

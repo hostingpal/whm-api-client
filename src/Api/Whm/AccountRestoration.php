@@ -67,6 +67,8 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *             result?: int,
  *             skipped_items?: int|null,
  *             started?: string,
+ *             status?: int,
+ *             statusmsg?: string,
  *             transfer_session_id?: string,
  *             warnings?: list<string>|null,
  *         },

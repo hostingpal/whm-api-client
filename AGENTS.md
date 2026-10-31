@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 39 typed groups cover 455 documented operations:
+and cPanel UAPI surface. The 42 typed groups cover 469 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -460,6 +460,65 @@ statistics, site/report lists and analyzer lists are empty; populated variants
 remain offline coverage. No settings or log content changed. Follow-up `8x0.2.25`
 retains the unresolved log errors and other unobserved variants.
 
+The repository, deployment and Passenger groups cover fourteen pinned functions.
+`versionControl()` manages cPanel Git repositories, `versionControlDeployment()`
+starts and inspects deployment tasks, and `passengerApps()` manages Application
+Manager registrations. Passenger inventory uses GET; the other thirteen methods
+use form POST, including repository and deployment retrievals whose source marks
+them `x-readonly=false`.
+
+Repository `sourceRepository` is caller-supplied JSON text, sent once as a form
+parameter. The client does not JSON-encode a PHP object or decode/re-encode the
+string. The existing scalar parameter boundary is `string|int|null`; supply the
+documented serialized JSON string, or omit it. Clone URLs may contain credentials,
+so this argument stays sensitive. The pinned source warns that repository deletion
+permanently removes directory contents. The PR40 reviewer instead observed
+registration deletion leaving the directory on the test server; retain the
+source's destructive-operation warning rather than relying on that discrepancy.
+Updating a branch can pull remote changes;
+source URLs cannot be changed by the update method.
+
+Deployment requires a clean working tree, branches and a checked-in `.cpanel.yml`.
+Returned task IDs and event/log URLs do not prove completion and are not fetched
+by the client. Reviewed integer deployment IDs are preserved, and `delete()`
+accepts the returned integer or documented string identifier. A status-success
+`create()` response with explicit null was observed for a non-deployable repository
+with no deployment queued; absent data remains a mismatch. A payload error after
+queueing does not undo the deployment and must not trigger a retry. Creation's
+unspecified `last_update` schema includes a null-only
+enum but remains mixed under the current effective validator; no stronger field
+contract is invented.
+
+Passenger registration requires an existing application; unregistering it does
+not delete its files. Environment names and values use matching repeated fields;
+supply one value per name. Editing environment variables replaces the current
+set. Omitting `enabled` when editing uses the documented default of 1 and can
+re-enable a disabled application; pass false explicitly to retain disabled state.
+Values remain sensitive, and opaque returned environment objects preserve
+their fields. Inventory `enabled` has an unspecified schema and remains mixed;
+mutation flags retain their declared types. `ensureDeps()` starts asynchronous
+installation. These methods manage Application Manager; the pinned source
+recommends WebApp for applications deployed with that newer feature.
+
+The bounded live catalog reads only WHM version and Passenger inventory on both
+routes. Repository/deployment POST reads, mutations and populated/secret-bearing
+variants remain tracked under `8x0.2.27`. No deployment, dependency installation,
+repository deletion or application configuration change is part of that catalog.
+The reviewer diagnosed its Passenger API failures: `npr` lacks the `passengerapps`
+feature and the server has no Passenger packages. No server-wide installation was
+made. All seven Passenger methods remain unobserved, including dependency-result
+and mutation flag/environment variants. The failed capture remains unwaived.
+
+
+The [application-management capture](docs/api/evidence/2026-10-31-application-deployment.json)
+at `344fffc` on `11.138.0.19` records three HTTP-200 GETs. WHM version passes;
+both Passenger inventory calls fail at the API layer before payload validation,
+so strict assessment remains failed. This is no successful empty-inventory or
+payload-schema evidence. All fourteen methods are offline-tested; separate
+reviewer lifecycle observations and their limits are recorded in the source audit.
+Committed lifecycle evidence remains under `8x0.2.27`. This capture changed no
+repository or application state.
+
 The Fileman group implements 13 of 14 pinned functions: directory autocomplete,
 file information, file content and directory listings use GET; content saving,
 in-memory transcoding, copy, move, rename, delete, trash, restore and trash purging
@@ -603,12 +662,19 @@ paths refer to server-side files, not local uploads.
 
 Omitted settings retain server defaults; false and zero are sent explicitly.
 The backup setter's `keeplocal` prose contradicts the getter's retention meaning;
-the client forwards the flag without inversion. The integer monthly-dates input
-also conflicts with comma-separated prose, so multiple dates are not established
-by that typed argument. Migration's `no_convert` name conflicts with its positive
-conversion prose; the documented flag is forwarded unchanged. The malformed
-`backup_set_list.backup_set` row description remains an opaque object. These
-source gaps remain under `8x0.2.29`.
+the client forwards the flag without inversion. `backupMonthlyDates` accepts
+an integer or a comma-separated string, following the pinned prose and reviewed
+upstream validator; the weekly day remains a single integer. Migration's
+`no_convert` name conflicts with its positive conversion prose; the flag is
+forwarded unchanged. `backup_set_list.backup_set` preserves a list of user/date
+rows. A combined listing can have a null destination legend, and remote `where`
+values may be transport IDs rather than the pinned `remote` label.
+
+The two pkgacct session GETs were observed to create an empty server directory
+before failing for an unknown session ID. Use only IDs returned by
+`startBackgroundPkgacct()`; other input forms were not tested. These observations
+come from [Claude review 5720277974](https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974),
+not the committed GET capture. Remaining coverage stays in `8x0.2.29`.
 
 Backup configuration and strict retention can affect stored archives. Packaging
 and restoration can overwrite account content; restoration may delete its source
@@ -625,6 +691,14 @@ version, four parameterless backup reads and six restoration status/module reads
 (11 GETs). It excludes destination credentials, OAuth requests, session logs,
 backup creation, account restoration, queue changes, migration and configuration
 writes. Populated variants and all remaining live behavior stay in `8x0.2.29`.
+
+The immutable WHM backup/restoration capture at `a5b6e3a` on `11.138.0.19`
+records 11 HTTP/API successes and ten payload/probe passes. Its `prebackup`
+validation failure and one masked unknown-field observation with integer values
+remain strict failures, unwaived under `8x0.2.29`. A wildcard identifies neither
+the underlying name nor field count. Backup and queue inventories are empty,
+module rows populated, and no mutation ran. Later reviewer observations and
+contract corrections are separate from that historical capture.
 
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
@@ -1078,10 +1152,3 @@ Beads block to `CLAUDE.md` (do not run `bd setup claude` to re-add one).
 Preserve the generated Beads blocks and keep project-specific additions outside
 them. If `bd setup` regenerates a Beads block with profile-neutral wording,
 re-apply the team-maintainer wording; the Git Workflow section is authoritative.
-
-The corrected WHM backup/restoration capture at `a5b6e3a` on `11.138.0.19` records
-11 HTTP/API successes and ten payload/probe passes. The integer weekday and
-`check_min_free_space` quoted flag pass; `prebackup` still fails strict 0/1 handling,
-and an unknown configuration integer remains. Strict status stays failed and
-unwaived under `8x0.2.29`; no broad coercion or guessed field is added. Backup and
-queue inventories are empty, module rows populated, and no mutation ran.

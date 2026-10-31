@@ -37,6 +37,7 @@ use SensitiveParameter;
  *         backuplogs?: 0|1,
  *         backupmount?: 0|1,
  *         backupsuspendedaccounts?: 0|1,
+ *         backupsuspendedaccts?: 0|1,
  *         backuptype?: string,
  *         check_min_free_space?: 0|1,
  *         disable_metadata?: 0|1,
@@ -54,7 +55,7 @@ use SensitiveParameter;
  *         min_free_space_unit?: string,
  *         mysqlbackup?: string,
  *         postbackup?: 0|1,
- *         prebackup?: 0|1,
+ *         prebackup?: 0|1|'-1'|'',
  *         psqlbackup?: 0|1,
  *         remote_restore_staging_dir?: string,
  *     },
@@ -91,6 +92,7 @@ use SensitiveParameter;
  *     ssl?: 0|1,
  *     timeout?: int,
  *     type?: string,
+ *     upload_system_backup?: 0|1,
  *     username?: string,
  * }
  * @phpstan-type BackupDestinationListResult array{
@@ -147,7 +149,10 @@ use SensitiveParameter;
  *     remote_backups?: array<array-key, array<array-key, list<string>>>,
  * }
  * @phpstan-type BackupSetListResult array{
- *     backup_set?: array<array-key, mixed>,
+ *     backup_set?: list<array{
+ *         backup_date?: list<string>,
+ *         user?: string,
+ *     }>,
  * }
  * @phpstan-type BackupSetListCombinedResult array{
  *     backup_set?: array<array-key, list<array{
@@ -157,7 +162,7 @@ use SensitiveParameter;
  *     destination_legend?: array<array-key, array{
  *         name?: string,
  *         type?: string,
- *     }>,
+ *     }>|null,
  * }
  * @phpstan-type BackupSkipUsersAllStatusResult array{
  *     reason?: array{
@@ -218,12 +223,25 @@ final readonly class Backups
      *
      * This function retrieves your backup destination configuration file data.
      *
-     * Documented: Backup configuration flags remain integer 0/1. disable_metadata=1 disables metadata, while
-     * keeplocal=0 deletes local backups. Omitted configuration fields remain absent.
+     * Documented: Documented backup configuration flags remain integer 0/1, with the reviewed prebackup exceptions
+     * below. disable_metadata=1 disables metadata, while keeplocal=0 deletes local backups. Omitted configuration
+     * fields remain absent.
      *
-     * Observed: On cPanel 11.138.0.19, backup_weekly_day was an integer and check_min_free_space/prebackup were numeric
-     * strings. Preserve weekly days as int|string; normalize only exact quoted 0/1 spellings for these two flags. Other
-     * field contracts, optional presence and setter semantics remain unchanged.
+     * Observed: On cPanel 11.138.0.19, backup_weekly_day was an integer and check_min_free_space was a numeric string.
+     * Preserve weekly days as int|string; check_min_free_space accepts only exact quoted 0/1 spellings and normalizes
+     * them to integer flags.
+     *
+     * Observed: Independent review on cPanel 11.138.0.19 identified prebackup as the exact string -1, the upstream
+     * stock default. Preserve -1 as a string. The existing quoted 0/1 normalization remains compatibility behavior;
+     * those prebackup spellings were not observed.
+     *
+     * Documented: The reviewer inspected Config.pm PREBACKUP as a string with default -1, and scripts/cpbackup handles
+     * a missing value, -1 and the empty string together. Preserve the exact empty string as well; other strings and
+     * integer -1 remain invalid.
+     *
+     * Observed: Independent review on cPanel 11.138.0.19 found the integer backupsuspendedaccts key. Preserve it
+     * alongside the optional documented backupsuspendedaccounts spelling without renaming or synthesizing either. This
+     * new observation does not identify the wildcard in older evidence artifacts.
      *
      * API-map identity: whm1:backup_config_get#GET (wire name backup_config_get; Backup Settings).
      *
@@ -251,9 +269,9 @@ final readonly class Backups
      * server defaults; explicit false and zero are sent. disableMetadata=true disables metadata, and strict pruning can
      * enforce retention without a successful backup.
      *
-     * Documented: The pinned backup_monthly_dates parameter has an integer schema despite prose permitting a
-     * comma-delimited list. This signature preserves the formal integer boundary; multiple monthly dates are not
-     * established by this typed parameter.
+     * Documented: backupMonthlyDates accepts a single integer or a comma-delimited string such as 1,15,22, as the
+     * pinned parameter prose and reviewer-inspected upstream comma splitting describe. backupWeeklyDay remains a single
+     * integer. No server-wide setting write was verified by the review.
      *
      * Documented: backupaccts, backupenable, backupmount and disableMetadata affect File and Directory Restoration
      * availability. Backup and restoration timeouts can terminate their respective jobs. Directory arguments identify
@@ -268,7 +286,7 @@ final readonly class Backups
      *
      * @param bool|null $backupDailyEnable Whether to enable daily backups. Null omits it.
      * @param int|null $backupDailyRetention The number of daily backups to retain. Null omits it.
-     * @param int|null $backupMonthlyDates Which days of the month to run backups. Null omits it.
+     * @param string|int|null $backupMonthlyDates Which days of the month to run backups. Null omits it.
      * @param bool|null $backupMonthlyEnable Whether to enable monthly backups. Null omits it.
      * @param int|null $backupMonthlyRetention The number of monthly backups to retain. Null omits it.
      * @param int|null $backupWeeklyDay Which day of the week to run weekly backups. Null omits it.
@@ -321,7 +339,7 @@ final readonly class Backups
     public function backupConfigSet(
         ?bool $backupDailyEnable = null,
         ?int $backupDailyRetention = null,
-        ?int $backupMonthlyDates = null,
+        string|int|null $backupMonthlyDates = null,
         ?bool $backupMonthlyEnable = null,
         ?int $backupMonthlyRetention = null,
         ?int $backupWeeklyDay = null,
@@ -579,9 +597,9 @@ final readonly class Backups
      * Documented: This inventory or status operation uses form POST because the pinned source marks x-readonly=false;
      * it is not included in an explicit GET-only live catalog.
      *
-     * Documented: Provider alternatives retain all documented fields, including later GoogleDrive and SFTP fields.
-     * Credential values returned by the server are sensitive payload data. The source provides no required response
-     * fields.
+     * Documented: Provider alternatives retain all documented fields, including later GoogleDrive and SFTP fields and
+     * the optional upload_system_backup integer flag present in all ten pinned examples. Credential values returned by
+     * the server are sensitive payload data. The source provides no required response fields.
      *
      * API-map identity: whm1:backup_destination_get#GET (wire name backup_destination_get; Backup Destination).
      *
@@ -789,9 +807,9 @@ final readonly class Backups
      * Documented: This inventory or status operation uses form POST because the pinned source marks x-readonly=false;
      * it is not included in an explicit GET-only live catalog.
      *
-     * Documented: The pinned backup_set schema declares an object with empty properties and misplaced items describing
-     * user/backup_date. Preserve that opaque object without inferring a list or named row fields; source clarification
-     * and live shape verification remain under whm-api-client-8x0.2.29.
+     * Documented: backup_set is a list of account rows with optional user and backup_date string-list fields. The
+     * pinned items describe those rows, and reviewer-inspected upstream branches establish the list container despite
+     * the pinned object type. Empty inventory provides no evidence of populated rows.
      *
      * API-map identity: whm1:backup_set_list#GET (wire name backup_set_list; Backup or Restore).
      *
@@ -817,8 +835,12 @@ final readonly class Backups
      * Documented: This inventory or status operation uses form POST because the pinned source marks x-readonly=false;
      * it is not included in an explicit GET-only live catalog.
      *
-     * Documented: Account names and destination IDs remain dynamic map keys. The where strings identify local or remote
-     * backup locations; the client does not fetch backup files.
+     * Documented: Account names and destination IDs remain dynamic map keys. The reviewer-inspected upstream sets
+     * remote where values to transport IDs despite the pinned local/remote enum; preserve where as a string. The client
+     * does not fetch backup files.
+     *
+     * Observed: Independent review on cPanel 11.138.0.19 found destination_legend null when no destinations exist.
+     * Preserve that null separately from an omitted field or empty map.
      *
      * API-map identity: whm1:backup_set_list_combined#GET (wire name backup_set_list_combined; Backup or Restore).
      *
@@ -867,6 +889,9 @@ final readonly class Backups
      *
      * Documented: The payload reason object reports configuration progress; it is distinct from the outer WHM
      * metadata.reason message. running remains an integer 0/1 flag.
+     *
+     * Observed: Independent review on cPanel 11.138.0.19 found this call raises ApiErrorException on an idle server. Do
+     * not assume an idle server returns a reason object with running=0.
      *
      * API-map identity: whm1:backup_skip_users_all_status#GET (wire name backup_skip_users_all_status; Backup
      * Settings).
@@ -941,6 +966,11 @@ final readonly class Backups
      * Documented: Returns master log text as payload data without parsing embedded JSON or following any log URL. The
      * source says users should not directly call live_tail_log.cgi.
      *
+     * Observed: On cPanel 11.138.0.19, an unknown sessionId created an empty directory under
+     * /var/cpanel/pkgacct_sessions/ before raising ApiErrorException. Pass only IDs returned by
+     * startBackgroundPkgacct(); other input forms were not tested. Unknown-ID probes are excluded from the live
+     * catalog.
+     *
      * API-map identity: whm1:fetch_pkgacct_master_log#GET (wire name fetch_pkgacct_master_log; Backup or Restore).
      *
      * @param string $sessionId The `start_background_pkgacct` session ID.
@@ -962,6 +992,11 @@ final readonly class Backups
      * Return start_background_pkgacct session state.
      *
      * This function returns the state of a `start_background_pkgacct` session.
+     *
+     * Observed: On cPanel 11.138.0.19, an unknown sessionId created an empty directory under
+     * /var/cpanel/pkgacct_sessions/ before raising ApiErrorException. Pass only IDs returned by
+     * startBackgroundPkgacct(); other input forms were not tested. Unknown-ID probes are excluded from the live
+     * catalog.
      *
      * API-map identity: whm1:get_pkgacct_session_state#GET (wire name get_pkgacct_session_state; Backup or Restore).
      *
@@ -1233,6 +1268,9 @@ final readonly class Backups
      *
      * Documented: Toggles the selected account backup state and can enable or disable backups. Omitting legacy selects
      * the standard backup system; false is forwarded as 0. Returned toggle_status remains an integer 0/1 flag.
+     *
+     * Observed: Independent review on cPanel 11.138.0.19 returned success and toggle_status for an unknown user. A
+     * successful toggle does not establish that the account exists.
      *
      * API-map identity: whm1:toggle_user_backup_state#GET (wire name toggle_user_backup_state; Backup Settings).
      *

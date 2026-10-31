@@ -47,6 +47,7 @@ final class BackupsSpec
                         'backuplogs' => ['type' => 'flag'],
                         'backupmount' => ['type' => 'flag'],
                         'backupsuspendedaccounts' => ['type' => 'flag'],
+                        'backupsuspendedaccts' => ['type' => 'flag'],
                         'backuptype' => ['type' => 'string'],
                         'check_min_free_space' => ['type' => 'flag', 'accept' => ['string-flag']],
                         'disable_metadata' => ['type' => 'flag'],
@@ -64,7 +65,14 @@ final class BackupsSpec
                         'min_free_space_unit' => ['type' => 'string'],
                         'mysqlbackup' => ['type' => 'string'],
                         'postbackup' => ['type' => 'flag'],
-                        'prebackup' => ['type' => 'flag', 'accept' => ['string-flag']],
+                        'prebackup' => [
+                            'type' => 'union',
+                            'anyOf' => [
+                                ['type' => 'flag', 'accept' => ['string-flag']],
+                                ['type' => 'string', 'literal' => '-1'],
+                                ['type' => 'string', 'literal' => ''],
+                            ],
+                        ],
                         'psqlbackup' => ['type' => 'flag'],
                         'remote_restore_staging_dir' => ['type' => 'string'],
                     ],
@@ -219,6 +227,7 @@ final class BackupsSpec
                 'ssl' => ['type' => 'flag'],
                 'timeout' => ['type' => 'int'],
                 'type' => ['type' => 'string'],
+                'upload_system_backup' => ['type' => 'flag'],
                 'username' => ['type' => 'string'],
             ],
         ],
@@ -373,7 +382,16 @@ final class BackupsSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'backup_set' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+                'backup_set' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'backup_date' => ['type' => 'list', 'items' => ['type' => 'string']],
+                            'user' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
             ],
         ],
     ];
@@ -401,6 +419,7 @@ final class BackupsSpec
                 ],
                 'destination_legend' => [
                     'type' => 'map',
+                    'nullable' => true,
                     'values' => [
                         'type' => 'object',
                         'fields' => [

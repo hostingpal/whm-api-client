@@ -378,13 +378,29 @@ committed populated/mutation evidence stays under `8x0.2.26`; no further read-on
 capture is outstanding from this review request. SHA-256:
 `8be0fe648505873d0f36221e0ef750954b5268469399ac2de804ef8c1e5d3b56`.
 
+### Application inventory capture
+
+The immutable [application-management capture](2026-10-31-application-deployment.json)
+at `344fffc64824bd35098d232dd92226cb222d2a15` on `11.138.0.19` records three GET
+observations, all HTTP 200. WHM version passes. Both `PassengerApps/list_applications`
+requests fail at the API layer with null payloads, so payload validation is not
+performed and strict assessment remains failed. The sanitized evidence does not
+diagnose the capability/configuration cause; neither failure is waived or treated
+as a successful empty inventory. This artifact establishes no successful payload
+coverage for the fourteen new methods. Separate reviewer lifecycle observations
+are recorded in the source audit; committed lifecycle coverage stays under `8x0.2.27`.
+
+No repository, deployment, application configuration or dependency installation
+changed, and no returned URL was fetched. No contract was broadened from an API
+failure, and no repeated capture was run merely to seek a passing status. SHA-256:
+`48b5b71e8feb9107310383e50f311f39d99301a3fb57c4179a00d12c97e44a64`.
+
 ## WHM backup and restoration
 
 The initial [backup/restoration capture](2026-10-31-backup-restoration.json)
 at `88e01bd54f1939e4937fd3673f2b174a6353e7ab` on `11.138.0.19` records eleven
 HTTP-200 and successful WHM API observations. Ten payload/probe checks pass;
-`backup_config_get` has three known-field type mismatches and one masked unknown
-integer field. The getter's `backup_weekly_day` is an integer; its original string
+`backup_config_get` has three known-field type mismatches and one masked unknown-field observation with integer values. The getter's `backup_weekly_day` is an integer; its original string
 contract is retained alongside that observed variant. Only `check_min_free_space`
 and `prebackup` gain exact quoted-flag acceptance. No other configuration field
 is widened and the unknown field remains untyped and unwaived.
@@ -403,11 +419,12 @@ HTTP/API successes and ten payload/probe passes. The weekday integer and
 0/1 contract: the artifact classifies it only as numeric-string, which does not
 establish its spelling or a valid flag value. The optional exact quoted-flag
 acceptance does not make this response compatible. No broader numeric coercion,
-new enum value or guessed sentinel is added. The unknown configuration integer
-also remains unresolved. Strict status stays failed with no acknowledgments.
+new enum value or guessed sentinel is added. That capture also retains one masked unknown-field observation with integer
+values; wildcard masking establishes neither its name nor field count. Strict status stays failed with no acknowledgments.
 
 Both artifacts remain immutable. Empty inventories/queues establish no populated
 row schemas; the module summary is populated. No mutation, backup creation,
 restoration or configuration behavior is established. Follow-up `8x0.2.29` retains
-the `prebackup` mismatch, unknown field and all source/live gaps. Corrected SHA-256:
+the historical `prebackup` mismatch, masked unknown-field observation and
+remaining source/live gaps. Corrected SHA-256:
 `f910fcd3377c881e07d496fd727bec622016bd8df33552cfe381552752acde47`.

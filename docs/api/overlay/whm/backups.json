@@ -8,11 +8,23 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Backup configuration flags remain integer 0/1. disable_metadata=1 disables metadata, while keeplocal=0 deletes local backups. Omitted configuration fields remain absent."
+          "text": "Documented backup configuration flags remain integer 0/1, with the reviewed prebackup exceptions below. disable_metadata=1 disables metadata, while keeplocal=0 deletes local backups. Omitted configuration fields remain absent."
         },
         {
           "kind": "observed",
-          "text": "On cPanel 11.138.0.19, backup_weekly_day was an integer and check_min_free_space/prebackup were numeric strings. Preserve weekly days as int|string; normalize only exact quoted 0/1 spellings for these two flags. Other field contracts, optional presence and setter semantics remain unchanged."
+          "text": "On cPanel 11.138.0.19, backup_weekly_day was an integer and check_min_free_space was a numeric string. Preserve weekly days as int|string; check_min_free_space accepts only exact quoted 0/1 spellings and normalizes them to integer flags."
+        },
+        {
+          "kind": "observed",
+          "text": "Independent review on cPanel 11.138.0.19 identified prebackup as the exact string -1, the upstream stock default. Preserve -1 as a string. The existing quoted 0/1 normalization remains compatibility behavior; those prebackup spellings were not observed."
+        },
+        {
+          "kind": "documented",
+          "text": "The reviewer inspected Config.pm PREBACKUP as a string with default -1, and scripts/cpbackup handles a missing value, -1 and the empty string together. Preserve the exact empty string as well; other strings and integer -1 remain invalid."
+        },
+        {
+          "kind": "observed",
+          "text": "Independent review on cPanel 11.138.0.19 found the integer backupsuspendedaccts key. Preserve it alongside the optional documented backupsuspendedaccounts spelling without renaming or synthesizing either. This new observation does not identify the wildcard in older evidence artifacts."
         }
       ],
       "response": {
@@ -51,15 +63,58 @@
           ]
         },
         "backup_config.prebackup": {
-          "accept": [
-            "string-flag"
-          ],
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "flag",
+                "accept": [
+                  "string-flag"
+                ]
+              },
+              {
+                "type": "string",
+                "literal": "-1"
+              },
+              {
+                "type": "string",
+                "literal": ""
+              }
+            ]
+          },
           "evidence": [
             {
               "kind": "live",
               "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "docs/api/evidence/2026-10-31-backup-restoration.json (SHA-256 4b788b00b69944d305473bd89004e6199914cf2b366ed90676b3313aac32daca), whm1:backup_config_get#GET through WHM at 88e01bd54f1939e4937fd3673f2b174a6353e7ab records $.backup_config.prebackup as numeric-string despite the pinned integer 0/1 flag. Accept only the exact quoted flag spellings 0 and 1, normalizing them to integer flags; broader numeric strings are not inferred. The immutable failed artifact and its masked unknown integer remain unchanged and unwaived under whm-api-client-8x0.2.29."
+              "note": "Independent PR42 review https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974 at revision 712e4b611d79ee065b96010acef56f262cd388fe on cPanel 11.138.0.19 read prebackup as the exact string -1 from PayloadMismatchException::$payload. Preserve that exact string alongside the pinned integer 0/1 flags. Existing exact quoted 0/1 normalization is retained only for compatibility, not claimed as observed. The original and corrected immutable captures remain unchanged; this review does not identify their masked unknown integer.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974"
+            },
+            {
+              "kind": "doc",
+              "version": "11.138.0.19 upstream source inspected by reviewer",
+              "date": "2026-10-31",
+              "note": "PR42 review https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974 reports Cpanel/Backup/Config.pm declares PREBACKUP type string with default '-1'; scripts/cpbackup:231 handles missing PREBACKUP, '-1' and '' together. This supports the exact empty string as a source-backed alternative, not a live observation or an unrestricted string contract. Keep omission distinct, and do not accept integer -1."
+            }
+          ]
+        },
+        "backup_config.backupsuspendedaccts": {
+          "add": {
+            "type": "flag"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent PR42 review https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974 at revision 712e4b611d79ee065b96010acef56f262cd388fe identified the integer getter key backupsuspendedaccts and reports upstream Cpanel/Backup/Config.pm BACKUPSUSPENDEDACCTS. The documented getter spelling backupsuspendedaccounts was absent in that response; preserve both optional keys independently. This new inspection does not retroactively identify any masked key in older immutable artifacts.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974"
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "The pinned backup_config_set/get parameter backupsuspendedaccts and backup_config_get/get response backupsuspendedaccounts both document suspended-account backup enablement as integer 0/1. Use that flag contract for the source- and reviewer-identified actual getter spelling without changing the pinned optional spelling."
             }
           ]
         }
@@ -70,10 +125,30 @@
           "version": "11.138.0.19",
           "date": "2026-10-31",
           "note": "docs/api/evidence/2026-10-31-backup-restoration.json (SHA-256 4b788b00b69944d305473bd89004e6199914cf2b366ed90676b3313aac32daca), whm1:backup_config_get#GET through WHM at 88e01bd54f1939e4937fd3673f2b174a6353e7ab records the three reviewed configuration representation discrepancies described in the response corrections. These observations establish neither a new unknown-field contract nor backup-setting mutation behavior. The immutable failed artifact and its masked unknown integer remain unchanged and unwaived under whm-api-client-8x0.2.29."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent PR42 review https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974 at revision 712e4b611d79ee065b96010acef56f262cd388fe supplies the exact prebackup string -1 and actual backupsuspendedaccts integer key. Source inspection separately supports the prebackup empty-string alternative. These are new review observations; old artifacts remain immutable, no historical wildcard is identified, and no server-wide setting mutation was run.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974"
         }
       ]
     },
     "whm1:backup_config_set": {
+      "params": {
+        "backup_monthly_dates": {
+          "type": "string|int"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13; 11.138.0.19 upstream source inspected by reviewer",
+          "date": "2026-10-31",
+          "note": "The pinned backup_config_set/get backup_monthly_dates schema is integer, but its parameter description explicitly permits a comma-delimited list; backup_config_get documents the string example 1,15,22. PR42 review https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974 additionally reports that the upstream validator splits on commas. Accept string|int for this parameter only, retaining optional omission and form POST. backup_weekly_day remains a single integer. No server-wide configuration write was run by the reviewer."
+        }
+      ],
       "notes": [
         {
           "kind": "documented",
@@ -81,7 +156,7 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned backup_monthly_dates parameter has an integer schema despite prose permitting a comma-delimited list. This signature preserves the formal integer boundary; multiple monthly dates are not established by this typed parameter."
+          "text": "backupMonthlyDates accepts a single integer or a comma-delimited string such as 1,15,22, as the pinned parameter prose and reviewer-inspected upstream comma splitting describe. backupWeeklyDay remains a single integer. No server-wide setting write was verified by the review."
         },
         {
           "kind": "documented",
@@ -191,6 +266,21 @@
       ]
     },
     "whm1:backup_destination_get": {
+      "response": {
+        "upload_system_backup": {
+          "add": {
+            "type": "flag"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "All ten pinned /backup_destination_get/get examples include integer upload_system_backup=0 although BackupDestinationGetResponse omits the field. The pinned BackupDestinationSetParameterBase schema documents this same setting as integer 0/1 (1 uploads system backups, 0 does not). Preserve it as an optional flag; examples do not establish required presence or quoted/boolean forms."
+            }
+          ]
+        }
+      },
       "notes": [
         {
           "kind": "documented",
@@ -198,7 +288,7 @@
         },
         {
           "kind": "documented",
-          "text": "Provider alternatives retain all documented fields, including later GoogleDrive and SFTP fields. Credential values returned by the server are sensitive payload data. The source provides no required response fields."
+          "text": "Provider alternatives retain all documented fields, including later GoogleDrive and SFTP fields and the optional upload_system_backup integer flag present in all ten pinned examples. Credential values returned by the server are sensitive payload data. The source provides no required response fields."
         }
       ]
     },
@@ -274,6 +364,35 @@
       ]
     },
     "whm1:backup_set_list": {
+      "response": {
+        "backup_set": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "backup_date": {
+                  "type": "list",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "user": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13; 11.138.0.19 upstream source inspected by reviewer",
+              "date": "2026-10-31",
+              "note": "The pinned /backup_set_list/get backup_set schema incorrectly says object with empty properties but contains items describing object rows with user:string and backup_date:array<string>, without required fields. PR42 review https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974 reports both Cpanel/Backup/BackupSet.pm upstream branches return a list of those rows, and a two-row offline replay failed the former map contract. Correct only the container type, retain optional row fields, and preserve an empty list. The review's empty live inventory does not establish populated-row runtime coverage."
+            }
+          ]
+        }
+      },
       "notes": [
         {
           "kind": "documented",
@@ -281,11 +400,34 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned backup_set schema declares an object with empty properties and misplaced items describing user/backup_date. Preserve that opaque object without inferring a list or named row fields; source clarification and live shape verification remain under whm-api-client-8x0.2.29."
+          "text": "backup_set is a list of account rows with optional user and backup_date string-list fields. The pinned items describe those rows, and reviewer-inspected upstream branches establish the list container despite the pinned object type. Empty inventory provides no evidence of populated rows."
         }
       ]
     },
     "whm1:backup_set_list_combined": {
+      "response": {
+        "destination_legend": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent PR42 review https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974 at revision 712e4b611d79ee065b96010acef56f262cd388fe observed backup_set_list_combined fail on a server without destinations because destination_legend is null. The reviewer inspected upstream declaration my $destination_legend, assigned only inside the destination loop, and replayed populated backup_set with null legend. Preserve null separately from omission and an empty map; populated rows remain offline/source evidence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974"
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent PR42 review https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974 observed the no-destinations null legend through WHM and inspected upstream destination-loop initialization. No server-wide write ran; the null legend correction is independent of populated backup coverage.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974"
+        }
+      ],
       "notes": [
         {
           "kind": "documented",
@@ -293,7 +435,11 @@
         },
         {
           "kind": "documented",
-          "text": "Account names and destination IDs remain dynamic map keys. The where strings identify local or remote backup locations; the client does not fetch backup files."
+          "text": "Account names and destination IDs remain dynamic map keys. The reviewer-inspected upstream sets remote where values to transport IDs despite the pinned local/remote enum; preserve where as a string. The client does not fetch backup files."
+        },
+        {
+          "kind": "observed",
+          "text": "Independent review on cPanel 11.138.0.19 found destination_legend null when no destinations exist. Preserve that null separately from an omitted field or empty map."
         }
       ]
     },
@@ -306,6 +452,15 @@
       ]
     },
     "whm1:backup_skip_users_all_status": {
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent PR42 review https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974 at revision 712e4b611d79ee065b96010acef56f262cd388fe observed backupSkipUsersAllStatus() raise ApiErrorException with the upstream unknown-error reason on an idle server. No backup_skip_users_all write ran; this does not establish active-job progress behavior.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974"
+        }
+      ],
       "notes": [
         {
           "kind": "documented",
@@ -314,6 +469,10 @@
         {
           "kind": "documented",
           "text": "The payload reason object reports configuration progress; it is distinct from the outer WHM metadata.reason message. running remains an integer 0/1 flag."
+        },
+        {
+          "kind": "observed",
+          "text": "Independent review on cPanel 11.138.0.19 found this call raises ApiErrorException on an idle server. Do not assume an idle server returns a reason object with running=0."
         }
       ]
     },
@@ -334,14 +493,43 @@
       ]
     },
     "whm1:fetch_pkgacct_master_log": {
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent PR42 review https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974 at revision 712e4b611d79ee065b96010acef56f262cd388fe called fetchPkgacctMasterLog() with its own unknown session ID: the server created an empty directory under /var/cpanel/pkgacct_sessions/ named for that ID, then raised ApiErrorException. The reviewer removed the directory. Other input forms were not tested. This GET contract does not imply absence of filesystem effects, and unknown-ID probes must stay outside the live catalog.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974"
+        }
+      ],
       "notes": [
         {
           "kind": "documented",
           "text": "Returns master log text as payload data without parsing embedded JSON or following any log URL. The source says users should not directly call live_tail_log.cgi."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, an unknown sessionId created an empty directory under /var/cpanel/pkgacct_sessions/ before raising ApiErrorException. Pass only IDs returned by startBackgroundPkgacct(); other input forms were not tested. Unknown-ID probes are excluded from the live catalog."
         }
       ]
     },
-    "whm1:get_pkgacct_session_state": {},
+    "whm1:get_pkgacct_session_state": {
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent PR42 review https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974 at revision 712e4b611d79ee065b96010acef56f262cd388fe called getPkgacctSessionState() with a separate unknown session ID: the server created an empty directory under /var/cpanel/pkgacct_sessions/ named for that ID, then raised ApiErrorException. The reviewer removed the directory. Other input forms were not tested. This GET contract does not imply absence of filesystem effects, and unknown-ID probes must stay outside the live catalog.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974"
+        }
+      ],
+      "notes": [
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, an unknown sessionId created an empty directory under /var/cpanel/pkgacct_sessions/ before raising ApiErrorException. Pass only IDs returned by startBackgroundPkgacct(); other input forms were not tested. Unknown-ID probes are excluded from the live catalog."
+        }
+      ]
+    },
     "whm1:get_users_and_domains_with_backup_metadata": {},
     "whm1:get_users_with_backup_metadata": {},
     "whm1:list_cparchive_files": {},
@@ -378,10 +566,23 @@
       ]
     },
     "whm1:toggle_user_backup_state": {
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent PR42 review https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974 at revision 712e4b611d79ee065b96010acef56f262cd388fe observed success with toggle_status for an unknown user through WHM. That response cannot prove account existence or an effective backup policy for an existing account. The reviewer also checked omitted, true and false legacy forms; no broader account or server-wide behavior is inferred.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/42#pullrequestreview-5720277974"
+        }
+      ],
       "notes": [
         {
           "kind": "documented",
           "text": "Toggles the selected account backup state and can enable or disable backups. Omitting legacy selects the standard backup system; false is forwarded as 0. Returned toggle_status remains an integer 0/1 flag."
+        },
+        {
+          "kind": "observed",
+          "text": "Independent review on cPanel 11.138.0.19 returned success and toggle_status for an unknown user. A successful toggle does not establish that the account exists."
         }
       ]
     }

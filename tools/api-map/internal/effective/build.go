@@ -337,6 +337,9 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		documented[p.Name] = true
 		if o, ok := ov.Params[p.Name]; ok && o.Omit {
 			omitted[p.Name] = true
+			if o.Type != "" || o.Description != "" {
+				b.problem(op.ID + ": omitted parameter " + p.Name + " cannot have type or description corrections")
+			}
 			if p.Definition["required"] == true {
 				b.problem(op.ID + ": required parameter " + p.Name + " cannot be omitted; exclude the operation and use call()")
 			}
@@ -376,6 +379,21 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		}
 		if o.Encoding != "" {
 			param.PHPType, param.DocType, param.Encoding = encodingTypes(o.Encoding, param)
+		}
+		// The only input type correction widens a documented scalar string or
+		// integer to string|int; it cannot replace boolean or multiple-value encodings.
+		if o.Type != "" {
+			if o.Type != "string|int" || (spec.Type != "string" && spec.Type != "int") || param.Encoding != "scalar" || param.PHPType != spec.Type {
+				b.problem(op.ID + ": parameter " + p.Name + ": type correction requires string|int on a scalar string or integer source")
+			} else {
+				param.PHPType, param.DocType = o.Type, o.Type
+			}
+		}
+		if o.Description != "" {
+			param.Description = clean(o.Description)
+			if param.Description == "" {
+				b.problem(op.ID + ": parameter " + p.Name + ": description correction must be nonempty")
+			}
 		}
 		if o.Sensitive != nil {
 			param.Sensitive = *o.Sensitive
