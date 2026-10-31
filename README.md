@@ -3878,6 +3878,81 @@ make no commercial transaction or server-store setting change. Live/store
 configuration/purchase behavior and source gaps remain open under
 `whm-api-client-8x0.2.68`; delivery is `whm-api-client-8x0.4.26`.
 
-Current generated coverage is 1,183 operations (595 UAPI, 588 WHM), 100 groups and
+At DomainRecommendations delivery, generated coverage was 1,183 operations (595 UAPI, 588 WHM), 100 groups and
 203 generated outputs (202 PHP files plus coverage), adding exactly these six
 operations to WPX baseline `a4d31458ec2763fc1b2261adff47b6fa9a79441d`.
+
+### UAPI Webmail credentials and session inventory (2026-11-01)
+
+Five operations span three generated groups. `session()` implements three of the
+four pinned Session functions: `createWebmailSessionForMailUser(domain, login,
+locale: null, remoteAddress: null)`,
+`createWebmailSessionForMailUserCheckPassword(domain, login, password,
+locale: null, remoteAddress: null)` and
+`createWebmailSessionForSelf(locale: null, remoteAddress: null)`. All require
+cPanel 86 and send form POST on direct UAPI and WHM bridge: each selected formal
+GET declares `x-readonly=false` and `x-rollback=none`. Offline fixtures do not
+establish live POST acceptance. `Session/create_temp_user` requires an
+authenticated session URL; it remains visible as unsupported under `8x0.1.33`.
+This is Session 3/4 plus complete ActiveSessions and WebmailApps coverage.
+
+The mail-user creators require the calling cPanel account to own the Webmail
+account. The password-checking method also requires the correct password; wrong
+passwords and suspended accounts fail. The method without password verification
+is a distinct authorized-owner operation. The client never falls back to it after
+a password failure. Self targets the authenticated cPanel user, not an arbitrary
+mailbox. Login, password and remoteAddress are sensitive method parameters.
+
+Lowercase locale is a server requirement; omitted locale uses the account locale.
+The source says remote_address defaults to the API caller IP and is required for
+command-line use. This library makes HTTP requests and retains its optionality;
+direct and bridged calls need not infer the same remote address. Optional null
+omits; empty strings stay supplied. Native strings retain case, punctuation, IP
+formatting and exact once encoding. No local locale, hostname, IP, password or
+name normalization or added enum/range validation occurs.
+
+Each creator returns an object with optional `hostname: string|null`,
+`session: string` and `token: string`. Omitted hostname stays omitted, null means
+the server that answered the API, and empty strings and opaque credential bytes
+stay exact. The source recipe requires a separate caller-controlled POST to the
+Webmail host on port 2096 at `<token>/login`, with `session=<session>` in its body.
+The library does not construct, fetch or log in to that destination. Treat
+hostname/token/session combinations and returned Webmail URLs as private data.
+Creating credentials establishes neither login, session activity nor mail access.
+No lookup, login, redirect, retry, polling, cleanup or rollback is implicit.
+
+`activeSessions()->listActiveSessions()` requires cPanel 138 and sends one GET.
+It returns the current session first, then the most recently active, preserving
+server order. Caller generic sorting can replace source order, but the typed
+no-parameter method adds neither generic controls nor client sorting. Empty
+results can mean no unexpired sessions or an unreadable session store. Session
+addresses are private; demo/shared accounts cannot call this function.
+`ip_address` may be empty. Optional strings, native integer `last_active` Unix
+timestamps and integer 0|1 `is_current`, `is_possessed` and `tfa_verified` flags
+retain their types. Zero flags under API status 1 are successful data; API status
+0 still fails. Possessed means reseller/root acting on behalf of the user;
+two-factor verification describes that returned session only. No current-token
+authentication, session-revocation capability or identifier from IP/time is inferred.
+
+`webmailApps()->listWebmailApps(theme: null)` requires cPanel 11.48 and sends one
+GET. The Receive Mail role disables this function when disabled; this caveat is
+not assigned to the other operations. Theme omission keeps the server default.
+Returned rows have optional `displayname`, `icon`, `id` and `url` strings without
+a closed client enum. Icon paths are documented relative to
+`/usr/local/cpanel/base/frontend`; URLs may contain session tokens. Both retain
+their bytes, with no path normalization or URL verification/fetching. Listing an
+app establishes neither browser reachability nor successful login.
+
+Inventory roots are nonnullable lists of objects; creator roots are nonnullable
+objects. Missing data, null roots, wrong nonempty containers and invalid known
+field types fail, with unknown siblings filtered by existing shape rules. The
+inherited associative JSON decoder conflates empty arrays and objects in object
+positions (follow-up `8x0.2.50`); this slice preserves that runtime behavior.
+Cached accessors perform no I/O. Every method makes exactly one API request.
+
+Current generated coverage is 1,188 operations (600 UAPI, 588 WHM), 103 groups and
+209 outputs (208 PHP files plus coverage), adding five operations and three groups
+to baseline `99f3c83b99eaad926c6c9ac308e771c47c641430`.
+Delivery is `whm-api-client-8x0.4.27`; live follow-up `8x0.2.69` remains OPEN.
+Implementation used synthetic offline fixtures only. No real session, login,
+mailbox, mail delivery, server or account state changed.

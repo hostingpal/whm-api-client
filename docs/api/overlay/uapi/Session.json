@@ -1,0 +1,207 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Session",
+  "class": "Session",
+  "accessor": "session",
+  "description": "Temporary Webmail session credentials (three of four pinned Session operations). Session-URL create_temp_user remains deferred under whm-api-client-8x0.1.33.",
+  "operations": {
+    "uapi:Session/create_webmail_session_for_mail_user": {
+      "name": "createWebmailSessionForMailUser",
+      "method": "POST",
+      "order": [
+        "domain",
+        "login",
+        "locale",
+        "remote_address"
+      ],
+      "notes": [
+        {
+          "kind": "policy",
+          "text": "Supplied strings retain case, punctuation and exact bytes and are encoded once. Optional null omits; empty strings remain supplied. No local locale, host, IP, password or name normalization or extra enum/range validation. One request only; no implicit lookup, login, redirect, retry, polling, cleanup or rollback. Live follow-up whm-api-client-8x0.2.69 remains OPEN."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 86. Creates temporary credentials, not a Webmail login, session activity or mail access. Formal GET has x-readonly=false and x-rollback=none; effective transport is form POST on direct UAPI and WHM bridge. Live POST acceptance remains unverified. Login and remoteAddress are private inputs; password is sensitive where present."
+        },
+        {
+          "kind": "documented",
+          "text": "The calling cPanel account must own the Webmail account. This authorized-owner operation does not verify the mailbox password; it is distinct from checkPassword and is never an automatic fallback after a password failure."
+        },
+        {
+          "kind": "documented",
+          "text": "Lowercase locale is a server requirement; omitted locale uses the account locale. remote_address defaults to the API caller IP and is required for command-line use; this HTTP library retains optionality. Direct and bridged routes need not infer the same remote address."
+        },
+        {
+          "kind": "documented",
+          "text": "The source recipe requires a separate caller-controlled POST to https://<hostname>:2096<token>/login with session=<session> in the body. Null hostname means the server that answered the API; missing hostname remains omitted. This library does not construct, fetch or log in to that destination. Hostname/token/session combinations and returned Webmail URLs are private data. Optional hostname:string|null, session:string and token:string preserve omission, null hostname and empty or opaque credential bytes."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_webmail_session_for_mail_user/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; no response or requiredness correction. x-readonly=false and x-rollback=none select effective form POST under mutation policy."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_webmail_session_for_mail_user/get/x-readonly",
+          "note": "Pinned classification supports form POST without changing selected source variant or response schema."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_webmail_session_for_mail_user/get/x-rollback",
+          "note": "Pinned classification supports form POST without changing selected source variant or response schema."
+        }
+      ],
+      "params": {
+        "login": {
+          "sensitive": true
+        },
+        "remote_address": {
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:Session/create_webmail_session_for_mail_user_check_password": {
+      "name": "createWebmailSessionForMailUserCheckPassword",
+      "method": "POST",
+      "order": [
+        "domain",
+        "login",
+        "password",
+        "locale",
+        "remote_address"
+      ],
+      "notes": [
+        {
+          "kind": "policy",
+          "text": "Supplied strings retain case, punctuation and exact bytes and are encoded once. Optional null omits; empty strings remain supplied. No local locale, host, IP, password or name normalization or extra enum/range validation. One request only; no implicit lookup, login, redirect, retry, polling, cleanup or rollback. Live follow-up whm-api-client-8x0.2.69 remains OPEN."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 86. Creates temporary credentials, not a Webmail login, session activity or mail access. Formal GET has x-readonly=false and x-rollback=none; effective transport is form POST on direct UAPI and WHM bridge. Live POST acceptance remains unverified. Login and remoteAddress are private inputs; password is sensitive where present."
+        },
+        {
+          "kind": "documented",
+          "text": "The calling cPanel account must own the Webmail account and supply the correct password. Wrong passwords and suspended accounts fail. No automatic retry using the operation without password verification."
+        },
+        {
+          "kind": "documented",
+          "text": "Lowercase locale is a server requirement; omitted locale uses the account locale. remote_address defaults to the API caller IP and is required for command-line use; this HTTP library retains optionality. Direct and bridged routes need not infer the same remote address."
+        },
+        {
+          "kind": "documented",
+          "text": "The source recipe requires a separate caller-controlled POST to https://<hostname>:2096<token>/login with session=<session> in the body. Null hostname means the server that answered the API; missing hostname remains omitted. This library does not construct, fetch or log in to that destination. Hostname/token/session combinations and returned Webmail URLs are private data. Optional hostname:string|null, session:string and token:string preserve omission, null hostname and empty or opaque credential bytes."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_webmail_session_for_mail_user_check_password/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; no response or requiredness correction. x-readonly=false and x-rollback=none select effective form POST under mutation policy."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_webmail_session_for_mail_user_check_password/get/x-readonly",
+          "note": "Pinned classification supports form POST without changing selected source variant or response schema."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_webmail_session_for_mail_user_check_password/get/x-rollback",
+          "note": "Pinned classification supports form POST without changing selected source variant or response schema."
+        }
+      ],
+      "params": {
+        "login": {
+          "sensitive": true
+        },
+        "password": {
+          "sensitive": true
+        },
+        "remote_address": {
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:Session/create_webmail_session_for_self": {
+      "name": "createWebmailSessionForSelf",
+      "method": "POST",
+      "order": [
+        "locale",
+        "remote_address"
+      ],
+      "notes": [
+        {
+          "kind": "policy",
+          "text": "Supplied strings retain case, punctuation and exact bytes and are encoded once. Optional null omits; empty strings remain supplied. No local locale, host, IP, password or name normalization or extra enum/range validation. One request only; no implicit lookup, login, redirect, retry, polling, cleanup or rollback. Live follow-up whm-api-client-8x0.2.69 remains OPEN."
+        },
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 86. Creates temporary credentials, not a Webmail login, session activity or mail access. Formal GET has x-readonly=false and x-rollback=none; effective transport is form POST on direct UAPI and WHM bridge. Live POST acceptance remains unverified. Login and remoteAddress are private inputs; password is sensitive where present."
+        },
+        {
+          "kind": "documented",
+          "text": "Targets the authenticated cPanel user, not an arbitrary mailbox."
+        },
+        {
+          "kind": "documented",
+          "text": "Lowercase locale is a server requirement; omitted locale uses the account locale. remote_address defaults to the API caller IP and is required for command-line use; this HTTP library retains optionality. Direct and bridged routes need not infer the same remote address."
+        },
+        {
+          "kind": "documented",
+          "text": "The source recipe requires a separate caller-controlled POST to https://<hostname>:2096<token>/login with session=<session> in the body. Null hostname means the server that answered the API; missing hostname remains omitted. This library does not construct, fetch or log in to that destination. Hostname/token/session combinations and returned Webmail URLs are private data. Optional hostname:string|null, session:string and token:string preserve omission, null hostname and empty or opaque credential bytes."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_webmail_session_for_self/get/description",
+          "note": "Selected formal GET variant and ordinary Flag outcome; no response or requiredness correction. x-readonly=false and x-rollback=none select effective form POST under mutation policy."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_webmail_session_for_self/get/x-readonly",
+          "note": "Pinned classification supports form POST without changing selected source variant or response schema."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-11-01",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Session~1create_webmail_session_for_self/get/x-rollback",
+          "note": "Pinned classification supports form POST without changing selected source variant or response schema."
+        }
+      ],
+      "params": {
+        "remote_address": {
+          "sensitive": true
+        }
+      }
+    }
+  }
+}

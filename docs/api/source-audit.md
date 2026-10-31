@@ -7187,3 +7187,67 @@ generated PHP remains byte-identical apart from the additive cached accessor.
 Focused Go RED/GREEN covers that lowering and rendering. Existing engine
 compatibility accepts empty JSON arrays as empty objects/maps where no required
 members prevent it; this change does not alter that shared behavior.
+
+
+### 2026-11-01: UAPI Webmail credentials and active-session inventory
+
+Delivery `whm-api-client-8x0.4.27` adds five operations in three groups against
+`99f3c83b99eaad926c6c9ac308e771c47c641430`: Session 3/4 plus complete
+ActiveSessions (1) and WebmailApps (1). Authoritative pinned source is
+`docs/api/sources/2026-10-13/cpanel.openapi.json.gz`, decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`, version
+11.138.0.10. Each selected formal GET binds its exact
+`/paths/~1<module>~1<function>/get/description`; the three Session creators
+also bind their exact `x-readonly` and `x-rollback` pointers. These values
+are false/none, selecting effective form POST on direct UAPI and WHM bridge.
+ActiveSessions prose establishes inventory despite no x-readonly extension;
+WebmailApps has x-readonly=true. Both inventories retain GET. All five use the
+ordinary Flag outcome without response/requiredness corrections or body overrides.
+
+Session creators require cPanel 86, ActiveSessions cPanel 138, WebmailApps
+cPanel 11.48. Receive Mail role restriction applies to WebmailApps only.
+Mail-user creators require the calling account to own the mailbox. Password
+checking adds the correct-password requirement and failure for wrong passwords
+or suspended accounts; the authorized-owner variant is not a fallback. Self
+targets the authenticated cPanel user. Locale lowercase/default and
+remote_address caller-IP/command-line caveats remain source requirements;
+the HTTP library retains optionality and does not assume identical inferred
+addresses through both routes. Login/password/remoteAddress are sensitive.
+
+Creator hostname/session/token fields remain optional; hostname alone permits
+null. Omission, null hostname and empty opaque credential strings stay distinct.
+The separate caller-controlled Webmail POST recipe at port 2096 uses token/login
+and a session body; null hostname refers to the API server, while omitted
+hostname is not filled in. No destination is constructed/fetched or logged into.
+Credential creation does not establish login, activity or mailbox access.
+Returned hostname/token/session combinations and application URLs are private.
+
+ActiveSessions preserves source ordering, optional strings/timestamp/native 0|1
+flags, empty IP and the empty-list no-unexpired-sessions/unreadable-store
+alternatives. Generic sorting can replace source order but is not added here.
+Demo/shared accounts cannot call it. Possessed denotes reseller/root acting
+on behalf of user; tfa_verified belongs to the returned session only. No token
+authentication inference, revocation capability or IP/time session ID is added.
+WebmailApps retains default theme omission, open strings and icon paths relative
+to /usr/local/cpanel/base/frontend without resolving paths or fetching URLs.
+Listing an application proves neither reachability nor login.
+
+Independent synthetic fixtures assert literal auth/path/query/body/content-type
+for every method on both routes, exact once encoding, omission/empty strings,
+nullable hostname and opaque credential/URL bytes, strict known field types,
+server list ordering, named/native signatures, cached accessors, one request,
+API/HTTP/JSON/transport/outer-WHM/payload error precedence and metadata reset.
+Exception arguments enabled during actual runner failures verify sensitive
+private inputs and response frames. Missing/null roots and nonempty wrong
+containers fail. The inherited associative JSON decoder conflates [] and {}
+in object positions; strict empty-object/array distinction remains outside
+this slice under existing follow-up `8x0.2.50`, with no runtime change or contract weakening.
+
+Coverage becomes 1,188 operations (600 UAPI, 588 WHM), 103 groups and 209 outputs
+(208 PHP files plus coverage). Existing overlays/generated contracts, runtime,
+generator, schemas, dependencies, pinned sources/evidence, map checksum and
+all historical audit text are preserved. Session/create_temp_user remains
+visible unsupported: its authenticated-session URL route is unresolved under
+`8x0.1.33`. Live follow-up `8x0.2.69` remains OPEN. No real session, login,
+mailbox, mail delivery, server or account state changed; live POST acceptance
+and Webmail login are not established by offline implementation.
