@@ -55,9 +55,9 @@ final readonly class ContactInformation
      * get_notification_preferences).
      *
      * @return GetNotificationPreferencesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/contact-information/contactinformation-get_notification_preferences
      */
     public function getNotificationPreferences(): array
@@ -87,9 +87,9 @@ final readonly class ContactInformation
      * get_pushbullet_access_token).
      *
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/contact-information/contactinformation-get_pushbullet_access_token
      */
     public function getPushbulletAccessToken(): string
@@ -130,7 +130,7 @@ final readonly class ContactInformation
      *     the first addresses to an account with no current contacts, as observed on cPanel 11.138.0.19 through direct
      *     UAPI and the WHM bridge. Omission does not bypass the existing-address check. Empty lists are rejected
      *     locally; an empty string was rejected by the API. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/contact-information/contactinformation-set_email_addresses
      */
@@ -163,7 +163,7 @@ final readonly class ContactInformation
      * set_pushbullet_access_token).
      *
      * @param string $pushbulletAccessToken The account’s new Pushbullet access token.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/contact-information/contactinformation-set_pushbullet_access_token
      */
     public function setPushbulletAccessToken(
@@ -194,7 +194,7 @@ final readonly class ContactInformation
      *
      * @param string|list<string> $oldAddresses The account’s existing contact email addresses.
      * @param string $password The account’s password.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/contact-information/contactinformation-unset_email_addresses
      */

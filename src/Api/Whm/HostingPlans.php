@@ -256,7 +256,7 @@ final readonly class HostingPlans
      *
      * @param string $user The cPanel username.
      * @param string|int $features Caller-serialized JSON object mapping feature names to enable/disable values.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-access/accounts-add_override_features_for_user
      */
     public function addOverrideFeaturesForUser(string $user, string|int $features): void
@@ -326,9 +326,9 @@ final readonly class HostingPlans
      * @param string|int|null $maxsub The hosting plan's maximum number of subdomains. Null omits it.
      * @param string|int|null $quota The hosting plan's disk space quota, in megabytes (MB). Null omits it.
      * @return AddPackageResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plans/packages-addpkg
      */
     public function addPackage(
@@ -404,9 +404,9 @@ final readonly class HostingPlans
      * @param string $name The hosting plan's name.
      * @param string $extensions The hosting plan's package extensions.
      * @return AddPackageExtensionResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plan-extensions/packages-addpkgext
      */
     public function addPackageExtension(string $name, string $extensions): array
@@ -432,9 +432,9 @@ final readonly class HostingPlans
      *
      * @param string $featurelist The feature list's name.
      * @return DeleteFeaturelistResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-lists/featurelists-delete_featurelist
      */
     public function deleteFeaturelist(string $featurelist): array
@@ -461,7 +461,7 @@ final readonly class HostingPlans
      * API-map identity: whm1:killpkg#GET (wire name killpkg; Hosting Plans).
      *
      * @param string $name The hosting plan's name.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plans/packages-killpkg
      */
     public function deletePackage(string $name): void
@@ -489,9 +489,9 @@ final readonly class HostingPlans
      * @param string $name The hosting plan's name.
      * @param string $extensions The space delimited package extensions to delete.
      * @return DeletePackageExtensionResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plan-extensions/packages-delpkgext
      */
     public function deletePackageExtension(string $name, string $extensions): array
@@ -570,9 +570,9 @@ final readonly class HostingPlans
      * @param string|int|null $maxsub The hosting plan's maximum number of subdomains. Null omits it.
      * @param string|int|null $quota The hosting plan's disk space quota, in megabytes (MB). Null omits it.
      * @return EditPackageResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plans/packages-editpkg
      */
     public function editPackage(
@@ -661,9 +661,9 @@ final readonly class HostingPlans
      * @param string|null $file The `dynamicui` configuration file to retrieve, relative to the
      *     `/usr/local/cpanel/whostmgr/docroot/themes/x/` directory. Null omits it.
      * @return GetAvailableApplicationsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-lists/dynamicui-get_available_applications
      */
     public function getAvailableApplications(?string $applicationsList = null, ?string $file = null): array
@@ -688,9 +688,9 @@ final readonly class HostingPlans
      * API-map identity: whm1:get_feature_metadata#GET (wire name get_feature_metadata; Feature Lists).
      *
      * @return GetFeatureMetadataResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-lists/featurelists-get_feature_metadata
      */
     public function getFeatureMetadata(): array
@@ -709,9 +709,9 @@ final readonly class HostingPlans
      * API-map identity: whm1:get_feature_names#GET (wire name get_feature_names; Feature Lists).
      *
      * @return GetFeatureNamesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-lists/featurelists-get_feature_names
      */
     public function getFeatureNames(): array
@@ -734,9 +734,9 @@ final readonly class HostingPlans
      *
      * @param string $featurelist The feature list for which to list information.
      * @return GetFeaturelistDataResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-lists/featurelists-get_featurelist_data
      */
     public function getFeaturelistData(string $featurelist): array
@@ -755,9 +755,9 @@ final readonly class HostingPlans
      * API-map identity: whm1:get_featurelists#GET (wire name get_featurelists; Feature Lists).
      *
      * @return GetFeaturelistsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-lists/featurelists-get_featurelists
      */
     public function getFeaturelists(): array
@@ -777,9 +777,9 @@ final readonly class HostingPlans
      * Feature Lists).
      *
      * @return GetFeaturelistsByPackageTypesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-lists/featurelists-get_featurelists_by_package_types
      */
     public function getFeaturelistsByPackageTypes(): array
@@ -814,9 +814,9 @@ final readonly class HostingPlans
      *
      * @param string $name The hosting plan's name.
      * @return GetPackageExtensionFormResult|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plan-extensions/accounts-_getpkgextensionform
      */
     public function getPackageExtensionForm(string $name): ?array
@@ -862,9 +862,9 @@ final readonly class HostingPlans
      *
      * @param string $name The hosting plan's name.
      * @return GetPackageInfoResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plans/packages-getpkginfo
      */
     public function getPackageInfo(string $name): array
@@ -885,9 +885,9 @@ final readonly class HostingPlans
      * @param string|list<string> $users The user's username.
      * @param string|list<string>|null $features The feature's name. Null omits it.
      * @return GetUsersFeaturesSettingsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-access/featurelists-get_users_features_settings
      */
@@ -919,9 +919,9 @@ final readonly class HostingPlans
      * @param 'all'|'creatable'|'editable'|'viewable'|null $want The permissions of packages that you wish to list. Null
      *     omits it.
      * @return ListPackagesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plans/packages-listpkgs
      */
     public function listPackages(?string $want = null): array
@@ -989,9 +989,9 @@ final readonly class HostingPlans
      * @param string|int|null $maxsub The hosting plan's maximum number of subdomains. Null omits it.
      * @param string|int|null $quota The hosting plan's disk space limit. Null omits it.
      * @return MatchPackagesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plans/packages-matchpkgs
      */
     public function matchPackages(
@@ -1064,7 +1064,7 @@ final readonly class HostingPlans
      *
      * @param string $user The user's username.
      * @param string|int $features Caller-serialized JSON array of feature names.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-access/accounts-remove_override_features_for_user
      */
     public function removeOverrideFeaturesForUser(string $user, string|int $features): void
@@ -1085,9 +1085,9 @@ final readonly class HostingPlans
      * @param string $user The cPanel account username.
      * @param string $feature The feature's ID.
      * @return 0|1
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-access/accounts-verify_user_has_feature
      */
     public function verifyUserHasFeature(string $user, string $feature): int

@@ -167,9 +167,9 @@ final readonly class ApiTools
      * @param 'cpaneld'|'whostmgrd'|'webmaild'|null $service The session's service. Null omits it.
      * @param string|null $user The session's cPanel account username or a valid email address. Null omits it.
      * @return CreateDashboardLoginLinkResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/session/wpdashboard-wp_dashboard_create_login_link
      */
     public function createDashboardLoginLink(?string $service = null, ?string $user = null): array
@@ -224,9 +224,9 @@ final readonly class ApiTools
      * @param string|null $whitelistIp One or more optional remote IP address or CIDR IP address ranges that can use
      *     this token. Null omits it.
      * @return CreateDashboardTokenResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/api-token-management/wpdashboard-wp_dashboard_create_api_token
      */
     public function createDashboardToken(
@@ -289,9 +289,9 @@ final readonly class ApiTools
      * @param string|null $whitelistIp One or more optional remote IP or CIDR IP ranges this token may be used from.
      *     Null omits it.
      * @return CreateTokenResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/api-token-management/tokens-api_token_create
      */
     public function createToken(
@@ -347,9 +347,9 @@ final readonly class ApiTools
      * @param string|null $promptToken The prompt token to pre-populate the user's website-generation goals when logging
      *     into the Nova interface. Null omits it.
      * @return CreateUserSessionResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/session/session-create_user_session
      */
     public function createUserSession(
@@ -393,9 +393,9 @@ final readonly class ApiTools
      *
      * @param string|null $type The cPanel API 1 function to query. Null omits it.
      * @return GetApiCallsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/api-statistics/sys-get_api_calls
      */
     public function getApiCalls(?string $type = null): array
@@ -431,9 +431,9 @@ final readonly class ApiTools
      *
      * @param 'cpapi1'|null $type The cPanel API type to query. Null omits it.
      * @return GetApiPagesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/api-statistics/sys-get_api_pages
      */
     public function getApiPages(?string $type = null): array
@@ -470,9 +470,9 @@ final readonly class ApiTools
      * Applications).
      *
      * @return GetAppconfigApplicationListResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/applications/sys-get_appconfig_application_list
      */
     public function getAppconfigApplicationList(): array
@@ -510,9 +510,9 @@ final readonly class ApiTools
      *
      * @param string $token The API token.
      * @return GetTokenDetailsResult|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/api-token-management/tokens-api_token_get_details
      */
     public function getTokenDetails(
@@ -538,9 +538,9 @@ final readonly class ApiTools
      * API-map identity: whm1:applist#GET (wire name applist; Applications).
      *
      * @return ListApplicationsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/applications/other-applist
      */
     public function listApplications(): array
@@ -565,9 +565,9 @@ final readonly class ApiTools
      * API-map identity: whm1:api_token_list#GET (wire name api_token_list; API Token Management).
      *
      * @return ListTokensResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/api-token-management/tokens-api_token_list
      */
     public function listTokens(): array
@@ -597,7 +597,7 @@ final readonly class ApiTools
      * API-map identity: whm1:api_token_revoke#GET (wire name api_token_revoke; API Token Management).
      *
      * @param string $tokenName The API token's name.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/api-token-management/tokens-api_token_revoke
      */
     public function revokeToken(string $tokenName): void
@@ -656,9 +656,9 @@ final readonly class ApiTools
      *     removes expiration. The client requires acl, whitelistIp and expiresAt explicitly; empty strings are not
      *     documented preservation values. Null omits it.
      * @return UpdateTokenResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/api-token-management/tokens-api_token_update
      */
     public function updateToken(

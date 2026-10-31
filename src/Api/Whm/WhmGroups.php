@@ -43,6 +43,8 @@ trait WhmGroups
 
     private ?Ssl $sslGroup = null;
 
+    private ?SystemPackages $systemPackagesGroup = null;
+
     private ?Transfers $transfersGroup = null;
 
     private ?WebServer $webServerGroup = null;
@@ -211,6 +213,16 @@ trait WhmGroups
     public function ssl(): Ssl
     {
         return $this->sslGroup ??= new Ssl($this->run(...));
+    }
+
+    /**
+     * Select the System Package Management operations without making a request.
+     *
+     * Server RPM metadata, package inventory, plugin processes and queued package actions.
+     */
+    public function systemPackages(): SystemPackages
+    {
+        return $this->systemPackagesGroup ??= new SystemPackages($this->run(...));
     }
 
     /**

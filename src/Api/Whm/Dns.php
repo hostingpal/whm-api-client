@@ -268,7 +268,7 @@ final readonly class Dns
      *
      * @param string $domain The domain for which to activate a security key.
      * @param int $keyId The security key's ID.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-security/dns-activate_zone_key
      */
     public function activateZoneKey(string $domain, int $keyId): void
@@ -308,7 +308,7 @@ final readonly class Dns
      * @param string|null $ipv6 The domain's IPv6 address. Null omits it.
      * @param string|null $template The zone file template. Null omits it.
      * @param string|null $trueowner The new zone's owner. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/dns-adddns
      */
     public function addDns(
@@ -359,9 +359,9 @@ final readonly class Dns
      * @param bool|null $active Whether to activate the new security key. Null omits it.
      * @param 256|384|1024|2048|null $keySize The security key size, in bits. Null omits it.
      * @return AddZoneKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-security/dns-add_zone_key
      */
     public function addZoneKey(
@@ -407,9 +407,9 @@ final readonly class Dns
      * @param string $host The nameserver's IP address.
      * @param string|null $althost The nameserver's alternate IP address. Null omits it.
      * @return ClusterMemberHasTrustWithResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/clusterserver-cluster_member_has_trust_with
      */
     public function clusterMemberHasTrustWith(string $host, ?string $althost = null): array
@@ -438,7 +438,7 @@ final readonly class Dns
      * @param string $domain The domain name to park.
      * @param string $username The cPanel user account.
      * @param string $webVhostDomain An existing web virtual host to which the new domain name should be added.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/userdomains-create_parked_domain_for_user
      */
     public function createParkedDomainForUser(string $domain, string $username, string $webVhostDomain): void
@@ -470,9 +470,9 @@ final readonly class Dns
      * @param bool|null $useCanonicalName Whether to use a canonical name in the Apache® configuration for
      *     self-referential URLs. Null omits it.
      * @return CreateSubdomainResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/userdomains-create_subdomain
      */
     public function createSubdomain(string $documentRoot, string $domain, ?bool $useCanonicalName = null): array
@@ -501,7 +501,7 @@ final readonly class Dns
      *
      * @param string $domain The domain for which to deactivate a security key.
      * @param int $keyId The security key's ID.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-security/dns-deactivate_zone_key
      */
     public function deactivateZoneKey(string $domain, int $keyId): void
@@ -530,9 +530,9 @@ final readonly class Dns
      *
      * @param string $domain The name of the domain to delete.
      * @return DeleteDomainResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/userdomains-delete_domain
      */
     public function deleteDomain(string $domain): array
@@ -563,9 +563,9 @@ final readonly class Dns
      *
      * @param string|list<string> $domains The domain for which to disable DNSSEC.
      * @return DisableDnssecForDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-security/dns-disable_dnssec_for_domains
      */
@@ -625,9 +625,9 @@ final readonly class Dns
      * @param bool|null $useNsec3 Whether the domain will use Next Secure Record (NSEC) or NSEC3 semantics. Null omits
      *     it.
      * @return EnableDnssecForDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-security/dns-enable_dnssec_for_domains
      */
@@ -679,9 +679,9 @@ final readonly class Dns
      * @param string $domain The domain from which to fetch the DNSKEY record value.
      * @param int $keyId The DNSSEC record's ID.
      * @return ExportZoneDnskeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/dns-export_zone_dnskey
      */
     public function exportZoneDnskey(string $domain, int $keyId): array
@@ -701,9 +701,9 @@ final readonly class Dns
      *
      * @param string|list<string> $zones The DNS zones to display.
      * @return ExportZoneFilesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/dns-export_zone_files
      */
@@ -738,9 +738,9 @@ final readonly class Dns
      * @param string $domain The domain to export the security key to.
      * @param int $keyId The security key's ID.
      * @return ExportZoneKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-security/dns-export_zone_key
      */
     public function exportZoneKey(string $domain, int $keyId): array
@@ -761,9 +761,9 @@ final readonly class Dns
      *
      * @param string|list<string> $domains The domain to fetch a DS record from.
      * @return FetchDsRecordsForDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-fetch_ds_records_for_domains
      */
@@ -783,9 +783,9 @@ final readonly class Dns
      * API-map identity: whm1:get_nameserver_config#GET (wire name get_nameserver_config; Resolvers).
      *
      * @return GetNameserverConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/resolvers/nameserver-get_nameserver_config
      */
     public function getNameserverConfig(): array
@@ -806,9 +806,9 @@ final readonly class Dns
      * @param string $domain The zone record's domain.
      * @param int $line The zone record's line number.
      * @return GetZoneRecordResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/dns-getzonerecord
      */
     public function getZoneRecord(string $domain, int $line): array
@@ -829,9 +829,9 @@ final readonly class Dns
      * @param string|list<string> $domains The domain to check whether the local server is authoritative for the
      *     domain's DNS records.
      * @return HasLocalAuthorityResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-has_local_authority
      */
@@ -867,9 +867,9 @@ final readonly class Dns
      * @param string $keyData The security key's data that the pdnsuti utility's `export-zone-key` call returns.
      * @param string $keyType The security key's type.
      * @return ImportZoneKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-security/dns-import_zone_key
      */
     public function importZoneKey(
@@ -897,9 +897,9 @@ final readonly class Dns
      * API-map identity: whm1:is_alias_available#GET (wire name is_alias_available; Resolvers).
      *
      * @return IsAliasAvailableResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-is_alias_available
      */
     public function isAliasAvailable(): array
@@ -919,9 +919,9 @@ final readonly class Dns
      * API-map identity: whm1:is_https_available#GET (wire name is_https_available; Service Records).
      *
      * @return IsHttpsAvailableResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-is_https_available
      */
     public function isHttpsAvailable(): array
@@ -942,9 +942,9 @@ final readonly class Dns
      * API-map identity: whm1:is_svcb_available#GET (wire name is_svcb_available; Service Records).
      *
      * @return IsSvcbAvailableResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-is_svcb_available
      */
     public function isSvcbAvailable(): array
@@ -974,7 +974,7 @@ final readonly class Dns
      * API-map identity: whm1:killdns#GET (wire name killdns; DNS Zones).
      *
      * @param string $domain The zone record's domain.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/dns-killdns
      */
     public function killDns(string $domain): void
@@ -991,9 +991,9 @@ final readonly class Dns
      *
      * @param string $domain The zone record's domain.
      * @return ListMxRecordsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-listmxs
      */
     public function listMxRecords(string $domain): array
@@ -1012,9 +1012,9 @@ final readonly class Dns
      * API-map identity: whm1:listzones#GET (wire name listzones; DNS Zones).
      *
      * @return ListZonesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/dns-listzones
      */
     public function listZones(): array
@@ -1034,9 +1034,9 @@ final readonly class Dns
      *
      * @param string $host The nameserver's hostname.
      * @return LookupNameserverIpResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/resolvers/nameserver-lookupnsip
      */
     public function lookupNameserverIp(string $host): array
@@ -1058,9 +1058,9 @@ final readonly class Dns
      *
      * @param string $host The nameserver's hostname.
      * @return LookupNameserverIpsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/resolvers/nameserver-lookupnsips
      */
     public function lookupNameserverIps(string $host): array
@@ -1080,9 +1080,9 @@ final readonly class Dns
      *
      * @param string $zone The name of one of the user’s DNS zones.
      * @return ParseDnsZoneResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/dns-parse_dns_zone
      */
     public function parseDnsZone(string $zone): array
@@ -1110,7 +1110,7 @@ final readonly class Dns
      *
      * @param string $domain The domain for which to remove a security key.
      * @param int $keyId The security key's ID.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-security/dns-remove_zone_key
      */
     public function removeZoneKey(string $domain, int $keyId): void
@@ -1138,7 +1138,7 @@ final readonly class Dns
      * @param int $line The DNS zone record file's line number.
      * @param string $zone The zone record's domain.
      * @param string|null $serialnum The zone file's serial number. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/dns-removezonerecord
      */
     public function removeZoneRecord(int $line, string $zone, ?string $serialnum = null): void
@@ -1174,7 +1174,7 @@ final readonly class Dns
      * @param string|null $domain The domain. Null omits it.
      * @param string|null $user The domain's owner. Null omits it.
      * @param string|null $zone The zone file. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-resetzone
      */
     public function resetZone(?string $domain = null, ?string $user = null, ?string $zone = null): void
@@ -1191,9 +1191,9 @@ final readonly class Dns
      *
      * @param string $domain The domain.
      * @return ResolveDomainNameResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/nameserver-resolvedomainname
      */
     public function resolveDomainName(string $domain): array
@@ -1225,7 +1225,7 @@ final readonly class Dns
      * @param int $preference The MX record's priority order.
      * @param string|null $class The record's class. Null omits it.
      * @param int|null $ttl The record's Time To Live (TTL) in seconds. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-savemxs
      */
     public function saveMxs(
@@ -1266,9 +1266,9 @@ final readonly class Dns
      *
      * @param 'BIND'|'PowerDNS'|'Disabled' $nameserver The nameserver software.
      * @return SetNameserverResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-cluster-settings/nameserver-set_nameserver
      */
     public function setNameserver(string $nameserver): array
@@ -1303,9 +1303,9 @@ final readonly class Dns
      * @param bool $nsec3OptOut Whether the system will create records for all delegations.
      * @param string $nsec3Salt The salt value that PowerDNS uses in the hashes.
      * @return SetNsec3ForDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-set_nsec3_for_domains
      */
     public function setNsec3ForDomains(
@@ -1347,7 +1347,7 @@ final readonly class Dns
      * @param string $nameserver1 The server's primary resolver nameserver.
      * @param string $nameserver2 The server's secondary resolver nameserver.
      * @param string|null $nameserver3 The server's tertiary resolver nameserver. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/resolvers/resolvers-setresolvers
      */
     public function setResolvers(string $nameserver1, string $nameserver2, ?string $nameserver3 = null): void
@@ -1377,9 +1377,9 @@ final readonly class Dns
      * Resolvers).
      *
      * @return SetUpDnsResolverWorkaroundsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/resolvers/dns-set_up_dns_resolver_workarounds
      */
     public function setUpDnsResolverWorkarounds(): array
@@ -1413,9 +1413,9 @@ final readonly class Dns
      *
      * @param string $domain The domain for which to disable NSEC3 semantics and use NSEC semantics.
      * @return UnsetNsec3ForDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/dns-unset_nsec3_for_domains
      */
     public function unsetNsec3ForDomains(string $domain): array
@@ -1450,7 +1450,7 @@ final readonly class Dns
      *     omits it.
      * @param string|null $nameserver4 The nameserver to add or update as the `wwwacct.conf` file's `NS4` setting. Null
      *     omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/resolvers/wwwacct-update_nameservers_config
      */
     public function updateNameserversConfig(
@@ -1478,7 +1478,7 @@ final readonly class Dns
      *
      * API-map identity: whm1:update_reverse_dns_cache#GET (wire name update_reverse_dns_cache; DNS Zones).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/dns-zones/dns-update_reverse_dns_cache
      */
     public function updateReverseDnsCache(): void
@@ -1498,7 +1498,7 @@ final readonly class Dns
      *
      * API-map identity: whm1:updateuserdomains#GET (wire name updateuserdomains; Domain Management).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-management/userdomains-updateuserdomains
      */
     public function updateUserDomains(): void

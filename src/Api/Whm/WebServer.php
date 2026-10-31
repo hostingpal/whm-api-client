@@ -161,9 +161,9 @@ final readonly class WebServer
      * API-map identity: whm1:convert_all_domains_to_fpm#GET (wire name convert_all_domains_to_fpm; PHP-FPM).
      *
      * @return ConvertAllDomainsToFpmResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php-fpm/php-convert_all_domains_to_fpm
      */
     public function convertAllDomainsToFpm(): array
@@ -187,9 +187,9 @@ final readonly class WebServer
      * Settings).
      *
      * @return Ea4GetAdditionalPkgPrefixesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/easyapache-settings/ea4-ea4_get_additional_pkg_prefixes
      */
     public function ea4GetAdditionalPkgPrefixes(): array
@@ -217,9 +217,9 @@ final readonly class WebServer
      * EasyApache Settings).
      *
      * @return Ea4GetCurrentlyInstalledPackagesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/easyapache-settings/ea4-ea4_get_currently_installed_packages
      */
     public function ea4GetCurrentlyInstalledPackages(): array
@@ -259,9 +259,9 @@ final readonly class WebServer
      * API-map identity: whm1:ea4_list_profiles#GET (wire name ea4_list_profiles; EasyApache Settings).
      *
      * @return Ea4ListProfilesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/easyapache-settings/ea4-ea4_list_profiles
      */
     public function ea4ListProfiles(): array
@@ -287,9 +287,9 @@ final readonly class WebServer
      * API-map identity: whm1:ea4_metainfo#GET (wire name ea4_metainfo; EasyApache Settings).
      *
      * @return Ea4MetainfoResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/easyapache-settings/ea4-ea4_metainfo
      */
     public function ea4Metainfo(): array
@@ -318,9 +318,9 @@ final readonly class WebServer
      * API-map identity: whm1:ea4_recommendations#GET (wire name ea4_recommendations; EasyApache Settings).
      *
      * @return Ea4RecommendationsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/easyapache-settings/ea4-ea4_recommendations
      */
     public function ea4Recommendations(): array
@@ -361,9 +361,9 @@ final readonly class WebServer
      *     it.
      * @param string|null $version The profile's version number. Null omits it.
      * @return Ea4SaveProfileResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a non-omittable list argument is empty,
      *     or any list is keyed or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/easyapache-settings/ea4-ea4_save_profile
@@ -408,9 +408,9 @@ final readonly class WebServer
      * API-map identity: whm1:eol_php_sites#GET (wire name eol_php_sites; EasyApache Settings).
      *
      * @return int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/easyapache-settings/eolphpsites-eol_php_sites
      */
     public function eolPhpSites(): int
@@ -440,9 +440,9 @@ final readonly class WebServer
      * API-map identity: whm1:get_fpm_count_and_utilization#GET (wire name get_fpm_count_and_utilization; PHP-FPM).
      *
      * @return GetFpmCountAndUtilizationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php-fpm/php-get_fpm_count_and_utilization
      */
     public function getFpmCountAndUtilization(): array
@@ -467,9 +467,9 @@ final readonly class WebServer
      * API-map identity: whm1:is_conversion_in_progress#GET (wire name is_conversion_in_progress; PHP-FPM).
      *
      * @return 0|1
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php-fpm/php-is_conversion_in_progress
      */
     public function isConversionInProgress(): int
@@ -490,9 +490,9 @@ final readonly class WebServer
      * API-map identity: whm1:php_get_default_accounts_to_fpm#GET (wire name php_get_default_accounts_to_fpm; PHP-FPM).
      *
      * @return 0|1
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php-fpm/php-php_get_default_accounts_to_fpm
      */
     public function phpGetDefaultAccountsToFpm(): int
@@ -514,9 +514,9 @@ final readonly class WebServer
      *
      * @param string|null $version An installed PHP version. Null omits it.
      * @return PhpGetHandlersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_get_handlers
      */
     public function phpGetHandlers(?string $version = null): array
@@ -553,9 +553,9 @@ final readonly class WebServer
      * @param bool|null $systemDefault Whether to return domains that inherit the system's default PHP version. Null
      *     omits it.
      * @return PhpGetImpactedDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_get_impacted_domains
      */
@@ -580,9 +580,9 @@ final readonly class WebServer
      * API-map identity: whm1:php_get_installed_versions#GET (wire name php_get_installed_versions; PHP).
      *
      * @return PhpGetInstalledVersionsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_get_installed_versions
      */
     public function phpGetInstalledVersions(): array
@@ -603,9 +603,9 @@ final readonly class WebServer
      * API-map identity: whm1:php_get_old_fpm_flag#GET (wire name php_get_old_fpm_flag; PHP-FPM).
      *
      * @return int
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php-fpm/php-php_get_old_fpm_flag
      */
     public function phpGetOldFpmFlag(): int
@@ -626,9 +626,9 @@ final readonly class WebServer
      * API-map identity: whm1:php_get_system_default_version#GET (wire name php_get_system_default_version; PHP).
      *
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_get_system_default_version
      */
     public function phpGetSystemDefaultVersion(): string
@@ -665,9 +665,9 @@ final readonly class WebServer
      * API-map identity: whm1:php_get_vhost_versions#GET (wire name php_get_vhost_versions; PHP).
      *
      * @return PhpGetVhostVersionsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_get_vhost_versions
      */
     public function phpGetVhostVersions(): array
@@ -691,9 +691,9 @@ final readonly class WebServer
      *
      * @param string $version The name of an installed PHP package.
      * @return PhpGetVhostsByVersionResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_get_vhosts_by_version
      */
     public function phpGetVhostsByVersion(string $version): array
@@ -721,9 +721,9 @@ final readonly class WebServer
      *
      * @param string $version The name of an installed PHP version's package.
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_ini_get_content
      */
     public function phpIniGetContent(string $version): string
@@ -755,9 +755,9 @@ final readonly class WebServer
      *
      * @param string $version The name of an installed version of PHP.
      * @return PhpIniGetDirectivesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_ini_get_directives
      */
     public function phpIniGetDirectives(string $version): array
@@ -793,9 +793,9 @@ final readonly class WebServer
      * @param string $content The contents of the `php.ini` file that you wish to change.
      * @param string $version The version of PHP for which you wish to change the `php.ini` file.
      * @return PhpIniSetContentResult|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_ini_set_content
      */
     public function phpIniSetContent(
@@ -834,9 +834,9 @@ final readonly class WebServer
      * @param string|list<string> $directives The name of a PHP directive and its value.
      * @param string $version PHP version on the system.
      * @return PhpIniSetDirectivesResult|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_ini_set_directives
      */
@@ -883,9 +883,9 @@ final readonly class WebServer
      *
      * @param bool $defaultAccountsToFpm Whether to enable PHP-FPM on all new accounts and domains on a server.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php-fpm/php-php_set_default_accounts_to_fpm
      */
     public function phpSetDefaultAccountsToFpm(bool $defaultAccountsToFpm): mixed
@@ -918,7 +918,7 @@ final readonly class WebServer
      *
      * @param string $handler An installed PHP handler.
      * @param string $version An installed PHP version.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_set_handler
      */
     public function phpSetHandler(string $handler, string $version): void
@@ -945,9 +945,9 @@ final readonly class WebServer
      * API-map identity: whm1:php_set_old_fpm_flag#GET (wire name php_set_old_fpm_flag; PHP-FPM).
      *
      * @return PhpSetOldFpmFlagResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php-fpm/php-php_set_old_fpm_flag
      */
     public function phpSetOldFpmFlag(): array
@@ -979,7 +979,7 @@ final readonly class WebServer
      * @param bool|null $overwrite Whether to overwrite the existing session save path in the `php.ini` file. Null omits
      *     it.
      * @param string|null $path The directory in which to save session information. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_set_session_save_path
      */
     public function phpSetSessionSavePath(?bool $overwrite = null, ?string $path = null): void
@@ -1002,7 +1002,7 @@ final readonly class WebServer
      * API-map identity: whm1:php_set_system_default_version#GET (wire name php_set_system_default_version; PHP).
      *
      * @param string $version The version of PHP that you wish to set as the system's default.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_set_system_default_version
      */
     public function phpSetSystemDefaultVersion(string $version): void
@@ -1041,7 +1041,7 @@ final readonly class WebServer
      * @param string|list<string> $vhosts The virtual host's name.
      * @param bool|null $phpFpm Whether PHP-FPM is enabled. Null omits it.
      * @param string|int|null $phpFpmPoolParms A JSON-encoded string containing a hash of values. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_set_vhost_versions
      */

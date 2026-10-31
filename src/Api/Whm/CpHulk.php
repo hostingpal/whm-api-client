@@ -220,9 +220,9 @@ final readonly class CpHulk
      * @param string|null $comment A comment to include. Null omits it.
      * @param bool|null $skipEnabledCheck Whether to skip checking if cPHulk runs on the server. Null omits it.
      * @return CreateRecordResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/management/cphulk-create_cphulk_record
      */
@@ -262,9 +262,9 @@ final readonly class CpHulk
      * @param 'white'|'black' $listName The cPHulk list's name.
      * @param bool|null $skipEnabledCheck Whether to skip checking if cPHulk runs on the server. Null omits it.
      * @return DeleteRecordResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/management/cphulk-delete_cphulk_record
      */
@@ -292,7 +292,7 @@ final readonly class CpHulk
      *
      * API-map identity: whm1:disable_cphulk#GET (wire name disable_cphulk; Settings).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/settings/cphulk-disable_cphulk
      */
     public function disable(): void
@@ -312,7 +312,7 @@ final readonly class CpHulk
      *
      * API-map identity: whm1:enable_cphulk#GET (wire name enable_cphulk; Settings).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/settings/cphulk-enable_cphulk
      */
     public function enable(): void
@@ -333,9 +333,9 @@ final readonly class CpHulk
      * API-map identity: whm1:flush_cphulk_login_history#GET (wire name flush_cphulk_login_history; Management).
      *
      * @return FlushLoginHistoryResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/management/cphulk-flush_cphulk_login_history
      */
     public function flushLoginHistory(): array
@@ -365,9 +365,9 @@ final readonly class CpHulk
      *
      * @param string|list<string> $ips The record's IP address.
      * @return FlushLoginHistoryForIpsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/management/cphulk-flush_cphulk_login_history_for_ips
      */
@@ -397,9 +397,9 @@ final readonly class CpHulk
      * API-map identity: whm1:get_cphulk_brutes#GET (wire name get_cphulk_brutes; Reporting).
      *
      * @return GetBrutesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/reporting/cphulk-get_cphulk_brutes
      */
     public function getBrutes(): array
@@ -421,9 +421,9 @@ final readonly class CpHulk
      * Reporting).
      *
      * @return GetCountriesWithKnownIpRangesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/reporting/countrycodes-get_countries_with_known_ip_ranges
      */
     public function getCountriesWithKnownIpRanges(): array
@@ -456,9 +456,9 @@ final readonly class CpHulk
      * API-map identity: whm1:get_cphulk_excessive_brutes#GET (wire name get_cphulk_excessive_brutes; Reporting).
      *
      * @return GetExcessiveBrutesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/reporting/cphulk-get_cphulk_excessive_brutes
      */
     public function getExcessiveBrutes(): array
@@ -484,9 +484,9 @@ final readonly class CpHulk
      * API-map identity: whm1:get_cphulk_failed_logins#GET (wire name get_cphulk_failed_logins; Reporting).
      *
      * @return GetFailedLoginsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/reporting/cphulk-get_cphulk_failed_logins
      */
     public function getFailedLogins(): array
@@ -512,9 +512,9 @@ final readonly class CpHulk
      * API-map identity: whm1:get_cphulk_user_brutes#GET (wire name get_cphulk_user_brutes; Reporting).
      *
      * @return GetUserBrutesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/reporting/cphulk-get_cphulk_user_brutes
      */
     public function getUserBrutes(): array
@@ -535,9 +535,9 @@ final readonly class CpHulk
      * API-map identity: whm1:load_cphulk_config#GET (wire name load_cphulk_config; Settings).
      *
      * @return LoadConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/settings/cphulk-load_cphulk_config
      */
     public function loadConfig(): array
@@ -563,9 +563,9 @@ final readonly class CpHulk
      * @param 'black'|'white' $listName The cPHulk list's name.
      * @param bool|null $skipEnabledCheck Whether to skip checking if cPHulk runs on the server. Null omits it.
      * @return ReadRecordsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/management/cphulk-read_cphulk_records
      */
     public function readRecords(string $listName, ?bool $skipEnabledCheck = null): array
@@ -640,9 +640,9 @@ final readonly class CpHulk
      * @param bool|null $usernameBasedProtectionLocalOrigin Whether to enable username-based protection only on requests
      *     that originate from a local IP address. Null omits it.
      * @return SaveConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/settings/cphulk-save_cphulk_config
      */
     public function saveConfig(
@@ -716,9 +716,9 @@ final readonly class CpHulk
      * @param string $key The configuration key for the setting to set/modify.
      * @param string|int $value The new value for the specified key.
      * @return SetConfigKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/settings/cphulk-set_cphulk_config_key
      */
     public function setConfigKey(
@@ -742,9 +742,9 @@ final readonly class CpHulk
      * API-map identity: whm1:cphulk_status#GET (wire name cphulk_status; Management).
      *
      * @return StatusResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/management/cphulk-cphulk_status
      */
     public function status(): array

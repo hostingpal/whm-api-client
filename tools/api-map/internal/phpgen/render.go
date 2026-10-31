@@ -296,10 +296,10 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	if ret != nil {
 		w.docTag(indent, "@return "+docReturn(op, *ret))
 	}
-	w.line(indent + " * @throws ApiException If transport, HTTP, the outcome, or the payload fails.")
+	w.line(indent + " * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.")
 	if ret != nil && op.Outcome == "flag" {
-		w.line(indent + " * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;")
-		w.line(indent + " *     any change the operation makes has already taken effect.")
+		w.line(indent + " * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;")
+		w.line(indent + " *     the operation may already have changed state; do not retry automatically.")
 	} else if ret != nil {
 		w.line(indent + " * @throws PayloadMismatchException If the envelope was accepted but the payload differs from the contract;")
 		w.line(indent + " *     the outcome is not checked.")

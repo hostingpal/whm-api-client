@@ -468,9 +468,9 @@ final readonly class Accounts
      * @param string|null $searchmethod The search method to use. Null omits it.
      * @param string|null $searchtype The type of search to perform. Null omits it.
      * @return AccountSummaryResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-accountsummary
      */
     public function accountSummary(
@@ -506,7 +506,7 @@ final readonly class Accounts
      *
      * @param string $account The username of the account.
      * @param string $name The name of the account enhancement.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-enhancements/accountenhancements-assign_account_enhancement
      */
     public function assignAccountEnhancement(string $account, string $name): void
@@ -523,7 +523,7 @@ final readonly class Accounts
      *
      * @param string $user The cPanel account's username.
      * @param string $package The hosting plan's name.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-changepackage
      */
     public function changePackage(string $user, string $package): void
@@ -548,9 +548,9 @@ final readonly class Accounts
      * @param bool|null $dbPassUpdate Whether to also change the account's MySQL® password. Null omits it.
      * @param bool|null $digestauth Whether to enable Digest Authentication for the account. Null omits it.
      * @return ChangePasswordResult|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/passwords/sys-passwd
      */
     public function changePassword(
@@ -587,9 +587,9 @@ final readonly class Accounts
      *
      * @param int $jobId The conversion's job identification number.
      * @return ConvertAddonFetchConversionDetailsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/convertaddon-convert_addon_fetch_conversion_details
      */
     public function convertAddonFetchConversionDetails(int $jobId): array
@@ -617,9 +617,9 @@ final readonly class Accounts
      *
      * @param string $domain The addon domain for which to retrieve details.
      * @return ConvertAddonFetchDomainDetailsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/convertaddon-convert_addon_fetch_domain_details
      */
     public function convertAddonFetchDomainDetails(string $domain): array
@@ -651,9 +651,9 @@ final readonly class Accounts
      *
      * @param int $jobId The conversion's job identification number.
      * @return ConvertAddonGetConversionStatusResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/convertaddon-convert_addon_get_conversion_status
      */
     public function convertAddonGetConversionStatus(int $jobId): array
@@ -681,9 +681,9 @@ final readonly class Accounts
      * Information).
      *
      * @return ConvertAddonListAddonDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/convertaddon-convert_addon_list_addon_domains
      */
     public function convertAddonListAddonDomains(): array
@@ -711,9 +711,9 @@ final readonly class Accounts
      * Information).
      *
      * @return ConvertAddonListConversionsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/convertaddon-convert_addon_list_conversions
      */
     public function convertAddonListConversions(): array
@@ -797,9 +797,9 @@ final readonly class Accounts
      * @param int|null $uid The account's user ID. Null omits it.
      * @param bool|null $useregns Whether to use registered nameservers for the domain. Null omits it.
      * @return CreateAccountResult|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-creation/accounts-createacct
      */
@@ -932,9 +932,9 @@ final readonly class Accounts
      * @param string $id The identifier of the item you are targeting.
      * @param string $name The name of the account enhancement.
      * @return CreateAccountEnhancementResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-enhancements/accountenhancements-create_account_enhancement
      */
     public function createAccountEnhancement(string $id, string $name): array
@@ -958,7 +958,7 @@ final readonly class Accounts
      * Enhancements).
      *
      * @param string $name The name of the account enhancement.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-enhancements/accountenhancements-delete_account_enhancement
      */
     public function deleteAccountEnhancement(string $name): void
@@ -984,9 +984,9 @@ final readonly class Accounts
      *
      * @param string $domain The account's main domain.
      * @return DomainUserDataResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/accounts-domainuserdata
      */
     public function domainUserData(string $domain): array
@@ -1011,7 +1011,7 @@ final readonly class Accounts
      *
      * @param string $user The cPanel account username.
      * @param string|int $quota The account's new quota.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/bandwidth-and-disk-quotas/accounts-editquota
      */
     public function editQuota(string $user, string|int $quota): void
@@ -1040,9 +1040,9 @@ final readonly class Accounts
      *     the named users to change their passwords at next login.
      * @param bool|null $stopOnFailure Whether to halt the function if it experiences an error. Null omits it.
      * @return ForcePasswordChangeResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/passwords/accounts-forcepasswordchange
      */
     public function forcePasswordChange(string $usersJson, ?bool $stopOnFailure = null): array
@@ -1068,9 +1068,9 @@ final readonly class Accounts
      * API-map identity: whm1:get_current_users_count#GET (wire name get_current_users_count; Account Creation).
      *
      * @return GetCurrentUsersCountResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-creation/accounts-get_current_users_count
      */
     public function getCurrentUsersCount(): array
@@ -1098,9 +1098,9 @@ final readonly class Accounts
      * @param 'on'|'off'|null $cacheMode Each cPanel & WHM server maintains a cache of users’ disk quota usage. Null
      *     omits it.
      * @return GetDiskUsageResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/bandwidth-and-disk-quotas/diskusage-get_disk_usage
      */
     public function getDiskUsage(?string $cacheMode = null): array
@@ -1119,9 +1119,9 @@ final readonly class Accounts
      * API-map identity: whm1:get_domain_info#GET (wire name get_domain_info; Domain Information).
      *
      * @return GetDomainInfoResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/accounts-get_domain_info
      */
     public function getDomainInfo(): array
@@ -1146,9 +1146,9 @@ final readonly class Accounts
      *
      * @param string $domain A domain on the system that is owned by the user calling this function.
      * @return GetDomainOwnerResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/accounts-getdomainowner
      */
     public function getDomainOwner(string $domain): array
@@ -1174,9 +1174,9 @@ final readonly class Accounts
      * API-map identity: whm1:get_homedir_roots#GET (wire name get_homedir_roots; Account Management).
      *
      * @return GetHomedirRootsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-get_homedir_roots
      */
     public function getHomedirRoots(): array
@@ -1209,9 +1209,9 @@ final readonly class Accounts
      * API-map identity: whm1:get_maximum_users#GET (wire name get_maximum_users; Account Creation).
      *
      * @return GetMaximumUsersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-creation/accounts-get_maximum_users
      */
     public function getMaximumUsers(): array
@@ -1236,9 +1236,9 @@ final readonly class Accounts
      *
      * @param string $password The password.
      * @return GetPasswordStrengthResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/passwords/accounts-get_password_strength
      */
     public function getPasswordStrength(
@@ -1269,9 +1269,9 @@ final readonly class Accounts
      *     omits it.
      * @param int|float|null $nearnessFraction The fraction of 1 at which to consider usage "near". Null omits it.
      * @return GetUpgradeOpportunitiesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-get_upgrade_opportunities
      */
     public function getUpgradeOpportunities(
@@ -1305,9 +1305,9 @@ final readonly class Accounts
      * @param string $user The requested user's username.
      * @param 'cpaneld'|'webmail'|null $service The interface for which to filter results: Null omits it.
      * @return GetUsersLinksResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/styles/plugins-get_users_links
      */
     public function getUsersLinks(string $user, ?string $service = null): array
@@ -1333,9 +1333,9 @@ final readonly class Accounts
      *
      * @param string $user The cPanel account username.
      * @return HasDigestAuthResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/sys-has_digest_auth
      */
     public function hasDigestAuth(string $user): array
@@ -1360,9 +1360,9 @@ final readonly class Accounts
      *
      * @param string $user The cPanel account username.
      * @return HasMycnfForCpuserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/sys-has_mycnf_for_cpuser
      */
     public function hasMycnfForCpuser(string $user): array
@@ -1388,9 +1388,9 @@ final readonly class Accounts
      * @param string $user The username of a cPanel account on the server.
      * @param string|int|null $bwlimit The account's new bandwidth quota, in megabytes (MB). Null omits it.
      * @return LimitBandwidthResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/bandwidth-and-disk-quotas/bandwidth-limitbw
      */
     public function limitBandwidth(string $user, string|int|null $bwlimit = null): array
@@ -1415,9 +1415,9 @@ final readonly class Accounts
      * API-map identity: whm1:list_account_enhancements#GET (wire name list_account_enhancements; Account Enhancements).
      *
      * @return ListAccountEnhancementsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-enhancements/accountenhancements-list_account_enhancements
      */
     public function listAccountEnhancements(): array
@@ -1440,9 +1440,9 @@ final readonly class Accounts
      * @param 'exact'|'regex'|null $searchmethod The function's search method. Null omits it.
      * @param string|null $want The returns to include in the output for each account. Null omits it.
      * @return ListAccountsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-listaccts
      */
     public function listAccounts(
@@ -1475,9 +1475,9 @@ final readonly class Accounts
      * API-map identity: whm1:listlockedaccounts#GET (wire name listlockedaccounts; Suspensions).
      *
      * @return ListLockedAccountsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/suspensions/accounts-listlockedaccounts
      */
     public function listLockedAccounts(): array
@@ -1501,9 +1501,9 @@ final readonly class Accounts
      * API-map identity: whm1:listsuspended#GET (wire name listsuspended; Suspensions).
      *
      * @return ListSuspendedResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/suspensions/accounts-listsuspended
      */
     public function listSuspended(): array
@@ -1527,9 +1527,9 @@ final readonly class Accounts
      * API-map identity: whm1:list_users#GET (wire name list_users; Account Management).
      *
      * @return ListUsersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-list_users
      */
     public function listUsers(): array
@@ -1633,9 +1633,9 @@ final readonly class Accounts
      * @param bool|null $updateExistingEmailAccountQuotas Whether to update the quota for existing email accounts to
      *     match the value of `MAX_EMAILACCT_QUOTA` setting. Null omits it.
      * @return ModifyAccountResult|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-modifyacct
      */
     public function modifyAccount(
@@ -1779,9 +1779,9 @@ final readonly class Accounts
      * @param string $name The name of the account enhancement.
      * @param string|null $id The account enhancement's new identifier. Null omits it.
      * @return ModifyAccountEnhancementResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-enhancements/accountenhancements-modify_account_enhancement
      */
     public function modifyAccountEnhancement(string $name, ?string $id = null): array
@@ -1806,9 +1806,9 @@ final readonly class Accounts
      * API-map identity: whm1:myprivs#GET (wire name myprivs; Account Management).
      *
      * @return MyPrivilegesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/acls-myprivs
      */
     public function myPrivileges(): array
@@ -1837,9 +1837,9 @@ final readonly class Accounts
      * API-map identity: whm1:quota_enabled#GET (wire name quota_enabled; Bandwidth and Disk Quotas).
      *
      * @return QuotaEnabledResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/bandwidth-and-disk-quotas/quota-quota_enabled
      */
     public function quotaEnabled(): array
@@ -1859,7 +1859,7 @@ final readonly class Accounts
      *
      * @param string $username The account's username.
      * @param bool|null $keepdns Whether to retain the account's DNS entries. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-removeacct
      */
     public function removeAccount(string $username, ?bool $keepdns = null): void
@@ -1889,7 +1889,7 @@ final readonly class Accounts
      * @param string $user The account's username.
      * @param string $password The account's password.
      * @param bool $enabledigest Whether to enable Digest Authentication for the account.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/sys-set_digest_auth
      */
     public function setDigestAuth(
@@ -1928,9 +1928,9 @@ final readonly class Accounts
      * @param string $username The cPanel account username whose primary domain's document root you want to change.
      * @param string $docroot The new document root as a path relative to the account's home directory.
      * @return SetPrimaryDomainDocrootResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-set_primary_domain_docroot
      */
     public function setPrimaryDomainDocroot(string $username, string $docroot): array
@@ -1981,9 +1981,9 @@ final readonly class Accounts
      * @param string|null $showres The reseller to query. Null omits it.
      * @param int|null $year The year to query. Null omits it.
      * @return ShowBandwidthResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/bandwidth-and-disk-quotas/bandwidth-showbw
      */
     public function showBandwidth(
@@ -2018,7 +2018,7 @@ final readonly class Accounts
      * @param string|null $reason The reason for suspension. Null omits it.
      * @param bool|null $disallowun Whether to allow only the `root` user to unsuspend the account. Null omits it.
      * @param bool|null $leaveFtpAcctsEnabled Whether to skip suspension of the account's FTP accounts. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/suspensions/accounts-suspendacct
      */
     public function suspendAccount(
@@ -2050,7 +2050,7 @@ final readonly class Accounts
      *
      * @param string $account The username of the account.
      * @param string $name The name of the account enhancement.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-enhancements/accountenhancements-unassign_account_enhancement
      */
     public function unassignAccountEnhancement(string $account, string $name): void
@@ -2067,7 +2067,7 @@ final readonly class Accounts
      *
      * @param string $user The account to unsuspend.
      * @param bool|null $retainServiceProxies Whether to retain any service proxies on an account. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/suspensions/accounts-unsuspendacct
      */
     public function unsuspendAccount(string $user, ?bool $retainServiceProxies = null): void
@@ -2098,7 +2098,7 @@ final readonly class Accounts
      * @param bool|null $checkQuota Whether to prevent removal of the user ID if the quota system tracks associated
      *     files. Null omits it.
      * @param bool|null $protectSystem Whether to prevent removal of system user or group IDs. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-untrack_acct_id
      */
     public function untrackAcctId(
@@ -2130,7 +2130,7 @@ final readonly class Accounts
      * API-map identity: whm1:verify_new_username#GET (wire name verify_new_username; Account Creation).
      *
      * @param string $user The account that you wish to create.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-creation/nameconflict-verify_new_username
      */
     public function verifyNewUsername(string $user): void

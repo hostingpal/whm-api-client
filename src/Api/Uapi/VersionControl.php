@@ -179,9 +179,9 @@ final readonly class VersionControl
      * @param string|int|null $sourceRepository A JSON-formatted object containing information about the source
      *     repository that the system will clone. Null omits it.
      * @return CreateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/repository-management/versioncontrol-create
      */
     public function create(
@@ -229,9 +229,9 @@ final readonly class VersionControl
      * @param string $repositoryRoot The absolute directory path in the user's `home` directory containing the
      *     repository to delete.
      * @return DeleteResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/repository-management/versioncontrol-delete
      */
     public function delete(string $repositoryRoot): ?array
@@ -273,9 +273,9 @@ final readonly class VersionControl
      *
      * @param string|null $fields A comma-separated list of desired return values. Null omits it.
      * @return RetrieveResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/repository-management/versioncontrol-retrieve
      */
     public function retrieve(?string $fields = null): array
@@ -324,9 +324,9 @@ final readonly class VersionControl
      * @param string|int|null $sourceRepository A JSON-encoded object containing information about the source
      *     repository. Null omits it.
      * @return UpdateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/repository-management/versioncontrol-update
      */
     public function update(

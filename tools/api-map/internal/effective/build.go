@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	markdownLink = regexp.MustCompile(`\[([^\]]+)\]\([^)]*\)`)
+	markdownLink = regexp.MustCompile(`\[([^\]]+)\]\(`)
 	whitespace   = regexp.MustCompile(`\s+`)
 	blankLine    = regexp.MustCompile(`\n\s*\n`)
 	// reservedNames are the methods WhmClient and UapiClient declare or inherit
@@ -908,8 +908,43 @@ func text(v any) string {
 	return s
 }
 
+// cleanMarkdownLinks removes only complete inline links, balancing URL parentheses.
+// Malformed links stay intact instead of dropping a partial URL from the prose.
+func cleanMarkdownLinks(s string) string {
+	var out strings.Builder
+	cursor := 0
+	for _, match := range markdownLink.FindAllStringSubmatchIndex(s, -1) {
+		if match[0] < cursor {
+			continue
+		}
+		depth := 1
+		end := match[1]
+		for end < len(s) && depth > 0 {
+			switch s[end] {
+			case '\\':
+				if end+1 < len(s) {
+					end++
+				}
+			case '(':
+				depth++
+			case ')':
+				depth--
+			}
+			end++
+		}
+		if depth != 0 {
+			continue
+		}
+		out.WriteString(s[cursor:match[0]])
+		out.WriteString(s[match[2]:match[3]])
+		cursor = end
+	}
+	out.WriteString(s[cursor:])
+	return out.String()
+}
+
 func clean(s string) string {
-	s = markdownLink.ReplaceAllString(s, "$1")
+	s = cleanMarkdownLinks(s)
 	s = strings.NewReplacer("**", "", "__", "").Replace(s)
 	return strings.TrimSpace(whitespace.ReplaceAllString(s, " "))
 }

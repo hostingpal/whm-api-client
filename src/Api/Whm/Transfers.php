@@ -181,7 +181,7 @@ final readonly class Transfers
      * API-map identity: whm1:abort_transfer_session#GET (wire name abort_transfer_session; cPanel Account Transfer).
      *
      * @param string $transferSessionId The transfer session's ID.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-transfer/transfers-abort_transfer_session
      */
     public function abortTransferSession(string $transferSessionId): void
@@ -205,7 +205,7 @@ final readonly class Transfers
      * Monitoring).
      *
      * @param string $transferSessionId The transfer session's ID.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/transfer-monitoring/transfers-analyze_transfer_session_remote
      */
     public function analyzeTransferSessionRemote(string $transferSessionId): void
@@ -227,9 +227,9 @@ final readonly class Transfers
      * Monitoring).
      *
      * @return AvailableTransferModulesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/transfer-monitoring/transfers-available_transfer_modules
      */
     public function availableTransferModules(): array
@@ -295,9 +295,9 @@ final readonly class Transfers
      * @param string|null $sshkeyName The SSH key's name. Null omits it.
      * @param string|null $sshkeyPassphrase The SSH key's passphrase. Null omits it.
      * @return CreateRemoteRootTransferSessionResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-transfer/transfers-create_remote_root_transfer_session
      */
     public function createRemoteRootTransferSession(
@@ -377,9 +377,9 @@ final readonly class Transfers
      *     integers, strings, null and omission are rejected by the native PHP parameter guard before the runner or any
      *     request.
      * @return CreateRemoteUserTransferSessionResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-transfer/transfers-create_remote_user_transfer_session
      */
     public function createRemoteUserTransferSession(
@@ -417,7 +417,7 @@ final readonly class Transfers
      *
      * @param string $user The cPanel account username.
      * @param string|null $mountpoint The filepath to the archive storage location. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/transfer-configuration/transfers-delete_account_archives
      */
     public function deleteAccountArchives(string $user, ?string $mountpoint = null): void
@@ -445,9 +445,9 @@ final readonly class Transfers
      * @param string $transferSessionId The transfer session's ID.
      * @param string $logfile The log file's name.
      * @return FetchTransferSessionLogResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/transfer-monitoring/transfers-fetch_transfer_session_log
      */
     public function fetchTransferSessionLog(string $transferSessionId, string $logfile): array
@@ -480,9 +480,9 @@ final readonly class Transfers
      *
      * @param string $transferSessionId The transfer session's ID.
      * @return GetTransferSessionStateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/transfer-monitoring/transfers-get_transfer_session_state
      */
     public function getTransferSessionState(string $transferSessionId): array
@@ -507,7 +507,7 @@ final readonly class Transfers
      * API-map identity: whm1:pause_transfer_session#GET (wire name pause_transfer_session; cPanel Account Transfer).
      *
      * @param string $transferSessionId The transfer session's ID.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-transfer/transfers-pause_transfer_session
      */
     public function pauseTransferSession(string $transferSessionId): void
@@ -548,9 +548,9 @@ final readonly class Transfers
      * @param string|null $sshkeyName The SSH key's name. Null omits it.
      * @param string|null $sshkeyPassphrase The SSH key's passphrase. Null omits it.
      * @return RemoteBasicCredentialCheckResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/transfer-configuration/ssh-remote_basic_credential_check
      */
     public function remoteBasicCredentialCheck(
@@ -609,9 +609,9 @@ final readonly class Transfers
      *
      * @param string $transferSessionId The transfer session's ID.
      * @return RetrieveTransferSessionRemoteAnalysisResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/transfer-monitoring/transfers-retrieve_transfer_session_remote_analysis
      */
     public function retrieveTransferSessionRemoteAnalysis(string $transferSessionId): array
@@ -646,9 +646,9 @@ final readonly class Transfers
      *
      * @param string $transferSessionId The transfer session's ID.
      * @return StartTransferSessionResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-transfer/transfers-start_transfer_session
      */
     public function startTransferSession(string $transferSessionId): array
@@ -682,9 +682,9 @@ final readonly class Transfers
      * @param string $module The transfer module name, forwarded unchanged. Discover available names with
      *     availableTransferModules(); the pinned six-name list is not a closed runtime inventory.
      * @return TransferModuleSchemaResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/transfer-configuration/transfers-transfer_module_schema
      */
     public function transferModuleSchema(string $module): array
@@ -713,9 +713,9 @@ final readonly class Transfers
      *
      * @param string $user The system username.
      * @return ValidateSystemUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/transfer-configuration/sys-validate_system_user
      */
     public function validateSystemUser(string $user): array
