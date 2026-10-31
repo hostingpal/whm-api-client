@@ -375,7 +375,11 @@
         },
         {
           "kind": "documented",
-          "text": "Extension names are case-sensitive and space-delimited. The name extensions is forbidden for a package when adding extensions. Calling addPackageExtension again with the same extension edits its variables upstream. Arbitrary case-sensitive extension variables are not represented by this fixed-parameter method; use a reviewed generic form call when needed, marking credential-bearing inputs sensitive."
+          "text": "Deletes the named, space-delimited package extensions. Extension names are case-sensitive. The pinned delpkgext description permits additional extension variables in key=value format; variable names are case-sensitive and their possible values come from the extension's own documentation."
+        },
+        {
+          "kind": "policy",
+          "text": "Client behavior: arbitrary extension variables are not represented by this fixed-parameter method. A reviewed generic form call must explicitly mark any credential-bearing values sensitive."
         }
       ],
       "params": {
@@ -389,6 +393,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /delpkgext GET declares x-readonly=false; send its documented query parameters in a form POST to avoid WHM query logging for mutations. Preserve the complete pinned parameter family, requiredness and exact case-sensitive wire names. No requestBody is declared."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/delpkgext description documents optional case-sensitive extension variables in key=value format; _DELETE_EXTENSIONS documents the case-sensitive, space-delimited extension names to delete. This does not establish addpkgext behavior for deletion. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
         }
       ]
     },
@@ -431,15 +441,19 @@
         },
         {
           "kind": "documented",
-          "text": "Omitted options retain upstream defaults, including default feature list, server theme/locale and resource limits. Omitted packageExtensions means no extensions; upstream recommends the separate extension helpers. Names/variables are case-sensitive; arbitrary extension variables are not represented by this fixed-parameter method. A server without the Web Server role defaults CGI off and cannot enable it. FrontPage settings are ignored."
+          "text": "Omitting featurelist assigns the default feature list to the plan's accounts, and omitting packageExtensions means the plan has no extensions. Omission can reset existing settings across every account using the plan; it is not a preserve-current-value operation. Upstream recommends the separate extension helpers. Extension names and variables are case-sensitive. A server without the Web Server role defaults CGI off and cannot enable it. FrontPage settings are ignored."
         },
         {
           "kind": "documented",
-          "text": "Bandwidth, disk quota and mailbox quota use MB. Zero, unlimited and documented null mean unlimited for bandwidth/disk/mailbox quota, subject to unlimited ACL permissions; email rate limits also use zero or unlimited. Count limits document unlimited or null separately from zero. The scalar encoder omits explicit PHP null, so it does not send a JSON null sentinel; use documented zero/unlimited when required. SQL limits apply separately to each available SQL engine. Omitted optional arguments are not filled with defaults."
+          "text": "Bandwidth, disk quota and mailbox quota use MB. Zero, unlimited and documented null mean unlimited for bandwidth/disk/mailbox quota, subject to unlimited ACL permissions; email rate limits also use zero or unlimited. Count limits document unlimited or null separately from zero. SQL limits apply separately to each available SQL engine."
         },
         {
           "kind": "documented",
           "text": "Keep exact wire-name differences: addPackage uses uppercase MAX_DEFER_FAIL_PERCENTAGE and MAX_EMAIL_PER_HOUR, while editPackage uses lowercase names; max_emailacct_quota and max_team_users are lowercase on both. Digest authentication and CGI/shell switches are boolean inputs encoded as 0/1; IP uses y/n. Changing maxEmailacctQuota does not affect existing email accounts."
+        },
+        {
+          "kind": "policy",
+          "text": "Client behavior: read the current plan with getPackageInfo() before editing, then explicitly send the complete intended settings, including featurelist and packageExtensions, to avoid unintended resets. The client does not read, merge or fill settings automatically. PHP null omits an argument rather than sending a null sentinel or preserving its server value. Arbitrary extension variables are outside this fixed-parameter method."
         }
       ],
       "params": {
@@ -453,6 +467,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /editpkg GET declares x-readonly=false; send its documented query parameters in a form POST to avoid WHM query logging for mutations. Preserve the complete pinned parameter family, requiredness and exact case-sensitive wire names. No requestBody is declared."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/editpkg parameter featurelist explicitly assigns default when omitted; _PACKAGE_EXTENSIONS explicitly means no extensions when no value is supplied. The operation description applies changes to all accounts on the plan. The read-first/full-settings guidance is client policy derived from those dangerous omission defaults; no edit ran in this review. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
         }
       ]
     },
@@ -470,7 +490,15 @@
         },
         {
           "kind": "documented",
-          "text": "applicationsList is a comma-separated list sent once; omission returns the entire dynamicui.conf content. file defaults to dynamicui.conf and is relative to /usr/local/cpanel/whostmgr/docroot/themes/x/. A caller-selected file reads server configuration. Returned template directives and application/icon URLs are payload data; the client does not execute or fetch them. The known nested Group/Image/Subitem required fields, nullable ACL/DNSOnly fields and role/service string-or-object alternatives remain strict."
+          "text": "applicationsList is a comma-separated list sent once; omission returns the entire dynamicui.conf content. file defaults to dynamicui.conf and is relative to /usr/local/cpanel/whostmgr/docroot/themes/x/. A caller-selected file reads server configuration. Returned template directives and application/icon URLs are payload data; the client does not execute or fetch them. Present Group/Image/Subitem fields, nullable ACL/DNSOnly fields and role/service string-or-object alternatives retain their types; observed omissions are documented separately."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent 11.138.0.19 review observed omitted group acl/target and item minimum_accounts_needed/role/service/target/subitems/multiuser_required/description/dnsonly_ok. These fields are optional without adding new null alternatives. Other required fields remain required; grouporder and itemorder remain native integers. The raw template records passed unchanged."
+        },
+        {
+          "kind": "observed",
+          "text": "The 11.138.0.19 clarification observed group description as a string on one of 29 groups and absent on 28. It is retained as an optional string; the pin has no such property. Neither group nor item descriptions were null in that observation. The contract adds no null compatibility, without claiming null is impossible on every server."
         }
       ],
       "response": {
@@ -662,8 +690,6 @@
                     "required": [
                       "type",
                       "acl",
-                      "description",
-                      "dnsonly_ok",
                       "file",
                       "group",
                       "itemorder",
@@ -685,11 +711,13 @@
                 },
                 "type": {
                   "type": "string"
+                },
+                "description": {
+                  "type": "string"
                 }
               },
               "required": [
                 "type",
-                "acl",
                 "dnsonly_ok",
                 "file",
                 "group",
@@ -704,6 +732,18 @@
               "version": "pinned 2026-10-13",
               "date": "2026-10-31",
               "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_available_applications GET data.groups description says an array of objects and supplies items/$ref Group but omits type. Restore only the list container and preserve every Group, Image, Role, Service and Subitem property and required/nullable setting from the pinned components."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET-only review of revision 056b5d23379fbbfc605f8e94cd00bb57bef76693 on cPanel 11.138.0.19 with type-only output: all 29 groups lacked acl and target. All 206 items lacked minimum_accounts_needed, role and service; 202 lacked target, 196 lacked subitems, 191 lacked multiuser_required, two lacked description and one lacked dnsonly_ok. Make those keys optional without widening present-value types. Group target and item minimum_accounts_needed/role/service/target/subitems/multiuser_required were already optional in this overlay; only group acl and item description/dnsonly_ok required removal from the required lists. Preserve every other required field, nullable alternative, typed role/service branch, subitem and raw record. grouporder and itemorder were native integers and remain strict. No package or feature write ran. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "The reviewer's follow-up type-only WHM GET inspection, with and without raw, found groups[].description as string on one of 29 groups and absent on 28, with zero null or empty-string values. Item description was string on 204 of 206 items and absent on two, again with zero null or empty strings. Both call forms had the same counts. The pinned Group schema has no description property; this optional string field is live-evidenced, not documented. No null compatibility is established, but the observations do not prove null impossible on every server: Whostmgr/DynamicUI/Loader.pm:153 only rewrites truthy descriptions and does not rule out null elsewhere. No mutation ran. Original review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852. Clarification: https://github.com/hostingpal/whm-api-client/pull/56#issuecomment-6539624881."
             }
           ]
         }
@@ -714,6 +754,18 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_available_applications GET declares x-readonly=true; retain GET for the documented read. Preserve the complete pinned parameter family, requiredness and exact case-sensitive wire names. No requestBody is declared."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET-only review of revision 056b5d23379fbbfc605f8e94cd00bb57bef76693 on cPanel 11.138.0.19 with type-only output: all 29 groups lacked acl and target. All 206 items lacked minimum_accounts_needed, role and service; 202 lacked target, 196 lacked subitems, 191 lacked multiuser_required, two lacked description and one lacked dnsonly_ok. Make those keys optional without widening present-value types. Group target and item minimum_accounts_needed/role/service/target/subitems/multiuser_required were already optional in this overlay; only group acl and item description/dnsonly_ok required removal from the required lists. Preserve every other required field, nullable alternative, typed role/service branch, subitem and raw record. grouporder and itemorder were native integers and remain strict. No package or feature write ran. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "The reviewer's follow-up type-only WHM GET inspection, with and without raw, found groups[].description as string on one of 29 groups and absent on 28, with zero null or empty-string values. Item description was string on 204 of 206 items and absent on two, again with zero null or empty strings. Both call forms had the same counts. The pinned Group schema has no description property; this optional string field is live-evidenced, not documented. No null compatibility is established, but the observations do not prove null impossible on every server: Whostmgr/DynamicUI/Loader.pm:153 only rewrites truthy descriptions and does not rule out null elsewhere. No mutation ran. Original review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852. Clarification: https://github.com/hostingpal/whm-api-client/pull/56#issuecomment-6539624881."
         }
       ]
     },
@@ -730,7 +782,19 @@
         },
         {
           "kind": "documented",
-          "text": "Only enabled settings are returned, so known fields remain optional. Extension variables are opaque dynamic fields and may contain credentials; treat the result as sensitive. Known limit fields remain integer, the exact unlimited literal, and null only where pinned; flags stay integer 0/1, while DIGESTAUTH stays a source string. MAX_TEAM_USERS may be null; omitted and null stay distinct."
+          "text": "Only enabled settings are returned, so known fields remain optional. Extension variables are opaque dynamic fields and may contain credentials; treat the result as sensitive. Pinned limit alternatives include the exact unlimited literal and null only where declared; the reviewed MAXPARK exception is documented separately. Flags stay integer 0/1, DIGESTAUTH stays a source string, and MAX_TEAM_USERS remains nullable native int. Omitted and null stay distinct."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent 11.138.0.19 GET review observed null MAXPARK on the stock default package, so this field also admits explicit null. CGI, HASSHELL and IP remained native integers; no broader flag conversion is established."
+        },
+        {
+          "kind": "documented",
+          "text": "The reviewed package-limit family includes digit-string representations, established separately in package-derived account limits. Applying that family to this method is source-backed compatibility; this endpoint's stock package had null limits and does not establish populated numeric-string observations."
+        },
+        {
+          "kind": "policy",
+          "text": "Client behavior: only the integer arms of the reviewed resource-limit unions accept canonical integer strings within PHP integer bounds and normalize them to int. The exact unlimited literal, existing nullable alternatives, omitted fields and opaque extension values remain distinct. MAX_TEAM_USERS and flag/string siblings retain their existing contracts."
         }
       ],
       "params": {
@@ -747,7 +811,10 @@
                 "type": "union",
                 "anyOf": [
                   {
-                    "type": "int"
+                    "type": "int",
+                    "accept": [
+                      "numeric-string"
+                    ]
                   },
                   {
                     "type": "string",
@@ -784,7 +851,10 @@
                 "type": "union",
                 "anyOf": [
                   {
-                    "type": "int"
+                    "type": "int",
+                    "accept": [
+                      "numeric-string"
+                    ]
                   },
                   {
                     "type": "string",
@@ -797,7 +867,10 @@
                 "type": "union",
                 "anyOf": [
                   {
-                    "type": "int"
+                    "type": "int",
+                    "accept": [
+                      "numeric-string"
+                    ]
                   },
                   {
                     "type": "string",
@@ -810,7 +883,10 @@
                 "type": "union",
                 "anyOf": [
                   {
-                    "type": "int"
+                    "type": "int",
+                    "accept": [
+                      "numeric-string"
+                    ]
                   },
                   {
                     "type": "string",
@@ -823,19 +899,26 @@
                 "type": "union",
                 "anyOf": [
                   {
-                    "type": "int"
+                    "type": "int",
+                    "accept": [
+                      "numeric-string"
+                    ]
                   },
                   {
                     "type": "string",
                     "literal": "unlimited"
                   }
-                ]
+                ],
+                "nullable": true
               },
               "MAXPOP": {
                 "type": "union",
                 "anyOf": [
                   {
-                    "type": "int"
+                    "type": "int",
+                    "accept": [
+                      "numeric-string"
+                    ]
                   },
                   {
                     "type": "string",
@@ -848,7 +931,10 @@
                 "type": "union",
                 "anyOf": [
                   {
-                    "type": "int"
+                    "type": "int",
+                    "accept": [
+                      "numeric-string"
+                    ]
                   },
                   {
                     "type": "string",
@@ -861,7 +947,10 @@
                 "type": "union",
                 "anyOf": [
                   {
-                    "type": "int"
+                    "type": "int",
+                    "accept": [
+                      "numeric-string"
+                    ]
                   },
                   {
                     "type": "string",
@@ -874,7 +963,10 @@
                 "type": "union",
                 "anyOf": [
                   {
-                    "type": "int"
+                    "type": "int",
+                    "accept": [
+                      "numeric-string"
+                    ]
                   },
                   {
                     "type": "string",
@@ -886,7 +978,10 @@
                 "type": "union",
                 "anyOf": [
                   {
-                    "type": "int"
+                    "type": "int",
+                    "accept": [
+                      "numeric-string"
+                    ]
                   },
                   {
                     "type": "string",
@@ -898,7 +993,10 @@
                 "type": "union",
                 "anyOf": [
                   {
-                    "type": "int"
+                    "type": "int",
+                    "accept": [
+                      "numeric-string"
+                    ]
                   },
                   {
                     "type": "string",
@@ -914,7 +1012,10 @@
                 "type": "union",
                 "anyOf": [
                   {
-                    "type": "int"
+                    "type": "int",
+                    "accept": [
+                      "numeric-string"
+                    ]
                   },
                   {
                     "type": "string",
@@ -937,6 +1038,18 @@
               "version": "pinned 2026-10-13",
               "date": "2026-10-31",
               "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /getpkginfo GET data.pkg expressly returns only enabled settings and also includes extension variables. Preserve every optional fixed field, validate known fields before opaque dynamic extension values via object.values mixed, and retain the documented int or literal unlimited and explicit-null alternatives. Description-only branches on BWLIMIT/MAXADDON/MAXFTP/MAXLST/MAXPOP/MAXSQL/MAXSUB/QUOTA describe unlimited, not arbitrary payload types; their source also explicitly contains the null and unlimited branches. MAXPARK and mail rate/quota fields do not declare null. No string-number normalization is established."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET-only review of revision 056b5d23379fbbfc605f8e94cd00bb57bef76693 on cPanel 11.138.0.19 with type-only output: getpkginfo for the stock default package returned pkg.MAXPARK as null; CGI, HASSHELL and IP arrived as native integers and passed. Other nullable siblings also passed. The new nullable leaf preserves omitted versus explicit null and does not widen unrelated fields. No package or feature write ran. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
+            },
+            {
+              "kind": "doc",
+              "version": "reviewed package-limit family",
+              "date": "2026-10-31",
+              "note": "Reviewed package-derived limit compatibility: docs/api/source-audit.md#runtime-observations-2026-10-13 records numeric strings for accountsummary maxaddons and maxparked in the same package-setting family. The reviewer requests this established family compatibility for getpkginfo and matchpkgs limits; the stock package read had null limits, so numeric-string limits were not observed on these two endpoints in this review. Only the integer arms of BWLIMIT, MAXADDON, MAXFTP, MAXLST, MAXPARK, MAXPOP, MAXSQL, MAXSUB, MAX_DEFER_FAIL_PERCENTAGE, MAX_EMAILACCT_QUOTA, MAX_EMAIL_PER_HOUR and QUOTA gain lossless canonical integer-string normalization within PHP integer bounds. Preserve the exact unlimited literal and each field's independent nullability; retain native integers, optional presence, strict flag/string siblings and native MAX_TEAM_USERS. This is source-family compatibility and offline regression coverage, not live populated endpoint evidence. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
             }
           ]
         }
@@ -947,6 +1060,18 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /getpkginfo GET declares x-readonly=true; retain GET for the documented read. Preserve the complete pinned parameter family, requiredness and exact case-sensitive wire names. No requestBody is declared."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET-only review of revision 056b5d23379fbbfc605f8e94cd00bb57bef76693 on cPanel 11.138.0.19 with type-only output: getpkginfo for the stock default package returned pkg.MAXPARK as null; CGI, HASSHELL and IP arrived as native integers and passed. Other nullable siblings also passed. The new nullable leaf preserves omitted versus explicit null and does not widen unrelated fields. No package or feature write ran. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewed package-limit family",
+          "date": "2026-10-31",
+          "note": "Reviewed package-derived limit compatibility: docs/api/source-audit.md#runtime-observations-2026-10-13 records numeric strings for accountsummary maxaddons and maxparked in the same package-setting family. The reviewer requests this established family compatibility for getpkginfo and matchpkgs limits; the stock package read had null limits, so numeric-string limits were not observed on these two endpoints in this review. Only the integer arms of BWLIMIT, MAXADDON, MAXFTP, MAXLST, MAXPARK, MAXPOP, MAXSQL, MAXSUB, MAX_DEFER_FAIL_PERCENTAGE, MAX_EMAILACCT_QUOTA, MAX_EMAIL_PER_HOUR and QUOTA gain lossless canonical integer-string normalization within PHP integer bounds. Preserve the exact unlimited literal and each field's independent nullability; retain native integers, optional presence, strict flag/string siblings and native MAX_TEAM_USERS. This is source-family compatibility and offline regression coverage, not live populated endpoint evidence. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
         }
       ]
     },
@@ -963,7 +1088,11 @@
         },
         {
           "kind": "documented",
-          "text": "Deletes the named hosting plan. You cannot delete a hosting plan that a cPanel account currently uses. The pinned response specifies no data payload; this method returns null. No account reassignment is performed by the client."
+          "text": "Deletes the named hosting plan. You cannot delete a hosting plan that a cPanel account currently uses. The pinned response specifies no data payload."
+        },
+        {
+          "kind": "policy",
+          "text": "Client behavior: deletePackage() is void. It performs no account reassignment and returns no payload."
         }
       ],
       "params": {
@@ -1013,7 +1142,19 @@
         },
         {
           "kind": "documented",
-          "text": "Omitting every selector lists all server packages. All selectors remain optional and are sent with their exact uppercase wire names except _PACKAGE_EXTENSIONS. Boolean CGI/HASSHELL inputs encode as 0/1, while DIGESTAUTH and IP take y/n strings. Results retain their distinct source strings for HASSHELL/IP and do not inherit getPackageInfo flag types. Limits use integers or exact unlimited; no live numeric-string coercion is inferred. The result shape does not enforce correspondence with requested criteria."
+          "text": "The pinned description says omitting every selector lists all server packages, but the observed contradiction below limits that claim. Selectors remain optional with exact uppercase wire names except _PACKAGE_EXTENSIONS. Boolean CGI/HASSHELL inputs encode as 0/1, while DIGESTAUTH and IP take y/n strings. Result rows retain distinct source strings for HASSHELL/IP and do not inherit getPackageInfo flag types. The list-row shape and optional name are source-backed; populated match rows were not observed."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19, the independent selector-free GET returned an empty pkg list while listPackages returned one package on the same server. The cause is unknown. An empty selector-free match result does not establish that the server has no packages; the contradiction remains tracked under whm-api-client-8x0.2.43."
+        },
+        {
+          "kind": "documented",
+          "text": "Canonical integer-string compatibility for the resource-limit unions follows the reviewed package-derived limit family. It is not based on populated matchPackages results from this review, which returned an empty list."
+        },
+        {
+          "kind": "policy",
+          "text": "Client behavior: pkg is a list, preserving row names, native integers, exact unlimited strings and omitted fields. Only the integer arms of its twelve reviewed resource-limit unions accept canonical integer strings within PHP bounds. Null, malformed or overflowing strings and unrelated field conversions remain invalid. The client does not enforce correspondence with requested criteria or substitute listPackages for an empty result."
         }
       ],
       "params": {
@@ -1022,267 +1163,243 @@
         }
       },
       "response": {
-        "pkg.BWLIMIT": {
+        "pkg": {
           "replace": {
-            "type": "union",
-            "anyOf": [
-              {
-                "type": "int"
-              },
-              {
-                "type": "string",
-                "literal": "unlimited"
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "BWLIMIT": {
+                  "type": "union",
+                  "anyOf": [
+                    {
+                      "type": "int",
+                      "accept": [
+                        "numeric-string"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "literal": "unlimited"
+                    }
+                  ]
+                },
+                "CGI": {
+                  "type": "flag"
+                },
+                "CPMOD": {
+                  "type": "string"
+                },
+                "DIGESTAUTH": {
+                  "type": "string"
+                },
+                "FEATURELIST": {
+                  "type": "string"
+                },
+                "FRONTPAGE": {
+                  "type": "int"
+                },
+                "HASSHELL": {
+                  "type": "string"
+                },
+                "IP": {
+                  "type": "string"
+                },
+                "LANG": {
+                  "type": "string"
+                },
+                "MAXADDON": {
+                  "type": "union",
+                  "anyOf": [
+                    {
+                      "type": "int",
+                      "accept": [
+                        "numeric-string"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "literal": "unlimited"
+                    }
+                  ]
+                },
+                "MAXFTP": {
+                  "type": "union",
+                  "anyOf": [
+                    {
+                      "type": "int",
+                      "accept": [
+                        "numeric-string"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "literal": "unlimited"
+                    }
+                  ]
+                },
+                "MAXLST": {
+                  "type": "union",
+                  "anyOf": [
+                    {
+                      "type": "int",
+                      "accept": [
+                        "numeric-string"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "literal": "unlimited"
+                    }
+                  ]
+                },
+                "MAXPARK": {
+                  "type": "union",
+                  "anyOf": [
+                    {
+                      "type": "int",
+                      "accept": [
+                        "numeric-string"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "literal": "unlimited"
+                    }
+                  ]
+                },
+                "MAXPOP": {
+                  "type": "union",
+                  "anyOf": [
+                    {
+                      "type": "int",
+                      "accept": [
+                        "numeric-string"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "literal": "unlimited"
+                    }
+                  ]
+                },
+                "MAXSQL": {
+                  "type": "union",
+                  "anyOf": [
+                    {
+                      "type": "int",
+                      "accept": [
+                        "numeric-string"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "literal": "unlimited"
+                    }
+                  ]
+                },
+                "MAXSUB": {
+                  "type": "union",
+                  "anyOf": [
+                    {
+                      "type": "int",
+                      "accept": [
+                        "numeric-string"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "literal": "unlimited"
+                    }
+                  ]
+                },
+                "MAX_DEFER_FAIL_PERCENTAGE": {
+                  "type": "union",
+                  "anyOf": [
+                    {
+                      "type": "int",
+                      "accept": [
+                        "numeric-string"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "literal": "unlimited"
+                    }
+                  ]
+                },
+                "MAX_EMAILACCT_QUOTA": {
+                  "type": "union",
+                  "anyOf": [
+                    {
+                      "type": "int",
+                      "accept": [
+                        "numeric-string"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "literal": "unlimited"
+                    }
+                  ]
+                },
+                "MAX_EMAIL_PER_HOUR": {
+                  "type": "union",
+                  "anyOf": [
+                    {
+                      "type": "int",
+                      "accept": [
+                        "numeric-string"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "literal": "unlimited"
+                    }
+                  ]
+                },
+                "QUOTA": {
+                  "type": "union",
+                  "anyOf": [
+                    {
+                      "type": "int",
+                      "accept": [
+                        "numeric-string"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "literal": "unlimited"
+                    }
+                  ]
+                },
+                "_PACKAGE_EXTENSIONS": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
               }
-            ]
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.BWLIMIT declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
             }
-          ]
-        },
-        "pkg.MAXADDON": {
-          "replace": {
-            "type": "union",
-            "anyOf": [
-              {
-                "type": "int"
-              },
-              {
-                "type": "string",
-                "literal": "unlimited"
-              }
-            ]
           },
           "evidence": [
             {
               "kind": "doc",
               "version": "pinned 2026-10-13",
               "date": "2026-10-31",
-              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAXADDON declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
-            }
-          ]
-        },
-        "pkg.MAXFTP": {
-          "replace": {
-            "type": "union",
-            "anyOf": [
-              {
-                "type": "int"
-              },
-              {
-                "type": "string",
-                "literal": "unlimited"
-              }
-            ]
-          },
-          "evidence": [
+              "note": "The /matchpkgs data.pkg schema incorrectly declares object while its own description says a list of hosting plan settings. The reviewed wire value is an empty list, which alone establishes no populated row types. Repair pkg to a list of optional-field records preserving all pinned properties. Add optional name:string from the reviewer's missing-name finding and the pinned /listpkgs pkg[].name package-family string property; populated names are source/offline coverage, not observed match rows. Preserve HASSHELL and IP as strings, CGI as a native flag and FRONTPAGE as its existing native integer contract, every nonnullable limit and exact unlimited alternatives; do not infer MAX_TEAM_USERS or extension-variable result fields absent from this response schema. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET-only review of revision 056b5d23379fbbfc605f8e94cd00bb57bef76693 on cPanel 11.138.0.19 with type-only output: selector-free matchpkgs returned pkg:[] while listpkgs on the same server returned one package. This contradicts the pinned claim that omitting every selector lists all server packages. The cause is unknown; do not reinterpret that empty result as proof that no packages exist. No populated match row was observed. No package or feature write ran. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
+            },
             {
               "kind": "doc",
-              "version": "pinned 2026-10-13",
+              "version": "reviewed package-limit family",
               "date": "2026-10-31",
-              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAXFTP declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
-            }
-          ]
-        },
-        "pkg.MAXLST": {
-          "replace": {
-            "type": "union",
-            "anyOf": [
-              {
-                "type": "int"
-              },
-              {
-                "type": "string",
-                "literal": "unlimited"
-              }
-            ]
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAXLST declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
-            }
-          ]
-        },
-        "pkg.MAXPARK": {
-          "replace": {
-            "type": "union",
-            "anyOf": [
-              {
-                "type": "int"
-              },
-              {
-                "type": "string",
-                "literal": "unlimited"
-              }
-            ]
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAXPARK declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
-            }
-          ]
-        },
-        "pkg.MAXPOP": {
-          "replace": {
-            "type": "union",
-            "anyOf": [
-              {
-                "type": "int"
-              },
-              {
-                "type": "string",
-                "literal": "unlimited"
-              }
-            ]
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAXPOP declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
-            }
-          ]
-        },
-        "pkg.MAXSQL": {
-          "replace": {
-            "type": "union",
-            "anyOf": [
-              {
-                "type": "int"
-              },
-              {
-                "type": "string",
-                "literal": "unlimited"
-              }
-            ]
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAXSQL declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
-            }
-          ]
-        },
-        "pkg.MAXSUB": {
-          "replace": {
-            "type": "union",
-            "anyOf": [
-              {
-                "type": "int"
-              },
-              {
-                "type": "string",
-                "literal": "unlimited"
-              }
-            ]
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAXSUB declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
-            }
-          ]
-        },
-        "pkg.MAX_DEFER_FAIL_PERCENTAGE": {
-          "replace": {
-            "type": "union",
-            "anyOf": [
-              {
-                "type": "int"
-              },
-              {
-                "type": "string",
-                "literal": "unlimited"
-              }
-            ]
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAX_DEFER_FAIL_PERCENTAGE declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
-            }
-          ]
-        },
-        "pkg.MAX_EMAILACCT_QUOTA": {
-          "replace": {
-            "type": "union",
-            "anyOf": [
-              {
-                "type": "int"
-              },
-              {
-                "type": "string",
-                "literal": "unlimited"
-              }
-            ]
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAX_EMAILACCT_QUOTA declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
-            }
-          ]
-        },
-        "pkg.MAX_EMAIL_PER_HOUR": {
-          "replace": {
-            "type": "union",
-            "anyOf": [
-              {
-                "type": "int"
-              },
-              {
-                "type": "string",
-                "literal": "unlimited"
-              }
-            ]
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAX_EMAIL_PER_HOUR declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
-            }
-          ]
-        },
-        "pkg.QUOTA": {
-          "replace": {
-            "type": "union",
-            "anyOf": [
-              {
-                "type": "int"
-              },
-              {
-                "type": "string",
-                "literal": "unlimited"
-              }
-            ]
-          },
-          "evidence": [
-            {
-              "kind": "doc",
-              "version": "pinned 2026-10-13",
-              "date": "2026-10-31",
-              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.QUOTA declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
+              "note": "Reviewed package-derived limit compatibility: docs/api/source-audit.md#runtime-observations-2026-10-13 records numeric strings for accountsummary maxaddons and maxparked in the same package-setting family. The reviewer requests this established family compatibility for getpkginfo and matchpkgs limits; the stock package read had null limits, so numeric-string limits were not observed on these two endpoints in this review. Only the integer arms of BWLIMIT, MAXADDON, MAXFTP, MAXLST, MAXPARK, MAXPOP, MAXSQL, MAXSUB, MAX_DEFER_FAIL_PERCENTAGE, MAX_EMAILACCT_QUOTA, MAX_EMAIL_PER_HOUR and QUOTA gain lossless canonical integer-string normalization within PHP integer bounds. Preserve the exact unlimited literal and each field's independent nullability; retain native integers, optional presence, strict flag/string siblings and native MAX_TEAM_USERS. This is source-family compatibility and offline regression coverage, not live populated endpoint evidence. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
             }
           ]
         }
@@ -1293,6 +1410,24 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET declares x-readonly=true; retain GET for the documented read. Preserve the complete pinned parameter family, requiredness and exact case-sensitive wire names. No requestBody is declared."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The /matchpkgs data.pkg schema incorrectly declares object while its own description says a list of hosting plan settings. The reviewed wire value is an empty list, which alone establishes no populated row types. Repair pkg to a list of optional-field records preserving all pinned properties. Add optional name:string from the reviewer's missing-name finding and the pinned /listpkgs pkg[].name package-family string property; populated names are source/offline coverage, not observed match rows. Preserve HASSHELL and IP as strings, CGI as a native flag and FRONTPAGE as its existing native integer contract, every nonnullable limit and exact unlimited alternatives; do not infer MAX_TEAM_USERS or extension-variable result fields absent from this response schema. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET-only review of revision 056b5d23379fbbfc605f8e94cd00bb57bef76693 on cPanel 11.138.0.19 with type-only output: selector-free matchpkgs returned pkg:[] while listpkgs on the same server returned one package. This contradicts the pinned claim that omitting every selector lists all server packages. The cause is unknown; do not reinterpret that empty result as proof that no packages exist. No populated match row was observed. No package or feature write ran. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewed package-limit family",
+          "date": "2026-10-31",
+          "note": "Reviewed package-derived limit compatibility: docs/api/source-audit.md#runtime-observations-2026-10-13 records numeric strings for accountsummary maxaddons and maxparked in the same package-setting family. The reviewer requests this established family compatibility for getpkginfo and matchpkgs limits; the stock package read had null limits, so numeric-string limits were not observed on these two endpoints in this review. Only the integer arms of BWLIMIT, MAXADDON, MAXFTP, MAXLST, MAXPARK, MAXPOP, MAXSQL, MAXSUB, MAX_DEFER_FAIL_PERCENTAGE, MAX_EMAILACCT_QUOTA, MAX_EMAIL_PER_HOUR and QUOTA gain lossless canonical integer-string normalization within PHP integer bounds. Preserve the exact unlimited literal and each field's independent nullability; retain native integers, optional presence, strict flag/string siblings and native MAX_TEAM_USERS. This is source-family compatibility and offline regression coverage, not live populated endpoint evidence. Review: https://github.com/hostingpal/whm-api-client/pull/56#pullrequestreview-5720810852."
         }
       ]
     },

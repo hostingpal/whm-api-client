@@ -172,6 +172,7 @@ final class HostingPlansSpec
                         'type' => 'object',
                         'fields' => [
                             'acl' => ['type' => 'string', 'nullable' => true],
+                            'description' => ['type' => 'string'],
                             'dnsonly_ok' => ['type' => 'string', 'nullable' => true],
                             'file' => ['type' => 'string'],
                             'group' => ['type' => 'string'],
@@ -259,16 +260,7 @@ final class HostingPlansSpec
                                         'type' => ['type' => 'string'],
                                         'url' => ['type' => 'string'],
                                     ],
-                                    'required' => [
-                                        'type',
-                                        'acl',
-                                        'description',
-                                        'dnsonly_ok',
-                                        'file',
-                                        'group',
-                                        'itemorder',
-                                        'url',
-                                    ],
+                                    'required' => ['type', 'acl', 'file', 'group', 'itemorder', 'url'],
                                 ],
                             ],
                             'key' => ['type' => 'string'],
@@ -277,7 +269,7 @@ final class HostingPlansSpec
                             'target' => ['type' => 'string'],
                             'type' => ['type' => 'string'],
                         ],
-                        'required' => ['type', 'acl', 'dnsonly_ok', 'file', 'group', 'groupdesc', 'grouporder'],
+                        'required' => ['type', 'dnsonly_ok', 'file', 'group', 'groupdesc', 'grouporder'],
                     ],
                 ],
                 'raw' => [
@@ -444,7 +436,7 @@ final class HostingPlansSpec
                             'type' => 'union',
                             'nullable' => true,
                             'anyOf' => [
-                                ['type' => 'int'],
+                                ['type' => 'int', 'accept' => ['numeric-string']],
                                 ['type' => 'string', 'literal' => 'unlimited'],
                             ],
                         ],
@@ -460,7 +452,7 @@ final class HostingPlansSpec
                             'type' => 'union',
                             'nullable' => true,
                             'anyOf' => [
-                                ['type' => 'int'],
+                                ['type' => 'int', 'accept' => ['numeric-string']],
                                 ['type' => 'string', 'literal' => 'unlimited'],
                             ],
                         ],
@@ -468,7 +460,7 @@ final class HostingPlansSpec
                             'type' => 'union',
                             'nullable' => true,
                             'anyOf' => [
-                                ['type' => 'int'],
+                                ['type' => 'int', 'accept' => ['numeric-string']],
                                 ['type' => 'string', 'literal' => 'unlimited'],
                             ],
                         ],
@@ -476,14 +468,15 @@ final class HostingPlansSpec
                             'type' => 'union',
                             'nullable' => true,
                             'anyOf' => [
-                                ['type' => 'int'],
+                                ['type' => 'int', 'accept' => ['numeric-string']],
                                 ['type' => 'string', 'literal' => 'unlimited'],
                             ],
                         ],
                         'MAXPARK' => [
                             'type' => 'union',
+                            'nullable' => true,
                             'anyOf' => [
-                                ['type' => 'int'],
+                                ['type' => 'int', 'accept' => ['numeric-string']],
                                 ['type' => 'string', 'literal' => 'unlimited'],
                             ],
                         ],
@@ -491,7 +484,7 @@ final class HostingPlansSpec
                             'type' => 'union',
                             'nullable' => true,
                             'anyOf' => [
-                                ['type' => 'int'],
+                                ['type' => 'int', 'accept' => ['numeric-string']],
                                 ['type' => 'string', 'literal' => 'unlimited'],
                             ],
                         ],
@@ -499,7 +492,7 @@ final class HostingPlansSpec
                             'type' => 'union',
                             'nullable' => true,
                             'anyOf' => [
-                                ['type' => 'int'],
+                                ['type' => 'int', 'accept' => ['numeric-string']],
                                 ['type' => 'string', 'literal' => 'unlimited'],
                             ],
                         ],
@@ -507,28 +500,28 @@ final class HostingPlansSpec
                             'type' => 'union',
                             'nullable' => true,
                             'anyOf' => [
-                                ['type' => 'int'],
+                                ['type' => 'int', 'accept' => ['numeric-string']],
                                 ['type' => 'string', 'literal' => 'unlimited'],
                             ],
                         ],
                         'MAX_DEFER_FAIL_PERCENTAGE' => [
                             'type' => 'union',
                             'anyOf' => [
-                                ['type' => 'int'],
+                                ['type' => 'int', 'accept' => ['numeric-string']],
                                 ['type' => 'string', 'literal' => 'unlimited'],
                             ],
                         ],
                         'MAX_EMAILACCT_QUOTA' => [
                             'type' => 'union',
                             'anyOf' => [
-                                ['type' => 'int'],
+                                ['type' => 'int', 'accept' => ['numeric-string']],
                                 ['type' => 'string', 'literal' => 'unlimited'],
                             ],
                         ],
                         'MAX_EMAIL_PER_HOUR' => [
                             'type' => 'union',
                             'anyOf' => [
-                                ['type' => 'int'],
+                                ['type' => 'int', 'accept' => ['numeric-string']],
                                 ['type' => 'string', 'literal' => 'unlimited'],
                             ],
                         ],
@@ -537,7 +530,7 @@ final class HostingPlansSpec
                             'type' => 'union',
                             'nullable' => true,
                             'anyOf' => [
-                                ['type' => 'int'],
+                                ['type' => 'int', 'accept' => ['numeric-string']],
                                 ['type' => 'string', 'literal' => 'unlimited'],
                             ],
                         ],
@@ -724,101 +717,105 @@ final class HostingPlansSpec
             'type' => 'object',
             'fields' => [
                 'pkg' => [
-                    'type' => 'object',
-                    'fields' => [
-                        'BWLIMIT' => [
-                            'type' => 'union',
-                            'anyOf' => [
-                                ['type' => 'int'],
-                                ['type' => 'string', 'literal' => 'unlimited'],
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'BWLIMIT' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
                             ],
-                        ],
-                        'CGI' => ['type' => 'flag'],
-                        'CPMOD' => ['type' => 'string'],
-                        'DIGESTAUTH' => ['type' => 'string'],
-                        'FEATURELIST' => ['type' => 'string'],
-                        'FRONTPAGE' => ['type' => 'int'],
-                        'HASSHELL' => ['type' => 'string'],
-                        'IP' => ['type' => 'string'],
-                        'LANG' => ['type' => 'string'],
-                        'MAXADDON' => [
-                            'type' => 'union',
-                            'anyOf' => [
-                                ['type' => 'int'],
-                                ['type' => 'string', 'literal' => 'unlimited'],
+                            'CGI' => ['type' => 'flag'],
+                            'CPMOD' => ['type' => 'string'],
+                            'DIGESTAUTH' => ['type' => 'string'],
+                            'FEATURELIST' => ['type' => 'string'],
+                            'FRONTPAGE' => ['type' => 'int'],
+                            'HASSHELL' => ['type' => 'string'],
+                            'IP' => ['type' => 'string'],
+                            'LANG' => ['type' => 'string'],
+                            'MAXADDON' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
                             ],
-                        ],
-                        'MAXFTP' => [
-                            'type' => 'union',
-                            'anyOf' => [
-                                ['type' => 'int'],
-                                ['type' => 'string', 'literal' => 'unlimited'],
+                            'MAXFTP' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
                             ],
-                        ],
-                        'MAXLST' => [
-                            'type' => 'union',
-                            'anyOf' => [
-                                ['type' => 'int'],
-                                ['type' => 'string', 'literal' => 'unlimited'],
+                            'MAXLST' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
                             ],
-                        ],
-                        'MAXPARK' => [
-                            'type' => 'union',
-                            'anyOf' => [
-                                ['type' => 'int'],
-                                ['type' => 'string', 'literal' => 'unlimited'],
+                            'MAXPARK' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
                             ],
-                        ],
-                        'MAXPOP' => [
-                            'type' => 'union',
-                            'anyOf' => [
-                                ['type' => 'int'],
-                                ['type' => 'string', 'literal' => 'unlimited'],
+                            'MAXPOP' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
                             ],
-                        ],
-                        'MAXSQL' => [
-                            'type' => 'union',
-                            'anyOf' => [
-                                ['type' => 'int'],
-                                ['type' => 'string', 'literal' => 'unlimited'],
+                            'MAXSQL' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
                             ],
-                        ],
-                        'MAXSUB' => [
-                            'type' => 'union',
-                            'anyOf' => [
-                                ['type' => 'int'],
-                                ['type' => 'string', 'literal' => 'unlimited'],
+                            'MAXSUB' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
                             ],
-                        ],
-                        'MAX_DEFER_FAIL_PERCENTAGE' => [
-                            'type' => 'union',
-                            'anyOf' => [
-                                ['type' => 'int'],
-                                ['type' => 'string', 'literal' => 'unlimited'],
+                            'MAX_DEFER_FAIL_PERCENTAGE' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
                             ],
-                        ],
-                        'MAX_EMAILACCT_QUOTA' => [
-                            'type' => 'union',
-                            'anyOf' => [
-                                ['type' => 'int'],
-                                ['type' => 'string', 'literal' => 'unlimited'],
+                            'MAX_EMAILACCT_QUOTA' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
                             ],
-                        ],
-                        'MAX_EMAIL_PER_HOUR' => [
-                            'type' => 'union',
-                            'anyOf' => [
-                                ['type' => 'int'],
-                                ['type' => 'string', 'literal' => 'unlimited'],
+                            'MAX_EMAIL_PER_HOUR' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
                             ],
-                        ],
-                        'QUOTA' => [
-                            'type' => 'union',
-                            'anyOf' => [
-                                ['type' => 'int'],
-                                ['type' => 'string', 'literal' => 'unlimited'],
+                            'QUOTA' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
                             ],
+                            '_PACKAGE_EXTENSIONS' => ['type' => 'string'],
+                            'name' => ['type' => 'string'],
                         ],
-                        '_PACKAGE_EXTENSIONS' => ['type' => 'string'],
                     ],
                 ],
             ],

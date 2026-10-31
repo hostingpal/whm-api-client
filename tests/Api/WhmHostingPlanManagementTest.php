@@ -147,16 +147,18 @@ final class WhmHostingPlanManagementTest extends TestCase
                 . '&HASSHELL=1&IP=n&LANG=en&MAX_DEFER_FAIL_PERCENTAGE=0&MAX_EMAIL_PER_HOUR=unlimited'
                 . '&MAX_EMAILACCT_QUOTA=1&MAX_TEAM_USERS=0&MAXADDON=0&MAXFTP=1&MAXLST=2&MAXPARK=3'
                 . '&MAXPOP=4&MAXSQL=5&MAXSUB=6&QUOTA=unlimited',
-            '{"pkg":{"BWLIMIT":"unlimited","CGI":1,"CPMOD":"jupiter","DIGESTAUTH":"y",'
+            '{"pkg":[{"BWLIMIT":"unlimited","CGI":1,"CPMOD":"jupiter","DIGESTAUTH":"y",'
                 . '"FEATURELIST":"default","FRONTPAGE":0,"HASSHELL":"n","IP":"n","LANG":"en",'
                 . '"MAXADDON":1,"MAXFTP":"unlimited","MAXLST":2,"MAXPARK":3,"MAXPOP":4,'
                 . '"MAXSQL":5,"MAXSUB":6,"MAX_DEFER_FAIL_PERCENTAGE":0,"MAX_EMAILACCT_QUOTA":0,'
-                . '"MAX_EMAIL_PER_HOUR":100,"QUOTA":0,"_PACKAGE_EXTENSIONS":"ExtOne ExtTwo"}}',
-            ['pkg' => ['BWLIMIT' => 'unlimited', 'CGI' => 1, 'CPMOD' => 'jupiter', 'DIGESTAUTH' => 'y',
+                . '"MAX_EMAIL_PER_HOUR":100,"QUOTA":0,"_PACKAGE_EXTENSIONS":"ExtOne ExtTwo",'
+                . '"name":"fixture"}]}',
+            ['pkg' => [['BWLIMIT' => 'unlimited', 'CGI' => 1, 'CPMOD' => 'jupiter', 'DIGESTAUTH' => 'y',
                 'FEATURELIST' => 'default', 'FRONTPAGE' => 0, 'HASSHELL' => 'n', 'IP' => 'n', 'LANG' => 'en',
                 'MAXADDON' => 1, 'MAXFTP' => 'unlimited', 'MAXLST' => 2, 'MAXPARK' => 3, 'MAXPOP' => 4,
                 'MAXSQL' => 5, 'MAXSUB' => 6, 'MAX_DEFER_FAIL_PERCENTAGE' => 0, 'MAX_EMAILACCT_QUOTA' => 0,
-                'MAX_EMAIL_PER_HOUR' => 100, 'QUOTA' => 0, '_PACKAGE_EXTENSIONS' => 'ExtOne ExtTwo']],
+                'MAX_EMAIL_PER_HOUR' => 100, 'QUOTA' => 0, '_PACKAGE_EXTENSIONS' => 'ExtOne ExtTwo',
+                'name' => 'fixture']]],
         ];
         yield 'remove overrides sends a JSON list once' => [
             'remove_override_features_for_user', 'removeOverrideFeaturesForUser',
@@ -230,29 +232,46 @@ final class WhmHostingPlanManagementTest extends TestCase
         ];
         foreach (['getpkginfo' => 'getPackageInfo', 'matchpkgs' => 'matchPackages'] as $operation => $method) {
             $arguments = $operation === 'getpkginfo' ? ['fixture'] : [];
-            foreach (['null', '[{}]', 'true'] as $payload) {
+            $invalidRoots = $operation === 'getpkginfo' ? ['null', '[{}]', 'true'] : ['null', '{}', 'true', '[1]'];
+            foreach ($invalidRoots as $payload) {
                 yield "$method package root $payload" => [$operation, $method, $arguments, '{"pkg":' . $payload . '}'];
             }
-            foreach (
-                ['BWLIMIT', 'MAXADDON', 'MAXFTP', 'MAXLST', 'MAXPARK', 'MAXPOP', 'MAXSQL', 'MAXSUB',
-                'MAX_DEFER_FAIL_PERCENTAGE', 'MAX_EMAILACCT_QUOTA', 'MAX_EMAIL_PER_HOUR', 'QUOTA'] as $field
-            ) {
-                foreach (['false', '1.5', '[]', '{}', '"not-unlimited"', '"0"', '"Unlimited"'] as $payload) {
+            foreach (self::packageLimitFields() as $field) {
+                foreach (
+                    ['false', 'true', '1.0', '1.5', '[]', '{}', '"not-unlimited"', '"Unlimited"', '"unlimited "',
+                    '""', '"00"', '"-0"', '"+1"', '"-01"', '" 1"', '"1 "', '"1.0"', '"1e3"',
+                    '"' . PHP_INT_MAX . '0"', '"' . PHP_INT_MIN . '0"', (string) PHP_INT_MAX . '0'] as $payload
+                ) {
+                    $row = '{"' . $field . '":' . $payload . '}';
                     yield "$method $field $payload" => [$operation, $method, $arguments,
-                        '{"pkg":{"' . $field . '":' . $payload . '}}'];
+                        '{"pkg":' . ($operation === 'matchpkgs' ? '[' . $row . ']' : $row) . '}'];
+                }
+                if (
+                    $operation === 'matchpkgs' || in_array($field, [
+                        'MAX_DEFER_FAIL_PERCENTAGE', 'MAX_EMAILACCT_QUOTA', 'MAX_EMAIL_PER_HOUR',
+                    ], true)
+                ) {
+                    $row = '{"' . $field . '":null}';
+                    yield "$method $field remains nonnullable" => [$operation, $method, $arguments,
+                        '{"pkg":' . ($operation === 'matchpkgs' ? '[' . $row . ']' : $row) . '}'];
                 }
             }
             foreach (['CGI', 'FRONTPAGE'] as $field) {
+                $row = '{"' . $field . '":"0"}';
                 yield "$method strict flag $field" => [$operation, $method, $arguments,
-                    '{"pkg":{"' . $field . '":"0"}}'];
+                    '{"pkg":' . ($operation === 'matchpkgs' ? '[' . $row . ']' : $row) . '}'];
             }
         }
-        yield 'get package park limit is not nullable' => [
-            'getpkginfo', 'getPackageInfo', ['fixture'], '{"pkg":{"MAXPARK":null}}',
-        ];
         yield 'get package IP is not a string' => ['getpkginfo', 'getPackageInfo', ['fixture'], '{"pkg":{"IP":"n"}}'];
-        yield 'match package shell remains a string' => ['matchpkgs', 'matchPackages', [], '{"pkg":{"HASSHELL":0}}'];
-        yield 'match package limit is not nullable' => ['matchpkgs', 'matchPackages', [], '{"pkg":{"QUOTA":null}}'];
+        yield 'get package team count stays native integer' => [
+            'getpkginfo', 'getPackageInfo', ['fixture'], '{"pkg":{"MAX_TEAM_USERS":"7"}}',
+        ];
+        yield 'match package shell remains a string' => ['matchpkgs', 'matchPackages', [], '{"pkg":[{"HASSHELL":0}]}'];
+        foreach (['null', '1', 'false', '[]', '{}'] as $value) {
+            yield 'match package name remains a string ' . $value => [
+                'matchpkgs', 'matchPackages', [], '{"pkg":[{"name":' . $value . '}]}',
+            ];
+        }
         foreach (['null', '{}', '[1]', '[{}]'] as $groups) {
             yield 'application groups ' . $groups => [
                 'get_available_applications', 'getAvailableApplications', [], '{"groups":' . $groups . '}',
@@ -312,20 +331,21 @@ final class WhmHostingPlanManagementTest extends TestCase
         self::assertNull($client->whm()->hostingPlans()->getPackageExtensionForm('fixture'));
     }
 
-    public function testEmptyOptionalPackageObjectsAndNullableLimitsRemainDistinct(): void
+    public function testEmptyPackageObjectAndPackageListPreserveNullableLimits(): void
     {
         [$client, $http] = self::client();
         $http->addResponse(new Response(200, [], self::envelope('getpkginfo', '{"pkg":{}}')));
-        $http->addResponse(new Response(200, [], self::envelope('matchpkgs', '{"pkg":{}}')));
+        $http->addResponse(new Response(200, [], self::envelope('matchpkgs', '{"pkg":[]}')));
         $group = $client->whm()->hostingPlans();
         self::assertSame(['pkg' => []], $group->getPackageInfo('fixture'));
         self::assertSame(['pkg' => []], $group->matchPackages());
         $http->addResponse(new Response(200, [], self::envelope(
             'getpkginfo',
-            '{"pkg":{"BWLIMIT":null,"MAXADDON":null,"MAXFTP":null,"MAXLST":null,"MAXPOP":null,'
+            '{"pkg":{"BWLIMIT":null,"MAXADDON":null,"MAXFTP":null,"MAXLST":null,"MAXPARK":null,"MAXPOP":null,'
             . '"MAXSQL":null,"MAXSUB":null,"QUOTA":null}}',
         )));
-        self::assertSame(['pkg' => ['BWLIMIT' => null, 'MAXADDON' => null, 'MAXFTP' => null, 'MAXLST' => null,
+        self::assertSame(['pkg' => [
+            'BWLIMIT' => null, 'MAXADDON' => null, 'MAXFTP' => null, 'MAXLST' => null, 'MAXPARK' => null,
             'MAXPOP' => null, 'MAXSQL' => null, 'MAXSUB' => null, 'QUOTA' => null]], $group->getPackageInfo('fixture'));
     }
 
@@ -369,12 +389,12 @@ final class WhmHostingPlanManagementTest extends TestCase
             'file' => 'item.svg', 'group' => 'fixture', 'itemorder' => 1, 'url' => '/synthetic'];
         $subitem = ['type' => 'subitem', 'acl' => null, 'breadcrumb' => '/synthetic', 'dnsonly_ok' => null,
             'file' => 'sub.svg', 'group' => 'fixture', 'parent' => 1, 'url' => '/child'];
-        foreach (['type', 'acl', 'dnsonly_ok', 'file', 'group', 'groupdesc', 'grouporder'] as $field) {
+        foreach (['type', 'dnsonly_ok', 'file', 'group', 'groupdesc', 'grouporder'] as $field) {
             $invalid = $group;
             unset($invalid[$field]);
             yield 'group requires ' . $field => [json_encode(['groups' => [$invalid]], JSON_THROW_ON_ERROR)];
         }
-        foreach (['type', 'acl', 'description', 'dnsonly_ok', 'file', 'group', 'itemorder', 'url'] as $field) {
+        foreach (['type', 'acl', 'file', 'group', 'itemorder', 'url'] as $field) {
             $invalid = $image;
             unset($invalid[$field]);
             yield 'image requires ' . $field => [json_encode(['groups' => [
@@ -388,14 +408,24 @@ final class WhmHostingPlanManagementTest extends TestCase
                 $group + ['items' => [$image + ['subitems' => [$invalid]]]],
             ]], JSON_THROW_ON_ERROR)];
         }
-        foreach (['grouporder' => '1', 'groupdesc' => 1, 'acl' => false, 'items' => [1]] as $field => $value) {
+        foreach (
+            ['grouporder' => '1', 'groupdesc' => 1, 'acl' => false, 'target' => null,
+            'description' => null, 'items' => [1]] as $field => $value
+        ) {
             $invalid = $group;
             $invalid[$field] = $value;
             yield 'group field ' . $field => [json_encode(['groups' => [$invalid]], JSON_THROW_ON_ERROR)];
         }
+        foreach ([false, 1, [], (object) []] as $value) {
+            $invalid = $group + ['description' => $value];
+            yield 'group description ' . json_encode($value, JSON_THROW_ON_ERROR) => [
+                json_encode(['groups' => [$invalid]], JSON_THROW_ON_ERROR),
+            ];
+        }
         foreach (
             ['role' => ['roles' => [1]], 'service' => ['services' => [false]], 'itemorder' => '1',
-            'url' => false, 'subitems' => [1]] as $field => $value
+            'url' => false, 'subitems' => [1], 'description' => null, 'dnsonly_ok' => false,
+            'minimum_accounts_needed' => '1', 'multiuser_required' => '1', 'target' => null] as $field => $value
         ) {
             $invalid = $image;
             $invalid[$field] = $value;
@@ -419,6 +449,153 @@ final class WhmHostingPlanManagementTest extends TestCase
         $http->addResponse(new Response(200, [], self::envelope('get_available_applications', $payload)));
         $this->expectException(PayloadMismatchException::class);
         $client->whm()->hostingPlans()->getAvailableApplications();
+    }
+
+    /** @return list<string> */
+    private static function packageLimitFields(): array
+    {
+        return ['BWLIMIT', 'MAXADDON', 'MAXFTP', 'MAXLST', 'MAXPARK', 'MAXPOP', 'MAXSQL', 'MAXSUB',
+            'MAX_DEFER_FAIL_PERCENTAGE', 'MAX_EMAILACCT_QUOTA', 'MAX_EMAIL_PER_HOUR', 'QUOTA'];
+    }
+
+    /** @return iterable<string, array{string, string, array<array-key, mixed>, string, array<array-key, mixed>}> */
+    public static function reviewedPackageResponses(): iterable
+    {
+        foreach (['getpkginfo' => 'getPackageInfo', 'matchpkgs' => 'matchPackages'] as $operation => $method) {
+            $arguments = $operation === 'getpkginfo' ? ['fixture'] : [];
+            foreach (self::packageLimitFields() as $field) {
+                foreach ([0, 1000, 4294967296, PHP_INT_MIN, PHP_INT_MAX] as $value) {
+                    foreach ([false, true] as $quoted) {
+                        $wire = $quoted ? (string) $value : $value;
+                        $row = [$field => $wire];
+                        $expected = [$field => $value];
+                        yield $method . ' ' . $field . ' ' . json_encode($wire, JSON_THROW_ON_ERROR) => [
+                            $operation, $method, $arguments,
+                            json_encode(['pkg' => $operation === 'matchpkgs' ? [$row] : $row], JSON_THROW_ON_ERROR),
+                            ['pkg' => $operation === 'matchpkgs' ? [$expected] : $expected],
+                        ];
+                    }
+                }
+                $row = [$field => 'unlimited'];
+                $expected = ['pkg' => $operation === 'matchpkgs' ? [$row] : $row];
+                yield $method . ' ' . $field . ' literal' => [
+                    $operation, $method, $arguments, json_encode($expected, JSON_THROW_ON_ERROR), $expected,
+                ];
+            }
+        }
+        yield 'matched deprecated frontpage retains native integer contract' => ['matchpkgs', 'matchPackages', [],
+            '{"pkg":[{"FRONTPAGE":2}]}', ['pkg' => [['FRONTPAGE' => 2]]]];
+        yield 'stock package park null' => ['getpkginfo', 'getPackageInfo', ['fixture'],
+            '{"pkg":{"MAXPARK":null,"MAXADDON":null,"CGI":0}}',
+            ['pkg' => ['MAXPARK' => null, 'MAXADDON' => null, 'CGI' => 0]]];
+        yield 'matched package empty row stays a list row' => ['matchpkgs', 'matchPackages', [],
+            '{"pkg":[{}]}', ['pkg' => [[]]]];
+        yield 'matched package two named rows preserve limits and omissions' => ['matchpkgs', 'matchPackages', [],
+            '{"pkg":[{"name":"first","QUOTA":"4294967296","MAXPARK":"unlimited","CGI":1,"HASSHELL":"n"},'
+                . '{"name":"second","QUOTA":0,"BWLIMIT":"1000","IP":"y"},{}]}',
+            ['pkg' => [
+                ['name' => 'first', 'QUOTA' => 4294967296, 'MAXPARK' => 'unlimited', 'CGI' => 1, 'HASSHELL' => 'n'],
+                ['name' => 'second', 'QUOTA' => 0, 'BWLIMIT' => 1000, 'IP' => 'y'], [],
+            ]]];
+    }
+
+    /** @param array<array-key, mixed> $arguments
+     * @param array<array-key, mixed> $expected
+     */
+    #[DataProvider('reviewedPackageResponses')]
+    public function testReviewedPackageRowsPreserveNormalizedLimitsAndNames(
+        string $operation,
+        string $method,
+        array $arguments,
+        string $payload,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($operation, $payload)));
+        self::assertSame(
+            self::canonical($expected),
+            self::canonical($client->whm()->hostingPlans()->{$method}(...$arguments)),
+        );
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, array<array-key, mixed>}> */
+    public static function reviewedApplicationResponses(): iterable
+    {
+        $group = ['type' => 'group', 'acl' => null, 'dnsonly_ok' => null, 'file' => 'group.svg',
+            'group' => 'fixture', 'groupdesc' => 'Fixture', 'grouporder' => 1, 'target' => '_blank'];
+        $described = $group + ['description' => 'Synthetic group description'];
+        yield 'group description retained beside omitted description' => [
+            json_encode(['groups' => [$described, $group]], JSON_THROW_ON_ERROR), ['groups' => [$described, $group]],
+        ];
+        foreach (['acl', 'target'] as $field) {
+            $row = $group;
+            unset($row[$field]);
+            yield 'optional group ' . $field => [json_encode(['groups' => [$row]], JSON_THROW_ON_ERROR),
+                ['groups' => [$row]]];
+        }
+        $item = ['type' => 'image', 'acl' => null, 'description' => 'Fixture', 'dnsonly_ok' => null,
+            'file' => 'item.svg', 'group' => 'fixture', 'itemorder' => 1, 'url' => '/synthetic',
+            'minimum_accounts_needed' => 1, 'multiuser_required' => 1, 'target' => '_blank',
+            'role' => ['match' => 'all', 'roles' => ['MailLocal']], 'service' => 'mysql', 'subitems' => []];
+        foreach (
+            ['minimum_accounts_needed', 'role', 'service', 'target', 'subitems', 'multiuser_required',
+            'description', 'dnsonly_ok'] as $field
+        ) {
+            $row = $item;
+            unset($row[$field]);
+            $expected = ['groups' => [$group + ['items' => [$row]]]];
+            yield 'optional item ' . $field => [json_encode($expected, JSON_THROW_ON_ERROR), $expected];
+        }
+        yield 'reviewed omissions across two groups and two items' => [
+            '{"groups":[{"type":"group","dnsonly_ok":null,"file":"one.svg","group":"one",'
+                . '"groupdesc":"One","grouporder":1,"items":[{"type":"image","acl":null,"file":"a.svg",'
+                . '"group":"one","itemorder":1,"url":"/a"},{"type":"image","acl":"all","file":"b.svg",'
+                . '"group":"one","itemorder":2,"url":"/b","description":"B","dnsonly_ok":null}]},'
+                . '{"type":"group","dnsonly_ok":"dns","file":"two.svg","group":"two",'
+                . '"groupdesc":"Two","grouporder":2}],"raw":[{"type":"raw","itemdesc":"[% synthetic %]"}]}',
+            ['groups' => [
+                ['type' => 'group', 'dnsonly_ok' => null, 'file' => 'one.svg', 'group' => 'one',
+                    'groupdesc' => 'One', 'grouporder' => 1, 'items' => [
+                        ['type' => 'image', 'acl' => null, 'file' => 'a.svg', 'group' => 'one',
+                            'itemorder' => 1, 'url' => '/a'],
+                        ['type' => 'image', 'acl' => 'all', 'file' => 'b.svg', 'group' => 'one',
+                            'itemorder' => 2, 'url' => '/b', 'description' => 'B', 'dnsonly_ok' => null],
+                    ]],
+                ['type' => 'group', 'dnsonly_ok' => 'dns', 'file' => 'two.svg', 'group' => 'two',
+                    'groupdesc' => 'Two', 'grouporder' => 2],
+            ], 'raw' => [['type' => 'raw', 'itemdesc' => '[% synthetic %]']]],
+        ];
+    }
+
+    /** @param array<array-key, mixed> $expected */
+    #[DataProvider('reviewedApplicationResponses')]
+    public function testReviewedApplicationOmissionsPreserveRemainingFields(string $payload, array $expected): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('get_available_applications', $payload)));
+        self::assertSame(
+            self::canonical($expected),
+            self::canonical($client->whm()->hostingPlans()->getAvailableApplications()),
+        );
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    private static function canonical(mixed $value): mixed
+    {
+        if (!is_array($value)) {
+            return $value;
+        }
+        foreach ($value as $key => $entry) {
+            $value[$key] = self::canonical($entry);
+        }
+        if (!array_is_list($value)) {
+            ksort($value);
+        }
+
+        return $value;
     }
 
     public function testNamesAreNotMarkedAsSecretsAndFeatureMapPlaceholdersAreExcluded(): void

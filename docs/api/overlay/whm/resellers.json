@@ -1,0 +1,968 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "Resellers",
+  "accessor": "resellers",
+  "operations": {
+    "whm1:acctcounts": {
+      "name": "accountCounts",
+      "method": "GET",
+      "order": [
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Omitting user queries the authenticated account. Account ownership counts do not establish reseller privileges. A null limit means no account creation limit; suspended may also be null. Fields remain optional."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel & WHM 11.138.0.19, the initial read-only capture returned an exact empty-string reseller.limit. That literal is preserved distinctly from integer zero, null and omission, without inferring its meaning. No numeric-string conversion or sibling-field widening is applied; the original capture remains failed and immutable."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /acctcounts x-cpanel-available-version=11; x-readonly=true. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "The immutable docs/api/evidence/2026-10-31-whm-resellers.json capture (SHA256 76e0be8605fc048ab03c9bfd82c0fb98fefbf93d170c0fb619cde5902339c753), revision 8acce7c186a2815c5f81275acfa053a6f52d3e3c, records whm1:acctcounts#GET on the whm route with successful API outcome and an exact empty-string $.reseller.limit, causing the original integer payload mismatch. Preserve only this literal alongside the pinned integer and nullable forms, without assigning it unlimited, zero or null semantics. Numeric strings, nonempty or whitespace strings, fractional values, booleans and containers stay invalid. Only this leaf is corrected; sibling active/suspended integer contracts remain unchanged. Boundary fixtures are synthetic; the initial failed artifact is unchanged.",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-resellers.json#sha256=76e0be8605fc048ab03c9bfd82c0fb98fefbf93d170c0fb619cde5902339c753"
+        }
+      ],
+      "response": {
+        "reseller.limit": {
+          "replace": {
+            "type": "union",
+            "nullable": true,
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "string",
+                "literal": ""
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "The immutable docs/api/evidence/2026-10-31-whm-resellers.json capture (SHA256 76e0be8605fc048ab03c9bfd82c0fb98fefbf93d170c0fb619cde5902339c753), revision 8acce7c186a2815c5f81275acfa053a6f52d3e3c, records whm1:acctcounts#GET on the whm route with successful API outcome and an exact empty-string $.reseller.limit, causing the original integer payload mismatch. Preserve only this literal alongside the pinned integer and nullable forms, without assigning it unlimited, zero or null semantics. Numeric strings, nonempty or whitespace strings, fractional values, booleans and containers stay invalid. Only this leaf is corrected; sibling active/suspended integer contracts remain unchanged. Boundary fixtures are synthetic; the initial failed artifact is unchanged.",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-resellers.json#sha256=76e0be8605fc048ab03c9bfd82c0fb98fefbf93d170c0fb619cde5902339c753"
+            }
+          ]
+        }
+      }
+    },
+    "whm1:get_public_contact": {
+      "name": "getPublicContact",
+      "method": "GET",
+      "order": [],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 68 and later, according to the pinned operation. Retrieves the authenticated account public contact information; omitted fields and empty strings remain distinct."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /get_public_contact x-cpanel-available-version=68; x-readonly=true. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        }
+      ]
+    },
+    "whm1:getresellerips": {
+      "name": "getResellerIps",
+      "method": "GET",
+      "order": [
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. The pinned user description claims a root fallback when omitted, but reviewed upstream source reads user without a default. Supply the target reseller username for the reviewed root WHM route. The integer all flag describes availability and is distinct from API success; empty IP lists stay empty."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, omitting user as root raised ApiErrorException because the server received an empty username. A named non-reseller also raised ApiErrorException. The retained capture failure has this known cause and remains failed and unwaived under whm-api-client-8x0.2.36; no successful reseller IP inventory was observed."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /getresellerips x-cpanel-available-version=11; x-readonly=true. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: WHM GET getresellerips as root without user raised the empty-username API error on cPanel 11.138.0.19; a named non-reseller raised Specified user is not a reseller. These are live read observations and explain the immutable capture failure. The function still uses normal Flag outcome checks; no error-text matching, successful populated result or write is inferred. The capture remains failed and unwaived under whm-api-client-8x0.2.36."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: Whostmgr/API/1/Resellers.pm reads args[user] without a default, contradicting the pinned /getresellerips description that omitted user selects root. Correct the note and parameter prose while preserving the pinned optional input type; the observed failure is scoped to the reviewed root WHM route. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "params": {
+        "user": {
+          "description": "The target reseller username. Supply it when using the reviewed root WHM route; the omitted-user fallback in the pinned description was not implemented by the reviewed source."
+        }
+      }
+    },
+    "whm1:list_enhancement_limits": {
+      "name": "listEnhancementLimits",
+      "method": "GET",
+      "order": [
+        "account"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.98 and later, according to the pinned operation. Returns limits keyed by third-party account enhancement ID. limited=0 means unlimited and limited=1 means limited. Zero limits, zero usage, empty maps and omitted fields remain distinct."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /list_enhancement_limits x-cpanel-available-version=11.98; x-readonly=true. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        }
+      ]
+    },
+    "whm1:listacls": {
+      "name": "listAcls",
+      "method": "GET",
+      "order": [],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. ACL all=1 grants root-level privileges. create-user-session and manage-api-tokens can bypass API token restrictions; passwd permits changing account passwords and logging in. quota and limit-bandwidth can circumvent package disk limits without resource limits. Third-party privileges may exist beyond the pinned named fields; no extra typed fields are inferred. FrontPage settings are ignored by cPanel & WHM."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /listacls x-cpanel-available-version=11; x-readonly=true. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        }
+      ]
+    },
+    "whm1:listresellers": {
+      "name": "listResellers",
+      "method": "GET",
+      "order": [],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Lists reseller account usernames; an empty reseller list remains empty."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /listresellers x-cpanel-available-version=11; x-readonly=true. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        }
+      ]
+    },
+    "whm1:resellerstats": {
+      "name": "resellerStats",
+      "method": "GET",
+      "order": [
+        "user",
+        "filter_deleted",
+        "filter_suspended",
+        "month",
+        "year"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Omitted filters retain zero defaults, and omitted month/year query the current period. Account bandwidth and disk amounts and allocation totals are strings in MB; reseller limits are integers in MB and reseller diskused is numeric MB. Zero reseller limits and account string 0.00 mean unlimited. acct includes the reseller account; diskused excludes it when root owns it. Integer payload flags remain distinct from API success."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /resellerstats x-cpanel-available-version=11; x-readonly=true. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        }
+      ]
+    },
+    "whm1:saveacllist": {
+      "name": "saveAclList",
+      "method": "POST",
+      "order": [
+        "acllist",
+        "acl-acct-summary",
+        "acl-add-pkg",
+        "acl-add-pkg-ip",
+        "acl-add-pkg-shell",
+        "acl-all",
+        "acl-allow-addoncreate",
+        "acl-allow-emaillimits-pkgs",
+        "acl-allow-parkedcreate",
+        "acl-allow-shell",
+        "acl-allow-unlimited-bw-pkgs",
+        "acl-allow-unlimited-disk-pkgs",
+        "acl-allow-unlimited-pkgs",
+        "acl-basic-system-info",
+        "acl-basic-whm-functions",
+        "acl-clustering",
+        "acl-cors-proxy-get",
+        "acl-cpanel-api",
+        "acl-cpanel-integration",
+        "acl-create-acct",
+        "acl-create-dns",
+        "acl-create-user-session",
+        "acl-demo-setup",
+        "acl-digest-auth",
+        "acl-edit-account",
+        "acl-edit-dns",
+        "acl-edit-mx",
+        "acl-edit-pkg",
+        "acl-generate-email-config",
+        "acl-kill-acct",
+        "acl-kill-dns",
+        "acl-limit-bandwidth",
+        "acl-list-accts",
+        "acl-list-pkgs",
+        "acl-locale-edit",
+        "acl-mailcheck",
+        "acl-manage-api-tokens",
+        "acl-manage-dns-records",
+        "acl-manage-oidc",
+        "acl-manage-styles",
+        "acl-mysql-info",
+        "acl-news",
+        "acl-ns-config",
+        "acl-park-dns",
+        "acl-passwd",
+        "acl-quota",
+        "acl-rearrange-accts",
+        "acl-resftp",
+        "acl-restart",
+        "acl-show-bandwidth",
+        "acl-ssl",
+        "acl-ssl-buy",
+        "acl-ssl-gencrt",
+        "acl-ssl-info",
+        "acl-stats",
+        "acl-status",
+        "acl-suspend-acct",
+        "acl-thirdparty",
+        "acl-track-email",
+        "acl-upgrade-account",
+        "acl-viewglobalpackages"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Creates or replaces a named ACL list as a whole set. Read the existing list first and supply the complete desired privilege set. Every omitted acl-* flag defaults to 0, so its privilege is removed from the replacement; omitting all flags saves an empty privilege set. Explicit true sends 1 to add and false sends 0 to remove, unlike the presence-only setAcls switches. Preserve all sixty save switches and the save-only acl-allow-shell, acl-allow-emaillimits-pkgs and acl-ns-config wire names. acl-all grants root-level privileges. The source recommends managing ACLs through the WHM interface. No save was observed; replacement semantics are supported by source and offline tests."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /saveacllist x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: saveAclList replaces the complete named privilege set rather than partially updating existing flags. All 60 pinned /saveacllist acl-* switches are optional integer enum[0,1] with default 0: false still emits 0, true emits 1, and omitted privileges are removed. Preserve the existing bool parameter contracts and encoding. Read the existing list before constructing the replacement. No write was performed; this is pinned/upstream-source evidence with offline tests. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:set_enhancement_limit": {
+      "name": "setEnhancementLimit",
+      "method": "POST",
+      "order": [
+        "account",
+        "id",
+        "limited",
+        "limit"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.98 and later, according to the pinned operation. Requires a third-party account enhancement ID; list_account_enhancements supplies valid IDs. limited=0 means unlimited; limited=1 requires limit. The conditional limit requirement remains documented without inventing a client cross-field rule. An omitted limit is distinct from explicit zero."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_enhancement_limit x-cpanel-available-version=11.98; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_enhancement_limit limited prose introduces an unlimited question but explicitly defines 0 as unlimited and 1 as limited. Use a description consistent with that value table and the existing bool encoder; do not change types, requiredness or add cross-field validation. Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "params": {
+        "limited": {
+          "description": "Whether to limit account enhancement assignments. true sends limited=1 and requires limit; false sends limited=0 for unlimited assignments."
+        }
+      }
+    },
+    "whm1:set_public_contact": {
+      "name": "setPublicContact",
+      "method": "POST",
+      "order": [
+        "name",
+        "url"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 68 and later, according to the pinned operation. Changes the authenticated account public contact information. name and url are optional; omitted values and explicit empty strings are sent distinctly."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_public_contact x-cpanel-available-version=68; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        }
+      ]
+    },
+    "whm1:setacls": {
+      "name": "setAcls",
+      "method": "POST",
+      "order": [
+        "reseller",
+        "acl-acct-summary",
+        "acl-add-pkg",
+        "acl-add-pkg-ip",
+        "acl-add-pkg-shell",
+        "acl-all",
+        "acl-allow-addoncreate",
+        "acl-allow-parkedcreate",
+        "acl-allow-unlimited-bw-pkgs",
+        "acl-allow-unlimited-disk-pkgs",
+        "acl-allow-unlimited-pkgs",
+        "acl-basic-system-info",
+        "acl-basic-whm-functions",
+        "acl-clustering",
+        "acl-cors-proxy-get",
+        "acl-cpanel-api",
+        "acl-cpanel-integration",
+        "acl-create-acct",
+        "acl-create-dns",
+        "acl-create-user-session",
+        "acl-demo-setup",
+        "acl-digest-auth",
+        "acl-disallow-shell",
+        "acl-edit-account",
+        "acl-edit-dns",
+        "acl-edit-mx",
+        "acl-edit-pkg",
+        "acl-generate-email-config",
+        "acl-kill-acct",
+        "acl-kill-dns",
+        "acl-limit-bandwidth",
+        "acl-list-accts",
+        "acl-list-pkgs",
+        "acl-locale-edit",
+        "acl-mailcheck",
+        "acl-manage-api-tokens",
+        "acl-manage-dns-records",
+        "acl-manage-oidc",
+        "acl-manage-styles",
+        "acl-mysql-info",
+        "acl-nameserver-config",
+        "acl-news",
+        "acl-park-dns",
+        "acl-passwd",
+        "acl-quota",
+        "acl-rearrange-accts",
+        "acl-resftp",
+        "acl-restart",
+        "acl-show-bandwidth",
+        "acl-ssl",
+        "acl-ssl-buy",
+        "acl-ssl-gencrt",
+        "acl-ssl-info",
+        "acl-stats",
+        "acl-status",
+        "acl-suspend-acct",
+        "acl-thirdparty",
+        "acl-track-email",
+        "acl-upgrade-account",
+        "acl-viewglobalpackages",
+        "acllist"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Replaces the reseller privilege set. Read current privileges first and construct the complete desired replacement. Use either a named acllist, which replaces the assigned set from that list, or inline acl-* switches, never both. In inline mode each true sends the key with value 1; null or omission excludes that privilege from the replacement. With no named list and no inline switches, all privileges are removed. false and integer values are rejected before dispatch because upstream grants any supplied acl-* key regardless of its value. acl-all grants root-level privileges. Preserve assignment-only acl-disallow-shell and acl-nameserver-config wire names. The source recommends managing ACLs through WHM."
+        },
+        {
+          "kind": "documented",
+          "text": "The backward-compatible user alias overrides reseller in reviewed upstream source, so it is omitted from this typed signature. The required reseller argument is the sole typed account selector; the alias remains reachable through generic call(). No alias-resolution rule is inferred beyond the reviewed source."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned acl-disallow-shell description says to allow shell-account creation, contradicting the wire name. Its shell-access meaning remains unresolved; the client preserves the exact assignment key without asserting either interpretation. All assignment behavior here is source-backed and tested offline; no reseller write was observed."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /setacls x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: Whostmgr/API/1/Resellers.pm on cPanel 11.138.0.19 adds every supplied acl-* key to a new ACL set with value 1, regardless of the input value, and selects user before reseller. The pinned /setacls has exactly 59 optional integer singleton enum[1] switches. Use the evidence-gated true-only parameter override with boolean encoding for every switch, so only true emits 1, and omit the overriding user alias. Inline omissions remove privileges from the replacement; a named acllist instead supplies the replacement set, and the source forbids combining named and inline forms. No write ran: these findings are upstream-source and offline encoding evidence. Clarification https://github.com/hostingpal/whm-api-client/pull/49#issuecomment-6537927871 confirms the proposed lifecycle did not execute and was not retried. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /setacls acl-disallow-shell is named as a prohibition but described as allowing shell-account creation. Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221 requires retaining this unresolved source contradiction without inventing a meaning. Replace only the misleading parameter description with a neutral presence-key description. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "params": {
+        "acl-acct-summary": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-add-pkg": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-add-pkg-ip": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-add-pkg-shell": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-all": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-allow-addoncreate": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-allow-parkedcreate": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-allow-unlimited-bw-pkgs": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-allow-unlimited-disk-pkgs": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-allow-unlimited-pkgs": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-basic-system-info": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-basic-whm-functions": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-clustering": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-cors-proxy-get": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-cpanel-api": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-cpanel-integration": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-create-acct": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-create-dns": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-create-user-session": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-demo-setup": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-digest-auth": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-disallow-shell": {
+          "type": "true",
+          "encoding": "bool",
+          "description": "Presence-only assignment of the acl-disallow-shell key. The pinned description conflicts with its wire name; no shell-access meaning is inferred from that contradiction."
+        },
+        "acl-edit-account": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-edit-dns": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-edit-mx": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-edit-pkg": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-generate-email-config": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-kill-acct": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-kill-dns": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-limit-bandwidth": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-list-accts": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-list-pkgs": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-locale-edit": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-mailcheck": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-manage-api-tokens": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-manage-dns-records": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-manage-oidc": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-manage-styles": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-mysql-info": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-nameserver-config": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-news": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-park-dns": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-passwd": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-quota": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-rearrange-accts": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-resftp": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-restart": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-show-bandwidth": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-ssl": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-ssl-buy": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-ssl-gencrt": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-ssl-info": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-stats": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-status": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-suspend-acct": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-thirdparty": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-track-email": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-upgrade-account": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "acl-viewglobalpackages": {
+          "type": "true",
+          "encoding": "bool"
+        },
+        "user": {
+          "omit": true
+        }
+      }
+    },
+    "whm1:setresellerips": {
+      "name": "setResellerIps",
+      "method": "POST",
+      "order": [
+        "user",
+        "delegate",
+        "ips"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Omitting ips clears the delegated IP list; a comma-separated string allocates multiple IPs. The pinned documentation and reviewed source default delegate to 1, restricting the reseller to its dedicated IP; explicit false sends 0 and permits dedicating any available IP to owned accounts. The pinned setter schema declares optional all=1 only with delegate=0. Reviewed source re-reads and returns getresellerips() data after applying the change; the existing setter payload contract is retained. This source-backed behavior has no observed successful write. Main shared IP assignment is a separate operation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /setresellerips x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: Whostmgr/API/1/Resellers.pm defaults omitted delegate to 1 and returns getresellerips() after setting delegation. Preserve the pinned ips-omission clearing behavior and the existing optional all/ip payload rather than treating it as void or optional payload. The setter pins all as integer enum[1], whereas the getter uses enum[0,1]; no new leaf narrowing is introduced without write evidence. This returned-getter path and default are source-only findings: all fourteen reseller writes remain unobserved. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:setresellerlimits": {
+      "name": "setResellerLimits",
+      "method": "POST",
+      "order": [
+        "user",
+        "account_limit",
+        "bandwidth_limit",
+        "diskspace_limit",
+        "enable_account_limit",
+        "enable_overselling",
+        "enable_overselling_bandwidth",
+        "enable_overselling_diskspace",
+        "enable_package_limit_numbers",
+        "enable_package_limits",
+        "enable_resource_limits"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Limits are applied only when the corresponding enable flags are set. Account limiting and resource limiting default to disabled; explicit false and zero remain supplied. Bandwidth and disk limits are MB. Overselling bandwidth/disk requires resource limits and overselling enabled. Preserve the actual bandwidth_limit wire name despite bandwidthlimit in prose and enable_overselling despite the enable_oversellng prose typo. No client-side cross-field enforcement, retry or rollback is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /setresellerlimits x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        }
+      ]
+    },
+    "whm1:setresellermainip": {
+      "name": "setResellerMainIp",
+      "method": "POST",
+      "order": [
+        "user",
+        "ip"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Assigns the reseller main shared IP; additional delegated IPs use setResellerIps. This changes hosting configuration immediately with no client retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /setresellermainip x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: keep the reseller account selector first in the public signature. The reviewed order is user, ip; preserve every pinned wire name, requiredness, encoding and sensitivity. This signature correction is verified offline; no write was performed. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:setresellernameservers": {
+      "name": "setResellerNameservers",
+      "method": "POST",
+      "order": [
+        "user",
+        "nameservers"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Omitting nameservers resets them to the server default. Multiple nameserver domains use one comma-separated string; an explicit empty string remains supplied."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /setresellernameservers x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /setresellernameservers nameservers parameter explicitly says omitting it resets nameservers to the server default. Retain this operation-specific omission caveat, without generalizing it to other reseller setters. No write was observed. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:setresellerpackagelimit": {
+      "name": "setResellerPackageLimit",
+      "method": "POST",
+      "order": [
+        "user",
+        "allowed",
+        "no_limit",
+        "number",
+        "package"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Omitted no_limit retains zero (use limits); true grants unlimited package use. allowed and number require package. allowed=0 denies package use even when number is supplied. Conditional requirements remain source caveats; the client does not invent cross-field validation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /setresellerpackagelimit x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        }
+      ]
+    },
+    "whm1:setupreseller": {
+      "name": "setupReseller",
+      "method": "POST",
+      "order": [
+        "user",
+        "makeowner"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Grants reseller privileges to an existing account; it does not create an account. makeowner defaults to 0 (retain current owner); true makes the account own itself. Account ownership and reseller privileges are separate."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /setupreseller x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        }
+      ]
+    },
+    "whm1:suspendreseller": {
+      "name": "suspendReseller",
+      "method": "POST",
+      "order": [
+        "user",
+        "reason",
+        "disallow",
+        "reseller-only"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Omitting reseller-only or passing false suspends the reseller and all owned accounts; true suspends only the reseller. disallow defaults to 0, allowing root or the owner to unsuspend; true restricts unsuspension to root. The source strongly recommends a reason; this freeform reason is sensitive. The client performs no retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /suspendreseller x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: keep the reseller account selector first in the public signature. The reviewed order is user, reason, disallow, reseller-only; preserve every pinned wire name, requiredness, encoding and sensitivity. This signature correction is verified offline; no write was performed. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "params": {
+        "reason": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:terminatereseller": {
+      "name": "terminateReseller",
+      "method": "POST",
+      "order": [
+        "user",
+        "terminatereseller"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Permanently deletes the owned cPanel accounts; deleted accounts cannot be recovered. The required terminatereseller flag controls whether the main reseller account is also terminated. Use unsetupReseller to revoke reseller status while retaining accounts. Returned acct entries can report individual failures despite the outer outcome; inspect each result/reason. output.raw may contain HTML and private account-removal details; treat it as payload data. No client retry or rollback is provided."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /terminatereseller x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221: keep the reseller account selector first in the public signature. The reviewed order is user, terminatereseller; preserve every pinned wire name, requiredness, encoding and sensitivity. This signature correction is verified offline; no write was performed. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:unsetupreseller": {
+      "name": "unsetupReseller",
+      "method": "POST",
+      "order": [
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Revokes reseller status while preserving the account and its owned accounts; it is distinct from irreversible terminateReseller."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /unsetupreseller x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        }
+      ]
+    },
+    "whm1:unsuspendreseller": {
+      "name": "unsuspendReseller",
+      "method": "POST",
+      "order": [
+        "user",
+        "reseller-only"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later, according to the pinned operation. Omitting reseller-only or passing false unsuspends the reseller and owned accounts; true only unsuspends the reseller. The client performs no retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /unsuspendreseller x-cpanel-available-version=11; x-readonly=false. Parameter declarations, descriptions and response data schema establish the documented caveats; preserve their exact wire names and optional presence."
+        }
+      ]
+    }
+  },
+  "description": "Reseller account inventory, privileges, ownership and limits. Both ACL write methods replace the whole privilege set; read current privileges before constructing the desired replacement. The cPanel 11.138.0.19 review exercised GET reads only. All fourteen write contracts remain supported by pinned documentation, reviewed upstream source and offline tests, without live mutation coverage."
+}

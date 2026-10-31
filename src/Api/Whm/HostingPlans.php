@@ -35,7 +35,8 @@ use InvalidArgumentException;
  * }
  * @phpstan-type GetAvailableApplicationsResult array{
  *     groups?: list<array{
- *         acl: string|null,
+ *         acl?: string|null,
+ *         description?: string,
  *         dnsonly_ok: string|null,
  *         file: string,
  *         group: string,
@@ -44,8 +45,8 @@ use InvalidArgumentException;
  *         imgtype?: string,
  *         items?: list<array{
  *             acl: string|null,
- *             description: string,
- *             dnsonly_ok: string|null,
+ *             description?: string,
+ *             dnsonly_ok?: string|null,
  *             file: string,
  *             group: string,
  *             imgtype?: string,
@@ -150,7 +151,7 @@ use InvalidArgumentException;
  *         MAXADDON?: int|'unlimited'|null,
  *         MAXFTP?: int|'unlimited'|null,
  *         MAXLST?: int|'unlimited'|null,
- *         MAXPARK?: int|'unlimited',
+ *         MAXPARK?: int|'unlimited'|null,
  *         MAXPOP?: int|'unlimited'|null,
  *         MAXSQL?: int|'unlimited'|null,
  *         MAXSUB?: int|'unlimited'|null,
@@ -197,7 +198,7 @@ use InvalidArgumentException;
  *     name?: string,
  * }>
  * @phpstan-type MatchPackagesResult array{
- *     pkg?: array{
+ *     pkg?: list<array{
  *         BWLIMIT?: int|'unlimited',
  *         CGI?: 0|1,
  *         CPMOD?: string,
@@ -219,7 +220,8 @@ use InvalidArgumentException;
  *         MAX_EMAIL_PER_HOUR?: int|'unlimited',
  *         QUOTA?: int|'unlimited',
  *         _PACKAGE_EXTENSIONS?: string,
- *     },
+ *         name?: string,
+ *     }>,
  * }
  */
 final readonly class HostingPlans
@@ -451,8 +453,9 @@ final readonly class HostingPlans
      * affect package or account capabilities; this method performs one request with no retry or rollback.
      *
      * Documented: Deletes the named hosting plan. You cannot delete a hosting plan that a cPanel account currently
-     * uses. The pinned response specifies no data payload; this method returns null. No account reassignment is
-     * performed by the client.
+     * uses. The pinned response specifies no data payload.
+     *
+     * Policy: Client behavior: deletePackage() is void. It performs no account reassignment and returns no payload.
      *
      * API-map identity: whm1:killpkg#GET (wire name killpkg; Hosting Plans).
      *
@@ -473,10 +476,12 @@ final readonly class HostingPlans
      * Documented: Available in cPanel & WHM 68 and later. Uses form POST for this documented mutation. Changes can
      * affect package or account capabilities; this method performs one request with no retry or rollback.
      *
-     * Documented: Extension names are case-sensitive and space-delimited. The name extensions is forbidden for a
-     * package when adding extensions. Calling addPackageExtension again with the same extension edits its variables
-     * upstream. Arbitrary case-sensitive extension variables are not represented by this fixed-parameter method; use a
-     * reviewed generic form call when needed, marking credential-bearing inputs sensitive.
+     * Documented: Deletes the named, space-delimited package extensions. Extension names are case-sensitive. The pinned
+     * delpkgext description permits additional extension variables in key=value format; variable names are
+     * case-sensitive and their possible values come from the extension's own documentation.
+     *
+     * Policy: Client behavior: arbitrary extension variables are not represented by this fixed-parameter method. A
+     * reviewed generic form call must explicitly mark any credential-bearing values sensitive.
      *
      * API-map identity: whm1:delpkgext#GET (wire name delpkgext; Hosting Plan Extensions).
      *
@@ -507,22 +512,26 @@ final readonly class HostingPlans
      * Documented: Package names cannot be renamed, and addPackage forbids the name extensions. editPackage creates a
      * missing package and applies changes to every account already on the package.
      *
-     * Documented: Omitted options retain upstream defaults, including default feature list, server theme/locale and
-     * resource limits. Omitted packageExtensions means no extensions; upstream recommends the separate extension
-     * helpers. Names/variables are case-sensitive; arbitrary extension variables are not represented by this
-     * fixed-parameter method. A server without the Web Server role defaults CGI off and cannot enable it. FrontPage
-     * settings are ignored.
+     * Documented: Omitting featurelist assigns the default feature list to the plan's accounts, and omitting
+     * packageExtensions means the plan has no extensions. Omission can reset existing settings across every account
+     * using the plan; it is not a preserve-current-value operation. Upstream recommends the separate extension helpers.
+     * Extension names and variables are case-sensitive. A server without the Web Server role defaults CGI off and
+     * cannot enable it. FrontPage settings are ignored.
      *
      * Documented: Bandwidth, disk quota and mailbox quota use MB. Zero, unlimited and documented null mean unlimited
      * for bandwidth/disk/mailbox quota, subject to unlimited ACL permissions; email rate limits also use zero or
-     * unlimited. Count limits document unlimited or null separately from zero. The scalar encoder omits explicit PHP
-     * null, so it does not send a JSON null sentinel; use documented zero/unlimited when required. SQL limits apply
-     * separately to each available SQL engine. Omitted optional arguments are not filled with defaults.
+     * unlimited. Count limits document unlimited or null separately from zero. SQL limits apply separately to each
+     * available SQL engine.
      *
      * Documented: Keep exact wire-name differences: addPackage uses uppercase MAX_DEFER_FAIL_PERCENTAGE and
      * MAX_EMAIL_PER_HOUR, while editPackage uses lowercase names; max_emailacct_quota and max_team_users are lowercase
      * on both. Digest authentication and CGI/shell switches are boolean inputs encoded as 0/1; IP uses y/n. Changing
      * maxEmailacctQuota does not affect existing email accounts.
+     *
+     * Policy: Client behavior: read the current plan with getPackageInfo() before editing, then explicitly send the
+     * complete intended settings, including featurelist and packageExtensions, to avoid unintended resets. The client
+     * does not read, merge or fill settings automatically. PHP null omits an argument rather than sending a null
+     * sentinel or preserving its server value. Arbitrary extension variables are outside this fixed-parameter method.
      *
      * API-map identity: whm1:editpkg#GET (wire name editpkg; Hosting Plans).
      *
@@ -626,8 +635,19 @@ final readonly class HostingPlans
      * Documented: applicationsList is a comma-separated list sent once; omission returns the entire dynamicui.conf
      * content. file defaults to dynamicui.conf and is relative to /usr/local/cpanel/whostmgr/docroot/themes/x/. A
      * caller-selected file reads server configuration. Returned template directives and application/icon URLs are
-     * payload data; the client does not execute or fetch them. The known nested Group/Image/Subitem required fields,
-     * nullable ACL/DNSOnly fields and role/service string-or-object alternatives remain strict.
+     * payload data; the client does not execute or fetch them. Present Group/Image/Subitem fields, nullable ACL/DNSOnly
+     * fields and role/service string-or-object alternatives retain their types; observed omissions are documented
+     * separately.
+     *
+     * Observed: The independent 11.138.0.19 review observed omitted group acl/target and item
+     * minimum_accounts_needed/role/service/target/subitems/multiuser_required/description/dnsonly_ok. These fields are
+     * optional without adding new null alternatives. Other required fields remain required; grouporder and itemorder
+     * remain native integers. The raw template records passed unchanged.
+     *
+     * Observed: The 11.138.0.19 clarification observed group description as a string on one of 29 groups and absent on
+     * 28. It is retained as an optional string; the pin has no such property. Neither group nor item descriptions were
+     * null in that observation. The contract adds no null compatibility, without claiming null is impossible on every
+     * server.
      *
      * API-map identity: whm1:get_available_applications#GET (wire name get_available_applications; Feature Lists).
      *
@@ -809,9 +829,23 @@ final readonly class HostingPlans
      * Documented: Available in cPanel & WHM 11 and later. Uses GET for this documented read.
      *
      * Documented: Only enabled settings are returned, so known fields remain optional. Extension variables are opaque
-     * dynamic fields and may contain credentials; treat the result as sensitive. Known limit fields remain integer, the
-     * exact unlimited literal, and null only where pinned; flags stay integer 0/1, while DIGESTAUTH stays a source
-     * string. MAX_TEAM_USERS may be null; omitted and null stay distinct.
+     * dynamic fields and may contain credentials; treat the result as sensitive. Pinned limit alternatives include the
+     * exact unlimited literal and null only where declared; the reviewed MAXPARK exception is documented separately.
+     * Flags stay integer 0/1, DIGESTAUTH stays a source string, and MAX_TEAM_USERS remains nullable native int. Omitted
+     * and null stay distinct.
+     *
+     * Observed: The independent 11.138.0.19 GET review observed null MAXPARK on the stock default package, so this
+     * field also admits explicit null. CGI, HASSHELL and IP remained native integers; no broader flag conversion is
+     * established.
+     *
+     * Documented: The reviewed package-limit family includes digit-string representations, established separately in
+     * package-derived account limits. Applying that family to this method is source-backed compatibility; this
+     * endpoint's stock package had null limits and does not establish populated numeric-string observations.
+     *
+     * Policy: Client behavior: only the integer arms of the reviewed resource-limit unions accept canonical integer
+     * strings within PHP integer bounds and normalize them to int. The exact unlimited literal, existing nullable
+     * alternatives, omitted fields and opaque extension values remain distinct. MAX_TEAM_USERS and flag/string siblings
+     * retain their existing contracts.
      *
      * API-map identity: whm1:getpkginfo#GET (wire name getpkginfo; Hosting Plans).
      *
@@ -890,11 +924,25 @@ final readonly class HostingPlans
      *
      * Documented: Available in cPanel & WHM 11 and later. Uses GET for this documented read.
      *
-     * Documented: Omitting every selector lists all server packages. All selectors remain optional and are sent with
-     * their exact uppercase wire names except _PACKAGE_EXTENSIONS. Boolean CGI/HASSHELL inputs encode as 0/1, while
-     * DIGESTAUTH and IP take y/n strings. Results retain their distinct source strings for HASSHELL/IP and do not
-     * inherit getPackageInfo flag types. Limits use integers or exact unlimited; no live numeric-string coercion is
-     * inferred. The result shape does not enforce correspondence with requested criteria.
+     * Documented: The pinned description says omitting every selector lists all server packages, but the observed
+     * contradiction below limits that claim. Selectors remain optional with exact uppercase wire names except
+     * _PACKAGE_EXTENSIONS. Boolean CGI/HASSHELL inputs encode as 0/1, while DIGESTAUTH and IP take y/n strings. Result
+     * rows retain distinct source strings for HASSHELL/IP and do not inherit getPackageInfo flag types. The list-row
+     * shape and optional name are source-backed; populated match rows were not observed.
+     *
+     * Observed: On 11.138.0.19, the independent selector-free GET returned an empty pkg list while listPackages
+     * returned one package on the same server. The cause is unknown. An empty selector-free match result does not
+     * establish that the server has no packages; the contradiction remains tracked under whm-api-client-8x0.2.43.
+     *
+     * Documented: Canonical integer-string compatibility for the resource-limit unions follows the reviewed
+     * package-derived limit family. It is not based on populated matchPackages results from this review, which returned
+     * an empty list.
+     *
+     * Policy: Client behavior: pkg is a list, preserving row names, native integers, exact unlimited strings and
+     * omitted fields. Only the integer arms of its twelve reviewed resource-limit unions accept canonical integer
+     * strings within PHP bounds. Null, malformed or overflowing strings and unrelated field conversions remain invalid.
+     * The client does not enforce correspondence with requested criteria or substitute listPackages for an empty
+     * result.
      *
      * API-map identity: whm1:matchpkgs#GET (wire name matchpkgs; Hosting Plans).
      *

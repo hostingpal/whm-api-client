@@ -17,7 +17,11 @@ trait WhmGroups
 
     private ?Accounts $accountsGroup = null;
 
+    private ?Authentication $authenticationGroup = null;
+
     private ?Backups $backupsGroup = null;
+
+    private ?CpHulk $cpHulkGroup = null;
 
     private ?Databases $databasesGroup = null;
 
@@ -25,9 +29,17 @@ trait WhmGroups
 
     private ?HostingPlans $hostingPlansGroup = null;
 
+    private ?IpAddresses $ipAddressesGroup = null;
+
+    private ?Mail $mailGroup = null;
+
     private ?ModSecurity $modSecurityGroup = null;
 
+    private ?Resellers $resellersGroup = null;
+
     private ?Server $serverGroup = null;
+
+    private ?Ssl $sslGroup = null;
 
     private ?WebServer $webServerGroup = null;
 
@@ -52,6 +64,17 @@ trait WhmGroups
     }
 
     /**
+     * Select the Authentication operations without making a request.
+     *
+     * WHM authentication providers, root SSH keys and two-factor policy. Returned credentials, private keys, 2FA
+     * secrets, account links and URLs are private payload data; never log them or fetch URLs automatically.
+     */
+    public function authentication(): Authentication
+    {
+        return $this->authenticationGroup ??= new Authentication($this->run(...));
+    }
+
+    /**
      * Select the Backups operations without making a request.
      *
      * WHM API 1 functions in the documented Backups group.
@@ -59,6 +82,19 @@ trait WhmGroups
     public function backups(): Backups
     {
         return $this->backupsGroup ??= new Backups($this->run(...));
+    }
+
+    /**
+     * Select the Login Security (cPHulk) operations without making a request.
+     *
+     * Server-wide cPHulk login security, configuration, address lists and history. Configuration and list changes
+     * affect login policy immediately; history removals are destructive. Returned commands and login records are
+     * payload data and may contain sensitive information. The cPanel 11.138.0.19 review used GET reads only; all
+     * fifteen writes across the reviewed cPHulk and Greylisting slice remain unobserved.
+     */
+    public function cpHulk(): CpHulk
+    {
+        return $this->cpHulkGroup ??= new CpHulk($this->run(...));
     }
 
     /**
@@ -92,6 +128,30 @@ trait WhmGroups
     }
 
     /**
+     * Select the IP Address Management operations without making a request.
+     *
+     * WHM API 1 functions in the documented IP Address Management group.
+     */
+    public function ipAddresses(): IpAddresses
+    {
+        return $this->ipAddressesGroup ??= new IpAddresses($this->run(...));
+    }
+
+    /**
+     * Select the Mail operations without making a request.
+     *
+     * Server-wide mail operations, including Greylisting policy, trusted hosts, common providers and deferred triplets.
+     * Trust and configuration changes alter mail deferral policy. Returned triplets contain sender and recipient
+     * addresses; the client does not deliver mail or fetch returned addresses. The cPanel 11.138.0.19 review used GET
+     * reads with Greylisting disabled; all fifteen writes across the reviewed cPHulk and Greylisting slice remain
+     * unobserved.
+     */
+    public function mail(): Mail
+    {
+        return $this->mailGroup ??= new Mail($this->run(...));
+    }
+
+    /**
      * Select the Web Server Security (ModSecurity) operations without making a request.
      *
      * Server-scoped ModSecurity configuration, staged rules, vendor lifecycle and diagnostics. Requires the Web Server
@@ -106,6 +166,19 @@ trait WhmGroups
     }
 
     /**
+     * Select the Resellers operations without making a request.
+     *
+     * Reseller account inventory, privileges, ownership and limits. Both ACL write methods replace the whole privilege
+     * set; read current privileges before constructing the desired replacement. The cPanel 11.138.0.19 review exercised
+     * GET reads only. All fourteen write contracts remain supported by pinned documentation, reviewed upstream source
+     * and offline tests, without live mutation coverage.
+     */
+    public function resellers(): Resellers
+    {
+        return $this->resellersGroup ??= new Resellers($this->run(...));
+    }
+
+    /**
      * Select the Server Administration operations without making a request.
      *
      * WHM API 1 functions in the documented Server Administration group.
@@ -113,6 +186,16 @@ trait WhmGroups
     public function server(): Server
     {
         return $this->serverGroup ??= new Server($this->run(...));
+    }
+
+    /**
+     * Select the SSL Certificates operations without making a request.
+     *
+     * WHM API 1 functions in the documented SSL Certificates group.
+     */
+    public function ssl(): Ssl
+    {
+        return $this->sslGroup ??= new Ssl($this->run(...));
     }
 
     /**
