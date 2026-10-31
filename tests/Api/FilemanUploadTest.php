@@ -129,22 +129,29 @@ final class FilemanUploadTest extends TestCase
         self::assertSame(0, $pipe->seeks);
     }
 
-    /** @return iterable<string, array{array<mixed>}> */
+    /** @return iterable<string, array{array<mixed>, ?UploadProbeStream}> */
     public static function badFiles(): iterable
     {
-        yield 'empty' => [[]];
-        yield 'sparse' => [[1 => Upload::fromString('valid', '')]];
-        yield 'late string' => [[Upload::fromPath('/missing/private-source'), '/private/path']];
+        yield 'empty' => [[], null];
+        yield 'sparse' => [[1 => Upload::fromString('valid', '')], null];
+        $source = new UploadProbeStream('private-source-bytes');
+        yield 'late string' => [[Upload::fromStream('probe', $source),
+            Upload::fromPath('/missing/private-source'), '/private/path'], $source];
         foreach (['<', '>', ';'] as $character) {
-            yield 'filename ' . $character => [[Upload::fromPath('/missing/private-source'),
-                Upload::fromString('private' . $character . 'name', '')]];
+            $source = new UploadProbeStream('private-source-bytes');
+            yield 'filename ' . $character => [
+            [Upload::fromStream('probe', $source),
+                Upload::fromPath('/missing/private-source'), Upload::fromString('private' . $character . 'name', '')],
+                $source];
         }
     }
 
     /** @param array<mixed> $files */
     #[DataProvider('badFiles')]
-    public function testInvalidListClearsMetadataWithoutOpeningEarlierSource(array $files): void
-    {
+    public function testInvalidListClearsMetadataWithoutOpeningEarlierSource(
+        array $files,
+        ?UploadProbeStream $source,
+    ): void {
         $sends = 0;
         $client = self::client(static function () use (&$sends): ResponseInterface {
             ++$sends;
@@ -159,6 +166,10 @@ final class FilemanUploadTest extends TestCase
         self::assertStringNotContainsString('private', $error->getMessage());
         self::assertNull($account->responseMeta());
         self::assertSame(1, $sends);
+        if ($source !== null) {
+            self::assertSame(0, $source->metadataCalls);
+            self::assertSame(0, $source->reads);
+        }
     }
 
     public function testBridgeRejectsBeforeSourceMetadataAndClearsSnapshot(): void
