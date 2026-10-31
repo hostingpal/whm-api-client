@@ -65,6 +65,1051 @@
     },
     "whm1:removeacct": {"name": "removeAccount", "params": {"user": {"omit": true}}},
     "whm1:suspendacct": {"name": "suspendAccount", "notes": [{"kind": "documented", "text": "Omitting reason records the documented default reason Unknown; pass a reason."}], "order": ["user", "reason", "disallowun", "leave-ftp-accts-enabled"]},
-    "whm1:unsuspendacct": {"name": "unsuspendAccount"}
+    "whm1:unsuspendacct": {"name": "unsuspendAccount"},
+    "whm1:assign_account_enhancement": {
+      "name": "assignAccountEnhancement",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.98."
+        },
+        {
+          "kind": "documented",
+          "text": "Assigns the named enhancement immediately to the specified cPanel account."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false. Use form POST for this mutation. The pinned success envelope declares metadata only and no data member."
+        }
+      ],
+      "void": true
+    },
+    "whm1:convert_addon_fetch_conversion_details": {
+      "name": "convertAddonFetchConversionDetails",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 58."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the Web Server role. Returned job and step statuses are payload data; a successful API envelope does not establish conversion completion. No polling or retry is performed."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:convert_addon_fetch_domain_details": {
+      "name": "convertAddonFetchDomainDetails",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 56."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the Web Server role. This reads addon-domain data without starting a conversion."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:convert_addon_get_conversion_status": {
+      "name": "convertAddonGetConversionStatus",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 58."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the Web Server role. This method accepts one native integer job_id. The pinned multiple-job prose starts job_id-0 while its example starts job_id-1; the contradictory indexed family remains excluded from this signature under whm-api-client-8x0.1.21. Job statuses are separate from API success and are not polled."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:convert_addon_initiate_conversion": {
+      "exclude": {
+        "reason": "Requires the documented dynamic keyed parameter family copymysqldb-*, unsupported by the typed encoders. Whole-operation exclusion retains the documented feature set under whm-api-client-8x0.1.29; generic scalar form calls can pass explicit evidenced keys.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "The pinned copymysqldb-* parameter encodes caller-chosen database/domain names in the key. No current typed encoding represents that keyed mapping. Dropping this parameter would hide a documented operation feature."
+          }
+        ]
+      }
+    },
+    "whm1:convert_addon_list_addon_domains": {
+      "name": "convertAddonListAddonDomains",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 56."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the Web Server role. Domain names remain dynamic map keys; the returned records are inventory, not proof of a successful conversion."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:convert_addon_list_conversions": {
+      "name": "convertAddonListConversions",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 58."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires the Web Server role. Conversion job statuses and timestamps remain payload data and do not trigger polling."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:create_account_enhancement": {
+      "name": "createAccountEnhancement",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.98."
+        },
+        {
+          "kind": "documented",
+          "text": "The ID must be an account-enhancement ID defined by a third-party plugin. listAccountEnhancements() lists valid IDs. This creates the enhancement immediately."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false. Use form POST for this mutation."
+        }
+      ]
+    },
+    "whm1:delete_account_enhancement": {
+      "name": "deleteAccountEnhancement",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 98."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the named account enhancement immediately. The pinned success envelope has no data payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false. Use form POST for this mutation. The pinned success envelope declares metadata only and no data member."
+        }
+      ],
+      "void": true
+    },
+    "whm1:domainuserdata": {
+      "name": "domainUserData",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.32."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns Apache domain userdata. userdirprotect remains a string, including the exact empty string; this method adds no observed numeric conversions."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:editquota": {
+      "name": "editQuota",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11."
+        },
+        {
+          "kind": "documented",
+          "text": "Quota is in megabytes (MB); 0 and unlimited grant unlimited disk space. This changes the account quota immediately and has no documented data payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false. Use form POST for this mutation. The pinned success envelope declares metadata only and no data member."
+        }
+      ],
+      "void": true
+    },
+    "whm1:forcepasswordchange": {
+      "name": "forcePasswordChange",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.32."
+        },
+        {
+          "kind": "documented",
+          "text": "usersJson is already serialized JSON text, as established by the pinned string format=json example. It is form-encoded once, without object encoding or parsing. Omitted stopOnFailure defaults to 0; the updated list identifies users forced to change their password on their next login."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false. Use form POST for this mutation."
+        }
+      ]
+    },
+    "whm1:get_current_users_count": {
+      "name": "getCurrentUsersCount",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 78."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the current cPanel account count as an optional native integer field."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:get_disk_usage": {
+      "name": "getDiskUsage",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 80."
+        },
+        {
+          "kind": "documented",
+          "text": "blocks_limit and blocks_used are in kibibytes (KiB), while inodes_limit and inodes_used count filesystem objects. Explicit null limits mean unlimited; omission remains distinct. Omitted cacheMode defaults to on (fast, potentially inaccurate); off ignores the quota cache."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:get_homedir_roots": {
+      "name": "getHomedirRoots",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 88."
+        },
+        {
+          "kind": "documented",
+          "text": "Home-directory parents are ordered by available free disk space, descending. This inventory does not change where new home directories are created."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:get_maximum_users": {
+      "name": "getMaximumUsers",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 78."
+        },
+        {
+          "kind": "documented",
+          "text": "The license account limit is a native integer; 0 means unlimited. This read does not purchase or change a license."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:get_password_strength": {
+      "name": "getPasswordStrength",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned read-only operation accepts a password. It uses sensitive form POST to keep that password out of request URLs. The returned integer strength remains separate from API success."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Password input is sensitive and uses form POST despite the source read-only GET variant."
+        }
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:get_upgrade_opportunities": {
+      "name": "getUpgradeOpportunities",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted diskThresholdBlocks defaults to 2097152 blocks; omitted nearnessFraction defaults to 0.8. Thresholds use blocks and nearness uses a fraction of 1. Account names remain dynamic keys. Nullable disk-check fields, 0, omission and empty maps remain distinct."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:get_users_links": {
+      "name": "getUsersLinks",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.50."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns theme appkey-to-URL values; treat URLs as private payload data and do not log or fetch them. The service schema/default is cpaneld, while the descriptive bullet says cpanel; this discrepancy is retained without inventing a corrected value."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:getdomainowner": {
+      "name": "getDomainOwner",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 78."
+        },
+        {
+          "kind": "documented",
+          "text": "An explicit null user means the caller does not own the account or the domain does not exist; omission remains distinct from null."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:has_digest_auth": {
+      "name": "hasDigestAuth",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.34."
+        },
+        {
+          "kind": "documented",
+          "text": "Checks Digest Authentication support for Web Disk over an unencrypted connection. The digestauth field is a native integer 0|1 flag."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:has_mycnf_for_cpuser": {
+      "name": "hasMycnfForCpuser",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.40."
+        },
+        {
+          "kind": "documented",
+          "text": "Checks for a valid .my.cnf in the selected account home; a successful API envelope remains separate from the 0|1 presence flag."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:limitbw": {
+      "name": "limitBandwidth",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11."
+        },
+        {
+          "kind": "documented",
+          "text": "bwlimit is in megabytes (MB). Omitted bwlimit defaults to unlimited; both 0 and unlimited grant unlimited bandwidth. Returned domains and formatted strings remain distinct from numeric quotas."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false. Use form POST for this mutation."
+        }
+      ]
+    },
+    "whm1:list_account_enhancements": {
+      "name": "listAccountEnhancements",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 98."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned schema declares one enhancements object with optional id and name fields, not an inferred list or keyed map. Additional warnings remain in responseMeta()->whm output metadata."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:list_users": {
+      "name": "listUsers",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the optional list of account usernames. Empty lists remain empty and omitted fields remain omitted."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:listlockedaccounts": {
+      "name": "listLockedAccounts",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.40."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the optional account list of locked account usernames."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:listsuspended": {
+      "name": "listSuspended",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11."
+        },
+        {
+          "kind": "documented",
+          "text": "Suspension time text stays a string while unixtime stays a native integer. The per-account is_locked flag is separate from API success."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:massmodifyacct": {
+      "exclude": {
+        "reason": "Requires the documented dynamic keyed parameter family MXCHECK-*, unsupported by the typed encoders. Whole-operation exclusion retains the documented feature set under whm-api-client-8x0.1.29; generic scalar form calls can pass explicit evidenced keys.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "The pinned MXCHECK-* parameter encodes caller-chosen database/domain names in the key. No current typed encoding represents that keyed mapping. Dropping this parameter would hide a documented operation feature."
+          }
+        ]
+      }
+    },
+    "whm1:modify_account_enhancement": {
+      "name": "modifyAccountEnhancement",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.98."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes the named enhancement immediately; omitted id retains the server-defined behavior."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false. Use form POST for this mutation."
+        }
+      ]
+    },
+    "whm1:myprivs": {
+      "name": "myPrivileges",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a list of current authenticated-user ACL privilege objects, including third-party ACL fields whose unspecified values remain opaque. Named flag fields retain native integer 0|1 semantics; allow-shell and list-pkgs retain their pinned unrestricted integer types."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ],
+      "response": {
+        "privileges": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "acct-summary": {
+                  "type": "flag"
+                },
+                "add-pkg": {
+                  "type": "flag"
+                },
+                "add-pkg-ip": {
+                  "type": "flag"
+                },
+                "add-pkg-shell": {
+                  "type": "flag"
+                },
+                "all": {
+                  "type": "flag"
+                },
+                "allow-addoncreate": {
+                  "type": "flag"
+                },
+                "allow-emaillimits-pkgs": {
+                  "type": "flag"
+                },
+                "allow-parkedcreate": {
+                  "type": "flag"
+                },
+                "allow-shell": {
+                  "type": "int"
+                },
+                "allow-unlimited-bw-pkgs": {
+                  "type": "flag"
+                },
+                "allow-unlimited-disk-pkgs": {
+                  "type": "flag"
+                },
+                "allow-unlimited-pkgs": {
+                  "type": "flag"
+                },
+                "basic-system-info": {
+                  "type": "flag"
+                },
+                "basic-whm-functions": {
+                  "type": "flag"
+                },
+                "clustering": {
+                  "type": "flag"
+                },
+                "cors-proxy-get": {
+                  "type": "flag"
+                },
+                "cpanel-api": {
+                  "type": "flag"
+                },
+                "cpanel-integration": {
+                  "type": "flag"
+                },
+                "create-acct": {
+                  "type": "flag"
+                },
+                "create-dns": {
+                  "type": "flag"
+                },
+                "create-user-session": {
+                  "type": "flag"
+                },
+                "demo-setup": {
+                  "type": "flag"
+                },
+                "digest-auth": {
+                  "type": "flag"
+                },
+                "edit-account": {
+                  "type": "flag"
+                },
+                "edit-dns": {
+                  "type": "flag"
+                },
+                "edit-mx": {
+                  "type": "flag"
+                },
+                "edit-pkg": {
+                  "type": "flag"
+                },
+                "file-restore": {
+                  "type": "flag"
+                },
+                "generate-email-config": {
+                  "type": "flag"
+                },
+                "kill-acct": {
+                  "type": "flag"
+                },
+                "kill-dns": {
+                  "type": "flag"
+                },
+                "limit-bandwidth": {
+                  "type": "flag"
+                },
+                "list-accts": {
+                  "type": "flag"
+                },
+                "list-pkgs": {
+                  "type": "int"
+                },
+                "locale-edit": {
+                  "type": "flag"
+                },
+                "mailcheck": {
+                  "type": "flag"
+                },
+                "manage-api-tokens": {
+                  "type": "flag"
+                },
+                "manage-dns-records": {
+                  "type": "flag"
+                },
+                "manage-oidc": {
+                  "type": "flag"
+                },
+                "manage-styles": {
+                  "type": "flag"
+                },
+                "mysql-info": {
+                  "type": "flag"
+                },
+                "news": {
+                  "type": "flag"
+                },
+                "ns-config": {
+                  "type": "flag"
+                },
+                "park-dns": {
+                  "type": "flag"
+                },
+                "passwd": {
+                  "type": "flag"
+                },
+                "quota": {
+                  "type": "flag"
+                },
+                "rearrange-accts": {
+                  "type": "flag"
+                },
+                "resftp": {
+                  "type": "flag"
+                },
+                "restart": {
+                  "type": "flag"
+                },
+                "show-bandwidth": {
+                  "type": "flag"
+                },
+                "ssl": {
+                  "type": "flag"
+                },
+                "ssl-buy": {
+                  "type": "flag"
+                },
+                "ssl-gencrt": {
+                  "type": "flag"
+                },
+                "ssl-info": {
+                  "type": "flag"
+                },
+                "stats": {
+                  "type": "flag"
+                },
+                "status": {
+                  "type": "flag"
+                },
+                "suspend-acct": {
+                  "type": "flag"
+                },
+                "thirdparty": {
+                  "type": "flag"
+                },
+                "track-email": {
+                  "type": "flag"
+                },
+                "upgrade-account": {
+                  "type": "flag"
+                },
+                "viewglobalpackages": {
+                  "type": "flag"
+                }
+              },
+              "values": {
+                "type": "mixed"
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "The pinned privileges description explicitly says \"An array of objects that contains the privileges available to the user, including any third-party ACL privileges.\" Its formal node omits type but declares items as an object with 61 named integer fields. Restore the documented list of objects, preserving every named 0|1 enum as a flag and allow-shell/list-pkgs as unrestricted integers. Preserve third-party ACL fields with mixed values because the source explicitly includes them without defining their types; this does not weaken validation of named fields."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:personalization_get": {
+      "exclude": {
+        "reason": "Requires a JSON request body; typed JSON transport remains tracked under whm-api-client-8x0.1.18. Generic form calls do not implement it.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "The pinned requestBody declares application/json, outside the generated form request representation."
+          }
+        ]
+      }
+    },
+    "whm1:personalization_set": {
+      "exclude": {
+        "reason": "Requires a JSON request body; typed JSON transport remains tracked under whm-api-client-8x0.1.18. Generic form calls do not implement it.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "The pinned requestBody declares application/json, outside the generated form request representation."
+          }
+        ]
+      }
+    },
+    "whm1:quota_enabled": {
+      "name": "quotaEnabled",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11."
+        },
+        {
+          "kind": "documented",
+          "text": "quota_enabled is a native integer 0|1 indicating whether quotas are enabled on at least one home-directory mount, separate from API success."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:set_digest_auth": {
+      "name": "setDigestAuth",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes Digest Authentication immediately and requires the account password even when disabling it. digestauth is a documented alias for enabledigest. SSL on port 2078 with a recognized CA removes the documented need for Digest Authentication. The pinned envelope declares no data payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false. Use form POST for this mutation. The pinned success envelope declares metadata only and no data member."
+        }
+      ],
+      "void": true,
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:set_primary_domain_docroot": {
+      "name": "setPrimaryDomainDocroot",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes the primary-domain document root immediately. docroot is forwarded unchanged; this method performs no rollback or follow-up URL fetch."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false. Use form POST for this mutation."
+        }
+      ]
+    },
+    "whm1:showbw": {
+      "name": "showBandwidth",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11."
+        },
+        {
+          "kind": "documented",
+          "text": "Bandwidth limits, totals and domain usage are in bytes. Omitted month/year use the current values and omitted showres queries all users. Both search and searchtype must be supplied for filtering; the search is a PCRE string, encoded once."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:unassign_account_enhancement": {
+      "name": "unassignAccountEnhancement",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.98."
+        },
+        {
+          "kind": "documented",
+          "text": "Unassigns the named enhancement immediately from the selected account. The pinned envelope declares no data payload."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false. Use form POST for this mutation. The pinned success envelope declares metadata only and no data member."
+        }
+      ],
+      "void": true
+    },
+    "whm1:untrack_acct_id": {
+      "name": "untrackAcctId",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 58."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply uid, gid or both. Omitted checkExists, checkQuota and protectSystem default to 1. checkQuota applies only to UIDs and cannot check filesystems without quota tracking. Explicit false and integer zero are preserved; removing tracking is immediate."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is false. Use form POST for this mutation. The pinned success envelope declares metadata only and no data member."
+        }
+      ],
+      "void": true
+    },
+    "whm1:verify_new_username": {
+      "name": "verifyNewUsername",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 58."
+        },
+        {
+          "kind": "documented",
+          "text": "Username conflicts are reported through the API failure metadata, not a boolean data payload. This does not reserve or create the account."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned x-readonly is true. Use GET for this read. The pinned success envelope declares metadata only and no data member."
+        }
+      ],
+      "void": true
+    }
   }
 }

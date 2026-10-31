@@ -3633,3 +3633,33 @@ lifecycles on both routes. `checkDisinfectionStatus()` fractional IDs remain
 unobserved. These observations neither replace the historical artifacts nor waive
 their API failures. Follow-up `8x0.2.31` remains open for committed mutation evidence,
 capability-dependent successes, populated variants and enforcement behavior.
+
+## Expanded WHM account management
+
+`whm()->accounts()` adds 35 methods while preserving its ten existing contracts,
+covering 45 of the 49 pinned functions. The additions use 23 GET and twelve form
+POST requests for account inventories, enhancement management, conversion status,
+quota/bandwidth controls, password policy, digest settings and document roots.
+Password-strength calculation uses POST because its password input is sensitive.
+
+JSON personalization calls remain under `8x0.1.18`. Conversion initiation and
+bulk modification remain excluded under `8x0.1.29`: their keyed database-copy and
+MX fields cannot yet be represented. Omitting the conversion copy fields copies
+no MySQL databases; the client does not silently drop them. Conversion status
+supports one integer job ID; contradictory indexed examples remain in `8x0.1.21`.
+
+Privilege results preserve the source-described list of records, all 61 named
+fields and opaque third-party ACL values. Known fields retain strict source types.
+Omitted values, explicit null, empty results and opaque payloads remain distinct.
+Per-method availability, units, defaults and conditional requirements stay in
+generated PHPDoc. Existing account lifecycle contracts are unchanged.
+
+Enhancement, quota, password/digest and root changes may affect accounts immediately.
+API success and conversion status do not establish completed migration or hosting
+behavior. The client adds no retry, rollback, polling, purchase or notification.
+
+All additions have independent offline contracts. The nine-GET catalog reads
+version, current/maximum user counts, disk usage, home roots, enhancement/user
+inventories, privileges and quota availability. The optional disk-cache selector
+is omitted. It requests no password or private account-link data and makes no
+account, quota, root or configuration changes. `8x0.2.41` retains live gaps.
