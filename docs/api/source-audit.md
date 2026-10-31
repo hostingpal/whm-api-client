@@ -3952,3 +3952,37 @@ text or any of the thirty write/helper operations ran. These reports remain
 separate from the immutable five-GET capture, whose failed idle observation stays
 unwaived under `8x0.2.34`. All existing artifacts are preserved; no new capture was
 run to clear the failure.
+
+
+## Expanded WHM web-server configuration
+
+`whm()->webServer()` adds 21 methods, preserving the original seven and covering
+28 of 30 pinned functions. Eleven additions use GET and ten use form POST for
+EasyApache profiles, PHP/FPM configuration, INI content/directives and PHP versions.
+The two FPM JSON-body operations remain excluded under `8x0.1.18`.
+
+Package, tag and directive lists use repeated wire fields; virtual hosts use the
+reviewed numbered family. INI content/directives and pool configuration inputs stay
+sensitive and are encoded once. Pool parameters accept caller-serialized JSON text;
+they do not introduce JSON bodies or automatic PHP-array serialization. The native
+scalar string|int limitation remains under `8x0.1.23`.
+
+Impacted-domain selectors are individually optional according to explicit
+either-or-both prose. Supply a domain or a true system-default selector; false
+alone errors, and parked domains are excluded. Source defaults, version floors,
+role restrictions, PHP-FPM prerequisites and profile overwrite behavior remain
+in each method's PHPDoc. Configuration changes can affect hosted sites immediately;
+the client adds no retry, conversion polling, rollback or server reload.
+
+Profiles preserve strict cpanel/custom rows and source-described vendor lists.
+EA4 metadata retains the pinned object values plus string and string-list variants
+shown in its example. It does not infer additional scalar/null types. Void,
+unspecified, nullable and absent result boundaries follow each operation's source.
+INI reads and mismatch payloads may contain private configuration.
+
+All additions have independent offline contracts. The fixed nine-GET catalog
+reads version, additional package prefixes, installed packages, profiles, EA4
+metadata/recommendations, EOL PHP counts, FPM capacity and vhost versions. It reads
+no INI content or arbitrary file, changes no profile/PHP/FPM setting and fetches
+no returned URL. Capacity estimates do not prove safe conversion or serving
+behavior. Remaining live work stays under `8x0.2.45`.

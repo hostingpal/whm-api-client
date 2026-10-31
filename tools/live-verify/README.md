@@ -1256,3 +1256,13 @@ when there are no pending changes. `Flag` therefore raises `ApiErrorException`
 for this normal idle state as well as other failures; do not match error text or
 waive the immutable capture. Separate reviewer log/settings reads do not expand
 this catalog, and all thirty server-wide write/helper operations remain unobserved.
+
+## Expanded WHM web-server inventory
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-webserver-configuration.php --output=docs/api/evidence/YYYY-MM-DD-whm-webserver-configuration.json`.
+
+Nine fixed parameterless GETs read version and eight EasyApache/PHP inventories.
+Only masked structural evidence is persisted. Existing committed-input, exact
+request guard, opt-in, verified TLS and new-only output requirements apply.
+No INI content, arbitrary file or private configuration selector is supplied;
+no conversion/profile/PHP/FPM mutation or URL fetch runs. `8x0.2.45` retains gaps.
