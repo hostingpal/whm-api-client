@@ -95,9 +95,9 @@ final readonly class WordPressRestore
      * API-map identity: uapi:WordPressRestore/any_running#GET (wire name any_running).
      *
      * @return AnyRunningResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/wordpress-manager-backups/wordpressrestore-any_running
      */
     public function anyRunning(): array
@@ -134,9 +134,9 @@ final readonly class WordPressRestore
      *
      * @param string $site The WordPress site's URL without the protocol prefix.
      * @return 0|1
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/wordpress-manager-backups/wordpressrestore-cleanup
      */
     public function cleanup(string $site): int
@@ -174,9 +174,9 @@ final readonly class WordPressRestore
      * @param string $backupPath The file path to the backup archive.
      * @param string $site The WordPress site's URL to restore.
      * @return StartResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/wordpress-manager-backups/wordpressrestore-start
      */
     public function start(string $backupPath, string $site): array

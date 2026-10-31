@@ -359,7 +359,7 @@ final readonly class Ssl
      *
      * @param string|list<string> $domain Disable AutoSSL for this domain.
      * @param string $username The cPanel user's account.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-add_autossl_user_excluded_domains
      */
@@ -390,9 +390,9 @@ final readonly class Ssl
      *
      * @param string $host The hostname whose SSL virtual host you'd like to delete.
      * @return DeleteSslVhostResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-settings/ssl-delete_ssl_vhost
      */
     public function deleteSslVhost(string $host): array
@@ -417,7 +417,7 @@ final readonly class Ssl
      *
      * API-map identity: whm1:disable_autossl#GET (wire name disable_autossl; Auto-Generated Certificates).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-disable_autossl
      */
     public function disableAutoSsl(): void
@@ -464,9 +464,9 @@ final readonly class Ssl
      * @param string|list<string> $vhostName The name of the web virtual host (vhost) for which to install the
      *     certificate.
      * @return EnqueueDeferredSslInstallationsResult|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-settings/ssl-enqueue_deferred_ssl_installations
      */
@@ -513,9 +513,9 @@ final readonly class Ssl
      * @param string $id The certificate's internal system ID.
      * @param string $user The cPanel account's username.
      * @return FetchCertificateInfoResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-settings/ssl-fetchcrtinfo
      */
     public function fetchCertificateInfo(string $id, string $user): array
@@ -543,9 +543,9 @@ final readonly class Ssl
      * Settings).
      *
      * @return FetchServiceSslComponentsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ssl-server-settings/ssl-fetch_service_ssl_components
      */
     public function fetchServiceSslComponents(): array
@@ -584,9 +584,9 @@ final readonly class Ssl
      *
      * @param string $domains A comma-separated list of domains for which to retrieve information.
      * @return FetchSslCertificatesForFqdnsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-settings/ssl-fetch_ssl_certificates_for_fqdns
      */
     public function fetchSslCertificatesForFqdns(string $domains): array
@@ -622,9 +622,9 @@ final readonly class Ssl
      * @param string|null $crtdata The certificate's text. Null omits it.
      * @param string|null $domain The domain's name. Null omits it.
      * @return FetchSslInfoResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-settings/ssl-fetchsslinfo
      */
     public function fetchSslInfo(
@@ -655,9 +655,9 @@ final readonly class Ssl
      * API-map identity: whm1:fetch_ssl_vhosts#GET (wire name fetch_ssl_vhosts; cPanel Account Settings).
      *
      * @return FetchSslVhostsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-settings/ssl-fetch_ssl_vhosts
      */
     public function fetchSslVhosts(): array
@@ -685,9 +685,9 @@ final readonly class Ssl
      * Settings).
      *
      * @return FetchVhostSslComponentsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-settings/ssl-fetch_vhost_ssl_components
      */
     public function fetchVhostSslComponents(): array
@@ -729,9 +729,9 @@ final readonly class Ssl
      * @param bool|null $skipCertificate Whether the function will skip certificate generation. Null omits it.
      * @param string|null $stateOrProvinceName The certificate's state or province name. Null omits it.
      * @return GenerateSslResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ssl-server-settings/ssl-generatessl
      */
     public function generateSsl(
@@ -775,9 +775,9 @@ final readonly class Ssl
      * Certificates).
      *
      * @return GetAutoSslCheckScheduleResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-get_autossl_check_schedule
      */
     public function getAutoSslCheckSchedule(): array
@@ -799,9 +799,9 @@ final readonly class Ssl
      *
      * @param string $startTime When the system created the log file.
      * @return GetAutoSslLogResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-get_autossl_log
      */
     public function getAutoSslLog(string $startTime): array
@@ -823,9 +823,9 @@ final readonly class Ssl
      * Certificates).
      *
      * @return GetAutoSslLogsCatalogResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-get_autossl_logs_catalog
      */
     public function getAutoSslLogsCatalog(): array
@@ -846,9 +846,9 @@ final readonly class Ssl
      * API-map identity: whm1:get_autossl_metadata#GET (wire name get_autossl_metadata; Auto-Generated Certificates).
      *
      * @return GetAutoSslMetadataResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-get_autossl_metadata
      */
     public function getAutoSslMetadata(): array
@@ -872,9 +872,9 @@ final readonly class Ssl
      *
      * @param string $domain The domain for which to poll the DCV status.
      * @return GetAutoSslProblemsForDomainResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-settings/ssl-get_autossl_problems_for_domain
      */
     public function getAutoSslProblemsForDomain(string $domain): array
@@ -900,9 +900,9 @@ final readonly class Ssl
      *
      * @param string $username The user for whom to poll the DCV status.
      * @return GetAutoSslProblemsForUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-settings/ssl-get_autossl_problems_for_user
      */
     public function getAutoSslProblemsForUser(string $username): array
@@ -930,9 +930,9 @@ final readonly class Ssl
      * API-map identity: whm1:get_autossl_providers#GET (wire name get_autossl_providers; Auto-Generated Certificates).
      *
      * @return GetAutoSslProvidersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-get_autossl_providers
      */
     public function getAutoSslProviders(): array
@@ -955,9 +955,9 @@ final readonly class Ssl
      *
      * @param string $username The cPanel user's account.
      * @return GetAutoSslUserExcludedDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-get_autossl_user_excluded_domains
      */
     public function getAutoSslUserExcludedDomains(string $username): array
@@ -995,9 +995,9 @@ final readonly class Ssl
      *
      * @param string $service The service's name.
      * @return GetBestSslDomainForServiceResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-settings/ssl-get_best_ssldomain_for_service
      */
     public function getBestSslDomainForService(string $service): array
@@ -1039,9 +1039,9 @@ final readonly class Ssl
      * @param 'ftp'|'exim'|'dovecot'|'cpanel' $service The service on which to install the SSL certificate.
      * @param string|null $cabundle The certificate's Certificate Authority (CA) bundle. Null omits it.
      * @return InstallServiceSslCertificateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-settings/ssl-install_service_ssl_certificate
      */
     public function installServiceSslCertificate(
@@ -1099,9 +1099,9 @@ final readonly class Ssl
      * @param string|null $cab The certificate's certificate authority (CA) bundle. Null omits it.
      * @param string|null $ip The IP address of the certificate's domain. Null omits it.
      * @return InstallSslResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-settings/ssl-installssl
      */
     public function installSsl(
@@ -1148,9 +1148,9 @@ final readonly class Ssl
      *     (CA). Null omits it.
      * @param string|null $user The cPanel username. Null omits it.
      * @return ListCertificatesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ssl-server-settings/ssl-listcrts
      */
     public function listCertificates(?bool $registered = null, ?string $user = null): array
@@ -1183,9 +1183,9 @@ final readonly class Ssl
      * API-map identity: whm1:rebuildinstalledssldb#GET (wire name rebuildinstalledssldb; SSL Server Settings).
      *
      * @return RebuildInstalledSslDatabaseResult|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ssl-server-settings/ssl-rebuildinstalledssldb
      */
     public function rebuildInstalledSslDatabase(): ?array
@@ -1209,9 +1209,9 @@ final readonly class Ssl
      * API-map identity: whm1:rebuilduserssldb#GET (wire name rebuilduserssldb; SSL Server Settings).
      *
      * @return RebuildUserSslDatabaseResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ssl-server-settings/ssl-rebuilduserssldb
      */
     public function rebuildUserSslDatabase(): array
@@ -1237,7 +1237,7 @@ final readonly class Ssl
      *
      * @param string|list<string> $domain Enable AutoSSL for this domain.
      * @param string $username The cPanel user's account.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-remove_autossl_user_excluded_domains
      */
@@ -1272,9 +1272,9 @@ final readonly class Ssl
      *
      * @param 'ftp'|'exim'|'dovecot'|'cpanel' $service The service.
      * @return ResetServiceSslCertificateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ssl-server-settings/ssl-reset_service_ssl_certificate
      */
     public function resetServiceSslCertificate(string $service): array
@@ -1305,7 +1305,7 @@ final readonly class Ssl
      * API-map identity: whm1:set_autossl_metadata#GET (wire name set_autossl_metadata; Auto-Generated Certificates).
      *
      * @param string|int $metadataJson JSON-encoded object of metadata keys and values that control AutoSSL's behavior.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-set_autossl_metadata
      */
     public function setAutoSslMetadata(
@@ -1332,7 +1332,7 @@ final readonly class Ssl
      * @param string $key The AutoSSL metadata key that you wish to modify.
      * @param bool $value Whether to allow AutoSSL to replace certificates that it did not issue for the
      *     `clobber_externally_signed` parameter.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-set_autossl_metadata_key
      */
     public function setAutoSslMetadataKey(string $key, bool $value): void
@@ -1358,7 +1358,7 @@ final readonly class Ssl
      *
      * @param string $username The cPanel user's account.
      * @param string|list<string>|null $domain Disable AutoSSL for this domain. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-set_autossl_user_excluded_domains
      */
@@ -1385,9 +1385,9 @@ final readonly class Ssl
      * Auto-Generated Certificates).
      *
      * @return StartAutoSslCheckForAllUsersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-start_autossl_check_for_all_users
      */
     public function startAutoSslCheckForAllUsers(): array
@@ -1419,9 +1419,9 @@ final readonly class Ssl
      *
      * @param string $username The cPanel username.
      * @return StartAutoSslCheckForOneUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/auto-generated-certificates/ssl-start_autossl_check_for_one_user
      */
     public function startAutoSslCheckForOneUser(string $username): array

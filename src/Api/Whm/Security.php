@@ -48,7 +48,7 @@ final readonly class Security
      *
      * API-map identity: whm1:allow_all_whm_root_access#GET (wire name allow_all_whm_root_access; WHM Access).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/whm-access/rootipaccess-allow_all_whm_root_access
      */
     public function allowAllWhmRootAccess(): void
@@ -66,23 +66,32 @@ final readonly class Security
      * not restricted. The API manages /var/cpanel/authorized_whm_root_ips; upstream strongly recommends against direct
      * file modification because improper formatting can remove all cPanel and WHM access using the root password.
      *
-     * Documented: cidrs accepts one CIDR string or a nonempty sequential list of strings sent as repeated cidr fields,
-     * as the pinned CLI and URL examples show. The returned optional cidr field is a reduced list of permitted CIDR
-     * addresses, distinct from the WHM envelope outcome. The response is an object with an optional string list; absent
-     * data and explicit null are not documented success payloads.
+     * Documented: The pinned response schema is an object with an optional cidr string list, described as a reduced
+     * list of permitted CIDR addresses. Absent data and explicit null are not documented success payloads. This schema
+     * boundary is separate from the implementation success shape described below.
      *
-     * Policy: Client policy: forward supplied CIDR strings unchanged, including an explicit empty string, without local
-     * address validation or normalization. This does not establish server acceptance of empty or malformed CIDRs. Use
-     * form POST and send one request without automatic retry or rollback; a payload error after API success does not
-     * undo a policy change. No SSH or firewall behavior is inferred.
+     * Documented: Source-based: the external reviewer inspected Whostmgr/API/1/RootIPAccess.pm and Utils.pm on
+     * 11.138.0.19. get_length_required_arguments rejects a missing value as MissingParameter and a blank value,
+     * including a blank list member, as Empty. Each CIDR is checked with Net::CIDR::cidrvalidate before the restriction
+     * file is written; any invalid value leaves existing restrictions unchanged. Successful calls return the reduced
+     * CIDR list, which Net::CIDR::cidradd may merge rather than echo. This is reviewer-inspected implementation
+     * evidence, not a pinned Perl source or live verification.
+     *
+     * Policy: Client policy: accept one string or a nonempty sequential string list, encode it once as repeated cidr
+     * form POST fields and forward the strings unchanged, including blank, whitespace and malformed values; no local
+     * CIDR validation or normalization is added. Pinned CLI and URL examples establish repeated keys only. The reviewer
+     * reports Cpanel::Form::Param supports repeated form values. Send one request without automatic retry or rollback;
+     * a payload error after API success does not undo a policy change. No SSH or firewall behavior is inferred.
      *
      * API-map identity: whm1:restrict_whm_root_access#GET (wire name restrict_whm_root_access; WHM Access).
      *
-     * @param string|list<string> $cidrs The IPs you wish to restrict in CIDR format.
+     * @param string|list<string> $cidrs The permitted source addresses in CIDR format for the root password login
+     *     allowlist. Only listed sources may log in as root with a password; include your own source to preserve
+     *     access. You can pass this parameter multiple times.
      * @return RestrictWhmRootAccessResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/whm-access/rootipaccess-restrict_whm_root_access
      */

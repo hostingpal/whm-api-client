@@ -55,9 +55,9 @@ final readonly class Features
      * API-map identity: uapi:Features/get_feature_metadata#GET (wire name get_feature_metadata).
      *
      * @return GetFeatureMetadataResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/cpanel-features/features-get_feature_metadata
      */
     public function getFeatureMetadata(): array
@@ -88,7 +88,7 @@ final readonly class Features
      *
      * @param string $name The feature's name.
      * @return HasFeatureResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the envelope was accepted but the payload differs from the contract;
      *     the outcome is not checked.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/cpanel-features/features-has_feature
@@ -114,9 +114,9 @@ final readonly class Features
      * @param string $pattern The feature's name that you wish to search.
      * @param bool|null $isRegex Whether the `pattern` parameter's value is a regular expression. Null omits it.
      * @return HasFeaturesLikeResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/cpanel-features/features-has_features_like
      */
     public function hasFeaturesLike(string $pattern, ?bool $isRegex = null): ?array
@@ -135,9 +135,9 @@ final readonly class Features
      * API-map identity: uapi:Features/list_features#GET (wire name list_features).
      *
      * @return ListFeaturesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/cpanel-features/features-list_features
      */
     public function listFeatures(): array
@@ -162,9 +162,9 @@ final readonly class Features
      * @param string $pattern The feature's name that you wish to search.
      * @param bool|null $isRegex Whether the `pattern` parameter's value is a regular expression. Null omits it.
      * @return ListFeaturesLikeResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/cpanel-features/features-list_features_like
      */
     public function listFeaturesLike(string $pattern, ?bool $isRegex = null): ?array

@@ -341,16 +341,41 @@ func (s schemas) payload(op model.Operation, v model.Variant) (payloadInfo, map[
 	if !ok {
 		return payloadInfo{issue: "the 200 response schema cannot be resolved"}, operation, nil
 	}
-	return s.envelopeData(op, envelopeSource, envelope), operation, nil
+	info := s.envelopeData(op, envelopeSource, envelope)
+	info.metadataOnly = op.Family == "whm1" && plainMetadataOnlyEnvelope(envelope)
+	return info, operation, nil
 }
 
 // payloadInfo is the documented success payload. partial marks data that only
 // some envelope alternatives document; issue explains an envelope that could
-// not be resolved (never silently treated as void).
+// not be resolved (never silently treated as void). metadataOnly records only a
+// plain resolved WHM object containing metadata and no payload siblings. It
+// never propagates from an alternative or infers a payload type.
 type payloadInfo struct {
-	spec    *TypeSpec
-	partial bool
-	issue   string
+	metadataOnly bool
+	spec         *TypeSpec
+	partial      bool
+	issue        string
+}
+
+// plainMetadataOnlyEnvelope deliberately excludes compositions and nullable roots.
+// Only this source fact can support an evidenced opaque retrieval restoration;
+// siblings such as needs_reboot remain unsupported envelope payloads.
+func plainMetadataOnlyEnvelope(envelope map[string]any) bool {
+	if envelope["type"] != "object" || isNullable(envelope) || enumHasNull(envelope) {
+		return false
+	}
+	for _, key := range []string{"allOf", "anyOf", "oneOf", "not", "if", "then", "else", "discriminator"} {
+		if _, present := envelope[key]; present {
+			return false
+		}
+	}
+	props, ok := asObject(envelope["properties"])
+	if !ok || len(props) != 1 {
+		return false
+	}
+	_, hasMetadata := props["metadata"]
+	return hasMetadata
 }
 
 // envelopeData reads the data member of a 200 envelope: WHM data, UAPI
@@ -423,6 +448,27 @@ func (s schemas) presenceOnlyInteger(sourceID string, node any) bool {
 	// enumDoc preserves quoted strings, duplicates, null and other literals
 	// distinctly, so only the exact singleton integer literal matches.
 	return s.enumDoc(sourceID, node) == "1"
+}
+
+// stringList accepts only a concrete nonnullable array of nonnullable strings.
+// Compositions are deliberately excluded rather than inferred as equivalent.
+func (s schemas) stringList(sourceID string, node any) bool {
+	obj, sourceID, _, ok := s.follow(sourceID, node)
+	if !ok || obj["type"] != "array" || isNullable(obj) || enumHasNull(obj) {
+		return false
+	}
+	item, _, _, itemOK := s.follow(sourceID, obj["items"])
+	if !itemOK || item["type"] != "string" || isNullable(item) || enumHasNull(item) {
+		return false
+	}
+	for _, schema := range []map[string]any{obj, item} {
+		for _, key := range []string{"allOf", "anyOf", "oneOf", "discriminator"} {
+			if _, present := schema[key]; present {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 // enumDoc renders a schema's enum as a PHPStan literal union, or "" when absent.
@@ -538,4 +584,21 @@ func mergeNames(base, extra []string) []string {
 		set[name] = true
 	}
 	return sortedKeys(set)
+}
+
+// targetString admits only concrete unrestricted strings or repeated string lists.
+func (s schemas) targetString(sourceID string, node any, listAllowed bool) bool {
+	obj, nextID, _, ok := s.follow(sourceID, node)
+	if !ok || isNullable(obj) {
+		return false
+	}
+	for _, key := range []string{"enum", "allOf", "anyOf", "oneOf", "discriminator"} {
+		if _, present := obj[key]; present {
+			return false
+		}
+	}
+	if obj["type"] == "string" {
+		return true
+	}
+	return listAllowed && obj["type"] == "array" && s.targetString(nextID, obj["items"], false)
 }

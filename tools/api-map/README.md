@@ -74,6 +74,11 @@ is rendered from the canonical map plus `docs/api/overlay/`:
 
 Operation entries (all keys optional):
 
+- `function`: evidence-gated WHM wire correction from a bare canonical function to
+  exactly `Namespace/same_leaf`, using identifier namespace and leaf. UAPI, excluded
+  operations, different leaves, paths, query strings and URLs are rejected. This
+  changes the generated function spec and effective contract hash; canonical map
+  IDs, variants, source hashes and documentation links remain unchanged.
 - `name`: the PHP method name. Required when the function has no `_` separator,
   starts with `_`, or contains `/`; otherwise the camelCase function name is used.
 - `variant` (`GET`/`POST`): the documented variant to generate, required for an
@@ -119,18 +124,38 @@ Operation entries (all keys optional):
   reviewed description, preserving later sentences. Both settings require
   operation-level evidence; requiredness, sensitivity and optional null omission
   retain their existing rules.
-  `type: "true"` is a separate evidence-gated presence-only correction, used
-  where sending a key grants a privilege regardless of its value. It requires
-  an optional concrete scalar integer source with exactly `enum: [1]`; the
-  effective parameter must remain optional. Encoding must be absent or `bool`,
-  and a simultaneous wire-name correction is rejected. It generates `?true`
-  with a null default and the existing boolean encoder: true sends `1`, while
-  null omits the key. PHP rejects false, integers (including `1`) and strings
-  before dispatch, in both strict and weak callers. No singleton enum is
-  changed implicitly; ordinary zero/one flags still accept false and emit `0`.
-  Composite, nullable, required and omitted inputs cannot use this correction,
-  and it adds no response type. This guard does not make omission a partial
-  update: each operation's replacement semantics remain in its reviewed notes.
+  `type: "true"` is a separate evidence-gated correction for a concrete,
+  nonnullable scalar integer source with exactly `enum: [1]`. Source and final
+  requiredness must match: optional inputs generate `?true` with a null default;
+  required inputs generate `true` with no default. Encoding must be absent or
+  `bool`, and a simultaneous wire-name correction is rejected. The existing
+  boolean encoder sends true as `1`; null omits only optional inputs. PHP rejects
+  false, integers (including `1`) and strings before the runner, in strict and
+  weak callers. Required inputs also reject null and omission. Native parameter
+  rejection does not clear prior response metadata. No singleton enum changes
+  implicitly; ordinary zero/one flags still accept false and emit `0`.
+  Composite, nullable and omitted inputs cannot use this correction, and it
+  adds no response type. Optional presence-only privilege inputs still retain
+  each operation's reviewed replacement semantics.
+  `omit_empty: true` is an explicit evidence-gated exception for optional
+  `repeat` parameters whose pinned source is a concrete, nonnullable array of
+  nonnullable strings. It omits exactly `[]`, alongside the existing null
+  omission, while strings and nonempty lists keep their existing encoding and
+  validation. Source-required, effectively required, omitted, scalar, composed
+  and other-encoding inputs are rejected; `true` is the only accepted present
+  value. The setting flows into the effective contract and generated runtime
+  spec. Only `ea4SaveProfile(tags: [])` selects it; required packages and other
+  list operations retain empty-list rejection.
+  `reject_empty: true` is an evidence-gated client target-scope policy. It requires
+  a required, concrete, nonnullable string or repeat-encoded string/list source,
+  without enums, composition, omission or simultaneous type correction. Only
+  scalar/repeat encodings are supported. Runtime validation rejects missing/null,
+  empty or keyed lists, nonstring entries, blank strings and trimmed `0`; the
+  latter guards Perl-falsey all-domain fallback. Values are not trimmed or DNS
+  validated. The policy currently selects only WHM apply/remove DMARC domains;
+  unflagged parameters and generic calls retain existing behavior. Typed native
+  missing/null failures occur before metadata reset; runner policy failures clear
+  metadata without I/O. Deliberate all-domain calls use documented generic POSTs.
 - `order`: wire names moved to the front of the signature in that order;
   required arguments always precede optional ones, so an order that lists an
   optional parameter before a required one, or an omitted parameter, is a problem.
@@ -179,6 +204,17 @@ Operation entries (all keys optional):
   literal); generated PHPStan types retain it. This opt-in constraint is never
   inferred from upstream enums and is invalid on other types. Only `replace` may
   address the payload root, with the empty path.
+
+A narrowly evidenced retrieval exception can restore an omitted payload contract:
+only WHM GET operations with `x-readonly=true`, a resolved plain 200 JSON object
+whose only property is `metadata`, and no payload issue or partial alternatives
+qualify. The overlay must supply exactly one root response replacement with an
+unadorned `mixed` spec and valid correction-level `live` evidence. `void`,
+`optional_payload`, `unwrap`, exclusions, compositions and payload siblings do
+not qualify. This preserves opaque observed data without inferring fields;
+missing data still fails in the existing runtime. Ordinary corrections to a
+documented payload remain unchanged. PR70 review 5721307565 supplies the
+attributed retrieval observation; it is separate from source-only corrections.
 
 The generator reads the pinned schemas as follows. `allOf` merges its parts and
 its sibling `properties`/`required`, skipping parts that carry only annotations.

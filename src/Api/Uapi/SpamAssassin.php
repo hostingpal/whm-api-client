@@ -64,7 +64,7 @@ final readonly class SpamAssassin
      *
      * API-map identity: uapi:SpamAssassin/clear_spam_box#GET (wire name clear_spam_box).
      *
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-management/spamassassin-clear_spam_box
      */
     public function clearSpamBox(): void
@@ -89,9 +89,9 @@ final readonly class SpamAssassin
      * API-map identity: uapi:SpamAssassin/get_symbolic_test_names#GET (wire name get_symbolic_test_names).
      *
      * @return GetSymbolicTestNamesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-management/spamassassin-get_symbolic_test_names
      */
     public function getSymbolicTestNames(): array
@@ -126,9 +126,9 @@ final readonly class SpamAssassin
      * API-map identity: uapi:SpamAssassin/get_user_preferences#GET (wire name get_user_preferences).
      *
      * @return GetUserPreferencesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-management/spamassassin-get_user_preferences
      */
     public function getUserPreferences(): array
@@ -176,9 +176,9 @@ final readonly class SpamAssassin
      * @param string|null $value The value for the preference of the variable that you want to manipulate. Null omits
      *     it.
      * @return UpdateUserPreferenceResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-management/spamassassin-update_user_preference
      */
     public function updateUserPreference(string $preference, ?string $value = null): array

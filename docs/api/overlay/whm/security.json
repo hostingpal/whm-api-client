@@ -35,7 +35,8 @@
       "params": {
         "cidr": {
           "php": "cidrs",
-          "encoding": "repeat"
+          "encoding": "repeat",
+          "description": "The permitted source addresses in CIDR format for the root password login allowlist. Only listed sources may log in as root with a password; include your own source to preserve access. You can pass this parameter multiple times."
         }
       },
       "notes": [
@@ -45,11 +46,15 @@
         },
         {
           "kind": "documented",
-          "text": "cidrs accepts one CIDR string or a nonempty sequential list of strings sent as repeated cidr fields, as the pinned CLI and URL examples show. The returned optional cidr field is a reduced list of permitted CIDR addresses, distinct from the WHM envelope outcome. The response is an object with an optional string list; absent data and explicit null are not documented success payloads."
+          "text": "The pinned response schema is an object with an optional cidr string list, described as a reduced list of permitted CIDR addresses. Absent data and explicit null are not documented success payloads. This schema boundary is separate from the implementation success shape described below."
+        },
+        {
+          "kind": "documented",
+          "text": "Source-based: the external reviewer inspected Whostmgr/API/1/RootIPAccess.pm and Utils.pm on 11.138.0.19. get_length_required_arguments rejects a missing value as MissingParameter and a blank value, including a blank list member, as Empty. Each CIDR is checked with Net::CIDR::cidrvalidate before the restriction file is written; any invalid value leaves existing restrictions unchanged. Successful calls return the reduced CIDR list, which Net::CIDR::cidradd may merge rather than echo. This is reviewer-inspected implementation evidence, not a pinned Perl source or live verification."
         },
         {
           "kind": "policy",
-          "text": "Client policy: forward supplied CIDR strings unchanged, including an explicit empty string, without local address validation or normalization. This does not establish server acceptance of empty or malformed CIDRs. Use form POST and send one request without automatic retry or rollback; a payload error after API success does not undo a policy change. No SSH or firewall behavior is inferred."
+          "text": "Client policy: accept one string or a nonempty sequential string list, encode it once as repeated cidr form POST fields and forward the strings unchanged, including blank, whitespace and malformed values; no local CIDR validation or normalization is added. Pinned CLI and URL examples establish repeated keys only. The reviewer reports Cpanel::Form::Param supports repeated form values. Send one request without automatic retry or rollback; a payload error after API success does not undo a policy change. No SSH or firewall behavior is inferred."
         }
       ],
       "evidence": [
@@ -57,7 +62,13 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /restrict_whm_root_access declares x-readonly=false, cPanel available version 108 and required cidr with a string schema and no minimum length. Its parameter note permits multiple occurrences, and both CLI and URL examples repeat the exact cidr key; use the existing repeat encoder for scalar/list input. The data schema is an object with optional cidr array of strings. Preserve source replacement, session and root-reseller caveats; no live restriction change was performed."
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /restrict_whm_root_access declares x-readonly=false, cPanel available version 108 and required cidr with a string schema and no minimum length. Its parameter note permits multiple occurrences; CLI and URL examples repeat the cidr key but do not document a POST body. The response data schema is an object with optional cidr array of strings. Preserve replacement, session, root-reseller and direct-file/root-password caveats. Scalar/nonempty sequential list acceptance, repeated form POST encoding and unchanged byte forwarding are client policy. No live restriction change was performed."
+        },
+        {
+          "kind": "doc",
+          "version": "reviewer-inspected implementation 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "External review 5721307804 of e017f3cc6b5a88fd4d134e7bfdc4aee10e40c744 reports inspection of Whostmgr/API/1/RootIPAccess.pm and Utils.pm: allowlist semantics; get_length_required_arguments Empty/MissingParameter failures; per-value Net::CIDR::cidrvalidate before file write; one invalid input preserves prior restrictions; Net::CIDR::cidradd may merge ranges; successful restriction returns the CIDR list. Reviewer also reports repeated-form support through Cpanel::Form::Param. Correct the misleading pinned parameter wording with the existing description override. These are source-based findings, not locally pinned Perl, captured HTTP error messages or live endpoint observations; both methods remain unobserved under 8x0.2.59."
         }
       ]
     }
