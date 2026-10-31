@@ -27,16 +27,16 @@ final class WhmNginxProbes
                 'whm',
                 NginxManagerSpec::NGINXMANAGER_GET_CACHE_CONFIG_SYSTEM,
                 'https://test.oblak.host:2087/json-api/nginxmanager_get_cache_config_system?api.version=1&merge=1',
-                static fn (Client $client): mixed => $client->whm()->nginxManager()->getSystemCacheConfig(merge: 1),
+                static fn (Client $client): mixed => $client->whm()->nginxManager()->getSystemCacheConfig(merge: true),
             ),
             new Probe(
                 'whm1:nginxmanager_get_cache_config_users',
                 'whm',
                 NginxManagerSpec::NGINXMANAGER_GET_CACHE_CONFIG_USERS,
                 'https://test.oblak.host:2087/json-api/nginxmanager_get_cache_config_users'
-                . '?api.version=1&merge=1&user=npr',
+                . '?api.version=1&user=npr&merge=1',
                 static fn (Client $client): mixed => $client->whm()->nginxManager()->getUsersCacheConfig(
-                    merge: 1,
+                    merge: true,
                     users: 'npr',
                 ),
             ),

@@ -63,9 +63,9 @@ final readonly class Ea4
      * API-map identity: uapi:EA4/get_php_recommendations#GET (wire name get_php_recommendations).
      *
      * @return GetPhpRecommendationsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php/ea4-get_php_recommendations
      */
     public function getPhpRecommendations(): array
@@ -94,9 +94,9 @@ final readonly class Ea4
      * API-map identity: uapi:EA4/get_recommendations#GET (wire name get_recommendations).
      *
      * @return GetRecommendationsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/ea4/ea4-get_recommendations
      */
     public function getRecommendations(): array

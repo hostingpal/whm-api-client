@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Api;
 
+use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
+use HostingPal\WhmApiClient\Api\Whm\Spec\NginxManagerSpec;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
+use HostingPal\WhmApiClient\Tests\Fixtures\WeakNginxCaller;
 use Http\Mock\Client as MockClient;
 use InvalidArgumentException;
 use Nyholm\Psr7\Factory\Psr17Factory;
@@ -15,6 +18,7 @@ use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
+use TypeError;
 
 /** Independent literals reviewed against the pinned NGINX Manager source. */
 final class WhmNginxManagerTest extends TestCase
@@ -24,36 +28,29 @@ final class WhmNginxManagerTest extends TestCase
     {
         yield 'clear repeated' => ['clearCache', 'nginxmanager_clear_cache', [['one', 'two +&=雪']], 'POST',
             'user=one&user=two%20%2B%26%3D%E9%9B%AA'];
-        yield 'clear omitted all users' => ['clearCache', 'nginxmanager_clear_cache', [], 'POST', ''];
-        yield 'clear null all users' => ['clearCache', 'nginxmanager_clear_cache', [null], 'POST', ''];
         yield 'system omitted merge' => ['getSystemCacheConfig', 'nginxmanager_get_cache_config_system', [], 'GET', ''];
-        yield 'system merge' => ['getSystemCacheConfig', 'nginxmanager_get_cache_config_system', [1], 'GET', 'merge=1'];
+        yield 'system merge' => [
+            'getSystemCacheConfig', 'nginxmanager_get_cache_config_system', [true], 'GET', 'merge=1'];
         yield 'users merge and repeated' => ['getUsersCacheConfig', 'nginxmanager_get_cache_config_users',
-            [1, ['one', 'two']], 'GET', 'merge=1&user=one&user=two'];
+            [['one', 'two'], true], 'GET', 'user=one&user=two&merge=1'];
         yield 'users scalar encoded once' => ['getUsersCacheConfig', 'nginxmanager_get_cache_config_users',
-            [null, 'one +&=%/雪'], 'GET', 'user=one%20%2B%26%3D%25%2F%E9%9B%AA'];
+            ['one +&=%/雪'], 'GET', 'user=one%20%2B%26%3D%25%2F%E9%9B%AA'];
         yield 'users empty scalar' => ['getUsersCacheConfig', 'nginxmanager_get_cache_config_users',
-            [null, ''], 'GET', 'user='];
+            [''], 'GET', 'user='];
+        yield 'users explicit null all users' => [
+            'getUsersCacheConfig', 'nginxmanager_get_cache_config_users', [null, null], 'GET', ''];
         yield 'users omitted all users' => [
             'getUsersCacheConfig', 'nginxmanager_get_cache_config_users', [], 'GET', ''];
         yield 'rebuild repeated' => ['rebuildCacheConfig', 'nginxmanager_rebuild_cache_config',
             [['one', 'two']], 'POST', 'user=one&user=two'];
-        yield 'rebuild omitted all users' => [
-            'rebuildCacheConfig', 'nginxmanager_rebuild_cache_config', [], 'POST', ''];
         yield 'reset scalar' => [
             'resetUsersCacheConfig', 'nginxmanager_reset_users_cache_config', ['one'], 'POST', 'user=one'];
         yield 'reset repeated' => ['resetUsersCacheConfig', 'nginxmanager_reset_users_cache_config',
             [['one', 'two']], 'POST', 'user=one&user=two'];
-        yield 'reset omitted all users' => [
-            'resetUsersCacheConfig', 'nginxmanager_reset_users_cache_config', [], 'POST', ''];
         yield 'disable repeated' => ['setCacheConfig', 'nginxmanager_set_cache_config',
             [false, ['one', 'two']], 'POST', 'enabled=0&user=one&user=two'];
         yield 'enable scalar' => [
             'setCacheConfig', 'nginxmanager_set_cache_config', [true, 'one'], 'POST', 'enabled=1&user=one'];
-        yield 'disable omitted all users' => [
-            'setCacheConfig', 'nginxmanager_set_cache_config', [false], 'POST', 'enabled=0'];
-        yield 'enable null all users' => [
-            'setCacheConfig', 'nginxmanager_set_cache_config', [true, null], 'POST', 'enabled=1'];
     }
 
     /** @param list<mixed> $arguments */
@@ -217,8 +214,8 @@ final class WhmNginxManagerTest extends TestCase
     public static function operations(): iterable
     {
         yield 'clear' => ['clearCache', 'nginxmanager_clear_cache', ['one']];
-        yield 'system read' => ['getSystemCacheConfig', 'nginxmanager_get_cache_config_system', [1]];
-        yield 'users read' => ['getUsersCacheConfig', 'nginxmanager_get_cache_config_users', [1, 'one']];
+        yield 'system read' => ['getSystemCacheConfig', 'nginxmanager_get_cache_config_system', [true]];
+        yield 'users read' => ['getUsersCacheConfig', 'nginxmanager_get_cache_config_users', ['one', true]];
         yield 'rebuild' => ['rebuildCacheConfig', 'nginxmanager_rebuild_cache_config', ['one']];
         yield 'reset' => ['resetUsersCacheConfig', 'nginxmanager_reset_users_cache_config', ['one']];
         yield 'set' => ['setCacheConfig', 'nginxmanager_set_cache_config', [false, 'one']];
@@ -254,7 +251,7 @@ final class WhmNginxManagerTest extends TestCase
         foreach ($methods as $method) {
             foreach ($invalid as $index => $users) {
                 yield "$method list $index" => [$method, match ($method) {
-                    'getUsersCacheConfig' => [null, $users], 'setCacheConfig' => [false, $users], default => [$users],
+                    'setCacheConfig' => [false, $users], default => [$users],
                 }];
             }
         }
@@ -276,6 +273,188 @@ final class WhmNginxManagerTest extends TestCase
             self::assertNull($whm->responseMeta());
         }
         self::assertCount(1, $http->getRequests());
+    }
+
+
+    /** @return iterable<string, array{string, string, bool}> */
+    public static function writes(): iterable
+    {
+        yield 'clear' => ['clearCache', 'nginxmanager_clear_cache', false];
+        yield 'rebuild' => ['rebuildCacheConfig', 'nginxmanager_rebuild_cache_config', false];
+        yield 'reset' => ['resetUsersCacheConfig', 'nginxmanager_reset_users_cache_config', false];
+        yield 'set' => ['setCacheConfig', 'nginxmanager_set_cache_config', true];
+    }
+
+    #[DataProvider('writes')]
+    public function testExplicitGenericPostIsTheDeliberateAllUsersForm(
+        string $method,
+        string $operation,
+        bool $set,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($operation, null)));
+        $client->whm()->call($operation, $set ? ['enabled' => 0] : []);
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('POST', $request->getMethod());
+        self::assertSame(
+            'https://api.example.test:2087/json-api/' . $operation . '?api.version=1',
+            (string) $request->getUri(),
+        );
+        self::assertSame($set ? 'enabled=0' : '', (string) $request->getBody());
+        self::assertSame('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
+        self::assertCount(1, $http->getRequests());
+    }
+
+    #[DataProvider('writes')]
+    public function testMissingAndNullWriteTargetsRejectBeforeRunnerAndRetainMetadata(
+        string $method,
+        string $operation,
+        bool $set,
+    ): void {
+        foreach ([false, true] as $weak) {
+            foreach ([[], [null]] as $target) {
+                [$client, $http] = self::client();
+                $group = $client->whm()->nginxManager();
+                $http->addResponse(new Response(200, [], self::envelope('nginxmanager_get_cache_config_system', '{}')));
+                $group->getSystemCacheConfig();
+                $previous = $client->whm()->responseMeta();
+                $arguments = [...($set ? [false] : []), ...$target];
+                try {
+                    if ($weak) {
+                        WeakNginxCaller::call($group, $method, $arguments);
+                    } else {
+                        $group->{$method}(...$arguments);
+                    }
+                    self::fail('A typed write requires an explicit nonnullable target.');
+                } catch (TypeError) {
+                    self::assertSame($previous, $client->whm()->responseMeta());
+                }
+                self::assertCount(1, $http->getRequests());
+            }
+        }
+    }
+
+    /** @return iterable<string, array{string, list<mixed>}> */
+    public static function unsafeWriteTargets(): iterable
+    {
+        foreach (['clearCache', 'rebuildCacheConfig', 'resetUsersCacheConfig', 'setCacheConfig'] as $method) {
+            foreach (['', ' ', "\t\r\n", '0', ' 0 ', [''], ['one', ' '], ['one', ' 0 ']] as $index => $target) {
+                yield "$method unsafe $index" => [$method, $method === 'setCacheConfig'
+                    ? [false, $target] : [$target]];
+            }
+        }
+    }
+
+    /** @param list<mixed> $arguments */
+    #[DataProvider('unsafeWriteTargets')]
+    public function testUnsafeWriteTargetsResetMetadataWithoutDispatch(string $method, array $arguments): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('nginxmanager_get_cache_config_system', '{}')));
+        $client->whm()->nginxManager()->getSystemCacheConfig();
+        try {
+            $client->whm()->nginxManager()->{$method}(...$arguments);
+            self::fail('Blank and trimmed-zero write targets must reject.');
+        } catch (InvalidArgumentException) {
+            self::assertNull($client->whm()->responseMeta());
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
+    #[DataProvider('writes')]
+    public function testValidWriteTargetsAreEncodedWithoutTrimming(string $method, string $operation, bool $set): void
+    {
+        foreach ([' one ', [' one ', 'two +&=雪']] as $target) {
+            [$client, $http] = self::client();
+            $http->addResponse(new Response(200, [], self::envelope($operation, null)));
+            $arguments = $set ? [false, $target] : [$target];
+            $client->whm()->nginxManager()->{$method}(...$arguments);
+            $request = $http->getLastRequest();
+            self::assertInstanceOf(RequestInterface::class, $request);
+            self::assertSame(
+                ($set ? 'enabled=0&' : '') . 'user=%20one%20'
+                . (is_array($target) ? '&user=two%20%2B%26%3D%E9%9B%AA' : ''),
+                (string) $request->getBody(),
+            );
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
+    public function testInternalMissingAndNullTargetsCannotBypassSelectedSpecPolicy(): void
+    {
+        foreach (
+            [NginxManagerSpec::NGINXMANAGER_CLEAR_CACHE, NginxManagerSpec::NGINXMANAGER_REBUILD_CACHE_CONFIG,
+            NginxManagerSpec::NGINXMANAGER_RESET_USERS_CACHE_CONFIG,
+            NginxManagerSpec::NGINXMANAGER_SET_CACHE_CONFIG] as $spec
+        ) {
+            foreach ([[], ['users' => null]] as $target) {
+                $dispatched = false;
+                try {
+                    OperationRunner::run(
+                        $spec,
+                        ($spec['function'] === 'nginxmanager_set_cache_config' ? ['enabled' => false] : []) + $target,
+                        static function () use (&$dispatched): never {
+                            $dispatched = true;
+                            self::fail('An internal missing or null target must not dispatch.');
+                        },
+                    );
+                    self::fail('The selected target policy must reject.');
+                } catch (InvalidArgumentException) {
+                    self::assertFalse($dispatched);
+                }
+            }
+        }
+    }
+
+    /** @return iterable<string, array{string, mixed, bool}> */
+    public static function mergeArguments(): iterable
+    {
+        foreach (['getSystemCacheConfig', 'getUsersCacheConfig'] as $method) {
+            foreach ([true, null, false, 0, 1, '0', '1', 'true', [], [true], new \stdClass()] as $index => $value) {
+                foreach ([false, true] as $weak) {
+                    yield "$method merge $index weak $weak" => [$method, $value, $weak];
+                }
+            }
+        }
+    }
+
+    #[DataProvider('mergeArguments')]
+    public function testPresenceOnlyMergeInStrictAndWeakCallers(string $method, mixed $value, bool $weak): void
+    {
+        [$client, $http] = self::client();
+        $group = $client->whm()->nginxManager();
+        $http->addResponse(new Response(200, [], self::envelope('nginxmanager_get_cache_config_system', '{}')));
+        $group->getSystemCacheConfig();
+        $previous = $client->whm()->responseMeta();
+        $arguments = ['merge' => $value];
+        if ($method === 'getUsersCacheConfig') {
+            $arguments['users'] = 'one';
+        }
+        if ($value === true || $value === null) {
+            $operation = $method === 'getSystemCacheConfig'
+                ? 'nginxmanager_get_cache_config_system' : 'nginxmanager_get_cache_config_users';
+            $http->addResponse(new Response(200, [], self::envelope($operation, '{}')));
+            $result = $weak ? WeakNginxCaller::call($group, $method, $arguments) : $group->{$method}(...$arguments);
+            self::assertSame([], $result);
+            $request = $http->getLastRequest();
+            self::assertInstanceOf(RequestInterface::class, $request);
+            self::assertSame('api.version=1' . ($method === 'getUsersCacheConfig' ? '&user=one' : '')
+                . ($value === true ? '&merge=1' : ''), $request->getUri()->getQuery());
+            self::assertCount(2, $http->getRequests());
+        } else {
+            try {
+                if ($weak) {
+                    WeakNginxCaller::call($group, $method, $arguments);
+                } else {
+                    $group->{$method}(...$arguments);
+                }
+                self::fail('Only true or null may be supplied for merge.');
+            } catch (TypeError) {
+                self::assertSame($previous, $client->whm()->responseMeta());
+            }
+            self::assertCount(1, $http->getRequests());
+        }
     }
 
     private static function envelope(string $operation, ?string $payload, int $result = 1): string

@@ -62,9 +62,9 @@ final readonly class Users
      * @param bool|null $enabledigest Whether to use Digest Authentication. Null omits it.
      * @param bool|null $enablemysql Whether to update the cPanel account's MySQL password. Null omits it.
      * @return ChangePasswordResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/account-management/users-change_password
      */
     public function changePassword(

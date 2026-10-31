@@ -55,3 +55,22 @@ func TestObservedNotesNeedLiveEvidence(t *testing.T) {
 		})
 	}
 }
+
+func TestPolicyNotesNeedNoLiveObservation(t *testing.T) {
+	set := loadWHM(t, withNotes(`[{"kind":"policy","text":"Uses POST for conservative credential handling."}]`, ""))
+	notes := set.Files[0].Operations["whm1:listaccts"].Notes
+	if len(notes) != 1 || notes[0].Kind != "policy" || notes[0].Text != "Uses POST for conservative credential handling." {
+		t.Fatalf("policy note lost: %+v", notes)
+	}
+	if problems := Validate(set); len(problems) != 0 {
+		t.Fatalf("client policy should not require live evidence: %v", problems)
+	}
+}
+
+func TestPolicyNotesDoNotWaiveObservedEvidence(t *testing.T) {
+	notes := `[{"kind":"policy","text":"Uses the reviewed client encoding."},{"kind":"observed","text":"A runtime shape was observed."}]`
+	set := loadWHM(t, withNotes(notes, evidenceJSON))
+	if got := strings.Join(Validate(set), "\n"); !strings.Contains(got, "an observed note needs live evidence") {
+		t.Fatalf("policy or doc evidence waived an observed note: %s", got)
+	}
+}

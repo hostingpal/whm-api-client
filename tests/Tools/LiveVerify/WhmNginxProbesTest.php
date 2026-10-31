@@ -28,7 +28,7 @@ final class WhmNginxProbesTest extends TestCase
                 'https://test.oblak.host:2087/json-api/nginxmanager_get_cache_config_system?api.version=1&merge=1'],
             ['whm1:nginxmanager_get_cache_config_users',
                 'https://test.oblak.host:2087/json-api/nginxmanager_get_cache_config_users'
-                . '?api.version=1&merge=1&user=npr'],
+                . '?api.version=1&user=npr&merge=1'],
         ];
         foreach ($probes as $index => $probe) {
             [$operation, $uri] = $expected[$index];

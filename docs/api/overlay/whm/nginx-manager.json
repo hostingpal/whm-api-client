@@ -14,19 +14,31 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available from cPanel & WHM 11 according to the pinned operation. The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+          "text": "Available from cPanel & WHM 11 according to the pinned operation."
         },
         {
           "kind": "documented",
-          "text": "Clears cached content for the selected users. WARNING: Omitting users clears the NGINX cache for all users."
+          "text": "Clears cached content for the selected users. WARNING: Omitting the upstream user parameter clears the NGINX cache for all users."
+        },
+        {
+          "kind": "policy",
+          "text": "Typed writes require explicit nonnullable users (one string or a nonempty sequential string list); there is no default target. The existing reject_empty policy rejects trimmed blanks and trimmed zero, empty or malformed lists and nonstring entries before dispatch. Trimmed-zero rejection is conservative client policy, not observed NGINX behavior or a username validator. Valid supplied strings are encoded unchanged, without trimming. Native missing/null argument rejection retains prior metadata; runner target validation clears it."
         },
         {
           "kind": "documented",
-          "text": "A string sends one user field; a nonempty sequential string list repeats the exact user field (user=one&user=two). Null omits user. The source default [] describes server omission behavior, not an explicit empty-list selection; explicit empty or nonsequential lists are rejected before dispatch."
+          "text": "The pinned response documents metadata only and no data payload."
         },
         {
-          "kind": "documented",
-          "text": "The pinned response documents metadata only and no data payload; this method returns void. Inspect responseMeta() for the WHM outcome."
+          "kind": "policy",
+          "text": "The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+        },
+        {
+          "kind": "policy",
+          "text": "For a deliberate server-wide operation, use whm()->call('nginxmanager_clear_cache', []). Generic call() uses POST by default and intentionally bypasses typed target validation; omitting user invokes the pinned all-users behavior."
+        },
+        {
+          "kind": "policy",
+          "text": "This method returns void. Inspect responseMeta() for the WHM outcome."
         }
       ],
       "evidence": [
@@ -41,12 +53,20 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /nginxmanager_clear_cache/get user parameter is optional, type array with string items, style=form and explode=true. Repeated user fields preserve that serialization. The user description explicitly defines all-user behavior on omission; no empty-list-means-none behavior is inferred. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned user omission explicitly targets all users. Review 5721097412 requires explicit typed targets. Reuse approved PR61 per-parameter required/reject_empty policy; trimmed-zero rejection is a conservative client policy, with no observed NGINX zero behavior. Intentional all-user calls remain available through generic POST without user; no typed all-user alias or new server signal is inferred."
         }
       ],
       "params": {
         "user": {
           "php": "users",
-          "encoding": "repeat"
+          "encoding": "repeat",
+          "required": true,
+          "reject_empty": true
         }
       }
     },
@@ -59,7 +79,7 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available from cPanel & WHM 11 according to the pinned operation. The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+          "text": "Available from cPanel & WHM 11 according to the pinned operation."
         },
         {
           "kind": "documented",
@@ -67,7 +87,23 @@
         },
         {
           "kind": "documented",
-          "text": "default.enabled is an integer 0|1 flag; system.enabled is boolean. The default/system configuration objects preserve dynamic configuration keys and their opaque values, including unit-bearing strings such as 60m and 10m. Omission, zero, false, empty strings and explicit null dynamic values stay distinct."
+          "text": "default.enabled is an integer 0|1 flag; system.enabled is boolean. The pinned default/system configuration objects permit additional configuration values with no declared value schema."
+        },
+        {
+          "kind": "policy",
+          "text": "The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+        },
+        {
+          "kind": "policy",
+          "text": "merge accepts only true or null: true sends merge=1, while null or omission omits the parameter. Other inputs reject before the runner and preserve prior metadata. No merged integer enabled variant has been observed; the potential interaction with default.enabled remains an unobserved risk under whm-api-client-8x0.2.51. Keep system.enabled and users[].config.enabled boolean and default.enabled an integer flag until evidence establishes otherwise."
+        },
+        {
+          "kind": "observed",
+          "text": "Separate PR63 reviewer diagnostic 5721097412 on WHM 11.138.0.19 reports this GET failing because the EA4 ea-nginx package is required but not installed. This diagnostic is separate from the immutable three-GET capture, which does not establish its failure cause. No successful payload for any NGINX method has been observed; all four POST operations remain unobserved."
+        },
+        {
+          "kind": "policy",
+          "text": "Configuration objects preserve dynamic keys and opaque values, including unit-bearing strings such as 60m and 10m. Omission, zero, false, empty strings and explicit null dynamic values stay distinct; no extra setting schema is inferred."
         }
       ],
       "evidence": [
@@ -76,6 +112,18 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /nginxmanager_get_cache_config_system/get declares x-readonly=true and x-cpanel-available-version=11; selected transport is GET. Canonical x-tagGroups identity is NGINX Manager. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned merge documents only integer 1. Apply the approved presence-only literal true/bool encoding pattern: true emits 1, omission/null omits the parameter, and false or coerced scalar inputs reject natively. Review 5721097412 requests this policy without new runtime guards."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Separate PR63 reviewer diagnostic 5721097412 on WHM 11.138.0.19 reports this GET failing because the EA4 ea-nginx package is required but not installed. This diagnostic is separate from the immutable three-GET capture, which does not establish its failure cause. No successful payload for any NGINX method has been observed; all four POST operations remain unobserved. Reviewer provenance: https://github.com/hostingpal/whm-api-client/pull/63#pullrequestreview-5721097412. No new capture or replay was performed for this correction."
         }
       ],
       "response": {
@@ -121,35 +169,58 @@
             }
           ]
         }
+      },
+      "params": {
+        "merge": {
+          "type": "true",
+          "encoding": "bool",
+          "description": "Optional literal true emits merge=1; null or omission omits merge. False, integers, strings and malformed values fail in strict and weak callers before the runner, preserving prior response metadata."
+        }
       }
     },
     "whm1:nginxmanager_get_cache_config_users": {
       "name": "getUsersCacheConfig",
       "method": "GET",
       "order": [
-        "merge",
-        "user"
+        "user",
+        "merge"
       ],
       "notes": [
         {
           "kind": "documented",
-          "text": "Available from cPanel & WHM 11 according to the pinned operation. The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+          "text": "Available from cPanel & WHM 11 according to the pinned operation."
         },
         {
           "kind": "documented",
           "text": "Returns user NGINX cache configurations. Omitting users retrieves configurations for all users. merge=1 combines default, system and user values; only integer 1 is documented for merge. Omission leaves the server behavior unchanged."
         },
         {
-          "kind": "documented",
-          "text": "A string sends one user field; a nonempty sequential string list repeats the exact user field (user=one&user=two). Null omits user. The source default [] describes server omission behavior, not an explicit empty-list selection; explicit empty or nonsequential lists are rejected before dispatch."
+          "kind": "policy",
+          "text": "A string sends one user field; a nonempty sequential string list repeats the exact user field (user=one&user=two). Null omits user for this read. Explicit empty or nonsequential lists are rejected before dispatch. Read filters retain existing blank/zero behavior; the stricter target policy applies only to the four writes."
         },
         {
           "kind": "documented",
-          "text": "The optional users list contains optional config, merged, owner and user fields. config.enabled is boolean; merged is an integer 0|1 flag indicating whether merge was supplied. Dynamic configuration keys and opaque values are preserved without inventing types for example-only settings."
+          "text": "The optional users list contains optional config, merged, owner and user fields. config.enabled is boolean; merged is an integer 0|1 flag indicating whether merge was supplied."
         },
         {
           "kind": "documented",
           "text": "The users container lacks a formal array type in the pinned schema; its explicit array-of-objects prose, item properties and list example establish the retained list shape."
+        },
+        {
+          "kind": "policy",
+          "text": "The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+        },
+        {
+          "kind": "policy",
+          "text": "merge accepts only true or null: true sends merge=1, while null or omission omits the parameter. Other inputs reject before the runner and preserve prior metadata. No merged integer enabled variant has been observed; the potential interaction with default.enabled remains an unobserved risk under whm-api-client-8x0.2.51. Keep system.enabled and users[].config.enabled boolean and default.enabled an integer flag until evidence establishes otherwise."
+        },
+        {
+          "kind": "observed",
+          "text": "Separate PR63 reviewer diagnostic 5721097412 on WHM 11.138.0.19 reports this GET failing because the EA4 ea-nginx package is required but not installed. This diagnostic is separate from the immutable three-GET capture, which does not establish its failure cause. No successful payload for any NGINX method has been observed; all four POST operations remain unobserved."
+        },
+        {
+          "kind": "policy",
+          "text": "Dynamic configuration keys and opaque values are preserved without inventing types for example-only settings."
         }
       ],
       "evidence": [
@@ -164,12 +235,29 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /nginxmanager_get_cache_config_users/get user parameter is optional, type array with string items, style=form and explode=true. Repeated user fields preserve that serialization. The user description explicitly defines all-user behavior on omission; no empty-list-means-none behavior is inferred. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned merge documents only integer 1. Apply the approved presence-only literal true/bool encoding pattern: true emits 1, omission/null omits the parameter, and false or coerced scalar inputs reject natively. Review 5721097412 requests this policy without new runtime guards."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Separate PR63 reviewer diagnostic 5721097412 on WHM 11.138.0.19 reports this GET failing because the EA4 ea-nginx package is required but not installed. This diagnostic is separate from the immutable three-GET capture, which does not establish its failure cause. No successful payload for any NGINX method has been observed; all four POST operations remain unobserved. Reviewer provenance: https://github.com/hostingpal/whm-api-client/pull/63#pullrequestreview-5721097412. No new capture or replay was performed for this correction."
         }
       ],
       "params": {
         "user": {
           "php": "users",
           "encoding": "repeat"
+        },
+        "merge": {
+          "type": "true",
+          "encoding": "bool",
+          "description": "Optional literal true emits merge=1; null or omission omits merge. False, integers, strings and malformed values fail in strict and weak callers before the runner, preserving prior response metadata."
         }
       },
       "response": {
@@ -222,19 +310,31 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available from cPanel & WHM 11 according to the pinned operation. The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+          "text": "Available from cPanel & WHM 11 according to the pinned operation."
         },
         {
           "kind": "documented",
-          "text": "Rebuilds NGINX user configuration. WARNING: Omitting users rebuilds the configuration for all users on the system."
+          "text": "Rebuilds NGINX user configuration. WARNING: Omitting the upstream user parameter rebuilds the configuration for all users on the system."
+        },
+        {
+          "kind": "policy",
+          "text": "Typed writes require explicit nonnullable users (one string or a nonempty sequential string list); there is no default target. The existing reject_empty policy rejects trimmed blanks and trimmed zero, empty or malformed lists and nonstring entries before dispatch. Trimmed-zero rejection is conservative client policy, not observed NGINX behavior or a username validator. Valid supplied strings are encoded unchanged, without trimming. Native missing/null argument rejection retains prior metadata; runner target validation clears it."
         },
         {
           "kind": "documented",
-          "text": "A string sends one user field; a nonempty sequential string list repeats the exact user field (user=one&user=two). Null omits user. The source default [] describes server omission behavior, not an explicit empty-list selection; explicit empty or nonsequential lists are rejected before dispatch."
+          "text": "The pinned response documents metadata only and no data payload."
         },
         {
-          "kind": "documented",
-          "text": "The pinned response documents metadata only and no data payload; this method returns void. Inspect responseMeta() for the WHM outcome."
+          "kind": "policy",
+          "text": "The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+        },
+        {
+          "kind": "policy",
+          "text": "For a deliberate server-wide operation, use whm()->call('nginxmanager_rebuild_cache_config', []). Generic call() uses POST by default and intentionally bypasses typed target validation; omitting user invokes the pinned all-users behavior."
+        },
+        {
+          "kind": "policy",
+          "text": "This method returns void. Inspect responseMeta() for the WHM outcome."
         }
       ],
       "evidence": [
@@ -249,12 +349,20 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /nginxmanager_rebuild_cache_config/get user parameter is optional, type array with string items, style=form and explode=true. Repeated user fields preserve that serialization. The user description explicitly defines all-user behavior on omission; no empty-list-means-none behavior is inferred. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned user omission explicitly targets all users. Review 5721097412 requires explicit typed targets. Reuse approved PR61 per-parameter required/reject_empty policy; trimmed-zero rejection is a conservative client policy, with no observed NGINX zero behavior. Intentional all-user calls remain available through generic POST without user; no typed all-user alias or new server signal is inferred."
         }
       ],
       "params": {
         "user": {
           "php": "users",
-          "encoding": "repeat"
+          "encoding": "repeat",
+          "required": true,
+          "reject_empty": true
         }
       }
     },
@@ -267,19 +375,31 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available from cPanel & WHM 11 according to the pinned operation. The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+          "text": "Available from cPanel & WHM 11 according to the pinned operation."
         },
         {
           "kind": "documented",
-          "text": "Resets users to the NGINX system default. WARNING: Omitting users resets the configuration to the default for all users on the system."
+          "text": "Resets users to the NGINX system default. WARNING: Omitting the upstream user parameter resets the configuration to the default for all users on the system."
+        },
+        {
+          "kind": "policy",
+          "text": "Typed writes require explicit nonnullable users (one string or a nonempty sequential string list); there is no default target. The existing reject_empty policy rejects trimmed blanks and trimmed zero, empty or malformed lists and nonstring entries before dispatch. Trimmed-zero rejection is conservative client policy, not observed NGINX behavior or a username validator. Valid supplied strings are encoded unchanged, without trimming. Native missing/null argument rejection retains prior metadata; runner target validation clears it."
         },
         {
           "kind": "documented",
-          "text": "A string sends one user field; a nonempty sequential string list repeats the exact user field (user=one&user=two). Null omits user. The source default [] describes server omission behavior, not an explicit empty-list selection; explicit empty or nonsequential lists are rejected before dispatch."
+          "text": "The pinned response documents metadata only and no data payload."
         },
         {
-          "kind": "documented",
-          "text": "The pinned response documents metadata only and no data payload; this method returns void. Inspect responseMeta() for the WHM outcome."
+          "kind": "policy",
+          "text": "The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+        },
+        {
+          "kind": "policy",
+          "text": "For a deliberate server-wide operation, use whm()->call('nginxmanager_reset_users_cache_config', []). Generic call() uses POST by default and intentionally bypasses typed target validation; omitting user invokes the pinned all-users behavior."
+        },
+        {
+          "kind": "policy",
+          "text": "This method returns void. Inspect responseMeta() for the WHM outcome."
         }
       ],
       "evidence": [
@@ -294,12 +414,20 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /nginxmanager_reset_users_cache_config/get user parameter is optional, type array with string items, style=form and explode=true. Repeated user fields preserve that serialization. The user description explicitly defines all-user behavior on omission; no empty-list-means-none behavior is inferred. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned user omission explicitly targets all users. Review 5721097412 requires explicit typed targets. Reuse approved PR61 per-parameter required/reject_empty policy; trimmed-zero rejection is a conservative client policy, with no observed NGINX zero behavior. Intentional all-user calls remain available through generic POST without user; no typed all-user alias or new server signal is inferred."
         }
       ],
       "params": {
         "user": {
           "php": "users",
-          "encoding": "repeat"
+          "encoding": "repeat",
+          "required": true,
+          "reject_empty": true
         }
       }
     },
@@ -313,19 +441,31 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available from cPanel & WHM 11 according to the pinned operation. The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+          "text": "Available from cPanel & WHM 11 according to the pinned operation."
         },
         {
           "kind": "documented",
-          "text": "Enables or disables NGINX caching. enabled=true sends 1; false sends 0. WARNING: Omitting users changes the caching status for all users on the system."
+          "text": "Enables or disables NGINX caching. WARNING: Omitting the upstream user parameter changes the caching status for all users on the system."
+        },
+        {
+          "kind": "policy",
+          "text": "Typed writes require explicit nonnullable users (one string or a nonempty sequential string list); there is no default target. The existing reject_empty policy rejects trimmed blanks and trimmed zero, empty or malformed lists and nonstring entries before dispatch. Trimmed-zero rejection is conservative client policy, not observed NGINX behavior or a username validator. Valid supplied strings are encoded unchanged, without trimming. Native missing/null argument rejection retains prior metadata; runner target validation clears it."
         },
         {
           "kind": "documented",
-          "text": "A string sends one user field; a nonempty sequential string list repeats the exact user field (user=one&user=two). Null omits user. The source default [] describes server omission behavior, not an explicit empty-list selection; explicit empty or nonsequential lists are rejected before dispatch."
+          "text": "The pinned response documents metadata only and no data payload."
         },
         {
-          "kind": "documented",
-          "text": "The pinned response documents metadata only and no data payload; this method returns void. Inspect responseMeta() for the WHM outcome."
+          "kind": "policy",
+          "text": "The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+        },
+        {
+          "kind": "policy",
+          "text": "For a deliberate server-wide operation, use whm()->call('nginxmanager_set_cache_config', ['enabled' => 0]). Generic call() uses POST by default and intentionally bypasses typed target validation; omitting user invokes the pinned all-users behavior. For setCacheConfig(), true sends enabled=1 and false sends enabled=0."
+        },
+        {
+          "kind": "policy",
+          "text": "This method returns void. Inspect responseMeta() for the WHM outcome."
         }
       ],
       "evidence": [
@@ -346,17 +486,26 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned enabled parameter is required integer enum [1,0], documented as enabling/disabling caching. Expose the established boolean input encoding so true sends 1 and false sends 0. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned user omission explicitly targets all users. Review 5721097412 requires explicit typed targets. Reuse approved PR61 per-parameter required/reject_empty policy; trimmed-zero rejection is a conservative client policy, with no observed NGINX zero behavior. Intentional all-user calls remain available through generic POST without user; no typed all-user alias or new server signal is inferred."
         }
       ],
       "params": {
         "user": {
           "php": "users",
-          "encoding": "repeat"
+          "encoding": "repeat",
+          "required": true,
+          "reject_empty": true
         },
         "enabled": {
           "encoding": "bool"
         }
       }
     }
-  }
+  },
+  "description": "Server-wide NGINX cache configuration reads and explicitly targeted cache writes. Typed writes require users; deliberate all-user writes use generic POST with user omitted. Configuration maps preserve opaque dynamic values. Requests execute once without retry, restart or rollback beyond the selected operation."
 }

@@ -98,9 +98,9 @@ final readonly class Mime
      * @param string $extension The file extension.
      * @param string $handler The Apache MIME handler.
      * @return AddHandlerResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/handler-management/mime-add_handler
      */
     public function addHandler(string $extension, string $handler): ?array
@@ -133,9 +133,9 @@ final readonly class Mime
      * @param string $urls The site to hotlink protect.
      * @param bool|null $allowNull Whether the domain allows hotlinks. Null omits it.
      * @return AddHotlinkResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/direct-link-protection-(hotlink)/mime-add_hotlink
      */
     public function addHotlink(string $extensions, string $redirectUrl, string $urls, ?bool $allowNull = null): ?array
@@ -167,9 +167,9 @@ final readonly class Mime
      * @param string $extension The file extension.
      * @param string $type The MIME type.
      * @return AddMimeResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mime-type-management/mime-add_mime
      */
     public function addMime(string $extension, string $type): ?array
@@ -204,9 +204,9 @@ final readonly class Mime
      * @param string|null $src A specific page from which to redirect. Null omits it.
      * @param 'permanent'|'temp'|null $type Whether the redirect is temporary. Null omits it.
      * @return AddRedirectResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-redirection/mime-add_redirect
      */
     public function addRedirect(
@@ -246,9 +246,9 @@ final readonly class Mime
      *
      * @param string $extension The file extension.
      * @return DeleteHandlerResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/handler-management/mime-delete_handler
      */
     public function deleteHandler(string $extension): ?array
@@ -272,9 +272,9 @@ final readonly class Mime
      * API-map identity: uapi:Mime/delete_hotlink#GET (wire name delete_hotlink).
      *
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/direct-link-protection-(hotlink)/mime-delete_hotlink
      */
     public function deleteHotlink(): mixed
@@ -301,9 +301,9 @@ final readonly class Mime
      *
      * @param string $type The MIME type.
      * @return DeleteMimeResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mime-type-management/mime-delete_mime
      */
     public function deleteMime(string $type): ?array
@@ -337,9 +337,9 @@ final readonly class Mime
      *     change. Null omits it.
      * @param string|null $src The specific page that redirects visitors. Null omits it.
      * @return DeleteRedirectResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-redirection/mime-delete_redirect
      */
     public function deleteRedirect(
@@ -378,9 +378,9 @@ final readonly class Mime
      *
      * @param string $domain The domain's name.
      * @return GetRedirectResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-redirection/mime-get_redirect
      */
     public function getRedirect(string $domain): array
@@ -405,9 +405,9 @@ final readonly class Mime
      *
      * @param 'system'|'user' $type Whether to retrieve system or user handlers.
      * @return ListHandlersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/handler-management/mime-list_handlers
      */
     public function listHandlers(string $type): array
@@ -436,9 +436,9 @@ final readonly class Mime
      * API-map identity: uapi:Mime/list_hotlinks#GET (wire name list_hotlinks).
      *
      * @return ListHotlinksResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/direct-link-protection-(hotlink)/mime-list_hotlinks
      */
     public function listHotlinks(): array
@@ -463,9 +463,9 @@ final readonly class Mime
      *
      * @param 'system'|'user' $type The MIME types to list.
      * @return ListMimeResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/mime-type-management/mime-list_mime
      */
     public function listMime(string $type): array
@@ -492,9 +492,9 @@ final readonly class Mime
      * @param string|null $destination The string with which to filter results. Null omits it.
      * @param string|null $regex A Perl regular expression that filters the results. Null omits it.
      * @return ListRedirectsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-redirection/mime-list_redirects
      */
     public function listRedirects(?string $destination = null, ?string $regex = null): array
@@ -521,9 +521,9 @@ final readonly class Mime
      * @param string $domain The domain for which to retrieve redirector information.
      * @param string $url The URL for which to retrieve redirector information.
      * @return RedirectInfoResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/handler-management/mime-redirect_info
      */
     public function redirectInfo(string $domain, string $url): array

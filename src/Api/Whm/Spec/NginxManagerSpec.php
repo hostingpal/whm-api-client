@@ -18,7 +18,7 @@ final class NginxManagerSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'users' => ['name' => 'user', 'encoding' => 'repeat'],
+            'users' => ['name' => 'user', 'encoding' => 'repeat', 'reject_empty' => true],
         ],
         'returns' => null,
     ];
@@ -28,7 +28,7 @@ final class NginxManagerSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
-            'merge' => ['name' => 'merge', 'encoding' => 'scalar'],
+            'merge' => ['name' => 'merge', 'encoding' => 'bool'],
         ],
         'returns' => [
             'type' => 'object',
@@ -56,8 +56,8 @@ final class NginxManagerSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
-            'merge' => ['name' => 'merge', 'encoding' => 'scalar'],
             'users' => ['name' => 'user', 'encoding' => 'repeat'],
+            'merge' => ['name' => 'merge', 'encoding' => 'bool'],
         ],
         'returns' => [
             'type' => 'object',
@@ -89,7 +89,7 @@ final class NginxManagerSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'users' => ['name' => 'user', 'encoding' => 'repeat'],
+            'users' => ['name' => 'user', 'encoding' => 'repeat', 'reject_empty' => true],
         ],
         'returns' => null,
     ];
@@ -99,7 +99,7 @@ final class NginxManagerSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'users' => ['name' => 'user', 'encoding' => 'repeat'],
+            'users' => ['name' => 'user', 'encoding' => 'repeat', 'reject_empty' => true],
         ],
         'returns' => null,
     ];
@@ -110,7 +110,7 @@ final class NginxManagerSpec
         'outcome' => 'flag',
         'params' => [
             'enabled' => ['name' => 'enabled', 'encoding' => 'bool'],
-            'users' => ['name' => 'user', 'encoding' => 'repeat'],
+            'users' => ['name' => 'user', 'encoding' => 'repeat', 'reject_empty' => true],
         ],
         'returns' => null,
     ];
