@@ -20,7 +20,7 @@ use SensitiveParameter;
  * responseMeta() before every attempt and records the envelope snapshot before API or payload errors.
  *
  * @phpstan-type AddZoneKeyResult array{
- *     new_key_id?: string,
+ *     new_key_id?: int,
  * }
  * @phpstan-type ClusterMemberHasTrustWithResult array{
  *     has_trust?: 0|1,
@@ -42,7 +42,7 @@ use SensitiveParameter;
  *     domains?: list<array{
  *         domain?: string,
  *         enabled?: 0|1,
- *         new_key_id?: string,
+ *         new_key_id?: int,
  *         nsec_error?: string,
  *         nsec_version?: string,
  *     }>,
@@ -58,6 +58,7 @@ use SensitiveParameter;
  *     }>,
  * }
  * @phpstan-type ExportZoneKeyResult array{
+ *     key_content?: string,
  *     key_tag?: int,
  *     key_type?: string,
  * }
@@ -163,6 +164,7 @@ use SensitiveParameter;
  * }
  * @phpstan-type ImportZoneKeyResult array{
  *     import_key_id?: int,
+ *     new_key_id?: int,
  * }
  * @phpstan-type IsAliasAvailableResult array{
  *     alias?: 0|1,
@@ -341,8 +343,13 @@ final readonly class Dns
      * Documented: Omitting active retains 1. Omitting key_size retains algorithm/key-type defaults: algorithms 5/6/7/8
      * use KSK 2048 or ZSK 1024 bits; algorithm 13 uses 256 and algorithm 14 uses 384 bits. Algorithms are 5 RSA/SHA-1,
      * 6 DSA-NSEC3-SHA1, 7 RSASHA1-NSEC3-SHA1, 8 RSA/SHA-256, 13 ECDSA P-256/SHA-256 and 14 ECDSA P-384/SHA-384. Supply
-     * lowercase ksk or zsk; key IDs and key types are public selectors. The returned new_key_id is the pinned string,
-     * without inferred numeric normalization.
+     * lowercase ksk or zsk; key IDs and key types are public selectors. The returned identifier has the separately
+     * evidenced integer normalization described below.
+     *
+     * Observed: The independent WHM review on 11.138.0.19 returned new_key_id as digit strings. These identifiers now
+     * normalize to int so they can be passed directly to typed key selectors under strict_types. Native integers and
+     * canonical bounded integer strings are accepted; omitted IDs stay absent. This is a reviewed correction to the
+     * pinned string response, not additional observed boundary coverage.
      *
      * API-map identity: whm1:add_zone_key#GET (wire name add_zone_key; DNS Security).
      *
@@ -512,6 +519,13 @@ final readonly class Dns
      * Documented: This function deletes a domain. **Note:** This function does **not** remove an addon domain's
      * associated subdomain. You **must** also run this function for the associated subdomain.
      *
+     * Documented: The pinned type:null payload means the domain does not exist on the server, including when the WHM
+     * envelope reports success. Inspect type rather than treating absence of an exception as proof that a domain was
+     * deleted.
+     *
+     * Documented: Client behavior: treat domain deletion as irreversible. The client provides no rollback or automatic
+     * retry and does not turn the documented type:null absent-domain result into an exception.
+     *
      * API-map identity: whm1:delete_domain#GET (wire name delete_domain; Domain Management).
      *
      * @param string $domain The name of the domain to delete.
@@ -576,14 +590,24 @@ final readonly class Dns
      * your registrar. * You **cannot** modify the DNSSEC security key. To make any changes, you **must** disable,
      * delete, and re-create the DNSSEC security key.
      *
-     * Documented: Omission retains active=1, algo_num=8, key_setup=classic, nsec3_iterations=7, nsec3_narrow=1,
-     * nsec3_opt_out=0 and use_nsec3=1; no salt default is specified. Algorithms 5/6/7/8/10/13/14 are documented,
-     * including 10 RSA/SHA-512. classic uses separate KSK/ZSK and is documented for algorithms at most 8; simple uses
-     * one key for algorithms above 8. Selecting algorithm 13 alone does not change the classic default. nsec3_salt is a
-     * hexadecimal string. Narrow=1 means Narrow mode and 0 Inclusive mode; opt_out=1 creates records for all
-     * delegations and 0 only secure delegations. use_nsec3 selects NSEC3 (1) or NSEC (0); the pinned prose says the
-     * system ignores the other NSEC3 options when this value is used. Inspect each domain enabled/nsec_error result
-     * separately from WHM metadata; new_key_id remains the pinned string.
+     * Documented: The pinned WHM parameter schema declares active=1, algo_num=8, key_setup=classic, nsec3_iterations=7,
+     * nsec3_narrow=1, nsec3_opt_out=0 and use_nsec3=1; it does not specify a salt default. These are snapshot values,
+     * not guaranteed runtime defaults for every server version. Algorithms 5/6/7/8/10/13/14 are documented, including
+     * 10 RSA/SHA-512. classic uses separate KSK/ZSK and is documented for algorithms at most 8; simple uses one key for
+     * algorithms above 8. Selecting algorithm 13 alone does not change the classic default. nsec3_salt is a hexadecimal
+     * string. Narrow=1 means Narrow mode and 0 Inclusive mode; opt_out=1 creates records for all delegations and 0 only
+     * secure delegations. use_nsec3 selects NSEC3 (1) or NSEC (0); the pinned prose says the system ignores the other
+     * NSEC3 options when this value is used. Inspect each domain enabled/nsec_error result separately from WHM
+     * metadata; new_key_id uses the separately evidenced integer normalization.
+     *
+     * Observed: The independent WHM review on 11.138.0.19 returned new_key_id as digit strings. These identifiers now
+     * normalize to int so they can be passed directly to typed key selectors under strict_types. Native integers and
+     * canonical bounded integer strings are accepted; omitted IDs stay absent. This is a reviewed correction to the
+     * pinned string response, not additional observed boundary coverage.
+     *
+     * Documented: Client behavior: omitted optional arguments stay omitted; the client does not fill in pinned defaults
+     * or infer WHM defaults from the UAPI version schedule. Supply explicit NSEC3 settings when a particular
+     * configuration is required.
      *
      * API-map identity: whm1:enable_dnssec_for_domains#GET (wire name enable_dnssec_for_domains; DNS Security).
      *
@@ -646,6 +670,10 @@ final readonly class Dns
      * Documented: key_id is a public numeric selector; returned DNSKEY text is payload data. The API result does not
      * establish trust or DNS propagation.
      *
+     * Observed: The independent WHM review on 11.138.0.19 observed key_id as a digit string. Canonical integer strings
+     * within PHP integer bounds normalize to int; native integers remain accepted. DNSKEY text stays string data and
+     * sibling fields retain their contracts.
+     *
      * API-map identity: whm1:export_zone_dnskey#GET (wire name export_zone_dnskey; DNS Zones).
      *
      * @param string $domain The domain from which to fetch the DNSKEY record value.
@@ -697,8 +725,13 @@ final readonly class Dns
      * Documented: This function exports a DNSSEC security key to a domain. **Note:** Only servers that run PowerDNS can
      * use DNSSEC. If you call this function on a server that doesn't use PowerDNS, you will receive an error.
      *
-     * Documented: key_id is a public selector. Treat exported key results and mismatch payloads as sensitive; the
-     * pinned response declares only key_tag and key_type. Do not infer extra private-key fields from sibling endpoints.
+     * Documented: key_id is a public selector. The pinned response declares key_tag and key_type; the reviewed WHM
+     * source additionally returns optional string key_content containing the exported private key. This added field is
+     * source-backed, not raw-export live evidence.
+     *
+     * Documented: Client behavior: treat key_content and raw payloads attached to PayloadMismatchException as secret
+     * material. Preserve the exported text exactly for backup or import and do not log successful results or exception
+     * payloads. The client performs no automatic key removal, import, retry or rollback.
      *
      * API-map identity: whm1:export_zone_key#GET (wire name export_zone_key; DNS Security).
      *
@@ -822,6 +855,11 @@ final readonly class Dns
      *
      * Documented: key_data is the private material from pdnsutil export-zone-key and remains sensitive. Supply
      * lowercase ksk or zsk. An accepted API result does not establish DNSSEC validation.
+     *
+     * Documented: The reviewer inspected the 11.138.0.19 WHM source, which returns new_key_id. Preserve that optional
+     * ID alongside the pinned optional import_key_id. new_key_id accepts native integers and canonical bounded integer
+     * strings, normalizing to int for typed selectors; import_key_id retains its strict pinned integer contract. The
+     * import correction is source-backed and offline-tested; the attempted focused pass was denied and no import ran.
      *
      * API-map identity: whm1:import_zone_key#GET (wire name import_zone_key; DNS Security).
      *
@@ -1087,16 +1125,13 @@ final readonly class Dns
      *
      * Documented: Available from cPanel & WHM 11 (x-cpanel-available-version).
      *
-     * Documented: This function deletes a DNS zone record. **Warning:** Incorrect use of this function could cause
-     * domains to resolve incorrectly. Exercise **extreme caution** when you remove DNS zone records. To effectively use
-     * this function, use the following workflow: 1. Run the `dumpzone` function. 2. Locate the `Line` value that
-     * corresponds to the zone record to delete. 3. Use the values from that zone record to formulate the appropriate
-     * `removezonerecord` parameters. **Important:** * When you disable the [DNS
-     * role](https://go.cpanel.net/serverroles), the system **disables** this function. * You **cannot** use this
-     * function to modify temporary domains.
+     * Documented: Deletes a DNS zone record. Incorrect removal can make domains resolve incorrectly. Disabling the DNS
+     * role disables this function, and it cannot modify temporary domains.
      *
-     * Documented: line is the DNS zone file line number. Omitting serialnum retains the current zone serial number. Use
-     * a verified record line; incorrect removal can make domains resolve incorrectly.
+     * Documented: Source-based line conversion: parseDnsZone() returns zero-based line_index, while removeZoneRecord()
+     * requires the one-based zone-file line. Pass line_index + 1, never line_index directly; for example, index 3
+     * requires line 4. This follows Cpanel/ZoneFile/Parse.pm and the WHM zone-file Line handling reviewed on
+     * 11.138.0.19, not a live removal. Omitting serialnum uses the current zone serial number.
      *
      * API-map identity: whm1:removezonerecord#GET (wire name removezonerecord; DNS Zones).
      *
@@ -1127,8 +1162,12 @@ final readonly class Dns
      * role](https://go.cpanel.net/serverroles), the system **disables** this function. **Note** You **must** include
      * either the `domain` or the `zone` parameters.
      *
-     * Documented: Supply domain or zone; the client does not choose an alternative automatically. Valid TXT records are
-     * preserved, all other records reset, subdomain records reset and zone file subdomains are restored in httpd.conf.
+     * Documented: At least one selector, domain or zone, is required by the upstream contract even though both formal
+     * parameters are optional. Resetting is destructive: valid TXT records are preserved, all other records return to
+     * defaults, subdomain records reset and zone file subdomains are restored in httpd.conf.
+     *
+     * Documented: Client behavior: supply domain or zone explicitly before calling resetZone(). The client does not
+     * choose a selector, back up the zone, roll changes back or retry automatically.
      *
      * API-map identity: whm1:resetzone#GET (wire name resetzone; Domain Management).
      *

@@ -52,7 +52,7 @@ final class DnsSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'new_key_id' => ['type' => 'string'],
+                'new_key_id' => ['type' => 'int', 'accept' => ['numeric-string']],
             ],
         ],
     ];
@@ -178,7 +178,7 @@ final class DnsSpec
                         'fields' => [
                             'domain' => ['type' => 'string'],
                             'enabled' => ['type' => 'flag'],
-                            'new_key_id' => ['type' => 'string'],
+                            'new_key_id' => ['type' => 'int', 'accept' => ['numeric-string']],
                             'nsec_error' => ['type' => 'string'],
                             'nsec_version' => ['type' => 'string'],
                         ],
@@ -200,7 +200,7 @@ final class DnsSpec
             'type' => 'object',
             'fields' => [
                 'dnskey' => ['type' => 'string'],
-                'key_id' => ['type' => 'int'],
+                'key_id' => ['type' => 'int', 'accept' => ['numeric-string']],
             ],
         ],
     ];
@@ -240,6 +240,7 @@ final class DnsSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
+                'key_content' => ['type' => 'string'],
                 'key_tag' => ['type' => 'int'],
                 'key_type' => ['type' => 'string'],
             ],
@@ -442,6 +443,7 @@ final class DnsSpec
             'type' => 'object',
             'fields' => [
                 'import_key_id' => ['type' => 'int'],
+                'new_key_id' => ['type' => 'int', 'accept' => ['numeric-string']],
             ],
         ],
     ];

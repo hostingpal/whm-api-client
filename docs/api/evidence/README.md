@@ -606,3 +606,19 @@ create/update/delete/validate/activate ran. A running activation step's `end_tim
 and the location of partial-rename warnings remain unobserved under `8x0.2.33`.
 The corrected nine-GET artifact already passes; no new capture is needed merely
 to clear discrepancies, and the original failed artifact is preserved.
+
+## WHM DNS management reviewer evidence
+
+The expanded DNS slice has no new committed live capture. The separate
+[PR54 review](https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698)
+reports selected WHM DNSSEC and disposable-account domain/zone calls on
+`11.138.0.19`, with account, home directory and three throwaway zones cleaned.
+Those reports support the observed key-ID compatibility fixes without changing
+any historical artifact or expanding its scope.
+
+Optional exported private `key_content`, imported `new_key_id` and the
+`parseDnsZone().line_index + 1` deletion mapping are backed by the reviewer's
+upstream source inspection. A focused raw-export/import/remove-record pass was
+denied before execution with `[Modify Shared Resources]` and was not retried.
+No raw export or private key value was captured by these corrections. The denied
+operations, server-wide writes and remaining variants stay under `8x0.2.42`.

@@ -69,6 +69,9 @@ final class WhmDnsManagementTest extends TestCase
         foreach (self::omissionCases() as $name => $case) {
             yield $name => [$case];
         }
+        foreach (self::reviewedKeyContracts() as $name => $case) {
+            yield $name => [$case];
+        }
         $deleted = self::operations()['delete_domain'];
         $deleted[5] = '{"type":null,"username":null}';
         $deleted[6] = ['type' => null, 'username' => null];
@@ -84,7 +87,7 @@ final class WhmDnsManagementTest extends TestCase
             'add_zone_key' => ['addZoneKey', 'add_zone_key', 'POST',
                 ['algoNum' => 13, 'domain' => 'example.test', 'keyType' => 'ksk', 'active' => false, 'keySize' => 256],
                 'algo_num=13&domain=example.test&key_type=ksk&active=0&key_size=256',
-                '{"new_key_id":"0012","future":"ignored"}', ['new_key_id' => '0012']],
+                '{"new_key_id":"12","future":"ignored"}', ['new_key_id' => 12]],
             'adddns' => ['addDns', 'adddns', 'POST',
                 ['domain' => 'example.test', 'ip' => '192.0.2.1', 'ipv6' => '2001:db8::1',
                     'template' => 'custom + template', 'trueowner' => 'fixture'],
@@ -118,11 +121,11 @@ final class WhmDnsManagementTest extends TestCase
                     'nsec3Salt' => 'a1b2', 'useNsec3' => false],
                 'domain=example.test&domain=other.test&active=0&algo_num=13&key_setup=simple&nsec3_iterations=1'
                     . '&nsec3_narrow=0&nsec3_opt_out=0&nsec3_salt=a1b2&use_nsec3=0',
-                '{"domains":[{"domain":"example.test","enabled":1,"new_key_id":"0012",'
+                '{"domains":[{"domain":"example.test","enabled":1,"new_key_id":"12",'
                     . '"nsec_error":"synthetic error","nsec_version":"NSEC3"},'
                     . '{"domain":"other.test","enabled":0},{}]}',
                 ['domains' => [
-            ['domain' => 'example.test', 'enabled' => 1, 'new_key_id' => '0012',
+            ['domain' => 'example.test', 'enabled' => 1, 'new_key_id' => 12,
                     'nsec_error' => 'synthetic error', 'nsec_version' => 'NSEC3'],
                     ['domain' => 'other.test', 'enabled' => 0], []]]],
             'export_zone_dnskey' => ['exportZoneDnskey', 'export_zone_dnskey', 'GET',
@@ -294,17 +297,18 @@ final class WhmDnsManagementTest extends TestCase
     public static function invalidPayloads(): iterable
     {
         $leaves = [
-            'add_zone_key' => ['{"new_key_id":12}', '{"new_key_id":null}'],
+            'add_zone_key' => ['{"new_key_id":"0012"}', '{"new_key_id":null}'],
             'cluster_member_has_trust_with' => ['{"has_trust":"1"}', '{"has_trust":2}'],
             'create_subdomain' => ['{"username":false}'],
             'delete_domain' => ['{"type":1}', '{"username":false}'],
             'disable_dnssec_for_domains' => ['{"domains":{}}', '{"domains":[1]}',
                 '{"domains":[{"disabled":true}]}', '{"domains":[{"domain":1}]}'],
             'enable_dnssec_for_domains' => ['{"domains":[{"domain":1}]}', '{"domains":[{"enabled":2}]}',
-                '{"domains":[{"new_key_id":12}]}', '{"domains":[{"nsec_error":null}]}',
+                '{"domains":[{"new_key_id":"0012"}]}', '{"domains":[{"nsec_error":null}]}',
                 '{"domains":[{"nsec_version":false}]}'],
-            'export_zone_dnskey' => ['{"dnskey":1}', '{"key_id":"12"}'],
-            'export_zone_key' => ['{"key_tag":"12"}', '{"key_type":1}'],
+            'export_zone_dnskey' => ['{"dnskey":1}', '{"key_id":"0012"}'],
+            'export_zone_key' => ['{"key_tag":"12"}', '{"key_type":1}', '{"key_content":null}',
+                '{"key_content":1}', '{"key_content":true}', '{"key_content":[]}', '{"key_content":{}}'],
             'import_zone_key' => ['{"import_key_id":"12"}', '{"import_key_id":null}'],
             'set_nameserver' => ['{"message":1}', '{"nameserver":false}'],
             'set_nsec3_for_domains' => ['{"domains":[{"domain":1}]}', '{"domains":[{"enabled":"0"}]}',
@@ -314,6 +318,17 @@ final class WhmDnsManagementTest extends TestCase
             'unset_nsec3_for_domains' => ['{"domains":[{"disabled":2}]}', '{"domains":[{"domain":false}]}',
                 '{"domains":[{"error":null}]}'],
         ];
+        $invalidIds = ['null', 'true', 'false', '1.0', '1.5', '[]', '{}', '""', '"0012"', '"-0"',
+            '"+12"', '"-01"', '" 12"', '"12 "', '"1.0"', '"1e3"', '"id"',
+            '"' . PHP_INT_MAX . '0"', '"' . PHP_INT_MIN . '0"', (string) PHP_INT_MAX . '0'];
+        foreach ($invalidIds as $id) {
+            $leaves['add_zone_key'][] = '{"new_key_id":' . $id . '}';
+            $leaves['enable_dnssec_for_domains'][] = '{"domains":[{"new_key_id":' . $id . '}]}';
+            $leaves['export_zone_dnskey'][] = '{"key_id":' . $id . '}';
+            $leaves['import_zone_key'][] = '{"new_key_id":' . $id . '}';
+        }
+        $leaves['enable_dnssec_for_domains'][] = '{"domains":[{"new_key_id":"12","enabled":"1"}]}';
+        $leaves['import_zone_key'][] = '{"new_key_id":"12","import_key_id":"12"}';
         foreach (self::operations() as $function => $case) {
             if ($case[5] === null) {
                 continue;
@@ -322,6 +337,119 @@ final class WhmDnsManagementTest extends TestCase
                 yield $function . ' invalid ' . $i => [$case, $payload];
             }
         }
+    }
+
+    /** @return iterable<string, Contract> */
+    private static function reviewedKeyContracts(): iterable
+    {
+        $operations = self::operations();
+        foreach ([0, 12, PHP_INT_MIN, PHP_INT_MAX] as $value) {
+            foreach ([false, true] as $quoted) {
+                $wire = json_encode($quoted ? (string) $value : $value, JSON_THROW_ON_ERROR);
+                foreach (
+                    ['add_zone_key', 'enable_dnssec_for_domains', 'export_zone_dnskey', 'import_zone_key'] as $function
+                ) {
+                    $case = $operations[$function];
+                    if ($function === 'enable_dnssec_for_domains') {
+                        $case[5] = '{"domains":[{"domain":"example.test","enabled":1,"new_key_id":' . $wire
+                            . '},{"domain":"other.test","enabled":0},{}]}';
+                        $case[6] = ['domains' => [
+                            ['domain' => 'example.test', 'enabled' => 1, 'new_key_id' => $value],
+                            ['domain' => 'other.test', 'enabled' => 0], [],
+                        ]];
+                    } elseif ($function === 'export_zone_dnskey') {
+                        $case[5] = '{"dnskey":"0012","key_id":' . $wire . '}';
+                        $case[6] = ['dnskey' => '0012', 'key_id' => $value];
+                    } elseif ($function === 'import_zone_key') {
+                        $case[5] = '{"import_key_id":7,"new_key_id":' . $wire . '}';
+                        $case[6] = ['import_key_id' => 7, 'new_key_id' => $value];
+                    } else {
+                        $case[5] = '{"new_key_id":' . $wire . '}';
+                        $case[6] = ['new_key_id' => $value];
+                    }
+                    yield $function . ' bounded ID ' . $wire => $case;
+                }
+            }
+        }
+        foreach (['', "synthetic private DNSSEC key + / = & %\n"] as $content) {
+            $case = $operations['export_zone_key'];
+            $case[5] = '{"key_tag":40481,"key_type":"CSK","key_content":'
+                . json_encode($content, JSON_THROW_ON_ERROR) . ',"future":"ignored"}';
+            $case[6] = ['key_content' => $content, 'key_tag' => 40481, 'key_type' => 'CSK'];
+            yield 'export exact key content ' . strlen($content) => $case;
+        }
+    }
+
+    #[DataProvider('keyChainingCases')]
+    public function testReturnedKeyIdsFlowIntoTypedSelectorsWithoutCasting(string $source, string $target): void
+    {
+        [$client, $http] = self::client();
+        $dns = $client->whm()->dns();
+        $case = self::operations()[$source];
+        $payload = $source === 'enable_dnssec_for_domains'
+            ? '{"domains":[{"domain":"example.test","new_key_id":"12"}]}'
+            : '{"new_key_id":"12"}';
+        $http->addResponse(new Response(200, [], self::envelope($source, $payload)));
+        $result = $dns->{$case[0]}(...$case[3]);
+        self::assertIsArray($result);
+        if ($source === 'enable_dnssec_for_domains') {
+            self::assertIsArray($result['domains']);
+            self::assertIsArray($result['domains'][0]);
+            $result = $result['domains'][0];
+        }
+        self::assertArrayHasKey('new_key_id', $result);
+        self::assertIsInt($result['new_key_id']);
+        self::assertSame(12, $result['new_key_id']);
+        $targetCase = self::operations()[$target];
+        $http->addResponse(new Response(200, [], self::envelope($target, $targetCase[5])));
+        $dns->{$targetCase[0]}('example.test', $result['new_key_id']);
+        self::assertCount(2, $http->getRequests());
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        $wire = 'domain=example.test&key_id=12';
+        self::assertSame($targetCase[2], $request->getMethod());
+        self::assertSame('https://api.example.test:2087/json-api/' . $target . '?api.version=1'
+            . ($targetCase[2] === 'GET' ? '&' . $wire : ''), (string) $request->getUri());
+        self::assertSame($targetCase[2] === 'POST' ? $wire : '', (string) $request->getBody());
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function keyChainingCases(): iterable
+    {
+        foreach (['add_zone_key', 'enable_dnssec_for_domains', 'import_zone_key'] as $source) {
+            foreach (
+                ['activate_zone_key', 'deactivate_zone_key', 'remove_zone_key',
+                'export_zone_dnskey', 'export_zone_key'] as $target
+            ) {
+                yield $source . ' to ' . $target => [$source, $target];
+            }
+        }
+    }
+
+    public function testExportedPrivateKeyCanBeImportedWithoutLosingOrDoubleEncodingBytes(): void
+    {
+        [$client, $http] = self::client();
+        $whm = $client->whm();
+        $dns = $whm->dns();
+        $secret = "synthetic private key +/= &%\nsecond line\n";
+        $http->addResponse(new Response(200, [], self::envelope(
+            'export_zone_key',
+            '{"key_tag":12,"key_type":"KSK","key_content":' . json_encode($secret, JSON_THROW_ON_ERROR) . '}',
+        )));
+        $exported = $dns->exportZoneKey('example.test', 12);
+        self::assertArrayHasKey('key_content', $exported);
+        $keyContent = $exported['key_content'] ?? null;
+        self::assertIsString($keyContent);
+        self::assertSame($secret, $keyContent);
+        self::assertNotNull($whm->responseMeta());
+        self::assertArrayNotHasKey('data', $whm->responseMeta()->whm ?? []);
+        $http->addResponse(new Response(200, [], self::envelope('import_zone_key', '{"new_key_id":"42"}')));
+        self::assertSame(['new_key_id' => 42], $dns->importZoneKey('other.test', $keyContent, 'ksk'));
+        self::assertCount(2, $http->getRequests());
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('domain=other.test&key_data=synthetic%20private%20key%20%2B%2F%3D%20%26%25%0A'
+            . 'second%20line%0A&key_type=ksk', (string) $request->getBody());
     }
 
     /** @param array<array-key, mixed> $domains */
@@ -391,13 +519,18 @@ final class WhmDnsManagementTest extends TestCase
                     self::assertTrue($error->outcomeConfirmed);
                     self::assertSame(json_decode($payload, true, 512, JSON_THROW_ON_ERROR), $error->payload);
                     self::assertStringNotContainsString('dns-secret-marker', $error->getMessage());
-                    self::assertStringNotContainsString('dns-secret-marker', $error->getTraceAsString());
+                    self::assertTrue(self::containsSecret(['nested' => [$error->payload]]));
+                    $framesWithArguments = 0;
                     foreach ($error->getTrace() as $frame) {
                         if (!str_starts_with($frame['class'] ?? '', 'HostingPal\\WhmApiClient\\')) {
                             continue;
                         }
+                        if (($frame['args'] ?? []) !== []) {
+                            $framesWithArguments++;
+                        }
                         self::assertFalse(self::containsSecret($frame['args'] ?? []));
                     }
+                    self::assertGreaterThan(0, $framesWithArguments);
                 }
             }
         } finally {

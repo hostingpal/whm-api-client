@@ -59,7 +59,11 @@
         },
         {
           "kind": "documented",
-          "text": "Omitting active retains 1. Omitting key_size retains algorithm/key-type defaults: algorithms 5/6/7/8 use KSK 2048 or ZSK 1024 bits; algorithm 13 uses 256 and algorithm 14 uses 384 bits. Algorithms are 5 RSA/SHA-1, 6 DSA-NSEC3-SHA1, 7 RSASHA1-NSEC3-SHA1, 8 RSA/SHA-256, 13 ECDSA P-256/SHA-256 and 14 ECDSA P-384/SHA-384. Supply lowercase ksk or zsk; key IDs and key types are public selectors. The returned new_key_id is the pinned string, without inferred numeric normalization."
+          "text": "Omitting active retains 1. Omitting key_size retains algorithm/key-type defaults: algorithms 5/6/7/8 use KSK 2048 or ZSK 1024 bits; algorithm 13 uses 256 and algorithm 14 uses 384 bits. Algorithms are 5 RSA/SHA-1, 6 DSA-NSEC3-SHA1, 7 RSASHA1-NSEC3-SHA1, 8 RSA/SHA-256, 13 ECDSA P-256/SHA-256 and 14 ECDSA P-384/SHA-384. Supply lowercase ksk or zsk; key IDs and key types are public selectors. The returned identifier has the separately evidenced integer normalization described below."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent WHM review on 11.138.0.19 returned new_key_id as digit strings. These identifiers now normalize to int so they can be passed directly to typed key selectors under strict_types. Native integers and canonical bounded integer strings are accepted; omitted IDs stay absent. This is a reviewed correction to the pinned string response, not additional observed boundary coverage."
         }
       ],
       "params": {
@@ -76,8 +80,30 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. add_zone_key: x-readonly=false; selected POST. Key IDs, sizes, types and setup names are public selectors, not private material; key_data is private key material. "
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM review of revision 5f78c2aa3b7f451b8a35be912cc8fa0c517e8f28 on the reviewer-created disposable account wrvdns: add_zone_key POST returned new_key_id as a digit string. The pinned field is string, but activate/deactivate/remove and export key selectors require int. Normalize this returned identifier to int for strict-types chaining, accepting native integers and canonical bounded integer strings. Reject arbitrary text, noncanonical spellings, floats, booleans, null and overflow; optionality and all sibling fields remain unchanged. The UAPI DNSSEC correction uses the same policy, but this WHM observation is independently established. The reviewer reported account, home directory and all three throwaway zones cleaned up. This lifecycle is separate from committed captures; no raw private material is recorded here. Review: https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698."
         }
-      ]
+      ],
+      "response": {
+        "new_key_id": {
+          "type": "int",
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM review of revision 5f78c2aa3b7f451b8a35be912cc8fa0c517e8f28 on the reviewer-created disposable account wrvdns: add_zone_key POST returned new_key_id as a digit string. The pinned field is string, but activate/deactivate/remove and export key selectors require int. Normalize this returned identifier to int for strict-types chaining, accepting native integers and canonical bounded integer strings. Reject arbitrary text, noncanonical spellings, floats, booleans, null and overflow; optionality and all sibling fields remain unchanged. The UAPI DNSSEC correction uses the same policy, but this WHM observation is independently established. The reviewer reported account, home directory and all three throwaway zones cleaned up. This lifecycle is separate from committed captures; no raw private material is recorded here. Review: https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698."
+            }
+          ]
+        }
+      }
     },
     "whm1:adddns": {
       "method": "POST",
@@ -232,6 +258,14 @@
         {
           "kind": "documented",
           "text": "This function deletes a domain. **Note:** This function does **not** remove an addon domain's associated subdomain. You **must** also run this function for the associated subdomain."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned type:null payload means the domain does not exist on the server, including when the WHM envelope reports success. Inspect type rather than treating absence of an exception as proof that a domain was deleted."
+        },
+        {
+          "kind": "documented",
+          "text": "Client behavior: treat domain deletion as irreversible. The client provides no rollback or automatic retry and does not turn the documented type:null absent-domain result into an exception."
         }
       ],
       "evidence": [
@@ -240,6 +274,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. delete_domain: x-readonly=false; selected POST. "
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /delete_domain data.type explicitly permits null and defines it as the domain not existing on the server. Keep this successful absent-domain result distinct from a confirmed deletion; the response contract already accepts it. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698."
         }
       ],
       "response": {
@@ -313,7 +353,15 @@
         },
         {
           "kind": "documented",
-          "text": "Omission retains active=1, algo_num=8, key_setup=classic, nsec3_iterations=7, nsec3_narrow=1, nsec3_opt_out=0 and use_nsec3=1; no salt default is specified. Algorithms 5/6/7/8/10/13/14 are documented, including 10 RSA/SHA-512. classic uses separate KSK/ZSK and is documented for algorithms at most 8; simple uses one key for algorithms above 8. Selecting algorithm 13 alone does not change the classic default. nsec3_salt is a hexadecimal string. Narrow=1 means Narrow mode and 0 Inclusive mode; opt_out=1 creates records for all delegations and 0 only secure delegations. use_nsec3 selects NSEC3 (1) or NSEC (0); the pinned prose says the system ignores the other NSEC3 options when this value is used. Inspect each domain enabled/nsec_error result separately from WHM metadata; new_key_id remains the pinned string."
+          "text": "The pinned WHM parameter schema declares active=1, algo_num=8, key_setup=classic, nsec3_iterations=7, nsec3_narrow=1, nsec3_opt_out=0 and use_nsec3=1; it does not specify a salt default. These are snapshot values, not guaranteed runtime defaults for every server version. Algorithms 5/6/7/8/10/13/14 are documented, including 10 RSA/SHA-512. classic uses separate KSK/ZSK and is documented for algorithms at most 8; simple uses one key for algorithms above 8. Selecting algorithm 13 alone does not change the classic default. nsec3_salt is a hexadecimal string. Narrow=1 means Narrow mode and 0 Inclusive mode; opt_out=1 creates records for all delegations and 0 only secure delegations. use_nsec3 selects NSEC3 (1) or NSEC (0); the pinned prose says the system ignores the other NSEC3 options when this value is used. Inspect each domain enabled/nsec_error result separately from WHM metadata; new_key_id uses the separately evidenced integer normalization."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent WHM review on 11.138.0.19 returned new_key_id as digit strings. These identifiers now normalize to int so they can be passed directly to typed key selectors under strict_types. Native integers and canonical bounded integer strings are accepted; omitted IDs stay absent. This is a reviewed correction to the pinned string response, not additional observed boundary coverage."
+        },
+        {
+          "kind": "documented",
+          "text": "Client behavior: omitted optional arguments stay omitted; the client does not fill in pinned defaults or infer WHM defaults from the UAPI version schedule. Supply explicit NSEC3 settings when a particular configuration is required."
         }
       ],
       "params": {
@@ -331,8 +379,36 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. enable_dnssec_for_domains: x-readonly=false; selected POST. Key IDs, sizes, types and setup names are public selectors, not private material; key_data is private key material. The domain parameter prose explicitly supports duplicate domain keys or domain/domain-1/domain-2; use repeated domain keys. "
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM review of revision 5f78c2aa3b7f451b8a35be912cc8fa0c517e8f28 on the reviewer-created disposable account wrvdns: enable_dnssec_for_domains POST returned domains[].new_key_id as a digit string. The pinned field is string, but activate/deactivate/remove and export key selectors require int. Normalize this returned identifier to int for strict-types chaining, accepting native integers and canonical bounded integer strings. Reject arbitrary text, noncanonical spellings, floats, booleans, null and overflow; optionality and all sibling fields remain unchanged. The UAPI DNSSEC correction uses the same policy, but this WHM observation is independently established. The reviewer reported account, home directory and all three throwaway zones cleaned up. This lifecycle is separate from committed captures; no raw private material is recorded here. Review: https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The WHM /enable_dnssec_for_domains parameter nsec3_iterations explicitly declares default 7; nsec3_salt has no default. The pinned UAPI /DNSSEC/enable_dnssec prose has a separate version-dependent schedule, which does not by itself establish WHM behavior. State only the pinned WHM values and avoid claiming that this snapshot fixes all server-version defaults. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698."
         }
-      ]
+      ],
+      "response": {
+        "domains[].new_key_id": {
+          "type": "int",
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM review of revision 5f78c2aa3b7f451b8a35be912cc8fa0c517e8f28 on the reviewer-created disposable account wrvdns: enable_dnssec_for_domains POST returned domains[].new_key_id as a digit string. The pinned field is string, but activate/deactivate/remove and export key selectors require int. Normalize this returned identifier to int for strict-types chaining, accepting native integers and canonical bounded integer strings. Reject arbitrary text, noncanonical spellings, floats, booleans, null and overflow; optionality and all sibling fields remain unchanged. The UAPI DNSSEC correction uses the same policy, but this WHM observation is independently established. The reviewer reported account, home directory and all three throwaway zones cleaned up. This lifecycle is separate from committed captures; no raw private material is recorded here. Review: https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698."
+            }
+          ]
+        }
+      }
     },
     "whm1:export_zone_dnskey": {
       "method": "GET",
@@ -348,6 +424,10 @@
         {
           "kind": "documented",
           "text": "key_id is a public numeric selector; returned DNSKEY text is payload data. The API result does not establish trust or DNS propagation."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent WHM review on 11.138.0.19 observed key_id as a digit string. Canonical integer strings within PHP integer bounds normalize to int; native integers remain accepted. DNSKEY text stays string data and sibling fields retain their contracts."
         }
       ],
       "params": {
@@ -361,8 +441,29 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. export_zone_dnskey: x-readonly=true; selected GET. Key IDs, sizes, types and setup names are public selectors, not private material; key_data is private key material. "
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM review of revision 5f78c2aa3b7f451b8a35be912cc8fa0c517e8f28 on the reviewer-created disposable account wrvdns: export_zone_dnskey GET returned key_id as a digit string despite the pinned integer schema. Apply the existing lossless canonical in-range integer-string normalization only to key_id, preserving native integers, optional presence and non-nullability. The review does not establish every accepted spelling or integer boundary; no new minimum or enum enforcement is added. The reviewer reported account, home directory and all three throwaway zones cleaned up. This lifecycle is separate from committed captures; no raw private material is recorded here. Review: https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698."
         }
-      ]
+      ],
+      "response": {
+        "key_id": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM review of revision 5f78c2aa3b7f451b8a35be912cc8fa0c517e8f28 on the reviewer-created disposable account wrvdns: export_zone_dnskey GET returned key_id as a digit string despite the pinned integer schema. Apply the existing lossless canonical in-range integer-string normalization only to key_id, preserving native integers, optional presence and non-nullability. The review does not establish every accepted spelling or integer boundary; no new minimum or enum enforcement is added. The reviewer reported account, home directory and all three throwaway zones cleaned up. This lifecycle is separate from committed captures; no raw private material is recorded here. Review: https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698."
+            }
+          ]
+        }
+      }
     },
     "whm1:export_zone_key": {
       "method": "POST",
@@ -377,7 +478,11 @@
         },
         {
           "kind": "documented",
-          "text": "key_id is a public selector. Treat exported key results and mismatch payloads as sensitive; the pinned response declares only key_tag and key_type. Do not infer extra private-key fields from sibling endpoints."
+          "text": "key_id is a public selector. The pinned response declares key_tag and key_type; the reviewed WHM source additionally returns optional string key_content containing the exported private key. This added field is source-backed, not raw-export live evidence."
+        },
+        {
+          "kind": "documented",
+          "text": "Client behavior: treat key_content and raw payloads attached to PayloadMismatchException as secret material. Preserve the exported text exactly for backup or import and do not log successful results or exception payloads. The client performs no automatic key removal, import, retry or rollback."
         }
       ],
       "params": {
@@ -391,8 +496,40 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. export_zone_key: x-readonly=false; selected POST. Key IDs, sizes, types and setup names are public selectors, not private material; key_data is private key material. "
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19 source inspection",
+          "date": "2026-10-31",
+          "note": "Reviewer source inspection on cPanel 11.138.0.19: Whostmgr/API/1/DNS.pm ends export_zone_key in _set_metadata_and_reduce($metadata, $result, 'key_tag', 'key_type', 'key_content'). The pinned schema declares only key_tag:int and key_type:string. Preserve both and add optional key_content:string for the exported private key text, consistent with the explicitly typed UAPI sibling. The earlier typed call exposed only known fields and cannot independently establish the raw key_content response. The focused raw-export/import/remove-record pass was denied with [Modify Shared Resources], was not retried, and nothing in that pass ran. This is source-only evidence, not a live observation. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698."
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "key_tag": {
+                "type": "int"
+              },
+              "key_type": {
+                "type": "string"
+              },
+              "key_content": {
+                "type": "string"
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19 source inspection",
+              "date": "2026-10-31",
+              "note": "Reviewer source inspection on cPanel 11.138.0.19: Whostmgr/API/1/DNS.pm ends export_zone_key in _set_metadata_and_reduce($metadata, $result, 'key_tag', 'key_type', 'key_content'). The pinned schema declares only key_tag:int and key_type:string. Preserve both and add optional key_content:string for the exported private key text, consistent with the explicitly typed UAPI sibling. The earlier typed call exposed only known fields and cannot independently establish the raw key_content response. The focused raw-export/import/remove-record pass was denied with [Modify Shared Resources], was not retried, and nothing in that pass ran. This is source-only evidence, not a live observation. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698."
+            }
+          ]
+        }
+      }
     },
     "whm1:import_zone_key": {
       "method": "POST",
@@ -408,6 +545,10 @@
         {
           "kind": "documented",
           "text": "key_data is the private material from pdnsutil export-zone-key and remains sensitive. Supply lowercase ksk or zsk. An accepted API result does not establish DNSSEC validation."
+        },
+        {
+          "kind": "documented",
+          "text": "The reviewer inspected the 11.138.0.19 WHM source, which returns new_key_id. Preserve that optional ID alongside the pinned optional import_key_id. new_key_id accepts native integers and canonical bounded integer strings, normalizing to int for typed selectors; import_key_id retains its strict pinned integer contract. The import correction is source-backed and offline-tested; the attempted focused pass was denied and no import ran."
         }
       ],
       "params": {
@@ -424,8 +565,40 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. import_zone_key: x-readonly=false; selected POST. Key IDs, sizes, types and setup names are public selectors, not private material; key_data is private key material. "
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19 source inspection",
+          "date": "2026-10-31",
+          "note": "Reviewer source inspection on cPanel 11.138.0.19: Whostmgr/API/1/DNS.pm reduces import_zone_key results to new_key_id, while the pinned schema names import_key_id:int. Preserve the pinned optional import_key_id unchanged and add optional new_key_id:int with canonical bounded numeric-string acceptance, consistent with the observed WHM add/enable identifier family and the UAPI DNSSEC normalization. No WHM import executed, so actual import wire forms are not live-established. The focused raw-export/import/remove-record pass was denied with [Modify Shared Resources], was not retried, and nothing in that pass ran. This is source-only evidence, not a live observation. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698."
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "import_key_id": {
+                "type": "int"
+              },
+              "new_key_id": {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19 source inspection",
+              "date": "2026-10-31",
+              "note": "Reviewer source inspection on cPanel 11.138.0.19: Whostmgr/API/1/DNS.pm reduces import_zone_key results to new_key_id, while the pinned schema names import_key_id:int. Preserve the pinned optional import_key_id unchanged and add optional new_key_id:int with canonical bounded numeric-string acceptance, consistent with the observed WHM add/enable identifier family and the UAPI DNSSEC normalization. No WHM import executed, so actual import wire forms are not live-established. The focused raw-export/import/remove-record pass was denied with [Modify Shared Resources], was not retried, and nothing in that pass ran. This is source-only evidence, not a live observation. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698."
+            }
+          ]
+        }
+      }
     },
     "whm1:killdns": {
       "method": "POST",
@@ -503,11 +676,11 @@
         },
         {
           "kind": "documented",
-          "text": "This function deletes a DNS zone record. **Warning:** Incorrect use of this function could cause domains to resolve incorrectly. Exercise **extreme caution** when you remove DNS zone records. To effectively use this function, use the following workflow: 1. Run the `dumpzone` function. 2. Locate the `Line` value that corresponds to the zone record to delete. 3. Use the values from that zone record to formulate the appropriate `removezonerecord` parameters. **Important:** * When you disable the [DNS role](https://go.cpanel.net/serverroles), the system **disables** this function. * You **cannot** use this function to modify temporary domains."
+          "text": "Deletes a DNS zone record. Incorrect removal can make domains resolve incorrectly. Disabling the DNS role disables this function, and it cannot modify temporary domains."
         },
         {
           "kind": "documented",
-          "text": "line is the DNS zone file line number. Omitting serialnum retains the current zone serial number. Use a verified record line; incorrect removal can make domains resolve incorrectly."
+          "text": "Source-based line conversion: parseDnsZone() returns zero-based line_index, while removeZoneRecord() requires the one-based zone-file line. Pass line_index + 1, never line_index directly; for example, index 3 requires line 4. This follows Cpanel/ZoneFile/Parse.pm and the WHM zone-file Line handling reviewed on 11.138.0.19, not a live removal. Omitting serialnum uses the current zone serial number."
         }
       ],
       "name": "removeZoneRecord",
@@ -518,6 +691,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. removezonerecord: x-readonly=false; selected POST. The documented success envelope has metadata and no data payload. "
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19 source inspection",
+          "date": "2026-10-31",
+          "note": "Reviewer source inspection on cPanel 11.138.0.19: Cpanel/ZoneFile/Parse.pm documents line_index as the 0-index of the line. Whostmgr/API/1/DNS.pm, Whostmgr/DNS.pm and Cpanel/ZoneFile.pm map removezonerecord line to the 1-based zone-file Line, consistent with the pinned line minimum 1. The typed workflow is parseDnsZone line_index + 1. No automatic offset conversion is added to the public line parameter. The focused raw-export/import/remove-record pass was denied with [Modify Shared Resources], was not retried, and nothing in that pass ran. This is source-only evidence, not a live observation. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698."
         }
       ]
     },
@@ -534,7 +713,11 @@
         },
         {
           "kind": "documented",
-          "text": "Supply domain or zone; the client does not choose an alternative automatically. Valid TXT records are preserved, all other records reset, subdomain records reset and zone file subdomains are restored in httpd.conf."
+          "text": "At least one selector, domain or zone, is required by the upstream contract even though both formal parameters are optional. Resetting is destructive: valid TXT records are preserved, all other records return to defaults, subdomain records reset and zone file subdomains are restored in httpd.conf."
+        },
+        {
+          "kind": "documented",
+          "text": "Client behavior: supply domain or zone explicitly before calling resetZone(). The client does not choose a selector, back up the zone, roll changes back or retry automatically."
         }
       ],
       "name": "resetZone",
@@ -545,6 +728,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. resetzone: x-readonly=false; selected POST. The documented success envelope has metadata and no data payload. "
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /resetzone description explicitly requires either domain or zone and says valid TXT records are preserved while all other records return to defaults. Clarify the conditional selector requirement and destructive effect without changing optional parameter types or inventing a new client validation rule. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698."
         }
       ]
     },
