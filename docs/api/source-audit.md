@@ -4338,6 +4338,80 @@ capture ran for these corrections. All ten form POST methods, including the NAT
 check helper, remain unobserved under `8x0.2.37`. Both historical artifacts remain
 immutable; no schema finding was waived or replayed.
 
+
+## WHM integrations and hooks
+
+`whm()->integrations()` exposes all twelve nondeprecated functions: three GET
+reads and nine form POST operations for account integration groups/links, token
+replacement and server-wide hook inventory/editing/deletion/order. The deprecated
+remote-access-hash function remains excluded. `getIntegrationLinkUserConfig()` is
+a read sent conservatively as POST because the source sets `x-readonly=false`;
+that flag alone does not establish mutation or link creation.
+
+Subscriber IDs, tokens, autologin/fallback URLs and executable hook/check/rollback
+text are sensitive. Returned configuration, commands and URLs are payload data;
+the client never executes them or fetches URLs. `createIntegrationLink()` accepts
+custom group IDs as strings alongside the source's listed built-in groups.
+Hook ordering takes caller-prepared CSV IDs, encoded once.
+
+The pinned `editHook()` source does not specify partial-update semantics for
+omitted options. Its `escalateprivs` default of 0 is a separate documented fact.
+Read the current hook and supply intended option values that matter, including
+escalation. The client makes no preservation, transaction or rollback guarantee.
+Hook changes can affect later events and privilege escalation; requests are not
+retried or automatically restored.
+
+The three removal/token responses have unconstrained, nonrequired `data` in the
+pinned source. Successful absent or null payloads return `null`; present JSON
+values retain the existing mixed contract, including scalars and opaque fields.
+API/envelope failures still raise exceptions with response metadata. The four
+source data-free operations remain void.
+
+All thirteen optional action fields are preserved by one source-backed `actions`
+list correction instead of thirteen leaf overrides. Only `check`, `description`
+and `rollback` permit null. Canonical in-range integer-string weights normalize
+to integers; exact quoted 0/1 action flags normalize to integer flags. Strict
+neighboring fields are unchanged. The global depth limit is unchanged and
+`8x0.10.5` remains open.
+
+The immutable two-GET capture at `7b6f5ce` on `11.138.0.19` passes strict
+assessment with zero discrepancies: version and empty integration-group
+inventory for `npr`. It establishes no populated item shapes. Separately,
+[PR62 review 5721050295](https://github.com/hostingpal/whm-api-client/pull/62#pullrequestreview-5721050295)
+reports `listHooks()` failing on digit-string action `weight` and `escalateprivs`,
+and empty `listIntegrationGroups()`/`listIntegrationLinks()` for `npr`.
+`listIntegrationLinks()` also returned empty for an unknown user, so an empty
+list does not prove account existence. Other action flags and `reorderHooks()`
+compatibility are reviewed source-family policy tested offline, not additional
+live observations. All nine POST methods remain unobserved; `8x0.2.49` stays open.
+No capture rerun, mutation, hook execution or URL fetch accompanied these fixes.
+
+| Generated methods | Wire method | Result contract | Evidence boundary |
+| --- | --- | --- | --- |
+| `createIntegrationGroup`, `createIntegrationLink`, `deleteHook`, `editHook` | POST | void | Pinned source/offline only |
+| `getIntegrationLinkUserConfig` | POST | optional-field configuration object | Conservative POST read; unobserved |
+| `listHooks` | GET | optional-field nested hook inventory | Reviewer found quoted weight/escalation mismatches; corrected offline |
+| `listIntegrationGroups`, `listIntegrationLinks` | GET | optional `links` list | Empty results only; no populated row shapes |
+| `removeIntegrationGroup`, `removeIntegrationLink`, `updateIntegrationLinkToken` | POST | mixed present JSON; absent/null returns null | Source-only optional payload; unobserved |
+| `reorderHooks` | POST | optional `hook_order` list with optional string ID/integer weight | Source-family weight compatibility; unobserved |
+
+## WHM integration-group read evidence
+
+The [WHM integrations capture](evidence/2026-10-31-whm-integrations.json) at
+`7b6f5cee9053ca64d6ac9cf7c522b77eef75d8ad` on `11.138.0.19` passes both
+GET observations and strict assessment with zero discrepancies. Integration-group
+inventory for npr is an empty links list, so populated group fields remain
+unobserved. No hook commands, credential links or user configuration were read;
+no hook/link/token change or URL fetch ran. Eleven other methods and populated
+variants remain under `8x0.2.49`. SHA-256:
+`b106dfebd59a1380bfa1cba65182501e49ab13f90f5b0bd4e208b3b4968b9c4c`.
+
+The later PR62 reviewer GET results are separate from this immutable capture.
+They report empty link lists for both `npr` and an unknown user; empty lists
+prove neither account existence nor populated field shapes. Only hook action
+weight and escalation digit strings were independently observed. All nine POSTs
+remain unobserved; no new capture was made for the corrections.
+
 ## Expanded WHM server administration
 
 `whm()->server()` now exposes 76 of the 79 pinned Server Administration functions,

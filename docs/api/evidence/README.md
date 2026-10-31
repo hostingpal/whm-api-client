@@ -784,6 +784,23 @@ ran. The initial failed artifact stays unchanged and `8x0.2.37` remains open.
 Corrected SHA-256:
 `185dd1b1d6728a6aad76ce258f60f1177f08e9f368c85935667e713889a9a552`.
 
+## WHM integration-group read evidence
+
+The [WHM integrations capture](2026-10-31-whm-integrations.json) at
+`7b6f5cee9053ca64d6ac9cf7c522b77eef75d8ad` on `11.138.0.19` passes both
+GET observations and strict assessment with zero discrepancies. Integration-group
+inventory for npr is an empty links list, so populated group fields remain
+unobserved. No hook commands, credential links or user configuration were read;
+no hook/link/token change or URL fetch ran. Eleven other methods and populated
+variants remain under `8x0.2.49`. SHA-256:
+`b106dfebd59a1380bfa1cba65182501e49ab13f90f5b0bd4e208b3b4968b9c4c`.
+
+The later PR62 reviewer GET results are separate from this immutable capture.
+They report empty link lists for both `npr` and an unknown user; empty lists
+prove neither account existence nor populated field shapes. Only hook action
+weight and escalation digit strings were independently observed. All nine POSTs
+remain unobserved; no new capture was made for the corrections.
+
 ## Expanded WHM server inventory capture
 
 The initial [expanded server capture](2026-10-31-whm-server-administration.json)

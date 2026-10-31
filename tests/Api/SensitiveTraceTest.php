@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\NumberedList;
 use HostingPal\WhmApiClient\Api\RepeatedList;
 use HostingPal\WhmApiClient\Api\RequestMethod;
+use HostingPal\WhmApiClient\Api\Whm\Integrations;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\ApiException;
@@ -804,6 +805,59 @@ final class SensitiveTraceTest extends TestCase
                     $method,
                 ),
             ];
+        }
+    }
+
+    /** @return iterable<string, array{Closure(Integrations): mixed, string}> */
+    public static function secretFailures(): iterable
+    {
+        yield 'create subscriber ID' => [static function (Integrations $g): mixed {
+            $g->createIntegrationLink('app', 'billing', '', self::SECRET, '', 'alice', url: 'https://x.test/');
+            return null;
+        }, '{"metadata":{"result":0,"reason":"Denied"}}'];
+        yield 'create fallback URL' => [static function (Integrations $g): mixed {
+            $g->createIntegrationLink('app', 'billing', '', '', '', 'alice', url: self::SECRET);
+            return null;
+        }, '{"metadata":{"result":0,"reason":"Denied"}}'];
+        yield 'create token' => [static function (Integrations $g): mixed {
+            $g->createIntegrationLink('app', 'billing', '', '', self::SECRET, 'alice', url: 'https://x.test/');
+            return null;
+        }, '{"metadata":{"result":0,"reason":"Denied"}}'];
+        yield 'create autologin URL' => [static function (Integrations $g): mixed {
+            $g->createIntegrationLink('app', 'billing', '', '', '', 'alice', autologinTokenUrl: self::SECRET);
+            return null;
+        }, '{"metadata":{"result":0,"reason":"Denied"}}'];
+        yield 'update token' => [
+            static fn (Integrations $g): mixed => $g->updateIntegrationLinkToken('app', self::SECRET, 'alice'),
+            '{"metadata":{"result":0,"reason":"Denied"}}'];
+        foreach (['hook', 'check', 'rollback'] as $field) {
+            yield 'edit ' . $field => [static function (Integrations $g) use ($field): mixed {
+                $g->editHook('hook-id', ...[$field => self::SECRET]);
+                return null;
+            }, '{"metadata":{"result":0,"reason":"Denied"}}'];
+        }
+        yield 'returned config URL on payload mismatch' => [
+            static fn (Integrations $g): mixed => $g->getIntegrationLinkUserConfig('app', 'alice'),
+            '{"metadata":{"result":1},"data":{"userconfig":{"autologin_token_url":"'
+                . '[fixture-secret]' . '","user":false}}}'];
+    }
+
+    /** @param Closure(Integrations): mixed $call */
+    #[DataProvider('secretFailures')]
+    public function testInputAndReturnedIntegrationSecretsStayOutOfExceptionTraces(
+        Closure $call,
+        string $response,
+    ): void {
+        self::assertSame('0', ini_get('zend.exception_ignore_args'));
+        $fixtureResponse = str_replace('[fixture-secret]', self::SECRET, $response);
+        [$client, $http] = self::client(false);
+        $http->addResponse(new Response(200, [], $fixtureResponse));
+        try {
+            $call($client->whm()->integrations());
+            self::fail('Expected fixture failure.');
+        } catch (ApiErrorException | PayloadMismatchException $exception) {
+            self::assertCount(1, $http->getRequests());
+            self::assertSecretAbsent($exception);
         }
     }
 

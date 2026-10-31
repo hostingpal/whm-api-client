@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 82 generated typed groups cover 1,030 documented operations (see
+The 83 generated typed groups cover 1,042 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1874,6 +1874,53 @@ item/subitem records keep its strict assessment failed and unwaived under
 `8x0.2.43`. Wildcards establish neither field identity nor underlying field count.
 The capture is complete and must not be repeated merely to clear findings. No
 mutation, arbitrary file read, template execution or URL fetch ran.
+
+### WHM integrations and hooks
+
+`whm()->integrations()` exposes all twelve nondeprecated functions: three GET
+reads and nine form POST operations for account integration groups/links, token
+replacement and server-wide hook inventory/editing/deletion/order. The deprecated
+remote-access-hash function remains excluded. `getIntegrationLinkUserConfig()` is
+a read sent conservatively as POST because the source sets `x-readonly=false`;
+that flag alone does not establish mutation or link creation.
+
+Subscriber IDs, tokens, autologin/fallback URLs and executable hook/check/rollback
+text are sensitive. Returned configuration, commands and URLs are payload data;
+the client never executes them or fetches URLs. `createIntegrationLink()` accepts
+custom group IDs as strings alongside the source's listed built-in groups.
+Hook ordering takes caller-prepared CSV IDs, encoded once.
+
+The pinned `editHook()` source does not specify partial-update semantics for
+omitted options. Its `escalateprivs` default of 0 is a separate documented fact.
+Read the current hook and supply intended option values that matter, including
+escalation. The client makes no preservation, transaction or rollback guarantee.
+Hook changes can affect later events and privilege escalation; requests are not
+retried or automatically restored.
+
+The three removal/token responses have unconstrained, nonrequired `data` in the
+pinned source. Successful absent or null payloads return `null`; present JSON
+values retain the existing mixed contract, including scalars and opaque fields.
+API/envelope failures still raise exceptions with response metadata. The four
+source data-free operations remain void.
+
+All thirteen optional action fields are preserved by one source-backed `actions`
+list correction instead of thirteen leaf overrides. Only `check`, `description`
+and `rollback` permit null. Canonical in-range integer-string weights normalize
+to integers; exact quoted 0/1 action flags normalize to integer flags. Strict
+neighboring fields are unchanged. The global depth limit is unchanged and
+`8x0.10.5` remains open.
+
+The immutable two-GET capture at `7b6f5ce` on `11.138.0.19` passes strict
+assessment with zero discrepancies: version and empty integration-group
+inventory for `npr`. It establishes no populated item shapes. Separately,
+[PR62 review 5721050295](https://github.com/hostingpal/whm-api-client/pull/62#pullrequestreview-5721050295)
+reports `listHooks()` failing on digit-string action `weight` and `escalateprivs`,
+and empty `listIntegrationGroups()`/`listIntegrationLinks()` for `npr`.
+`listIntegrationLinks()` also returned empty for an unknown user, so an empty
+list does not prove account existence. Other action flags and `reorderHooks()`
+compatibility are reviewed source-family policy tested offline, not additional
+live observations. All nine POST methods remain unobserved; `8x0.2.49` stays open.
+No capture rerun, mutation, hook execution or URL fetch accompanied these fixes.
 
 ### Generic calls
 
