@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "StatsManager",
+  "operations": {
+    "uapi:StatsManager/get_configuration": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 90 and later. Disabled when the WebServer role is disabled. Lists weblog analyzer settings for each domain on the selected account; no domain selector or request defaults are documented."
+        },
+        {
+          "kind": "documented",
+          "text": "Only analyzers enabled for this user on the system are shown. enabled is the cumulative administrator/user setting for the domain; enabled_by_user records the user choice. These are integer 0/1 flags, with optional name, analyzers and domain fields preserved. Empty lists remain empty."
+        },
+        {
+          "kind": "documented",
+          "text": "Additional analyzer settings remain in responseMeta()->uapi[metadata], separate from the returned domain list. The metadata analyzers have available_for_user, enabled_by_default and name; metadata locked=1 means only the reseller or root can manage configuration and locked=0 means the cPanel user can manage it. The metadata description is not a typed payload contract and establishes no analyzer execution behavior."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /StatsManager/get_configuration GET declares x-readonly=true; query parameters and the response data schema are inline in cpanel.openapi.json.gz. Preserve the source GET method, requiredness, optional fields and exact scalar types."
+        }
+      ]
+    },
+    "uapi:StatsManager/save_configuration": {
+      "exclude": {
+        "reason": "Requires an application/json request body containing nested changes/analyzers objects. JSON transport remains under whm-api-client-8x0.1.18; generic calls support only GET/form POST and cannot represent this body. This operation is not deprecated.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned /StatsManager/save_configuration POST requestBody/content/application~1json declares changes as an array of domain/analyzers objects. Its HTTP wire example explicitly sends Content-Type: application/json and its CLI example uses uapi --input=json. x-readonly=false and x-rollback=none; no deprecated marker is declared. Do not replace the required JSON representation with form encoding."
+          }
+        ]
+      }
+    }
+  }
+}

@@ -907,6 +907,89 @@ and strict assessment with zero discrepancies. Both information responses contai
 the preserved empty-string size. No content was read or resource changed. Earlier
 captures remain unchanged; do not repeat the run just for handoff.
 
+## Resource and web statistics
+
+`resource-statistics.php` binds `resource-statistics-v1` to 23 GET observations:
+WHM version and eleven statistics reads through both UAPI routes. All account
+requests target `npr`, and domain requests use `npr.rs`. The Bandwidth query uses
+`domain|protocol`, HTTP only, daily samples, UTC, and fixed timestamps from
+2026-10-01T00:00:00Z to 2026-10-31T00:00:00Z. StatsBar selects bandwidth/disk use
+with both warning flags false; site errors request at most one Apache log entry.
+Webalizer and Analog selectors follow the pinned source, without enabling services.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/resource-statistics.php \
+  --output=docs/api/evidence/resource-statistics-new.json
+```
+
+Both tokens and committed inputs are required. The existing exact-URI GET guard,
+original-response structural sanitizer and new-only protected publication apply.
+Dynamic grouping/date/domain keys remain wildcarded; log text and all other
+payload values are not persisted. Strict assessment accepts no discrepancies or
+historical acknowledgments. No configuration write, report download or analyzer
+execution is performed. Failed capability/schema observations remain failed
+evidence instead of being skipped or waived.
+
+The corrected [statistics capture](../../docs/api/evidence/2026-10-31-resource-statistics-corrected.json)
+at `a439c3c` on `11.138.0.19` records 23 HTTP-200 GETs. Twenty-one API/payload/probe
+checks pass with zero discrepancies; both `Stats/get_site_errors` API calls fail,
+so strict status remains failed. Ten new functions pass on both routes. Daily
+statistics, site/report lists and analyzer lists are empty; populated variants
+remain offline coverage. No settings or log content changed. Follow-up `8x0.2.25`
+retains the unresolved log errors and other unobserved variants.
+
+
+## Resource/statistics varied review capture
+
+`resource-statistics-review.php` binds a separate fixed review recipe with 27 GETs:
+one WHM version observation and all eleven statistics functions through both UAPI
+routes, with three bandwidth queries per route instead of one. Query grouping is
+`domain`, `domain|protocol` and `domain|protocol|year`, using the same October 2026
+UTC bounds, `npr.rs` domain and HTTP protocol. The mixed StatsBar selection includes
+ordinary usage and the reviewed nullable-count/array-role rows. Site inventory
+uses `analog`; the one-entry error-log read uses `suexec`. No analyzer, server
+configuration, file permission, log content or account setting changes.
+
+The command requires committed inputs, `WHM_API_LIVE=1`, exact account/domain
+guards and both test tokens, like the original section command. It writes only to
+a new path. Original statistics catalogs and artifacts remain unchanged.
+
+Repeated operation/route pairs use fixed reviewed `argument_variant` labels,
+separate from the pinned `variant` (which remains the operation plus `#GET`).
+Labels are catalog constants, never request values or upstream data. The guarded
+URI still binds each exact request. The strict section assessment requires the
+expected label on every labeled record and rejects missing, wrong, reordered or
+duplicate labels and mixed labeled/unlabeled repeats. Historical unlabeled
+catalogs retain duplicate rejection and their original record shape. No failure
+or discrepancy acknowledgment is introduced.
+
+## DNSSEC and Dynamic DNS inventory
+
+The fixed `dns-security-v1` catalog contains five GET observations: WHM version,
+`DNSSEC/fetch_ds_records(domain: 'npr.rs')` and `DynamicDNS/list` through direct
+UAPI and the WHM bridge for `npr`. It neither guesses key identifiers nor fetches
+DDNS update URLs, and performs no DNSSEC, registrar, key or domain mutation.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/dns-security.php \
+  --output=docs/api/evidence/dns-security-new.json
+```
+
+Both test tokens and committed inputs are required. The exact-URI GET guard
+rejects method, body and target changes before dispatch. The report stores only
+structural types/paths: private-key strings, DDNS IDs and domain-map keys are
+never persisted as values. Strict assessment requires all five observations to
+pass without discrepancies or acknowledgments. An unavailable API remains failed
+evidence. Follow-up `8x0.2.26` owns the remaining operation and payload variants.
+
+The [DNS security capture](../../docs/api/evidence/2026-10-31-dns-security.json) at
+`372df78` on `11.138.0.19` passes all five GET observations and strict assessment
+with zero discrepancies. DS detail objects and the DDNS inventory are empty;
+populated fields and the other fifteen methods remain offline coverage. No DNS,
+key, registrar or DDNS state changed. Follow-up `8x0.2.26` remains open.
+
 ## WHM backup and restoration inventory
 
 `backup-restoration.php` binds `backup-restoration-v1` to eleven WHM GETs: version,
