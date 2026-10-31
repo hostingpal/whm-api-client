@@ -200,6 +200,9 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	result.Constant = b.constant(op, result.PHPName)
 	result.Alias = Pascal(result.PHPName) + "Result"
 	result.Params = b.params(op, v, ov, body)
+	if ov.MultipartUpload != nil {
+		result.MultipartUpload = b.multipartUpload(op, v, ov, node, &result.Params)
+	}
 	if ov.MultipartUploads != nil {
 		result.MultipartUploads = b.multipartUploads(op, v, ov, node, &result.Params)
 	}
@@ -303,7 +306,7 @@ func (b *builder) formBody(op model.Operation, v model.Variant, ov overlay.Opera
 		return nil, true
 	}
 	if ov.Body == "multipart" {
-		if ov.MultipartUploads != nil {
+		if ov.MultipartUploads != nil || ov.MultipartUpload != nil {
 			return nil, true
 		}
 		return b.multipartBody(op, v, ov, node)

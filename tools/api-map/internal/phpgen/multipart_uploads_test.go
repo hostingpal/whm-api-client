@@ -28,3 +28,25 @@ func TestRenderUploadListAndExplicitObjectPolicy(t *testing.T) {
 		t.Fatal("uploads leaked into query parameter specs")
 	}
 }
+
+func TestRenderRequiredWhmTextAndScalarUpload(t *testing.T) {
+	op := effective.Operation{PHPName: "restoreConfigFromUpload", Constant: "RESTORE_CONFIG_FROM_UPLOAD", Function: "restore_config_from_upload", Method: "POST", Body: "multipart", Outcome: "flag", MultipartUpload: &overlay.MultipartUpload{PHP: "file", Source: "file", Text: "module"}, Params: []effective.Param{{PHP: "module", PHPType: "string", DocType: "'Basic'|'Main'", Required: true, Sensitive: true}, {PHP: "file", PHPType: "Upload", DocType: "Upload", Required: true, Sensitive: true}}}
+	g := effective.Group{Family: "whm1", Name: "Server Administration", Class: "Server", Operations: []effective.Operation{op}}
+	group, spec := groupClass(g), specClass(g)
+	for _, want := range []string{`use HostingPal\WhmApiClient\Upload;`, `@param 'Basic'|'Main' $module`, `string $module,`, `Upload $file,`, `): void`, `['module' => $module, 'file' => $file]`} {
+		if !strings.Contains(group, want) {
+			t.Errorf("missing %s", want)
+		}
+	}
+	if strings.Count(group, "#[SensitiveParameter]") != 2 {
+		t.Fatalf("both public value arguments must be sensitive: %s", group)
+	}
+	for _, want := range []string{`'multipart_upload' => [`, `'php' => 'file'`, `'source' => 'file'`, `'text' => 'module'`, `'params' => []`, `'returns' => null`, `'outcome' => 'flag'`} {
+		if !strings.Contains(spec, want) {
+			t.Errorf("missing %s", want)
+		}
+	}
+	if strings.Contains(spec, `'module' => '`) || strings.Contains(spec, `'multipart_uploads'`) || strings.Contains(group, `UploadList`) {
+		t.Fatal("scalar body leaked into route or list metadata")
+	}
+}

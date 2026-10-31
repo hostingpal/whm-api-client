@@ -223,7 +223,16 @@ final class WhmClient extends AbstractApiClient
         #[SensitiveParameter] JsonBody|MultipartInput|null $body = null,
     ): ApiResponse {
         if ($body instanceof MultipartInput) {
-            throw new LogicException('Generated multipart uploads require UAPI.');
+            if (!isset($spec['multipart_upload'])) {
+                throw new LogicException('Generated WHM multipart requires a scalar upload spec.');
+            }
+            return $this->executeMultipartPost(
+                '/json-api/' . OperationSpec::text($spec, 'function'),
+                $body->query->withRouting(self::RESERVED),
+                $body,
+                ResponseRoute::Whm,
+                OperationSpec::outcome($spec),
+            );
         }
         if ($body !== null) {
             $this->validateJsonQuery($parameters, []);

@@ -32,7 +32,7 @@ final readonly class MultipartInput
     /**
      * Preserve generated query provenance and declaration collision semantics.
      *
-     * @param list<array{name: string, value: Upload}> $parts
+     * @param list<array{name: string, value: string|Upload}> $parts
      */
     public static function generated(
         #[SensitiveParameter] array $parts,

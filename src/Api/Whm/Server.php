@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use HostingPal\WhmApiClient\Upload;
 use InvalidArgumentException;
 use SensitiveParameter;
 
@@ -1950,6 +1951,41 @@ final readonly class Server
         string $path,
     ): void {
         ($this->run)(ServerSpec::RESTORE_CONFIG_FROM_FILE, ['module' => $module, 'path' => $path]);
+    }
+
+    /**
+     * Update configuration file from backup via POST.
+     *
+     * This function restores a configuration backup file via HTTP POST method. If the backup file does not contain any
+     * changes, the system does not write to the configuration file.
+     *
+     * Documented: Available from cPanel 74. Basic selects Basic WebHost Manager Setup; Main selects Tweak Settings.
+     * Module names are case-sensitive. Unchanged backups do not rewrite configuration.
+     *
+     * Policy: Both arguments are required from the body schema despite absent requestBody.required. Sends literal
+     * module text followed by a single Upload; routing stays in the WHM query. This can affect server-wide
+     * configuration; no retry, rollback, transactional or restart guarantee is provided. No live configuration restore
+     * has been performed.
+     *
+     * Policy: The formal multipart schema and upload prose govern this request. The empty JSON HTTP sample and its port
+     * 2083 are inconsistent examples, not alternate transport or routing contracts.
+     *
+     * API-map identity: whm1:restore_config_from_upload#POST (wire name restore_config_from_upload; Configuration
+     * Clusters).
+     *
+     * @param 'Basic'|'Main' $module The configuration module's name.
+     * @param Upload $file The configuration file data, in `multipart/form-data` format.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws InvalidArgumentException If the upload or multipart fields are invalid; no retry occurs.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/configuration-clusters/cpanel-restore_config_from_upload
+     */
+    public function restoreConfigFromUpload(
+        #[SensitiveParameter]
+        string $module,
+        #[SensitiveParameter]
+        Upload $file,
+    ): void {
+        ($this->run)(ServerSpec::RESTORE_CONFIG_FROM_UPLOAD, ['module' => $module, 'file' => $file]);
     }
 
     /**

@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 91 generated typed groups cover 1,107 documented operations (see
+The 91 generated typed groups cover 1,108 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -664,8 +664,8 @@ foreach ($result['uploads'] ?? [] as $upload) {
 This is offline typed coverage of one additional canonical UAPI operation, with
 no new live upload claim. PR74's attributed raw server observations on
 `11.138.0.19` informed the reviewed outcome/size/filename decisions and are
-separate from this client. Five binary operations remain for later adoption:
-four Backup restores and the WHM restore (`8x0.30.7`/`.30.8`/`.30.9`). The nine
+separate from this client. Four Backup binary restores remain for later adoption
+(`8x0.30.8`/`.30.9`); WHM configuration upload is now typed. The nine
 multipart inventory entries are not nine verified typed endpoints.
 
 
@@ -913,7 +913,8 @@ excluded upstream. Private keys and PEM inputs are sensitive, and writes use POS
 multipart bodies. Routing and authentication remain unchanged on both routes;
 these methods do not accept filesystem paths or file handles. Generic `call()`
 continues to support form bodies only. Binary multipart requires an explicit,
-source-bound list descriptor; Fileman is its first typed adopter. Separate generic
+source-bound descriptor; Fileman uses a required upload list, and WHM configuration
+restore uses required text plus one Upload. Separate generic
 `callMultipart()` supports explicit Upload descriptors on WHM/direct UAPI without
 changing these SSL contracts.
 
@@ -1434,8 +1435,8 @@ $client->whm()->modSecurity()->updateSettings(settings: [
 
 This emits `setting_id1=1&state1=On&setting_id2=2&state2=Off&remove2=0`;
 there is no `remove1`. Empty state strings, integer zero and string `'0'` remain
-values. The alias adds one public method, while canonical coverage remains 1,107
-operations (521 UAPI and 586 WHM), 91 groups and 185 generated files (184 PHP files plus the coverage document).
+values. The alias adds one public method, while canonical coverage remains 1,108
+operations (521 UAPI and 587 WHM), 91 groups and 185 generated files (184 PHP files plus the coverage document).
 
 The twelve source-backed empty-result mutations accept an omitted or null payload
 while retaining any returned mixed data; they are not weakened to void. Omitted
@@ -2433,8 +2434,8 @@ tracked under `whm-api-client-8x0.29.6`.
 Raw `callJson()` provides JSON transport without a typed contract or endpoint
 compatibility claim; `call()` remains GET/form-only. Selected typed
 operation support is tracked under `whm-api-client-8x0.1.18` (JSON). Fileman is
-now the first typed binary multipart adopter; the remaining five binary methods
-stay under `8x0.30.7`/`.30.8`/`.30.9`. Complete execution-contract coverage remains
+the first typed binary multipart adopter. WHM configuration upload is also typed;
+the remaining four Backup binary methods stay under `8x0.30.8`/`.30.9`. Complete execution-contract coverage remains
 open under `whm-api-client-8x0.1`.
 
 ```php
@@ -2510,6 +2511,30 @@ filtering is unchanged. `CallResult`, `OutcomePolicy`, metadata snapshots and th
 standard transport/HTTP/envelope/API exceptions work as above; failures never retry
 or change body encoding. Library value-bearing trace frames are sensitive; a
 third-party HTTP client's own frames can still contain the authenticated request.
+
+### WHM configuration upload
+
+`whm()->server()->restoreConfigFromUpload('Main', $upload)` accepts a required
+case-sensitive module string and a required `Upload` descriptor. Documented module
+choices are `Basic` (Basic WebHost Manager Setup) and `Main` (Tweak Settings).
+Available from cPanel 74, it sends literal module text followed by the binary
+`file` part in one streaming multipart POST to WHM, with `api.version=1` only in
+the URL. Both values are sensitive. Paths, strings and lists are not accepted in
+place of `Upload`; use the explicit factories described below. Module choices
+are PHPDoc guidance under the existing scalar policy, without a new enum checker.
+
+This restores server-wide configuration. Unchanged backups do not rewrite the
+configuration file. The client adds no retry, rollback, transactional or restart
+guarantee. Its `void` result follows the normal WHM outcome and `responseMeta()`;
+it does not report a changed-files count. The source's multipart schema requires
+both fields even though `requestBody.required` is absent. The empty JSON HTTP
+sample and port 2083 do not override multipart or normal WHM routing.
+
+This implementation adds exactly one canonical WHM operation: total coverage is
+1,108 operations (521 UAPI, 587 WHM), 91 groups and 185 generated outputs. Tests
+verify request bytes, routing, stream ownership, metadata and failures offline.
+No live configuration restore was run; Fileman fixture authorization does not
+cover a root configuration restore. Four Backup uploads remain excluded.
 
 ### Raw multipart calls
 

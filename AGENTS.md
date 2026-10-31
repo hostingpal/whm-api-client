@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 91 typed groups cover 1,107 documented operations:
+and cPanel UAPI surface. The 91 typed groups cover 1,108 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -2994,8 +2994,8 @@ Coverage remains 1,107 operations, 91 groups, 185 generated files (184 PHP files
 write or report submission was performed; comma-delimited report IDs remain in .1.24.
 
 
-The typed Fileman upload adoption adds one canonical UAPI operation: current
-coverage is 1,107 operations (521 UAPI, 586 WHM), 91 groups and 185 generated
+The typed Fileman upload adoption added one canonical UAPI operation: coverage
+at that adoption was 1,107 operations (521 UAPI, 586 WHM), 91 groups and 185 generated
 outputs. Only uploadFiles uses the new evidence-bound multipart_uploads required
 list descriptor. Its fixed params stay query fields, its route is direct, and its
 explicit Unchecked outcome preserves all-failed payload reasons. The object-only
@@ -3003,7 +3003,30 @@ accept_empty_array:false return opt-in applies solely to its required data root;
 default source lowering, nested/default shapes and earlier generated constants
 are unchanged. Diskinfo uses the existing object fields+values grammar.
 No owned client upload capture ran in this implementation. Attributed PR74 raw
-server observations remain separate, and 8x0.30.5 owns client live evidence. The
-five remaining binary operations remain 8x0.30.7/.30.8/.30.9. Inherited PR84/source,
+server observations remain separate, and 8x0.30.5 owns client live evidence. At that adoption,
+five binary operations remained in 8x0.30.7/.30.8/.30.9. Inherited PR84/source,
 8x0.30.10 POSIX path and 8x0.30.11 metadata truthfulness gates stay external-owned;
 this adoption changes no Upload or source/stream contract.
+
+
+The WHM configuration-upload adoption adds exactly one canonical operation:
+current coverage is 1,108 operations (521 UAPI, 587 WHM), 91 groups and 185
+outputs. `whm()->server()->restoreConfigFromUpload(module, Upload)` uses the
+separate evidence-bound `multipart_upload` descriptor `{php, source, text}`.
+Its only reviewed shape is required `module` literal text followed by scalar
+binary `file`, with no endpoint query parameters. Source schema requiredness
+is explicit despite absent requestBody.required; do not globally change legacy
+body requiredness. Both public values are sensitive. Preserve `Basic`/`Main`
+PHPDoc/case and existing scalar runtime policy; do not add enum validation.
+
+The WHM route keeps api.version=1 only in the URL, uses normal flag/metadata
+handling and returns void. Available from cPanel 74; unchanged backups do not
+rewrite configuration. This can affect server-wide configuration, with no retry,
+rollback, transactional or restart guarantee. Empty JSON sample/port 2083 are
+source inconsistencies. No live root restore or Fileman fixture restore ran.
+The disjoint descriptor is mutually exclusive with multipart_uploads and JSON;
+Fileman's required list, query placement and direct-only policy remain intact.
+Four Backup binary methods remain in 8x0.30.8/.30.9. Inherited PR84/source,
+PR86 preparation-exception mapping, POSIX source-path and reliable-size/metadata
+integration gates remain external-owned and unwaived. Upload factories, bounded
+stream/source/transport primitives and pinned sources/evidence are unchanged.

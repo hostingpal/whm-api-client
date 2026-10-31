@@ -78,6 +78,9 @@ final class OperationRunner
                 : JsonBody::present(StructuredJsonEncoder::encode($value, $descriptor['schema']));
         }
         $uploads = null;
+        if (isset($spec['multipart_upload'])) {
+            $uploads = ScalarUpload::parts(ScalarUpload::descriptor($spec), $arguments);
+        }
         if (isset($spec['multipart_uploads'])) {
             $descriptor = UploadList::descriptor($spec);
             $uploads = UploadList::parts($arguments[$descriptor['php']] ?? null, $descriptor['prefix']);

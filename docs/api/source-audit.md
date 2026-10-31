@@ -6306,3 +6306,46 @@ generic/SSL suites retain their broader lifecycle coverage. Five binary operatio
 remain unadopted under `8x0.30.7`/`.30.8`/`.30.9`; the nine-operation multipart
 inventory does not establish complete typed or live coverage. Inherited source
 acceptance and POSIX/reliable-metadata gates remain external-owned.
+
+
+### WHM configuration upload adoption (2026-10-31, offline)
+
+`whm1:restore_config_from_upload#POST` is generated as
+`whm()->server()->restoreConfigFromUpload(string $module, Upload $file): void`.
+Both public arguments carry SensitiveParameter. Pinned WHM source version
+11.138.0.10, decompressed SHA-256
+`6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594`,
+binds to `/paths/~1restore_config_from_upload/post`. Exact overlay evidence
+binds `/requestBody/content/multipart~1form-data/schema/properties/file`,
+`/properties/module` at that same schema, and `/schema/required`. The schema
+requires both file and module despite absent requestBody.required; this is an
+explicit typed adoption, preserving old SSL and ordinary body-requiredness rules.
+
+The new disjoint `multipart_upload` descriptor is `{php: file, source: file,
+text: module}`. It accepts only the reviewed required WHM module text and one
+Upload, with no endpoint query fields. Text precedes file in one streamed POST;
+normal WHM routing adds api.version=1 only to the query. The existing Upload,
+source preparation, bounded framing, exact-length HTTP attempt, ownership and
+failure lifecycle are reused. Generic calls, Fileman lists and three SSL string
+multipart contracts retain their prior behavior. Module PHPDoc is exactly
+`'Basic'|'Main'`; there is no new runtime enum or minimum enforcement. General
+Upload filename rules apply; Fileman's extra `<>;` restriction is not inherited.
+
+The source makes this available from cPanel 74. Basic selects Basic WebHost
+Manager Setup and Main selects Tweak Settings; unchanged backups do not rewrite
+configuration. Configuration changes can affect the server. The client provides
+no retry, rollback, transactional or restart guarantee and invents no ACL claim.
+The formal multipart schema and file-upload prose govern. The empty JSON HTTP
+sample and port 2083 at `/x-codeSamples/1/source` are attributed inconsistencies.
+The pinned 200 schema has metadata only, so void retains normal flag outcome
+and responseMeta rather than fabricating a payload or changed-files count.
+
+Canonical coverage increases by one WHM operation to 1,108 (521 UAPI, 587 WHM),
+with 91 groups and 185 generated outputs. Offline fixtures verify exact text/
+binary/empty bytes, routing, one-attempt behavior, ownership, sensitive traces,
+early structural/source failures, outcome and metadata handling. No live root
+configuration restore or Fileman fixture restore occurred. Four Backup uploads
+remain under 8x0.30.8/.30.9. Parent PR84/source and PR86 preparation-exception
+integration gates, POSIX source paths and reliable-size metadata follow-ups
+remain external-owned and unwaived. Historical source snapshots and live
+artifacts are unchanged.
