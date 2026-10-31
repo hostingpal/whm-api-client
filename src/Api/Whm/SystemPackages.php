@@ -311,12 +311,16 @@ final readonly class SystemPackages
      * Documented: Omit key to request all RPM keys in the section; a supplied key requests that key. The pinned source
      * describes dynamic RPM keys mapped to string lists, either in a key map or in a section map containing key maps.
      *
-     * Observed: Independent review on 11.138.0.19 observed target_settings as a key map of 46 strings and rpm_groups as
-     * string lists.
+     * Observed: Independent review on 11.138.0.19 reported target_settings returning 46 string values and rpm_groups
+     * string lists passing. This is the earlier reviewer report, distinct from the later structural capture.
      *
-     * Policy: The client accepts strings or string lists as dynamic leaves in both map families. String leaves in the
-     * source section-map family are a compatibility inference, not an observed section-map response. Empty maps and
-     * lists remain empty. No deeper tree, numeric, boolean or null leaves are accepted.
+     * Observed: The immutable 2026-10-31 reviewed capture on 11.138.0.19 observed section-map structure for both fixed
+     * RPM reads: string leaves for the target-settings argument variant and string-list leaves for rpm-groups. Dynamic
+     * key identities and counts remain masked. This capture does not establish flat key-map responses.
+     *
+     * Policy: The client accepts strings or string lists as dynamic leaves in both map families. The pinned flat
+     * key-map family remains supported; the later capture observed the section-map family. Empty maps and lists remain
+     * empty. No deeper tree, numeric, boolean or null leaves are accepted.
      *
      * API-map identity: whm1:get_rpm_version_data#GET (wire name get_rpm_version_data; List Package Information).
      *

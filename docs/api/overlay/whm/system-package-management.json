@@ -94,11 +94,15 @@
         },
         {
           "kind": "observed",
-          "text": "Independent review on 11.138.0.19 observed target_settings as a key map of 46 strings and rpm_groups as string lists."
+          "text": "Independent review on 11.138.0.19 reported target_settings returning 46 string values and rpm_groups string lists passing. This is the earlier reviewer report, distinct from the later structural capture."
+        },
+        {
+          "kind": "observed",
+          "text": "The immutable 2026-10-31 reviewed capture on 11.138.0.19 observed section-map structure for both fixed RPM reads: string leaves for the target-settings argument variant and string-list leaves for rpm-groups. Dynamic key identities and counts remain masked. This capture does not establish flat key-map responses."
         },
         {
           "kind": "policy",
-          "text": "The client accepts strings or string lists as dynamic leaves in both map families. String leaves in the source section-map family are a compatibility inference, not an observed section-map response. Empty maps and lists remain empty. No deeper tree, numeric, boolean or null leaves are accepted."
+          "text": "The client accepts strings or string lists as dynamic leaves in both map families. The pinned flat key-map family remains supported; the later capture observed the section-map family. Empty maps and lists remain empty. No deeper tree, numeric, boolean or null leaves are accepted."
         }
       ],
       "evidence": [
@@ -118,8 +122,15 @@
           "kind": "live",
           "version": "11.138.0.19",
           "date": "2026-10-31",
-          "note": "Independent review of dfba7249295d31f14866c3f896044094910391d3 observed target_settings returning 46 plain string values; rpm_groups string lists passed. Extend only these dynamic leaf families with strings, including the source section-map family as a compatibility inference. No recursive, numeric, boolean or nullable leaves are established.",
+          "note": "Independent review of dfba7249295d31f14866c3f896044094910391d3 on 11.138.0.19 reported target_settings returning 46 plain string values and rpm_groups string lists passing. This records the attributed reviewer report; it does not infer dynamic key identities or counts from the separate masked capture. No recursive, numeric, boolean or nullable leaves were established.",
           "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/60#pullrequestreview-5721000633"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-system-packages-reviewed.json",
+          "note": "Immutable docs/api/evidence/2026-10-31-whm-system-packages-reviewed.json SHA-256 44b3540940eeda781608957a57d12e5b9b5bdf10343c84f4f5a272e071d156ed at revision dd72691120690df4d0cc7c6b8c0f62ae447e4fcb, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:get_rpm_version_data#GET through the WHM GET route, effective contract SHA-256 84e1ce2f44743200ec62f7068014d4005a3245cb9dc5c6e6c29198010c414217: the target-settings argument variant observed payload $ object, $.* object and $.*.* string; rpm-groups observed $ object, $.* object, $.*.* list and $.*.*[] string. Both returned HTTP 200, API success, passed payload validation and zero discrepancies in the strict five-GET review recipe. This establishes section-map string and string-list leaf structure for these fixed reads on this revision/version; wildcard key identities and counts remain unknown. Preserve the pinned flat key-map alternative, which this capture did not observe. No runtime or type-contract change is needed."
         }
       ],
       "params": {
@@ -185,8 +196,15 @@
               "kind": "live",
               "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Independent review of dfba7249295d31f14866c3f896044094910391d3 observed target_settings returning 46 plain string values; rpm_groups string lists passed. Extend only these dynamic leaf families with strings, including the source section-map family as a compatibility inference. No recursive, numeric, boolean or nullable leaves are established.",
+              "note": "Independent review of dfba7249295d31f14866c3f896044094910391d3 on 11.138.0.19 reported target_settings returning 46 plain string values and rpm_groups string lists passing. This records the attributed reviewer report; it does not infer dynamic key identities or counts from the separate masked capture. No recursive, numeric, boolean or nullable leaves were established.",
               "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/60#pullrequestreview-5721000633"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-system-packages-reviewed.json",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-system-packages-reviewed.json SHA-256 44b3540940eeda781608957a57d12e5b9b5bdf10343c84f4f5a272e071d156ed at revision dd72691120690df4d0cc7c6b8c0f62ae447e4fcb, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:get_rpm_version_data#GET through the WHM GET route, effective contract SHA-256 84e1ce2f44743200ec62f7068014d4005a3245cb9dc5c6e6c29198010c414217: the target-settings argument variant observed payload $ object, $.* object and $.*.* string; rpm-groups observed $ object, $.* object, $.*.* list and $.*.*[] string. Both returned HTTP 200, API success, passed payload validation and zero discrepancies in the strict five-GET review recipe. This establishes section-map string and string-list leaf structure for these fixed reads on this revision/version; wildcard key identities and counts remain unknown. Preserve the pinned flat key-map alternative, which this capture did not observe. No runtime or type-contract change is needed."
             }
           ]
         }
