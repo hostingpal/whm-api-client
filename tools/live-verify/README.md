@@ -906,3 +906,30 @@ at `06001e0` on `11.138.0.19` passes all seven GETs, both-route identity/zero ch
 and strict assessment with zero discrepancies. Both information responses contain
 the preserved empty-string size. No content was read or resource changed. Earlier
 captures remain unchanged; do not repeat the run just for handoff.
+
+## Account environment and preferences
+
+The `account-environment-v1` catalog contains 27 GET observations: WHM version,
+twelve parameterless account reads and `getUserInformation(name: 'domain')`, each
+account read through direct UAPI and the WHM bridge for `npr`. It covers contact
+notification preferences, contact-us availability, locale attributes/inventory,
+theme inventory, notification count, enhancement inventory, both EA4 recommendation
+reads, server information, Variables server/session information and the user domain.
+The documented `name=domain` selector prevents a broad user-configuration request,
+which can include `pushbullet_access_token`; both exact URIs require that selector.
+Other optional selectors remain omitted. Enhancement lookup by ID, token retrieval
+and every state-changing method are excluded. Other user-field live coverage remains
+under `8x0.2.28`; the full generated user-information contract stays available.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/account-environment.php \
+  --output=docs/api/evidence/account-environment-new.json
+```
+
+Both test tokens and committed inputs are required. The exact URI/method/body
+guard and structural-only evidence rules remain unchanged. No contact, token,
+locale, theme or notification preference is modified; no messages are sent.
+Dynamic keys are wildcarded, and server/session/user values are never persisted.
+Strict assessment requires all original observations to pass with no discrepancies
+or acknowledgments. Follow-up `8x0.2.28` owns unobserved variants and failures.

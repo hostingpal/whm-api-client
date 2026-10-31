@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Notifications",
+  "operations": {
+    "uapi:Notifications/get_notifications_count": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later. Returns the number of server-wide notifications on the selected account. This read does not send, acknowledge or dismiss notifications."
+        },
+        {
+          "kind": "documented",
+          "text": "The documented count is a nonnegative integer; preserve zero as an integer and do not coerce numeric strings. Null or absent data is a payload mismatch. General schema minima are not enforced by the shared validator."
+        }
+      ]
+    }
+  }
+}

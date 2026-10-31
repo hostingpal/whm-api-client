@@ -1,0 +1,160 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "ContactInformation",
+  "operations": {
+    "uapi:ContactInformation/get_notification_preferences": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Returns notification preferences for the selected cPanel or Webmail account. The pinned operation declares x-readonly=true and no minimum version; this read changes no preference."
+        },
+        {
+          "kind": "documented",
+          "text": "Rows preserve optional descp, name, enabled and the literal string field additionalProperties declared under properties in the pinned schema. This does not establish arbitrary dynamic preference fields. enabled remains integer 0 or 1; omitted row fields remain absent, and an empty list remains empty."
+        }
+      ]
+    },
+    "uapi:ContactInformation/get_pushbullet_access_token": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ContactInformation/get_pushbullet_access_token declares x-readonly=false and x-rollback=none. Use form POST, retaining any credentials outside query strings. "
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 130 and later. The source marks this retrieval x-readonly=false and no rollback, so it uses POST despite its get prefix."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the selected cPanel account's Pushbullet access token as sensitive payload data. Keep returned tokens out of logs and evidence; this operation is excluded from the bounded live catalog. Empty strings remain strings; null or absent data is not a token."
+        }
+      ]
+    },
+    "uapi:ContactInformation/set_email_addresses": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ContactInformation/set_email_addresses declares x-readonly=false and x-rollback=none. Use form POST, retaining any credentials outside query strings. The address and old_address arrays declare explode=true with string items. Send duplicate address or old_address keys using the repeat encoder. All listed parameters retain required=true, including the sensitive account password; there is no conditional-password exception in the pinned operation."
+        }
+      ],
+      "params": {
+        "address": {
+          "php": "addresses",
+          "encoding": "repeat"
+        },
+        "old_address": {
+          "php": "oldAddresses",
+          "encoding": "repeat"
+        },
+        "password": {
+          "sensitive": true
+        }
+      },
+      "order": [
+        "address",
+        "old_address",
+        "password"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 102 and later. Sets the selected account's contact email addresses with no rollback. Use unsetEmailAddresses() to remove all addresses."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply the new addresses, the complete existing-address list and the account password. A mismatch between oldAddresses and the current account addresses fails to prevent races. Requiredness is retained; repeated keys encode both nonempty lists in caller order. This changes contact destinations; the client does not send a separate notification."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned success envelope declares no data member; this operation returns void after checking the envelope outcome."
+        }
+      ]
+    },
+    "uapi:ContactInformation/set_notification_preferences": {
+      "exclude": {
+        "reason": "Requires an application/json request body; JSON transport remains tracked in whm-api-client-8x0.1.18. Generic form calls do not provide JSON support.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned /ContactInformation/set_notification_preferences POST requestBody/content/application~1json declares a preferences object with dynamic string values. No form variant is documented; do not infer form serialization. Source cpanel.openapi.json.gz decompressed-byte SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+          }
+        ]
+      }
+    },
+    "uapi:ContactInformation/set_pushbullet_access_token": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ContactInformation/set_pushbullet_access_token declares x-readonly=false and x-rollback=none. Use form POST, retaining any credentials outside query strings. "
+        }
+      ],
+      "params": {
+        "pushbullet_access_token": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 130 and later. Updates the selected cPanel account's Pushbullet access token with no rollback. The required token remains sensitive and is sent only in the form POST body; empty strings are forwarded rather than omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned success envelope declares no data member; this operation returns void after checking the envelope outcome."
+        }
+      ]
+    },
+    "uapi:ContactInformation/unset_email_addresses": {
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ContactInformation/unset_email_addresses declares x-readonly=false and x-rollback=none. Use form POST, retaining any credentials outside query strings. The address and old_address arrays declare explode=true with string items. Send duplicate address or old_address keys using the repeat encoder. All listed parameters retain required=true, including the sensitive account password; there is no conditional-password exception in the pinned operation."
+        }
+      ],
+      "params": {
+        "old_address": {
+          "php": "oldAddresses",
+          "encoding": "repeat"
+        },
+        "password": {
+          "sensitive": true
+        }
+      },
+      "order": [
+        "old_address",
+        "password"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 102 and later. Removes all contact email addresses from the selected account with no rollback. This changes the account's contact destinations."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply the complete existing-address list and the account password. A mismatched oldAddresses list fails to prevent races. Both arguments remain required, and the nonempty list is encoded as repeated old_address keys in caller order."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned success envelope declares no data member; this operation returns void after checking the envelope outcome."
+        }
+      ]
+    }
+  }
+}

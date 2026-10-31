@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Variables",
+  "accessor": "variables",
+  "class": "Variables",
+  "operations": {
+    "uapi:Variables/get_server_information": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 86 and later. Omitting name returns all server configuration settings; supplied name selects one documented variable and is forwarded once. The typed method does not infer a numbered or repeated parameter family from the differing prose and example."
+        },
+        {
+          "kind": "documented",
+          "text": "All documented configuration fields are optional and nullable. Preserve integer flags, integer quantities and strings separately from null and omission. Unit descriptions follow upstream: file_upload_maximum_bytes is documented in megabytes despite its name."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/Variables/get_server_information declares x-readonly: true and a GET operation. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ]
+    },
+    "uapi:Variables/get_session_information": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 86 and later. Retrieves the web server hostname; host is the only documented selector and the server default. Omitting name leaves that default to the server. The returned host field may be absent but is not documented as nullable."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/Variables/get_session_information declares x-readonly: true and a GET operation. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ]
+    },
+    "uapi:Variables/get_user_information": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 86 and later. Omitting name returns all user configuration data; a supplied name selects one setting and is forwarded once. No indexed parameter family is inferred by the typed method."
+        },
+        {
+          "kind": "documented",
+          "text": "Configuration fields remain optional. Zero bandwidth_limit and disk_block_limit mean unlimited; disk_block_limit is documented in kilobytes and bandwidth_limit in bytes. Maximum account limits preserve integer or unlimited string forms, while maximum_emails_per_hour also documents zero as unlimited."
+        },
+        {
+          "kind": "documented",
+          "text": "Custom feature names and MX domain names are dynamic map keys. Feature values remain integer 0/1 flags and MX values remain strings. The home_directory_links item schema is unspecified and remains mixed."
+        },
+        {
+          "kind": "documented",
+          "text": "The payload can contain the account Pushbullet access token and other private configuration data. Treat the returned configuration as sensitive and do not persist raw values in structural evidence."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/Variables/get_user_information declares x-readonly: true and a GET operation. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ],
+      "response": {
+        "feature": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "flag"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "/Variables/get_user_information result.data.properties.feature incorrectly nests additionalProperties inside properties. Its prose says custom feature names are returned as keys; example {custom_feature: 1} and the nested integer enum [0,1] establish a dynamic map of integer flags, not a literal additionalProperties field. Preserve optional field presence. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+            }
+          ]
+        },
+        "mxcheck": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "string"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "/Variables/get_user_information result.data.properties.mxcheck incorrectly nests additionalProperties inside properties. Its prose says the domain name is the return name; example {example.com: local, example2.com: remote} and the nested string schema establish a dynamic domain-to-string map. Preserve optional field presence and do not infer an enforced closed MX-type enum. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+            }
+          ]
+        }
+      }
+    }
+  }
+}

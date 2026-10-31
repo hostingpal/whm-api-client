@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "EA4",
+  "accessor": "ea4",
+  "class": "Ea4",
+  "operations": {
+    "uapi:EA4/get_php_recommendations": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Returns a list of recommended PHP version names; an empty list is preserved. Recommendations do not change the server configuration."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/EA4/get_php_recommendations declares x-readonly: true and a GET operation. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ]
+    },
+    "uapi:EA4/get_recommendations": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. Package names are dynamic keys whose values are recommendation lists. Recommendation and option fields remain optional; empty maps and lists remain empty."
+        },
+        {
+          "kind": "documented",
+          "text": "Option recommended values are booleans. UI levels and action strings stay strings; no additional closed enum or inferred version support is imposed."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/EA4/get_recommendations declares x-readonly: true and a GET operation. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ]
+    }
+  }
+}

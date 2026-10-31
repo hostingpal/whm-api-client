@@ -2743,3 +2743,41 @@ observations, not inferred from ordinary owner fields here. Every earlier JSON
 artifact from both merged parents is byte-identical, including failed captures.
 The evidence commit changes only documentation/artifacts; executable code and
 effective contracts remain those of the captured revision.
+
+## Account environment and preferences (2026-10-31)
+
+The account environment and preference slice exposes twenty compatible methods
+across ContactInformation, Contactus, Locale, Themes, Notifications,
+AccountEnhancements, EA4, ServerInformation and Variables. Fourteen reads use GET;
+six secret-bearing or state-changing operations use form POST. The JSON-body
+`ContactInformation/set_notification_preferences` operation remains excluded under
+`8x0.1.18`, and the deprecated theme-base operation remains excluded.
+
+Contact addresses use documented repeated form fields. Required address,
+old-address and password inputs retain their source requiredness; passwords and
+Pushbullet tokens are sensitive parameters. The token getter also uses POST and
+returns sensitive payload data. Contact mutations with no documented data return
+void; locale setting preserves its present unspecified payload, while theme update
+preserves nullable opaque objects and rejects an absent payload.
+
+Theme options preserve omission and explicit false. Enhancement availability data
+is separate from UAPI status: a successful data value of zero is not an API error.
+The enhancement-list source omits its container type and has inconsistent object
+prose/items structure, so the result remains mixed rather than acquiring an
+invented list contract. Notification preference rows retain the suspicious literal
+`additionalProperties` source property without inferring a dynamic-field schema.
+
+Variable reads preserve optional fields, nullable values and exact name selectors.
+Source prose/examples establish dynamic feature-flag and domain/MX maps where the
+formal schema misplaced `additionalProperties`; only those field nodes are
+corrected. Server/session/user fields and opaque values are returned as data;
+recommendations do not install packages or change configuration.
+
+The live catalog selects twelve parameterless reads and the user-domain read
+`getUserInformation(name: 'domain')` through both routes, plus WHM version (27 GETs).
+The user selector requests only the documented domain field; the unfiltered user
+read can include `pushbullet_access_token` and is excluded from this catalog.
+Enhancement lookup by ID and token retrieval are also excluded. No contact, locale,
+theme or preference settings change. Other user-field live coverage, successful
+payload variants and mutations remain tracked under `8x0.2.28`; structural captures
+never persist tokens, addresses or server/session/user values.
