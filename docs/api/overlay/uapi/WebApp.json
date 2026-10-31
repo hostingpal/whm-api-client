@@ -461,7 +461,7 @@
           "date": "2026-10-31",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1WebApp~1redeploy/post/description",
-          "note": "Explicit pinned operation description selects form POST mutation; x-readonly/x-rollback are absent. Selected formal parameters, response data and requiredness remain unchanged except the separately evidenced optional list last_deploy.error_category addition. Runtime transport is independent of the selected source GET variant."
+          "note": "Explicit pinned operation description and selected POST variant define this form POST mutation; x-readonly/x-rollback are absent. Selected formal parameters, response data and requiredness are preserved. The selected POST source retains the optional body-only sshkeypass field; no list response correction is applied to this operation."
         }
       ],
       "variant": "POST",
@@ -563,7 +563,7 @@
           "date": "2026-10-31",
           "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
           "pointer": "/paths/~1WebApp~1stage/post/description",
-          "note": "Explicit pinned operation description selects form POST mutation; x-readonly/x-rollback are absent. Selected formal parameters, response data and requiredness remain unchanged except the separately evidenced optional list last_deploy.error_category addition. Runtime transport is independent of the selected source GET variant."
+          "note": "Explicit pinned operation description and selected POST variant define this form POST mutation; x-readonly/x-rollback are absent. Selected formal parameters, response data and requiredness are preserved. The selected POST source retains the optional body-only sshkeypass field; no list response correction is applied to this operation."
         }
       ],
       "variant": "POST",

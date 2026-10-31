@@ -365,17 +365,23 @@ final class UapiWebAppTest extends TestCase
         self::assertCount(1, $http->getRequests());
     }
 
-    public function testStructuredResourceRejectedWithoutReadingItAndFloatPrecisionRestored(): void
+    public function testStructuredResourceRejectedWithoutConsumptionAndFloatPrecisionRestored(): void
     {
         [$client, $http] = self::client('direct');
         $resource = fopen('php://memory', 'r+');
         self::assertIsResource($resource);
+        $bytes = 'nonempty-synthetic-resource-bytes';
+        self::assertSame(strlen($bytes), fwrite($resource, $bytes));
+        self::assertTrue(rewind($resource));
+        $position = ftell($resource);
+        self::assertSame(0, $position);
+        self::assertFalse(feof($resource));
         try {
             $arguments = ['app', 'env' => ['SECRET' => $resource]];
             self::invoke($client->uapi('npr')->webApp(), 'configureStructured', $arguments);
             self::fail('A resource must fail locally.');
         } catch (InvalidArgumentException) {
-            self::assertSame(0, ftell($resource));
+            self::assertSame($position, ftell($resource));
             self::assertCount(0, $http->getRequests());
         } finally {
             fclose($resource);
