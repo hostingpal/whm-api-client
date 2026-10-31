@@ -15,7 +15,7 @@
         },
         {
           "kind": "documented",
-          "text": "All result fields are optional. Count and maximum display values, including _count and _max, remain strings with their formatting intact. Result flags remain integer 0 or 1; zeroisunlimited explains whether zero means unlimited or zero for that statistic. condition is returned only when the statistic meets subsystem installation requirements. Preserve units per row rather than assuming one unit across statistics."
+          "text": "All result fields are optional. Non-null count and maximum display values, including _count and _max, remain strings with their formatting intact; the observed count null is preserved separately from omission. Result flags remain integer 0 or 1; zeroisunlimited explains whether zero means unlimited or zero for that statistic. condition is returned only when the statistic meets subsystem installation requirements. Preserve units per row rather than assuming one unit across statistics."
         },
         {
           "kind": "documented",
@@ -24,6 +24,10 @@
         {
           "kind": "observed",
           "text": "The original 2026-10-31-resource-statistics.json capture at fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on cPanel 11.138.0.19 observed numeric strings at $[].percent through both routes. The pinned field is integer, so only canonical bounded integer strings normalize losslessly; native floats and fractional or noncanonical strings remain rejected. The structural capture does not reveal precise spelling or fractional formatting, which remains an unresolved live compatibility limit. No percentage string is cast through float or rounded, and neighboring percentage fields and flags are unchanged."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer read-only checks on cPanel 11.138.0.19 (PR38 review 5719939412) found count=null for apacheversion, cpanelversion, hostingpackage, hostname, kernelversion, machinetype, mysqlversion, operatingsystem, perlversion, sharedip, shorthostname and theme through both routes. parkeddomains returned an array role. Preserve count as nullable string and role as string or a list of strings; neither becomes required and other fields keep their existing rules. This correction is attributed reviewer evidence; the pinned formal schemas declare both fields as strings."
         }
       ],
       "params": {
@@ -57,6 +61,41 @@
               "fingerprint": "docs/api/evidence/2026-10-31-resource-statistics.json"
             }
           ]
+        },
+        "[].count": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR38 review 5719939412 of 2ed278000f815d5130c812cc8443209239102f7b reports read-only npr checks through direct and WHM-bridged UAPI on cPanel 11.138.0.19. count was null for apacheversion, cpanelversion, hostingpackage, hostname, kernelversion, machinetype, mysqlversion, operatingsystem, perlversion, sharedip, shorthostname and theme. The pinned count schema is string; add null only to this optional field and retain omission and formatted strings distinctly. Other count/maximum fields and all percentages remain unchanged. Evidence is the attributed reviewer report, not a committed structural capture. https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412"
+            }
+          ]
+        },
+        "[].role": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR38 review 5719939412 of 2ed278000f815d5130c812cc8443209239102f7b reports an array role for parkeddomains during read-only npr checks through direct and WHM-bridged UAPI on cPanel 11.138.0.19. The pinned role schema is string; preserve that scalar alternative and model the array variant narrowly as a list of strings, using the existing role scalar type for each member. Do not infer null, arbitrary list members, object maps or a closed role enum. Exact array item observations are to be established by the separate final varied capture; this is attributed reviewer evidence. https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412"
+            }
+          ]
         }
       },
       "evidence": [
@@ -66,6 +105,18 @@
           "date": "2026-10-31",
           "note": "Original immutable docs/api/evidence/2026-10-31-resource-statistics.json (SHA-256 6114814a2c39e52080d34c90cf0790380c16b86d3dca87677cb00fea50a407f3), captured at revision fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on cPanel 11.138.0.19 from pinned source SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, records HTTP 200 and API success on direct-uapi and bridged-uapi GET routes. Payload $[].percent is numeric-string with type_mismatch at $[].percent under effective contract 398c459b94f43e08c7c9c43fa2458630146539eb3b84fcdf4b18e0201e5359b3. The pinned percent schema is integer and its examples use 0, with no documented fractional support. Apply only the existing canonical bounded integer-string conversion at this field; no native floats, fractional/fixed-point strings, coercion through float, overflow or alternate spellings are admitted. Structural evidence cannot establish whether every live percentage spelling fits this conservative boundary; retain fractional-format compatibility as unresolved. percent5, percent10, percent20, flags and formatted strings remain unchanged. Preserve the original failed artifact unchanged.",
           "fingerprint": "docs/api/evidence/2026-10-31-resource-statistics.json"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR38 review 5719939412 of 2ed278000f815d5130c812cc8443209239102f7b reports read-only npr checks through direct and WHM-bridged UAPI on cPanel 11.138.0.19. count was null for apacheversion, cpanelversion, hostingpackage, hostname, kernelversion, machinetype, mysqlversion, operatingsystem, perlversion, sharedip, shorthostname and theme. The pinned count schema is string; add null only to this optional field and retain omission and formatted strings distinctly. Other count/maximum fields and all percentages remain unchanged. Evidence is the attributed reviewer report, not a committed structural capture. https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR38 review 5719939412 of 2ed278000f815d5130c812cc8443209239102f7b reports an array role for parkeddomains during read-only npr checks through direct and WHM-bridged UAPI on cPanel 11.138.0.19. The pinned role schema is string; preserve that scalar alternative and model the array variant narrowly as a list of strings, using the existing role scalar type for each member. Do not infer null, arbitrary list members, object maps or a closed role enum. Exact array item observations are to be established by the separate final varied capture; this is attributed reviewer evidence. https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412"
         }
       ]
     }

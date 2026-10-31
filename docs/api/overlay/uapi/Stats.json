@@ -61,6 +61,10 @@
         {
           "kind": "documented",
           "text": "date is an integer Unix timestamp and entry is the error log text. Both row fields are optional. Returned log text is payload data and does not establish HTTP error behavior."
+        },
+        {
+          "kind": "observed",
+          "text": "On test.oblak.host running cPanel 11.138.0.19, the reviewer reported that log: 'error' and omitted log failed for npr on both routes because /var/cpanel/cpanel.config was owned by root:root with mode 0600 and unreadable by npr. log: 'suexec' returned populated typed rows on both routes. This is an observed test-server limitation, not a general operation restriction. See https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412."
         }
       ],
       "evidence": [
@@ -75,6 +79,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /Stats/get_site_errors parameters/2 names the wire field maxlines and describes the number of lines. Expose the conventional PHP name maxLines while retaining the exact maxlines query name and optional integer schema; no requiredness or encoding change."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer read-only observations on npr at https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412 (reviewed revision 2ed278000f815d5130c812cc8443209239102f7b) attribute getSiteErrors(log: 'error') and default-log API errors on both routes to root-owned mode-0600 /var/cpanel/cpanel.config being unreadable by npr. The reviewer reports populated typed rows for log: 'suexec' on both routes and left the server file unchanged. This records the environment-specific observation without changing request defaults, result validation or the earlier failed captures."
         }
       ],
       "params": {
@@ -118,6 +128,10 @@
         {
           "kind": "documented",
           "text": "Returns statistics-file paths for the selected account. all_domains and ssl are integer 0/1 payload flags: all_domains=1 identifies an all-domain file and ssl=1 identifies SSL-request statistics. Every row field remains optional. Reading these paths does not retrieve their files or establish analyzer report contents."
+        },
+        {
+          "kind": "observed",
+          "text": "On test.oblak.host running cPanel 11.138.0.19, the reviewer observed ssl as a digit string for listSites(engine: 'analog') directly and as an integer through the WHM bridge. Only ssl additionally accepts exact quoted 0/1 flags and normalizes them to integers, matching existing SSL flag handling. Optional omission and native integer flags are preserved; all_domains retains its pinned integer flag contract. See https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412."
         }
       ],
       "evidence": [
@@ -126,8 +140,29 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /Stats/list_sites GET declares x-readonly=true; query parameters and the response data schema are inline in cpanel.openapi.json.gz. Preserve the source GET method, requiredness, optional fields and exact scalar types."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer read-only observations on npr at https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412 (reviewed revision 2ed278000f815d5130c812cc8443209239102f7b) report listSites(engine: 'analog') ssl as a digit string on direct UAPI, causing PayloadMismatchException, and as an integer through the WHM bridge. The pinned /Stats/list_sites result.data.items.properties.ssl schema explicitly declares integer enum [0, 1]. Apply the existing string-flag normalization only to [].ssl, accepting exact \"0\"/\"1\" alongside native 0/1 and preserving omission. Reject null, booleans, fractional values and other string spellings; all_domains stays strict. Cross-route quoted-flag tests are synthetic compatibility checks, not evidence of quoted values on the bridge. This review evidence is separate from the existing immutable captures."
         }
-      ]
+      ],
+      "response": {
+        "[].ssl": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer read-only observations on npr at https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412 (reviewed revision 2ed278000f815d5130c812cc8443209239102f7b) report listSites(engine: 'analog') ssl as a digit string on direct UAPI, causing PayloadMismatchException, and as an integer through the WHM bridge. The pinned /Stats/list_sites result.data.items.properties.ssl schema explicitly declares integer enum [0, 1]. Apply the existing string-flag normalization only to [].ssl, accepting exact \"0\"/\"1\" alongside native 0/1 and preserving omission. Reject null, booleans, fractional values and other string spellings; all_domains stays strict. Cross-route quoted-flag tests are synthetic compatibility checks, not evidence of quoted values on the bridge. This review evidence is separate from the existing immutable captures."
+            }
+          ]
+        }
+      }
     },
     "uapi:Stats/list_stats_by_domain": {
       "method": "GET",

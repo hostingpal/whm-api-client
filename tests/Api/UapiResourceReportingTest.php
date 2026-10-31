@@ -77,11 +77,6 @@ final class UapiResourceReportingTest extends TestCase
             'optional retention fields' => ['Bandwidth/get_retention_periods', '[{}, {"retention":0}]',
                 [[], ['retention' => 0]]],
             'empty retention' => ['Bandwidth/get_retention_periods', '[]', []],
-            'dynamic grouping keys and opaque deepest values' => ['Bandwidth/query',
-                '{"example.test":{"http":{"2026":{"bytes":0,"custom":[null,"1.25",false]}}},'
-                . '"UNKNOWN":{"smtp":null,"ftp":{"2025":null}}}',
-                ['example.test' => ['http' => [2026 => ['bytes' => 0, 'custom' => [null, '1.25', false]]]],
-                    'UNKNOWN' => ['smtp' => null, 'ftp' => [2025 => null]]]],
             'empty report' => ['Bandwidth/query', '{}', []],
             'empty first grouping' => ['Bandwidth/query', '{"example.test":{}}', ['example.test' => []]],
             'resource fields and unlimited maximum' => ['ResourceUsage/get_usages',
@@ -124,6 +119,118 @@ final class UapiResourceReportingTest extends TestCase
     }
 
     /** @param array<array-key, mixed> $expected */
+    #[DataProvider('bandwidthGroupingPayloads')]
+    public function testBandwidthGroupingDepthPreservesDocumentedNumericLeaves(
+        string $route,
+        string $grouping,
+        string $payload,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('exampleuser');
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+
+        self::assertSame($expected, $account->bandwidth()->query(grouping: $grouping));
+        self::assertRequest($http, $route, 'Bandwidth/query', 'grouping=' . rawurlencode($grouping));
+        self::assertCount(1, $http->getRequests());
+        self::assertSame(1, $account->responseMeta()?->uapiStatus());
+    }
+
+    /** @return iterable<string, array{string, string, string, array<array-key, mixed>}> */
+    public static function bandwidthGroupingPayloads(): iterable
+    {
+        // Values below come from the pinned /Bandwidth/query examples, not generated specs.
+        $cases = [
+            'one level domain example' => ['domain',
+                '{"UNKNOWN":70447164,"example.com":815258916235,"parkedexample.com":18861122614,'
+                . '"subdomain.example.com":11407,"subdomain2.example.com":683533}',
+                ['UNKNOWN' => 70447164, 'example.com' => 815258916235, 'parkedexample.com' => 18861122614,
+                    'subdomain.example.com' => 11407, 'subdomain2.example.com' => 683533]],
+            'two level domain year example' => ['domain|year',
+                '{"UNKNOWN":{"1325376000":141799,"1356998400":52558},"example.com":{"1325376000":27496678808}}',
+                ['UNKNOWN' => [1325376000 => 141799, 1356998400 => 52558],
+                    'example.com' => [1325376000 => 27496678808]]],
+            'two level year domain example' => ['year|domain',
+                '{"1325376000":{"UNKNOWN":70447164,"example.com":815258916235}}',
+                [1325376000 => ['UNKNOWN' => 70447164, 'example.com' => 815258916235]]],
+            'three level fractional example' => ['domain|protocol|year',
+                '{"UNKNOWN":{"imap":{"1325376000":11036.0461226852,"1356998400":14892},'
+                . '"smtp":{"1325376000":155605,"1356998400":2525944.05255787}},'
+                . '"example.com":{"http":{"1325376000":11700672006}}}',
+                ['UNKNOWN' => ['imap' => [1325376000 => 11036.0461226852, 1356998400 => 14892],
+                    'smtp' => [1325376000 => 155605, 1356998400 => 2525944.05255787]],
+                    'example.com' => ['http' => [1325376000 => 11700672006]]]],
+            // Each depth has numeric byte leaves; these boundary cases are synthetic.
+            'one level fractional and zero' => ['protocol', '{"imap":11036.0461226852,"ftp":0}',
+                ['imap' => 11036.0461226852, 'ftp' => 0]],
+            'two level fractional and nullable values' => ['domain|protocol',
+                '{"UNKNOWN":{"imap":11036.0461226852,"smtp":0,"ftp":null}}',
+                ['UNKNOWN' => ['imap' => 11036.0461226852, 'smtp' => 0, 'ftp' => null]]],
+            'three level zero nullable and empty maps' => ['domain|protocol|year',
+                '{"UNKNOWN":{"imap":{"1325376000":0,"1356998400":null},"smtp":null,"ftp":{}}}',
+                ['UNKNOWN' => ['imap' => [1325376000 => 0, 1356998400 => null], 'smtp' => null, 'ftp' => []]]],
+        ];
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach ($cases as $name => [$grouping, $payload, $expected]) {
+                yield $route . ' ' . $name => [$route, $grouping, $payload, $expected];
+            }
+        }
+    }
+
+    /** @param list<array<string, mixed>> $expected */
+    #[DataProvider('statsBarVariantPayloads')]
+    public function testReviewedStatsBarVariantsPreserveNullCountsAndRoleLists(
+        string $route,
+        string $display,
+        string $payload,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('exampleuser');
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+
+        self::assertSame($expected, $account->statsBar()->getStats(display: $display));
+        self::assertRequest($http, $route, 'StatsBar/get_stats', 'display=' . rawurlencode($display));
+        self::assertCount(1, $http->getRequests());
+        self::assertSame(1, $account->responseMeta()?->uapiStatus());
+    }
+
+    /** @return iterable<string, array{string, string, string, list<array<string, mixed>>}> */
+    public static function statsBarVariantPayloads(): iterable
+    {
+        // Synthetic values exercise the field variants reported in review 5719939412.
+        $nullCountKeys = ['apacheversion', 'cpanelversion', 'hostingpackage', 'hostname', 'kernelversion',
+            'machinetype', 'mysqlversion', 'operatingsystem', 'perlversion', 'sharedip', 'shorthostname', 'theme'];
+        $nullCountRows = [];
+        $nullCountExpected = [];
+        foreach ($nullCountKeys as $key) {
+            $nullCountRows[] = '{"name":"' . $key . '","count":null}';
+            $nullCountExpected[] = ['count' => null, 'name' => $key];
+        }
+        $cases = [
+            'mixed null string and omitted counts' => [implode('|', $nullCountKeys) . '|diskusage|bandwidthusage',
+                '[' . implode(',', $nullCountRows) . ',{"name":"diskusage","count":"1.75 MB"},'
+                . '{"name":"bandwidthusage"}]',
+                [...$nullCountExpected, ['count' => '1.75 MB', 'name' => 'diskusage'], ['name' => 'bandwidthusage']]],
+            'list empty string and omitted roles' => ['parkeddomains|diskusage|bandwidthusage',
+                '[{"name":"parkeddomains","role":["DNS","WebServer"]},{"role":[]},'
+                . '{"role":"WebServer"},{}]',
+                [
+                    ['name' => 'parkeddomains', 'role' => ['DNS', 'WebServer']],
+                    ['role' => []],
+                    ['role' => 'WebServer'],
+                    [],
+                ],
+            ],
+        ];
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach ($cases as $name => [$display, $payload, $expected]) {
+                yield $route . ' ' . $name => [$route, $display, $payload, $expected];
+            }
+        }
+    }
+
+    /** @param array<array-key, mixed> $expected */
     #[DataProvider('observedCompatiblePayloads')]
     public function testObservedRepresentationsUseOnlyTheReviewedCompatibility(
         string $route,
@@ -157,10 +264,6 @@ final class UapiResourceReportingTest extends TestCase
             'two grouping integer bytes' => ['Bandwidth/query',
                 '{"example.test":{"http":0,"smtp":1048577},"UNKNOWN":{"ftp":3}}',
                 ['example.test' => ['http' => 0, 'smtp' => 1048577], 'UNKNOWN' => ['ftp' => 3]]],
-            'documented alternatives remain alongside integer leaves' => ['Bandwidth/query',
-                '{"example.test":{"http":0,"ftp":null,"smtp":{"2026":{"bytes":1}},"imap":{"2025":null}}}',
-                ['example.test' => ['http' => 0, 'ftp' => null, 'smtp' => [2026 => ['bytes' => 1]],
-                    'imap' => [2025 => null]]]],
             'resource integer strings and nullable URL' => ['ResourceUsage/get_usages',
                 '[{"maximum":"15","usage":"0","url":null},{"maximum":null,"usage":"1048577"},'
                 . '{"maximum":"0"},{"url":"sql/index.html"}]',
@@ -280,7 +383,10 @@ final class UapiResourceReportingTest extends TestCase
                 $cases[] = [$operation, $payload];
             }
         }
-        foreach (['{"x":null}', '{"x":1}', '{"x":{"y":{"z":1}}}'] as $payload) {
+        foreach (
+            ['{"x":null}', '{"x":{"y":{"z":{"fourth":1}}}}',
+            '{"example.test":{"http":{"2026":{"bytes":0,"custom":[null,"1.25",false]}}}}'] as $payload
+        ) {
             $cases[] = ['Bandwidth/query', $payload];
         }
         $fields = [
@@ -295,11 +401,14 @@ final class UapiResourceReportingTest extends TestCase
             'StatsBar/get_stats' => [],
         ];
         foreach (
-            ['_count', '_max', 'count', 'feature', 'id', 'item', 'max', 'maxed_phrase', 'module', 'name',
-            'near_limit_phrase', 'phrase', 'role', 'rowtype', 'units'] as $field
+            ['_count', '_max', 'feature', 'id', 'item', 'max', 'maxed_phrase', 'module', 'name',
+            'near_limit_phrase', 'phrase', 'rowtype', 'units'] as $field
         ) {
             $fields['StatsBar/get_stats'][$field] = ['null', '0', 'false'];
         }
+        $fields['StatsBar/get_stats']['count'] = ['0', 'false', '[]', '{}'];
+        $fields['StatsBar/get_stats']['role'] = ['null', '0', 'false', '[0]', '[null]', '[true]', '[{}]',
+            '[[]]', '["DNS",0]', '{"name":"DNS"}'];
         foreach (['_maxed', 'condition', 'is_maxed', 'normalized', 'zeroisunlimited'] as $field) {
             $fields['StatsBar/get_stats'][$field] = ['null', '"0"', 'true', '2', '1.5'];
         }
@@ -307,8 +416,10 @@ final class UapiResourceReportingTest extends TestCase
         foreach (['percent5', 'percent10', 'percent20'] as $field) {
             $fields['StatsBar/get_stats'][$field] = ['null', '"0"', 'true', '1.5'];
         }
-        foreach (['"0"', '"1"', '1.5', 'true', 'false', '[0]', '"1.25"'] as $value) {
-            $cases[] = ['Bandwidth/query', '{"example.test":{"http":' . $value . '}}'];
+        foreach (['"0"', '"1"', 'true', 'false', '[0]', '"1.25"', '"NaN"', '"Infinity"'] as $value) {
+            $cases[] = ['Bandwidth/query', '{"UNKNOWN":' . $value . '}'];
+            $cases[] = ['Bandwidth/query', '{"UNKNOWN":{"imap":' . $value . '}}'];
+            $cases[] = ['Bandwidth/query', '{"UNKNOWN":{"imap":{"1325376000":' . $value . '}}}'];
         }
         foreach (['maximum', 'usage'] as $field) {
             foreach (

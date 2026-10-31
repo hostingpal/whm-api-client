@@ -102,7 +102,7 @@ final class StatsSpec
                     'all_domains' => ['type' => 'flag'],
                     'domain' => ['type' => 'string'],
                     'path' => ['type' => 'string'],
-                    'ssl' => ['type' => 'flag'],
+                    'ssl' => ['type' => 'flag', 'accept' => ['string-flag']],
                 ],
             ],
         ],

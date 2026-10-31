@@ -2760,13 +2760,21 @@ false flags are sent as zero. Keep bytes, timestamps, per-resource units and
 formatted display strings distinct. Resource `maximum: null` means unlimited;
 zero and omission remain separate. Dynamic domain/date/grouping keys remain keys
 in returned arrays and are wildcarded in structural evidence. The pinned
-Bandwidth query schema describes nested objects with opaque deepest values;
-it does not establish numeric scalar leaves or every grouping-depth variant.
-The observed two-level `domain|protocol` query additionally preserves integer
-leaves. Resource maximum/usage, StatsBar percent and bandwidth month-start values
-accept lossless canonical integer strings only in their reviewed fields. A null
+Bandwidth grouping prose and response examples establish one to three dynamic
+key levels ending in integer or fractional byte values. The overlay repairs the
+formal schema's object-only leaves while retaining nullable second/third values
+and empty maps; numeric strings and opaque fourth-level leaves are not inferred.
+The result shape does not enforce correspondence with the supplied grouping.
+Resource maximum/usage, StatsBar percent and bandwidth month-start values accept
+lossless canonical integer strings only in their reviewed fields. A null
 resource URL remains distinct from omission; fractional strings are not rounded
-or silently coerced. The live/error-log follow-up is `8x0.2.25`.
+or silently coerced. StatsBar preserves observed null `count` values and string
+or string-list `role` values; other percentage and flag rules stay unchanged.
+`listSites()` normalizes only exact quoted `ssl` flags to integer 0/1, preserving
+omission and the native flags. These field corrections follow the
+[PR38 reviewer observations](https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412)
+on cPanel `11.138.0.19`; they do not establish every display or analyzer variant.
+The live/error-log follow-up remains `8x0.2.25`.
 
 Statistics require the documented features, roles and analyzer availability.
 `getSiteErrors()` returns log text as payload data; report URLs are returned
@@ -2774,6 +2782,13 @@ without being fetched. Analyzer configuration metadata stays in `responseMeta()`
 The fixed live catalog targets only `npr`/`npr.rs`, bounds the bandwidth query to
 October 2026 UTC, and limits the error-log read to one entry. No configuration,
 statistics generation or log contents are changed by these reads.
+
+On `test.oblak.host` with cPanel `11.138.0.19`, the reviewer found that
+`getSiteErrors(log: 'error')` and the default failed because `npr` could not read
+the root-owned mode-0600 `/var/cpanel/cpanel.config`. The same operation with
+`log: 'suexec'` returned populated typed rows on both routes. This is an attributed
+environment observation, not a general API restriction. The server file was left
+unchanged and the earlier failed artifacts remain failed and unwaived.
 
 All formal optional fields and dynamic maps are covered by independent literal
 fixtures and exact-wire tests on wrapped/bare direct and bridged UAPI. The

@@ -67,6 +67,19 @@ func (w *writer) docTag(indent, text string) {
 	}
 }
 
+// typeAlias wraps an overlong single-line generic after its outer opening
+// bracket. The type's contents stay intact, including quoted literals and keys.
+func (w *writer) typeAlias(name string, spec effective.TypeSpec) {
+	head := "@phpstan-type " + name + " "
+	docType := shape(spec, "")
+	if (spec.Type == "map" || spec.Type == "list") && !strings.Contains(docType, "\n") &&
+		len(head)+len(docType)+3 > lineWidth {
+		prefix, contents, _ := strings.Cut(docType, "<")
+		docType = prefix + "<\n    " + contents
+	}
+	w.docTag("", head+docType)
+}
+
 // families lists every generated family. Both handles use their family's
 // accessor trait, so each trait is rendered even when it has no groups.
 var families = []string{"uapi", "whm1"}
@@ -201,7 +214,7 @@ func groupClass(g effective.Group) string {
 			w.line(" *")
 			aliases = true
 		}
-		w.docTag("", "@phpstan-type "+op.Alias+" "+shape(*spec, ""))
+		w.typeAlias(op.Alias, *spec)
 	}
 	w.line(" */")
 	w.line("final readonly class " + g.Class)

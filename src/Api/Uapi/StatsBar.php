@@ -23,7 +23,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     _max?: string,
  *     _maxed?: 0|1,
  *     condition?: 0|1,
- *     count?: string,
+ *     count?: string|null,
  *     feature?: string,
  *     id?: string,
  *     is_maxed?: 0|1,
@@ -39,7 +39,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     percent20?: int,
  *     percent5?: int,
  *     phrase?: string,
- *     role?: string,
+ *     role?: string|list<string>,
  *     rowtype?: string,
  *     units?: string,
  *     zeroisunlimited?: 0|1,
@@ -71,10 +71,11 @@ final readonly class StatsBar
      * requests all results. warnout=true includes results at 100 percent; false hides them. The client encodes these
      * supplied booleans as integer 1 or 0.
      *
-     * Documented: All result fields are optional. Count and maximum display values, including _count and _max, remain
-     * strings with their formatting intact. Result flags remain integer 0 or 1; zeroisunlimited explains whether zero
-     * means unlimited or zero for that statistic. condition is returned only when the statistic meets subsystem
-     * installation requirements. Preserve units per row rather than assuming one unit across statistics.
+     * Documented: All result fields are optional. Non-null count and maximum display values, including _count and _max,
+     * remain strings with their formatting intact; the observed count null is preserved separately from omission.
+     * Result flags remain integer 0 or 1; zeroisunlimited explains whether zero means unlimited or zero for that
+     * statistic. condition is returned only when the statistic meets subsystem installation requirements. Preserve
+     * units per row rather than assuming one unit across statistics.
      *
      * Documented: The pinned second response example contains langkey without declaring it in the formal item
      * properties. It remains an unmodeled field and is not added to the typed contract from an example alone.
@@ -85,6 +86,13 @@ final readonly class StatsBar
      * remain rejected. The structural capture does not reveal precise spelling or fractional formatting, which remains
      * an unresolved live compatibility limit. No percentage string is cast through float or rounded, and neighboring
      * percentage fields and flags are unchanged.
+     *
+     * Observed: Reviewer read-only checks on cPanel 11.138.0.19 (PR38 review 5719939412) found count=null for
+     * apacheversion, cpanelversion, hostingpackage, hostname, kernelversion, machinetype, mysqlversion,
+     * operatingsystem, perlversion, sharedip, shorthostname and theme through both routes. parkeddomains returned an
+     * array role. Preserve count as nullable string and role as string or a list of strings; neither becomes required
+     * and other fields keep their existing rules. This correction is attributed reviewer evidence; the pinned formal
+     * schemas declare both fields as strings.
      *
      * API-map identity: uapi:StatsBar/get_stats#GET (wire name get_stats).
      *

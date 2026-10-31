@@ -36,7 +36,7 @@ final class StatsBarSpec
                     '_max' => ['type' => 'string'],
                     '_maxed' => ['type' => 'flag'],
                     'condition' => ['type' => 'flag'],
-                    'count' => ['type' => 'string'],
+                    'count' => ['type' => 'string', 'nullable' => true],
                     'feature' => ['type' => 'string'],
                     'id' => ['type' => 'string'],
                     'is_maxed' => ['type' => 'flag'],
@@ -52,7 +52,13 @@ final class StatsBarSpec
                     'percent20' => ['type' => 'int'],
                     'percent5' => ['type' => 'int'],
                     'phrase' => ['type' => 'string'],
-                    'role' => ['type' => 'string'],
+                    'role' => [
+                        'type' => 'union',
+                        'anyOf' => [
+                            ['type' => 'string'],
+                            ['type' => 'list', 'items' => ['type' => 'string']],
+                        ],
+                    ],
                     'rowtype' => ['type' => 'string'],
                     'units' => ['type' => 'string'],
                     'zeroisunlimited' => ['type' => 'flag'],

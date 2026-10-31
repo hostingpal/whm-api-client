@@ -108,6 +108,12 @@ final readonly class Stats
      * Documented: date is an integer Unix timestamp and entry is the error log text. Both row fields are optional.
      * Returned log text is payload data and does not establish HTTP error behavior.
      *
+     * Observed: On test.oblak.host running cPanel 11.138.0.19, the reviewer reported that log: 'error' and omitted log
+     * failed for npr on both routes because /var/cpanel/cpanel.config was owned by root:root with mode 0600 and
+     * unreadable by npr. log: 'suexec' returned populated typed rows on both routes. This is an observed test-server
+     * limitation, not a general operation restriction. See
+     * https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412.
+     *
      * API-map identity: uapi:Stats/get_site_errors#GET (wire name get_site_errors).
      *
      * @param string $domain The domain for which to return error log entries.
@@ -177,6 +183,12 @@ final readonly class Stats
      * Documented: Returns statistics-file paths for the selected account. all_domains and ssl are integer 0/1 payload
      * flags: all_domains=1 identifies an all-domain file and ssl=1 identifies SSL-request statistics. Every row field
      * remains optional. Reading these paths does not retrieve their files or establish analyzer report contents.
+     *
+     * Observed: On test.oblak.host running cPanel 11.138.0.19, the reviewer observed ssl as a digit string for
+     * listSites(engine: 'analog') directly and as an integer through the WHM bridge. Only ssl additionally accepts
+     * exact quoted 0/1 flags and normalizes them to integers, matching existing SSL flag handling. Optional omission
+     * and native integer flags are preserved; all_domains retains its pinned integer flag contract. See
+     * https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412.
      *
      * API-map identity: uapi:Stats/list_sites#GET (wire name list_sites).
      *

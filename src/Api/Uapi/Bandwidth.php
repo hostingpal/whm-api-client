@@ -23,7 +23,8 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     interval?: string,
  *     retention?: int,
  * }>
- * @phpstan-type QueryResult array<array-key, array<array-key, int|array<array-key, array<array-key, mixed>|null>|null>>
+ * @phpstan-type QueryResult array<
+ *     array-key, int|float|array<array-key, int|float|array<array-key, int|float|null>|null>>
  */
 final readonly class Bandwidth
 {
@@ -106,16 +107,18 @@ final readonly class Bandwidth
      * year_month_day_mour_minute while the schema uses the former. These source inconsistencies remain explicit; the
      * client does not validate grouping combinations or infer extra parameter values.
      *
-     * Documented: The pinned result schema is a dynamic hierarchy: first-group values are objects, second- and
-     * third-group values may be null, and the deepest object has unspecified properties. The prose describes bandwidth
-     * bytes, but it does not establish numeric scalar leaves or the exact shape for fewer grouping levels. Preserve
-     * opaque deepest values without inventing a numeric contract; live behavior remains separate evidence.
+     * Documented: The pinned response examples and grouping prose establish one, two or three dynamic key levels in the
+     * declared grouping order, ending in numeric bandwidth bytes. Integer and finite fractional leaves are preserved,
+     * including the documented 11036.0461226852 value; numeric strings are not inferred. The formal schema mislabels
+     * byte leaves as objects. Its nullable second- and third-group values remain nullable, and empty grouping maps
+     * remain empty. The bounded result shape does not enforce correspondence between a supplied grouping string and a
+     * particular response depth.
      *
      * Observed: The original 2026-10-31-resource-statistics.json capture at fb4f9c9eb03e094d89a41806e927c4cbf0c60432 on
-     * cPanel 11.138.0.19 observed integer byte leaves at $.*.* for grouping=domain|protocol through both routes. The
-     * effective second grouping value accepts integers alongside the documented nullable map alternative; first
-     * grouping values remain objects and the documented deeper alternative stays intact. Other grouping-depth scalar
-     * variants are not established.
+     * cPanel 11.138.0.19 observed integer byte leaves at $.*.* for grouping=domain|protocol through both routes. Review
+     * 5719939412 also reports successful API responses rejected at one and three grouping levels. The pinned examples
+     * establish those shapes and fractional byte leaves independently; the original immutable artifact remains
+     * unchanged.
      *
      * API-map identity: uapi:Bandwidth/query#GET (wire name query).
      *

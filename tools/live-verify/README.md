@@ -938,3 +938,28 @@ so strict status remains failed. Ten new functions pass on both routes. Daily
 statistics, site/report lists and analyzer lists are empty; populated variants
 remain offline coverage. No settings or log content changed. Follow-up `8x0.2.25`
 retains the unresolved log errors and other unobserved variants.
+
+
+## Resource/statistics varied review capture
+
+`resource-statistics-review.php` binds a separate fixed review recipe with 27 GETs:
+one WHM version observation and all eleven statistics functions through both UAPI
+routes, with three bandwidth queries per route instead of one. Query grouping is
+`domain`, `domain|protocol` and `domain|protocol|year`, using the same October 2026
+UTC bounds, `npr.rs` domain and HTTP protocol. The mixed StatsBar selection includes
+ordinary usage and the reviewed nullable-count/array-role rows. Site inventory
+uses `analog`; the one-entry error-log read uses `suexec`. No analyzer, server
+configuration, file permission, log content or account setting changes.
+
+The command requires committed inputs, `WHM_API_LIVE=1`, exact account/domain
+guards and both test tokens, like the original section command. It writes only to
+a new path. Original statistics catalogs and artifacts remain unchanged.
+
+Repeated operation/route pairs use fixed reviewed `argument_variant` labels,
+separate from the pinned `variant` (which remains the operation plus `#GET`).
+Labels are catalog constants, never request values or upstream data. The guarded
+URI still binds each exact request. The strict section assessment requires the
+expected label on every labeled record and rejects missing, wrong, reordered or
+duplicate labels and mixed labeled/unlabeled repeats. Historical unlabeled
+catalogs retain duplicate rejection and their original record shape. No failure
+or discrepancy acknowledgment is introduced.

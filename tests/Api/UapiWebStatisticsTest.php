@@ -144,6 +144,48 @@ final class UapiWebStatisticsTest extends TestCase
         }
     }
 
+    /** @param list<array{all_domains?: 0|1, domain?: string, path?: string, ssl?: 0|1}> $expected */
+    #[DataProvider('siteSslFlags')]
+    public function testSiteSslFlagsNormalizeOnlyExactQuotedFlags(
+        string $route,
+        string $payload,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        self::assertSame($expected, $account->stats()->listSites(engine: 'analog'));
+        self::assertRequest($http, $route, 'list_sites', 'engine=analog');
+        self::assertSame(1, $account->responseMeta()?->uapiStatus());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /**
+     * @return iterable<string, array{
+     *     string, string, list<array{all_domains?: 0|1, domain?: string, path?: string, ssl?: 0|1}>
+     * }>
+     */
+    public static function siteSslFlags(): iterable
+    {
+        $cases = [
+            'quoted zero' => ['[{"ssl":"0"}]', [['ssl' => 0]]],
+            'quoted one' => ['[{"ssl":"1"}]', [['ssl' => 1]]],
+            'mixed flags and optional omission' => [
+                '[{"all_domains":0,"domain":"example.com","path":"/tmp/user/analog/1.html","ssl":"1"},'
+                    . '{"ssl":"0"},{"ssl":1},{"ssl":0},{}]',
+                [
+                    ['all_domains' => 0, 'domain' => 'example.com', 'path' => '/tmp/user/analog/1.html', 'ssl' => 1],
+                    ['ssl' => 0], ['ssl' => 1], ['ssl' => 0], [],
+                ],
+            ],
+        ];
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach ($cases as $name => [$payload, $expected]) {
+                yield "$route $name" => [$route, $payload, $expected];
+            }
+        }
+    }
+
     #[DataProvider('invalidPayloads')]
     public function testMalformedOrAbsentDataRetainsConfirmedMetadata(
         string $route,
@@ -243,7 +285,26 @@ final class UapiWebStatisticsTest extends TestCase
                     }
                     if ($function === 'list_sites') {
                         foreach (['all_domains', 'ssl'] as $field) {
-                            foreach (['null', '"0"', '"1"', 'true', 'false', '2', '-1', '1.0', '[]'] as $bad) {
+                            $badValues = ['null', 'true', 'false', '2', '-1', '1.0', '[]', '{}'];
+                            if ($field === 'ssl') {
+                                array_push(
+                                    $badValues,
+                                    '"2"',
+                                    '"-1"',
+                                    '"00"',
+                                    '"01"',
+                                    '"1.0"',
+                                    '"+1"',
+                                    '"-0"',
+                                    '"1e0"',
+                                    '" 1"',
+                                    '"1 "',
+                                    '""',
+                                );
+                            } else {
+                                array_push($badValues, '"0"', '"1"');
+                            }
+                            foreach ($badValues as $bad) {
                                 $cases[] = '[{"' . $field . '":' . $bad . '}]';
                             }
                         }
