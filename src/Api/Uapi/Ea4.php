@@ -54,6 +54,12 @@ final readonly class Ea4
      * Documented: Available in cPanel 82 and later. Returns a list of recommended PHP version names; an empty list is
      * preserved. Recommendations do not change the server configuration.
      *
+     * Observed: On cPanel 11.138.0.19, Claude reproduced API failure through direct UAPI and the WHM bridge when
+     * /etc/cpanel/ea4/recommendations/custom_php_recommendation.json was absent, and traced this behavior in
+     * Cpanel/API/EA4.pm. ApiErrorException is the correct outcome for this observed server state; it establishes no
+     * successful payload behavior and does not waive the failed captures. Reviewer evidence:
+     * https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923.
+     *
      * API-map identity: uapi:EA4/get_php_recommendations#GET (wire name get_php_recommendations).
      *
      * @return GetPhpRecommendationsResult

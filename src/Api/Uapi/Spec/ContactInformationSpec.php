@@ -49,8 +49,8 @@ final class ContactInformationSpec
         'outcome' => 'flag',
         'params' => [
             'addresses' => ['name' => 'address', 'encoding' => 'repeat'],
-            'oldAddresses' => ['name' => 'old_address', 'encoding' => 'repeat'],
             'password' => ['name' => 'password', 'encoding' => 'scalar'],
+            'oldAddresses' => ['name' => 'old_address', 'encoding' => 'repeat'],
         ],
         'returns' => null,
     ];

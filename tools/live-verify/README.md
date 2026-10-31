@@ -1052,3 +1052,32 @@ Two EA4 API failures, one EA4 bridge failure and five masked unknown-field
 observations keep strict status failed and remain unwaived under `8x0.2.28`.
 Eleven functions pass on both routes and general EA4 recommendations pass directly.
 No mutation or secret retrieval ran; user information remains domain-only.
+
+## Account-environment broad user review capture
+
+`account-environment-review.php` binds three GET observations: WHM version and
+`Variables/get_user_information` on both routes for designated account `npr`.
+Its explicit 67-name allowlist selects every field in the pinned user-information
+schema except `pushbullet_access_token`. The list is fixed in the reviewed catalog;
+it is never derived from live keys or automatically expanded with a future schema.
+Repeated `name` query keys exercise the typed selector without an unfiltered read.
+
+The recipe label is `account-environment-review-v1`; each user read records the
+fixed argument variant `documented-fields-except-token`. The command requires
+committed inputs, `WHM_API_LIVE=1`, exact `npr`/`npr.rs` guards and both test tokens.
+The shared exact-URI guard rejects added token selectors, omitted selectors,
+changed targets, request bodies and mutations before dispatch. Evidence retains
+only masked structural types/paths from each original response. No settings,
+contact addresses, locale, theme or token changes; no message sending or returned
+URL fetch. Original account-environment catalogs and captures remain unchanged.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/account-environment-review.php \
+  --output=docs/api/evidence/account-environment-reviewed-new.json
+```
+
+The recipe covers broad user-field wire compatibility, not every account state
+or mutation. Every discrepancy and failed observation remains a strict failure;
+no acknowledgment or retry is added. The requested capture follows review of the
+corrected contracts and writes to a new immutable path.

@@ -254,12 +254,106 @@ final class UapiAccountPreferencesTest extends TestCase
     }
 
     #[DataProvider('routes')]
+    public function testFirstContactAddressesOmitOldAddressesFromFormBody(string $route): void
+    {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        foreach ([false, true] as $explicitNull) {
+            $http->addResponse(new Response(200, [], self::envelope($route, 'null')));
+            if ($explicitNull) {
+                $account->contactInformation()->setEmailAddresses(
+                    addresses: ['first+tag@example.test', 'second@example.test'],
+                    password: 'p a+&=%/雪',
+                    oldAddresses: null,
+                );
+            } else {
+                $account->contactInformation()->setEmailAddresses(
+                    addresses: ['first+tag@example.test', 'second@example.test'],
+                    password: 'p a+&=%/雪',
+                );
+            }
+            $request = $http->getLastRequest();
+            self::assertInstanceOf(RequestInterface::class, $request);
+            self::assertSame('POST', $request->getMethod());
+            self::assertSame(
+                $route === 'bridge'
+                    ? 'https://api.example.test:2087/json-api/uapi_cpanel?api.version=1&cpanel.user=npr'
+                        . '&cpanel.module=ContactInformation&cpanel.function=set_email_addresses'
+                    : 'https://api.example.test:2083/execute/ContactInformation/set_email_addresses',
+                (string) $request->getUri(),
+            );
+            self::assertSame(
+                'address=first%2Btag%40example.test&address=second%40example.test'
+                    . '&password=p%20a%2B%26%3D%25%2F%E9%9B%AA',
+                (string) $request->getBody(),
+            );
+            self::assertSame('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
+            self::assertSame(1, $account->responseMeta()?->uapiStatus());
+            self::assertSame($route === 'bridge' ? 1 : null, $account->responseMeta()->whmResult());
+        }
+        self::assertCount(2, $http->getRequests());
+    }
+
+    #[DataProvider('routes')]
+    public function testOmittedOldAddressesPreserveApiFailureMetadataWithoutRetry(string $route): void
+    {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope($route, '0')));
+        $account->notifications()->getNotificationsCount();
+        $previous = $account->responseMeta();
+        $http->addResponse(new Response(200, [], self::envelope($route, 'null', 0)));
+        try {
+            $account->contactInformation()->setEmailAddresses(
+                addresses: ['new@example.test'],
+                password: 'fixture-password',
+            );
+            self::fail('Omitting oldAddresses must not turn an API failure into success.');
+        } catch (ApiErrorException $error) {
+            self::assertSame(0, $error->metadata?->uapiStatus());
+            self::assertSame(['Synthetic failure'], $error->errors());
+            self::assertNotSame($previous, $error->metadata);
+            self::assertSame($account->responseMeta(), $error->metadata);
+        }
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('address=new%40example.test&password=fixture-password', (string) $request->getBody());
+        self::assertCount(2, $http->getRequests());
+    }
+
+    #[DataProvider('routes')]
+    public function testEmptyOldAddressStringIsNotOmitted(string $route): void
+    {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope($route, 'null', 0)));
+        try {
+            $account->contactInformation()->setEmailAddresses(
+                addresses: ['first@example.test'],
+                password: 'fixture-password',
+                oldAddresses: '',
+            );
+            self::fail('The API failure for an empty old_address value must be preserved.');
+        } catch (ApiErrorException $error) {
+            self::assertSame(0, $error->metadata?->uapiStatus());
+            self::assertSame($account->responseMeta(), $error->metadata);
+        }
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame(
+            'address=first%40example.test&password=fixture-password&old_address=',
+            (string) $request->getBody(),
+        );
+        self::assertCount(1, $http->getRequests());
+    }
+
+    #[DataProvider('routes')]
     public function testRequiredEmptyStringsAreSentInMutationBodies(string $route): void
     {
         [$client, $http] = self::client($route);
         $account = $client->uapi('npr');
         $cases = [
-            'setEmailAddresses' => 'address=new%40example.test&old_address=old%40example.test&password=',
+            'setEmailAddresses' => 'address=new%40example.test&password=&old_address=old%40example.test',
             'unsetEmailAddresses' => 'old_address=old%40example.test&password=',
             'setPushbulletAccessToken' => 'pushbullet_access_token=',
             'setLocale' => 'locale=',
@@ -269,10 +363,17 @@ final class UapiAccountPreferencesTest extends TestCase
             $http->addResponse(new Response(200, [], self::envelope($route, 'null')));
             switch ($method) {
                 case 'setEmailAddresses':
-                    $account->contactInformation()->setEmailAddresses(['new@example.test'], ['old@example.test'], '');
+                    $account->contactInformation()->setEmailAddresses(
+                        addresses: ['new@example.test'],
+                        oldAddresses: ['old@example.test'],
+                        password: '',
+                    );
                     break;
                 case 'unsetEmailAddresses':
-                    $account->contactInformation()->unsetEmailAddresses(['old@example.test'], '');
+                    $account->contactInformation()->unsetEmailAddresses(
+                        oldAddresses: ['old@example.test'],
+                        password: '',
+                    );
                     break;
                 case 'setPushbulletAccessToken':
                     $account->contactInformation()->setPushbulletAccessToken('');
@@ -328,7 +429,7 @@ final class UapiAccountPreferencesTest extends TestCase
         [$client] = self::client('direct');
         $contact = $client->uapi()->contactInformation();
         foreach (
-            ['setEmailAddresses' => ['addresses', 'oldAddresses', 'password'],
+            ['setEmailAddresses' => ['addresses', 'password'],
             'unsetEmailAddresses' => ['oldAddresses', 'password'],
             'setPushbulletAccessToken' => ['pushbulletAccessToken']] as $method => $parameters
         ) {
@@ -340,9 +441,13 @@ final class UapiAccountPreferencesTest extends TestCase
                 }
             }
         }
+        $oldAddresses = new ReflectionParameter([$contact, 'setEmailAddresses'], 'oldAddresses');
+        self::assertTrue($oldAddresses->isOptional());
+        self::assertTrue($oldAddresses->allowsNull());
+        self::assertNull($oldAddresses->getDefaultValue());
     }
 
-    /** @param list<mixed> $arguments */
+    /** @param array<string, mixed> $arguments */
     #[DataProvider('invalidRepeatedInputs')]
     public function testMalformedRepeatedAddressInputClearsMetadataBeforeIo(string $method, array $arguments): void
     {
@@ -362,13 +467,17 @@ final class UapiAccountPreferencesTest extends TestCase
         self::assertCount(1, $http->getRequests());
     }
 
-    /** @return iterable<string, array{string, list<mixed>}> */
+    /** @return iterable<string, array{string, array<string, mixed>}> */
     public static function invalidRepeatedInputs(): iterable
     {
         foreach ([[], [0], [false], [null], ['key' => 'mail@example.test']] as $index => $invalid) {
-            yield "new $index" => ['setEmailAddresses', [$invalid, ['old@example.test'], 'password']];
-            yield "old $index" => ['setEmailAddresses', [['new@example.test'], $invalid, 'password']];
-            yield "unset $index" => ['unsetEmailAddresses', [$invalid, 'password']];
+            yield "new $index" => ['setEmailAddresses', [
+                'addresses' => $invalid, 'oldAddresses' => ['old@example.test'], 'password' => 'password',
+            ]];
+            yield "old $index" => ['setEmailAddresses', [
+                'addresses' => ['new@example.test'], 'oldAddresses' => $invalid, 'password' => 'password',
+            ]];
+            yield "unset $index" => ['unsetEmailAddresses', ['oldAddresses' => $invalid, 'password' => 'password']];
         }
     }
 
@@ -393,10 +502,14 @@ final class UapiAccountPreferencesTest extends TestCase
                     $contact->setPushbulletAccessToken($secret);
                     break;
                 case 'setEmailAddresses':
-                    $contact->setEmailAddresses(['new@example.test'], ['old@example.test'], $secret);
+                    $contact->setEmailAddresses(
+                        addresses: ['new@example.test'],
+                        oldAddresses: ['old@example.test'],
+                        password: $secret,
+                    );
                     break;
                 default:
-                    $contact->unsetEmailAddresses(['old@example.test'], $secret);
+                    $contact->unsetEmailAddresses(oldAddresses: ['old@example.test'], password: $secret);
             }
             self::fail('Synthetic failure must throw.');
         } catch (ApiException $error) {
@@ -506,8 +619,8 @@ final class UapiAccountPreferencesTest extends TestCase
     {
         $parameters = match ($function) {
             'set_email_addresses' => 'address=new%2Btag%40example.test&address=second%40example.test&'
-                . 'old_address=old%40example.test&old_address=other%40example.test'
-                . '&password=p%20a%2B%26%3D%25%2F%E9%9B%AA',
+                . 'password=p%20a%2B%26%3D%25%2F%E9%9B%AA'
+                . '&old_address=old%40example.test&old_address=other%40example.test',
             'unset_email_addresses' => 'old_address=old%40example.test&old_address=other%40example.test'
                 . '&password=p%20a%2B%26%3D%25%2F%E9%9B%AA',
             'set_pushbullet_access_token' => 'pushbullet_access_token=p%20a%2B%26%3D%25%2F%E9%9B%AA',

@@ -10,11 +10,14 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\UapiClient;
 use Http\Mock\Client as MockClient;
+use InvalidArgumentException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
+use ReflectionMethod;
+use TypeError;
 
 /** Independently authored payload and wire cases for the eight pinned environment reads. */
 final class UapiAccountEnvironmentTest extends TestCase
@@ -51,7 +54,11 @@ final class UapiAccountEnvironmentTest extends TestCase
         [$client, $http] = self::client($route);
         $account = $client->uapi('npr');
         $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
-        self::assertSame($expected, self::invoke($account, $module, $function));
+        try {
+            self::assertSame($expected, self::invoke($account, $module, $function));
+        } catch (PayloadMismatchException) {
+            self::fail('The independently reviewed valid payload must be accepted.');
+        }
         self::assertRequest($http, $route, $module, $function);
         self::assertCount(1, $http->getRequests());
         $metadata = $account->responseMeta();
@@ -62,7 +69,8 @@ final class UapiAccountEnvironmentTest extends TestCase
     }
 
     #[DataProvider('observedCompatibilityPayloads')]
-    public function testObservedCompatibilityPreservesPayloadAndMetadata(
+    #[DataProvider('reviewedVariablesFamilyPayloads')]
+    public function testReviewedCompatibilityPreservesPayloadAndMetadata(
         string $route,
         string $module,
         string $function,
@@ -78,7 +86,7 @@ final class UapiAccountEnvironmentTest extends TestCase
         try {
             self::assertSame($expected, self::invoke($account, $module, $function));
         } catch (PayloadMismatchException) {
-            self::fail('The evidenced field representation must satisfy its narrowed compatibility contract.');
+            self::fail('The reviewed field representation must satisfy its compatibility contract.');
         }
         $metadata = $account->responseMeta();
         self::assertNotNull($metadata);
@@ -117,6 +125,45 @@ final class UapiAccountEnvironmentTest extends TestCase
                 [$route, 'Variables', 'get_server_information',
                     '{"empty_trash_days":"7","mysql_version":"8.0","version":"5.14"}',
                     ['empty_trash_days' => '7', 'mysql_version' => '8.0', 'version' => '5.14']];
+        }
+    }
+
+    /** @return iterable<string, array{string, string, string, string, mixed}> */
+    public static function reviewedVariablesFamilyPayloads(): iterable
+    {
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (self::variableFields() as [$function, $field, $type]) {
+                if ($function !== 'get_user_information' || !in_array($type, ['flag', 'int', 'limit'], true)) {
+                    continue;
+                }
+                // Literal field families; some numeric variants are source-inferred rather than live-observed.
+                $values = $type === 'flag' ? [0, 1] : [0, 25, PHP_INT_MAX, PHP_INT_MIN];
+                foreach ($values as $index => $value) {
+                    yield "$route reviewed user $field $index" => [$route, 'Variables', $function,
+                        json_encode([$field => (string) $value], JSON_THROW_ON_ERROR), [$field => $value]];
+                }
+                if ($type === 'limit') {
+                    // Preserve the existing string alternative; no new closed unlimited enum is inferred.
+                    foreach (['unlimited', 'future', '01', '1.5', '999999999999999999999999999'] as $index => $value) {
+                        yield "$route unchanged limit string $field $index" => [$route, 'Variables', $function,
+                            json_encode([$field => $value], JSON_THROW_ON_ERROR), [$field => $value]];
+                    }
+                }
+            }
+            yield "$route reviewed dynamic feature flags" => [$route, 'Variables', 'get_user_information',
+                '{"feature":{"fixture_0":"0","fixture_1":"1","fixture_int":1}}',
+                ['feature' => ['fixture_0' => 0, 'fixture_1' => 1, 'fixture_int' => 1]]];
+            yield "$route reviewed unset contacts" => [$route, 'Variables', 'get_user_information',
+                '{"contact_email":null,"contact_email_2":null}', ['contact_email' => null, 'contact_email_2' => null]];
+            yield "$route reviewed alternate contact unset" => [$route, 'Variables', 'get_user_information',
+                '{"contact_email":"fixture@example.test","contact_email_2":null}',
+                ['contact_email' => 'fixture@example.test', 'contact_email_2' => null]];
+            foreach (['file_upload_maximum_bytes', 'minimum_password_strength_mysql'] as $field) {
+                foreach ([0, 25, PHP_INT_MAX, PHP_INT_MIN] as $index => $value) {
+                    yield "$route inferred server $field $index" => [$route, 'Variables', 'get_server_information',
+                        json_encode([$field => (string) $value], JSON_THROW_ON_ERROR), [$field => $value]];
+                }
+            }
         }
     }
 
@@ -328,7 +375,11 @@ final class UapiAccountEnvironmentTest extends TestCase
                         array_push(
                             $cases,
                             '{"feature":{"fixture":2}}',
-                            '{"feature":{"fixture":"1"}}',
+                            '{"feature":{"fixture":"2"}}',
+                            '{"feature":{"fixture":"01"}}',
+                            '{"feature":{"fixture":"-1"}}',
+                            '{"feature":{"fixture":"1.0"}}',
+                            '{"feature":{"fixture":"999999999999999999999999999"}}',
                             '{"mxcheck":{"fixture":1}}',
                             '{"home_directory_links":null}',
                         );
@@ -345,29 +396,25 @@ final class UapiAccountEnvironmentTest extends TestCase
                 }
                 if (str_contains($type, 'flag') || str_contains($type, 'int')) {
                     $badValues[] = '0.5';
-                    if ($function === 'get_server_information' && isset(self::observedServerFields()[$field])) {
-                        array_push(
-                            $badValues,
-                            '"00"',
-                            '"01"',
-                            '"-0"',
-                            '"+1"',
-                            '"1.0"',
-                            '"0.5"',
-                            '"1e3"',
-                            '" 1"',
-                            '"1 "',
-                            '""',
-                            '"unlimited"',
-                            '"999999999999999999999999999"',
-                            '"-999999999999999999999999999"',
-                            'true',
-                        );
-                        if (str_contains($type, 'flag')) {
-                            array_push($badValues, '"2"', '"-1"');
-                        }
-                    } else {
-                        $badValues[] = '"0"';
+                    array_push(
+                        $badValues,
+                        '"00"',
+                        '"01"',
+                        '"-0"',
+                        '"+1"',
+                        '"1.0"',
+                        '"0.5"',
+                        '"1e3"',
+                        '" 1"',
+                        '"1 "',
+                        '""',
+                        '"unlimited"',
+                        '"999999999999999999999999999"',
+                        '"-999999999999999999999999999"',
+                        'true',
+                    );
+                    if (str_contains($type, 'flag')) {
+                        array_push($badValues, '"2"', '"-1"');
                     }
                 }
                 if (str_contains($type, 'flag')) {
@@ -466,6 +513,55 @@ final class UapiAccountEnvironmentTest extends TestCase
         $variables->getUserInformation(name: '');
         self::assertRequest($http, $route, 'Variables', 'get_user_information', 'name=');
         self::assertCount(10, $http->getRequests());
+    }
+
+    #[DataProvider('routes')]
+    public function testUserAndServerNamesRepeatWithoutNumbering(string $route): void
+    {
+        [$client, $http] = self::client($route);
+        $variables = $client->uapi('npr')->variables();
+        foreach (['get_server_information', 'get_user_information'] as $function) {
+            $http->addResponse(new Response(200, [], self::envelope($route, '{}')));
+            match ($function) {
+                'get_server_information' => $variables->getServerInformation(name: ['default_theme', 'a +&=%/雪']),
+                default => $variables->getUserInformation(name: ['domain', 'a +&=%/雪']),
+            };
+            $first = $function === 'get_server_information' ? 'default_theme' : 'domain';
+            self::assertRequest($http, $route, 'Variables', $function, 'name=' . $first
+                . '&name=a%20%2B%26%3D%25%2F%E9%9B%AA');
+        }
+        self::assertCount(2, $http->getRequests());
+    }
+
+    /** @param array<mixed> $names */
+    #[DataProvider('invalidRepeatedNames')]
+    public function testMalformedRepeatedNamesClearMetadataBeforeIo(string $method, array $names): void
+    {
+        [$client, $http] = self::client('direct');
+        $account = $client->uapi();
+        $http->addResponse(new Response(200, [], self::envelope('direct', '{}')));
+        $account->variables()->getSessionInformation();
+        self::assertNotNull($account->responseMeta());
+        try {
+            // Exercise invalid lists outside the generated PHPDoc contract.
+            (new ReflectionMethod($account->variables(), $method))->invoke($account->variables(), $names);
+            self::fail('Malformed repeated names must fail before dispatch.');
+        } catch (InvalidArgumentException) {
+            self::assertNull($account->responseMeta());
+        } catch (TypeError) {
+            self::fail('List validation must run after the metadata reset.');
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, array<mixed>}> */
+    public static function invalidRepeatedNames(): iterable
+    {
+        foreach (['getServerInformation', 'getUserInformation'] as $method) {
+            foreach ([[], [1 => 'domain'], ['domain', false], [0], [null], [['domain']]] as $index => $names) {
+                yield "$method $index" => [$method, $names];
+            }
+        }
     }
 
     /** @return iterable<string, array{string}> */
@@ -586,7 +682,8 @@ final class UapiAccountEnvironmentTest extends TestCase
                 . 'notify_twofactorauth_change notify_twofactorauth_change_notification_disabled '
                 . 'spf_enabled utf8_mailbox',
             'int' => 'bandwidth_limit created disk_block_limit gid last_modified uid',
-            'string' => 'contact_email contact_email_2 cpanel_root_directory created_in_version database_owner domain '
+            'nullable-string' => 'contact_email contact_email_2',
+            'string' => 'cpanel_root_directory created_in_version database_owner domain '
                 . 'feature_list home ip lang locale mailbox_format owner plan pushbullet_access_token shell '
                 . 'ssl_default_key_type theme user',
             'limit' => 'maximum_addon_domains maximum_databases maximum_defer_fail_percentage '

@@ -10,7 +10,7 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 86 and later. Omitting name returns all server configuration settings; supplied name selects one documented variable and is forwarded once. The typed method does not infer a numbered or repeated parameter family from the differing prose and example."
+          "text": "Available in cPanel 86 and later. Omitting name returns all server configuration settings. A string selects one variable; a nonempty list selects multiple variables using repeated name keys. Omission and explicit null leave selection to the server."
         },
         {
           "kind": "documented",
@@ -18,7 +18,11 @@
         },
         {
           "kind": "observed",
-          "text": "Reviewed numeric-string observations on 32 flag fields and six integer fields normalize only exact quoted 0/1 flags and lossless canonical integer strings respectively. Existing nullability and omission remain distinct; other fields retain their source types."
+          "text": "Reviewed observations on 32 flag fields and six integer fields normalize exact quoted 0/1 flags and lossless canonical integer strings. The same integer compatibility for file_upload_maximum_bytes and minimum_password_strength_mysql is inferred from the reviewer-inspected shared %Cpanel::CONF source path; those fields were null locally, not observed with numeric values. Preserve null separately from omission."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewer inspection of Cpanel/API/Variables.pm on 11.138.0.19 maps disable_analog, disable_awstats, disable_boxtrapper, disable_mailman, disable_roundcube, disable_spamassassin, disable_spambox, disable_webalizer, skip_apache_clients_optimizer and skip_mailbox_warnings_check from skip* configuration keys, including disable_awstats from skipawstats and skip_mailbox_warnings_check from skipboxcheck. These source mappings imply disable/skip meanings that contradict the pinned 1 - Enabled descriptions. Preserve the returned flags without inversion; the reviewer checked mappings only, not runtime behavior."
         }
       ],
       "evidence": [
@@ -26,14 +30,42 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Variables/get_server_information declares x-readonly: true and a GET operation. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+          "note": "/Variables/get_server_information declares x-readonly: true and a GET operation. Pinned UAPI decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
         },
         {
           "kind": "live",
           "version": "11.138.0.19",
           "date": "2026-10-31",
-          "note": "Variables/get_server_information returned numeric-string type mismatches at 38 known integer fields on both routes: 32 pinned 0/1 flags and six ordinary integers. Only those explicit fields gain bounded string compatibility. The unknown wildcard discrepancy remains unresolved and is not acknowledged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+          "note": "Variables/get_server_information returned numeric-string type mismatches at 38 known integer fields on both routes: 32 pinned 0/1 flags and six ordinary integers. This artifact directly supports those 38 explicit fields; the two additional integer-family inferences are attributed separately to reviewer source inspection. The unknown wildcard discrepancy remains unresolved and is not acknowledged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
           "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "The pinned name prose describes incremented names; the server example also uses repeated name keys. Reviewer source inspection finds get_multiple('name') in both get_user_information and get_server_information, and repeated name, name-0/name-1 and name-1/name-2 returned both selected keys through direct and bridged UAPI. Use the existing repeat encoding for optional scalar or list input. Session name remains scalar. This is attributed reviewer evidence, separate from committed captures.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. The ten disable/skip mappings identified in the operation note conflict with pinned 1 - Enabled descriptions. The known examples are disable_awstats from skipawstats and skip_mailbox_warnings_check from skipboxcheck. Other exact source-key spellings are not provided in the report and are not inferred here. Meaning is source-inferred; runtime feature behavior was not verified.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. get_server_information copies %Cpanel::CONF through _build_results unchanged, including file_upload_maximum_bytes, the same path as the six observed numeric-string integers. Both additional keys were absent from the local cpanel.config and seen only as null. Accept canonical PHP-integer-bounded numeric strings as a source-inferred family rule, not a value-specific live observation; keep existing nullable and optional behavior. No server configuration was changed to obtain evidence.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. get_server_information copies %Cpanel::CONF through _build_results unchanged, including minimum_password_strength_mysql, the same path as the six observed numeric-string integers. Both additional keys were absent from the local cpanel.config and seen only as null. Accept canonical PHP-integer-bounded numeric strings as a source-inferred family rule, not a value-specific live observation; keep existing nullable and optional behavior. No server configuration was changed to obtain evidence.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
         }
       ],
       "response": {
@@ -568,6 +600,39 @@
               "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
             }
           ]
+        },
+        "file_upload_maximum_bytes": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. get_server_information copies %Cpanel::CONF through _build_results unchanged, including file_upload_maximum_bytes, the same path as the six observed numeric-string integers. Both additional keys were absent from the local cpanel.config and seen only as null. Accept canonical PHP-integer-bounded numeric strings as a source-inferred family rule, not a value-specific live observation; keep existing nullable and optional behavior. No server configuration was changed to obtain evidence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "minimum_password_strength_mysql": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. get_server_information copies %Cpanel::CONF through _build_results unchanged, including minimum_password_strength_mysql, the same path as the six observed numeric-string integers. Both additional keys were absent from the local cpanel.config and seen only as null. Accept canonical PHP-integer-bounded numeric strings as a source-inferred family rule, not a value-specific live observation; keep existing nullable and optional behavior. No server configuration was changed to obtain evidence.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        }
+      },
+      "params": {
+        "name": {
+          "encoding": "repeat"
         }
       }
     },
@@ -588,7 +653,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Variables/get_session_information declares x-readonly: true and a GET operation. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+          "note": "/Variables/get_session_information declares x-readonly: true and a GET operation. Pinned UAPI decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
         },
         {
           "kind": "live",
@@ -618,7 +683,7 @@
       "notes": [
         {
           "kind": "documented",
-          "text": "Available in cPanel 86 and later. Omitting name returns all user configuration data; a supplied name selects one setting and is forwarded once. No indexed parameter family is inferred by the typed method."
+          "text": "Available in cPanel 86 and later. Omitting name returns all user configuration settings. A string selects one variable; a nonempty list selects multiple variables using repeated name keys. Omission and explicit null leave selection to the server."
         },
         {
           "kind": "documented",
@@ -626,11 +691,19 @@
         },
         {
           "kind": "documented",
-          "text": "Custom feature names and MX domain names are dynamic map keys. Feature values remain integer 0/1 flags and MX values remain strings. The home_directory_links item schema is unspecified and remains mixed."
+          "text": "Custom feature names and MX domain names are dynamic map keys. Feature values normalize to integer 0/1 flags, including reviewer-observed exact quoted 0/1 forms; MX values remain strings. The home_directory_links item schema is unspecified and remains mixed."
         },
         {
           "kind": "documented",
           "text": "The payload can contain the account Pushbullet access token and other private configuration data. Treat the returned configuration as sensitive and do not persist raw values in structural evidence."
+        },
+        {
+          "kind": "observed",
+          "text": "The reviewer found numeric strings in user flags, feature values, created and disk_block_limit on both routes; gid was an integer directly and a numeric string through WHM. The inspected source copies %Cpanel::CPDATA and %Cpanel::USERDATA without numeric coercion. Canonical lossless integer-string compatibility applies to this reviewed numeric family, including source-inferred variants for uid, bandwidth_limit, last_modified and other unobserved members. Strict flags accept only 0/1 or exact quoted 0/1; strict integers reject malformed strings and overflow. The existing string alternatives of maximum_* limits remain strings when integer normalization fails, without a new closed enum."
+        },
+        {
+          "kind": "observed",
+          "text": "On a reviewer-owned disposable account through both routes, contact_email and contact_email_2 were empty strings before any contact was set; the alternate contact became null after setting one address, and both became null after unsetting addresses. Preserve null, empty string, populated string and omitted fields distinctly. These observations are attributed to the review, not the committed domain-only capture."
         }
       ],
       "evidence": [
@@ -638,7 +711,35 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/Variables/get_user_information declares x-readonly: true and a GET operation. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+          "note": "/Variables/get_user_information declares x-readonly: true and a GET operation. Pinned UAPI decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "The pinned name prose describes incremented names; the server example also uses repeated name keys. Reviewer source inspection finds get_multiple('name') in both get_user_information and get_server_information, and repeated name, name-0/name-1 and name-1/name-2 returned both selected keys through direct and bridged UAPI. Use the existing repeat encoding for optional scalar or list input. Session name remains scalar. This is attributed reviewer evidence, separate from committed captures.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. get_user_information builds results from %Cpanel::CPDATA and %Cpanel::USERDATA; _transform_results does not coerce numbers. Reviewer live reads on npr failed on numeric strings at 25 fields direct and 26 bridged, including gid only through WHM. This supports an operation-scoped numeric family rule, not general coercion and not a claim that each field was separately observed as a string. uid, bandwidth_limit and last_modified were integer locally. Every existing integer and flag is covered, with optional presence preserved; maximum_* string alternatives remain unchanged.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer lifecycle observations on a disposable account through direct and bridged UAPI establish contact_email can be null: both fields were empty strings on creation, contact_email_2 was null after a one-address set, and both were null after unset_email_addresses. Add explicit null to the existing optional string without conflating omission or empty string. This report is separate from the immutable domain-only capture.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer lifecycle observations on a disposable account through direct and bridged UAPI establish contact_email_2 can be null: both fields were empty strings on creation, contact_email_2 was null after a one-address set, and both were null after unset_email_addresses. Add explicit null to the existing optional string without conflating omission or empty string. This report is separate from the immutable domain-only capture.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
         }
       ],
       "response": {
@@ -646,7 +747,10 @@
           "replace": {
             "type": "map",
             "values": {
-              "type": "flag"
+              "type": "flag",
+              "accept": [
+                "string-flag"
+              ]
             }
           },
           "evidence": [
@@ -654,7 +758,14 @@
               "kind": "doc",
               "version": "pinned 2026-10-13",
               "date": "2026-10-31",
-              "note": "/Variables/get_user_information result.data.properties.feature incorrectly nests additionalProperties inside properties. Its prose says custom feature names are returned as keys; example {custom_feature: 1} and the nested integer enum [0,1] establish a dynamic map of integer flags, not a literal additionalProperties field. Preserve optional field presence. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+              "note": "/Variables/get_user_information result.data.properties.feature incorrectly nests additionalProperties inside properties. Its prose says custom feature names are returned as keys; example {custom_feature: 1} and the nested integer enum [0,1] establish a dynamic map of integer flags, not a literal additionalProperties field. Preserve optional field presence. Pinned UAPI decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. The reviewer observed dynamic feature values as digit strings through both routes. Preserve dynamic keys and integer 0/1 results, accepting only exact quoted 0/1. Other strings, integers outside 0/1, booleans, nulls and malformed map values remain invalid.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
             }
           ]
         },
@@ -670,9 +781,761 @@
               "kind": "doc",
               "version": "pinned 2026-10-13",
               "date": "2026-10-31",
-              "note": "/Variables/get_user_information result.data.properties.mxcheck incorrectly nests additionalProperties inside properties. Its prose says the domain name is the return name; example {example.com: local, example2.com: remote} and the nested string schema establish a dynamic domain-to-string map. Preserve optional field presence and do not infer an enforced closed MX-type enum. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+              "note": "/Variables/get_user_information result.data.properties.mxcheck incorrectly nests additionalProperties inside properties. Its prose says the domain name is the return name; example {example.com: local, example2.com: remote} and the nested string schema establish a dynamic domain-to-string map. Preserve optional field presence and do not infer an enforced closed MX-type enum. Pinned UAPI decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
             }
           ]
+        },
+        "backup_enabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. The reviewer observed numeric-string backup_enabled through both direct and bridged UAPI. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "bandwidth_limit": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. bandwidth_limit was an integer in the reviewer run; string compatibility is source-inferred from the shared hash path, not separately live-observed. Accept only canonical lossless PHP-integer-bounded numeric strings; malformed and overflowing strings remain rejected. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "cgi_enabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. The reviewer observed numeric-string cgi_enabled through both direct and bridged UAPI. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "created": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. The reviewer observed numeric-string created through both direct and bridged UAPI. Accept only canonical lossless PHP-integer-bounded numeric strings; malformed and overflowing strings remain rejected. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "demo_mode": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. The reviewer observed numeric-string demo_mode through both direct and bridged UAPI. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "disk_block_limit": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. The reviewer observed numeric-string disk_block_limit through both direct and bridged UAPI. Accept only canonical lossless PHP-integer-bounded numeric strings; malformed and overflowing strings remain rejected. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "dkim_enabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. The reviewer observed numeric-string dkim_enabled through both direct and bridged UAPI. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "gid": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. The reviewer observed gid as an integer directly and a numeric string through bridged UAPI in the same run. Accept only canonical lossless PHP-integer-bounded numeric strings; malformed and overflowing strings remain rejected. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "last_modified": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. last_modified was an integer in the reviewer run; string compatibility is source-inferred from the shared hash path, not separately live-observed. Accept only canonical lossless PHP-integer-bounded numeric strings; malformed and overflowing strings remain rejected. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "legacy_backup_enabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. The reviewer observed numeric-string legacy_backup_enabled through both direct and bridged UAPI. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "maximum_addon_domains": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. maximum_addon_domains has pinned integer and string alternatives. Infer canonical numeric-string normalization for its integer arm from the reviewed user-data family, trying that arm first. Preserve the existing string alternative verbatim, including noncanonical and out-of-range strings; do not newly enforce the documented unlimited enum or claim a field-specific live observation. Preserve optional presence and reject null.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "maximum_databases": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. maximum_databases has pinned integer and string alternatives. Infer canonical numeric-string normalization for its integer arm from the reviewed user-data family, trying that arm first. Preserve the existing string alternative verbatim, including noncanonical and out-of-range strings; do not newly enforce the documented unlimited enum or claim a field-specific live observation. Preserve optional presence and reject null.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "maximum_defer_fail_percentage": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. maximum_defer_fail_percentage has pinned integer and string alternatives. Infer canonical numeric-string normalization for its integer arm from the reviewed user-data family, trying that arm first. Preserve the existing string alternative verbatim, including noncanonical and out-of-range strings; do not newly enforce the documented unlimited enum or claim a field-specific live observation. Preserve optional presence and reject null.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "maximum_email_account_disk_quota": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. maximum_email_account_disk_quota has pinned integer and string alternatives. Infer canonical numeric-string normalization for its integer arm from the reviewed user-data family, trying that arm first. Preserve the existing string alternative verbatim, including noncanonical and out-of-range strings; do not newly enforce the documented unlimited enum or claim a field-specific live observation. Preserve optional presence and reject null.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "maximum_emails_per_hour": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. maximum_emails_per_hour has pinned integer and string alternatives. Infer canonical numeric-string normalization for its integer arm from the reviewed user-data family, trying that arm first. Preserve the existing string alternative verbatim, including noncanonical and out-of-range strings; do not newly enforce the documented unlimited enum or claim a field-specific live observation. Preserve optional presence and reject null.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "maximum_ftp_accounts": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. maximum_ftp_accounts has pinned integer and string alternatives. Infer canonical numeric-string normalization for its integer arm from the reviewed user-data family, trying that arm first. Preserve the existing string alternative verbatim, including noncanonical and out-of-range strings; do not newly enforce the documented unlimited enum or claim a field-specific live observation. Preserve optional presence and reject null.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "maximum_mail_accounts": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. maximum_mail_accounts has pinned integer and string alternatives. Infer canonical numeric-string normalization for its integer arm from the reviewed user-data family, trying that arm first. Preserve the existing string alternative verbatim, including noncanonical and out-of-range strings; do not newly enforce the documented unlimited enum or claim a field-specific live observation. Preserve optional presence and reject null.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "maximum_mailing_lists": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. maximum_mailing_lists has pinned integer and string alternatives. Infer canonical numeric-string normalization for its integer arm from the reviewed user-data family, trying that arm first. Preserve the existing string alternative verbatim, including noncanonical and out-of-range strings; do not newly enforce the documented unlimited enum or claim a field-specific live observation. Preserve optional presence and reject null.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "maximum_parked_domains": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. maximum_parked_domains has pinned integer and string alternatives. Infer canonical numeric-string normalization for its integer arm from the reviewed user-data family, trying that arm first. Preserve the existing string alternative verbatim, including noncanonical and out-of-range strings; do not newly enforce the documented unlimited enum or claim a field-specific live observation. Preserve optional presence and reject null.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "maximum_passenger_apps": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. maximum_passenger_apps has pinned integer and string alternatives. Infer canonical numeric-string normalization for its integer arm from the reviewed user-data family, trying that arm first. Preserve the existing string alternative verbatim, including noncanonical and out-of-range strings; do not newly enforce the documented unlimited enum or claim a field-specific live observation. Preserve optional presence and reject null.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "maximum_subdomains": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. maximum_subdomains has pinned integer and string alternatives. Infer canonical numeric-string normalization for its integer arm from the reviewed user-data family, trying that arm first. Preserve the existing string alternative verbatim, including noncanonical and out-of-range strings; do not newly enforce the documented unlimited enum or claim a field-specific live observation. Preserve optional presence and reject null.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_account_authn_link": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_account_authn_link is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_account_authn_link_notification_disabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_account_authn_link_notification_disabled is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_account_login": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_account_login is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_account_login_for_known_netblock": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_account_login_for_known_netblock is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_account_login_notification_disabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_account_login_notification_disabled is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_autossl_expiry": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_autossl_expiry is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_autossl_expiry_coverage": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_autossl_expiry_coverage is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_autossl_renewal_coverage": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_autossl_renewal_coverage is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_autossl_renewal_coverage_reduced": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_autossl_renewal_coverage_reduced is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_autossl_renewal_uncovered_domains": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_autossl_renewal_uncovered_domains is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_bandwidth_limit": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_bandwidth_limit is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_contact_address_change": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_contact_address_change is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_contact_address_change_notification_disabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_contact_address_change_notification_disabled is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_disk_limit": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_disk_limit is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_password_change": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_password_change is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_password_change_notification_disabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_password_change_notification_disabled is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_ssl_expiry": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_ssl_expiry is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_twofactorauth_change": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_twofactorauth_change is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "notify_twofactorauth_change_notification_disabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. notify_twofactorauth_change_notification_disabled is covered by source inference across the reviewed flag family. Fourteen present notify_* flags were numeric strings in the reviewer run, but the report does not identify them individually; no field-specific observation is claimed here. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "spf_enabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. The reviewer observed numeric-string spf_enabled through both direct and bridged UAPI. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "uid": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. uid was an integer in the reviewer run; string compatibility is source-inferred from the shared hash path, not separately live-observed. Accept only canonical lossless PHP-integer-bounded numeric strings; malformed and overflowing strings remain rejected. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "utf8_mailbox": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer inspection of Cpanel/API/Variables.pm on cPanel 11.138.0.19, reported in PR41 review 5720241923. The reviewer observed numeric-string utf8_mailbox through both direct and bridged UAPI. Accept only exact quoted 0/1 and retain integer 0/1 output. Preserve optional presence; no null is added.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "contact_email": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer lifecycle observations on a disposable account through direct and bridged UAPI establish contact_email can be null: both fields were empty strings on creation, contact_email_2 was null after a one-address set, and both were null after unset_email_addresses. Add explicit null to the existing optional string without conflating omission or empty string. This report is separate from the immutable domain-only capture.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        },
+        "contact_email_2": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer lifecycle observations on a disposable account through direct and bridged UAPI establish contact_email_2 can be null: both fields were empty strings on creation, contact_email_2 was null after a one-address set, and both were null after unset_email_addresses. Add explicit null to the existing optional string without conflating omission or empty string. This report is separate from the immutable domain-only capture.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923"
+            }
+          ]
+        }
+      },
+      "params": {
+        "name": {
+          "encoding": "repeat"
         }
       }
     }

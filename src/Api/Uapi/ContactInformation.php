@@ -108,10 +108,15 @@ final readonly class ContactInformation
      * Documented: Available in cPanel 102 and later. Sets the selected account's contact email addresses with no
      * rollback. Use unsetEmailAddresses() to remove all addresses.
      *
-     * Documented: Supply the new addresses, the complete existing-address list and the account password. A mismatch
-     * between oldAddresses and the current account addresses fails to prevent races. Requiredness is retained; repeated
-     * keys encode both nonempty lists in caller order. This changes contact destinations; the client does not send a
-     * separate notification.
+     * Documented: Supply the new addresses and account password. When contacts exist, supply their complete list as
+     * oldAddresses; a mismatch fails to prevent races. Repeated keys preserve supplied address order. This changes
+     * contact destinations; the client does not send a separate notification.
+     *
+     * Observed: On cPanel 11.138.0.19, direct UAPI and WHM-bridged form POSTs accepted omitted old_address when setting
+     * the first contacts and returned data:null. Omit oldAddresses (or pass null) only when no contacts exist; omission
+     * with existing contacts failed without changing them. An empty list fails local validation and an empty string
+     * failed at the API. The account password remains required and sensitive. This setter exception does not change
+     * unsetEmailAddresses(), which requires the complete existing-address list.
      *
      * Documented: The pinned success envelope declares no data member; this operation returns void after checking the
      * envelope outcome.
@@ -119,22 +124,26 @@ final readonly class ContactInformation
      * API-map identity: uapi:ContactInformation/set_email_addresses#GET (wire name set_email_addresses).
      *
      * @param string|list<string> $addresses The account’s new contact email addresses.
-     * @param string|list<string> $oldAddresses The account’s existing contact email addresses.
      * @param string $password The account’s password.
+     * @param string|list<string>|null $oldAddresses The account's complete existing contact email address list. Supply
+     *     it when contacts exist; a mismatch fails to prevent races. Omit this argument (or pass null) only when adding
+     *     the first addresses to an account with no current contacts, as observed on cPanel 11.138.0.19 through direct
+     *     UAPI and the WHM bridge. Omission does not bypass the existing-address check. Empty lists are rejected
+     *     locally; an empty string was rejected by the API. Null omits it.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/contact-information/contactinformation-set_email_addresses
      */
     public function setEmailAddresses(
         string|array $addresses,
-        string|array $oldAddresses,
         #[SensitiveParameter]
         string $password,
+        string|array|null $oldAddresses = null,
     ): void {
         ($this->run)(ContactInformationSpec::SET_EMAIL_ADDRESSES, [
             'addresses' => $addresses,
-            'oldAddresses' => $oldAddresses,
             'password' => $password,
+            'oldAddresses' => $oldAddresses,
         ]);
     }
 

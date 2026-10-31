@@ -3122,8 +3122,10 @@ six secret-bearing or state-changing operations use form POST. The JSON-body
 `ContactInformation/set_notification_preferences` operation remains excluded under
 `8x0.1.18`, and the deprecated theme-base operation remains excluded.
 
-Contact addresses use documented repeated form fields. Required address,
-old-address and password inputs retain their source requiredness; passwords and
+Contact addresses use documented repeated form fields. The setter requires the
+new addresses and password; omit `oldAddresses` only when the account has no
+contacts. Existing contacts still require their complete old-address list to pass
+the server race check. Unset keeps that list and password required. Passwords and
 Pushbullet tokens are sensitive parameters. The token getter also uses POST and
 returns sensitive payload data. Contact mutations with no documented data return
 void; locale setting preserves its present unspecified payload, while theme update
@@ -3136,16 +3138,19 @@ prose/items structure, so the result remains mixed rather than acquiring an
 invented list contract. Notification preference rows retain the suspicious literal
 `additionalProperties` source property without inferring a dynamic-field schema.
 
-Variable reads preserve optional fields, nullable values and exact name selectors.
-Source prose/examples establish dynamic feature-flag and domain/MX maps where the
-formal schema misplaced `additionalProperties`; only those field nodes are
-corrected. Server/session/user fields and opaque values are returned as data;
+Variable reads preserve optional fields and nullable values. User/server name
+selectors accept a string or repeated string list; the session selector stays
+scalar. Source prose/examples establish dynamic feature-flag and domain/MX maps
+where the formal schema misplaced `additionalProperties`; the dynamic-map repair
+is limited to those field nodes. Server/session/user fields and opaque values are returned as data;
 recommendations do not install packages or change configuration.
 
-Only the 32 observed server flags accept exact quoted `0`/`1`; six observed integer
-quantities accept canonical lossless integer strings. Other string and integer
-fields keep their contracts. Session host additionally accepts null, observed
-through the bridge. Only outer EA4 recommendation URLs accept `bool|string`;
+The 32 observed server flags accept exact quoted `0`/`1`; all eight server integer
+quantities accept canonical lossless integer strings, with six value-observed and
+two source-inferred. User integer/flag fields and feature flags have the reviewed
+family compatibility described below; existing limit-string alternatives remain
+unchanged. Contact email fields preserve explicit null, empty string and omission.
+Session host additionally accepts null, observed through the bridge. Only outer EA4 recommendation URLs accept `bool|string`;
 option URLs stay strings. Boolean URL values are payload data with no inferred
 sentinel meaning. Unknown fields remain untyped, and failed EA4 calls do not
 establish a successful response contract.
@@ -3190,3 +3195,54 @@ The enhancement list is empty and the user read is domain-only. No mutation,
 secret retrieval or broader user-field behavior is established. Follow-up `8x0.2.28`
 remains open. Original evidence is unchanged. Corrected SHA-256:
 `654442a1e360c28534c4b80c320ffdde2ca0d96ffdd87f8342fd1b6b47a3eb78`.
+
+### Account-environment external review corrections
+
+[Claude's review of `a361c45`](https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923)
+identified two failures outside the original domain-only user capture: unfiltered
+user information rejected valid wire values, and the typed contact setter could
+not supply an account's first contact address. The reviewer reports cPanel
+`11.138.0.19` through direct and bridged routes, reads on `npr`, and contact/theme/
+locale/token checks on disposable `wrvenv`, whose removal was verified after each
+run. These are attributed reviewer observations, separate from committed captures.
+
+For user information, the reviewer traced results through `%Cpanel::CPDATA` and
+`%Cpanel::USERDATA` without numeric coercion. The same `gid` was an integer directly
+and a digit string through the bridge. The reviewed compatibility family therefore
+covers canonical lossless integer strings in every integer/flag field and feature
+flag value for this operation. Native integers and omission remain unchanged;
+flags still accept only zero and one. Unobserved siblings are source-based
+compatibility inferences, not additional live observations. Existing `maximum_*`
+string alternatives remain available; no new closed enum enforcement is inferred.
+Contact email fields additionally preserve the null states observed after a
+one-address set or complete unset, separately from empty strings and omission.
+
+Server information's two remaining nullable integers follow the same documented
+configuration-copy path as its six corrected siblings. Their numeric values were
+not observed on this server, and no server-wide configuration was changed to
+manufacture them. Repeated-name selection for user/server information follows
+reviewed source `get_multiple('name')` and both-route selection observations;
+session information keeps its scalar selector. Notes distinguish pinned inverted
+skip/disable wording from reviewer-inspected source mappings without claiming
+runtime enforcement was measured.
+
+The first-contact setter now permits omitting `oldAddresses` only for an account
+with no existing contact addresses. The reviewer observed successful explicit-null
+results in that state; omission with existing addresses still fails the server's
+race check. The unset method retains a required complete old-address list. Wrong
+password/list failures and single-request/no-retry behavior remain intact.
+
+The reviewer attributes both PHP-recommendation API failures to an absent
+`/etc/cpanel/ea4/recommendations/custom_php_recommendation.json`; the API exception
+is retained. The general-recommendations bridge failure remains a successful WHM
+envelope containing null UAPI data, correctly rejected, with no established cause.
+Unknown findings remain unwaived and explicitly nonblocking. Reviewer-observed
+notification preference rows contain `onchangeparent`, `type`, `infotext`, and
+`value`, with no literal `additionalProperties`; those unmodeled fields remain
+follow-up `8x0.2.28`, not a new typed schema inferred from masked historical keys.
+
+The new bounded review recipe selects every current documented user field except
+`pushbullet_access_token` on both routes, plus WHM version. It requests no token,
+performs no mutation, and will capture only sanitized structure at the reviewed
+corrected revision. This paragraph describes the recipe, not a completed run.
+The original account-environment artifacts keep their original failures and hashes.

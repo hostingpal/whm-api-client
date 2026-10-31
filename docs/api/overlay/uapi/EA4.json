@@ -11,6 +11,10 @@
         {
           "kind": "documented",
           "text": "Available in cPanel 82 and later. Returns a list of recommended PHP version names; an empty list is preserved. Recommendations do not change the server configuration."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, Claude reproduced API failure through direct UAPI and the WHM bridge when /etc/cpanel/ea4/recommendations/custom_php_recommendation.json was absent, and traced this behavior in Cpanel/API/EA4.pm. ApiErrorException is the correct outcome for this observed server state; it establishes no successful payload behavior and does not waive the failed captures. Reviewer evidence: https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923."
         }
       ],
       "evidence": [
@@ -18,7 +22,13 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/EA4/get_php_recommendations declares x-readonly: true and a GET operation. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+          "note": "/EA4/get_php_recommendations declares x-readonly: true and a GET operation. Pinned cpanel.openapi.json.gz decompressed-byte SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; stored gzip SHA-256: ba2ba938969c2e98f9bdb259f4072d182af215ba8a44402846de077ba6b85358."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Claude PR41 review https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923 reproduced EA4/get_php_recommendations API failure through direct UAPI and the WHM bridge on cPanel 11.138.0.19. Inspection of Cpanel/API/EA4.pm ties this failure to the absence of /etc/cpanel/ea4/recommendations/custom_php_recommendation.json; ApiErrorException is the correct outcome for that observed server state. This is separate reviewer evidence, establishes no successful payload contract and does not waive the failed captures. No new live call or evidence capture was made for this note."
         }
       ]
     },
@@ -43,7 +53,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "/EA4/get_recommendations declares x-readonly: true and a GET operation. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+          "note": "/EA4/get_recommendations declares x-readonly: true and a GET operation. Pinned cpanel.openapi.json.gz decompressed-byte SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; stored gzip SHA-256: ba2ba938969c2e98f9bdb259f4072d182af215ba8a44402846de077ba6b85358."
         },
         {
           "kind": "live",
