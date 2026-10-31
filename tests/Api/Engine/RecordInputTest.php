@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Tests\Api\Engine;
 
 use HostingPal\WhmApiClient\Api\Engine\ArgumentEncoder;
+use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
 use HostingPal\WhmApiClient\Api\Engine\RecordEncoder;
 use HostingPal\WhmApiClient\Api\Engine\SpecChecker;
 use InvalidArgumentException;
@@ -130,6 +131,37 @@ final class RecordInputTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         ArgumentEncoder::encode($params, $arguments);
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     * @param array<string, mixed> $arguments
+     */
+    #[DataProvider('collisions')]
+    public function testKnownRecordOverlapsFailExactlyBeforeDispatch(array $params, array $arguments): void
+    {
+        $other = $params['other'];
+        if (
+            is_array($other) && is_array($other['collection'] ?? null)
+            && ($other['collection']['kind'] ?? null) === 'map'
+        ) {
+            $this->expectException(InvalidArgumentException::class);
+            ArgumentEncoder::encode($params, $arguments);
+            return;
+        }
+        $calls = 0;
+        $caught = null;
+        try {
+            OperationRunner::run(['function' => 'fixture', 'method' => 'POST', 'outcome' => 'flag',
+                'params' => $params, 'returns' => null], [], static function () use (&$calls): never {
+                    $calls++;
+                    throw new \RuntimeException('Dispatch must not run.');
+                });
+        } catch (\Throwable $error) {
+            $caught = $error;
+        }
+        self::assertSame(LogicException::class, $caught === null ? null : $caught::class);
+        self::assertSame(0, $calls);
     }
 
     public function testRoutingReservationsRejectConcreteRecords(): void
