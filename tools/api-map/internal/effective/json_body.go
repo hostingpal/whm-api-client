@@ -59,11 +59,18 @@ func (b *builder) jsonBody(op model.Operation, v model.Variant, ov overlay.Opera
 	if !boundInputEvidence(ov.Evidence, v.OperationLocator, pointer) {
 		return fail("needs doc evidence matching source_sha256 and requestBody pointer")
 	}
-	body, source, _, ok := b.schemas.follow(v.OperationLocator.SourceID, node["requestBody"])
+	body, source, resolved, ok := b.schemas.follow(v.OperationLocator.SourceID, node["requestBody"])
 	content, _ := asObject(body["content"])
 	media, found := asObject(content["application/json"])
 	if !ok || !found || len(content) != 1 {
 		return fail("requires a selected application/json source body")
+	}
+	if resolved != "" {
+		_, resolvedPointer, found := strings.Cut(resolved, "#")
+		if !found {
+			return fail("unresolved source requestBody pointer")
+		}
+		pointer = resolvedPointer
 	}
 	required := body["required"] == true
 	if d.Required != nil {

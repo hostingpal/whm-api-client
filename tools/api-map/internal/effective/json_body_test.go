@@ -271,3 +271,54 @@ func TestJSONInputCorrectionEvidenceFollowsResolvedSourcePointer(t *testing.T) {
 		}
 	}
 }
+
+func TestJSONRequestBodyRefCorrectionProvenance(t *testing.T) {
+	inline := "/paths/~1listaccts/get/requestBody/content/application~1json/schema"
+	target := "/components/requestBodies/InputBody/content/application~1json/schema"
+	for _, correct := range []bool{false, true} {
+		name := "nonexistent inline evidence"
+		if correct {
+			name = "resolved component evidence"
+		}
+		t.Run(name, func(t *testing.T) {
+			descriptor := bodyDescriptor
+			if correct {
+				descriptor = strings.ReplaceAll(descriptor, inline, target)
+			}
+			m, set := jsonFixture(t, descriptor)
+			node := fixtureNode(t, m, "whm1:listaccts")
+			body := node["requestBody"]
+			components, _ := asObject(m.Documents["whm-openapi"]["components"])
+			if components == nil {
+				components = map[string]any{}
+				m.Documents["whm-openapi"]["components"] = components
+			}
+			components["requestBodies"] = map[string]any{"InputBody": body}
+			node["requestBody"] = map[string]any{"$ref": "#/components/requestBodies/InputBody"}
+			_, problems := buildProblems(t, m, set)
+			if correct && problems != "" {
+				t.Errorf("correct resolved requestBody provenance rejected: %s", problems)
+			}
+			if !correct && problems == "" {
+				t.Error("nonexistent inline schema provenance accepted through requestBody ref")
+			}
+		})
+	}
+}
+
+func TestJSONRequestBodyRefCrossDocumentCorrectionsRemainUnsupported(t *testing.T) {
+	inline := "/paths/~1listaccts/get/requestBody/content/application~1json/schema"
+	target := "/components/requestBodies/InputBody/content/application~1json/schema"
+	m, set := jsonFixture(t, strings.ReplaceAll(bodyDescriptor, inline, target))
+	node := fixtureNode(t, m, "whm1:listaccts")
+	components, ok := asObject(m.Documents["cpanel-openapi"]["components"])
+	if !ok {
+		t.Fatal("fixture components missing")
+	}
+	components["requestBodies"] = map[string]any{"InputBody": node["requestBody"]}
+	node["requestBody"] = map[string]any{"$ref": "cpanel-openapi#/components/requestBodies/InputBody"}
+	_, problems := buildProblems(t, m, set)
+	if !strings.Contains(problems, "cross-document input corrections require separate source provenance") {
+		t.Fatalf("cross-document requestBody correction did not fail closed: %s", problems)
+	}
+}
