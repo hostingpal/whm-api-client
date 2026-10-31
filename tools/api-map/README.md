@@ -105,11 +105,17 @@ Operation entries (all keys optional):
   inputs cannot use it, and duplicate final wire names fail generation. Overlay
   keys and `order` still use the pinned source name; the public PHP name, type,
   requiredness and sensitivity retain their existing rules.
-  `type: "string|int"` is the only input type correction: it widens a documented
-  scalar string or integer parameter with matching scalar encoding, for reviewed
-  identifier variants or comma-delimited values. It cannot target omitted,
-  boolean/flag, floating-point, repeated or composite
-  inputs. `description` replaces the complete parameter text with a nonblank
+  `type: "string|int"` widens a documented scalar string or integer parameter
+  with matching scalar encoding, for reviewed identifier variants or
+  comma-delimited values. `type: "string|int|float"` applies only to a documented
+  scalar number parameter whose native type is `int|float`; it adds exact string
+  input while retaining both numeric types. This permits passing a version such
+  as `"10.10"` from discovery without losing its trailing zero. Strings are
+  forwarded unchanged; the override does not validate version syntax or repair
+  precision already lost in a caller's float conversion. Unselected number
+  parameters retain `int|float`. Neither override can target omitted,
+  boolean/flag, repeated or composite inputs. `description` replaces the
+  complete parameter text with a nonblank
   reviewed description, preserving later sentences. Both settings require
   operation-level evidence; requiredness, sensitivity and optional null omission
   retain their existing rules.

@@ -387,11 +387,13 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 			param.Encoding != "scalar" || (spec.Type != "string" && spec.Type != "int" && spec.Type != "number")) {
 			b.problem(op.ID + ": parameter " + p.Name + ": wire correction requires simple names and a scalar string, integer or number source")
 		}
-		// The only input type correction widens a documented scalar string or
-		// integer to string|int; it cannot replace boolean or multiple-value encodings.
+		// Reviewed scalar corrections add string compatibility without removing
+		// the source's numeric types or replacing boolean/multiple-value encodings.
 		if o.Type != "" {
-			if o.Type != "string|int" || (spec.Type != "string" && spec.Type != "int") || param.Encoding != "scalar" || param.PHPType != spec.Type {
-				b.problem(op.ID + ": parameter " + p.Name + ": type correction requires string|int on a scalar string or integer source")
+			stringInteger := o.Type == "string|int" && (spec.Type == "string" || spec.Type == "int") && param.PHPType == spec.Type
+			stringNumber := o.Type == "string|int|float" && spec.Type == "number" && param.PHPType == "int|float"
+			if param.Encoding != "scalar" || (!stringInteger && !stringNumber) {
+				b.problem(op.ID + ": parameter " + p.Name + ": type correction requires string|int on a scalar string or integer source, or string|int|float on a scalar number source")
 			} else {
 				param.PHPType, param.DocType = o.Type, o.Type
 			}
