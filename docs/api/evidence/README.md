@@ -1126,3 +1126,20 @@ queue content or mail configuration were changed or read beyond the fixed catalo
 All 31 new form POST methods and remaining read variants stay under `8x0.2.48`.
 Corrected SHA-256:
 `f2f0f37ec2fb441a2949728c84cf68d0f9dd2141672bf584e06a88cd500ed6c2`.
+
+## WHM Market provider inventory evidence
+
+The [Market provider capture](2026-10-31-whm-market.json) at
+`38edb29f84902cbe27b81dbfa926571fadaabefb` on `11.138.0.19` passes both GET
+observations and strict assessment with zero discrepancies. Provider rows are
+populated, including integer enabled/supports_commission flags and an integer
+commission divisor. This establishes the observed provider inventory shape, not
+commission configuration, prices, payments, purchases or provider changes.
+
+No commerce route, product payload, commission ID, private token, OAuth exchange
+or mutation was exercised, and no returned URL was fetched. The capture establishes
+no Commerce routing. Separately, PR64 review 5721097744 reports a successful
+Sitejet/get_commerce GET and nullable commission IDs; see
+the Commerce/Market contract notes. All remaining methods/variants stay under
+`8x0.2.52`. SHA-256:
+`8b1b468eb3ab91072cd0a676ac7d9337c3359bbde80497703451b24ecda1ee7d`.

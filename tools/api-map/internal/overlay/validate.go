@@ -51,7 +51,7 @@ func Validate(set Set) []string {
 			seen[id] = name
 			op := file.Operations[id]
 			if op.Exclude != nil && (op.Name != "" || len(op.Params) > 0 || len(op.Response) > 0 || op.Unwrap != "" ||
-				op.OptionalPayload || op.Variant != "" || op.Body != "" || len(op.BodyFields) > 0) {
+				op.Function != "" || op.OptionalPayload || op.Variant != "" || op.Body != "" || len(op.BodyFields) > 0) {
 				problems = append(problems, id+": excluded operations take no other settings")
 			}
 			if op.Void && op.Unwrap != "" {
@@ -65,6 +65,9 @@ func Validate(set Set) []string {
 			}
 			if len(op.BodyFields) > 0 && op.Body != "multipart" {
 				problems = append(problems, id+": body_fields requires multipart")
+			}
+			if op.Function != "" && (file.Family != "whm1" || !qualifiedFunction.MatchString(op.Function)) {
+				problems = append(problems, id+": function requires one WHM namespace and identifier leaf")
 			}
 			problems = append(problems, missingEvidence(id, op)...)
 			for wire, param := range op.Params {
@@ -128,6 +131,9 @@ func missingEvidence(id string, op Operation) []string {
 		return nil
 	}
 	var settings []string
+	if op.Function != "" {
+		settings = append(settings, "function")
+	}
 	if op.Body != "" {
 		settings = append(settings, "body")
 	}
@@ -204,3 +210,6 @@ func IsCorrectedWireName(name string) bool {
 }
 
 var correctedWireName = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+
+// qualifiedFunction allows exactly Namespace/function, with no path syntax.
+var qualifiedFunction = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*/[A-Za-z_][A-Za-z0-9_]*$`)

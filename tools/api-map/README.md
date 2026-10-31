@@ -74,6 +74,11 @@ is rendered from the canonical map plus `docs/api/overlay/`:
 
 Operation entries (all keys optional):
 
+- `function`: evidence-gated WHM wire correction from a bare canonical function to
+  exactly `Namespace/same_leaf`, using identifier namespace and leaf. UAPI, excluded
+  operations, different leaves, paths, query strings and URLs are rejected. This
+  changes the generated function spec and effective contract hash; canonical map
+  IDs, variants, source hashes and documentation links remain unchanged.
 - `name`: the PHP method name. Required when the function has no `_` separator,
   starts with `_`, or contains `/`; otherwise the camelCase function name is used.
 - `variant` (`GET`/`POST`): the documented variant to generate, required for an

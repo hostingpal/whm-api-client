@@ -38,6 +38,9 @@ type File struct {
 // Operation holds per-operation decisions; zero values keep generator defaults.
 type Operation struct {
 	Name string `json:"name,omitempty"`
+	// Function qualifies a bare WHM function with one source-evidenced namespace.
+	// It preserves the canonical identity and leaf; UAPI corrections are forbidden.
+	Function string `json:"function,omitempty"`
 	// Variant selects the documented variant (by HTTP method) of an operation
 	// the map documents with several variants.
 	Variant    string            `json:"variant,omitempty"`
@@ -56,7 +59,7 @@ type Operation struct {
 	Notes           []Note                `json:"notes,omitempty"`
 	Exclude         *Exclusion            `json:"exclude,omitempty"`
 	Probe           json.RawMessage       `json:"probe,omitempty"`
-	// Evidence backs behaviour-changing settings: variant, method, outcome,
+	// Evidence backs behaviour-changing settings: function, variant, method, outcome,
 	// void, optional_payload, a parameter encoding and "sensitive": false on a
 	// parameter, parameter requiredness, scalar type/description corrections or
 	// suppressed enum documentation.

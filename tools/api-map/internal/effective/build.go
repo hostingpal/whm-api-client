@@ -176,7 +176,7 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		ID:          op.ID,
 		VariantID:   v.ID,
 		Family:      op.Family,
-		Function:    op.Function,
+		Function:    b.wireFunction(op, ov),
 		Outcome:     firstNonEmpty(ov.Outcome, "flag"),
 		Body:        ov.Body,
 		Summary:     sentence(text(node["summary"])),
@@ -235,6 +235,25 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	}
 	result.Returns = returns
 	return result, b.groupOf(op, v, node), true
+}
+
+// wireFunction applies only a single namespace to a bare WHM canonical leaf.
+// Naming, documentation identities and source locators continue to use op.
+func (b *builder) wireFunction(op model.Operation, ov overlay.Operation) string {
+	if ov.Function == "" {
+		return op.Function
+	}
+	parts := strings.Split(ov.Function, "/")
+	if op.Family != "whm1" || !overlay.IsCorrectedWireName(op.Function) ||
+		len(parts) != 2 || !overlay.IsCorrectedWireName(parts[0]) ||
+		!overlay.IsCorrectedWireName(parts[1]) || parts[1] != op.Function || ov.Exclude != nil {
+		b.problem(op.ID + ": function correction requires Namespace/same_bare_function on WHM")
+		return op.Function
+	}
+	if len(ov.Evidence) == 0 {
+		b.problem(op.ID + ": function needs evidence")
+	}
+	return ov.Function
 }
 
 var constantName = regexp.MustCompile(`^[A-Z_][A-Z0-9_]*$`)

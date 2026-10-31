@@ -1616,3 +1616,19 @@ get_user_email_forward_destination.forward_to additionally preserves literal emp
 string alongside list<string>, without assigning meaning. PR61 source review
 separately supports arbitrary strings, with null still invalid. Inventories are empty and no mail mutation/delivery/key/queue inspection
 ran. Initial e023749 evidence remains failed and immutable; 8x0.2.48 stays open.
+
+## WHM Market provider inventory
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-market.php --output=docs/api/evidence/YYYY-MM-DD-whm-market.json`.
+
+Two fixed GETs read version and provider inventory. Existing opt-in, exact request
+guard, committed-input, TLS and immutable structural-output rules apply. No
+commission IDs, private product information, token exchange, provider/commerce
+changes, purchases or URL fetches run. Keep live gaps under `8x0.2.52`.
+
+The Market provider capture at 38edb29 on 11.138.0.19 passes both GET checks and
+strict assessment with zero discrepancies. Provider rows are populated; only this
+inventory plus version is observed. No commerce route, commission ID, product,
+private token, OAuth exchange, mutation or URL fetch ran. The separately reported
+PR64 reviewer Commerce/commission reads do not change this completed capture or
+catalog. All remaining live variants stay under 8x0.2.52.

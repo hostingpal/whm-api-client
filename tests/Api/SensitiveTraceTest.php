@@ -861,6 +861,44 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
+    /** @return iterable<string, array{Closure(Client): mixed, string}> */
+    public static function commerceMarketSecrets(): iterable
+    {
+        yield 'attribute provider first' => [static function (Client $client): mixed {
+            $client->whm()->market()->setProductAttribute('provider', 'product', 'attribute', self::SECRET);
+            return null;
+        }, '{"metadata":{"result":0}}'];
+        yield 'storefront URL' => [static function (Client $client): mixed {
+            $client->whm()->commerce()->setCommerce(false, self::SECRET);
+            return null;
+        }, '{"metadata":{"result":0}}'];
+        yield 'token input' => [static fn (Client $client): mixed =>
+            $client->whm()->commerce()->validateLoginToken(self::SECRET, 'provider', 'https://example.test'),
+            '{"metadata":{"result":0}}'];
+        yield 'token redirect' => [static fn (Client $client): mixed =>
+            $client->whm()->commerce()->validateLoginToken('token', 'provider', self::SECRET),
+            '{"metadata":{"result":0}}'];
+        yield 'returned token' => [static fn (Client $client): mixed =>
+            $client->whm()->commerce()->validateLoginToken('token', 'provider', 'https://example.test'),
+            '{"metadata":{"result":1},"data":{"payload":[{"access_token":"[fixture-secret]",'
+                . '"refresh_token":false}]}}'];
+    }
+
+    /** @param Closure(Client): mixed $call */
+    #[DataProvider('commerceMarketSecrets')]
+    public function testCommerceAndMarketSecretsStayOutOfExceptionTraces(Closure $call, string $response): void
+    {
+        [$client, $http] = self::client(false);
+        $http->addResponse(new Response(200, [], str_replace('[fixture-secret]', self::SECRET, $response)));
+        try {
+            $call($client);
+            self::fail('Expected fixture failure.');
+        } catch (ApiErrorException | PayloadMismatchException $exception) {
+            self::assertCount(1, $http->getRequests());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
     private static function assertSecretAbsent(Throwable $exception): void
     {
         for ($current = $exception; $current !== null; $current = $current->getPrevious()) {
