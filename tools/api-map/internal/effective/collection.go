@@ -30,7 +30,7 @@ func (b *builder) collection(op model.Operation, source model.Parameter, ov over
 		b.problem(op.ID + ": parameter " + source.Name + ": collection needs doc evidence matching source_sha256 and parameter/prose pointer")
 	}
 	item := spec
-	if spec.Type == "list" && spec.Items != nil {
+	if c.Kind != "map" && spec.Type == "list" && spec.Items != nil {
 		item = *spec.Items
 	}
 	compatible := func(t TypeSpec) bool {
@@ -59,6 +59,13 @@ func (b *builder) collection(op model.Operation, source model.Parameter, ov over
 	param.Collection = c
 	param.Encoding = "collection"
 	param.PHPType = "array"
+	if c.Kind == "map" {
+		param.DocType = "array<string, " + c.ItemType + ">"
+		if c.Empty == "reject" {
+			param.DocType = "non-empty-" + param.DocType
+		}
+		return
+	}
 	param.DocType = "non-empty-list<" + c.ItemType + ">"
 	if *c.AllowScalar {
 		param.PHPType = c.ItemType + "|array"
@@ -99,6 +106,10 @@ func (b *builder) collectionOverlaps(id string, params []Param) {
 			continue
 		}
 		for j, other := range params {
+			// Map placeholder wire names are not emitted; runtime checks actual keys.
+			if other.Collection != nil && other.Collection.Kind == "map" {
+				continue
+			}
 			// Legacy indexed families must also be checked against new repeats.
 			// Leave comparisons between two legacy-only parameters unchanged.
 			if i == j || (p.Collection == nil && other.Collection == nil) {

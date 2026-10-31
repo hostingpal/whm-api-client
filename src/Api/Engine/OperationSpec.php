@@ -28,14 +28,23 @@ use LogicException;
  *   it as a repeated list. Generation restricts this explicit option to optional
  *   string-list source parameters; absent settings retain empty-list rejection.
  *   New explicit encoding 'collection' requires a collection descriptor with
- *   kind ('indexed'|'repeat'), item_type ('string'|'int'|'bool'|'string|int'),
- *   allow_scalar (boolean), and empty ('reject'). Indexed descriptors additionally
+ *   kind ('indexed'|'repeat'|'map'), item_type ('string'|'int'|'bool'|'string|int'),
+ *   allow_scalar (boolean), and empty ('reject' for lists). Indexed descriptors additionally
  *   require literal identifier prefix, separator (''|'-'), and nonnegative integer
  *   start (at most 2147483647). Repeat descriptors forbid these index fields.
- *   Scalars use name; arrays always use the list pattern, including singletons.
+ *   For list kinds, scalars use name; arrays use the pattern, including singletons.
  *   Bool items become integer 1/0. Null/float items are invalid; optional top-level
  *   null still omits. Collection metadata never combines with legacy encodings,
- *   omit_empty or reject_empty. All generated collection arguments are sensitive.
+ *   omit_empty or reject_empty. Map descriptors require allow_scalar false,
+ *   empty ('allow'|'reject'), and a literal prefix (empty or ASCII identifier with
+ *   hyphens); index separator/start fields are forbidden. Each nonempty UTF-8
+ *   string key without ASCII control bytes is appended literally to that prefix.
+ *   Integer keys (including PHP-coerced numeric strings) and non-array inputs fail.
+ *   Empty allowed maps emit no dynamic fields; the request still dispatches.
+ *   Map PHPDoc is array<string,T> or non-empty-array<string,T>; top-level null
+ *   omits optional arguments. Generated collections receive SensitiveParameter
+ *   for trace protection, independently of
+ *   secret-bearing transport classification, which still requires POST.
  * - returns: required key; a type spec (see ShapeValidator for the grammar), or
  *   an explicit null for a void operation.
  * - unwrap: optional string naming a field declared in an object "returns";

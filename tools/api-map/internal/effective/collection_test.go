@@ -11,8 +11,15 @@ import (
 
 const indexedDescriptor = `{"kind":"indexed","item_type":"string","allow_scalar":true,"empty":"reject","prefix":"domain","separator":"-","start":0}`
 
+const namedMapDescriptor = `{"kind":"map","item_type":"string","allow_scalar":false,"empty":"allow","prefix":""}`
+
 func TestCollectionPreciseEffectiveTypes(t *testing.T) {
 	for _, tc := range []struct{ source, descriptor, native, doc string }{
+		{`{"type":"string"}`, namedMapDescriptor, "array", "array<string, string>"},
+		{`{"type":"string"}`, strings.Replace(namedMapDescriptor, `"empty":"allow"`, `"empty":"reject"`, 1), "array", "non-empty-array<string, string>"},
+		{`{"type":"integer"}`, strings.Replace(namedMapDescriptor, `"item_type":"string"`, `"item_type":"int"`, 1), "array", "array<string, int>"},
+		{`{"type":"integer","enum":[0,1]}`, strings.Replace(namedMapDescriptor, `"item_type":"string"`, `"item_type":"bool"`, 1), "array", "array<string, bool>"},
+		{`{"type":"string"}`, strings.Replace(namedMapDescriptor, `"item_type":"string"`, `"item_type":"string|int"`, 1), "array", "array<string, string|int>"},
 		{`{"type":"string"}`, indexedDescriptor, "string|array", "string|non-empty-list<string>"},
 		{`{"type":"integer"}`, strings.ReplaceAll(strings.ReplaceAll(indexedDescriptor, `"string"`, `"int"`), `"prefix":"domain","separator":"-","start":0`, `"prefix":"setting_id","separator":"","start":1`), "int|array", "int|non-empty-list<int>"},
 		{`{"type":"integer","enum":[0,1]}`, strings.Replace(indexedDescriptor, `"item_type":"string"`, `"item_type":"bool"`, 1), "bool|array", "bool|non-empty-list<bool>"},
@@ -265,5 +272,115 @@ func TestCollectionTraceRedactionPreservesTransportPolicy(t *testing.T) {
 				t.Fatalf("transport/redaction policy lost: %+v", got)
 			}
 		})
+	}
+}
+
+func TestNamedMapRejectsIncompatibleSourcesAndUnboundEvidence(t *testing.T) {
+	for _, tc := range []struct{ source, evidence string }{
+		{`{"type":"number"}`, `"source_sha256":"y","pointer":"/paths/~1createacct/get/parameters/0"`},
+		{`{"type":"integer"}`, `"source_sha256":"y","pointer":"/paths/~1createacct/get/parameters/0"`},
+		{`{"type":"boolean"}`, `"source_sha256":"y","pointer":"/paths/~1createacct/get/parameters/0"`},
+		{`{"type":"object"}`, `"source_sha256":"y","pointer":"/paths/~1createacct/get/parameters/0"`},
+		{`{"type":"array","items":{"type":"string"}}`, `"source_sha256":"y","pointer":"/paths/~1createacct/get/parameters/0"`},
+		{`{"type":"object","additionalProperties":{"type":"string"}}`, `"source_sha256":"y","pointer":"/paths/~1createacct/get/parameters/0"`},
+		{`{"type":"string"}`, `"source_sha256":"wrong","pointer":"/paths/~1createacct/get/parameters/0"`},
+		{`{"type":"string"}`, `"source_sha256":"y","pointer":"/paths/~1createacct/get/parameters/1"`},
+		{`{"type":"string"}`, `"source_sha256":"y","pointer":"/paths/~1other/get/parameters/0"`},
+		{`{"type":"string"}`, `"note":"unbound evidence"`},
+	} {
+		m := fixtureMap(t)
+		var source map[string]any
+		_ = json.Unmarshal([]byte(tc.source), &source)
+		for _, op := range m.Operations {
+			if op.ID == "whm1:createacct" {
+				op.Variants[0].Parameters[0].Definition["schema"] = source
+			}
+		}
+		set := fixtureOverlay("listed")
+		var op overlay.Operation
+		if err := json.Unmarshal([]byte(`{"name":"createAccount","params":{"username":{"collection":`+namedMapDescriptor+`}},"evidence":[{"kind":"doc","version":"synthetic","date":"2026-10-31",`+tc.evidence+`}]}`), &op); err != nil {
+			t.Fatal(err)
+		}
+		set.Files[1].Operations["whm1:createacct"] = op
+		_, problems := buildProblems(t, m, set)
+		if !strings.Contains(problems, "collection") {
+			t.Fatalf("incompatible collection accepted: %s %s: %s", tc.source, tc.evidence, problems)
+		}
+	}
+}
+
+func TestNamedMapTraceRedactionPreservesTransportPolicy(t *testing.T) {
+	for _, tc := range []struct {
+		name, wire, decision, method, want, problem string
+	}{
+		{"plain inferred GET", "username", "", "", "GET", ""},
+		{"plain explicit GET", "username", "", "GET", "GET", ""},
+		{"explicit nonsecret GET", "username", `,"sensitive":false`, "GET", "GET", ""},
+		{"explicit secret inferred POST", "username", `,"sensitive":true`, "", "POST", ""},
+		{"explicit secret refuses GET", "username", `,"sensitive":true`, "GET", "", "secret-bearing parameters require POST"},
+		{"secret name inferred POST", "password", "", "", "POST", ""},
+		{"secret name refuses GET", "password", "", "GET", "", "secret-bearing parameters require POST"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m := fixtureMap(t)
+			for i := range m.Operations {
+				if m.Operations[i].ID != "whm1:createacct" {
+					continue
+				}
+				v := &m.Operations[i].Variants[0]
+				v.Parameters = v.Parameters[:1]
+				v.Parameters[0].Name = tc.wire
+				v.Parameters[0].Definition["name"] = tc.wire
+				v.Risk.Classification = "read-only"
+			}
+			var op overlay.Operation
+			raw := `{"name":"createAccount","params":{"` + tc.wire + `":{"collection":` + namedMapDescriptor + tc.decision + `}},"evidence":[{"kind":"doc","version":"synthetic fixture only","date":"2026-10-31","note":"Fixture collection transport policy","source_sha256":"y","pointer":"/paths/~1createacct/get/parameters/0"}]}`
+			if err := json.Unmarshal([]byte(raw), &op); err != nil {
+				t.Fatal(err)
+			}
+			op.Method = tc.method
+			set := fixtureOverlay("listed")
+			set.Files[1].Operations["whm1:createacct"] = op
+			result, problems := buildProblems(t, m, set)
+			if tc.problem != "" {
+				if !strings.Contains(problems, tc.problem) {
+					t.Fatalf("secret transport policy bypassed: %s", problems)
+				}
+				return
+			}
+			if problems != "" {
+				t.Fatal(problems)
+			}
+			got := groupByClass(t, result, "Accounts").Operations[0]
+			if got.Method != tc.want || got.Params[0].Sensitive != (tc.wire == "password" || tc.decision == `,"sensitive":true`) {
+				t.Fatalf("transport/redaction policy lost: %+v", got)
+			}
+		})
+	}
+}
+
+func TestNamedMapPlaceholderUsesExplicitPHPNameAndLiteralPrefix(t *testing.T) {
+	m := fixtureMap(t)
+	for _, op := range m.Operations {
+		if op.ID == "whm1:createacct" {
+			op.Variants[0].Parameters[0].Name = "MXCHECK-*"
+			op.Variants[0].Parameters[0].Definition["name"] = "MXCHECK-*"
+			op.Variants[0].Parameters[0].Definition["required"] = false
+		}
+	}
+	var op overlay.Operation
+	raw := `{"name":"createAccount","params":{"MXCHECK-*":{"php":"mailExchangers","required":true,"collection":{"kind":"map","item_type":"string","allow_scalar":false,"empty":"allow","prefix":"MXCHECK-"}}},"evidence":[{"kind":"doc","version":"synthetic","date":"2026-10-31","note":"Fixture only","source_sha256":"y","pointer":"/paths/~1createacct/get/parameters/0"}]}`
+	if err := json.Unmarshal([]byte(raw), &op); err != nil {
+		t.Fatal(err)
+	}
+	set := fixtureOverlay("listed")
+	set.Files[1].Operations["whm1:createacct"] = op
+	result, problems := buildProblems(t, m, set)
+	if problems != "" {
+		t.Fatal(problems)
+	}
+	p := groupByClass(t, result, "Accounts").Operations[0].Params[0]
+	if p.PHP != "mailExchangers" || !p.Required || p.PHPType != "array" || p.DocType != "array<string, string>" {
+		t.Fatalf("map name/requiredness lost: %+v", p)
 	}
 }

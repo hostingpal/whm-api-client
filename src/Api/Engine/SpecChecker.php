@@ -179,6 +179,7 @@ final class SpecChecker
         }
 
         $wires = [];
+        $maps = [];
         foreach ($params as $name => $param) {
             $wire = is_array($param) ? ($param['name'] ?? null) : null;
             if (
@@ -190,8 +191,9 @@ final class SpecChecker
                 throw new LogicException('Invalid parameter spec for ' . $name . '.');
             }
 
+            $map = false;
             if ($param['encoding'] === 'collection') {
-                CollectionEncoder::check($param['collection'] ?? null);
+                $map = CollectionEncoder::check($param['collection'] ?? null)['kind'] === 'map';
             } elseif (array_key_exists('collection', $param)) {
                 throw new LogicException('Collection metadata requires collection encoding.');
             }
@@ -215,11 +217,14 @@ final class SpecChecker
             $suffix = in_array($param['encoding'], ['suffix-numbered', 'suffix-numbered-scalar'], true);
             if (
                 ($suffix && preg_match('/^[A-Za-z_][A-Za-z0-9_]*\*$/D', $wire) !== 1)
-                || (!$suffix && str_contains($wire, '*'))
+                || (!$suffix && !$map && str_contains($wire, '*'))
             ) {
                 throw new LogicException('Invalid suffix-numbered parameter pattern.');
             }
             foreach ($wires as $other => $otherSuffix) {
+                if ($map || isset($maps[$other])) {
+                    continue;
+                }
                 if (
                     ($suffix && self::overlaps($wire, (string) $other, $otherSuffix))
                     || ($otherSuffix && self::overlaps((string) $other, $wire, $suffix))
@@ -233,6 +238,9 @@ final class SpecChecker
             }
 
             $wires[$wire] = $suffix;
+            if ($map) {
+                $maps[$wire] = true;
+            }
         }
     }
 

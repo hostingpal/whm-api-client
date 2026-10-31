@@ -24,6 +24,14 @@ func TestRenderExplicitCollectionNativeDocAndCompleteSpec(t *testing.T) {
                     'separator' => '-',
                     'start' => 0,
                 ],`},
+		{`{"kind":"map","item_type":"string","allow_scalar":false,"empty":"allow","prefix":"x_"}`, "?array", "array<string, string>|null",
+			`                'collection' => [
+                    'kind' => 'map',
+                    'item_type' => 'string',
+                    'allow_scalar' => false,
+                    'empty' => 'allow',
+                    'prefix' => 'x_',
+                ],`},
 		{`{"kind":"repeat","item_type":"int","allow_scalar":false,"empty":"reject"}`, "?array", "non-empty-list<int>|null",
 			`                'collection' => [
                     'kind' => 'repeat',
@@ -70,13 +78,19 @@ func TestRenderExplicitCollectionNativeDocAndCompleteSpec(t *testing.T) {
 }
 
 func TestRenderNonsecretCollectionStillRedactsPublicFrame(t *testing.T) {
-	var param effective.Param
-	if err := json.Unmarshal([]byte(`{"Wire":"domain","PHP":"domain","Encoding":"collection","PHPType":"string|array","DocType":"string|non-empty-list<string>","Required":true,"collection":{"kind":"indexed","item_type":"string","allow_scalar":true,"empty":"reject","prefix":"domain","separator":"-","start":0}}`), &param); err != nil {
-		t.Fatal(err)
-	}
-	result := effective.Result{Groups: []effective.Group{{Family: "uapi", Name: "Examples", Class: "Examples", Accessor: "examples", Operations: []effective.Operation{{Function: "example", PHPName: "example", Constant: "EXAMPLE", Method: "GET", Outcome: "flag", Params: []effective.Param{param}}}}}}
-	class := string(Render(result)["src/Api/Uapi/Examples.php"])
-	if param.Sensitive || !strings.Contains(class, "use SensitiveParameter;") || !strings.Contains(class, "#[SensitiveParameter]\n        string|array $domain,") {
-		t.Fatalf("nonsecret collection missing public-frame protection:\n%s", class)
+	for _, tc := range []struct{ descriptor, native, doc string }{
+		{`{"kind":"indexed","item_type":"string","allow_scalar":true,"empty":"reject","prefix":"domain","separator":"-","start":0}`, "string|array", "string|non-empty-list<string>"},
+		{`{"kind":"map","item_type":"string","allow_scalar":false,"empty":"allow","prefix":""}`, "array", "array<string, string>"},
+	} {
+		var collection overlay.Collection
+		if err := json.Unmarshal([]byte(tc.descriptor), &collection); err != nil {
+			t.Fatal(err)
+		}
+		param := effective.Param{Wire: "domain", PHP: "domain", Encoding: "collection", PHPType: tc.native, DocType: tc.doc, Required: true, Collection: &collection}
+		result := effective.Result{Groups: []effective.Group{{Family: "uapi", Name: "Examples", Class: "Examples", Accessor: "examples", Operations: []effective.Operation{{Function: "example", PHPName: "example", Constant: "EXAMPLE", Method: "GET", Outcome: "flag", Params: []effective.Param{param}}}}}}
+		class := string(Render(result)["src/Api/Uapi/Examples.php"])
+		if param.Sensitive || !strings.Contains(class, "use SensitiveParameter;") || !strings.Contains(class, "#[SensitiveParameter]\n        "+tc.native+" $domain,") {
+			t.Fatalf("nonsecret collection missing public-frame protection:\n%s", class)
+		}
 	}
 }

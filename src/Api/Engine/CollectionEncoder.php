@@ -10,13 +10,16 @@ use SensitiveParameter;
 use stdClass;
 
 /**
- * Explicit strict indexed/repeated list grammar, independent of legacy markers.
+ * Explicit strict indexed/repeated list and named-map grammar, independent of legacy markers.
  *
  * @phpstan-type CollectionSpec array{
  *     kind: 'repeat', item_type: 'string'|'int'|'bool'|'string|int', allow_scalar: bool, empty: 'reject'
  * }|array{
  *     kind: 'indexed', item_type: 'string'|'int'|'bool'|'string|int', allow_scalar: bool, empty: 'reject',
  *     prefix: string, separator: ''|'-', start: int<0, 2147483647>
+ * }|array{
+ *     kind: 'map', item_type: 'string'|'int'|'bool'|'string|int', allow_scalar: false,
+ *     empty: 'allow'|'reject', prefix: string
  * }
  * @internal
  */
@@ -32,14 +35,24 @@ final class CollectionEncoder
     {
         if (
             !is_array($spec)
-            || !in_array($spec['kind'] ?? null, ['indexed', 'repeat'], true)
+            || !in_array($spec['kind'] ?? null, ['indexed', 'repeat', 'map'], true)
             || !in_array($spec['item_type'] ?? null, ['string', 'int', 'bool', 'string|int'], true)
             || !is_bool($spec['allow_scalar'] ?? null)
-            || ($spec['empty'] ?? null) !== 'reject'
+            || !in_array($spec['empty'] ?? null, $spec['kind'] === 'map' ? ['allow', 'reject'] : ['reject'], true)
         ) {
             throw new LogicException('Invalid collection descriptor.');
         }
         $keys = ['kind', 'item_type', 'allow_scalar', 'empty'];
+        if ($spec['kind'] === 'map') {
+            if (
+                $spec['allow_scalar'] !== false
+                || !is_string($spec['prefix'] ?? null)
+                || preg_match('/^([A-Za-z_][A-Za-z0-9_-]*)?$/D', $spec['prefix']) !== 1
+            ) {
+                throw new LogicException('Invalid named-map rules.');
+            }
+            $keys[] = 'prefix';
+        }
         if ($spec['kind'] === 'indexed') {
             if (
                 !is_string($spec['prefix'] ?? null)
@@ -56,6 +69,10 @@ final class CollectionEncoder
         if (array_diff(array_keys($spec), $keys) !== []) {
             throw new LogicException('Unsupported collection descriptor fields.');
         }
+        if ($spec['kind'] === 'map') {
+            return ['kind' => 'map', 'item_type' => $spec['item_type'], 'allow_scalar' => false,
+                'empty' => $spec['empty'], 'prefix' => $spec['prefix']];
+        }
         if ($spec['kind'] === 'indexed') {
             return ['kind' => 'indexed', 'item_type' => $spec['item_type'], 'allow_scalar' => $spec['allow_scalar'],
                 'empty' => 'reject', 'prefix' => $spec['prefix'], 'separator' => $spec['separator'],
@@ -69,8 +86,9 @@ final class CollectionEncoder
     /**
      * Append every strict item in original order, retaining argument provenance.
      *
-     * A scalar uses the original unsuffixed name; an array always uses the list
-     * pattern. No empty, sparse or keyed array is normalized into a valid list.
+     * For list kinds, a scalar uses the original unsuffixed name; arrays always
+     * use the list pattern. No empty, sparse or keyed array becomes a valid list.
+     * Maps use the explicit literal prefix and preserve every valid caller key.
      *
      * @throws InvalidArgumentException If the input does not match its descriptor.
      */
@@ -82,6 +100,11 @@ final class CollectionEncoder
         #[SensitiveParameter] mixed $value,
     ): void {
         $spec = self::check($spec);
+        if ($spec['kind'] === 'map') {
+            self::appendMap($fields, $origin, $spec, $value);
+
+            return;
+        }
         if (!is_array($value)) {
             if ($spec['allow_scalar'] !== true) {
                 throw new InvalidArgumentException('This argument requires a nonempty sequential list.');
@@ -103,6 +126,32 @@ final class CollectionEncoder
                 $name = $spec['prefix'] . $spec['separator'] . ($spec['start'] + $position);
             }
             $fields->append($origin, $name, self::item($spec['item_type'], $item), $family, false);
+        }
+    }
+
+    /**
+     * Append literal caller keys without normalization, retaining ownership.
+     *
+     * @param array{kind: 'map', item_type: 'string'|'int'|'bool'|'string|int',
+     *     allow_scalar: false, empty: 'allow'|'reject', prefix: string} $spec
+     */
+    private static function appendMap(
+        #[SensitiveParameter] OrderedFields $fields,
+        string $origin,
+        array $spec,
+        #[SensitiveParameter] mixed $value,
+    ): void {
+        if (!is_array($value) || ($value === [] && $spec['empty'] === 'reject')) {
+            throw new InvalidArgumentException('This argument requires a map with the declared empty policy.');
+        }
+        foreach ($value as $key => $item) {
+            if (
+                !is_string($key) || $key === '' || preg_match('//u', $key) !== 1
+                || preg_match('/[\\x00-\\x1F\\x7F]/', $key) !== 0
+            ) {
+                throw new InvalidArgumentException('Map keys must be nonempty UTF-8 strings without control bytes.');
+            }
+            $fields->append($origin, $spec['prefix'] . $key, self::item($spec['item_type'], $item), null, false);
         }
     }
 

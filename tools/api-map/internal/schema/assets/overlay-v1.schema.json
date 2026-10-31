@@ -49,7 +49,8 @@
         "kind": {
           "enum": [
             "indexed",
-            "repeat"
+            "repeat",
+            "map"
           ]
         },
         "item_type": {
@@ -64,11 +65,14 @@
           "type": "boolean"
         },
         "empty": {
-          "const": "reject"
+          "enum": [
+            "reject",
+            "allow"
+          ]
         },
         "prefix": {
           "type": "string",
-          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+          "pattern": "^([A-Za-z_][A-Za-z0-9_-]*)?$"
         },
         "separator": {
           "enum": [
@@ -103,7 +107,15 @@
               "prefix",
               "separator",
               "start"
-            ]
+            ],
+            "properties": {
+              "prefix": {
+                "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+              },
+              "empty": {
+                "const": "reject"
+              }
+            }
           }
         },
         {
@@ -122,6 +134,44 @@
                     "prefix"
                   ]
                 },
+                {
+                  "required": [
+                    "separator"
+                  ]
+                },
+                {
+                  "required": [
+                    "start"
+                  ]
+                }
+              ]
+            },
+            "properties": {
+              "empty": {
+                "const": "reject"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "map"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "prefix"
+            ],
+            "properties": {
+              "allow_scalar": {
+                "const": false
+              }
+            },
+            "not": {
+              "anyOf": [
                 {
                   "required": [
                     "separator"

@@ -175,6 +175,78 @@ final class GeneratedCollectionInputsTest extends TestCase
         }
     }
 
+    #[DataProvider('routes')]
+    public function testNamedMapLiteralRequestAndEmptyMapStillDispatches(string $route, string $method): void
+    {
+        foreach ([['A.%&=' => '', 'x_test' => 'a%20&='], [], null] as $values) {
+            [$handle, $http] = $this->client($route);
+            $params = self::mapParams() + ['fixed' => ['name' => 'fixed', 'encoding' => 'bool']];
+            $this->invoke($handle, $method, $params, ['values' => $values, 'fixed' => false]);
+            $request = $http->getLastRequest();
+            self::assertInstanceOf(RequestInterface::class, $request);
+            $expected = $values === null || $values === [] ? 'fixed=0'
+                : 'x_A.%25%26%3D=&x_x_test=a%2520%26%3D&fixed=0';
+            $fields = $method === 'POST' ? (string) $request->getBody() : $request->getUri()->getQuery();
+            self::assertStringEndsWith($expected, $fields);
+            self::assertCount(1, $http->getRequests());
+            self::assertNotNull($handle->responseMeta());
+        }
+    }
+
+    #[DataProvider('routes')]
+    public function testLateInvalidMapEntryClearsMetadataAndNeverDispatches(string $route, string $method): void
+    {
+        $cases = [['private-key' => 'private-value', 'late-key' => null], ['private-key' => 'ok', 7 => 'bad']];
+        foreach ($cases as $values) {
+            [$handle, $http] = $this->client($route);
+            $handle instanceof WhmClient ? $handle->call('probe') : $handle->call('Email', 'probe');
+            self::assertNotNull($handle->responseMeta());
+            try {
+                $this->invoke($handle, $method, self::mapParams(), ['values' => $values]);
+                self::fail('Invalid map must fail before I/O.');
+            } catch (InvalidArgumentException $error) {
+                self::assertStringNotContainsString('private', $error->getMessage());
+                self::assertStringNotContainsString('late-key', $error->getMessage());
+                self::assertNull($handle->responseMeta());
+                self::assertCount(1, $http->getRequests());
+            }
+        }
+    }
+
+    #[DataProvider('routes')]
+    public function testNamedMapRoutingCollisionsFailLocally(string $route, string $method): void
+    {
+        if ($route === 'direct') {
+            // Direct UAPI has no query routing fields; literal dotted names survive.
+            [$handle, $http] = $this->client($route);
+            $this->invoke($handle, $method, self::mapParams(''), ['values' => ['cpanel.user' => 'value']]);
+            self::assertCount(1, $http->getRequests());
+            return;
+        }
+        $keys = $route === 'whm' ? ['api.version']
+            : ['api.version', 'cpanel.user', 'cpanel.module', 'cpanel.function'];
+        foreach ($keys as $key) {
+            [$handle, $http] = $this->client($route);
+            try {
+                $this->invoke($handle, $method, self::mapParams(''), ['values' => [$key => 'private-value']]);
+                self::fail('Map cannot overwrite routing.');
+            } catch (InvalidArgumentException $error) {
+                self::assertStringNotContainsString($key, $error->getMessage());
+                self::assertStringNotContainsString('private-value', $error->getMessage());
+                self::assertNull($handle->responseMeta());
+                self::assertCount(0, $http->getRequests());
+            }
+        }
+    }
+
+    /** @return array<string, mixed> */
+    private static function mapParams(string $prefix = 'x_'): array
+    {
+        return ['values' => ['name' => 'placeholder*', 'encoding' => 'collection', 'collection' => [
+            'kind' => 'map', 'item_type' => 'string', 'allow_scalar' => false,
+            'empty' => 'allow', 'prefix' => $prefix]]];
+    }
+
     /** @return array<string, mixed> */
     private static function params(): array
     {

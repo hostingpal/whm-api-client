@@ -448,9 +448,11 @@ func specClass(g effective.Group) string {
 					w.line("                    'kind' => " + phpString(c.Kind) + ",")
 					w.line("                    'item_type' => " + phpString(c.ItemType) + ",")
 					w.line(fmt.Sprintf("                    'allow_scalar' => %t,", *c.AllowScalar))
-					w.line("                    'empty' => 'reject',")
-					if c.Kind == "indexed" {
+					w.line("                    'empty' => " + phpString(c.Empty) + ",")
+					if c.Kind == "indexed" || c.Kind == "map" {
 						w.line("                    'prefix' => " + phpString(*c.Prefix) + ",")
+					}
+					if c.Kind == "indexed" {
 						w.line("                    'separator' => " + phpString(*c.Separator) + ",")
 						w.line(fmt.Sprintf("                    'start' => %d,", *c.Start))
 					}

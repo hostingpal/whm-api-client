@@ -95,7 +95,8 @@ Operation entries (all keys optional):
   decision when any word of its name is `key` or `signature`, or its pinned
   description mentions an authorization code or verifier), and `omit` drops the
   parameter from the signature (it stays reachable through `call()`); name
-  patterns such as `MXCHECK-*` must be omitted, and a required parameter cannot
+  patterns such as `MXCHECK-*` need an explicit named-map descriptor (or omission),
+  and a required parameter cannot
   be omitted (exclude the operation instead). A union of scalar schemas becomes
   the union of their PHP types; an object, map or a union with a list, map or
   object branch needs an `encoding` (or `omit`). `required` overrides the pinned
@@ -103,7 +104,7 @@ Operation entries (all keys optional):
   suppresses only the PHPDoc literal enum in favor of the existing native type;
   absent or true keeps the pinned enum. It changes neither encoding nor native
   parameter types and does not resolve disputed upstream values.
-  `collection` instead declares an ordinary strict list input without markers:
+  `collection` instead declares ordinary strict list/map inputs without markers:
   `{"kind":"indexed","item_type":"string","allow_scalar":true,"empty":"reject",
   "prefix":"domain","separator":"-","start":0}`. Every fact is required;
   `kind: "repeat"` omits and forbids prefix/separator/start. Item types are `string`,
@@ -118,6 +119,23 @@ Operation entries (all keys optional):
   all collection arguments receive `SensitiveParameter` for trace protection,
   independently of secret-bearing transport classification. Source/overlay secret
   decisions still require POST; ordinary read-only collection inputs retain GET.
+  `kind: "map"` requires `allow_scalar: false`, `empty: "allow"` or `"reject"`,
+  and a mandatory literal `prefix` (empty or `[A-Za-z_][A-Za-z0-9_-]*`); it forbids
+  separator/start. For example `{"kind":"map","item_type":"bool",
+  "allow_scalar":false,"empty":"allow","prefix":""}` accepts a feature map,
+  while prefix `MXCHECK-` appends caller keys literally. No prefix stripping or
+  wildcard inference occurs. The native type is `array` (`?array` when optional),
+  with `array<string,T>` or `non-empty-array<string,T>` PHPDoc. An allowed empty map
+  emits no dynamic fields, while fixed fields and the request still dispatch.
+  Map values must match the declared strict scalar item type, backed by the
+  source scalar schema and matching parameter evidence. Keys must be nonempty
+  valid UTF-8 strings without U+0000–U+001F/U+007F; integer keys, including PHP's
+  coercion of canonical numeric string keys, fail. Dots, hyphens, case, percent,
+  ampersand, equals and retained string keys such as `"01"` are preserved. Each
+  literal key/value is RFC3986 encoded once. Map source placeholders are never
+  emitted; use `php` to give placeholder parameters a meaningful public name.
+  Actual map collisions with fixed, other map/list and route fields fail before
+  dispatch in either order without exposing keys or values in diagnostics.
   Collection descriptors
   cannot combine with `encoding`, `type`, `wire`, `omit`, `omit_empty` or
   `reject_empty`. Static indexed overlaps fail generation; expanded collisions
