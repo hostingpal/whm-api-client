@@ -273,6 +273,10 @@
         {
           "kind": "documented",
           "text": "Returns optional range records, with native integer 0/1 enabled flags, textual IPv6/CIDR addresses, account-name lists and reclaimed-address lists. SHARED denotes the main shared IPv6 address; omitted fields and empty lists remain distinct."
+        },
+        {
+          "kind": "observed",
+          "text": "The 2026-10-31 inventory capture on cPanel 11.138.0.19 recorded enabled as numeric-string and mostrecent/note as null. Only exact quoted enabled flags \"0\" and \"1\" additionally normalize to native integer 0/1; the two named string fields additionally preserve explicit null. Optional omission remains distinct from null and empty strings. The structural capture does not identify exact string flag values; both exact spellings and mixed combinations are synthetic compatibility checks. Sibling fields and other operations stay strict, and the original failed artifact remains unchanged."
         }
       ],
       "evidence": [
@@ -280,9 +284,52 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "Pinned WHM /ipv6_range_list/get declares x-readonly=true and x-cpanel-available-version=11.40; selected transport is GET. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+          "note": "Pinned WHM /ipv6_range_list/get declares x-readonly=true and x-cpanel-available-version=11.40; selected transport is GET. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Pinned response properties and requiredness are retained; the three later observed compatibility rules are recorded separately below. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Immutable docs/api/evidence/2026-10-31-whm-ip-addresses.json (SHA-256 439b50dbddb6d3577889ac9013a154ffde1151a8b4a53b8292c674e5ff1b3900), whm1:ipv6_range_list#GET through WHM at revision adb1dfdca8c5308315ef1cad23d902675798d579 on cPanel 11.138.0.19, records $.range[].enabled as numeric-string and $.range[].mostrecent/$.range[].note as null, with three type_mismatch discrepancies. Add only exact quoted flag normalization to range[].enabled and nullable string support to range[].mostrecent and range[].note. The five HTTP/API outcomes passed, but this payload failed; the artifact remains failed and immutable. No IP, range, account, network, NAT or configuration changes occurred. Other operations and sibling fields retain their contracts; unobserved variants remain under whm-api-client-8x0.2.37."
         }
-      ]
+      ],
+      "response": {
+        "range[].enabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-ip-addresses.json (SHA-256 439b50dbddb6d3577889ac9013a154ffde1151a8b4a53b8292c674e5ff1b3900), whm1:ipv6_range_list#GET through WHM at revision adb1dfdca8c5308315ef1cad23d902675798d579 on cPanel 11.138.0.19, records $.range[].enabled as numeric-string despite the pinned integer enum [0,1], with a type_mismatch at that path. Apply the existing bounded string-flag rule only here: preserve native integer 0/1 and normalize exact quoted \"0\"/\"1\" to them. Other numeric strings, booleans, floats and null remain invalid. The structural artifact does not identify the observed numeric-string value; exact flag spellings in tests are synthetic bounded compatibility cases. Optionality and all other flag fields stay unchanged; the failed artifact is unwaived under whm-api-client-8x0.2.37."
+            }
+          ]
+        },
+        "range[].mostrecent": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-ip-addresses.json (SHA-256 439b50dbddb6d3577889ac9013a154ffde1151a8b4a53b8292c674e5ff1b3900), whm1:ipv6_range_list#GET through WHM at revision adb1dfdca8c5308315ef1cad23d902675798d579 on cPanel 11.138.0.19, records $.range[].mostrecent as null despite the pinned string schema, with a type_mismatch at that path. Preserve the documented string and observed explicit null, keeping omission distinct from null and rejecting all other scalar/list/object types. This correction applies only to this operation field; other IPv6 address fields are unchanged. The failed artifact stays unchanged and unwaived under whm-api-client-8x0.2.37."
+            }
+          ]
+        },
+        "range[].note": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-ip-addresses.json (SHA-256 439b50dbddb6d3577889ac9013a154ffde1151a8b4a53b8292c674e5ff1b3900), whm1:ipv6_range_list#GET through WHM at revision adb1dfdca8c5308315ef1cad23d902675798d579 on cPanel 11.138.0.19, records $.range[].note as null despite the pinned string schema, with a type_mismatch at that path. Preserve the documented string and observed explicit null, keeping omission and empty string distinct from null and rejecting all other scalar/list/object types. This correction applies only to this operation field; sibling string fields and other operations are unchanged. The failed artifact stays unchanged and unwaived under whm-api-client-8x0.2.37."
+            }
+          ]
+        }
+      }
     },
     "whm1:ipv6_range_remove": {
       "name": "removeIpv6Range",

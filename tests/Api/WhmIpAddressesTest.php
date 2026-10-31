@@ -203,6 +203,56 @@ final class WhmIpAddressesTest extends TestCase
         self::assertCount(1, $http->getRequests());
     }
 
+    /** @return iterable<string, array{string, array<string, mixed>}> */
+    public static function reviewedRangePayloads(): iterable
+    {
+        // The immutable live artifact establishes numeric-string and null structural variants.
+        // Exact quoted flag values and combinations below are synthetic bounded compatibility checks.
+        yield 'quoted zero flag' => ['{"range":[{"enabled":"0"}]}', ['range' => [['enabled' => 0]]]];
+        yield 'quoted one flag' => ['{"range":[{"enabled":"1"}]}', ['range' => [['enabled' => 1]]]];
+        yield 'mostrecent null' => ['{"range":[{"mostrecent":null}]}', ['range' => [['mostrecent' => null]]]];
+        yield 'note null' => ['{"range":[{"note":null}]}', ['range' => [['note' => null]]]];
+        yield 'all three structural variants' => [
+            '{"range":[{"enabled":"1","mostrecent":null,"note":null}]}',
+            ['range' => [['enabled' => 1, 'mostrecent' => null, 'note' => null]]],
+        ];
+        yield 'native flag and nullable fields' => [
+            '{"range":[{"enabled":0,"mostrecent":null,"note":null}]}',
+            ['range' => [['enabled' => 0, 'mostrecent' => null, 'note' => null]]],
+        ];
+        yield 'null and omission remain distinct' => [
+            '{"range":[{},{"mostrecent":null},{"note":null},{"mostrecent":"","note":""}]}',
+            ['range' => [[], ['mostrecent' => null], ['note' => null], ['mostrecent' => '', 'note' => '']]],
+        ];
+    }
+
+    /** @param array<string, mixed> $expected */
+    #[DataProvider('reviewedRangePayloads')]
+    public function testReviewedRangeVariantsNormalizeOnlyExactFlagsAndPreserveNulls(
+        string $payload,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client();
+        $whm = $client->whm();
+        $http->addResponse(new Response(200, [], self::envelope('get_shared_ip', '{"ip":"~"}')));
+        $whm->ipAddresses()->getSharedIp();
+        $previous = $whm->responseMeta();
+        $http->addResponse(new Response(200, [], self::envelope('ipv6_range_list', $payload)));
+        self::assertSame($expected, $whm->ipAddresses()->listIpv6Ranges());
+        self::assertNotSame($previous, $whm->responseMeta());
+        self::assertSame(1, $whm->responseMeta()?->whmResult());
+        self::assertSame('ipv6_range_list', $whm->responseMeta()?->whm['command'] ?? null);
+        self::assertCount(2, $http->getRequests());
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('GET', $request->getMethod());
+        self::assertSame(
+            'https://api.example.test:2087/json-api/ipv6_range_list?api.version=1',
+            (string) $request->getUri(),
+        );
+        self::assertSame('', (string) $request->getBody());
+    }
+
     /** @return iterable<string, array{string, string, list<mixed>, ?string}> */
     public static function invalidPayloads(): iterable
     {
@@ -233,8 +283,12 @@ final class WhmIpAddressesTest extends TestCase
             ['CIDR', 'enabled', 'first', 'last', 'mostrecent', 'name', 'note', 'owner',
             'range_users', 'reclaimed'] as $key
         ) {
-            $fields[] = ['listIpv6Ranges', 'ipv6_range_list', [], 'range[].' . $key,
-                $key === 'enabled' ? 'flag' : (in_array($key, ['range_users', 'reclaimed'], true) ? 'list' : 'string')];
+            $fields[] = ['listIpv6Ranges', 'ipv6_range_list', [], 'range[].' . $key, match ($key) {
+                'enabled' => 'quoted-flag',
+                'mostrecent', 'note' => 'nullable-string',
+                'range_users', 'reclaimed' => 'list',
+                default => 'string',
+            }];
         }
         foreach (['forbidden', 'free', 'used'] as $key) {
             $fields[] = ['getIpv6RangeUsage', 'ipv6_range_usage', ['Block'], 'usage.' . $key, 'int'];
@@ -247,13 +301,7 @@ final class WhmIpAddressesTest extends TestCase
                 in_array($key, ['active', 'dedicated', 'mainaddr', 'removable', 'used'], true) ? 'flag' : 'string'];
         }
         foreach ($fields as [$method, $operation, $arguments, $path, $type]) {
-            $badValues = match ($type) {
-                'flag' => ['null', '"0"', '"1"', 'true', 'false', '1.0', '2', '-1', '[]', '{}'],
-                'int' => ['null', '"0"', '"1"', 'true', 'false', '1.0', '[]', '{}'],
-                'list' => ['null', '0', 'true', '"text"', '{}', '[null]', '[false]'],
-                'object' => ['null', '0', 'true', '"text"', '[{}]'],
-                default => ['null', '0', 'true', 'false', '[]', '{}'],
-            };
+            $badValues = self::invalidLeafValues($type);
             foreach ($badValues as $index => $bad) {
                 yield "$method $path invalid $index" =>
                     [$method, $operation, $arguments, self::nestedPayload($path, $bad)];
@@ -396,6 +444,21 @@ final class WhmIpAddressesTest extends TestCase
     {
         return in_array($method, ['getPublicIp', 'getSharedIp', 'disableIpv6Account', 'enableIpv6Account',
             'listIpv6Ranges', 'getIpv6RangeUsage', 'listIps', 'listIpv6s', 'checkNatIp'], true);
+    }
+
+    /** @return list<string> */
+    private static function invalidLeafValues(string $type): array
+    {
+        return match ($type) {
+            'flag' => ['null', '"0"', '"1"', 'true', 'false', '1.0', '2', '-1', '[]', '{}'],
+            'int' => ['null', '"0"', '"1"', 'true', 'false', '1.0', '[]', '{}'],
+            'list' => ['null', '0', 'true', '"text"', '{}', '[null]', '[false]'],
+            'object' => ['null', '0', 'true', '"text"', '[{}]'],
+            'quoted-flag' => ['null', 'true', 'false', '1.0', '2', '-1', '[]', '{}',
+                '"2"', '"-1"', '"00"', '"01"', '"+1"', '"1.0"', '"1e0"', '" 1"', '"1 "', '""', '"true"'],
+            'nullable-string' => ['0', '1.5', 'true', 'false', '[]', '{}'],
+            default => ['null', '0', 'true', 'false', '[]', '{}'],
+        };
     }
 
     private static function nestedPayload(string $path, string $value): string

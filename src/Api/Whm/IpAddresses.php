@@ -65,9 +65,9 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *         enabled?: 0|1,
  *         first?: string,
  *         last?: string,
- *         mostrecent?: string,
+ *         mostrecent?: string|null,
  *         name?: string,
- *         note?: string,
+ *         note?: string|null,
  *         owner?: string,
  *         range_users?: list<string>,
  *         reclaimed?: list<string>,
@@ -445,6 +445,13 @@ final readonly class IpAddresses
      * Documented: Returns optional range records, with native integer 0/1 enabled flags, textual IPv6/CIDR addresses,
      * account-name lists and reclaimed-address lists. SHARED denotes the main shared IPv6 address; omitted fields and
      * empty lists remain distinct.
+     *
+     * Observed: The 2026-10-31 inventory capture on cPanel 11.138.0.19 recorded enabled as numeric-string and
+     * mostrecent/note as null. Only exact quoted enabled flags "0" and "1" additionally normalize to native integer
+     * 0/1; the two named string fields additionally preserve explicit null. Optional omission remains distinct from
+     * null and empty strings. The structural capture does not identify exact string flag values; both exact spellings
+     * and mixed combinations are synthetic compatibility checks. Sibling fields and other operations stay strict, and
+     * the original failed artifact remains unchanged.
      *
      * API-map identity: whm1:ipv6_range_list#GET (wire name ipv6_range_list; IPv6 Address Settings).
      *
