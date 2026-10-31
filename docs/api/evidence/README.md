@@ -831,3 +831,44 @@ This establishes no successful login, SSH access, TFA challenge, provider/link
 operation or mutation compatibility, including the effective POST login-URL method.
 All remaining operations and variants stay under `8x0.2.40`. Immutable SHA-256:
 `79245a336ed4daacbc6ac02c1bc48a3c72f64dee68f42987b5ab1dafb6366c81`.
+
+## WHM SSL certificate inventory capture
+
+The initial [WHM SSL capture](2026-10-31-whm-ssl.json) at
+`df3a6341a08d85eb9c011e617db7edbcc2c967cc` on `11.138.0.19` records nine
+HTTP/API successes and seven payload/probe passes. The best-service-domain
+expiration is null. Certificate inventory has null owner-list items and literal
+`issuer.organizationName` values, plus numeric-string modulus lengths and expiry
+timestamps. Five operation-specific field rules preserve these observed variants;
+other fields and WHM/UAPI operations remain unchanged. Owner-list null items do
+not make the list itself nullable, and no meaning is assigned to null values.
+
+Integer-string compatibility stays canonical and lossless, rejecting noncanonical
+strings, fractional values and overflow. Structural evidence does not establish
+every accepted canonical spelling. No provider data, private key, component PEM
+or log contents were read and no mutation or URL request ran. The original strict
+assessment stays failed and immutable; `8x0.2.39` retains remaining live behavior.
+Initial SHA-256:
+`f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29`.
+
+The [corrected WHM SSL capture](2026-10-31-whm-ssl-corrected.json) at
+`4317e1af1a4065134fae5e8addbd6c9cf083e985` on `11.138.0.19` passes all nine
+HTTP/API/payload/probe checks and strict assessment with zero discrepancies.
+The five operation-specific corrections pass, with populated certificate inventory.
+No installation, service restart, TLS serving/trust, AutoSSL issuance/renewal,
+provider configuration or key lifecycle behavior is established.
+
+No certificate, exclusion, configuration or scheduling setting changed. No private
+key, component PEM, provider payload or log content was read, and no URL was fetched.
+The original failed artifact stays unchanged; `8x0.2.39` retains unobserved behavior.
+Corrected SHA-256:
+`1e3117fc43dc790b0891b3571313b44f60953ce4b6e0d20305c0bc32ccacb498`.
+
+### Separate WHM SSL review evidence
+
+[Claude review 5720639651](https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651)
+records additional WHM reads and a disposable-account SSL lifecycle on
+`11.138.0.19`, with account cleanup reported. Those observations motivate narrow
+contract corrections and remain separate from the two immutable captures above.
+The service reset/install family and rebuild/enqueue missing-data variants are
+source/offline only. No new capture ran for review fixes; `8x0.2.39` remains open.

@@ -1378,3 +1378,28 @@ issuer names and the integer policy flag were read. No secret, private URL, key,
 configuration or link data was requested, and no state changed. It establishes
 no login, TFA challenge, SSH access or mutation compatibility. `8x0.2.40` remains
 open for all unobserved functions and variants.
+
+## WHM SSL inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-ssl.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-ssl.json
+```
+
+Nine exact GET requests read version, AutoSSL schedule, log catalog metadata,
+metadata flags, designated account/domain problems and exclusions, the best
+SSL domain for the pinned `whostmgr` example and certificate metadata for `npr`.
+The request guard, opt-in, committed inputs, verified TLS, structural-only capture
+and no-retry behavior are unchanged. Provider payloads, private keys, component
+PEM and log contents are omitted. No certificate generation, installation, reset,
+removal, provider/configuration change, background check or notification occurs.
+No returned URL is fetched. Strict findings remain failures; `8x0.2.39` retains
+unobserved operations and variants.
+
+The corrected WHM SSL capture at `4317e1a` on `11.138.0.19` passes all nine GET
+observations and strict assessment with zero discrepancies. Five evidenced leaves
+preserve best-domain null expiry, nullable certificate owner items and issuer
+organization, and canonical integer-string modulus/expiry values. No sibling or
+UAPI contract changed. Certificate inventory is populated; no mutation or private
+material read ran. The initial artifact is immutable and `8x0.2.39` remains open.
