@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 41 generated typed groups cover 431 documented operations (see
+The 46 generated typed groups cover 462 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -339,6 +339,8 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()`, `addHost()`, `addHostNote()`, `checkDatabase()`, `deleteHost()`, `dumpDatabaseSchema()`, `getHostNotes()`, `listRoutines()`, `locateServer()`, `renameDatabase()`, `renameUser()`, `repairDatabase()`, `revokeAccessToDatabase()`, `setPassword()`, `setupDbAndUser()`, `updatePrivileges()` |
 | `uapi()->postgresql()` | `createDatabase()`, `createUser()`, `deleteDatabase()`, `deleteUser()`, `getRestrictions()`, `grantAllPrivileges()`, `listDatabases()`, `listUsers()`, `renameDatabase()`, `renameUser()`, `renameUserNoPassword()`, `revokeAllPrivileges()`, `setPassword()`, `updatePrivileges()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
+| `uapi()->dnssec()` | All 12 pinned functions: key lifecycle, DNSKEY/private-key exports, DS records and NSEC settings. `fetchDsRecords()` and `exportZoneDnskey()` use GET; the other ten use form POST, including private-key export. |
+| `uapi()->dynamicDns()` | All 5 pinned functions: `listDomains()` uses GET; `create()`, `recreate()`, `setDescription()` and `delete()` use form POST. |
 
 UAPI groups operate on the selected cPanel account through either credential route.
 DomainInfo, Features and LangPHP expose every function in their pinned modules.
@@ -376,6 +378,47 @@ retried or rolled back by the client.
 object fields; an absent payload is a mismatch. WebVhosts preserves optional and
 nullable proxy-subdomain lists. `listSslCapableDomains()` does not invent a domain
 argument from inconsistent upstream prose.
+
+The DNSSEC and Dynamic DNS groups cover all seventeen pinned functions.
+`dnssec()` exposes key lifecycle, DNSKEY/private-key export, DS records and NSEC
+settings; `dynamicDns()` exposes creation, inventory, ID replacement, description
+updates and deletion. DNSKEY/DS reads and Dynamic DNS inventory use GET; the other
+fourteen methods use form POST, including private-key export.
+
+DNSSEC requires the DNS role and retains each method's version and registrar
+requirements. Disabling DNSSEC destroys its keys and requires registrar record
+removal; the client provides no retry or rollback. Dynamic domain/key maps retain
+their returned keys, optional fields and per-domain results separately from the
+API envelope. Single-domain calls use the documented `domain` argument; the
+`domain-0`/`domain-1` family remains tracked under `8x0.1.21`.
+Omitting `keySetup` retains `classic` even with `algoNum: 13`; choose `simple`
+explicitly for the documented combined-key setup above algorithm 8. Key removal
+is irreversible and can break validation while registrar DS records reference it.
+Reviewed key identifiers normalize canonical in-range integer strings to integers
+for direct use in subsequent typed key methods. Digest algorithm identifiers also
+accept that narrow conversion; other flags and numeric fields remain strict.
+Export payloads expose an optional `success` flag, with no promised `error` field.
+
+Imported key material and Dynamic DNS input IDs are sensitive parameters.
+`exportZoneKey()` results and `PayloadMismatchException::$payload` can contain
+private keys; do not log either. `fetchDsRecords()` may also return private-key
+material, and Dynamic DNS IDs form part
+of update URLs; treat those result values as sensitive and do not fetch update
+URLs while inspecting inventory. `recreate()` replaces the DDNS identifier and
+invalidates the existing update URL; update DDNS clients to use its replacement.
+Deleting a DDNS domain also invalidates its existing update URL.
+`setDescription()` returns no payload. Deletion's source `number` enum `[0, 1]` becomes an integer `0|1` flag under
+the existing generator; zero means the identifier did not exist for deletion.
+Omitted timestamps and explicit null `last_update_time` remain distinct.
+
+The live catalog reads only DS records for `npr.rs`, Dynamic DNS inventory for
+`npr`, and WHM version. It makes no key, registrar, DNS-record or DDNS changes.
+Unobserved live variants remain tracked under `8x0.2.26`; API responses alone do
+not establish DNS propagation or DNSSEC validation by resolvers.
+The final integrated capture at `71e31f1` passes all five GETs and strict checks
+with zero discrepancies. Its DS objects and DDNS lists are empty; populated
+numeric fields and mutations remain separate reviewer/offline evidence. The
+original capture is unchanged; `docs/api/source-audit.md` records both hashes.
 
 The directory groups cover all ten pinned functions, available from cPanel 88.
 Six reads use GET and four mutations use form POST. Directory paths are forwarded
@@ -451,6 +494,55 @@ artifact stays failed. After Claude verified the corrected code, a separate
 contract. It remains strictly failed only for the same two masked unknown-field
 findings, which are unwaived. See `docs/api/source-audit.md` for both immutable
 artifacts, exact revisions, hashes and coverage limits.
+
+The repository, deployment and Passenger groups cover fourteen pinned functions.
+`versionControl()` manages cPanel Git repositories, `versionControlDeployment()`
+starts and inspects deployment tasks, and `passengerApps()` manages Application
+Manager registrations. Passenger inventory uses GET; the other thirteen methods
+use form POST, including repository and deployment retrievals whose source marks
+them `x-readonly=false`.
+
+Repository `sourceRepository` is caller-supplied JSON text, sent once as a form
+parameter. The client does not JSON-encode a PHP object or decode/re-encode the
+string. The existing scalar parameter boundary is `string|int|null`; supply the
+documented serialized JSON string, or omit it. Clone URLs may contain credentials,
+so this argument stays sensitive. The pinned source warns that repository deletion
+permanently removes directory contents. The PR40 reviewer instead observed
+registration deletion leaving the directory on the test server; retain the
+source's destructive-operation warning rather than relying on that discrepancy.
+Updating a branch can pull remote changes;
+source URLs cannot be changed by the update method.
+
+Deployment requires a clean working tree, branches and a checked-in `.cpanel.yml`.
+Returned task IDs and event/log URLs do not prove completion and are not fetched
+by the client. Reviewed integer deployment IDs are preserved, and `delete()`
+accepts the returned integer or documented string identifier. A status-success
+`create()` response with explicit null was observed for a non-deployable repository
+with no deployment queued; absent data remains a mismatch. A payload error after
+queueing does not undo the deployment and must not trigger a retry. Creation's
+unspecified `last_update` schema includes a null-only
+enum but remains mixed under the current effective validator; no stronger field
+contract is invented.
+
+Passenger registration requires an existing application; unregistering it does
+not delete its files. Environment names and values use matching repeated fields;
+supply one value per name. Editing environment variables replaces the current
+set. Omitting `enabled` when editing uses the documented default of 1 and can
+re-enable a disabled application; pass false explicitly to retain disabled state.
+Values remain sensitive, and opaque returned environment objects preserve
+their fields. Inventory `enabled` has an unspecified schema and remains mixed;
+mutation flags retain their declared types. `ensureDeps()` starts asynchronous
+installation. These methods manage Application Manager; the pinned source
+recommends WebApp for applications deployed with that newer feature.
+
+The bounded live catalog reads only WHM version and Passenger inventory on both
+routes. Repository/deployment POST reads, mutations and populated/secret-bearing
+variants remain tracked under `8x0.2.27`. No deployment, dependency installation,
+repository deletion or application configuration change is part of that catalog.
+The reviewer diagnosed its Passenger API failures: `npr` lacks the `passengerapps`
+feature and the server has no Passenger packages. No server-wide installation was
+made. All seven Passenger methods remain unobserved, including dependency-result
+and mutation flag/environment variants. The failed capture remains unwaived.
 
 The Fileman group implements 13 of 14 pinned functions: directory autocomplete,
 file information, file content and directory listings use GET; content saving,

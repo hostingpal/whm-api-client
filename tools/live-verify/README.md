@@ -964,6 +964,61 @@ duplicate labels and mixed labeled/unlabeled repeats. Historical unlabeled
 catalogs retain duplicate rejection and their original record shape. No failure
 or discrepancy acknowledgment is introduced.
 
+## DNSSEC and Dynamic DNS inventory
+
+The fixed `dns-security-v1` catalog contains five GET observations: WHM version,
+`DNSSEC/fetch_ds_records(domain: 'npr.rs')` and `DynamicDNS/list` through direct
+UAPI and the WHM bridge for `npr`. It neither guesses key identifiers nor fetches
+DDNS update URLs, and performs no DNSSEC, registrar, key or domain mutation.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/dns-security.php \
+  --output=docs/api/evidence/dns-security-new.json
+```
+
+Both test tokens and committed inputs are required. The exact-URI GET guard
+rejects method, body and target changes before dispatch. The report stores only
+structural types/paths: private-key strings, DDNS IDs and domain-map keys are
+never persisted as values. Strict assessment requires all five observations to
+pass without discrepancies or acknowledgments. An unavailable API remains failed
+evidence. Follow-up `8x0.2.26` owns the remaining operation and payload variants.
+
+The [DNS security capture](../../docs/api/evidence/2026-10-31-dns-security.json) at
+`372df78` on `11.138.0.19` passes all five GET observations and strict assessment
+with zero discrepancies. DS detail objects and the DDNS inventory are empty;
+populated fields and the other fifteen methods remain offline coverage. No DNS,
+key, registrar or DDNS state changed. Follow-up `8x0.2.26` remains open.
+
+## Application-management inventory
+
+The `application-deployment-v1` catalog contains three GET observations: WHM
+version and `PassengerApps/list_applications` through direct UAPI and the WHM
+bridge for `npr`. Repository/deployment retrieval methods use form POST because their source
+declares `x-readonly=false`, and are outside this GET catalog. No registration, enablement,
+deployment, repository removal or dependency installation runs.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/application-deployment.php \
+  --output=docs/api/evidence/application-deployment-new.json
+```
+
+Both tokens and committed inputs are required. Exact URI/method/body guards apply;
+structural evidence retains no environment values, application-name keys, paths,
+clone URLs, commit messages or log text. Returned URLs are never fetched. Strict
+assessment requires every original observation to pass without discrepancies or
+acknowledgments. Follow-up `8x0.2.27` owns all unobserved operations and variants.
+
+The [application-management capture](../../docs/api/evidence/2026-10-31-application-deployment.json)
+at `344fffc` on `11.138.0.19` records three HTTP-200 GETs. WHM version passes;
+both Passenger inventory calls fail at the API layer before payload validation,
+so strict assessment remains failed. This is no successful empty-inventory or
+payload-schema evidence. All fourteen methods are offline-tested; separate
+reviewer lifecycle observations and their limits are recorded in the source audit.
+Committed lifecycle evidence remains under `8x0.2.27`. This capture changed no
+repository or application state.
+
 ## Team and user management
 
 `team-user-management.php` binds `team-user-management-v1` to nine exact GETs:
