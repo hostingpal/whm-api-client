@@ -111,6 +111,9 @@ final readonly class IpAddresses
      * address list itself. The client forwards the supplied string once without adding a prefix or validating network
      * syntax.
      *
+     * Documented: This void method leaves the pinned metadata.output.messages string list in
+     * responseMeta()->whm['output']['messages']; inspect that metadata for per-address output after envelope success.
+     *
      * API-map identity: whm1:addips#GET (wire name addips; IPv4 Address Settings).
      *
      * @param string $ips The IPv4 address or address range in Class C CIDR format.
@@ -204,8 +207,9 @@ final readonly class IpAddresses
      *
      * @param string $ip The IPv4 address.
      * @param string|null $ethernetDev The network alias to which the IPv4 address is bound. Null omits it.
-     * @param bool|null $skipIfShutdown Whether to remove the IP address if the ethernet interface is down. Null omits
-     *     it.
+     * @param bool|null $skipIfShutdown Whether to skip removal if the network interface is already down. True sends 1
+     *     and prevents removal; false sends 0 and permits removal. Omission retains the documented 0 default. This
+     *     switch does not shut down the interface. Null omits it.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ipv4-address-settings/ips-delip
      */
@@ -234,18 +238,24 @@ final readonly class IpAddresses
      * Documented: The failures records have optional name and reason fields. The pinned reason schema has only prose
      * and an example, without a type; its value remains mixed rather than an invented string-only contract.
      *
+     * Documented: The reviewed upstream implementation returns no data on clean success. Absent or null data therefore
+     * returns null; when data is present, the documented failure fields remain validated. The clean-success form is
+     * source-backed and offline-tested, not live-observed. Do not retry a completed disable to recover a response.
+     *
+     * Returns null when the server sends no data.
+     *
      * API-map identity: whm1:ipv6_disable_account#GET (wire name ipv6_disable_account; IPv6 Address Settings).
      *
      * @param string $user A comma delimited list of account names.
-     * @return DisableIpv6AccountResult
+     * @return DisableIpv6AccountResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ipv6-address-settings/ipv6-ipv6_disable_account
      */
-    public function disableIpv6Account(string $user): array
+    public function disableIpv6Account(string $user): ?array
     {
-        /** @var DisableIpv6AccountResult $result Validated against IpAddressesSpec::IPV6_DISABLE_ACCOUNT. */
+        /** @var DisableIpv6AccountResult|null $result Validated against IpAddressesSpec::IPV6_DISABLE_ACCOUNT. */
         $result = ($this->run)(IpAddressesSpec::IPV6_DISABLE_ACCOUNT, ['user' => $user]);
 
         return $result;
@@ -325,6 +335,10 @@ final readonly class IpAddresses
      *
      * Documented: Returns optional integer forbidden, free and used counts for the named range. Counts, zero values and
      * omitted fields remain distinct; no numeric-string or floating-point coercion is inferred.
+     *
+     * Observed: On cPanel 11.138.0.19, this operation returns constant placeholder values used=20, free=1000000 and
+     * forbidden=65536. The reviewer confirmed those values for a real range and the upstream implementation returns the
+     * same constants. They do not measure actual address capacity or utilization on that version.
      *
      * API-map identity: whm1:ipv6_range_usage#GET (wire name ipv6_range_usage; IPv6 Address Settings).
      *

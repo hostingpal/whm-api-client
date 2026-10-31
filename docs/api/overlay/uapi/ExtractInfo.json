@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "ExtractInfo",
+  "accessor": "extractInfo",
+  "operations": {
+    "uapi:ExtractInfo/finish": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later; idempotently clears the selected account's extraction progress marker, making progress report none. Call after the separate Fileman extraction finishes whether it succeeds or fails. This cleanup does not perform extraction, roll back files or establish success; the client never invokes it automatically."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, the reviewer observed integer cleared=1 after the state was cleared. The pinned boolean remains the public result; integer 0 and 1 normalize to false and true. Other integers, strings, floats and null remain payload mismatches. A successful cleanup is not retried automatically."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation omits x-readonly. The generated client conservatively uses form POST; no read-only GET override is inferred."
+        }
+      ],
+      "name": "finish",
+      "response": {
+        "cleared": {
+          "accept": [
+            "int-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019 of e1425e688904c7751401cb5ddf58c902d571f573 on cPanel 11.138.0.19: typed direct ExtractInfo/finish returned integer cleared=1 after clearing state, causing PayloadMismatchException with outcomeConfirmed=true. Generic calls and Cpanel/API/ExtractInfo.pm (my $cleared = 1) confirmed the integer. Accept only integer 0/1 alongside the pinned boolean and normalize to bool. This field-specific correction does not widen ExtractInfo.start.started."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019 of e1425e688904c7751401cb5ddf58c902d571f573 on cPanel 11.138.0.19: typed direct ExtractInfo/finish returned integer cleared=1 after clearing state, causing PayloadMismatchException with outcomeConfirmed=true. Generic calls and Cpanel/API/ExtractInfo.pm (my $cleared = 1) confirmed the integer. Accept only integer 0/1 alongside the pinned boolean and normalize to bool. This field-specific correction does not widen ExtractInfo.start.started."
+        }
+      ]
+    },
+    "uapi:ExtractInfo/progress": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later; reports progress for the selected account's externally bracketed Fileman extraction. Destination-directory growth can contain noise; percent is numeric and at most 99 until finish clears the marker. A none state, including after finish, is not proof that extraction succeeded."
+        },
+        {
+          "kind": "documented",
+          "text": "totalBytes is integer uncompressed bytes. The gzip trailer wraps at 4 GiB, so larger archives use a best-effort estimate; totalBytesEstimated remains the pinned integer rather than an inferred closed flag. startedAtEpoch is nullable and omitted fields stay omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload verification."
+        }
+      ],
+      "name": "progress"
+    },
+    "uapi:ExtractInfo/start": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later; records the selected account's archive size, destination baseline and progress marker and returns immediately. It extracts nothing. Call the separate Fileman extraction, poll progress while it runs, then finish; neither orchestration nor extraction is performed by this method."
+        },
+        {
+          "kind": "documented",
+          "text": "archive and directory are server-side paths which must resolve inside the selected account's home directory. The client forwards both unchanged and uploads no local archive. File extraction can change destination files; inspect the separate extraction operation before running it."
+        },
+        {
+          "kind": "documented",
+          "text": "started is a JSON boolean, not an integer 0/1 flag."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation omits x-readonly. The generated client conservatively uses form POST; no read-only GET override is inferred."
+        },
+        {
+          "kind": "observed",
+          "text": "The cPanel 11.138.0.19 review observed ApiErrorException for a missing archive through direct and bridged UAPI. A start with a real archive was not exercised. This failure is separate from the strict boolean started payload contract and does not establish successful extraction."
+        }
+      ],
+      "name": "start",
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019: ExtractInfo/start with a missing archive raised ApiErrorException on the reviewed cPanel 11.138.0.19 installation; direct and bridged calls were exercised. A real archive start was not run."
+        }
+      ]
+    }
+  }
+}

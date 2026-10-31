@@ -25,6 +25,10 @@
         {
           "kind": "documented",
           "text": "Supply excludes as a comma-delimited address string. Omission excludes no addresses; the multiple-address example includes an inconsistent excludes= prefix, while the parameter description specifies the address list itself. The client forwards the supplied string once without adding a prefix or validating network syntax."
+        },
+        {
+          "kind": "documented",
+          "text": "This void method leaves the pinned metadata.output.messages string list in responseMeta()->whm['output']['messages']; inspect that metadata for per-address output after envelope success."
         }
       ],
       "evidence": [
@@ -33,6 +37,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM /addips/get declares x-readonly=false and x-cpanel-available-version=11; selected transport is POST. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /addips/get documents metadata.output.messages as a string list and no data payload. The metadata is retained by the shared response lifecycle; this note does not infer a new return schema."
         }
       ]
     },
@@ -66,6 +76,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned optional integer enum [0,1] request switch is exposed as bool and encoded as 1/0. Null omits it and retains the documented server default; explicit false sends 0."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The /delip/get skipifshutdown introductory sentence is ambiguous; its value table explicitly says 1 does not remove the address when the interface is down and 0 removes it. Correct the parameter prose to match that table without changing encoding or default."
         }
       ],
       "params": {
@@ -74,7 +90,8 @@
         },
         "skipifshutdown": {
           "php": "skipIfShutdown",
-          "encoding": "bool"
+          "encoding": "bool",
+          "description": "Whether to skip removal if the network interface is already down. True sends 1 and prevents removal; false sends 0 and permits removal. Omission retains the documented 0 default. This switch does not shut down the interface."
         }
       }
     },
@@ -146,6 +163,10 @@
         {
           "kind": "documented",
           "text": "The failures records have optional name and reason fields. The pinned reason schema has only prose and an example, without a type; its value remains mixed rather than an invented string-only contract."
+        },
+        {
+          "kind": "documented",
+          "text": "The reviewed upstream implementation returns no data on clean success. Absent or null data therefore returns null; when data is present, the documented failure fields remain validated. The clean-success form is source-backed and offline-tested, not live-observed. Do not retry a completed disable to recover a response."
         }
       ],
       "evidence": [
@@ -154,8 +175,15 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM /ipv6_disable_account/get declares x-readonly=false and x-cpanel-available-version=11.40; selected transport is POST. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "cPanel 11.138.0.19 source reviewed 2026-10-31",
+          "date": "2026-10-31",
+          "note": "Claude review https://github.com/hostingpal/whm-api-client/pull/50#pullrequestreview-5720554070 inspected Whostmgr/API/1/IPv6.pm: ipv6_disable_account sets metadata.result=1 and returns without data on clean success. The pinned schema describes fail_cnt/failures only when failures occur. This supports optional_payload while retaining the complete object contract, including mixed failure reasons, when present. No IPv6 write ran during review."
         }
-      ]
+      ],
+      "optional_payload": true
     },
     "whm1:ipv6_enable_account": {
       "name": "enableIpv6Account",
@@ -370,6 +398,10 @@
         {
           "kind": "documented",
           "text": "Returns optional integer forbidden, free and used counts for the named range. Counts, zero values and omitted fields remain distinct; no numeric-string or floating-point coercion is inferred."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, this operation returns constant placeholder values used=20, free=1000000 and forbidden=65536. The reviewer confirmed those values for a real range and the upstream implementation returns the same constants. They do not measure actual address capacity or utilization on that version."
         }
       ],
       "evidence": [
@@ -378,6 +410,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned WHM /ipv6_range_usage/get declares x-readonly=true and x-cpanel-available-version=11.40; selected transport is GET. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Claude read-only review https://github.com/hostingpal/whm-api-client/pull/50#pullrequestreview-5720554070 observed the constant used/free/forbidden values from getIpv6RangeUsage for a real range and inspected Cpanel/IPv6/ApiSupport.pm, which returns those constants. This is a separate reviewer observation, not an expansion of the committed five-GET inventory capture. Integer types remain unchanged."
         }
       ]
     },

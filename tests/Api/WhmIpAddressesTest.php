@@ -203,6 +203,75 @@ final class WhmIpAddressesTest extends TestCase
         self::assertCount(1, $http->getRequests());
     }
 
+    /** @return iterable<string, array{?string}> */
+    public static function emptyDisablePayloads(): iterable
+    {
+        yield 'omitted data' => [null];
+        yield 'explicit null data' => ['null'];
+    }
+
+    #[DataProvider('emptyDisablePayloads')]
+    public function testSuccessfulIpv6DisableWithoutFailureDataReturnsNullAndDoesNotRetry(?string $payload): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('ipv6_disable_account', $payload)));
+
+        self::assertNull($client->whm()->ipAddresses()->disableIpv6Account('one,two'));
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertSame('ipv6_disable_account', $client->whm()->responseMeta()?->whm['command'] ?? null);
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('POST', $request->getMethod());
+        self::assertSame(
+            'https://api.example.test:2087/json-api/ipv6_disable_account?api.version=1',
+            (string) $request->getUri(),
+        );
+        self::assertSame('user=one%2Ctwo', (string) $request->getBody());
+        self::assertSame('application/x-www-form-urlencoded', $request->getHeaderLine('Content-Type'));
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{?string}> */
+    public static function failedDisablePayloads(): iterable
+    {
+        yield from self::emptyDisablePayloads();
+        yield 'present per-account failure' => ['{"fail_cnt":1,"failures":[{"name":"one","reason":"failed"}]}'];
+    }
+
+    #[DataProvider('failedDisablePayloads')]
+    public function testFailedIpv6DisableStillRaisesApiErrorWhenDataIsOptional(?string $payload): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('ipv6_disable_account', $payload, 0)));
+        try {
+            $client->whm()->ipAddresses()->disableIpv6Account('one');
+            self::fail('Optional data must not hide a failed WHM outcome.');
+        } catch (ApiErrorException $error) {
+            self::assertSame(['Synthetic failure'], $error->errors());
+            self::assertSame(0, $error->metadata?->whmResult());
+            self::assertSame('ipv6_disable_account', $error->metadata?->whm['command'] ?? null);
+            self::assertSame($client->whm()->responseMeta(), $error->metadata);
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
+    public function testAddIpsRetainsPinnedPerAliasMessagesInResponseMetadata(): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], '{"metadata":{"command":"addips","reason":"Success",'
+            . '"result":1,"version":1,"output":{"messages":["Synthetic alias one added.",'
+            . '"Synthetic alias two added."]}}}'));
+
+        $client->whm()->ipAddresses()->addIps('192.0.2.16/28', '255.255.255.240');
+        $metadata = $client->whm()->responseMeta();
+        self::assertNotNull($metadata);
+        self::assertSame(1, $metadata->whmResult());
+        $output = $metadata->whm['output'] ?? null;
+        self::assertIsArray($output);
+        self::assertSame(['Synthetic alias one added.', 'Synthetic alias two added.'], $output['messages'] ?? null);
+        self::assertCount(1, $http->getRequests());
+    }
+
     /** @return iterable<string, array{string, array<string, mixed>}> */
     public static function reviewedRangePayloads(): iterable
     {
@@ -258,6 +327,9 @@ final class WhmIpAddressesTest extends TestCase
     {
         foreach (self::payloadOperations() as [$method, $operation, $arguments]) {
             foreach ([null, 'null', 'false', '1', '1.5', '"text"', '[{}]'] as $index => $bad) {
+                if ($method === 'disableIpv6Account' && ($bad === null || $bad === 'null')) {
+                    continue;
+                }
                 yield "$method invalid root $index" => [$method, $operation, $arguments, $bad];
             }
         }

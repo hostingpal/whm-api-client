@@ -1,0 +1,586 @@
+{
+    "schema_version": 1,
+    "read_only_section": {
+        "recipe": "whm-databases-v1",
+        "status": "failed",
+        "probes": [
+            {
+                "operation": "whm1:version",
+                "variant": "whm1:version#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:20:13Z",
+                "revision": "e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "a104c6ecb50eac33b47fad0dce288f86d82f149b",
+                "overlay_sha256": "b1d4dd14b5247e4677dec8848b721c79b8159239284752f035670810e89f3131",
+                "effective_contract_sha256": "a3b55069b379516f20fcf82f959226d68b68ac515a7e55c0bde8842d39effd60",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.version": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.version": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:current_mysql_version",
+                "variant": "whm1:current_mysql_version#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:20:13Z",
+                "revision": "e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "a104c6ecb50eac33b47fad0dce288f86d82f149b",
+                "overlay_sha256": "b1d4dd14b5247e4677dec8848b721c79b8159239284752f035670810e89f3131",
+                "effective_contract_sha256": "5dea0eded7b067b22e5df7541a2ca80e859a5a3df704c45e4a243ef811c8010f",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.server": [
+                        "string"
+                    ],
+                    "$.data.version": [
+                        "numeric-string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.server": [
+                        "string"
+                    ],
+                    "$.version": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_database_optimizations",
+                "variant": "whm1:get_database_optimizations#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:20:14Z",
+                "revision": "e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "a104c6ecb50eac33b47fad0dce288f86d82f149b",
+                "overlay_sha256": "b1d4dd14b5247e4677dec8848b721c79b8159239284752f035670810e89f3131",
+                "effective_contract_sha256": "119b653e75e31934677f66fe673a3c3fc07261b276383420e5021411c656f1da",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "failed",
+                "probe_outcome": "failed",
+                "failure_kind": "payload_mismatch",
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.payload": [
+                        "object"
+                    ],
+                    "$.data.payload.*": [
+                        "object"
+                    ],
+                    "$.data.payload.*.*": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.payload": [
+                        "object"
+                    ],
+                    "$.payload.*": [
+                        "object"
+                    ],
+                    "$.payload.*.*": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$.payload",
+                        "kind": "type_mismatch"
+                    }
+                ]
+            },
+            {
+                "operation": "whm1:installable_mysql_versions",
+                "variant": "whm1:installable_mysql_versions#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:20:14Z",
+                "revision": "e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "a104c6ecb50eac33b47fad0dce288f86d82f149b",
+                "overlay_sha256": "b1d4dd14b5247e4677dec8848b721c79b8159239284752f035670810e89f3131",
+                "effective_contract_sha256": "ea2faac3ecaa732005e423f546448057e0305934e62277653c56075d18085692",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.versions": [
+                        "list"
+                    ],
+                    "$.data.versions[]": [
+                        "object"
+                    ],
+                    "$.data.versions[].server": [
+                        "string"
+                    ],
+                    "$.data.versions[].version": [
+                        "numeric-string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.versions": [
+                        "list"
+                    ],
+                    "$.versions[]": [
+                        "object"
+                    ],
+                    "$.versions[].server": [
+                        "string"
+                    ],
+                    "$.versions[].version": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:latest_available_mysql_version",
+                "variant": "whm1:latest_available_mysql_version#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:20:14Z",
+                "revision": "e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "a104c6ecb50eac33b47fad0dce288f86d82f149b",
+                "overlay_sha256": "b1d4dd14b5247e4677dec8848b721c79b8159239284752f035670810e89f3131",
+                "effective_contract_sha256": "13ed1239d4c766d49aa0e4c9148a6bd6e80340d5956f6acecd7688b02dc74acf",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.server": [
+                        "string"
+                    ],
+                    "$.data.version": [
+                        "numeric-string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.server": [
+                        "string"
+                    ],
+                    "$.version": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:list_database_users",
+                "variant": "whm1:list_database_users#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:20:15Z",
+                "revision": "e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "a104c6ecb50eac33b47fad0dce288f86d82f149b",
+                "overlay_sha256": "b1d4dd14b5247e4677dec8848b721c79b8159239284752f035670810e89f3131",
+                "effective_contract_sha256": "0b51724887fd14f567e0b932f7a683632da01385e6ecb53f9b41594ad97d1fd1",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.payload": [
+                        "empty-list"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.payload": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:list_databases",
+                "variant": "whm1:list_databases#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:20:15Z",
+                "revision": "e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "a104c6ecb50eac33b47fad0dce288f86d82f149b",
+                "overlay_sha256": "b1d4dd14b5247e4677dec8848b721c79b8159239284752f035670810e89f3131",
+                "effective_contract_sha256": "8d43eca289ac0ee6c10b2be209be0d01a6f763457cfb34d1db589c80dd31d69c",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.payload": [
+                        "empty-list"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.payload": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:list_mysql_databases_and_users",
+                "variant": "whm1:list_mysql_databases_and_users#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:20:15Z",
+                "revision": "e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "a104c6ecb50eac33b47fad0dce288f86d82f149b",
+                "overlay_sha256": "b1d4dd14b5247e4677dec8848b721c79b8159239284752f035670810e89f3131",
+                "effective_contract_sha256": "771b8df496f945b6afba8393f29e6df36b136adb2b615eeb2f85e9f8f663e803",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "failed",
+                "probe_outcome": "failed",
+                "failure_kind": "payload_mismatch",
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.mysql_config": [
+                        "object"
+                    ],
+                    "$.data.mysql_config.mysql-version": [
+                        "numeric-string"
+                    ],
+                    "$.data.mysql_config.prefix_length": [
+                        "int"
+                    ],
+                    "$.data.mysql_config.use_db_prefix": [
+                        "numeric-string"
+                    ],
+                    "$.data.mysql_databases": [
+                        "empty-object"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.mysql_config": [
+                        "object"
+                    ],
+                    "$.mysql_config.mysql-version": [
+                        "numeric-string"
+                    ],
+                    "$.mysql_config.prefix_length": [
+                        "int"
+                    ],
+                    "$.mysql_config.use_db_prefix": [
+                        "numeric-string"
+                    ],
+                    "$.mysql_databases": [
+                        "empty-object"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$.mysql_config.use_db_prefix",
+                        "kind": "type_mismatch"
+                    }
+                ]
+            },
+            {
+                "operation": "whm1:remote_mysql_monitor_profile_activation",
+                "variant": "whm1:remote_mysql_monitor_profile_activation#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:20:15Z",
+                "revision": "e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "a104c6ecb50eac33b47fad0dce288f86d82f149b",
+                "overlay_sha256": "b1d4dd14b5247e4677dec8848b721c79b8159239284752f035670810e89f3131",
+                "effective_contract_sha256": "c33dffc2aaca4040b0c98254c08bcb10dcb4e6edb6ab0ca4cb3680f8284cbc77",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "failed",
+                "probe_outcome": "failed",
+                "failure_kind": "payload_mismatch",
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.job_in_progress": [
+                        "null"
+                    ],
+                    "$.data.last_job_details": [
+                        "null"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.job_in_progress": [
+                        "null"
+                    ],
+                    "$.last_job_details": [
+                        "null"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$.job_in_progress",
+                        "kind": "type_mismatch"
+                    },
+                    {
+                        "path": "$.last_job_details",
+                        "kind": "type_mismatch"
+                    }
+                ]
+            }
+        ]
+    }
+}

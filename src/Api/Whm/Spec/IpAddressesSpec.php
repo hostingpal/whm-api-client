@@ -88,6 +88,7 @@ final class IpAddressesSpec
                 ],
             ],
         ],
+        'optional' => true,
     ];
 
     public const IPV6_RANGE_EDIT = [
