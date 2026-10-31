@@ -413,3 +413,19 @@ No user, service, role or password changed and no message was sent. Follow-up
 `8x0.2.30` retains API failures, the unknown field and unobserved operations/variants.
 Initial immutable SHA-256:
 `b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116`.
+
+The [corrected team/user-management capture](2026-10-31-team-user-management-corrected.json)
+at `9922081314c6343fe65f9a6d978f354d0fde3c3c` on `11.138.0.19` records nine HTTP
+200 observations. Four API/payload/probe checks pass: version, direct subaccount
+inventory and both password-strength reads. The seven nullable field corrections
+pass directly with no remaining known-field mismatches. Team counts and role
+descriptions still fail on both routes, and the bridged user inventory still fails
+at the API. One masked unknown-field observation with null values remains in the
+direct inventory; masking establishes neither key identities nor counts.
+Strict status remains failed, without waivers or acknowledgments.
+
+This establishes populated direct inventory and password-policy reads only;
+no team listing, password retrieval, user mutation or message sending occurs.
+The original failed capture is unchanged. Follow-up `8x0.2.30` retains all API
+failures, unknown-field findings and unobserved variants. Corrected SHA-256:
+`3d16299d29f632b4874dd99c0e400f0301dd4a89d60a7a5ff60d49ab68d0a435`.

@@ -1329,3 +1329,10 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+The corrected team/user-management capture at `9922081` on `11.138.0.19` passes
+four of nine API/payload/probe checks: version, direct subaccount inventory and
+password-strength through both routes. Seven direct inventory null corrections
+pass; five API failures and one masked unknown-field observation with null values
+keep strict status failed and unwaived under `8x0.2.30`. No team listing, password
+retrieval, user/role/service mutation or message sending ran.

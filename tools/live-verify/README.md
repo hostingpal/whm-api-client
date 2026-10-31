@@ -1041,3 +1041,10 @@ new-only protected publication remain unchanged. Both tokens are required.
 No user/service/role/password changes, invitation, activation or reset messages
 occur. Strict assessment accepts no discrepancies or historical acknowledgments.
 Follow-up `8x0.2.30` retains other operations and unobserved variants.
+
+The corrected team/user-management capture at `9922081` on `11.138.0.19` passes
+four of nine API/payload/probe checks: version, direct subaccount inventory and
+password-strength through both routes. Seven direct inventory null corrections
+pass; five API failures and one masked unknown-field observation with null values
+keep strict status failed and unwaived under `8x0.2.30`. No team listing, password
+retrieval, user/role/service mutation or message sending ran.
