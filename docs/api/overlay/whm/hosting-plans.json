@@ -4,33 +4,1356 @@
   "group": "Hosting Plans",
   "accessor": "hostingPlans",
   "operations": {
-    "whm1:get_available_featurelists": {"exclude": {"reason": "Deprecated; use getFeaturelists() (get_featurelists), which does not treat an empty list as an error for resellers.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; DEPRECATED: Use get_featurelists instead."}]}},
+    "whm1:get_available_featurelists": {
+      "exclude": {
+        "reason": "Deprecated; use getFeaturelists() (get_featurelists), which does not treat an empty list as an error for resellers.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-13",
+            "note": "Flagged deprecated: true; DEPRECATED: Use get_featurelists instead."
+          }
+        ]
+      }
+    },
     "whm1:get_feature_metadata": {
-      "response": {"features[].is_plugin": {"accept": ["string-flag"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "feature endpoints returned exact string flags \"0\"/\"1\"; docs/api/source-audit.md#runtime-observations-2026-10-13"}]}}
+      "response": {
+        "features[].is_plugin": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-13",
+              "note": "feature endpoints returned exact string flags \"0\"/\"1\"; docs/api/source-audit.md#runtime-observations-2026-10-13"
+            }
+          ]
+        }
+      }
     },
     "whm1:get_feature_names": {},
     "whm1:get_featurelist_data": {
-      "notes": [{"kind": "documented", "text": "The disabled feature list uses the opposite logic for value: 1 means that list does not include the feature and 0 means it does (the feature is disabled); is_disabled is not used for that list."}],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "The disabled feature list uses the opposite logic for value: 1 means that list does not include the feature and 0 means it does (the feature is disabled); is_disabled is not used for that list."
+        }
+      ],
       "response": {
-        "features[].is_disabled": {"accept": ["string-flag"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "feature endpoints returned exact string flags \"0\"/\"1\"; docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
-        "features[].is_meridian_only": {"accept": ["bool"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "get_featurelist_data returned booleans for presentation flags; docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
-        "features[].is_standalone_experience": {"accept": ["bool"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "get_featurelist_data returned booleans for presentation flags; docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
-        "features[].suppress_plugin_label": {"accept": ["bool"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "get_featurelist_data returned booleans for presentation flags; docs/api/source-audit.md#runtime-observations-2026-10-13"}]},
-        "features[].value": {"accept": ["string-flag"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "feature endpoints returned exact string flags \"0\"/\"1\"; docs/api/source-audit.md#runtime-observations-2026-10-13"}]}
+        "features[].is_disabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-13",
+              "note": "feature endpoints returned exact string flags \"0\"/\"1\"; docs/api/source-audit.md#runtime-observations-2026-10-13"
+            }
+          ]
+        },
+        "features[].is_meridian_only": {
+          "accept": [
+            "bool"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-13",
+              "note": "get_featurelist_data returned booleans for presentation flags; docs/api/source-audit.md#runtime-observations-2026-10-13"
+            }
+          ]
+        },
+        "features[].is_standalone_experience": {
+          "accept": [
+            "bool"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-13",
+              "note": "get_featurelist_data returned booleans for presentation flags; docs/api/source-audit.md#runtime-observations-2026-10-13"
+            }
+          ]
+        },
+        "features[].suppress_plugin_label": {
+          "accept": [
+            "bool"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-13",
+              "note": "get_featurelist_data returned booleans for presentation flags; docs/api/source-audit.md#runtime-observations-2026-10-13"
+            }
+          ]
+        },
+        "features[].value": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-13",
+              "note": "feature endpoints returned exact string flags \"0\"/\"1\"; docs/api/source-audit.md#runtime-observations-2026-10-13"
+            }
+          ]
+        }
       }
     },
     "whm1:get_featurelists": {},
     "whm1:get_featurelists_by_package_types": {},
     "whm1:get_users_features_settings": {
       "params": {
-        "feature": {"php": "features", "encoding": "numbered"},
-        "user": {"php": "users", "encoding": "numbered"}
+        "feature": {
+          "php": "features",
+          "encoding": "numbered"
+        },
+        "user": {
+          "php": "users",
+          "encoding": "numbered"
+        }
       },
-      "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-15", "note": "The pinned feature and user descriptions document several values by incrementing the parameter name (feature-1, feature-2; user-1, user-2); the lists are sent with WHM's numbered name, name-1, ... convention."}],
-      "response": {"users_features_settings[].feature_list_setting": {"accept": ["string-flag"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-13", "note": "feature endpoints returned exact string flags \"0\"/\"1\"; docs/api/source-audit.md#runtime-observations-2026-10-13"}]}}
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-15",
+          "note": "The pinned feature and user descriptions document several values by incrementing the parameter name (feature-1, feature-2; user-1, user-2); the lists are sent with WHM's numbered name, name-1, ... convention."
+        }
+      ],
+      "response": {
+        "users_features_settings[].feature_list_setting": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-13",
+              "note": "feature endpoints returned exact string flags \"0\"/\"1\"; docs/api/source-audit.md#runtime-observations-2026-10-13"
+            }
+          ]
+        }
+      }
     },
-    "whm1:listpkgs": {"name": "listPackages", "unwrap": "pkg"},
-    "whm1:read_featurelist": {"exclude": {"reason": "Deprecated; use getFeaturelistData() (get_featurelist_data).", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; DEPRECATED: Use get_featurelist_data instead."}]}},
-    "whm1:verify_user_has_feature": {"notes": [{"kind": "documented", "text": "Returns 1 for any feature that does not exist in a feature list, because the system presumes access to features outside its feature lists; a 1 does not prove that the feature exists."}], "order": ["user", "feature"], "unwrap": "has_feature"}
+    "whm1:listpkgs": {
+      "name": "listPackages",
+      "unwrap": "pkg"
+    },
+    "whm1:read_featurelist": {
+      "exclude": {
+        "reason": "Deprecated; use getFeaturelistData() (get_featurelist_data).",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-13",
+            "note": "Flagged deprecated: true; DEPRECATED: Use get_featurelist_data instead."
+          }
+        ]
+      }
+    },
+    "whm1:verify_user_has_feature": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Returns 1 for any feature that does not exist in a feature list, because the system presumes access to features outside its feature lists; a 1 does not prove that the feature exists."
+        }
+      ],
+      "order": [
+        "user",
+        "feature"
+      ],
+      "unwrap": "has_feature"
+    },
+    "whm1:_getpkgextensionform": {
+      "name": "getPackageExtensionForm",
+      "method": "GET",
+      "order": [
+        "pkg"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.40 and later. Uses GET for this documented read."
+        },
+        {
+          "kind": "documented",
+          "text": "Reads each extension template selected by the package _PACKAGE_EXTENSIONS value from /var/cpanel/packages/extensions/name.tt2. Returned HTML and Template Toolkit source are payload data and are never executed or fetched. Upstream returns only metadata when there are no extensions or their template files are empty; preserve absent/null payload as null and an object with omitted html separately."
+        }
+      ],
+      "params": {
+        "pkg": {
+          "php": "name"
+        }
+      },
+      "optional_payload": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /_getpkgextensionform GET description expressly says only metadata is returned when the plan has no extensions or its template files are empty; data.html is an optional string. Retain that documented absent-payload branch with optional_payload."
+        }
+      ]
+    },
+    "whm1:add_override_features_for_user": {
+      "name": "addOverrideFeaturesForUser",
+      "method": "POST",
+      "order": [
+        "user",
+        "features"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 56 and later. Uses form POST for this documented mutation. Changes can affect package or account capabilities; this method performs one request with no retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "features is caller-supplied serialized JSON text, sent once as a form field. The source application/json content describes a query parameter, not a JSON request body. The existing scalar boundary is string|int; integer acceptance does not establish valid JSON semantics. No PHP object/list encoder is supplied (whm-api-client-8x0.1.23). Feature names and switches are not credentials. Use getFeatureNames() for available names; the CLI and URL examples use quoted 1 for enabled although the formal map declares integer flags."
+        }
+      ],
+      "params": {
+        "features": {
+          "encoding": "scalar",
+          "sensitive": false,
+          "description": "Caller-serialized JSON object mapping feature names to enable/disable values."
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /add_override_features_for_user GET parameters/features has content/application~1json. CLI and URL examples pass a serialized JSON object as a single features parameter. No requestBody is declared and no data response schema is specified."
+        }
+      ]
+    },
+    "whm1:addpkg": {
+      "name": "addPackage",
+      "method": "POST",
+      "order": [
+        "name",
+        "_PACKAGE_EXTENSIONS",
+        "bwlimit",
+        "cgi",
+        "cpmod",
+        "digestauth",
+        "featurelist",
+        "frontpage",
+        "hasshell",
+        "ip",
+        "language",
+        "MAX_DEFER_FAIL_PERCENTAGE",
+        "MAX_EMAIL_PER_HOUR",
+        "max_emailacct_quota",
+        "max_team_users",
+        "maxaddon",
+        "maxftp",
+        "maxlst",
+        "maxpark",
+        "maxpop",
+        "maxsql",
+        "maxsub",
+        "quota"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later. Uses form POST for this documented mutation. Changes can affect package or account capabilities; this method performs one request with no retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Package names cannot be renamed, and addPackage forbids the name extensions. Creation does not implicitly assign an account to the package."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted options retain upstream defaults, including default feature list, server theme/locale and resource limits. Omitted packageExtensions means no extensions; upstream recommends the separate extension helpers. Names/variables are case-sensitive; arbitrary extension variables are not represented by this fixed-parameter method. A server without the Web Server role defaults CGI off and cannot enable it. FrontPage settings are ignored."
+        },
+        {
+          "kind": "documented",
+          "text": "Bandwidth, disk quota and mailbox quota use MB. Zero, unlimited and documented null mean unlimited for bandwidth/disk/mailbox quota, subject to unlimited ACL permissions; email rate limits also use zero or unlimited. Count limits document unlimited or null separately from zero. The scalar encoder omits explicit PHP null, so it does not send a JSON null sentinel; use documented zero/unlimited when required. SQL limits apply separately to each available SQL engine. Omitted optional arguments are not filled with defaults."
+        },
+        {
+          "kind": "documented",
+          "text": "Keep exact wire-name differences: addPackage uses uppercase MAX_DEFER_FAIL_PERCENTAGE and MAX_EMAIL_PER_HOUR, while editPackage uses lowercase names; max_emailacct_quota and max_team_users are lowercase on both. Digest authentication and CGI/shell switches are boolean inputs encoded as 0/1; IP uses y/n. The pinned max_team_users input is an integer; its source does not declare explicit null."
+        }
+      ],
+      "params": {
+        "_PACKAGE_EXTENSIONS": {
+          "php": "packageExtensions"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /addpkg GET declares x-readonly=false; send its documented query parameters in a form POST to avoid WHM query logging for mutations. Preserve the complete pinned parameter family, requiredness and exact case-sensitive wire names. No requestBody is declared."
+        }
+      ]
+    },
+    "whm1:addpkgext": {
+      "name": "addPackageExtension",
+      "method": "POST",
+      "order": [
+        "name",
+        "_PACKAGE_EXTENSIONS"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 68 and later. Uses form POST for this documented mutation. Changes can affect package or account capabilities; this method performs one request with no retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Extension names are case-sensitive and space-delimited. The name extensions is forbidden for a package when adding extensions. Calling addPackageExtension again with the same extension edits its variables upstream. Arbitrary case-sensitive extension variables are not represented by this fixed-parameter method; use a reviewed generic form call when needed, marking credential-bearing inputs sensitive."
+        }
+      ],
+      "params": {
+        "_PACKAGE_EXTENSIONS": {
+          "php": "extensions"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /addpkgext GET declares x-readonly=false; send its documented query parameters in a form POST to avoid WHM query logging for mutations. Preserve the complete pinned parameter family, requiredness and exact case-sensitive wire names. No requestBody is declared."
+        }
+      ]
+    },
+    "whm1:delete_featurelist": {
+      "name": "deleteFeaturelist",
+      "method": "POST",
+      "order": [
+        "featurelist"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later. Uses form POST for this documented mutation. Changes can affect package or account capabilities; this method performs one request with no retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the named feature list. The optional deleted_featurelist response field is preserved as text; no account reassignment or replacement feature list is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /delete_featurelist GET declares x-readonly=false; send its documented query parameters in a form POST to avoid WHM query logging for mutations. Preserve the complete pinned parameter family, requiredness and exact case-sensitive wire names. No requestBody is declared."
+        }
+      ]
+    },
+    "whm1:delpkgext": {
+      "name": "deletePackageExtension",
+      "method": "POST",
+      "order": [
+        "name",
+        "_DELETE_EXTENSIONS"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 68 and later. Uses form POST for this documented mutation. Changes can affect package or account capabilities; this method performs one request with no retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Extension names are case-sensitive and space-delimited. The name extensions is forbidden for a package when adding extensions. Calling addPackageExtension again with the same extension edits its variables upstream. Arbitrary case-sensitive extension variables are not represented by this fixed-parameter method; use a reviewed generic form call when needed, marking credential-bearing inputs sensitive."
+        }
+      ],
+      "params": {
+        "_DELETE_EXTENSIONS": {
+          "php": "extensions"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /delpkgext GET declares x-readonly=false; send its documented query parameters in a form POST to avoid WHM query logging for mutations. Preserve the complete pinned parameter family, requiredness and exact case-sensitive wire names. No requestBody is declared."
+        }
+      ]
+    },
+    "whm1:editpkg": {
+      "name": "editPackage",
+      "method": "POST",
+      "order": [
+        "name",
+        "_PACKAGE_EXTENSIONS",
+        "bwlimit",
+        "cgi",
+        "cpmod",
+        "digestauth",
+        "featurelist",
+        "frontpage",
+        "hasshell",
+        "ip",
+        "language",
+        "max_defer_fail_percentage",
+        "max_email_per_hour",
+        "max_emailacct_quota",
+        "max_team_users",
+        "maxaddon",
+        "maxftp",
+        "maxlst",
+        "maxpark",
+        "maxpop",
+        "maxsql",
+        "maxsub",
+        "quota"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later. Uses form POST for this documented mutation. Changes can affect package or account capabilities; this method performs one request with no retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Package names cannot be renamed, and addPackage forbids the name extensions. editPackage creates a missing package and applies changes to every account already on the package."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted options retain upstream defaults, including default feature list, server theme/locale and resource limits. Omitted packageExtensions means no extensions; upstream recommends the separate extension helpers. Names/variables are case-sensitive; arbitrary extension variables are not represented by this fixed-parameter method. A server without the Web Server role defaults CGI off and cannot enable it. FrontPage settings are ignored."
+        },
+        {
+          "kind": "documented",
+          "text": "Bandwidth, disk quota and mailbox quota use MB. Zero, unlimited and documented null mean unlimited for bandwidth/disk/mailbox quota, subject to unlimited ACL permissions; email rate limits also use zero or unlimited. Count limits document unlimited or null separately from zero. The scalar encoder omits explicit PHP null, so it does not send a JSON null sentinel; use documented zero/unlimited when required. SQL limits apply separately to each available SQL engine. Omitted optional arguments are not filled with defaults."
+        },
+        {
+          "kind": "documented",
+          "text": "Keep exact wire-name differences: addPackage uses uppercase MAX_DEFER_FAIL_PERCENTAGE and MAX_EMAIL_PER_HOUR, while editPackage uses lowercase names; max_emailacct_quota and max_team_users are lowercase on both. Digest authentication and CGI/shell switches are boolean inputs encoded as 0/1; IP uses y/n. Changing maxEmailacctQuota does not affect existing email accounts."
+        }
+      ],
+      "params": {
+        "_PACKAGE_EXTENSIONS": {
+          "php": "packageExtensions"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /editpkg GET declares x-readonly=false; send its documented query parameters in a form POST to avoid WHM query logging for mutations. Preserve the complete pinned parameter family, requiredness and exact case-sensitive wire names. No requestBody is declared."
+        }
+      ]
+    },
+    "whm1:get_available_applications": {
+      "name": "getAvailableApplications",
+      "method": "GET",
+      "order": [
+        "applications_list",
+        "file"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 76 and later. Uses GET for this documented read."
+        },
+        {
+          "kind": "documented",
+          "text": "applicationsList is a comma-separated list sent once; omission returns the entire dynamicui.conf content. file defaults to dynamicui.conf and is relative to /usr/local/cpanel/whostmgr/docroot/themes/x/. A caller-selected file reads server configuration. Returned template directives and application/icon URLs are payload data; the client does not execute or fetch them. The known nested Group/Image/Subitem required fields, nullable ACL/DNSOnly fields and role/service string-or-object alternatives remain strict."
+        }
+      ],
+      "response": {
+        "groups": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "acl": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "dnsonly_ok": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "file": {
+                  "type": "string"
+                },
+                "group": {
+                  "type": "string"
+                },
+                "groupdesc": {
+                  "type": "string"
+                },
+                "grouporder": {
+                  "type": "int"
+                },
+                "imgtype": {
+                  "type": "string"
+                },
+                "items": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "acl": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "dnsonly_ok": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "file": {
+                        "type": "string"
+                      },
+                      "group": {
+                        "type": "string"
+                      },
+                      "imgtype": {
+                        "type": "string"
+                      },
+                      "itemdesc": {
+                        "type": "string"
+                      },
+                      "itemorder": {
+                        "type": "int"
+                      },
+                      "key": {
+                        "type": "string"
+                      },
+                      "minimum_accounts_needed": {
+                        "type": "int"
+                      },
+                      "multiuser_required": {
+                        "type": "int"
+                      },
+                      "role": {
+                        "type": "union",
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "fields": {
+                              "match": {
+                                "type": "string"
+                              },
+                              "roles": {
+                                "type": "list",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          },
+                          {
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "searchtext": {
+                        "type": "string"
+                      },
+                      "service": {
+                        "type": "union",
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "fields": {
+                              "match": {
+                                "type": "string"
+                              },
+                              "services": {
+                                "type": "list",
+                                "items": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          },
+                          {
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "subitems": {
+                        "type": "list",
+                        "items": {
+                          "type": "object",
+                          "fields": {
+                            "acl": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "breadcrumb": {
+                              "type": "string"
+                            },
+                            "dnsonly_ok": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "file": {
+                              "type": "string"
+                            },
+                            "group": {
+                              "type": "string"
+                            },
+                            "itemdesc": {
+                              "type": "string"
+                            },
+                            "key": {
+                              "type": "string"
+                            },
+                            "parent": {
+                              "type": "int"
+                            },
+                            "searchtext": {
+                              "type": "string"
+                            },
+                            "target": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string"
+                            },
+                            "url": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "type",
+                            "acl",
+                            "breadcrumb",
+                            "dnsonly_ok",
+                            "file",
+                            "group",
+                            "parent",
+                            "url"
+                          ]
+                        }
+                      },
+                      "subtype": {
+                        "type": "string"
+                      },
+                      "target": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "acl",
+                      "description",
+                      "dnsonly_ok",
+                      "file",
+                      "group",
+                      "itemorder",
+                      "url"
+                    ]
+                  }
+                },
+                "key": {
+                  "type": "string"
+                },
+                "searchtext": {
+                  "type": "string"
+                },
+                "subtype": {
+                  "type": "string"
+                },
+                "target": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "acl",
+                "dnsonly_ok",
+                "file",
+                "group",
+                "groupdesc",
+                "grouporder"
+              ]
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_available_applications GET data.groups description says an array of objects and supplies items/$ref Group but omits type. Restore only the list container and preserve every Group, Image, Role, Service and Subitem property and required/nullable setting from the pinned components."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_available_applications GET declares x-readonly=true; retain GET for the documented read. Preserve the complete pinned parameter family, requiredness and exact case-sensitive wire names. No requestBody is declared."
+        }
+      ]
+    },
+    "whm1:getpkginfo": {
+      "name": "getPackageInfo",
+      "method": "GET",
+      "order": [
+        "pkg"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later. Uses GET for this documented read."
+        },
+        {
+          "kind": "documented",
+          "text": "Only enabled settings are returned, so known fields remain optional. Extension variables are opaque dynamic fields and may contain credentials; treat the result as sensitive. Known limit fields remain integer, the exact unlimited literal, and null only where pinned; flags stay integer 0/1, while DIGESTAUTH stays a source string. MAX_TEAM_USERS may be null; omitted and null stay distinct."
+        }
+      ],
+      "params": {
+        "pkg": {
+          "php": "name"
+        }
+      },
+      "response": {
+        "pkg": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "BWLIMIT": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "int"
+                  },
+                  {
+                    "type": "string",
+                    "literal": "unlimited"
+                  }
+                ],
+                "nullable": true
+              },
+              "CGI": {
+                "type": "flag"
+              },
+              "CPMOD": {
+                "type": "string"
+              },
+              "DIGESTAUTH": {
+                "type": "string"
+              },
+              "FEATURELIST": {
+                "type": "string"
+              },
+              "FRONTPAGE": {
+                "type": "flag"
+              },
+              "HASSHELL": {
+                "type": "flag"
+              },
+              "IP": {
+                "type": "flag"
+              },
+              "LANG": {
+                "type": "string"
+              },
+              "MAXADDON": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "int"
+                  },
+                  {
+                    "type": "string",
+                    "literal": "unlimited"
+                  }
+                ],
+                "nullable": true
+              },
+              "MAXFTP": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "int"
+                  },
+                  {
+                    "type": "string",
+                    "literal": "unlimited"
+                  }
+                ],
+                "nullable": true
+              },
+              "MAXLST": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "int"
+                  },
+                  {
+                    "type": "string",
+                    "literal": "unlimited"
+                  }
+                ],
+                "nullable": true
+              },
+              "MAXPARK": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "int"
+                  },
+                  {
+                    "type": "string",
+                    "literal": "unlimited"
+                  }
+                ]
+              },
+              "MAXPOP": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "int"
+                  },
+                  {
+                    "type": "string",
+                    "literal": "unlimited"
+                  }
+                ],
+                "nullable": true
+              },
+              "MAXSQL": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "int"
+                  },
+                  {
+                    "type": "string",
+                    "literal": "unlimited"
+                  }
+                ],
+                "nullable": true
+              },
+              "MAXSUB": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "int"
+                  },
+                  {
+                    "type": "string",
+                    "literal": "unlimited"
+                  }
+                ],
+                "nullable": true
+              },
+              "MAX_DEFER_FAIL_PERCENTAGE": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "int"
+                  },
+                  {
+                    "type": "string",
+                    "literal": "unlimited"
+                  }
+                ]
+              },
+              "MAX_EMAILACCT_QUOTA": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "int"
+                  },
+                  {
+                    "type": "string",
+                    "literal": "unlimited"
+                  }
+                ]
+              },
+              "MAX_EMAIL_PER_HOUR": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "int"
+                  },
+                  {
+                    "type": "string",
+                    "literal": "unlimited"
+                  }
+                ]
+              },
+              "MAX_TEAM_USERS": {
+                "type": "int",
+                "nullable": true
+              },
+              "QUOTA": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "int"
+                  },
+                  {
+                    "type": "string",
+                    "literal": "unlimited"
+                  }
+                ],
+                "nullable": true
+              },
+              "_PACKAGE_EXTENSIONS": {
+                "type": "string"
+              }
+            },
+            "values": {
+              "type": "mixed"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /getpkginfo GET data.pkg expressly returns only enabled settings and also includes extension variables. Preserve every optional fixed field, validate known fields before opaque dynamic extension values via object.values mixed, and retain the documented int or literal unlimited and explicit-null alternatives. Description-only branches on BWLIMIT/MAXADDON/MAXFTP/MAXLST/MAXPOP/MAXSQL/MAXSUB/QUOTA describe unlimited, not arbitrary payload types; their source also explicitly contains the null and unlimited branches. MAXPARK and mail rate/quota fields do not declare null. No string-number normalization is established."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /getpkginfo GET declares x-readonly=true; retain GET for the documented read. Preserve the complete pinned parameter family, requiredness and exact case-sensitive wire names. No requestBody is declared."
+        }
+      ]
+    },
+    "whm1:killpkg": {
+      "name": "deletePackage",
+      "method": "POST",
+      "order": [
+        "pkgname"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later. Uses form POST for this documented mutation. Changes can affect package or account capabilities; this method performs one request with no retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the named hosting plan. You cannot delete a hosting plan that a cPanel account currently uses. The pinned response specifies no data payload; this method returns null. No account reassignment is performed by the client."
+        }
+      ],
+      "params": {
+        "pkgname": {
+          "php": "name"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /killpkg GET declares x-readonly=false; send its documented query parameters in a form POST to avoid WHM query logging for mutations. Preserve the complete pinned parameter family, requiredness and exact case-sensitive wire names. No requestBody is declared."
+        }
+      ]
+    },
+    "whm1:matchpkgs": {
+      "name": "matchPackages",
+      "method": "GET",
+      "order": [
+        "_PACKAGE_EXTENSIONS",
+        "BWLIMIT",
+        "CGI",
+        "CPMOD",
+        "DIGESTAUTH",
+        "FEATURELIST",
+        "HASSHELL",
+        "IP",
+        "LANG",
+        "MAX_DEFER_FAIL_PERCENTAGE",
+        "MAX_EMAIL_PER_HOUR",
+        "MAX_EMAILACCT_QUOTA",
+        "MAX_TEAM_USERS",
+        "MAXADDON",
+        "MAXFTP",
+        "MAXLST",
+        "MAXPARK",
+        "MAXPOP",
+        "MAXSQL",
+        "MAXSUB",
+        "QUOTA"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11 and later. Uses GET for this documented read."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting every selector lists all server packages. All selectors remain optional and are sent with their exact uppercase wire names except _PACKAGE_EXTENSIONS. Boolean CGI/HASSHELL inputs encode as 0/1, while DIGESTAUTH and IP take y/n strings. Results retain their distinct source strings for HASSHELL/IP and do not inherit getPackageInfo flag types. Limits use integers or exact unlimited; no live numeric-string coercion is inferred. The result shape does not enforce correspondence with requested criteria."
+        }
+      ],
+      "params": {
+        "_PACKAGE_EXTENSIONS": {
+          "php": "packageExtensions"
+        }
+      },
+      "response": {
+        "pkg.BWLIMIT": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "string",
+                "literal": "unlimited"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.BWLIMIT declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
+            }
+          ]
+        },
+        "pkg.MAXADDON": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "string",
+                "literal": "unlimited"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAXADDON declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
+            }
+          ]
+        },
+        "pkg.MAXFTP": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "string",
+                "literal": "unlimited"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAXFTP declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
+            }
+          ]
+        },
+        "pkg.MAXLST": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "string",
+                "literal": "unlimited"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAXLST declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
+            }
+          ]
+        },
+        "pkg.MAXPARK": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "string",
+                "literal": "unlimited"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAXPARK declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
+            }
+          ]
+        },
+        "pkg.MAXPOP": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "string",
+                "literal": "unlimited"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAXPOP declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
+            }
+          ]
+        },
+        "pkg.MAXSQL": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "string",
+                "literal": "unlimited"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAXSQL declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
+            }
+          ]
+        },
+        "pkg.MAXSUB": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "string",
+                "literal": "unlimited"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAXSUB declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
+            }
+          ]
+        },
+        "pkg.MAX_DEFER_FAIL_PERCENTAGE": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "string",
+                "literal": "unlimited"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAX_DEFER_FAIL_PERCENTAGE declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
+            }
+          ]
+        },
+        "pkg.MAX_EMAILACCT_QUOTA": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "string",
+                "literal": "unlimited"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAX_EMAILACCT_QUOTA declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
+            }
+          ]
+        },
+        "pkg.MAX_EMAIL_PER_HOUR": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "string",
+                "literal": "unlimited"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.MAX_EMAIL_PER_HOUR declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
+            }
+          ]
+        },
+        "pkg.QUOTA": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "int"
+              },
+              {
+                "type": "string",
+                "literal": "unlimited"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET data.pkg.QUOTA declares an integer alternative and only the string enum unlimited. Preserve that exact literal; do not admit other strings, fractions, booleans or null."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /matchpkgs GET declares x-readonly=true; retain GET for the documented read. Preserve the complete pinned parameter family, requiredness and exact case-sensitive wire names. No requestBody is declared."
+        }
+      ]
+    },
+    "whm1:remove_override_features_for_user": {
+      "name": "removeOverrideFeaturesForUser",
+      "method": "POST",
+      "order": [
+        "user",
+        "features"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 56 and later. Uses form POST for this documented mutation. Changes can affect package or account capabilities; this method performs one request with no retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "features is caller-supplied serialized JSON text, sent once as a form field. The source application/json content describes a query parameter, not a JSON request body. The existing scalar boundary is string|int; integer acceptance does not establish valid JSON semantics. No PHP object/list encoder is supplied (whm-api-client-8x0.1.23). Feature names and switches are not credentials. Use getFeatureNames() for available names; only the named overrides are removed."
+        }
+      ],
+      "params": {
+        "features": {
+          "encoding": "scalar",
+          "sensitive": false,
+          "description": "Caller-serialized JSON array of feature names."
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remove_override_features_for_user GET parameters/features has content/application~1json. CLI and URL examples pass a serialized JSON array as a single features parameter. No requestBody is declared and no data response schema is specified."
+        }
+      ]
+    },
+    "whm1:create_featurelist": {
+      "exclude": {
+        "reason": "Dynamic feature-name request fields require an explicit map encoding under whm-api-client-8x0.1.31; the documented featurelistname is a placeholder, not a literal wire key. Do not expose a method that silently omits feature configuration.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /create_featurelist GET parameters/featurelistname description explicitly states the parameter name is the feature name. The example changemx=1 confirms dynamic names; overwrite can replace a list and reseller Add/Remove Package permission is required."
+          }
+        ]
+      }
+    },
+    "whm1:update_featurelist": {
+      "exclude": {
+        "reason": "Dynamic feature-name request fields require an explicit map encoding under whm-api-client-8x0.1.31; the documented feature name is a placeholder, not a literal wire key. Do not expose a method that silently omits feature configuration.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /update_featurelist GET parameters/feature name description explicitly states the parameter name is the feature name. Omitting feature fields disables all features in the list, and response updated_features/invalid_features also use dynamic feature names."
+          }
+        ]
+      }
+    }
   }
 }

@@ -1232,3 +1232,13 @@ passing; retain it and the initial failed artifact. Separate reviewer profile-re
 and disposable-account lifecycle observations in review 5720420360 do not expand
 this catalog. Profile responses and unvalidated exception payloads may contain
 plaintext passwords; the catalog still excludes those credential reads.
+
+## WHM hosting plans
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-hosting-plans.php --output=docs/api/evidence/YYYY-MM-DD-whm-hosting-plans.json`.
+
+Two fixed GETs read version and matchpkgs without selectors. The pinned latter
+contract explicitly lists all packages when arguments are omitted. Existing
+exact request guards, committed inputs, opt-in, verified TLS and structural-only
+capture apply. No package or feature mutation, arbitrary file read, template
+execution or URL fetch runs. Findings stay unwaived; `8x0.2.43` retains live gaps.

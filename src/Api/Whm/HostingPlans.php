@@ -18,6 +18,81 @@ use InvalidArgumentException;
  * Each method executes one WHM API 1 request immediately with a single attempt and no retries. The handle clears
  * responseMeta() before every attempt and records the envelope snapshot before API or payload errors.
  *
+ * @phpstan-type AddPackageResult array{
+ *     pkg?: string,
+ * }
+ * @phpstan-type AddPackageExtensionResult array{
+ *     pkg?: string,
+ * }
+ * @phpstan-type DeleteFeaturelistResult array{
+ *     deleted_featurelist?: string,
+ * }
+ * @phpstan-type DeletePackageExtensionResult array{
+ *     pkg?: string,
+ * }
+ * @phpstan-type EditPackageResult array{
+ *     pkg?: string,
+ * }
+ * @phpstan-type GetAvailableApplicationsResult array{
+ *     groups?: list<array{
+ *         acl: string|null,
+ *         dnsonly_ok: string|null,
+ *         file: string,
+ *         group: string,
+ *         groupdesc: string,
+ *         grouporder: int,
+ *         imgtype?: string,
+ *         items?: list<array{
+ *             acl: string|null,
+ *             description: string,
+ *             dnsonly_ok: string|null,
+ *             file: string,
+ *             group: string,
+ *             imgtype?: string,
+ *             itemdesc?: string,
+ *             itemorder: int,
+ *             key?: string,
+ *             minimum_accounts_needed?: int,
+ *             multiuser_required?: int,
+ *             role?: array{
+ *                 match?: string,
+ *                 roles?: list<string>,
+ *             }|string,
+ *             searchtext?: string,
+ *             service?: array{
+ *                 match?: string,
+ *                 services?: list<string>,
+ *             }|string,
+ *             subitems?: list<array{
+ *                 acl: string|null,
+ *                 breadcrumb: string,
+ *                 dnsonly_ok: string|null,
+ *                 file: string,
+ *                 group: string,
+ *                 itemdesc?: string,
+ *                 key?: string,
+ *                 parent: int,
+ *                 searchtext?: string,
+ *                 target?: string,
+ *                 type: string,
+ *                 url: string,
+ *             }>,
+ *             subtype?: string,
+ *             target?: string,
+ *             type: string,
+ *             url: string,
+ *         }>,
+ *         key?: string,
+ *         searchtext?: string,
+ *         subtype?: string,
+ *         target?: string,
+ *         type: string,
+ *     }>,
+ *     raw?: list<array{
+ *         itemdesc: string,
+ *         type: string,
+ *     }>,
+ * }
  * @phpstan-type GetFeatureMetadataResult array{
  *     features?: list<array{
  *         id?: string,
@@ -58,6 +133,36 @@ use InvalidArgumentException;
  *         standard: list<string>,
  *     },
  * }
+ * @phpstan-type GetPackageExtensionFormResult array{
+ *     html?: string,
+ * }
+ * @phpstan-type GetPackageInfoResult array{
+ *     pkg?: array{
+ *         BWLIMIT?: int|'unlimited'|null,
+ *         CGI?: 0|1,
+ *         CPMOD?: string,
+ *         DIGESTAUTH?: string,
+ *         FEATURELIST?: string,
+ *         FRONTPAGE?: 0|1,
+ *         HASSHELL?: 0|1,
+ *         IP?: 0|1,
+ *         LANG?: string,
+ *         MAXADDON?: int|'unlimited'|null,
+ *         MAXFTP?: int|'unlimited'|null,
+ *         MAXLST?: int|'unlimited'|null,
+ *         MAXPARK?: int|'unlimited',
+ *         MAXPOP?: int|'unlimited'|null,
+ *         MAXSQL?: int|'unlimited'|null,
+ *         MAXSUB?: int|'unlimited'|null,
+ *         MAX_DEFER_FAIL_PERCENTAGE?: int|'unlimited',
+ *         MAX_EMAILACCT_QUOTA?: int|'unlimited',
+ *         MAX_EMAIL_PER_HOUR?: int|'unlimited',
+ *         MAX_TEAM_USERS?: int|null,
+ *         QUOTA?: int|'unlimited'|null,
+ *         _PACKAGE_EXTENSIONS?: string,
+ *         ...<array-key, mixed>
+ *     },
+ * }
  * @phpstan-type GetUsersFeaturesSettingsResult array{
  *     users_features_settings?: list<array{
  *         cpuser_setting?: 0|1|null,
@@ -91,6 +196,31 @@ use InvalidArgumentException;
  *     _PACKAGE_EXTENSIONS?: string,
  *     name?: string,
  * }>
+ * @phpstan-type MatchPackagesResult array{
+ *     pkg?: array{
+ *         BWLIMIT?: int|'unlimited',
+ *         CGI?: 0|1,
+ *         CPMOD?: string,
+ *         DIGESTAUTH?: string,
+ *         FEATURELIST?: string,
+ *         FRONTPAGE?: int,
+ *         HASSHELL?: string,
+ *         IP?: string,
+ *         LANG?: string,
+ *         MAXADDON?: int|'unlimited',
+ *         MAXFTP?: int|'unlimited',
+ *         MAXLST?: int|'unlimited',
+ *         MAXPARK?: int|'unlimited',
+ *         MAXPOP?: int|'unlimited',
+ *         MAXSQL?: int|'unlimited',
+ *         MAXSUB?: int|'unlimited',
+ *         MAX_DEFER_FAIL_PERCENTAGE?: int|'unlimited',
+ *         MAX_EMAILACCT_QUOTA?: int|'unlimited',
+ *         MAX_EMAIL_PER_HOUR?: int|'unlimited',
+ *         QUOTA?: int|'unlimited',
+ *         _PACKAGE_EXTENSIONS?: string,
+ *     },
+ * }
  */
 final readonly class HostingPlans
 {
@@ -102,6 +232,426 @@ final readonly class HostingPlans
      */
     public function __construct(private Closure $run)
     {
+    }
+
+    /**
+     * Add cPanel account feature list overrides.
+     *
+     * This function adds feature overrides to a cPanel account.
+     *
+     * Documented: Available in cPanel & WHM 56 and later. Uses form POST for this documented mutation. Changes can
+     * affect package or account capabilities; this method performs one request with no retry or rollback.
+     *
+     * Documented: features is caller-supplied serialized JSON text, sent once as a form field. The source
+     * application/json content describes a query parameter, not a JSON request body. The existing scalar boundary is
+     * string|int; integer acceptance does not establish valid JSON semantics. No PHP object/list encoder is supplied
+     * (whm-api-client-8x0.1.23). Feature names and switches are not credentials. Use getFeatureNames() for available
+     * names; the CLI and URL examples use quoted 1 for enabled although the formal map declares integer flags.
+     *
+     * API-map identity: whm1:add_override_features_for_user#GET (wire name add_override_features_for_user; Feature
+     * Access).
+     *
+     * @param string $user The cPanel username.
+     * @param string|int $features Caller-serialized JSON object mapping feature names to enable/disable values.
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-access/accounts-add_override_features_for_user
+     */
+    public function addOverrideFeaturesForUser(string $user, string|int $features): void
+    {
+        ($this->run)(HostingPlansSpec::ADD_OVERRIDE_FEATURES_FOR_USER, ['user' => $user, 'features' => $features]);
+    }
+
+    /**
+     * Create hosting plan.
+     *
+     * This function creates a hosting plan (package).
+     *
+     * Documented: Available in cPanel & WHM 11 and later. Uses form POST for this documented mutation. Changes can
+     * affect package or account capabilities; this method performs one request with no retry or rollback.
+     *
+     * Documented: Package names cannot be renamed, and addPackage forbids the name extensions. Creation does not
+     * implicitly assign an account to the package.
+     *
+     * Documented: Omitted options retain upstream defaults, including default feature list, server theme/locale and
+     * resource limits. Omitted packageExtensions means no extensions; upstream recommends the separate extension
+     * helpers. Names/variables are case-sensitive; arbitrary extension variables are not represented by this
+     * fixed-parameter method. A server without the Web Server role defaults CGI off and cannot enable it. FrontPage
+     * settings are ignored.
+     *
+     * Documented: Bandwidth, disk quota and mailbox quota use MB. Zero, unlimited and documented null mean unlimited
+     * for bandwidth/disk/mailbox quota, subject to unlimited ACL permissions; email rate limits also use zero or
+     * unlimited. Count limits document unlimited or null separately from zero. The scalar encoder omits explicit PHP
+     * null, so it does not send a JSON null sentinel; use documented zero/unlimited when required. SQL limits apply
+     * separately to each available SQL engine. Omitted optional arguments are not filled with defaults.
+     *
+     * Documented: Keep exact wire-name differences: addPackage uses uppercase MAX_DEFER_FAIL_PERCENTAGE and
+     * MAX_EMAIL_PER_HOUR, while editPackage uses lowercase names; max_emailacct_quota and max_team_users are lowercase
+     * on both. Digest authentication and CGI/shell switches are boolean inputs encoded as 0/1; IP uses y/n. The pinned
+     * max_team_users input is an integer; its source does not declare explicit null.
+     *
+     * API-map identity: whm1:addpkg#GET (wire name addpkg; Hosting Plans).
+     *
+     * @param string $name The new hosting plan's name.
+     * @param string|null $packageExtensions A space-separated list of the hosting plan's package extensions. Null omits
+     *     it.
+     * @param string|int|null $bwlimit The hosting plan's maximum bandwidth use, in megabytes (MB). Null omits it.
+     * @param bool|null $cgi Whether CGI access is enabled for the account. Null omits it.
+     * @param string|null $cpmod The hosting plan's cPanel theme. Null omits it.
+     * @param bool|null $digestauth Whether to enable Digest Authentication for accounts on the hosting plan. Null omits
+     *     it.
+     * @param string|null $featurelist The hosting plan's feature list. Null omits it.
+     * @param bool|null $frontpage Whether Microsoft® FrontPage® Extensions are enabled for the account. Null omits
+     *     it.
+     * @param bool|null $hasshell Whether the hosting plan allows shell access. Null omits it.
+     * @param 'y'|'n'|null $ip Whether the account has a dedicated IP address. Null omits it.
+     * @param string|null $language The hosting plan's default locale, in its two-letter ISO-3166 code format. Null
+     *     omits it.
+     * @param string|int|null $maxDeferFailPercentage The percentage of failed or deferred email messages that the
+     *     hosting plan allows users to send per hour before outgoing mail is rate-limited. Null omits it.
+     * @param string|int|null $maxEmailPerHour The maximum number of emails that the hosting plan allows users to send
+     *     in one hour. Null omits it.
+     * @param string|int|null $maxEmailacctQuota The hosting plan's maximum email account quota size, in megabytes (MB).
+     *     Null omits it.
+     * @param int|null $maxTeamUsers The hosting plan's maximum number of Team users. Null omits it.
+     * @param string|int|null $maxaddon The hosting plan's maximum number of addon domains. Null omits it.
+     * @param string|int|null $maxftp The hosting plan's maximum number of FTP accounts. Null omits it.
+     * @param string|int|null $maxlst The hosting plan's maximum number of mailing lists. Null omits it.
+     * @param string|int|null $maxpark The hosting plan's maximum number of parked domains (aliases). Null omits it.
+     * @param string|int|null $maxpop The hosting plan's maximum number of email accounts. Null omits it.
+     * @param string|int|null $maxsql The hosting plan's maximum number of each available type of SQL database. Null
+     *     omits it.
+     * @param string|int|null $maxsub The hosting plan's maximum number of subdomains. Null omits it.
+     * @param string|int|null $quota The hosting plan's disk space quota, in megabytes (MB). Null omits it.
+     * @return AddPackageResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plans/packages-addpkg
+     */
+    public function addPackage(
+        string $name,
+        ?string $packageExtensions = null,
+        string|int|null $bwlimit = null,
+        ?bool $cgi = null,
+        ?string $cpmod = null,
+        ?bool $digestauth = null,
+        ?string $featurelist = null,
+        ?bool $frontpage = null,
+        ?bool $hasshell = null,
+        ?string $ip = null,
+        ?string $language = null,
+        string|int|null $maxDeferFailPercentage = null,
+        string|int|null $maxEmailPerHour = null,
+        string|int|null $maxEmailacctQuota = null,
+        ?int $maxTeamUsers = null,
+        string|int|null $maxaddon = null,
+        string|int|null $maxftp = null,
+        string|int|null $maxlst = null,
+        string|int|null $maxpark = null,
+        string|int|null $maxpop = null,
+        string|int|null $maxsql = null,
+        string|int|null $maxsub = null,
+        string|int|null $quota = null,
+    ): array {
+        /** @var AddPackageResult $result Validated against HostingPlansSpec::ADDPKG. */
+        $result = ($this->run)(HostingPlansSpec::ADDPKG, [
+            'name' => $name,
+            'packageExtensions' => $packageExtensions,
+            'bwlimit' => $bwlimit,
+            'cgi' => $cgi,
+            'cpmod' => $cpmod,
+            'digestauth' => $digestauth,
+            'featurelist' => $featurelist,
+            'frontpage' => $frontpage,
+            'hasshell' => $hasshell,
+            'ip' => $ip,
+            'language' => $language,
+            'maxDeferFailPercentage' => $maxDeferFailPercentage,
+            'maxEmailPerHour' => $maxEmailPerHour,
+            'maxEmailacctQuota' => $maxEmailacctQuota,
+            'maxTeamUsers' => $maxTeamUsers,
+            'maxaddon' => $maxaddon,
+            'maxftp' => $maxftp,
+            'maxlst' => $maxlst,
+            'maxpark' => $maxpark,
+            'maxpop' => $maxpop,
+            'maxsql' => $maxsql,
+            'maxsub' => $maxsub,
+            'quota' => $quota,
+        ]);
+
+        return $result;
+    }
+
+    /**
+     * Add hosting plan extension.
+     *
+     * This function adds a package extension to a hosting plan (package).
+     *
+     * Documented: Available in cPanel & WHM 68 and later. Uses form POST for this documented mutation. Changes can
+     * affect package or account capabilities; this method performs one request with no retry or rollback.
+     *
+     * Documented: Extension names are case-sensitive and space-delimited. The name extensions is forbidden for a
+     * package when adding extensions. Calling addPackageExtension again with the same extension edits its variables
+     * upstream. Arbitrary case-sensitive extension variables are not represented by this fixed-parameter method; use a
+     * reviewed generic form call when needed, marking credential-bearing inputs sensitive.
+     *
+     * API-map identity: whm1:addpkgext#GET (wire name addpkgext; Hosting Plan Extensions).
+     *
+     * @param string $name The hosting plan's name.
+     * @param string $extensions The hosting plan's package extensions.
+     * @return AddPackageExtensionResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plan-extensions/packages-addpkgext
+     */
+    public function addPackageExtension(string $name, string $extensions): array
+    {
+        /** @var AddPackageExtensionResult $result Validated against HostingPlansSpec::ADDPKGEXT. */
+        $result = ($this->run)(HostingPlansSpec::ADDPKGEXT, ['name' => $name, 'extensions' => $extensions]);
+
+        return $result;
+    }
+
+    /**
+     * Delete feature list.
+     *
+     * This function deletes a feature list.
+     *
+     * Documented: Available in cPanel & WHM 11 and later. Uses form POST for this documented mutation. Changes can
+     * affect package or account capabilities; this method performs one request with no retry or rollback.
+     *
+     * Documented: Deletes the named feature list. The optional deleted_featurelist response field is preserved as text;
+     * no account reassignment or replacement feature list is inferred.
+     *
+     * API-map identity: whm1:delete_featurelist#GET (wire name delete_featurelist; Feature Lists).
+     *
+     * @param string $featurelist The feature list's name.
+     * @return DeleteFeaturelistResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-lists/featurelists-delete_featurelist
+     */
+    public function deleteFeaturelist(string $featurelist): array
+    {
+        /** @var DeleteFeaturelistResult $result Validated against HostingPlansSpec::DELETE_FEATURELIST. */
+        $result = ($this->run)(HostingPlansSpec::DELETE_FEATURELIST, ['featurelist' => $featurelist]);
+
+        return $result;
+    }
+
+    /**
+     * Delete hosting plan.
+     *
+     * This function deletes a hosting plan (package).
+     *
+     * Documented: Available in cPanel & WHM 11 and later. Uses form POST for this documented mutation. Changes can
+     * affect package or account capabilities; this method performs one request with no retry or rollback.
+     *
+     * Documented: Deletes the named hosting plan. You cannot delete a hosting plan that a cPanel account currently
+     * uses. The pinned response specifies no data payload; this method returns null. No account reassignment is
+     * performed by the client.
+     *
+     * API-map identity: whm1:killpkg#GET (wire name killpkg; Hosting Plans).
+     *
+     * @param string $name The hosting plan's name.
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plans/packages-killpkg
+     */
+    public function deletePackage(string $name): void
+    {
+        ($this->run)(HostingPlansSpec::KILLPKG, ['name' => $name]);
+    }
+
+    /**
+     * Remove hosting plan extension.
+     *
+     * This function deletes a package extension from a hosting plan (package).
+     *
+     * Documented: Available in cPanel & WHM 68 and later. Uses form POST for this documented mutation. Changes can
+     * affect package or account capabilities; this method performs one request with no retry or rollback.
+     *
+     * Documented: Extension names are case-sensitive and space-delimited. The name extensions is forbidden for a
+     * package when adding extensions. Calling addPackageExtension again with the same extension edits its variables
+     * upstream. Arbitrary case-sensitive extension variables are not represented by this fixed-parameter method; use a
+     * reviewed generic form call when needed, marking credential-bearing inputs sensitive.
+     *
+     * API-map identity: whm1:delpkgext#GET (wire name delpkgext; Hosting Plan Extensions).
+     *
+     * @param string $name The hosting plan's name.
+     * @param string $extensions The space delimited package extensions to delete.
+     * @return DeletePackageExtensionResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plan-extensions/packages-delpkgext
+     */
+    public function deletePackageExtension(string $name, string $extensions): array
+    {
+        /** @var DeletePackageExtensionResult $result Validated against HostingPlansSpec::DELPKGEXT. */
+        $result = ($this->run)(HostingPlansSpec::DELPKGEXT, ['name' => $name, 'extensions' => $extensions]);
+
+        return $result;
+    }
+
+    /**
+     * Update hosting plan.
+     *
+     * This function edits a hosting plan (package).
+     *
+     * Documented: Available in cPanel & WHM 11 and later. Uses form POST for this documented mutation. Changes can
+     * affect package or account capabilities; this method performs one request with no retry or rollback.
+     *
+     * Documented: Package names cannot be renamed, and addPackage forbids the name extensions. editPackage creates a
+     * missing package and applies changes to every account already on the package.
+     *
+     * Documented: Omitted options retain upstream defaults, including default feature list, server theme/locale and
+     * resource limits. Omitted packageExtensions means no extensions; upstream recommends the separate extension
+     * helpers. Names/variables are case-sensitive; arbitrary extension variables are not represented by this
+     * fixed-parameter method. A server without the Web Server role defaults CGI off and cannot enable it. FrontPage
+     * settings are ignored.
+     *
+     * Documented: Bandwidth, disk quota and mailbox quota use MB. Zero, unlimited and documented null mean unlimited
+     * for bandwidth/disk/mailbox quota, subject to unlimited ACL permissions; email rate limits also use zero or
+     * unlimited. Count limits document unlimited or null separately from zero. The scalar encoder omits explicit PHP
+     * null, so it does not send a JSON null sentinel; use documented zero/unlimited when required. SQL limits apply
+     * separately to each available SQL engine. Omitted optional arguments are not filled with defaults.
+     *
+     * Documented: Keep exact wire-name differences: addPackage uses uppercase MAX_DEFER_FAIL_PERCENTAGE and
+     * MAX_EMAIL_PER_HOUR, while editPackage uses lowercase names; max_emailacct_quota and max_team_users are lowercase
+     * on both. Digest authentication and CGI/shell switches are boolean inputs encoded as 0/1; IP uses y/n. Changing
+     * maxEmailacctQuota does not affect existing email accounts.
+     *
+     * API-map identity: whm1:editpkg#GET (wire name editpkg; Hosting Plans).
+     *
+     * @param string $name The hosting plan's name.
+     * @param string|null $packageExtensions The hosting plan's package extensions. Null omits it.
+     * @param string|int|null $bwlimit The hosting plan's maximum bandwidth use, in megabytes (MB). Null omits it.
+     * @param bool|null $cgi Whether CGI access is enabled for the hosting plan. Null omits it.
+     * @param string|null $cpmod The hosting plan's cPanel theme. Null omits it.
+     * @param bool|null $digestauth Whether to enable Digest Authentication for accounts on the hosting plan. Null omits
+     *     it.
+     * @param string|null $featurelist The hosting plan's feature list. Null omits it.
+     * @param bool|null $frontpage Whether Microsoft® FrontPage Extensions are enabled for the account. Null omits it.
+     * @param bool|null $hasshell Whether the hosting plan allows shell access. Null omits it.
+     * @param 'y'|'n'|null $ip Whether the hosting plan uses a dedicated IP address. Null omits it.
+     * @param string|null $language The hosting plan's default locale. Null omits it.
+     * @param string|int|null $maxDeferFailPercentage The percentage of failed or deferred email messages that an
+     *     account on the hosting plan can send per hour before outgoing mail is rate-limited. Null omits it.
+     * @param string|int|null $maxEmailPerHour The maximum number of emails that the hosting plan allows accounts to
+     *     send in one hour. Null omits it.
+     * @param string|int|null $maxEmailacctQuota The hosting plan's maximum email account quota size, in megabytes (MB).
+     *     Null omits it.
+     * @param int|null $maxTeamUsers The hosting plan's maximum number of Team users. Null omits it.
+     * @param string|int|null $maxaddon The hosting plan's maximum number of addon domains. Null omits it.
+     * @param string|int|null $maxftp The hosting plan's maximum number of FTP accounts. Null omits it.
+     * @param string|int|null $maxlst The hosting plan's maximum number of mailing lists. Null omits it.
+     * @param string|int|null $maxpark The hosting plan's maximum number of parked domains (aliases). Null omits it.
+     * @param string|int|null $maxpop The hosting plan's maximum number of email accounts. Null omits it.
+     * @param string|int|null $maxsql The hosting plan's maximum number of each available type of SQL database. Null
+     *     omits it.
+     * @param string|int|null $maxsub The hosting plan's maximum number of subdomains. Null omits it.
+     * @param string|int|null $quota The hosting plan's disk space quota, in megabytes (MB). Null omits it.
+     * @return EditPackageResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plans/packages-editpkg
+     */
+    public function editPackage(
+        string $name,
+        ?string $packageExtensions = null,
+        string|int|null $bwlimit = null,
+        ?bool $cgi = null,
+        ?string $cpmod = null,
+        ?bool $digestauth = null,
+        ?string $featurelist = null,
+        ?bool $frontpage = null,
+        ?bool $hasshell = null,
+        ?string $ip = null,
+        ?string $language = null,
+        string|int|null $maxDeferFailPercentage = null,
+        string|int|null $maxEmailPerHour = null,
+        string|int|null $maxEmailacctQuota = null,
+        ?int $maxTeamUsers = null,
+        string|int|null $maxaddon = null,
+        string|int|null $maxftp = null,
+        string|int|null $maxlst = null,
+        string|int|null $maxpark = null,
+        string|int|null $maxpop = null,
+        string|int|null $maxsql = null,
+        string|int|null $maxsub = null,
+        string|int|null $quota = null,
+    ): array {
+        /** @var EditPackageResult $result Validated against HostingPlansSpec::EDITPKG. */
+        $result = ($this->run)(HostingPlansSpec::EDITPKG, [
+            'name' => $name,
+            'packageExtensions' => $packageExtensions,
+            'bwlimit' => $bwlimit,
+            'cgi' => $cgi,
+            'cpmod' => $cpmod,
+            'digestauth' => $digestauth,
+            'featurelist' => $featurelist,
+            'frontpage' => $frontpage,
+            'hasshell' => $hasshell,
+            'ip' => $ip,
+            'language' => $language,
+            'maxDeferFailPercentage' => $maxDeferFailPercentage,
+            'maxEmailPerHour' => $maxEmailPerHour,
+            'maxEmailacctQuota' => $maxEmailacctQuota,
+            'maxTeamUsers' => $maxTeamUsers,
+            'maxaddon' => $maxaddon,
+            'maxftp' => $maxftp,
+            'maxlst' => $maxlst,
+            'maxpark' => $maxpark,
+            'maxpop' => $maxpop,
+            'maxsql' => $maxsql,
+            'maxsub' => $maxsub,
+            'quota' => $quota,
+        ]);
+
+        return $result;
+    }
+
+    /**
+     * Return dynamicui file.
+     *
+     * This function returns the contents of a `dynamicui` file. For more information, read our Guide to WHM dynamicui
+     * Files documentation.
+     *
+     * Documented: Available in cPanel & WHM 76 and later. Uses GET for this documented read.
+     *
+     * Documented: applicationsList is a comma-separated list sent once; omission returns the entire dynamicui.conf
+     * content. file defaults to dynamicui.conf and is relative to /usr/local/cpanel/whostmgr/docroot/themes/x/. A
+     * caller-selected file reads server configuration. Returned template directives and application/icon URLs are
+     * payload data; the client does not execute or fetch them. The known nested Group/Image/Subitem required fields,
+     * nullable ACL/DNSOnly fields and role/service string-or-object alternatives remain strict.
+     *
+     * API-map identity: whm1:get_available_applications#GET (wire name get_available_applications; Feature Lists).
+     *
+     * @param string|null $applicationsList A comma-separated list of the application entries to return. Null omits it.
+     * @param string|null $file The `dynamicui` configuration file to retrieve, relative to the
+     *     `/usr/local/cpanel/whostmgr/docroot/themes/x/` directory. Null omits it.
+     * @return GetAvailableApplicationsResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-lists/dynamicui-get_available_applications
+     */
+    public function getAvailableApplications(?string $applicationsList = null, ?string $file = null): array
+    {
+        /**
+         * @var GetAvailableApplicationsResult $result
+         * Validated against HostingPlansSpec::GET_AVAILABLE_APPLICATIONS.
+         */
+        $result = ($this->run)(HostingPlansSpec::GET_AVAILABLE_APPLICATIONS, [
+            'applicationsList' => $applicationsList,
+            'file' => $file,
+        ]);
+
+        return $result;
     }
 
     /**
@@ -218,6 +768,69 @@ final readonly class HostingPlans
     }
 
     /**
+     * Return hosting plan extension templates.
+     *
+     * This function retrieves a hosting plan's package extension templates. When you call this function, the system
+     * checks the hosting plan's `_PACKAGE_EXTENSIONS` value. The function returns the contents of the
+     * `/var/cpanel/packages/extensions/name.tt2` file for each package extension in the list, where name represents the
+     * package extension's name.
+     *
+     * Documented: Available in cPanel & WHM 11.40 and later. Uses GET for this documented read.
+     *
+     * Documented: Reads each extension template selected by the package _PACKAGE_EXTENSIONS value from
+     * /var/cpanel/packages/extensions/name.tt2. Returned HTML and Template Toolkit source are payload data and are
+     * never executed or fetched. Upstream returns only metadata when there are no extensions or their template files
+     * are empty; preserve absent/null payload as null and an object with omitted html separately.
+     *
+     * Returns null when the server sends no data.
+     *
+     * API-map identity: whm1:_getpkgextensionform#GET (wire name _getpkgextensionform; Hosting Plan Extensions).
+     *
+     * @param string $name The hosting plan's name.
+     * @return GetPackageExtensionFormResult|null
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plan-extensions/accounts-_getpkgextensionform
+     */
+    public function getPackageExtensionForm(string $name): ?array
+    {
+        /** @var GetPackageExtensionFormResult|null $result Validated against HostingPlansSpec::GETPKGEXTENSIONFORM. */
+        $result = ($this->run)(HostingPlansSpec::GETPKGEXTENSIONFORM, ['name' => $name]);
+
+        return $result;
+    }
+
+    /**
+     * Return hosting plan configuration.
+     *
+     * This function lists a hosting plan's (package's) settings.
+     *
+     * Documented: Available in cPanel & WHM 11 and later. Uses GET for this documented read.
+     *
+     * Documented: Only enabled settings are returned, so known fields remain optional. Extension variables are opaque
+     * dynamic fields and may contain credentials; treat the result as sensitive. Known limit fields remain integer, the
+     * exact unlimited literal, and null only where pinned; flags stay integer 0/1, while DIGESTAUTH stays a source
+     * string. MAX_TEAM_USERS may be null; omitted and null stay distinct.
+     *
+     * API-map identity: whm1:getpkginfo#GET (wire name getpkginfo; Hosting Plans).
+     *
+     * @param string $name The hosting plan's name.
+     * @return GetPackageInfoResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plans/packages-getpkginfo
+     */
+    public function getPackageInfo(string $name): array
+    {
+        /** @var GetPackageInfoResult $result Validated against HostingPlansSpec::GETPKGINFO. */
+        $result = ($this->run)(HostingPlansSpec::GETPKGINFO, ['name' => $name]);
+
+        return $result;
+    }
+
+    /**
      * Return cPanel accounts' feature settings.
      *
      * This function lists the features settings of cPanel accounts.
@@ -268,6 +881,130 @@ final readonly class HostingPlans
         $result = ($this->run)(HostingPlansSpec::LISTPKGS, ['want' => $want]);
 
         return $result;
+    }
+
+    /**
+     * Return filtered hosting plans.
+     *
+     * This function matches the server's hosting plans (packages) against your criteria.
+     *
+     * Documented: Available in cPanel & WHM 11 and later. Uses GET for this documented read.
+     *
+     * Documented: Omitting every selector lists all server packages. All selectors remain optional and are sent with
+     * their exact uppercase wire names except _PACKAGE_EXTENSIONS. Boolean CGI/HASSHELL inputs encode as 0/1, while
+     * DIGESTAUTH and IP take y/n strings. Results retain their distinct source strings for HASSHELL/IP and do not
+     * inherit getPackageInfo flag types. Limits use integers or exact unlimited; no live numeric-string coercion is
+     * inferred. The result shape does not enforce correspondence with requested criteria.
+     *
+     * API-map identity: whm1:matchpkgs#GET (wire name matchpkgs; Hosting Plans).
+     *
+     * @param string|null $packageExtensions A space-separated list of one or more of the hosting plan's package
+     *     extensions. Null omits it.
+     * @param string|int|null $bwlimit The hosting plan's bandwidth limit. Null omits it.
+     * @param bool|null $cgi Whether CGI is enabled for the hosting plan. Null omits it.
+     * @param string|null $cpmod The hosting plan's cPanel interface theme. Null omits it.
+     * @param 'y'|'n'|null $digestauth Whether the hosting plan enables Digest Authentication. Null omits it.
+     * @param string|null $featurelist The hosting plan's feature list. Null omits it.
+     * @param bool|null $hasshell Whether shell access is enabled for the hosting plan. Null omits it.
+     * @param 'y'|'n'|null $ip Whether the hosting plan grants accounts a dedicated IP address. Null omits it.
+     * @param string|null $lang The hosting plan's locale. Null omits it.
+     * @param string|int|null $maxDeferFailPercentage The percentage of failed or deferred email messages that the
+     *     hosting plan can send per hour before the system rate-limits outgoing mail. Null omits it.
+     * @param string|int|null $maxEmailPerHour The maximum number of emails that the hosting plan can send in one hour.
+     *     Null omits it.
+     * @param string|int|null $maxEmailacctQuota The hosting plan's maximum email account quota size, in megabytes (MB).
+     *     Null omits it.
+     * @param int|null $maxTeamUsers The hosting plan's maximum number of Team users. Null omits it.
+     * @param string|int|null $maxaddon The hosting plan's maximum number of addon domains. Null omits it.
+     * @param string|int|null $maxftp The hosting plan's maximum number of FTP accounts. Null omits it.
+     * @param string|int|null $maxlst The hosting plan's maximum number of mailing lists. Null omits it.
+     * @param string|int|null $maxpark The hosting plan's maximum number of parked domains (aliases). Null omits it.
+     * @param string|int|null $maxpop The hosing plan's maximum number of email accounts. Null omits it.
+     * @param string|int|null $maxsql The hosting plan's maximum number of SQL databases. Null omits it.
+     * @param string|int|null $maxsub The hosting plan's maximum number of subdomains. Null omits it.
+     * @param string|int|null $quota The hosting plan's disk space limit. Null omits it.
+     * @return MatchPackagesResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/hosting-plans/packages-matchpkgs
+     */
+    public function matchPackages(
+        ?string $packageExtensions = null,
+        string|int|null $bwlimit = null,
+        ?bool $cgi = null,
+        ?string $cpmod = null,
+        ?string $digestauth = null,
+        ?string $featurelist = null,
+        ?bool $hasshell = null,
+        ?string $ip = null,
+        ?string $lang = null,
+        string|int|null $maxDeferFailPercentage = null,
+        string|int|null $maxEmailPerHour = null,
+        string|int|null $maxEmailacctQuota = null,
+        ?int $maxTeamUsers = null,
+        string|int|null $maxaddon = null,
+        string|int|null $maxftp = null,
+        string|int|null $maxlst = null,
+        string|int|null $maxpark = null,
+        string|int|null $maxpop = null,
+        string|int|null $maxsql = null,
+        string|int|null $maxsub = null,
+        string|int|null $quota = null,
+    ): array {
+        /** @var MatchPackagesResult $result Validated against HostingPlansSpec::MATCHPKGS. */
+        $result = ($this->run)(HostingPlansSpec::MATCHPKGS, [
+            'packageExtensions' => $packageExtensions,
+            'bwlimit' => $bwlimit,
+            'cgi' => $cgi,
+            'cpmod' => $cpmod,
+            'digestauth' => $digestauth,
+            'featurelist' => $featurelist,
+            'hasshell' => $hasshell,
+            'ip' => $ip,
+            'lang' => $lang,
+            'maxDeferFailPercentage' => $maxDeferFailPercentage,
+            'maxEmailPerHour' => $maxEmailPerHour,
+            'maxEmailacctQuota' => $maxEmailacctQuota,
+            'maxTeamUsers' => $maxTeamUsers,
+            'maxaddon' => $maxaddon,
+            'maxftp' => $maxftp,
+            'maxlst' => $maxlst,
+            'maxpark' => $maxpark,
+            'maxpop' => $maxpop,
+            'maxsql' => $maxsql,
+            'maxsub' => $maxsub,
+            'quota' => $quota,
+        ]);
+
+        return $result;
+    }
+
+    /**
+     * Remove cPanel account feature list overrides.
+     *
+     * This function removes feature overrides from a cPanel account.
+     *
+     * Documented: Available in cPanel & WHM 56 and later. Uses form POST for this documented mutation. Changes can
+     * affect package or account capabilities; this method performs one request with no retry or rollback.
+     *
+     * Documented: features is caller-supplied serialized JSON text, sent once as a form field. The source
+     * application/json content describes a query parameter, not a JSON request body. The existing scalar boundary is
+     * string|int; integer acceptance does not establish valid JSON semantics. No PHP object/list encoder is supplied
+     * (whm-api-client-8x0.1.23). Feature names and switches are not credentials. Use getFeatureNames() for available
+     * names; only the named overrides are removed.
+     *
+     * API-map identity: whm1:remove_override_features_for_user#GET (wire name remove_override_features_for_user;
+     * Feature Access).
+     *
+     * @param string $user The user's username.
+     * @param string|int $features Caller-serialized JSON array of feature names.
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/feature-access/accounts-remove_override_features_for_user
+     */
+    public function removeOverrideFeaturesForUser(string $user, string|int $features): void
+    {
+        ($this->run)(HostingPlansSpec::REMOVE_OVERRIDE_FEATURES_FOR_USER, ['user' => $user, 'features' => $features]);
     }
 
     /**

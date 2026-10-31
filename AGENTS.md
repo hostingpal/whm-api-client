@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 72 typed groups cover 606 documented operations:
+and cPanel UAPI surface. The 72 typed groups cover 618 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -1498,3 +1498,38 @@ Beads block to `CLAUDE.md` (do not run `bd setup claude` to re-add one).
 Preserve the generated Beads blocks and keep project-specific additions outside
 them. If `bd setup` regenerates a Beads block with profile-neutral wording,
 re-apply the team-maintainer wording; the Git Workflow section is authoritative.
+
+
+## Expanded WHM hosting plans
+
+`whm()->hostingPlans()` adds twelve methods for package creation, editing,
+deletion, extension management, matching, application inventory and feature
+overrides. The group covers twenty of 24 pinned functions: eight existing typed
+contracts and two deprecated exclusions are preserved. Dynamic feature-list
+creation/update fields remain excluded under `8x0.1.31`. Four additions use GET;
+eight mutations use form POST.
+
+Package options preserve exact wire casing, omitted defaults, false/zero and
+literal unlimited values. Quotas use the source's MB units. Editing a package
+changes accounts using it, while mailbox-quota edits do not change existing
+mailboxes. A package currently used by an account cannot be deleted. The client
+does not retry, roll back or silently assign accounts.
+
+Feature overrides accept caller-serialized JSON text in form fields, encoded
+once. They do not use a JSON request body or automatically serialize PHP arrays.
+The scalar native string|int limitation remains under `8x0.1.23`; integer JSON
+semantics are not established. Extension helpers preserve space-separated,
+case-sensitive names and do not infer arbitrary extension input fields.
+
+Package information retains strict named fields plus source-documented opaque
+extension variables, which may contain private configuration. Unspecified
+extension templates may produce metadata only; otherwise HTML stays payload
+data. The application group-list repair follows explicit source array prose and
+referenced row schemas. Literal unlimited alternatives remain narrow; nullable
+fields and omissions stay distinct. URLs and templates are never executed.
+
+All additions have independent offline contracts. The bounded live catalog reads
+WHM version and `matchPackages()` with every selector omitted, which the source
+explicitly describes as listing all packages. It makes no package/feature changes,
+reads no arbitrary configuration file, and fetches no returned URL or template.
+Remaining operations and variants stay under `8x0.2.43`.
