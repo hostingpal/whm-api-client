@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 77 typed groups cover 711 documented operations:
+and cPanel UAPI surface. The 78 typed groups cover 717 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -1286,6 +1286,29 @@ further commands are tracked under `gwi`. Go is a
 development-tool choice, not a runtime dependency of the PHP package. Preserve pinned documentation snapshots and
 refresh them explicitly; routine checks must remain offline. The tool design
 is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
+
+
+## WHM NGINX cache management
+
+`whm()->nginxManager()` covers all six pinned functions: two configuration GETs
+and four form POST operations. Omitting users targets all users for clearing,
+rebuilding, resetting or setting cache state, and all users for configuration
+inventory. A nonempty sequential string list repeats the exact user field;
+explicit empty lists are rejected. False sends zero; omitted options retain
+server behavior. Only merge=1 is documented, although its native argument is int.
+
+Default configuration enabled remains integer 0|1; system/user enabled remains
+boolean. Additional configuration values preserve the source's open object data.
+Source-backed missing-type corrections retain the documented users list and
+system boolean. No runtime schema or global generator behavior changes.
+All four mutations are source-documented void results. Per-method availability
+is the pinned version 11; no later version floor is inferred. These methods add
+no automatic restart, retry or rollback beyond the selected API operation.
+
+All six methods have offline contracts. The bounded three-GET catalog reads
+version, merged system configuration and merged configuration for designated
+npr only. It does not clear, rebuild, reset, toggle, restart or measure cache/HTTP
+behavior. Unobserved variants and mutations remain under `8x0.2.51`.
 
 ## Architecture and Conventions
 

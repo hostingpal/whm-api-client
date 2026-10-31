@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 77 generated typed groups cover 711 documented operations (see
+The 78 generated typed groups cover 717 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1831,3 +1831,25 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+## WHM NGINX cache management
+
+`whm()->nginxManager()` covers all six pinned functions: two configuration GETs
+and four form POST operations. Omitting users targets all users for clearing,
+rebuilding, resetting or setting cache state, and all users for configuration
+inventory. A nonempty sequential string list repeats the exact user field;
+explicit empty lists are rejected. False sends zero; omitted options retain
+server behavior. Only merge=1 is documented, although its native argument is int.
+
+Default configuration enabled remains integer 0|1; system/user enabled remains
+boolean. Additional configuration values preserve the source's open object data.
+Source-backed missing-type corrections retain the documented users list and
+system boolean. No runtime schema or global generator behavior changes.
+All four mutations are source-documented void results. Per-method availability
+is the pinned version 11; no later version floor is inferred. These methods add
+no automatic restart, retry or rollback beyond the selected API operation.
+
+All six methods have offline contracts. The bounded three-GET catalog reads
+version, merged system configuration and merged configuration for designated
+npr only. It does not clear, rebuild, reset, toggle, restart or measure cache/HTTP
+behavior. Unobserved variants and mutations remain under `8x0.2.51`.

@@ -1,0 +1,362 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "NGINX Manager",
+  "class": "NginxManager",
+  "accessor": "nginxManager",
+  "operations": {
+    "whm1:nginxmanager_clear_cache": {
+      "name": "clearCache",
+      "method": "POST",
+      "order": [
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11 according to the pinned operation. The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Clears cached content for the selected users. WARNING: Omitting users clears the NGINX cache for all users."
+        },
+        {
+          "kind": "documented",
+          "text": "A string sends one user field; a nonempty sequential string list repeats the exact user field (user=one&user=two). Null omits user. The source default [] describes server omission behavior, not an explicit empty-list selection; explicit empty or nonsequential lists are rejected before dispatch."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response documents metadata only and no data payload; this method returns void. Inspect responseMeta() for the WHM outcome."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /nginxmanager_clear_cache/get declares x-readonly=false and x-cpanel-available-version=11; selected transport is POST. Canonical x-tagGroups identity is NGINX Manager. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /nginxmanager_clear_cache/get user parameter is optional, type array with string items, style=form and explode=true. Repeated user fields preserve that serialization. The user description explicitly defines all-user behavior on omission; no empty-list-means-none behavior is inferred. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "params": {
+        "user": {
+          "php": "users",
+          "encoding": "repeat"
+        }
+      }
+    },
+    "whm1:nginxmanager_get_cache_config_system": {
+      "name": "getSystemCacheConfig",
+      "method": "GET",
+      "order": [
+        "merge"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11 according to the pinned operation. The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the default and system NGINX cache configurations. merge=1 combines default and system values; only integer 1 is documented for merge. Omission leaves the server behavior unchanged."
+        },
+        {
+          "kind": "documented",
+          "text": "default.enabled is an integer 0|1 flag; system.enabled is boolean. The default/system configuration objects preserve dynamic configuration keys and their opaque values, including unit-bearing strings such as 60m and 10m. Omission, zero, false, empty strings and explicit null dynamic values stay distinct."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /nginxmanager_get_cache_config_system/get declares x-readonly=true and x-cpanel-available-version=11; selected transport is GET. Canonical x-tagGroups identity is NGINX Manager. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "response": {
+        "default": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "enabled": {
+                "type": "flag"
+              }
+            },
+            "values": {
+              "type": "mixed"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "/nginxmanager_get_cache_config_system data.default: The pinned configuration node declares both properties.enabled and additionalProperties with no value type. Preserve the named enabled field and every dynamic configuration key using an object with values:mixed. Dynamic values, including string units and nested data, remain opaque; examples do not establish a closed set of fields or additional leaf contracts. Optional field presence remains unchanged and no numeric-string/flag coercion or nullability is inferred. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        },
+        "system": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "enabled": {
+                "type": "bool"
+              }
+            },
+            "values": {
+              "type": "mixed"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "/nginxmanager_get_cache_config_system data.system: The pinned configuration node declares both properties.enabled and additionalProperties with no value type. Preserve the named enabled field and every dynamic configuration key using an object with values:mixed. Dynamic values, including string units and nested data, remain opaque; examples do not establish a closed set of fields or additional leaf contracts. Optional field presence remains unchanged and no numeric-string/flag coercion or nullability is inferred. Its enabled node omits formal type/enum keys, but its description contains true/false semantics and literal type: boolean text; the system example has enabled:true. Repair only that explicitly documented boolean contract, without widening it to integer flags. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:nginxmanager_get_cache_config_users": {
+      "name": "getUsersCacheConfig",
+      "method": "GET",
+      "order": [
+        "merge",
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11 according to the pinned operation. The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns user NGINX cache configurations. Omitting users retrieves configurations for all users. merge=1 combines default, system and user values; only integer 1 is documented for merge. Omission leaves the server behavior unchanged."
+        },
+        {
+          "kind": "documented",
+          "text": "A string sends one user field; a nonempty sequential string list repeats the exact user field (user=one&user=two). Null omits user. The source default [] describes server omission behavior, not an explicit empty-list selection; explicit empty or nonsequential lists are rejected before dispatch."
+        },
+        {
+          "kind": "documented",
+          "text": "The optional users list contains optional config, merged, owner and user fields. config.enabled is boolean; merged is an integer 0|1 flag indicating whether merge was supplied. Dynamic configuration keys and opaque values are preserved without inventing types for example-only settings."
+        },
+        {
+          "kind": "documented",
+          "text": "The users container lacks a formal array type in the pinned schema; its explicit array-of-objects prose, item properties and list example establish the retained list shape."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /nginxmanager_get_cache_config_users/get declares x-readonly=true and x-cpanel-available-version=11; selected transport is GET. Canonical x-tagGroups identity is NGINX Manager. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /nginxmanager_get_cache_config_users/get user parameter is optional, type array with string items, style=form and explode=true. Repeated user fields preserve that serialization. The user description explicitly defines all-user behavior on omission; no empty-list-means-none behavior is inferred. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "params": {
+        "user": {
+          "php": "users",
+          "encoding": "repeat"
+        }
+      },
+      "response": {
+        "users": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "config": {
+                  "type": "object",
+                  "fields": {
+                    "enabled": {
+                      "type": "bool"
+                    }
+                  },
+                  "values": {
+                    "type": "mixed"
+                  }
+                },
+                "merged": {
+                  "type": "flag"
+                },
+                "owner": {
+                  "type": "string"
+                },
+                "user": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /nginxmanager_get_cache_config_users data.users omits type:array but its description explicitly says an array of objects, its items.properties declares the row fields, and its example is a list containing two records. Replace users with a list of objects retaining all original optional fields: config, merged (integer enum [1,0]), owner (string) and user (string). /nginxmanager_get_cache_config_users data.users[].config: The pinned configuration node declares both properties.enabled and additionalProperties with no value type. Preserve the named enabled field and every dynamic configuration key using an object with values:mixed. Dynamic values, including string units and nested data, remain opaque; examples do not establish a closed set of fields or additional leaf contracts. Optional field presence remains unchanged and no numeric-string/flag coercion or nullability is inferred. enabled has formal boolean type and enum [false,true]. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:nginxmanager_rebuild_cache_config": {
+      "name": "rebuildCacheConfig",
+      "method": "POST",
+      "order": [
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11 according to the pinned operation. The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Rebuilds NGINX user configuration. WARNING: Omitting users rebuilds the configuration for all users on the system."
+        },
+        {
+          "kind": "documented",
+          "text": "A string sends one user field; a nonempty sequential string list repeats the exact user field (user=one&user=two). Null omits user. The source default [] describes server omission behavior, not an explicit empty-list selection; explicit empty or nonsequential lists are rejected before dispatch."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response documents metadata only and no data payload; this method returns void. Inspect responseMeta() for the WHM outcome."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /nginxmanager_rebuild_cache_config/get declares x-readonly=false and x-cpanel-available-version=11; selected transport is POST. Canonical x-tagGroups identity is NGINX Manager. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /nginxmanager_rebuild_cache_config/get user parameter is optional, type array with string items, style=form and explode=true. Repeated user fields preserve that serialization. The user description explicitly defines all-user behavior on omission; no empty-list-means-none behavior is inferred. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "params": {
+        "user": {
+          "php": "users",
+          "encoding": "repeat"
+        }
+      }
+    },
+    "whm1:nginxmanager_reset_users_cache_config": {
+      "name": "resetUsersCacheConfig",
+      "method": "POST",
+      "order": [
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11 according to the pinned operation. The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Resets users to the NGINX system default. WARNING: Omitting users resets the configuration to the default for all users on the system."
+        },
+        {
+          "kind": "documented",
+          "text": "A string sends one user field; a nonempty sequential string list repeats the exact user field (user=one&user=two). Null omits user. The source default [] describes server omission behavior, not an explicit empty-list selection; explicit empty or nonsequential lists are rejected before dispatch."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response documents metadata only and no data payload; this method returns void. Inspect responseMeta() for the WHM outcome."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /nginxmanager_reset_users_cache_config/get declares x-readonly=false and x-cpanel-available-version=11; selected transport is POST. Canonical x-tagGroups identity is NGINX Manager. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /nginxmanager_reset_users_cache_config/get user parameter is optional, type array with string items, style=form and explode=true. Repeated user fields preserve that serialization. The user description explicitly defines all-user behavior on omission; no empty-list-means-none behavior is inferred. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "params": {
+        "user": {
+          "php": "users",
+          "encoding": "repeat"
+        }
+      }
+    },
+    "whm1:nginxmanager_set_cache_config": {
+      "name": "setCacheConfig",
+      "method": "POST",
+      "order": [
+        "enabled",
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11 according to the pinned operation. The client executes one request without automatic reload, restart, cache clear, rebuild, retry or rollback beyond the selected operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Enables or disables NGINX caching. enabled=true sends 1; false sends 0. WARNING: Omitting users changes the caching status for all users on the system."
+        },
+        {
+          "kind": "documented",
+          "text": "A string sends one user field; a nonempty sequential string list repeats the exact user field (user=one&user=two). Null omits user. The source default [] describes server omission behavior, not an explicit empty-list selection; explicit empty or nonsequential lists are rejected before dispatch."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response documents metadata only and no data payload; this method returns void. Inspect responseMeta() for the WHM outcome."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /nginxmanager_set_cache_config/get declares x-readonly=false and x-cpanel-available-version=11; selected transport is POST. Canonical x-tagGroups identity is NGINX Manager. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /nginxmanager_set_cache_config/get user parameter is optional, type array with string items, style=form and explode=true. Repeated user fields preserve that serialization. The user description explicitly defines all-user behavior on omission; no empty-list-means-none behavior is inferred. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned enabled parameter is required integer enum [1,0], documented as enabling/disabling caching. Expose the established boolean input encoding so true sends 1 and false sends 0. Pinned WHM decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "params": {
+        "user": {
+          "php": "users",
+          "encoding": "repeat"
+        },
+        "enabled": {
+          "encoding": "bool"
+        }
+      }
+    }
+  }
+}

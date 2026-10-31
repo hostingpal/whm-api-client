@@ -1329,3 +1329,12 @@ GET observations and strict assessment with zero discrepancies. IPv6 range
 where observed. IPv4/IPv6/range rows are populated; range-user lists are empty.
 No network or address/range change ran. The original failed capture is immutable
 and follow-up `8x0.2.37` retains all remaining live coverage.
+
+## WHM NGINX configuration
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-nginx.php --output=docs/api/evidence/YYYY-MM-DD-whm-nginx.json`.
+
+Three fixed GETs read version and merged system/npr cache configurations. Existing
+opt-in, committed-input, exact request guard, TLS and immutable structural-output
+rules apply. No all-user inventory, cache clearing/rebuild/reset/toggle, service
+restart or HTTP enforcement test runs. Keep gaps under `8x0.2.51`.

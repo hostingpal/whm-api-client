@@ -33,6 +33,8 @@ trait WhmGroups
 
     private ?ModSecurity $modSecurityGroup = null;
 
+    private ?NginxManager $nginxManagerGroup = null;
+
     private ?Resellers $resellersGroup = null;
 
     private ?Server $serverGroup = null;
@@ -148,6 +150,16 @@ trait WhmGroups
     public function modSecurity(): ModSecurity
     {
         return $this->modSecurityGroup ??= new ModSecurity($this->run(...));
+    }
+
+    /**
+     * Select the NGINX Manager operations without making a request.
+     *
+     * WHM API 1 functions in the documented NGINX Manager group.
+     */
+    public function nginxManager(): NginxManager
+    {
+        return $this->nginxManagerGroup ??= new NginxManager($this->run(...));
     }
 
     /**

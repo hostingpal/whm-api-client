@@ -4237,3 +4237,25 @@ and `/addips/get` supplies the metadata message contract. No new live request or
 capture ran for these corrections. All ten form POST methods, including the NAT
 check helper, remain unobserved under `8x0.2.37`. Both historical artifacts remain
 immutable; no schema finding was waived or replayed.
+
+## WHM NGINX cache management
+
+`whm()->nginxManager()` covers all six pinned functions: two configuration GETs
+and four form POST operations. Omitting users targets all users for clearing,
+rebuilding, resetting or setting cache state, and all users for configuration
+inventory. A nonempty sequential string list repeats the exact user field;
+explicit empty lists are rejected. False sends zero; omitted options retain
+server behavior. Only merge=1 is documented, although its native argument is int.
+
+Default configuration enabled remains integer 0|1; system/user enabled remains
+boolean. Additional configuration values preserve the source's open object data.
+Source-backed missing-type corrections retain the documented users list and
+system boolean. No runtime schema or global generator behavior changes.
+All four mutations are source-documented void results. Per-method availability
+is the pinned version 11; no later version floor is inferred. These methods add
+no automatic restart, retry or rollback beyond the selected API operation.
+
+All six methods have offline contracts. The bounded three-GET catalog reads
+version, merged system configuration and merged configuration for designated
+npr only. It does not clear, rebuild, reset, toggle, restart or measure cache/HTTP
+behavior. Unobserved variants and mutations remain under `8x0.2.51`.
