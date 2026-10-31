@@ -3634,6 +3634,134 @@ unobserved. These observations neither replace the historical artifacts nor waiv
 their API failures. Follow-up `8x0.2.31` remains open for committed mutation evidence,
 capability-dependent successes, populated variants and enforcement behavior.
 
+## Account backup and restoration (2026-10-31)
+
+The account-backup section exposes 32 compatible methods across `backup()`,
+`restore()`, `wordPressBackup()`, `wordPressRestore()`, `backupInfo()`,
+`extractInfo()` and `websiteBackup()`. Eight explicit reads use GET; 24 operations
+use form POST. Four binary multipart Backup restore endpoints remain excluded
+under `8x0.1.19`, including their alternative server-path modes; generic form access
+does not establish typed upload coverage.
+
+Full backups preserve sensitive remote passwords and SSH key passphrases; `keyName`
+is an existing key identifier, not private-key content. The pinned prerequisite
+text names `SSL::generate_key` and API2 `SSH::importkey`; this UAPI slice does not
+implement API2 key import. Omitting the completion-email
+argument sends no notification. A PID, backup ID or restore ID does not establish
+completion. Restore paths retain required slash conventions and are passed unchanged;
+`overwrite` is required and can replace original content. Source role/version and
+WordPress Manager plugin requirements remain in each generated method.
+
+WordPress results preserve optional fields, null and opaque-object alternatives.
+`WordPressRestore/any_running` preserves both the flat pinned examples and the
+formal optional `items` wrapper, including `any_running`, `sites` and `last_outcome`.
+The `sites` list keeps its known row shape; its formal object alternative is
+unstructured and only documented as empty. No populated keyed-record shape is
+inferred. Both `any_running` placements preserve the documented integer 0/1 values.
+Cancellation and cleanup have their documented result meanings and do not imply
+successful restoration or archive deletion. Returned SSE URLs are never fetched.
+
+BackupInfo, ExtractInfo and WebsiteBackup omit `x-readonly`. Ten methods use the
+conservative form POST fallback; WebsiteBackup creation, deletion, extraction and
+restoration have explicit pinned POST/form contracts and known mutation effects.
+Their POST responses are outside the committed read-only capture; separate reviewer
+lifecycle observations are recorded in the source audit.
+BackupInfo reset clears completion tracking without canceling a run or deleting
+archives. ExtractInfo start records a baseline/marker and extracts no files;
+finish clears that marker after either success or failure. Paths refer to server-side
+account files. The documented estimate limitations remain visible.
+
+WebsiteBackup uses repeated `database` and `ids` fields, preserving order and
+values. Creation with omitted databases backs up files only; omitted email sends
+no notification. Restore defaults differ: databases restore unless
+`restoreDatabases: false` is supplied. Restore merges and overwrites matching files
+by default; `clean: true` can remove later additions. These optional boolean
+switches preserve omission and encode explicit false/true as 0/1. Archive deletion is destructive,
+per-ID failures stay separate from API status, and source ID/domain association
+limits remain explicit. Background operation IDs mean submitted work; inspect
+operation status and errors/warnings for completion. Server database snapshots do
+not imply an atomic site rollback. No client retry or rollback is introduced.
+
+All 32 methods have offline contracts. The fixed nine-GET catalog selects WHM
+version plus account backup inventory, restore-user inventory and both WordPress
+`anyRunning()` reads through both routes. It guesses no site or path and excludes
+all unknown-risk calls, writes, extraction, restoration, deletion and notifications.
+Remaining source/live behavior stays under `8x0.2.32`.
+
+WordPressBackup `cancel()` and `start()` return an optional string `site`,
+preserving the pinned outer type across format-only alternatives. Their generated
+input currently accepts `string|int`; supply a string site as documented. Integer
+site semantics are not established. The generator limitation is tracked under
+`8x0.1.23`; it does not weaken the response contract.
+
+## Account backup and restoration capture
+
+The immutable [account-backup capture](evidence/2026-10-31-account-backup-restoration.json)
+at `e7b4a42` on `11.138.0.19` records nine HTTP 200 observations. WHM version,
+Backup/list_backups and Restore/get_users on both routes pass API, payload and
+probe checks. Both inventories are empty; populated rows remain unobserved.
+WordPressBackup/any_running and WordPressRestore/any_running fail at the API layer
+on both routes. The sanitized evidence does not establish the cause, and no
+response contract is widened from those failures. There are zero payload
+discrepancies, while strict assessment remains failed for the four API errors.
+
+No backup or restore job, extraction, cleanup, cancellation, message or filesystem
+change ran in this capture. No POST method is represented by the artifact;
+reviewer lifecycle reports remain separate evidence. Follow-up `8x0.2.32` retains the unobserved operations,
+plugin availability and lifecycle behavior. No repeat capture was run merely to
+seek a passing status. SHA-256:
+`c06b329f50f2ebd16ae43d52a7be4afb8b37d0267956d2d557287113209956f3`.
+
+### Account backup review corrections and evidence boundary
+
+[Claude review 5720426019](https://github.com/hostingpal/whm-api-client/pull/45#pullrequestreview-5720426019)
+reports cPanel `11.138.0.19` lifecycle observations through both routes on a
+disposable account that the reviewer created and removed, confirming cleanup.
+These reports do not add records to the immutable nine-GET capture.
+
+`BackupInfo::reset()` and `ExtractInfo::finish()` returned integer `cleared: 1`
+after clearing state. The direct typed calls failed after success; generic calls
+and inspected upstream source confirm the integer. The correction accepts only
+integer 0/1 alongside the pinned boolean, without widening unrelated state fields.
+`diskQuotaCheck()` returned `estimatedBytes` as canonical decimal text directly
+and an integer through the bridge. The same bounded compatibility on `availableBytes`
+is source-family inference, not a separately observed quoted value.
+
+`WordPressRestore::anyRunning()` now preserves the flat InProgress/NotInProgress
+examples and the formal `items` wrapper in a single optional-field object. This
+avoids a first-matching optional-object union silently dropping the other shape.
+[Clarification 6537452942](https://github.com/hostingpal/whm-api-client/pull/45#issuecomment-6537452942)
+explicitly retains the formal opaque-object `sites` alternative alongside the
+known list rows: no populated keyed-record map is inferred and the object branch
+is not narrowed. The object is formally unstructured and documented only as empty.
+These are pinned-source and offline corrections; WordPress success is unobserved.
+
+`restoreBackup()` uses optional booleans for `clean` and `restoreDatabases`, with
+omission distinct from explicit false/true encoded as 0/1. The reviewer observed
+clean restoration deleting a file added after the backup; this destructive effect
+is also explicit in the pinned contract. The method has no automatic retry or
+rollback. Creation, deletion, extraction and restoration have pinned POST/form
+contracts; the other ten methods without read-only declarations retain conservative
+POST selection. Corrected notes retain the cPanel 72 floor for `Restore::getUsers()`
+and the documented key-generation/import references for SCP backup by key.
+
+WordPress calls failed on both routes because their API modules were absent on this
+installation; the installed plugin supplied no usable modules. Disabled server
+backups prevent `queryFileInfo()` and `restoreFile()`; `getUsers()` still returns an
+empty list. `ExtractInfo::start()` with a missing archive raises `ApiErrorException`.
+These diagnoses do not change any captured outcome or waive the four API failures.
+
+The reviewer separately exercised WebsiteBackup create, status-to-completion,
+populated inventory, extract, merge/clean restore and deletion on both routes,
+including per-ID repeat-delete failures and unknown-operation/domain errors.
+Full backup to the home directory and progress reads were also exercised. SCP
+calls, successful extraction-state start with a real archive, file restoration
+from a real backup and WordPress success remain unobserved. Empty operation lists
+after completion and empty Backup inventory despite an existing archive were also
+observed upstream; no new semantics are inferred from them. Follow-up `8x0.2.32`
+retains these limits and future committed mutation evidence. The format-only site
+input limitation remains `8x0.1.23` for correction before the first tagged release.
+
 ## WHM authentication
 
 `whm()->authentication()` exposes 30 of the 32 pinned Authentication operations
