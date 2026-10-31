@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Uapi\Spec\DnssecSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -248,24 +249,32 @@ final readonly class Dnssec
      * Documented: Available from cPanel 60; operates on the selected account. Disabling the DNS role disables this
      * operation. The client performs no automatic retry or rollback.
      *
-     * Documented: This interface accepts one domain string. The pinned prose also documents domain-0/domain-1/domain-2,
-     * but that zero-based family is not exposed by this signature; no list encoding or delimiter is inferred.
+     * Documented: Accepts one domain string or a nonempty sequential string list. Scalars use domain; lists use
+     * domain-0/domain-1 starting at zero, including a singleton list. Empty, sparse, associative and non-string lists
+     * fail before dispatch. Scoped live cases are recorded separately in the observed note.
      *
      * Documented: Disabling DNSSEC is irreversible and loses associated keys; the previous state can only be retrieved
      * from a full backup. Remove the DNS/DS records at the registrar when disabling DNSSEC. The disabled map reports an
      * integer 0/1 result for each domain, independent of envelope success.
      *
+     * Observed: On cPanel 11.138.0.19, disabling two domains in one call succeeded through direct UAPI and the WHM
+     * bridge; a subsequent fetch returned no keys for either domain. Rejection of an empty string within a domain list
+     * remains unobserved, and this result establishes no atomicity guarantee.
+     *
      * API-map identity: uapi:DNSSEC/disable_dnssec#GET (wire name disable_dnssec).
      *
-     * @param string $domain The domain on which to disable DNSSEC.
+     * @param string|non-empty-list<string> $domain The domain on which to disable DNSSEC.
      * @return DisableDnssecResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns-security/dnssec-disable_dnssec
      */
-    public function disableDnssec(string $domain): array
-    {
+    public function disableDnssec(
+        #[SensitiveParameter]
+        string|array $domain,
+    ): array {
         /** @var DisableDnssecResult $result Validated against DnssecSpec::DISABLE_DNSSEC. */
         $result = ($this->run)(DnssecSpec::DISABLE_DNSSEC, ['domain' => $domain]);
 
@@ -280,8 +289,9 @@ final readonly class Dnssec
      * Documented: Available from cPanel 60; operates on the selected account. Disabling the DNS role disables this
      * operation. The client performs no automatic retry or rollback.
      *
-     * Documented: This interface accepts one domain string. The pinned prose also documents domain-0/domain-1/domain-2,
-     * but that zero-based family is not exposed by this signature; no list encoding or delimiter is inferred.
+     * Documented: Accepts one domain string or a nonempty sequential string list. Scalars use domain; lists use
+     * domain-0/domain-1 starting at zero, including a singleton list. Empty, sparse, associative and non-string lists
+     * fail before dispatch. Scoped live cases are recorded separately in the observed note.
      *
      * Documented: After enabling DNSSEC, add the DNS/DS records at the registrar. Security keys cannot be modified in
      * place; the source requires disabling/deleting and re-creating keys to change them.
@@ -300,9 +310,12 @@ final readonly class Dnssec
      * per-domain flag is distinct from envelope success. Only new_key_id also accepts a lossless canonical integer
      * string, as the pinned example quotes it; it normalizes to int. Other integer contracts are unchanged.
      *
+     * Observed: On cPanel 11.138.0.19, enabling two domains in one call succeeded through direct UAPI and the WHM
+     * bridge. API success does not establish DNS propagation or registrar configuration.
+     *
      * API-map identity: uapi:DNSSEC/enable_dnssec#GET (wire name enable_dnssec).
      *
-     * @param string $domain The domain on which to enable DNSSEC.
+     * @param string|non-empty-list<string> $domain The domain on which to enable DNSSEC.
      * @param bool|null $active Whether to activate the newly-created key. Null omits it.
      * @param int|null $algoNum The algorithm that the system uses to generate the security key. Null omits it.
      * @param 'simple'|'classic'|null $keySetup The manner in which the system creates the security key. Null omits it.
@@ -318,10 +331,12 @@ final readonly class Dnssec
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns-security/dnssec-enable_dnssec
      */
     public function enableDnssec(
-        string $domain,
+        #[SensitiveParameter]
+        string|array $domain,
         ?bool $active = null,
         ?int $algoNum = null,
         ?string $keySetup = null,
@@ -433,8 +448,9 @@ final readonly class Dnssec
      * Documented: Available from cPanel 82; operates on the selected account. Disabling the DNS role disables this
      * operation. The client performs no automatic retry or rollback.
      *
-     * Documented: This interface accepts one domain string. The pinned prose also documents domain-0/domain-1/domain-2,
-     * but that zero-based family is not exposed by this signature; no list encoding or delimiter is inferred.
+     * Documented: Accepts one domain string or a nonempty sequential string list. Scalars use domain; lists use
+     * domain-0/domain-1 starting at zero, including a singleton list. Empty, sparse, associative and non-string lists
+     * fail before dispatch. Scoped live cases are recorded separately in the observed note.
      *
      * Documented: The result is a domain-keyed map. Each optional keys map is keyed by the key tag, while optional
      * nsec_details is its sibling. The pinned example incorrectly places nsec_details inside keys; the explicit schema
@@ -453,17 +469,24 @@ final readonly class Dnssec
      * range and normalizes to int. nsec3_narrow remained an integer. These observations are separate from the committed
      * empty-zone capture.
      *
+     * Observed: On cPanel 11.138.0.19, direct UAPI and WHM bridge calls with multiple domains, a singleton list or a
+     * scalar returned populated keys and digests. Including an unknown domain raised ApiErrorException without a
+     * partial result. These reads do not establish DNS trust or resolver validation.
+     *
      * API-map identity: uapi:DNSSEC/fetch_ds_records#GET (wire name fetch_ds_records).
      *
-     * @param string $domain The domain from which to fetch DS records.
+     * @param string|non-empty-list<string> $domain The domain from which to fetch DS records.
      * @return FetchDsRecordsResult
      * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
      *     the operation may already have changed state; do not retry automatically.
+     * @throws InvalidArgumentException If a list argument is empty, keyed, or contains an unsupported value.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dns-security/dnssec-fetch_ds_records
      */
-    public function fetchDsRecords(string $domain): array
-    {
+    public function fetchDsRecords(
+        #[SensitiveParameter]
+        string|array $domain,
+    ): array {
         /** @var FetchDsRecordsResult $result Validated against DnssecSpec::FETCH_DS_RECORDS. */
         $result = ($this->run)(DnssecSpec::FETCH_DS_RECORDS, ['domain' => $domain]);
 

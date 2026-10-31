@@ -73,6 +73,12 @@ final class ArgumentEncoder
                 continue;
             }
 
+            if ($param['encoding'] === 'collection') {
+                CollectionEncoder::append($encoded, $name, $wire, $param['collection'], $value);
+
+                continue;
+            }
+
             $encodedValue = match ($param['encoding'] ?? null) {
                 'scalar' => self::scalar($value),
                 'bool' => is_bool($value)

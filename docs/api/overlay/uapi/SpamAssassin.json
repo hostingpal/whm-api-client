@@ -176,7 +176,7 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned source documents multiple values as value-0 and value-1. This interface exposes only the pinned single string value; the current numbered encoder does not establish that exact zero-based family. Use no inferred comma delimiter or alternative numbered serialization."
+          "text": "Accepts one string value or a nonempty sequential string list for the selected preference. Scalars use value; lists use value-0/value-1 starting at zero, including a singleton list. Null or omission removes previous settings; an empty list is rejected before dispatch rather than treated as omission. Order, duplicates, empty strings and string zero are preserved. This does not batch multiple preference names; scoped live cases are recorded separately in the observed note."
         },
         {
           "kind": "documented",
@@ -185,6 +185,10 @@
         {
           "kind": "observed",
           "text": "On cPanel 11.138.0.19, independent PR36 review observed required_score numeric strings on both direct UAPI and the WHM bridge for reads and successful updates. Accepted decimal numeric strings are preserved unchanged, including precision and trailing zeros; JSON integers and floats remain accepted. Arbitrary strings, booleans, null and containers are rejected as score items. Omitted required_score stays absent and an empty list stays empty."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, direct UAPI and WHM bridge calls stored three list values in order, including a duplicate; singleton-list and scalar forms stored one value. Omitting value deleted the selected preference. Empty lists, sparse lists and integer items raised InvalidArgumentException before dispatch. These results do not establish mail filtering or delivery behavior."
         }
       ],
       "evidence": [
@@ -199,6 +203,20 @@
           "version": "11.138.0.19",
           "date": "2026-10-30",
           "note": "Independent PR36 reviewer observations at https://github.com/hostingpal/whm-api-client/pull/36#pullrequestreview-5719192482, reviewed revision ed1e68c44acc8b97133892f0ce7d068d5db11fab, report cPanel 11.138.0.19 returning required_score arrays containing numeric strings 5.1, 6 and 5.0 through both direct-uapi and bridged-uapi for get_user_preferences and update_user_preference. Successful writes then failed the list<number> payload contract. Apply the existing number accept:numeric-string and preserve:true rule only to required_score items on both operations, retaining JSON integers/floats, optional presence and empty lists while rejecting nondecimal strings, booleans, null and containers. Preserve strings without numeric conversion. These observations are reviewer evidence, separate from the committed read-only and BoxTrapper artifacts; those earlier captures do not establish this mutation coverage. Precision and formatting boundary fixtures are synthetic, not additional live observations."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1SpamAssassin~1update_user_preference/get/parameters/1",
+          "note": "Pinned parameter description and multiple example establish value-0/value-1 with zero-based indices. Preserve unsuffixed scalar input and use the indexed spelling for every nonempty string list, including a singleton. Reject empty lists before dispatch; null retains optional omission only where already allowed."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent PR76 reviewer report https://github.com/hostingpal/whm-api-client/pull/76#pullrequestreview-5722987368, reviewed revision ec0796271da96827835bb26d8fb38091cb882e94, on a disposable wrvidx account with a second parked domain through direct UAPI and the WHM bridge. A three-value list retained order and a duplicate; singleton-list and scalar forms stored one value. Omitting value deleted the selected preference. Empty lists, sparse lists and integer items raised InvalidArgumentException before dispatch. These observations do not establish mail filtering or delivery behavior. The reviewer reports token revocation and confirmed account, home directory and zone cleanup. This is review-attributed evidence, not a new committed capture or local live run."
         }
       ],
       "response": {
@@ -253,6 +271,19 @@
               "note": "Independent PR36 reviewer observations at https://github.com/hostingpal/whm-api-client/pull/36#pullrequestreview-5719192482, reviewed revision ed1e68c44acc8b97133892f0ce7d068d5db11fab, report cPanel 11.138.0.19 returning required_score arrays containing numeric strings 5.1, 6 and 5.0 through both direct-uapi and bridged-uapi for get_user_preferences and update_user_preference. Successful writes then failed the list<number> payload contract. Apply the existing number accept:numeric-string and preserve:true rule only to required_score items on both operations, retaining JSON integers/floats, optional presence and empty lists while rejecting nondecimal strings, booleans, null and containers. Preserve strings without numeric conversion. These observations are reviewer evidence, separate from the committed read-only and BoxTrapper artifacts; those earlier captures do not establish this mutation coverage. Precision and formatting boundary fixtures are synthetic, not additional live observations."
             }
           ]
+        }
+      },
+      "params": {
+        "value": {
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "value",
+            "separator": "-",
+            "start": 0
+          }
         }
       }
     }

@@ -30,11 +30,14 @@ use LogicException;
  * (one per generated operation), and a defective spec is rechecked and rejected on
  * every call.
  *
+ * @phpstan-import-type CollectionSpec from CollectionEncoder
  * @internal
  */
 final class SpecChecker
 {
-    private const ENCODINGS = ['scalar', 'bool', 'repeat', 'numbered', 'suffix-numbered', 'suffix-numbered-scalar'];
+    private const ENCODINGS = [
+        'scalar', 'bool', 'repeat', 'numbered', 'suffix-numbered', 'suffix-numbered-scalar', 'collection',
+    ];
 
     /** Accepted wire variants per type; types not listed accept none. */
     private const ACCEPT = [
@@ -137,7 +140,6 @@ final class SpecChecker
             }
         }
 
-
         if (!array_key_exists('returns', $spec)) {
             throw new LogicException('Operation spec is missing "returns".');
         }
@@ -189,6 +191,13 @@ final class SpecChecker
                 throw new LogicException('Invalid parameter spec for ' . $name . '.');
             }
 
+            $declared = ['name' => $wire, 'encoding' => $param['encoding']];
+            if ($param['encoding'] === 'collection') {
+                $declared['collection'] = CollectionEncoder::check($param['collection'] ?? null);
+            } elseif (array_key_exists('collection', $param)) {
+                throw new LogicException('Collection metadata requires collection encoding.');
+            }
+
             if (
                 array_key_exists('omit_empty', $param)
                 && ($param['omit_empty'] !== true || $param['encoding'] !== 'repeat')
@@ -218,17 +227,81 @@ final class SpecChecker
             ) {
                 throw new LogicException('Reserved wire name in the parameter specs.');
             }
-            foreach ($wires as $other => $encoding) {
+            foreach ($wires as $other => $otherParam) {
                 if (
-                    self::overlaps($wire, $param['encoding'], (string) $other, $encoding)
-                    || self::overlaps((string) $other, $encoding, $wire, $param['encoding'])
+                    self::overlaps($wire, $param['encoding'], (string) $other, $otherParam['encoding'])
+                    || self::overlaps((string) $other, $otherParam['encoding'], $wire, $param['encoding'])
+                    || self::collectionOverlaps($declared, $otherParam)
+                    || self::collectionOverlaps($otherParam, $declared)
                 ) {
                     throw new LogicException('Overlapping wire names in the parameter specs.');
                 }
             }
 
-            $wires[$wire] = $param['encoding'];
+            $wires[$wire] = $declared;
         }
+    }
+
+    /**
+     * Extend declared-family lint to collection descriptors without changing legacy rules.
+     *
+     * @param array{name: string, encoding: string, collection?: CollectionSpec} $param
+     * @param array{name: string, encoding: string, collection?: CollectionSpec} $other
+     */
+    private static function collectionOverlaps(array $param, array $other): bool
+    {
+        if ($param['encoding'] !== 'collection' && $other['encoding'] !== 'collection') {
+            return false;
+        }
+        $family = self::indexedFamily($param);
+        if ($family === null) {
+            return false;
+        }
+        [$base, $start] = $family;
+        if (self::indexContains($base, $start, $other['name'])) {
+            return true;
+        }
+        $otherFamily = self::indexedFamily($other);
+        if ($otherFamily === null) {
+            return false;
+        }
+        [$otherBase] = $otherFamily;
+
+        return $base === $otherBase || self::indexContains($base, 0, $otherBase . '1')
+            || self::indexContains($otherBase, 0, $base . '1');
+    }
+
+    /** @param array{name: string, encoding: string, collection?: CollectionSpec} $param
+     * @return array{string, int}|null
+     */
+    private static function indexedFamily(array $param): ?array
+    {
+        if (
+            $param['encoding'] === 'collection'
+            && isset($param['collection'])
+            && $param['collection']['kind'] === 'indexed'
+        ) {
+            return [$param['collection']['prefix'] . $param['collection']['separator'], $param['collection']['start']];
+        }
+        if ($param['encoding'] === 'numbered') {
+            return [$param['name'] . '-', 1];
+        }
+        if (in_array($param['encoding'], ['suffix-numbered', 'suffix-numbered-scalar'], true)) {
+            return [substr($param['name'], 0, -1), 1];
+        }
+
+        return null;
+    }
+
+    private static function indexContains(string $base, int $start, string $name): bool
+    {
+        if (!str_starts_with($name, $base)) {
+            return false;
+        }
+        $suffix = substr($name, strlen($base));
+
+        // Overflow saturates at PHP_INT_MAX, which is above every allowed start.
+        return preg_match('/^(0|[1-9][0-9]*)$/D', $suffix) === 1 && (int) $suffix >= $start;
     }
 
     /** Check whether a declared family can emit another parameter's name or family prefix. */

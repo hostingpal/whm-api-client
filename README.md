@@ -438,8 +438,22 @@ DNSSEC requires the DNS role and retains each method's version and registrar
 requirements. Disabling DNSSEC destroys its keys and requires registrar record
 removal; the client provides no retry or rollback. Dynamic domain/key maps retain
 their returned keys, optional fields and per-domain results separately from the
-API envelope. Single-domain calls use the documented `domain` argument; the
-`domain-0`/`domain-1` family remains tracked under `8x0.1.21`.
+API envelope. `enableDnssec()`, `disableDnssec()` and `fetchDsRecords()` accept
+`domain` as a string or a nonempty sequential string list. Scalars retain `domain`;
+arrays always use zero-based `domain-0`/`domain-1`, including singleton arrays.
+Other DNSSEC methods retain their existing arguments. Remaining indexed families
+and source contradictions stay under `8x0.1.21`. The separate
+[2026-10-31 singleton-list capture](docs/api/evidence/2026-10-31-dnssec-indexed-input.json)
+at `5e0ea6b` on `11.138.0.19` passes three GETs and strict assessment with zero
+discrepancies. It confirms DS singleton-list acceptance on both routes; domain
+detail objects are empty, and this capture changed no DNS, key, registrar or
+preference state. Separately, [review 5722987368](https://github.com/hostingpal/whm-api-client/pull/76#pullrequestreview-5722987368) of
+`ec0796271da96827835bb26d8fb38091cb882e94` on `11.138.0.19` reports direct and
+bridged multi-domain enable/fetch/disable, populated DS `keys` and `digests`,
+scalar/singleton fetch, an empty re-read after disable, and an unknown-domain
+`ApiErrorException` without a partial result. These are reviewer observations
+under `8x0.2.26`, distinct from the immutable singleton capture; DNS propagation,
+resolver validation and remaining variants are not established.
 Omitting `keySetup` retains `classic` even with `algoNum: 13`; choose `simple`
 explicitly for the documented combined-key setup above algorithm 8. Key removal
 is irreversible and can break validation while registrar DS records reference it.
@@ -985,10 +999,18 @@ custom keys. Custom values have no general pinned type and remain opaque in
 both reads and updates, which return the complete preference object.
 `required_score` lists accept integers, floats and observed numeric strings;
 strings retain their exact precision and formatting. `updateUserPreference()` accepts
-one scalar `value`; omission removes settings, while empty string and string `0`
-remain explicit values. The documented `value-0`/`value-1` multi-value family is
-not yet represented by the typed signature (`whm-api-client-8x0.1.20`). `clearSpamBox()` deletes all Spam Box
-contents across the selected account and has no individual-mailbox selector.
+a string or nonempty sequential string list for `value`. Scalars retain `value`;
+arrays use zero-based `value-0`/`value-1`, including singleton arrays. Omission or
+null removes settings; `[]` is rejected before HTTP. Empty strings, string `0`,
+order and duplicates remain exact. One preference is updated per call.
+[review 5722987368](https://github.com/hostingpal/whm-api-client/pull/76#pullrequestreview-5722987368) of `ec0796271da96827835bb26d8fb38091cb882e94`
+on `11.138.0.19` observed three ordered values including a duplicate, singleton
+and scalar values, and deletion with `value` omitted through direct UAPI and the
+WHM bridge. It also observed `[]`, sparse lists and integer items rejected before
+dispatch. These cases are recorded under `8x0.2.23.1`; they do not waive the
+historical failed `required_score` removal capture or establish mail filtering.
+`clearSpamBox()` deletes all Spam Box contents across the selected account and
+has no individual-mailbox selector.
 
 Greylisting selected-domain methods send repeated plural `domains` keys, following
 the declared parameter and prose despite singular examples. Status flags remain
@@ -1797,7 +1819,13 @@ JSON personalization calls remain under `8x0.1.18`. Conversion initiation and
 bulk modification remain excluded under `8x0.1.29`: their keyed database-copy and
 MX fields need explicit support. Omitting conversion copy fields copies no MySQL
 databases; the client does not silently drop them. Conversion status supports
-one integer job ID; contradictory indexed examples remain in `8x0.1.21`.
+one integer job ID. The pinned examples disagree about the first suffix, but
+[review 5722427592](https://github.com/hostingpal/whm-api-client/pull/72#pullrequestreview-5722427592)
+reports `_parse_job_ids` accepting `job_id` or numeric `job_id-N`, including zero-
+and one-based suffixes, on `11.138.0.19`. This source inspection lifts that
+numbering ambiguity for the reviewed handler/version; list adoption still needs
+an explicit pattern and integer input policy under `8x0.1.21`. It establishes
+neither a general arbitrary-pattern contract nor live conversion-list behavior.
 
 `getMaximumUsers()` preserves the pinned optional `users` integer and the
 separately observed optional `maximum_users`, normalizing bounded canonical

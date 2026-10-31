@@ -78,6 +78,19 @@ type Note struct {
 // NoteKinds maps each note kind to the label that starts its docblock line.
 var NoteKinds = map[string]string{"documented": "Documented", "observed": "Observed", "policy": "Policy"}
 
+// Collection declares strict ordinary-list input independently of legacy markers.
+// Indexed names are literal Prefix + Separator + (Start + PHP position).
+// Empty lists always reject; optional top-level null still omits the parameter.
+type Collection struct {
+	Kind        string  `json:"kind"`
+	ItemType    string  `json:"item_type"`
+	AllowScalar *bool   `json:"allow_scalar"`
+	Empty       string  `json:"empty"`
+	Prefix      *string `json:"prefix,omitempty"`
+	Separator   *string `json:"separator,omitempty"`
+	Start       *int    `json:"start,omitempty"`
+}
+
 // Param renames, re-encodes or omits one documented parameter, keyed by wire
 // name. Omitted parameters (aliases, wildcard patterns such as MXCHECK-*) stay
 // reachable through call() and are left out of the generated signature. EnumDoc
@@ -92,15 +105,16 @@ var NoteKinds = map[string]string{"documented": "Documented", "observed": "Obser
 // public PHP name or source-based order. All corrections require operation evidence
 // and cannot target omitted inputs.
 type Param struct {
-	Wire        string `json:"wire,omitempty"`
-	Type        string `json:"type,omitempty"`
-	Description string `json:"description,omitempty"`
-	PHP         string `json:"php,omitempty"`
-	Required    *bool  `json:"required,omitempty"`
-	EnumDoc     *bool  `json:"enum_doc,omitempty"`
-	Encoding    string `json:"encoding,omitempty"`
-	Sensitive   *bool  `json:"sensitive,omitempty"`
-	Omit        bool   `json:"omit,omitempty"`
+	Collection  *Collection `json:"collection,omitempty"`
+	Wire        string      `json:"wire,omitempty"`
+	Type        string      `json:"type,omitempty"`
+	Description string      `json:"description,omitempty"`
+	PHP         string      `json:"php,omitempty"`
+	Required    *bool       `json:"required,omitempty"`
+	EnumDoc     *bool       `json:"enum_doc,omitempty"`
+	Encoding    string      `json:"encoding,omitempty"`
+	Sensitive   *bool       `json:"sensitive,omitempty"`
+	Omit        bool        `json:"omit,omitempty"`
 	// OmitEmpty explicitly omits [] on optional repeated string-list inputs.
 	OmitEmpty *bool `json:"omit_empty,omitempty"`
 	// RejectEmpty requires an explicit nonblank, nonzero target.
@@ -141,11 +155,15 @@ type Exclusion struct {
 
 // Evidence binds a decision to documentation or a live observation.
 type Evidence struct {
-	Kind        string `json:"kind"`
-	Version     string `json:"version"`
-	Date        string `json:"date"`
-	Note        string `json:"note"`
-	Fingerprint string `json:"fingerprint,omitempty"`
+	// Only collection overrides require structured parameter provenance. Existing
+	// evidence keeps its original contract and needs no provenance migration.
+	SourceSHA256 string `json:"source_sha256,omitempty"`
+	Pointer      string `json:"pointer,omitempty"`
+	Kind         string `json:"kind"`
+	Version      string `json:"version"`
+	Date         string `json:"date"`
+	Note         string `json:"note"`
+	Fingerprint  string `json:"fingerprint,omitempty"`
 }
 
 // Set is a loaded overlay directory.

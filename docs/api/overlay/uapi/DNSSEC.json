@@ -176,11 +176,15 @@
         },
         {
           "kind": "documented",
-          "text": "This interface accepts one domain string. The pinned prose also documents domain-0/domain-1/domain-2, but that zero-based family is not exposed by this signature; no list encoding or delimiter is inferred."
+          "text": "Accepts one domain string or a nonempty sequential string list. Scalars use domain; lists use domain-0/domain-1 starting at zero, including a singleton list. Empty, sparse, associative and non-string lists fail before dispatch. Scoped live cases are recorded separately in the observed note."
         },
         {
           "kind": "documented",
           "text": "Disabling DNSSEC is irreversible and loses associated keys; the previous state can only be retrieved from a full backup. Remove the DNS/DS records at the registrar when disabling DNSSEC. The disabled map reports an integer 0/1 result for each domain, independent of envelope success."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, disabling two domains in one call succeeded through direct UAPI and the WHM bridge; a subsequent fetch returned no keys for either domain. Rejection of an empty string within a domain list remains unobserved, and this result establishes no atomicity guarantee."
         }
       ],
       "evidence": [
@@ -189,6 +193,20 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /DNSSEC/disable_dnssec declares x-readonly=false; use POST. The source snapshot's decompressed SHA-256 is 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DNSSEC~1disable_dnssec/get/parameters/0",
+          "note": "Pinned parameter description and multiple example establish domain-0/domain-1 with zero-based indices. Preserve unsuffixed scalar input and use the indexed spelling for every nonempty string list, including a singleton. Reject empty lists before dispatch; null retains optional omission only where already allowed. The copied note says enable DNSSEC; this is an upstream wording error, not live batch evidence."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent PR76 reviewer report https://github.com/hostingpal/whm-api-client/pull/76#pullrequestreview-5722987368, reviewed revision ec0796271da96827835bb26d8fb38091cb882e94, on a disposable wrvidx account with a second parked domain through direct UAPI and the WHM bridge. Multi-domain disableDnssec disabled both disposable-account domains, and a subsequent fetch was empty. The empty-string list-item case was not run; source prevalidation is not runtime or atomicity proof. The reviewer reports token revocation and confirmed account, home directory and zone cleanup. This is review-attributed evidence, not a new committed capture or local live run."
         }
       ],
       "response": {
@@ -208,6 +226,19 @@
             }
           ]
         }
+      },
+      "params": {
+        "domain": {
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "domain",
+            "separator": "-",
+            "start": 0
+          }
+        }
       }
     },
     "uapi:DNSSEC/enable_dnssec": {
@@ -222,7 +253,7 @@
         },
         {
           "kind": "documented",
-          "text": "This interface accepts one domain string. The pinned prose also documents domain-0/domain-1/domain-2, but that zero-based family is not exposed by this signature; no list encoding or delimiter is inferred."
+          "text": "Accepts one domain string or a nonempty sequential string list. Scalars use domain; lists use domain-0/domain-1 starting at zero, including a singleton list. Empty, sparse, associative and non-string lists fail before dispatch. Scoped live cases are recorded separately in the observed note."
         },
         {
           "kind": "documented",
@@ -239,6 +270,10 @@
         {
           "kind": "documented",
           "text": "The enabled map is keyed by domain and preserves optional enabled, new_key_id and nsec_version. Its per-domain flag is distinct from envelope success. Only new_key_id also accepts a lossless canonical integer string, as the pinned example quotes it; it normalizes to int. Other integer contracts are unchanged."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, enabling two domains in one call succeeded through direct UAPI and the WHM bridge. API success does not establish DNS propagation or registrar configuration."
         }
       ],
       "evidence": [
@@ -277,6 +312,20 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /DNSSEC/enable_dnssec parameter use_nsec3 is a 0/1 integer switch. Expose it as bool and encode true as 1 and false as 0; omitted optional switches retain their server defaults."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DNSSEC~1enable_dnssec/get/parameters/0",
+          "note": "Pinned parameter description and multiple example establish domain-0/domain-1 with zero-based indices. Preserve unsuffixed scalar input and use the indexed spelling for every nonempty string list, including a singleton. Reject empty lists before dispatch; null retains optional omission only where already allowed."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent PR76 reviewer report https://github.com/hostingpal/whm-api-client/pull/76#pullrequestreview-5722987368, reviewed revision ec0796271da96827835bb26d8fb38091cb882e94, on a disposable wrvidx account with a second parked domain through direct UAPI and the WHM bridge. Multi-domain enableDnssec enabled both disposable-account domains. The reviewer reports token revocation and confirmed account, home directory and zone cleanup. This is review-attributed evidence, not a new committed capture or local live run."
         }
       ],
       "params": {
@@ -294,6 +343,17 @@
         },
         "use_nsec3": {
           "encoding": "bool"
+        },
+        "domain": {
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "domain",
+            "separator": "-",
+            "start": 0
+          }
         }
       },
       "response": {
@@ -469,7 +529,7 @@
         },
         {
           "kind": "documented",
-          "text": "This interface accepts one domain string. The pinned prose also documents domain-0/domain-1/domain-2, but that zero-based family is not exposed by this signature; no list encoding or delimiter is inferred."
+          "text": "Accepts one domain string or a nonempty sequential string list. Scalars use domain; lists use domain-0/domain-1 starting at zero, including a singleton list. Empty, sparse, associative and non-string lists fail before dispatch. Scoped live cases are recorded separately in the observed note."
         },
         {
           "kind": "documented",
@@ -482,6 +542,10 @@
         {
           "kind": "observed",
           "text": "Reviewer observations on enabled zones through direct UAPI and the WHM bridge confirmed digit strings for created, nsec3_hash_algo_num, nsec3_iterations and nsec3_opt_out, and additionally found digit strings in keys[].digests[].algo_num. The digest algorithm now accepts canonical decimal integer strings within PHP integer range and normalizes to int. nsec3_narrow remained an integer. These observations are separate from the committed empty-zone capture."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, direct UAPI and WHM bridge calls with multiple domains, a singleton list or a scalar returned populated keys and digests. Including an unknown domain raised ApiErrorException without a partial result. These reads do not establish DNS trust or resolver validation."
         }
       ],
       "evidence": [
@@ -496,6 +560,20 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /DNSSEC/fetch_ds_records declares x-readonly=true; use GET. The source snapshot's decompressed SHA-256 is 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DNSSEC~1fetch_ds_records/get/parameters/0",
+          "note": "Pinned parameter description and multiple example establish domain-0/domain-1 with zero-based indices. Preserve unsuffixed scalar input and use the indexed spelling for every nonempty string list, including a singleton. Reject empty lists before dispatch; null retains optional omission only where already allowed. The copied note says enable DNSSEC; this is an upstream wording error, not live batch evidence."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent PR76 reviewer report https://github.com/hostingpal/whm-api-client/pull/76#pullrequestreview-5722987368, reviewed revision ec0796271da96827835bb26d8fb38091cb882e94, on a disposable wrvidx account with a second parked domain through direct UAPI and the WHM bridge. Multi-domain, singleton-list and scalar fetchDsRecords passed with populated keys and digests. A fetch including an unknown domain raised ApiErrorException without a partial result. The reviewer reports token revocation and confirmed account, home directory and zone cleanup. This is review-attributed evidence, not a new committed capture or local live run."
         }
       ],
       "response": {
@@ -624,6 +702,19 @@
               "note": "Reviewer lifecycle observations at https://github.com/hostingpal/whm-api-client/pull/39#pullrequestreview-5720009405 against revision 476d418a0c9bf9781208af9ed1f885bb3d29f4d6 on npr.rs through direct UAPI and the WHM bridge. Actual fetch_ds_records method GET observed the schema-correct sibling nsec_details and digit strings at nsec_details.nsec3_iterations, nsec3_opt_out, nsec3_hash_algo_num, keys[].created and keys[].digests[].algo_num. Preserve the existing example-backed normalizations and add canonical in-range integer-string acceptance only for digest algo_num; no source enum or minimum is newly enforced. nsec3_opt_out remains exact 0/1 and nsec3_narrow remains strict integer 0/1. Preserve every field, optional presence and null rejection. The server version is not recorded in the review. Reviewer-reported runtime evidence is separate from the committed five-GET capture, which observed no enabled DNSSEC zone. No private key, digest or other live payload values are persisted here."
             }
           ]
+        }
+      },
+      "params": {
+        "domain": {
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "domain",
+            "separator": "-",
+            "start": 0
+          }
         }
       }
     },
