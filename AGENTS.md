@@ -1287,6 +1287,14 @@ development-tool choice, not a runtime dependency of the PHP package. Preserve p
 refresh them explicitly; routine checks must remain offline. The tool design
 is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
 
+
+The corrected WHM mail-management capture at 437c951 on11.138.0.19 passes all
+eight GET observations and strict assessment with zero discrepancies. Only
+get_user_email_forward_destination.forward_to additionally preserves literal empty
+string alongside list<string>, without assigning meaning or accepting null/other
+strings. Inventories are empty and no mail mutation/delivery/key/queue inspection
+ran. Initial e023749 evidence remains failed and immutable;8x0.2.48 stays open.
+
 ## Architecture and Conventions
 
 - Follow the [agreed PHP client interface](docs/superpowers/specs/2026-10-13-php-client-design.md):

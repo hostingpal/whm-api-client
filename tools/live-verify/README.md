@@ -1340,3 +1340,10 @@ selectors are fixed to npr/npr.rs. Existing committed-input, exact request guard
 opt-in, verified TLS and new-only structural output rules apply. No messages,
 queue contents, keys or mobileconfig are read; no mail is delivered and no state
 changes. Follow-up `8x0.2.48` retains unobserved behavior and variants.
+
+The corrected WHM mail-management capture at 437c951 on11.138.0.19 passes all
+eight GET observations and strict assessment with zero discrepancies. Only
+get_user_email_forward_destination.forward_to additionally preserves literal empty
+string alongside list<string>, without assigning meaning or accepting null/other
+strings. Inventories are empty and no mail mutation/delivery/key/queue inspection
+ran. Initial e023749 evidence remains failed and immutable;8x0.2.48 stays open.

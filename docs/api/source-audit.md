@@ -4276,3 +4276,25 @@ inventories, owned mailbox names and forwarding destinations for designated
 and sends no messages or mutations. These reads establish no mail delivery,
 filtering enforcement, TLS serving or key-installation behavior.
 Remaining live work stays under `8x0.2.48`.
+
+## WHM mail-management read evidence
+
+The initial [WHM mail-management capture](evidence/2026-10-31-whm-mail-management.json)
+at `e0237496016fa8546c3cbd310e302b654c9a9396` on `11.138.0.19` records eight
+HTTP/API successes and seven payload/probe passes. Only forward_to differs:
+get_user_email_forward_destination returns literal empty string alongside the
+pinned list-of-strings contract. The correction preserves that exact literal,
+without inferring its meaning or accepting other strings/null. The failed original
+artifact is immutable. Its SHA-256 is
+`3b990bd9f1bb37f7e823cf8c36acc7f0d2f6a8a346213bb272d13a55abc4bcc5`.
+
+The [corrected capture](evidence/2026-10-31-whm-mail-management-corrected.json)
+at `437c951` on `11.138.0.19` passes all eight HTTP/API/payload/probe checks
+and strict assessment with zero discrepancies. Blocked-country/domain and mailbox
+lists are empty; they establish no populated rows. Default DMARC, SNI and the
+literal forward destination are read-only API observations, not evidence of DNS,
+mail routing, TLS negotiation or message delivery. No keys, message content,
+queue content or mail configuration were changed or read beyond the fixed catalog.
+All 31 new form POST methods and remaining read variants stay under `8x0.2.48`.
+Corrected SHA-256:
+`f2f0f37ec2fb441a2949728c84cf68d0f9dd2141672bf584e06a88cd500ed6c2`.
