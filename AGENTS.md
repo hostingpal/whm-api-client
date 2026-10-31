@@ -1329,3 +1329,11 @@ service status and dashboard hostname. Optional selectors are omitted. It reads
 no credentials, linked-node secrets, arbitrary configuration values or sockets,
 and sends no notification, URL probe or mutation. Follow-up `8x0.2.38` retains
 unobserved variants and operational behavior.
+
+The corrected expanded WHM server capture at `742eaa8` on `11.138.0.19` passes
+all eight HTTP/API/payload/probe checks. Ten evidenced integer leaves accept
+canonical integer strings losslessly; siblings remain unchanged. Strict status
+still fails for two masked unknown-field observations in installed versions and
+service rows. They remain untyped and unwaived; no key identity/count is inferred.
+No mutation or private configuration read ran. Historical artifacts remain
+immutable and `8x0.2.38` retains remaining live coverage and unknown findings.

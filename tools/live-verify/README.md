@@ -1174,3 +1174,11 @@ inventory is requested. No EULA, purchase, reboot/restart, update, activation,
 node-link, configuration, notification or URL-verification operation runs.
 Successful inventory does not establish service health, completion or remote
 connectivity. Remaining source/live variants stay under `8x0.2.38`.
+
+The corrected expanded WHM server capture at `742eaa8` on `11.138.0.19` passes
+all eight HTTP/API/payload/probe checks. Ten evidenced integer leaves accept
+canonical integer strings losslessly; siblings remain unchanged. Strict status
+still fails for two masked unknown-field observations in installed versions and
+service rows. They remain untyped and unwaived; no key identity/count is inferred.
+No mutation or private configuration read ran. Historical artifacts remain
+immutable and `8x0.2.38` retains remaining live coverage and unknown findings.

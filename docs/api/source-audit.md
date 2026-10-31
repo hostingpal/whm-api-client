@@ -3578,3 +3578,17 @@ populated. No configuration, credential, service, profile, license, notification
 or node operation changed anything, and no secret-bearing read was selected.
 The initial capture remains failed and immutable. SHA-256:
 `69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296`.
+
+The [corrected expanded server capture](evidence/2026-10-31-whm-server-administration-corrected.json)
+at `742eaa8419eca4c9021ff0cc87ff6504a08e477e` on `11.138.0.19` passes all eight
+HTTP/API/payload/probe checks. The ten integer-leaf corrections now pass. Strict
+assessment remains failed for the same two masked unknown-field observations in
+installed versions and service rows, with zero acknowledgments and no new typed
+unknown fields. Masking identifies neither underlying names nor field counts.
+
+All original observations and artifacts remain unchanged. These reads establish
+only the selected inventory and policy responses, not service health, completed
+updates, profile activation, licensing, node connectivity or notification delivery.
+No mutation, credential read or URL request ran. Follow-up `8x0.2.38` retains the
+unknown findings and unobserved variants. Corrected SHA-256:
+`db24e53879fff4754369b984969640b51ea483713ad71c735d6d1bb1be88f6b8`.
