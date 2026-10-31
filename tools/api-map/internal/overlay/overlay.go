@@ -81,10 +81,14 @@ var NoteKinds = map[string]string{"documented": "Documented", "observed": "Obser
 // reachable through call() and are left out of the generated signature. EnumDoc
 // false suppresses only the literal enum PHPDoc, without changing native types or
 // encoding, and needs evidence. An absent or true value preserves enum PHPDoc.
-// Type permits only the reviewed string|int widening of a scalar string input;
+// Type permits reviewed string|int widening of scalar string/integer inputs, or
+// string|int|float widening of scalar number inputs to preserve exact strings.
 // Description replaces the parameter text without truncating later sentences.
-// Both corrections require operation evidence and cannot target omitted inputs.
+// Wire corrects a simple scalar parameter name on the wire without changing its
+// public PHP name or source-based order. All corrections require operation evidence
+// and cannot target omitted inputs.
 type Param struct {
+	Wire        string `json:"wire,omitempty"`
 	Type        string `json:"type,omitempty"`
 	Description string `json:"description,omitempty"`
 	PHP         string `json:"php,omitempty"`

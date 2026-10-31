@@ -13,7 +13,13 @@ namespace HostingPal\WhmApiClient\Api\Whm;
  */
 trait WhmGroups
 {
+    private ?AccountRestoration $accountRestorationGroup = null;
+
     private ?Accounts $accountsGroup = null;
+
+    private ?Backups $backupsGroup = null;
+
+    private ?Databases $databasesGroup = null;
 
     private ?Dns $dnsGroup = null;
 
@@ -26,6 +32,16 @@ trait WhmGroups
     private ?WebServer $webServerGroup = null;
 
     /**
+     * Select the Account Restoration operations without making a request.
+     *
+     * WHM API 1 functions in the documented Account Restoration group.
+     */
+    public function accountRestoration(): AccountRestoration
+    {
+        return $this->accountRestorationGroup ??= new AccountRestoration($this->run(...));
+    }
+
+    /**
      * Select the Accounts operations without making a request.
      *
      * WHM API 1 functions in the documented Accounts group.
@@ -33,6 +49,26 @@ trait WhmGroups
     public function accounts(): Accounts
     {
         return $this->accountsGroup ??= new Accounts($this->run(...));
+    }
+
+    /**
+     * Select the Backups operations without making a request.
+     *
+     * WHM API 1 functions in the documented Backups group.
+     */
+    public function backups(): Backups
+    {
+        return $this->backupsGroup ??= new Backups($this->run(...));
+    }
+
+    /**
+     * Select the Databases operations without making a request.
+     *
+     * WHM API 1 functions in the documented Databases group.
+     */
+    public function databases(): Databases
+    {
+        return $this->databasesGroup ??= new Databases($this->run(...));
     }
 
     /**
@@ -59,8 +95,10 @@ trait WhmGroups
      * Select the Web Server Security (ModSecurity) operations without making a request.
      *
      * Server-scoped ModSecurity configuration, staged rules, vendor lifecycle and diagnostics. Requires the Web Server
-     * role. Payload rule text, logs, configuration and settings may contain sensitive data. Deployment may restart
-     * Apache; API outcomes and per-item results remain distinct.
+     * role. Deployment may restart Apache; API outcomes and per-item results remain distinct. Safety guidance: treat
+     * returned rule text, configuration, settings and logs as sensitive. Configuration text may contain secrets; logs
+     * can include request data, IP addresses and sensitive transaction fragments. Avoid logging these payloads. The
+     * cPanel 11.138.0.19 review exercised GET reads only; all thirty form POST operations remain unobserved.
      */
     public function modSecurity(): ModSecurity
     {

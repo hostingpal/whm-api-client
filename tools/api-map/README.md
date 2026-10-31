@@ -98,10 +98,24 @@ Operation entries (all keys optional):
   suppresses only the PHPDoc literal enum in favor of the existing native type;
   absent or true keeps the pinned enum. It changes neither encoding nor native
   parameter types and does not resolve disputed upstream values.
-  `type: "string|int"` is the only input type correction: it widens a documented
-  scalar string parameter with matching scalar encoding, for typed identifier
-  interoperability. It cannot target omitted, boolean, repeated or composite
-  inputs. `description` replaces the complete parameter text with a nonblank
+  `wire` corrects one scalar string, integer or number parameter's transmitted
+  name with operation-level evidence. Both names must be simple ASCII identifiers
+  (`[A-Za-z_][A-Za-z0-9_]*`), excluding routing fields (`api.version`, `cpanel.*`),
+  indexed names and wildcard families. Omitted, boolean, repeated and composite
+  inputs cannot use it, and duplicate final wire names fail generation. Overlay
+  keys and `order` still use the pinned source name; the public PHP name, type,
+  requiredness and sensitivity retain their existing rules.
+  `type: "string|int"` widens a documented scalar string or integer parameter
+  with matching scalar encoding, for reviewed identifier variants or
+  comma-delimited values. `type: "string|int|float"` applies only to a documented
+  scalar number parameter whose native type is `int|float`; it adds exact string
+  input while retaining both numeric types. This permits passing a version such
+  as `"10.10"` from discovery without losing its trailing zero. Strings are
+  forwarded unchanged; the override does not validate version syntax or repair
+  precision already lost in a caller's float conversion. Unselected number
+  parameters retain `int|float`. Neither override can target omitted,
+  boolean/flag, repeated or composite inputs. `description` replaces the
+  complete parameter text with a nonblank
   reviewed description, preserving later sentences. Both settings require
   operation-level evidence; requiredness, sensitivity and optional null omission
   retain their existing rules.
@@ -122,7 +136,7 @@ Operation entries (all keys optional):
 - `evidence`: operation-level evidence, required when the entry sets `variant`, `method`,
   `outcome`, `void` or `optional_payload`, changes a parameter `required` setting,
   suppresses its enum documentation (`enum_doc: false`), sets a parameter `encoding` (it
-  changes the wire request), corrects a parameter `type` or `description`, or marks
+  changes the wire request), corrects a parameter `wire`, `type` or `description`, or marks
   a parameter `"sensitive": false`.
 - `notes`: docblock lines, each `{"kind", "text"}`. Kind `documented` restates
   the pinned documentation and renders as "Documented:"; kind `observed` records

@@ -395,6 +395,218 @@ changed, and no returned URL was fetched. No contract was broadened from an API
 failure, and no repeated capture was run merely to seek a passing status. SHA-256:
 `48b5b71e8feb9107310383e50f311f39d99301a3fb57c4179a00d12c97e44a64`.
 
+## Account environment and preferences
+
+The initial [account-environment capture](2026-10-31-account-environment.json)
+at `e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6` on `11.138.0.19` records 27 HTTP
+200 GETs: twenty API/payload/probe passes, four payload mismatches, two API failures
+and one bridge request failure. Its 83 discrepancies comprise 78 type mismatches
+and five masked unknown-field entries. Thirty-two server flags and six server
+integer quantities arrive as numeric strings on both routes; the bridge session
+host is null; direct EA4 recommendation URLs include booleans alongside strings.
+These observations support only those field corrections. The unknown preference,
+recommendation and server fields remain untyped and unwaived. Both PHP-recommendation
+reads fail at the API; the other EA4 bridge response has `data.uapi: null`, so no
+UAPI payload is available. The capture establishes no cause for these failures.
+
+The domain-selected user requests return only `domain`; other user fields, including
+`pushbullet_access_token`, are absent. Locale, theme, preference and server-information
+rows are populated; the enhancement list is empty. This read-only capture establishes
+no contact, locale, theme, preference or token mutation behavior. Follow-up `8x0.2.28`
+retains all failures, unknown fields and unobserved variants. Original SHA-256:
+`e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd`.
+
+The [corrected account-environment capture](2026-10-31-account-environment-corrected.json)
+at `c85a39ef45f108bfef0264eb3a2e01c5167761a6` on `11.138.0.19` records 27 HTTP
+200 GETs. Twenty-four API/payload/probe checks pass, with no known-field type
+mismatches. Both PHP-recommendation API calls and the general recommendation
+bridge call still fail. Five masked unknown-field observations remain: notification
+preferences on both routes, direct general recommendations and server variables on
+both routes. Strict status remains failed with no waivers or acknowledgments.
+Eleven new functions pass on both routes; general recommendations pass directly.
+The enhancement list is empty and the user read is domain-only. No mutation,
+secret retrieval or broader user-field behavior is established. Follow-up `8x0.2.28`
+remains open. Original evidence is unchanged. Corrected SHA-256:
+`654442a1e360c28534c4b80c320ffdde2ca0d96ffdd87f8342fd1b6b47a3eb78`.
+
+## WHM backup and restoration
+
+The initial [backup/restoration capture](2026-10-31-backup-restoration.json)
+at `88e01bd54f1939e4937fd3673f2b174a6353e7ab` on `11.138.0.19` records eleven
+HTTP-200 and successful WHM API observations. Ten payload/probe checks pass;
+`backup_config_get` has three known-field type mismatches and one masked unknown-field observation with integer values. The getter's `backup_weekly_day` is an integer; its original string
+contract is retained alongside that observed variant. Only `check_min_free_space`
+and `prebackup` gain exact quoted-flag acceptance. No other configuration field
+is widened and the unknown field remains untyped and unwaived.
+
+Backup metadata users/domains, archive inventory and every queue collection are
+empty. Restoration module rows are populated. These reads establish no populated
+backup/queue rows, destination behavior, backup creation, restoration, migration,
+queue mutation or configuration-write semantics. All original findings remain in
+`8x0.2.29`; source contradictions are unresolved. Initial SHA-256:
+`4b788b00b69944d305473bd89004e6199914cf2b366ed90676b3313aac32daca`.
+
+The [corrected backup/restoration capture](2026-10-31-backup-restoration-corrected.json)
+at `a5b6e3a959185702d9e2146dc6323e0c69ec3cdf` on `11.138.0.19` records eleven
+HTTP/API successes and ten payload/probe passes. The weekday integer and
+`check_min_free_space` quoted flag now pass. `prebackup` still fails its strict
+0/1 contract: the artifact classifies it only as numeric-string, which does not
+establish its spelling or a valid flag value. The optional exact quoted-flag
+acceptance does not make this response compatible. No broader numeric coercion,
+new enum value or guessed sentinel is added. That capture also retains one masked unknown-field observation with integer
+values; wildcard masking establishes neither its name nor field count. Strict status stays failed with no acknowledgments.
+
+Both artifacts remain immutable. Empty inventories/queues establish no populated
+row schemas; the module summary is populated. No mutation, backup creation,
+restoration or configuration behavior is established. Follow-up `8x0.2.29` retains
+the historical `prebackup` mismatch, masked unknown-field observation and
+remaining source/live gaps. Corrected SHA-256:
+`f910fcd3377c881e07d496fd727bec622016bd8df33552cfe381552752acde47`.
+
+## Team and user management
+
+The initial [team/user-management capture](2026-10-31-team-user-management.json)
+at `5cae92f5ef3dfdb4ff9e83b8ab06be6d17867677` on `11.138.0.19` records nine HTTP
+200 observations. Version and both password-strength reads pass. Team counts and
+role descriptions fail at the API on both routes, as does the bridged user list;
+no cause is established. The direct user inventory succeeds at the API but has
+seven known null mismatches: `alternate_email`, `avatar_url`, `domain`,
+`invite_expiration`, `phone_number`, `real_name` and `services.ftp.quota`.
+These observations support nullability only at those list-row paths. One masked
+unknown-field observation with a null value remains untyped and unwaived. Strict assessment is failed.
+
+The direct inventory is populated; it establishes no successful bridge payload or
+team schema, and the team listing that includes password fields was not called.
+No user, service, role or password changed and no message was sent. Follow-up
+`8x0.2.30` retains API failures, the unknown field and unobserved operations/variants.
+Initial immutable SHA-256:
+`b0bbf85e9054d68f8a06eb984a63cdac76c81d9b9a2cf6cebb3e81c0d0c04116`.
+
+The [corrected team/user-management capture](2026-10-31-team-user-management-corrected.json)
+at `9922081314c6343fe65f9a6d978f354d0fde3c3c` on `11.138.0.19` records nine HTTP
+200 observations. Four API/payload/probe checks pass: version, direct subaccount
+inventory and both password-strength reads. The seven nullable field corrections
+pass directly with no remaining known-field mismatches. Team counts and role
+descriptions still fail on both routes, and the bridged user inventory still fails
+at the API. One masked unknown-field observation with null values remains in the
+direct inventory; masking establishes neither key identities nor counts.
+Strict status remains failed, without waivers or acknowledgments.
+
+This establishes populated direct inventory and password-policy reads only;
+no team listing, password retrieval, user mutation or message sending occurs.
+The original failed capture is unchanged. Follow-up `8x0.2.30` retains all API
+failures, unknown-field findings and unobserved variants. Corrected SHA-256:
+`3d16299d29f632b4874dd99c0e400f0301dd4a89d60a7a5ff60d49ab68d0a435`.
+
+## Security and access controls
+
+The initial [security/access capture](2026-10-31-security-access.json)
+at `91fce03c2cc0e24893d9c269b51a2c7d02644f0b` on `11.138.0.19` records 25 HTTP
+200 observations: ten API/payload/probe passes, eight successful-API payload
+mismatches and seven API failures. Both scan-path calls return lists of objects;
+the original root mismatch masks their field names. The list alternative uses
+the documented per-path `id`/`message` record and the source's available-paths prose,
+which is a source-based item interpretation, not proof of named live leaf fields.
+The formal object alternative remains supported. Both scan-status responses are
+explicit null, both SSH ports are numeric strings, and both last-login responses
+are scalar strings. Only those contract alternatives gain compatibility.
+
+Both ModSecurity methods fail on both routes, and all three external-authentication
+reads fail through the bridge. The capture itself establishes no cause, and no
+failure is waived. No scan,
+disinfection, security-setting change, unlink, host-key action or login occurs.
+Follow-up `8x0.2.31` retains these errors and every unobserved variant. The original
+capture remains failed and immutable. SHA-256:
+`4697e246b36b465efa814273d583d2c50c72d795352f3205eba0d983ac14ea77`.
+
+The corrected [security/access capture](2026-10-31-security-access-corrected.json)
+at `aee24c1081727cd66b8ef86aced5bd27d7e83375` on `11.138.0.19` records 25 HTTP
+200 observations: eighteen API/payload/probe passes and the same seven API
+failures. There are zero payload discrepancies. Scan-path lists now establish
+string `id` and `message` leaves on both routes; scan status remains null, SSH
+ports normalize canonical integer strings and last-login results remain scalar
+strings. No populated infected-file rows or enforcement behavior is established.
+Strict assessment remains failed for the API errors, without a waiver. The
+separate reviewer assessment is recorded in the source audit. No mutation ran.
+Both artifacts remain immutable and follow-up
+`8x0.2.31` retains the unobserved methods and variants. SHA-256:
+`6c0d5ace2ea0795b778c68f552bd2d0852ab8848fb26bc213823ce4916bb63a0`.
+
+## Account backup and restoration capture
+
+The immutable [account-backup capture](2026-10-31-account-backup-restoration.json)
+at `e7b4a42` on `11.138.0.19` records nine HTTP 200 observations. WHM version,
+Backup/list_backups and Restore/get_users on both routes pass API, payload and
+probe checks. Both inventories are empty; populated rows remain unobserved.
+WordPressBackup/any_running and WordPressRestore/any_running fail at the API layer
+on both routes. The sanitized evidence does not establish the cause, and no
+response contract is widened from those failures. There are zero payload
+discrepancies, while strict assessment remains failed for the four API errors.
+
+No backup or restore job, extraction, cleanup, cancellation, message or filesystem
+change ran in this capture. No POST method is represented by the artifact;
+reviewer lifecycle reports remain separate evidence. Follow-up `8x0.2.32` retains the unobserved operations,
+plugin availability and lifecycle behavior. No repeat capture was run merely to
+seek a passing status. SHA-256:
+`c06b329f50f2ebd16ae43d52a7be4afb8b37d0267956d2d557287113209956f3`.
+
+## WHM database administration capture
+
+The initial [WHM database capture](2026-10-31-whm-databases.json) at
+`e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e` on `11.138.0.19` records nine HTTP
+200 and successful-API observations: six payload/probe passes and three payload
+failures. Database optimizations return an object map under `payload`; the
+container mismatch masks its row field names. The compatible map alternative
+uses the same optional `name`, `reason` and `value` string fields as the pinned
+list schema. Those row names are source-based interpretation, not named live
+proof from this artifact. The original list alternative remains supported.
+
+The selected account's `mysql_config.use_db_prefix` is a numeric string;
+compatibility accepts only exact string flags `0` and `1`. Profile activation
+status returns explicit null for `job_in_progress` and `last_job_details`.
+These narrow corrections preserve omission and every pinned field. No profile
+credentials were requested, and no upgrade, checker, profile, password, database
+or user change ran. The initial artifact stays failed and immutable. Follow-up
+`8x0.2.33` retains remaining behavior and variants. SHA-256:
+`263cf2cfb1d5ec0c0c8a3fe6884e9b7611bc636db38f9977512cb052dd7e3a47`.
+
+The corrected [WHM database capture](2026-10-31-whm-databases-corrected.json) at
+`00ba48d402f0a60cd975ec38cf5166545a8c0286` on `11.138.0.19` passes all nine
+HTTP/API/payload/probe observations and strict assessment, with zero discrepancies.
+Optimization map records now establish the named `name`, `reason` and `value`
+string leaves. The selected prefix flag passes exact string-flag normalization;
+activation state retains both explicit null fields. Installable version rows are
+present, while database/user inventories are empty. Empty inventories do not
+establish their populated row schemas.
+
+The other eighteen methods were outside this committed catalog. This capture
+read no profile credentials and ran no upgrade, checker, profile activation,
+password, rename or configuration change. Successful inventory calls establish neither upgrade safety nor
+completion, remote trust or service enforcement. The initial failed artifact is
+unchanged; follow-up `8x0.2.33` owns the remaining variants. SHA-256:
+`b97b7f1bbf91bccc8d048026a1d99c38ecaa049730c165507fde5fe53b111ba1`.
+
+### Independent database review observations
+
+[Claude review 5720420360](https://github.com/hostingpal/whm-api-client/pull/46#pullrequestreview-5720420360)
+reports WHM checks on cPanel `11.138.0.19` with MySQL 8.4, separate from the
+committed nine-GET capture. Both profile reads returned canonical digit-string
+ports; their plaintext password values were not printed. Quoted list flags and
+create-result `cpcloud` compatibility are pinned-example/source-family evidence,
+not live mutation observations. Unknown-user database inventory returned success
+with a null database list; an existing empty account returned an empty list.
+
+The reviewer created and removed disposable account `wrvdb` and its database
+resources while checking all six MySQL/PostgreSQL rename and password methods,
+followed by populated inventory. Unknown rename sources, profile names and upgrade
+IDs raised API errors; no directory was created for the unknown upgrade ID.
+These reviewer reports do not expand the immutable capture or establish server-wide
+write coverage. No upgrade, checker run, root-password change or remote-profile
+create/update/delete/validate/activate ran. A running activation step's `end_time`
+and the location of partial-rename warnings remain unobserved under `8x0.2.33`.
+The corrected nine-GET artifact already passes; no new capture is needed merely
+to clear discrepancies, and the original failed artifact is preserved.
+
 ## WHM ModSecurity inventory capture
 
 The immutable [WHM ModSecurity capture](2026-10-31-whm-modsecurity.json) at
@@ -402,13 +614,34 @@ The immutable [WHM ModSecurity capture](2026-10-31-whm-modsecurity.json) at
 observations. WHM version, configuration inventory, vendor inventory and
 installation status pass API, payload and probe checks. Both inventories are
 empty, so their populated rows remain unobserved. The pending-configuration read
-fails at the API layer; its cause is not established. There are zero payload
-discrepancies, while strict assessment remains failed for that API error.
+fails at the API layer. The reviewer established that the ordinary idle state
+uses result 0 when no rule changes are pending; it therefore raises the expected
+`ApiErrorException` under `Flag`. Other failures also use result 0, so no error-text
+matching or special success exception is introduced. There are zero payload
+discrepancies, while strict assessment remains failed and unwaived for that API error.
 
 No raw rule/configuration text, audit logs or secret-bearing settings were read.
 No scan, policy, vendor, report, deployment or configuration change ran, and no
-returned URL was fetched. The other thirty-four methods remain offline-tested.
+returned URL was fetched. The other thirty-four methods were outside this committed catalog.
 Follow-up `8x0.2.34` retains the failed read and all unobserved behavior; this
 capture does not establish request blocking or enforcement. No repeated capture
 was run merely to obtain a passing result. SHA-256:
 `673fd065ffdf05bdb8a1c1dd5af5bcb770a8280aa556cc4a5f2d9fbbd516ab9c`.
+
+### Independent ModSecurity review observations
+
+[Claude review 5720447657](https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657)
+reports read-only WHM checks on cPanel `11.138.0.19`. The empty log establishes
+its inner `data` wrapper, and all ten populated settings rows had string states.
+The shared set-result record, integer setting alternatives, nullable log/report
+fields and twelve optional mutation payloads are source/offline corrections;
+no server-wide write or populated log row was observed. The reviewer printed
+only keys and type classes, not rule, log or setting values.
+
+Configuration and vendor inventories were empty; installed status and settings
+reads passed. Missing selectors for rules, unknown configuration text and the
+normal idle pending-config state raise API errors. No populated rules/configuration
+text or any of the thirty write/helper operations ran. These reports remain
+separate from the immutable five-GET capture, whose failed idle observation stays
+unwaived under `8x0.2.34`. All existing artifacts are preserved; no new capture was
+run to clear the failure.

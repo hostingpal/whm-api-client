@@ -17,6 +17,7 @@ use Psr\Http\Message\RequestInterface;
 use ReflectionMethod;
 use ReflectionParameter;
 use SensitiveParameter;
+use TypeError;
 
 /** Literal source-reviewed fixtures, independent of generated specs and overlay data. */
 final class WhmModSecurityTest extends TestCase
@@ -72,7 +73,7 @@ final class WhmModSecurityTest extends TestCase
             . '"vendor_id":"vendor","vendor_url":"https://vendor.test"';
         $config = '{"active":1,"config":"vendor/rules.conf","vendor_id":"vendor"}';
         $options = '[{"name":"On label","option":"On"},{"name":"Off label","option":"Off"}]';
-        $setting = '"default":1500,"description":"setting","directive":"SecRuleEngine","engine":1,'
+        $setting = '"default":"Off","description":"setting","directive":"SecRuleEngine","engine":1,'
             . '"name":"Engine","radio_options":' . $options . ',"setting_id":2,"state":"On",'
             . '"type":"radio","url":"https://reference.test/rule"';
         $hit = '"action_desc":"denied","handler":null,"host":"example.test","http_method":"GET",'
@@ -130,7 +131,7 @@ final class WhmModSecurityTest extends TestCase
         yield 'pending configs' => ['modsec_get_configs_with_changes_pending', 'getConfigsWithChangesPending', [],
             'GET', '', '{"configs":["user.conf",""]}'];
         yield 'log' => ['modsec_get_log', 'getLog', [], 'GET', '',
-            '[{' . $hit . ',"file_exists":1,"reportable":0,"timezone":-60}]'];
+            '{"data":[{' . $hit . ',"file_exists":1,"reportable":0,"timezone":-60}]}'];
         yield 'rules flags' => ['modsec_get_rules', 'getRules', ['user.conf', false, true, ''], 'GET',
             'config=user.conf&exclude_bare_comments=0&exclude_other_directives=1&vendor_id=',
             '{"chunks":[' . $rule . ',{}],"staged_changes":1}'];
@@ -161,7 +162,8 @@ final class WhmModSecurityTest extends TestCase
         yield 'set setting' => ['modsec_set_setting', 'setSetting', [0, '0'], 'POST', 'setting_id=0&state=0',
             '{"default":"1500","description":"setting","directive":"SecPcreMatchLimit","name":"Limit",'
                 . '"radio_options":' . $options . ',"setting_id":0,"state":0,"type":"number",'
-                . '"url":"https://reference.test/limit","validation":[{"arg":null,"name":7},"positiveInteger"]}'];
+                . '"url":"https://reference.test/limit","validation":[{"arg":"prefix","name":"startsWith"},'
+                . '"positiveInteger"]}'];
         yield 'undisable string id' => ['modsec_undisable_rule', 'undisableRule', ['user.conf', '00123'], 'POST',
             'config=user.conf&id=00123', null];
         yield 'update' => ['modsec_update_vendor', 'updateVendor', ['https://vendor.test/meta'], 'POST',
@@ -251,10 +253,10 @@ final class WhmModSecurityTest extends TestCase
             if ($payload === null) {
                 continue;
             }
-            yield "$function missing" => [$function, $method, $arguments, null];
             if (in_array($method, $opaque, true)) {
                 continue;
             }
+            yield "$function missing" => [$function, $method, $arguments, null];
             foreach (['null', 'false', '0', '1.5', '"text"'] as $bad) {
                 yield "$function root $bad" => [$function, $method, $arguments, $bad];
             }
@@ -266,9 +268,6 @@ final class WhmModSecurityTest extends TestCase
                     $method === 'addRule' && in_array($dotted, ['rule.config', 'rule.config_active', 'rule.staged',
                     'rule.vendor_active', 'rule.vendor_id'], true)
                 ) {
-                    continue;
-                }
-                if ($method === 'setSetting' && in_array($dotted, ['validation.0.arg', 'validation.0.name'], true)) {
                     continue;
                 }
                 $bad = self::replaceAt($decoded, $path, true);
@@ -305,7 +304,7 @@ final class WhmModSecurityTest extends TestCase
         ?string $fixture,
     ): void {
         [$client, $http] = self::client();
-        $payload = $fixture === null ? null : ($method === 'getLog' ? '[]' : '{}');
+        $payload = $fixture === null ? null : '{}';
         $http->addResponse(new Response(200, [], self::envelope($function, $payload)));
         self::assertSame($fixture === null ? null : [], $client->whm()->modSecurity()->{$method}(...$arguments));
         self::assertCount(1, $http->getRequests());
@@ -342,8 +341,8 @@ final class WhmModSecurityTest extends TestCase
     /** @return iterable<string, array{string, string}> */
     public static function nullableFields(): iterable
     {
-        yield 'log values' => ['getLog', '[{"handler":"handler","meta_logdata":"data","meta_rev":2,'
-            . '"meta_severity":"future severity","meta_uri":"/uri"}]'];
+        yield 'log values' => ['getLog', '{"data":[{"handler":"handler","meta_logdata":"data","meta_rev":2,'
+            . '"meta_severity":"future severity","meta_uri":"/uri"}]}'];
         yield 'report values' => ['reportRule', '{"report":[{"hits":[{"handler":"handler","meta_logdata":"data",'
             . '"meta_msg":null,"meta_rev":2,"meta_severity":"CRITICAL","meta_uri":"/uri"}]}]}'];
         yield 'settings validators optional fields' => ['getSettings', '{"settings":[{"default":0,"engine":1,'
@@ -363,18 +362,19 @@ final class WhmModSecurityTest extends TestCase
         self::assertCount(1, $http->getRequests());
     }
 
-    /** @return iterable<string, array{string, string, array<array-key, mixed>, string}> */
+    /** @return iterable<string, array{string, string, array<array-key, mixed>, string|null}> */
     public static function unconstrainedPayloads(): iterable
     {
         $methods = ['deployRuleChanges', 'deploySettingsChanges', 'disableVendor', 'disableVendorUpdates',
             'discardRuleChanges', 'enableVendor', 'enableVendorUpdates', 'makeConfigActive', 'makeConfigInactive',
             'removeRule', 'removeSetting', 'setConfigText'];
+        $payloads = [null, 'null', 'false', '0', '1.5', '"text"', '[]', '{}', '{"opaque":{"nested":null,"zero":0}}'];
         foreach (self::operations() as [$function, $method, $arguments]) {
             if (!in_array($method, $methods, true)) {
                 continue;
             }
-            foreach (['null', 'false', '0', '1.5', '"text"', '[]', '{"opaque":{"nested":null,"zero":0}}'] as $payload) {
-                yield "$function $payload" => [$function, $method, $arguments, $payload];
+            foreach ($payloads as $i => $payload) {
+                yield "$function $i" => [$function, $method, $arguments, $payload];
             }
         }
     }
@@ -385,12 +385,12 @@ final class WhmModSecurityTest extends TestCase
         string $function,
         string $method,
         array $arguments,
-        string $payload,
+        ?string $payload,
     ): void {
         [$client, $http] = self::client();
         $http->addResponse(new Response(200, [], self::envelope($function, $payload)));
         self::assertSame(
-            json_decode($payload, true, 512, JSON_THROW_ON_ERROR),
+            $payload === null ? null : json_decode($payload, true, 512, JSON_THROW_ON_ERROR),
             $client->whm()->modSecurity()->{$method}(...$arguments),
         );
         self::assertCount(1, $http->getRequests());
@@ -415,6 +415,282 @@ final class WhmModSecurityTest extends TestCase
         } finally {
             self::assertCount(1, $http->getRequests());
             self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        }
+    }
+
+    public function testEmptyLogWrapperIsPreservedAfterSuccessfulRead(): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('modsec_get_log', '{"data":[]}')));
+        self::assertSame(['data' => []], $client->whm()->modSecurity()->getLog());
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    public function testWrappedLogPreservesAllTwentyThreeFieldsAndNullableHitLeaves(): void
+    {
+        [$client, $http] = self::client();
+        $row = self::logRow();
+        self::assertCount(23, $row);
+        $ordinary = array_replace($row, ['meta_msg' => 'synthetic message', 'meta_offset' => 0]);
+        $omitted = $row;
+        unset($omitted['meta_msg'], $omitted['meta_offset']);
+        $expected = ['data' => [$row, $ordinary, $omitted]];
+        $http->addResponse(new Response(200, [], self::envelope(
+            'modsec_get_log',
+            json_encode($expected, JSON_THROW_ON_ERROR),
+        )));
+        self::assertSame(self::canonical($expected), self::canonical($client->whm()->modSecurity()->getLog()));
+        self::assertCount(1, $http->getRequests());
+    }
+
+    public function testReportHitsPreserveNullableOffsetAlongsideNullableMessage(): void
+    {
+        [$client, $http] = self::client();
+        $hit = self::logRow();
+        unset($hit['file_exists'], $hit['reportable']);
+        $hit['timezone'] = '-60';
+        $expected = ['report' => [['hits' => [$hit], 'rule_text' => 'synthetic rule']]];
+        $http->addResponse(new Response(200, [], self::envelope(
+            'modsec_report_rule',
+            json_encode($expected, JSON_THROW_ON_ERROR),
+        )));
+        self::assertSame(
+            self::canonical($expected),
+            self::canonical($client->whm()->modSecurity()->reportRule('a@example.test', '', 1, false, 'freeform')),
+        );
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return array<string, mixed> */
+    private static function logRow(): array
+    {
+        return [
+            'action_desc' => 'synthetic denial', 'file_exists' => 1, 'handler' => null, 'host' => 'example.test',
+            'http_method' => 'GET', 'http_status' => 406, 'http_version' => 'HTTP/1.1', 'id' => 123,
+            'ip' => '192.0.2.1', 'justification' => 'synthetic match', 'meta_file' => '/synthetic.conf',
+            'meta_id' => 456, 'meta_line' => 2, 'meta_logdata' => null, 'meta_msg' => null, 'meta_offset' => null,
+            'meta_rev' => null, 'meta_severity' => null, 'meta_uri' => null, 'path' => '/synthetic',
+            'reportable' => 0, 'timestamp' => '2026-10-30 12:00:00', 'timezone' => -60,
+        ];
+    }
+
+    #[DataProvider('reviewedPayloadBoundaries')]
+    public function testReviewedShapesRejectInvalidRootsAndUnrelatedFieldTypes(
+        string $function,
+        string $method,
+        string $payload,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($function, $payload)));
+        $arguments = match ($method) {
+            'setSetting', 'batchSettings' => [0, 'On'],
+            'reportRule' => ['a@example.test', '', 1, false, 'freeform'],
+            default => [],
+        };
+        try {
+            $client->whm()->modSecurity()->{$method}(...$arguments);
+            self::fail('Only reviewed container and leaf corrections may change validation.');
+        } catch (PayloadMismatchException $error) {
+            self::assertTrue($error->outcomeConfirmed);
+            self::assertSame(1, $error->metadata?->whmResult());
+            self::assertSame(json_decode($payload, true, 512, JSON_THROW_ON_ERROR), $error->payload);
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, string}> */
+    public static function reviewedPayloadBoundaries(): iterable
+    {
+        foreach (['[{}]', '{"data":null}', '{"data":{}}', '{"data":false}', '{"data":[1]}'] as $payload) {
+            yield "log root $payload" => ['modsec_get_log', 'getLog', $payload];
+        }
+        $badRows = [
+            '{"meta_msg":0}', '{"meta_offset":"0"}', '{"meta_offset":1.5}',
+            '{"meta_offset":false}', '{"meta_offset":{}}', '{"http_status":"406"}',
+            '{"meta_id":null}', '{"handler":true}', '{"host":null}', '{"id":"123"}',
+        ];
+        foreach ($badRows as $i => $row) {
+            yield "log field $i" => ['modsec_get_log', 'getLog', '{"data":[' . $row . ']}'];
+            yield "report field $i" => ['modsec_report_rule', 'reportRule', '{"report":[{"hits":[' . $row . ']}]}'];
+        }
+        yield 'log timezone stays integer' => ['modsec_get_log', 'getLog', '{"data":[{"timezone":"-60"}]}'];
+        yield 'report timezone stays string' =>
+            ['modsec_report_rule', 'reportRule', '{"report":[{"hits":[{"timezone":-60}]}]}'];
+        foreach (['default', 'state'] as $field) {
+            foreach (['null', 'true', 'false', '1.5', '[]', '{}'] as $bad) {
+                $row = '{"' . $field . '":' . $bad . '}';
+                yield "get $field $bad" => ['modsec_get_settings', 'getSettings', '{"settings":[' . $row . ']}'];
+                yield "set $field $bad" => ['modsec_set_setting', 'setSetting', $row];
+                if ($field === 'default') {
+                    yield "batch $field $bad" =>
+                        ['modsec_batch_settings', 'batchSettings', '{"updated_settings":[' . $row . ']}'];
+                }
+            }
+        }
+        foreach (['engine' => '"1"', 'missing' => 'true', 'setting_id' => '"2"', 'name' => 'null'] as $field => $bad) {
+            $row = '{"' . $field . '":' . $bad . '}';
+            yield "get strict $field" => ['modsec_get_settings', 'getSettings', '{"settings":[' . $row . ']}'];
+            yield "set strict $field" => ['modsec_set_setting', 'setSetting', $row];
+        }
+        foreach (['arg', 'name'] as $field) {
+            foreach (['null', '0', 'true', '[]', '{}'] as $bad) {
+                $row = '{"validation":[{"' . $field . '":' . $bad . '}]}';
+                yield "get validator $field $bad" =>
+                    ['modsec_get_settings', 'getSettings', '{"settings":[' . $row . ']}'];
+                yield "set validator $field $bad" => ['modsec_set_setting', 'setSetting', $row];
+            }
+        }
+        yield 'batch state remains string' =>
+            ['modsec_batch_settings', 'batchSettings', '{"updated_settings":[{"state":1}]}'];
+        yield 'batch engine remains flag' =>
+            ['modsec_batch_settings', 'batchSettings', '{"updated_settings":[{"engine":2}]}'];
+    }
+
+    /** @param array<string, mixed> $row */
+    #[DataProvider('sharedSettingRows')]
+    public function testGetAndSetSettingsPreserveTheSameCompleteRecord(array $row): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(
+            'modsec_get_settings',
+            json_encode(['settings' => [$row]], JSON_THROW_ON_ERROR),
+        )));
+        $http->addResponse(new Response(200, [], self::envelope(
+            'modsec_set_setting',
+            json_encode($row, JSON_THROW_ON_ERROR),
+        )));
+        $group = $client->whm()->modSecurity();
+        self::assertSame(self::canonical(['settings' => [$row]]), self::canonical($group->getSettings()));
+        self::assertSame(self::canonical($row), self::canonical($group->setSetting(2, 'On')));
+        self::assertCount(2, $http->getRequests());
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('POST', $request->getMethod());
+        self::assertSame('setting_id=2&state=On', (string) $request->getBody());
+    }
+
+    /** @return iterable<string, array{array<string, mixed>}> */
+    public static function sharedSettingRows(): iterable
+    {
+        yield 'full engine record with typed validators' => [[
+            'default' => 'Off', 'description' => 'Synthetic description', 'directive' => 'SecRuleEngine',
+            'engine' => 1, 'missing' => 1, 'name' => 'Engine',
+            'radio_options' => [['name' => 'Off label', 'option' => 'Off'], ['name' => 'On label', 'option' => 'On']],
+            'setting_id' => 2, 'state' => 'On', 'type' => 'radio', 'url' => 'https://reference.test/engine',
+            'validation' => [['arg' => 'prefix', 'name' => 'startsWith'], 'path', [], 'positiveInteger'],
+        ]];
+        yield 'only formerly discarded fields' => [['engine' => 1, 'missing' => 1]];
+        yield 'empty record' => [[]];
+        foreach (['default', 'state'] as $field) {
+            foreach ([0, 1500, PHP_INT_MAX, '', 'Off', 'On', '001500', '123456789012345678901'] as $i => $value) {
+                yield "$field $i" => [[$field => $value]];
+            }
+        }
+    }
+
+    #[DataProvider('batchDefaults')]
+    public function testBatchDefaultPreservesStringsAndIntegers(string|int $default): void
+    {
+        [$client, $http] = self::client();
+        $expected = ['updated_settings' => [['default' => $default]]];
+        $http->addResponse(new Response(200, [], self::envelope(
+            'modsec_batch_settings',
+            json_encode($expected, JSON_THROW_ON_ERROR),
+        )));
+        self::assertSame($expected, $client->whm()->modSecurity()->batchSettings(2, 'On'));
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string|int}> */
+    public static function batchDefaults(): iterable
+    {
+        foreach (['Off', 'On', '', '001500', '123456789012345678901', 0, 1500, PHP_INT_MAX] as $i => $value) {
+            yield (string) $i => [$value];
+        }
+    }
+
+    public function testCloneRuleIntegerIdChainsIntoDisableAndUndisableWithoutCasting(): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('modsec_clone_rule', '{"rule":{"id":123}}')));
+        $http->addResponse(new Response(200, [], self::envelope('modsec_disable_rule', null)));
+        $http->addResponse(new Response(200, [], self::envelope('modsec_undisable_rule', null)));
+        $group = $client->whm()->modSecurity();
+        $id = $group->cloneRule('user.conf', 7)['rule']['id'] ?? null;
+        self::assertSame(123, $id);
+        $group->disableRule('user.conf', $id);
+        $group->undisableRule('user.conf', $id);
+        self::assertCount(3, $http->getRequests());
+        foreach (array_slice($http->getRequests(), 1) as $request) {
+            self::assertInstanceOf(RequestInterface::class, $request);
+            self::assertSame('config=user.conf&id=123', (string) $request->getBody());
+            self::assertSame('POST', $request->getMethod());
+        }
+    }
+
+    #[DataProvider('ruleIds')]
+    public function testRuleIdsPreserveNativeIntegersAndExactStrings(string $method, string|int $id, string $wire): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('synthetic', null)));
+        $client->whm()->modSecurity()->{$method}('user.conf', $id);
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('config=user.conf&id=' . $wire, (string) $request->getBody());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string|int, string}> */
+    public static function ruleIds(): iterable
+    {
+        $ids = [
+            [123, '123'], [PHP_INT_MAX, (string) PHP_INT_MAX], ['00123', '00123'],
+            ['123456789012345678901', '123456789012345678901'],
+        ];
+        foreach (['disableRule', 'undisableRule'] as $method) {
+            foreach ($ids as $i => [$id, $wire]) {
+                yield "$method $i" => [$method, $id, $wire];
+            }
+        }
+    }
+
+    #[DataProvider('invalidRuleIds')]
+    public function testRuleIdWideningRejectsOtherTypesBeforeIo(string $method, mixed $id): void
+    {
+        [$client, $http] = self::client();
+        $this->expectException(TypeError::class);
+        try {
+            $client->whm()->modSecurity()->{$method}('user.conf', $id);
+        } finally {
+            self::assertSame([], $http->getRequests());
+        }
+    }
+
+    /** @return iterable<string, array{string, mixed}> */
+    public static function invalidRuleIds(): iterable
+    {
+        foreach (['disableRule', 'undisableRule'] as $method) {
+            foreach ([null, true, false, 1.5, []] as $i => $id) {
+                yield "$method $i" => [$method, $id];
+            }
+        }
+    }
+
+    public function testPendingConfigurationIdleOutcomeRetainsFlagWithoutMessageMatching(): void
+    {
+        foreach (['No rule changes are pending.', 'Synthetic permission failure'] as $reason) {
+            [$client, $http] = self::client();
+            $envelope = '{"metadata":{"result":0,"reason":' . json_encode($reason, JSON_THROW_ON_ERROR) . '}}';
+            $http->addResponse(new Response(200, [], $envelope));
+            try {
+                $client->whm()->modSecurity()->getConfigsWithChangesPending();
+                self::fail('Idle and other failed outcomes must remain ApiErrorException.');
+            } catch (ApiErrorException $error) {
+                self::assertSame(0, $error->metadata?->whmResult());
+                self::assertSame([$reason], $error->errors());
+            }
+            self::assertCount(1, $http->getRequests());
         }
     }
 

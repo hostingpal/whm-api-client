@@ -1,0 +1,92 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "EA4",
+  "accessor": "ea4",
+  "class": "Ea4",
+  "operations": {
+    "uapi:EA4/get_php_recommendations": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later. Returns a list of recommended PHP version names; an empty list is preserved. Recommendations do not change the server configuration."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, Claude reproduced API failure through direct UAPI and the WHM bridge when /etc/cpanel/ea4/recommendations/custom_php_recommendation.json was absent, and traced this behavior in Cpanel/API/EA4.pm. ApiErrorException is the correct outcome for this observed server state; it establishes no successful payload behavior and does not waive the failed captures. Reviewer evidence: https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/EA4/get_php_recommendations declares x-readonly: true and a GET operation. Pinned cpanel.openapi.json.gz decompressed-byte SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; stored gzip SHA-256: ba2ba938969c2e98f9bdb259f4072d182af215ba8a44402846de077ba6b85358."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Claude PR41 review https://github.com/hostingpal/whm-api-client/pull/41#pullrequestreview-5720241923 reproduced EA4/get_php_recommendations API failure through direct UAPI and the WHM bridge on cPanel 11.138.0.19. Inspection of Cpanel/API/EA4.pm ties this failure to the absence of /etc/cpanel/ea4/recommendations/custom_php_recommendation.json; ApiErrorException is the correct outcome for that observed server state. This is separate reviewer evidence, establishes no successful payload contract and does not waive the failed captures. No new live call or evidence capture was made for this note."
+        }
+      ]
+    },
+    "uapi:EA4/get_recommendations": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 84 and later. Package names are dynamic keys whose values are recommendation lists. Recommendation and option fields remain optional; empty maps and lists remain empty."
+        },
+        {
+          "kind": "documented",
+          "text": "Option recommended values are booleans. UI levels and action strings stay strings; no additional closed enum or inferred version support is imposed."
+        },
+        {
+          "kind": "observed",
+          "text": "Direct UAPI returned boolean and string outer recommendation url values on cPanel 11.138.0.19. Preserve bool|string without inferring a false-only sentinel; option-level URLs remain strings. The failed WHM bridge envelope establishes no successful bridged payload behavior."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "/EA4/get_recommendations declares x-readonly: true and a GET operation. Pinned cpanel.openapi.json.gz decompressed-byte SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; stored gzip SHA-256: ba2ba938969c2e98f9bdb259f4072d182af215ba8a44402846de077ba6b85358."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "EA4/get_recommendations direct-uapi returned bool and string at $.*[].url, the outer recommendation URL. Preserve bool|string at only that leaf; the masked artifact does not establish a false-only sentinel. Option-level $.*[].options[].url remains string. The unknown wildcard field remains unresolved, and the bridged data.uapi:null request failure provides no payload compatibility evidence. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+          "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+        }
+      ],
+      "response": {
+        "{}[].url": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "bool"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "EA4/get_recommendations direct-uapi returned bool and string at $.*[].url, the outer recommendation URL. Preserve bool|string at only that leaf; the masked artifact does not establish a false-only sentinel. Option-level $.*[].options[].url remains string. The unknown wildcard field remains unresolved, and the bridged data.uapi:null request failure provides no payload compatibility evidence. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

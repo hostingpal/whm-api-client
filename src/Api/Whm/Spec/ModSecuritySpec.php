@@ -104,7 +104,13 @@ final class ModSecuritySpec
                     'items' => [
                         'type' => 'object',
                         'fields' => [
-                            'default' => ['type' => 'int'],
+                            'default' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'int'],
+                                ],
+                            ],
                             'description' => ['type' => 'string'],
                             'directive' => ['type' => 'string'],
                             'engine' => ['type' => 'flag'],
@@ -207,6 +213,7 @@ final class ModSecuritySpec
             'config' => ['name' => 'config', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'mixed'],
+        'optional' => true,
     ];
 
     public const MODSEC_DEPLOY_SETTINGS_CHANGES = [
@@ -215,6 +222,7 @@ final class ModSecuritySpec
         'outcome' => 'flag',
         'params' => [],
         'returns' => ['type' => 'mixed'],
+        'optional' => true,
     ];
 
     public const MODSEC_DISABLE_RULE = [
@@ -236,6 +244,7 @@ final class ModSecuritySpec
             'vendorId' => ['name' => 'vendor_id', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'mixed'],
+        'optional' => true,
     ];
 
     public const MODSEC_DISABLE_VENDOR_CONFIGS = [
@@ -272,6 +281,7 @@ final class ModSecuritySpec
             'vendorId' => ['name' => 'vendor_id', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'mixed'],
+        'optional' => true,
     ];
 
     public const MODSEC_DISCARD_ALL_RULE_CHANGES = [
@@ -306,6 +316,7 @@ final class ModSecuritySpec
             'config' => ['name' => 'config', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'mixed'],
+        'optional' => true,
     ];
 
     public const MODSEC_EDIT_RULE = [
@@ -341,6 +352,7 @@ final class ModSecuritySpec
             'vendorId' => ['name' => 'vendor_id', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'mixed'],
+        'optional' => true,
     ];
 
     public const MODSEC_ENABLE_VENDOR_CONFIGS = [
@@ -377,6 +389,7 @@ final class ModSecuritySpec
             'vendorId' => ['name' => 'vendor_id', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'mixed'],
+        'optional' => true,
     ];
 
     public const MODSEC_GET_CONFIG_TEXT = [
@@ -436,33 +449,38 @@ final class ModSecuritySpec
         'outcome' => 'flag',
         'params' => [],
         'returns' => [
-            'type' => 'list',
-            'items' => [
-                'type' => 'object',
-                'fields' => [
-                    'action_desc' => ['type' => 'string'],
-                    'file_exists' => ['type' => 'flag'],
-                    'handler' => ['type' => 'string', 'nullable' => true],
-                    'host' => ['type' => 'string'],
-                    'http_method' => ['type' => 'string'],
-                    'http_status' => ['type' => 'int'],
-                    'http_version' => ['type' => 'string'],
-                    'id' => ['type' => 'int'],
-                    'ip' => ['type' => 'string'],
-                    'justification' => ['type' => 'string'],
-                    'meta_file' => ['type' => 'string'],
-                    'meta_id' => ['type' => 'int'],
-                    'meta_line' => ['type' => 'int'],
-                    'meta_logdata' => ['type' => 'string', 'nullable' => true],
-                    'meta_msg' => ['type' => 'string'],
-                    'meta_offset' => ['type' => 'int'],
-                    'meta_rev' => ['type' => 'int', 'nullable' => true],
-                    'meta_severity' => ['type' => 'string', 'nullable' => true],
-                    'meta_uri' => ['type' => 'string', 'nullable' => true],
-                    'path' => ['type' => 'string'],
-                    'reportable' => ['type' => 'flag'],
-                    'timestamp' => ['type' => 'string'],
-                    'timezone' => ['type' => 'int'],
+            'type' => 'object',
+            'fields' => [
+                'data' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'action_desc' => ['type' => 'string'],
+                            'file_exists' => ['type' => 'flag'],
+                            'handler' => ['type' => 'string', 'nullable' => true],
+                            'host' => ['type' => 'string'],
+                            'http_method' => ['type' => 'string'],
+                            'http_status' => ['type' => 'int'],
+                            'http_version' => ['type' => 'string'],
+                            'id' => ['type' => 'int'],
+                            'ip' => ['type' => 'string'],
+                            'justification' => ['type' => 'string'],
+                            'meta_file' => ['type' => 'string'],
+                            'meta_id' => ['type' => 'int'],
+                            'meta_line' => ['type' => 'int'],
+                            'meta_logdata' => ['type' => 'string', 'nullable' => true],
+                            'meta_msg' => ['type' => 'string', 'nullable' => true],
+                            'meta_offset' => ['type' => 'int', 'nullable' => true],
+                            'meta_rev' => ['type' => 'int', 'nullable' => true],
+                            'meta_severity' => ['type' => 'string', 'nullable' => true],
+                            'meta_uri' => ['type' => 'string', 'nullable' => true],
+                            'path' => ['type' => 'string'],
+                            'reportable' => ['type' => 'flag'],
+                            'timestamp' => ['type' => 'string'],
+                            'timezone' => ['type' => 'int'],
+                        ],
+                    ],
                 ],
             ],
         ],
@@ -539,7 +557,13 @@ final class ModSecuritySpec
                                 ],
                             ],
                             'setting_id' => ['type' => 'int'],
-                            'state' => ['type' => 'string'],
+                            'state' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'int'],
+                                ],
+                            ],
                             'type' => ['type' => 'string'],
                             'url' => ['type' => 'string'],
                             'validation' => [
@@ -639,6 +663,7 @@ final class ModSecuritySpec
             'config' => ['name' => 'config', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'mixed'],
+        'optional' => true,
     ];
 
     public const MODSEC_MAKE_CONFIG_INACTIVE = [
@@ -649,6 +674,7 @@ final class ModSecuritySpec
             'config' => ['name' => 'config', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'mixed'],
+        'optional' => true,
     ];
 
     public const MODSEC_PREVIEW_VENDOR = [
@@ -687,6 +713,7 @@ final class ModSecuritySpec
             'id' => ['name' => 'id', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'mixed'],
+        'optional' => true,
     ];
 
     public const MODSEC_REMOVE_SETTING = [
@@ -697,6 +724,7 @@ final class ModSecuritySpec
             'settingId' => ['name' => 'setting_id', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'mixed'],
+        'optional' => true,
     ];
 
     public const MODSEC_REMOVE_VENDOR = [
@@ -748,7 +776,7 @@ final class ModSecuritySpec
                                         'meta_line' => ['type' => 'int'],
                                         'meta_logdata' => ['type' => 'string', 'nullable' => true],
                                         'meta_msg' => ['type' => 'string', 'nullable' => true],
-                                        'meta_offset' => ['type' => 'int'],
+                                        'meta_offset' => ['type' => 'int', 'nullable' => true],
                                         'meta_rev' => ['type' => 'int', 'nullable' => true],
                                         'meta_severity' => ['type' => 'string', 'nullable' => true],
                                         'meta_uri' => ['type' => 'string', 'nullable' => true],
@@ -777,6 +805,7 @@ final class ModSecuritySpec
             'text' => ['name' => 'text', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'mixed'],
+        'optional' => true,
     ];
 
     public const MODSEC_SET_SETTING = [
@@ -790,9 +819,17 @@ final class ModSecuritySpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'default' => ['type' => 'string'],
+                'default' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
                 'description' => ['type' => 'string'],
                 'directive' => ['type' => 'string'],
+                'engine' => ['type' => 'int'],
+                'missing' => ['type' => 'int'],
                 'name' => ['type' => 'string'],
                 'radio_options' => [
                     'type' => 'list',
@@ -805,7 +842,13 @@ final class ModSecuritySpec
                     ],
                 ],
                 'setting_id' => ['type' => 'int'],
-                'state' => ['type' => 'int'],
+                'state' => [
+                    'type' => 'union',
+                    'anyOf' => [
+                        ['type' => 'string'],
+                        ['type' => 'int'],
+                    ],
+                ],
                 'type' => ['type' => 'string'],
                 'url' => ['type' => 'string'],
                 'validation' => [
@@ -816,8 +859,8 @@ final class ModSecuritySpec
                             [
                                 'type' => 'object',
                                 'fields' => [
-                                    'arg' => ['type' => 'mixed'],
-                                    'name' => ['type' => 'mixed'],
+                                    'arg' => ['type' => 'string'],
+                                    'name' => ['type' => 'string'],
                                 ],
                             ],
                             ['type' => 'string'],
