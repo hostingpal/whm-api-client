@@ -1,0 +1,231 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "GPG",
+  "class": "Gpg",
+  "accessor": "gpg",
+  "operations": {
+    "uapi:GPG/delete_keypair": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation declares no additional role restriction."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes all keys matching keyId. A public-key ID deletes the public key; a public/private pair ID deletes both. The source points to listSecretKeys() for the desired identifier. Key deletion changes account key material and has no documented rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST with one attempt and no automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object with no pinned fields. Preserve opaque object fields and explicit null; absent data is a payload mismatch."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /GPG/delete_keypair: x-readonly=false and x-rollback=none. Use form POST with no retry or rollback; retain the pinned parameter requiredness, defaults and data schema. Sensitive inputs stay out of query strings and library exception trace arguments."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /GPG/delete_keypair: key_id is the documented string identifier selecting the GPG key, not key contents or a passphrase. Explicitly classify this identifier as non-sensitive; secret key_data and passphrase values remain sensitive and secret-bearing export uses form POST."
+        }
+      ],
+      "params": {
+        "key_id": {
+          "sensitive": false
+        }
+      }
+    },
+    "uapi:GPG/export_public_key": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation declares no additional role restriction."
+        },
+        {
+          "kind": "documented",
+          "text": "Exports the selected public key through GET. keyId is required and forwarded unchanged; the optional key_data field is a string containing key bytes. Omitted fields stay omitted; no null or absent payload is inferred. The client performs no key parsing or cryptographic validation."
+        }
+      ],
+      "params": {
+        "key_id": {
+          "sensitive": false
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /GPG/export_public_key: key_id is the documented string identifier selecting the GPG key, not key contents or a passphrase. Explicitly classify this identifier as non-sensitive; secret key_data and passphrase values remain sensitive and secret-bearing export uses form POST."
+        }
+      ]
+    },
+    "uapi:GPG/export_secret_key": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation declares no additional role restriction."
+        },
+        {
+          "kind": "documented",
+          "text": "Exports private key material using form POST. keyId is required; omit passphrase to preserve server behavior, while an explicit empty string is sent unchanged. The source declares x-readonly=false and no rollback. The client performs no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The optional key_data string contains private key material. Treat the returned payload and PayloadMismatchException::$payload as sensitive; do not log either. Payload content is not copied into responseMeta(). Omitted key_data stays omitted and null or absent data is a mismatch."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /GPG/export_secret_key: x-readonly=false and x-rollback=none. Use form POST with no retry or rollback; retain the pinned parameter requiredness, defaults and data schema. Sensitive inputs stay out of query strings and library exception trace arguments."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /GPG/export_secret_key: key_id is the documented string identifier selecting the GPG key, not key contents or a passphrase. Explicitly classify this identifier as non-sensitive; secret key_data and passphrase values remain sensitive and secret-bearing export uses form POST."
+        }
+      ],
+      "params": {
+        "passphrase": {
+          "sensitive": true
+        },
+        "key_id": {
+          "sensitive": false
+        }
+      },
+      "order": [
+        "key_id",
+        "passphrase"
+      ]
+    },
+    "uapi:GPG/generate_key": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation declares no additional role restriction."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires email, name and passphrase. Creates key material in the selected account .gnupg directory using system entropy; low entropy can cause long generation times or timeouts. A timeout does not establish whether generation completed."
+        },
+        {
+          "kind": "documented",
+          "text": "Omit comment, expire, keysize and noExpire to retain server defaults. expire is a string Unix timestamp defaulting to one year from the current date; keysize defaults to 2048 and the pinned request prose calls its unit bytes. noExpire defaults to 0; explicit false is sent as 0 and true as 1. No client-side precedence between expire and noExpire is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST with one attempt and no automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object with no pinned fields. Preserve opaque object fields and explicit null; absent data is a payload mismatch."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /GPG/generate_key: x-readonly=false and x-rollback=none. Use form POST with no retry or rollback; retain the pinned parameter requiredness, defaults and data schema. Sensitive inputs stay out of query strings and library exception trace arguments."
+        }
+      ],
+      "params": {
+        "passphrase": {
+          "sensitive": true
+        }
+      },
+      "order": [
+        "email",
+        "name",
+        "passphrase",
+        "comment",
+        "expire",
+        "keysize",
+        "no_expire"
+      ]
+    },
+    "uapi:GPG/import_key": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation declares no additional role restriction."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires keyData, which may contain private key material. Supply the original key string; the form encoder URI-encodes it exactly once as key_data, satisfying the pinned encoding instruction. The client performs no decoding, key parsing or cryptography."
+        },
+        {
+          "kind": "documented",
+          "text": "Uses form POST with one attempt and no automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns an object with optional string key_id. Omitted fields stay omitted; null or absent data is a payload mismatch."
+        }
+      ],
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /GPG/import_key: x-readonly=false and x-rollback=none. Use form POST with no retry or rollback; retain the pinned parameter requiredness, defaults and data schema. Sensitive inputs stay out of query strings and library exception trace arguments."
+        }
+      ],
+      "params": {
+        "key_data": {
+          "sensitive": true,
+          "description": "The original GPG key string to import. The client form-encodes this sensitive value once; do not pre-encode it."
+        }
+      }
+    },
+    "uapi:GPG/list_public_keys": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation declares no additional role restriction."
+        },
+        {
+          "kind": "documented",
+          "text": "Lists public-key metadata using GET with no request arguments. Each row keeps optional algorithm, bits, created, expires, id, type and user_id fields. created and expires remain strings; expires is an empty string when the key never expires. The source describes bits in bits and type as pub."
+        },
+        {
+          "kind": "documented",
+          "text": "Preserve an empty list and omitted row fields. This inventory does not export key contents, prove ownership of newly generated keys, or establish signing, encryption or authentication behavior."
+        }
+      ]
+    },
+    "uapi:GPG/list_secret_keys": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation declares no additional role restriction."
+        },
+        {
+          "kind": "documented",
+          "text": "Lists secret-key metadata using GET with no request arguments. Each row keeps optional algorithm, bits, created, expires, id, type and user_id fields. created and expires remain integer Unix timestamps, unlike public-key inventory strings. The source describes type as sec; do not infer an empty-string or nullable expiry variant."
+        },
+        {
+          "kind": "documented",
+          "text": "Preserve an empty list and omitted row fields. Metadata does not export key contents or establish signing, encryption or authentication behavior."
+        }
+      ]
+    }
+  }
+}

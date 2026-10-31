@@ -1355,3 +1355,13 @@ still fails for two masked unknown-field observations in installed versions and
 service rows. They remain untyped and unwaived; no key identity/count is inferred.
 No mutation or private configuration read ran. Historical artifacts remain
 immutable and `8x0.2.38` retains remaining live coverage and unknown findings.
+
+## GPG public inventory and two-factor status
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/gpg-two-factor.php --output=docs/api/evidence/YYYY-MM-DD-gpg-two-factor.json`.
+
+Five fixed GETs read version and selected-account public-key inventory/two-factor
+status through both UAPI routes. Existing opt-in, committed-input, exact request
+guard, TLS and immutable structural-output rules apply. No key export, secret-key
+inventory, private/team configuration, key/authentication mutation or login test
+runs. Keep remaining live coverage under `8x0.2.54`.

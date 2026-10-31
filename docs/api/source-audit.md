@@ -4345,3 +4345,30 @@ variants also remain unobserved under `8x0.2.38`. Profile-activation input typin
 remains under `8x0.1.23` before release. No new live call or capture ran for these
 corrections. Both historical captures remain immutable, and their two masked
 unknown-field observations stay strict failures without acknowledgment or waiver.
+
+## UAPI GPG and two-factor authentication
+
+`uapi()->gpg()` covers all seven pinned functions and `uapi()->twoFactorAuth()`
+all five. Four reads use GET and eight mutations/secret-bearing operations use
+form POST. GPG requires cPanel 82; two-factor operations require cPanel 54.
+Private key data, passphrases, shared secrets and verification tokens remain
+sensitive. Key identifiers select records and are distinct from key material.
+
+Public-key timestamps remain strings, including empty expiration; secret-key
+timestamps remain integers. Preserve source optional fields, strict 0|1 flags,
+opaque results and null/missing distinctions. The source tfa_removed singleton
+value 1 remains an integer without new enum enforcement. Two-factor verification
+uses the documented integer token parameter. The duplicated-1 configured-state
+prose discrepancy remains explicit in generated notes.
+
+Key generation depends on entropy and may time out; timeout does not establish
+whether a key was created. Key deletion and two-factor setup/removal can alter
+account security immediately. Calls add no retry, rollback, local cryptography
+or authentication flow. API success does not prove signing, encryption or login
+enforcement. Returned secrets/key contents are sensitive payload data.
+
+All twelve methods have independent direct and bridged UAPI contracts. The fixed
+five-GET catalog reads version, public-key inventory and two-factor status through
+both routes. It exports no key, reads no secret-key inventory or private/team
+configuration, and makes no key/authentication changes. Remaining live variants
+and controlled lifecycle verification stay under `8x0.2.54`.
