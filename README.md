@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 79 generated typed groups cover 790 documented operations (see
+The 80 generated typed groups cover 820 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -310,6 +310,7 @@ An empty live list does not verify the types of records it never returned.
 | `whm()->webServer()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetHandlers()`, `phpGetDefaultAccountsToFpm()`, `phpGetOldFpmFlag()`, `isConversionInProgress()`, `phpGetVhostsByVersion()` |
 | `whm()->hostingPlans()` | `listPackages()`, `getFeatureMetadata()`, `getFeatureNames()`, `getFeaturelistData()`, `getFeaturelists()`, `getFeaturelistsByPackageTypes()`, `getUsersFeaturesSettings()`, `verifyUserHasFeature()` |
 | `whm()->dns()` | `listZones()`, `parseDnsZone()`, `getZoneRecord()`, `listMxRecords()`, `exportZoneFiles()`, `resolveDomainName()`, `hasLocalAuthority()`, `fetchDsRecordsForDomains()`, `getNameserverConfig()`, `lookupNameserverIp()`, `lookupNameserverIps()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
+| `whm()->authentication()` | SSH keys, providers, external-account links and two-factor authentication (30); see [generated methods](src/Api/Whm/Authentication.php). |
 
 ### cPanel UAPI
 
@@ -1507,6 +1508,56 @@ service status and dashboard hostname. Optional selectors are omitted. It reads
 no credentials, linked-node secrets, arbitrary configuration values or sockets,
 and sends no notification, URL probe or mutation. Follow-up `8x0.2.38` retains
 unobserved variants and operational behavior.
+
+### WHM authentication
+
+`whm()->authentication()` exposes 30 of the 32 pinned Authentication operations
+for SSH keys, authentication providers, external-account links and two-factor
+configuration/policy. Seven use GET and 23 use form POST. Deprecated `accesshash`
+remains excluded; JSON `twofactorauth_set_tfa_config_for_user` remains under
+`8x0.1.18`. The login-URL method uses POST as a conservative client privacy
+policy, despite the pinned GET-only declaration. The pinned redirect example has
+a `state` value; it does not establish that redirects always contain tokens.
+Live POST compatibility remains unverified. Reviewed upstream `Market.pm` code
+routes through a provider and may make an outbound call; the reviewer did not
+execute it. Generated notes distinguish client policy from documented facts and
+observed behavior.
+
+Key material, passphrases, provider configurations, redirect URLs and TFA secrets
+and tokens remain sensitive. Returned keys, provider URLs/configuration and TFA
+configuration are private payload data. The client does not follow returned URLs;
+upstream provider calls may have their own outbound behavior as described above.
+Remote SSH connection checking is explicit and performs no automatic follow-up.
+Key generation/import/authorization/deletion, provider/link changes and TFA changes
+can alter access immediately. Preserve abort/overwrite, keep-file and authorization
+defaults and inspect per-item results separately from API metadata. No retry or
+rollback is added. Source versions and conditional input caveats remain in PHPDoc.
+
+`authorizeSshKey()` accepts file-only authorization by omitting `text`; if both
+are supplied, the pinned contract gives text precedence. The file argument remains
+required and names a public key under `/root/.ssh`. Successful remote SSH checks
+permit null `comment`, `protocol_versions` and `server_software` as documented.
+These POST paths are source-backed and offline-tested. External-account link and
+unlink methods take the local username first. Unset provider values retain null;
+client ID/secret nulls and absent/null TFA `primary_account` are source-family
+compatibility, not observations from executing those POST methods.
+
+Provider display configurations accept caller-serialized JSON containing the
+pinned `color`, `display_name`, `icon`, `icon_type`, `label` and `textcolor` keys,
+as a form field encoded once. The native `string|int` boundary has no documented
+integer semantics or automatic object encoding. Before release, `8x0.1.23` must
+also cover this content-based query schema, separately from JSON-body transport.
+TFA removal currently
+supports scalar `user`; the separately documented `user-1`/`user-2` family remains
+under `8x0.1.21`, without assuming equivalence to another numbered encoding.
+A user listed as modified may have had no TFA settings; it does not prove removal
+changed a configured account.
+
+All 30 methods have independent offline contracts. The fixed three-GET catalog
+reads WHM version, issuer names and policy status only. It retrieves no keys, TFA
+secrets, provider configuration or login URLs, opens no remote SSH connection,
+and changes no account, authentication policy or provider. Follow-up `8x0.2.40`
+retains remaining source/live coverage.
 
 ### Generic calls
 
