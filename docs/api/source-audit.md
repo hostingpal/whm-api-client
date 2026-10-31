@@ -3761,3 +3761,31 @@ after completion and empty Backup inventory despite an existing archive were als
 observed upstream; no new semantics are inferred from them. Follow-up `8x0.2.32`
 retains these limits and future committed mutation evidence. The format-only site
 input limitation remains `8x0.1.23` for correction before the first tagged release.
+
+## Expanded WHM DNS management
+
+`whm()->dns()` adds 26 functions while preserving fourteen typed reads and the
+deprecated `dumpzone` exclusion. Forty of the 44 pinned DNS functions are typed.
+The additions use two GET and 24 form POST requests for DNSSEC keys, domains,
+zones, MX records, resolvers, nameservers and cache/configuration maintenance.
+
+Three record-write operations remain excluded under `8x0.1.30`.
+`addzonerecord` and `editzonerecord` need composed form schemas with discriminators;
+`mass_edit_dns_zone` combines repeated serialized JSON records and integer removal
+indices. These are distinct request-format gaps, not invented JSON-body support.
+
+DNSSEC enable/disable accepts the source-documented repeated domain fields.
+Other domain selectors retain their own scalar contracts. Private key input is
+sensitive. The pinned export result declares only key tag/type; the client does
+not invent a private-key field. The delete-domain username accepts explicit null
+from pinned prose. Other response types, omission, nullability, per-item outcomes,
+key identifiers and source version/default/backend caveats remain unchanged.
+
+Domain/zone deletion or reset, DNSSEC key changes, resolver/nameserver updates and
+MX changes can affect live hosting immediately. There is no automatic retry,
+rollback, polling or inference of propagation, authority, trust or DNSSEC validity.
+
+All 26 additions have independent offline contracts. No new live capture is
+performed: the new GET operations need verified cluster-host or key-ID selectors
+that are not available for an owned fixture. No selector is guessed, private key
+exported or DNS/network configuration changed. `8x0.2.42` retains live verification.

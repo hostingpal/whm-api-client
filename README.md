@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 71 generated typed groups cover 580 documented operations (see
+The 71 generated typed groups cover 606 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1601,3 +1601,31 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+## Expanded WHM DNS management
+
+`whm()->dns()` adds 26 functions while preserving fourteen typed reads and the
+deprecated `dumpzone` exclusion. Forty of the 44 pinned DNS functions are typed.
+The additions use two GET and 24 form POST requests for DNSSEC keys, domains,
+zones, MX records, resolvers, nameservers and cache/configuration maintenance.
+
+Three record-write operations remain excluded under `8x0.1.30`.
+`addzonerecord` and `editzonerecord` need composed form schemas with discriminators;
+`mass_edit_dns_zone` combines repeated serialized JSON records and integer removal
+indices. These are distinct request-format gaps, not invented JSON-body support.
+
+DNSSEC enable/disable accepts the source-documented repeated domain fields.
+Other domain selectors retain their own scalar contracts. Private key input is
+sensitive. The pinned export result declares only key tag/type; the client does
+not invent a private-key field. The delete-domain username accepts explicit null
+from pinned prose. Other response types, omission, nullability, per-item outcomes,
+key identifiers and source version/default/backend caveats remain unchanged.
+
+Domain/zone deletion or reset, DNSSEC key changes, resolver/nameserver updates and
+MX changes can affect live hosting immediately. There is no automatic retry,
+rollback, polling or inference of propagation, authority, trust or DNSSEC validity.
+
+All 26 additions have independent offline contracts. No new live capture is
+performed: the new GET operations need verified cluster-host or key-ID selectors
+that are not available for an owned fixture. No selector is guessed, private key
+exported or DNS/network configuration changed. `8x0.2.42` retains live verification.

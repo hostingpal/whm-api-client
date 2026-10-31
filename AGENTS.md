@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 71 typed groups cover 580 documented operations:
+and cPanel UAPI surface. The 71 typed groups cover 606 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -1433,3 +1433,31 @@ Beads block to `CLAUDE.md` (do not run `bd setup claude` to re-add one).
 Preserve the generated Beads blocks and keep project-specific additions outside
 them. If `bd setup` regenerates a Beads block with profile-neutral wording,
 re-apply the team-maintainer wording; the Git Workflow section is authoritative.
+
+## Expanded WHM DNS management
+
+`whm()->dns()` adds 26 functions while preserving fourteen typed reads and the
+deprecated `dumpzone` exclusion. Forty of the 44 pinned DNS functions are typed.
+The additions use two GET and 24 form POST requests for DNSSEC keys, domains,
+zones, MX records, resolvers, nameservers and cache/configuration maintenance.
+
+Three record-write operations remain excluded under `8x0.1.30`.
+`addzonerecord` and `editzonerecord` need composed form schemas with discriminators;
+`mass_edit_dns_zone` combines repeated serialized JSON records and integer removal
+indices. These are distinct request-format gaps, not invented JSON-body support.
+
+DNSSEC enable/disable accepts the source-documented repeated domain fields.
+Other domain selectors retain their own scalar contracts. Private key input is
+sensitive. The pinned export result declares only key tag/type; the client does
+not invent a private-key field. The delete-domain username accepts explicit null
+from pinned prose. Other response types, omission, nullability, per-item outcomes,
+key identifiers and source version/default/backend caveats remain unchanged.
+
+Domain/zone deletion or reset, DNSSEC key changes, resolver/nameserver updates and
+MX changes can affect live hosting immediately. There is no automatic retry,
+rollback, polling or inference of propagation, authority, trust or DNSSEC validity.
+
+All 26 additions have independent offline contracts. No new live capture is
+performed: the new GET operations need verified cluster-host or key-ID selectors
+that are not available for an owned fixture. No selector is guessed, private key
+exported or DNS/network configuration changed. `8x0.2.42` retains live verification.

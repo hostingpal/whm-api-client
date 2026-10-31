@@ -18,6 +18,760 @@
     "whm1:lookupnsip": {"name": "lookupNameserverIp"},
     "whm1:lookupnsips": {"name": "lookupNameserverIps", "notes": [{"kind": "observed", "text": "Returns ipv6 as an empty string, rather than omitting it, when the nameserver has no IPv6 address."}], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "lookupnsips returned ipv6 as an empty string for a nameserver without an IPv6 address, although the pinned description says the field is returned only when an IPv6 address exists; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]},
     "whm1:parse_dns_zone": {},
-    "whm1:resolvedomainname": {"name": "resolveDomainName"}
+    "whm1:resolvedomainname": {"name": "resolveDomainName"},
+    "whm1:activate_zone_key": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 86 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function activates a domain's DNSSEC security key."
+        }
+      ],
+      "params": {
+        "key_id": {
+          "sensitive": false
+        }
+      },
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. activate_zone_key: x-readonly=false; selected POST. The documented success envelope has metadata and no data payload. Key IDs, sizes, types and setup names are public selectors, not private material; key_data is private key material. "
+        }
+      ]
+    },
+    "whm1:add_zone_key": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 86 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function generates a DNSSEC zone key for a domain. **Note:** * Only servers that run PowerDNS can use DNSSEC. If you call this function on a server that doesn't use PowerDNS, you will receive an error. * After you enable DNSSEC on the domain, you **must** add the Delegation of Signing (DS) records to your zone record and your registrar. * You **cannot** modify the DNSSEC security key. To make any changes, you **must** disable, delete, and re-create the DNSSEC security key."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting active retains 1. Omitting key_size retains algorithm/key-type defaults: algorithms 5/6/7/8 use KSK 2048 or ZSK 1024 bits; algorithm 13 uses 256 and algorithm 14 uses 384 bits. Algorithms are 5 RSA/SHA-1, 6 DSA-NSEC3-SHA1, 7 RSASHA1-NSEC3-SHA1, 8 RSA/SHA-256, 13 ECDSA P-256/SHA-256 and 14 ECDSA P-384/SHA-384. Supply lowercase ksk or zsk; key IDs and key types are public selectors. The returned new_key_id is the pinned string, without inferred numeric normalization."
+        }
+      ],
+      "params": {
+        "key_type": {
+          "sensitive": false
+        },
+        "key_size": {
+          "sensitive": false
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. add_zone_key: x-readonly=false; selected POST. Key IDs, sizes, types and setup names are public selectors, not private material; key_data is private key material. "
+        }
+      ]
+    },
+    "whm1:adddns": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.28 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function creates a DNS zone. If `trueowner=user`, this function does the following: * Adds a DNS entry in the `/var/cpanel/users/USER` file, where `USER` represents the `trueowner` parameter's value. * Creates the `/etc/vdomainaliases/DOMAIN` file, where `DOMAIN` represents the new zone's domain. * Creates the `/etc/vfilters/DOMAIN` file, where `DOMAIN` represents the new zone's domain. When you call this function, the system uses the domain name and IP address that you supply. WHM's standard zone template determines all other zone information. This function generates the DNS zone's [MX record](https://en.wikipedia.org/wiki/MX_record), [domain PTR](https://en.wikipedia.org/wiki/Reverse_DNS_lookup#Multiple_pointer_records), and [A records](https://en.wikipedia.org/wiki/List_of_DNS_record_types#A) automatically. **Important:** When you disable the [DNS role](https://go.cpanel.net/serverroles), the system **disables** this function. **NOTE:** You **cannot** use this function to add temporary domains."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting template retains standard; omitting trueowner retains the authenticated user. The template determines other zone information and automatically creates MX, domain PTR and A records. Optional null IPv6/owner arguments are omitted."
+        }
+      ],
+      "name": "addDns",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. adddns: x-readonly=false; selected POST. The documented success envelope has metadata and no data payload. "
+        }
+      ]
+    },
+    "whm1:addzonerecord": {
+      "exclude": {
+        "reason": "The referenced form body uses anyOf/discriminator DNS record alternatives unsupported by the current generator; preserving every required record field needs reviewed body-schema support. Tracked under whm-api-client-8x0.1.30.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. addzonerecord: The referenced form body uses anyOf/discriminator DNS record alternatives unsupported by the current generator; preserving every required record field needs reviewed body-schema support."
+          }
+        ]
+      }
+    },
+    "whm1:cluster_member_has_trust_with": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 84 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function queries whether nameservers in a DNS cluster can share records with one another. Servers in a DNS cluster **must** exist in a [Reverse Trust relationship](https://go.cpanel.net/whmdocsDNSCluster) to share information. This relationship requires each server to have an [API token](https://go.cpanel.net/ManageAPITokens). **Note:** DNS servers in a Write-Only role do not need to exist in a Reverse Trust relationship. For more information, read our [Guide to DNS Cluster Configurations](https://go.cpanel.net/DNSClusterConfig) documentation."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting althost retains the documented 8.8.8.8 alternate host. host and althost are caller-selected cluster IPs; constructing the group does not probe a cluster."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. cluster_member_has_trust_with: x-readonly=true; selected GET. "
+        }
+      ]
+    },
+    "whm1:create_parked_domain_for_user": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 82 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function creates an alias (parks a domain on a web virtual host)."
+        },
+        {
+          "kind": "documented",
+          "text": "web_vhost_domain identifies an existing web virtual host. If it is not the main domain, the system considers the new name an addon domain."
+        }
+      ],
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. create_parked_domain_for_user: x-readonly=false; selected POST. The documented success envelope has metadata and no data payload. "
+        }
+      ]
+    },
+    "whm1:create_subdomain": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 86 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function creates a subdomain."
+        },
+        {
+          "kind": "documented",
+          "text": "document_root is within the account home directory and invalid paths fail. If Restrict document roots to public_html is On, it must begin with public_html/. Omitting use_canonical_name retains 0; explicit false sends 0."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. create_subdomain: x-readonly=false; selected POST. "
+        }
+      ]
+    },
+    "whm1:deactivate_zone_key": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 86 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function deactivates a domain's DNSSEC security key. **Note:** Only servers that run PowerDNS can use DNSSEC. If you call this function on a server that doesn't use PowerDNS, you will receive an error."
+        }
+      ],
+      "params": {
+        "key_id": {
+          "sensitive": false
+        }
+      },
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. deactivate_zone_key: x-readonly=false; selected POST. The documented success envelope has metadata and no data payload. Key IDs, sizes, types and setup names are public selectors, not private material; key_data is private key material. "
+        }
+      ]
+    },
+    "whm1:delete_domain": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 86 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function deletes a domain. **Note:** This function does **not** remove an addon domain's associated subdomain. You **must** also run this function for the associated subdomain."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. delete_domain: x-readonly=false; selected POST. "
+        }
+      ],
+      "response": {
+        "username": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. delete_domain data.username prose explicitly allows null when no cPanel account owns the domain, although the formal string schema omits nullable."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:disable_dnssec_for_domains": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 86 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function disables DNSSEC on the domain. **Note:** Only servers that run PowerDNS can use DNSSEC. If you call this function on a server that doesn't use PowerDNS, you will receive an error. **Warning:** - This action is **irreversible**. If you disable DNSSEC on the domain, you will lose the associated keys. You can only retrieve the keys by restoring them from a full back up of the account. - If you disable DNSSEC, you **must** remove the Delegation of Signing (DS) records on your DNS server and with your registrar."
+        },
+        {
+          "kind": "documented",
+          "text": "Inspect each domain disabled flag separately from WHM metadata. Disabling loses keys irreversibly unless restored from a full account backup; remove the DS records from the DNS server and registrar."
+        }
+      ],
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. disable_dnssec_for_domains: x-readonly=false; selected POST. Key IDs, sizes, types and setup names are public selectors, not private material; key_data is private key material. The domain parameter prose explicitly supports duplicate domain keys or domain/domain-1/domain-2; use repeated domain keys. "
+        }
+      ]
+    },
+    "whm1:editzonerecord": {
+      "exclude": {
+        "reason": "The referenced form body uses anyOf/discriminator DNS record alternatives unsupported by the current generator; preserving every required record field needs reviewed body-schema support. Tracked under whm-api-client-8x0.1.30.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. editzonerecord: The referenced form body uses anyOf/discriminator DNS record alternatives unsupported by the current generator; preserving every required record field needs reviewed body-schema support."
+          }
+        ]
+      }
+    },
+    "whm1:enable_dnssec_for_domains": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 86 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function enables DNSSEC on the domain. **Note:** * Only servers that run PowerDNS can use DNSSEC. If you call this function on a server that doesn't use PowerDNS, you will receive an error. * After you enable DNSSEC on the domain, you **must** add the Delegation of Signing (DS) records on your DNS server and with your registrar. * You **cannot** modify the DNSSEC security key. To make any changes, you **must** disable, delete, and re-create the DNSSEC security key."
+        },
+        {
+          "kind": "documented",
+          "text": "Omission retains active=1, algo_num=8, key_setup=classic, nsec3_iterations=7, nsec3_narrow=1, nsec3_opt_out=0 and use_nsec3=1; no salt default is specified. Algorithms 5/6/7/8/10/13/14 are documented, including 10 RSA/SHA-512. classic uses separate KSK/ZSK and is documented for algorithms at most 8; simple uses one key for algorithms above 8. Selecting algorithm 13 alone does not change the classic default. nsec3_salt is a hexadecimal string. Narrow=1 means Narrow mode and 0 Inclusive mode; opt_out=1 creates records for all delegations and 0 only secure delegations. use_nsec3 selects NSEC3 (1) or NSEC (0); the pinned prose says the system ignores the other NSEC3 options when this value is used. Inspect each domain enabled/nsec_error result separately from WHM metadata; new_key_id remains the pinned string."
+        }
+      ],
+      "params": {
+        "key_setup": {
+          "sensitive": false
+        },
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. enable_dnssec_for_domains: x-readonly=false; selected POST. Key IDs, sizes, types and setup names are public selectors, not private material; key_data is private key material. The domain parameter prose explicitly supports duplicate domain keys or domain/domain-1/domain-2; use repeated domain keys. "
+        }
+      ]
+    },
+    "whm1:export_zone_dnskey": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 88 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function exports a domain's DNSKEY record value."
+        },
+        {
+          "kind": "documented",
+          "text": "key_id is a public numeric selector; returned DNSKEY text is payload data. The API result does not establish trust or DNS propagation."
+        }
+      ],
+      "params": {
+        "key_id": {
+          "sensitive": false
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. export_zone_dnskey: x-readonly=true; selected GET. Key IDs, sizes, types and setup names are public selectors, not private material; key_data is private key material. "
+        }
+      ]
+    },
+    "whm1:export_zone_key": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 86 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function exports a DNSSEC security key to a domain. **Note:** Only servers that run PowerDNS can use DNSSEC. If you call this function on a server that doesn't use PowerDNS, you will receive an error."
+        },
+        {
+          "kind": "documented",
+          "text": "key_id is a public selector. Treat exported key results and mismatch payloads as sensitive; the pinned response declares only key_tag and key_type. Do not infer extra private-key fields from sibling endpoints."
+        }
+      ],
+      "params": {
+        "key_id": {
+          "sensitive": false
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. export_zone_key: x-readonly=false; selected POST. Key IDs, sizes, types and setup names are public selectors, not private material; key_data is private key material. "
+        }
+      ]
+    },
+    "whm1:import_zone_key": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 86 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function imports a DNSSEC security key. **Note:** Only servers that run PowerDNS can use DNSSEC. If you call this function on a server that doesn't use PowerDNS, you will receive an error."
+        },
+        {
+          "kind": "documented",
+          "text": "key_data is the private material from pdnsutil export-zone-key and remains sensitive. Supply lowercase ksk or zsk. An accepted API result does not establish DNSSEC validation."
+        }
+      ],
+      "params": {
+        "key_data": {
+          "sensitive": true
+        },
+        "key_type": {
+          "sensitive": false
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. import_zone_key: x-readonly=false; selected POST. Key IDs, sizes, types and setup names are public selectors, not private material; key_data is private key material. "
+        }
+      ]
+    },
+    "whm1:killdns": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function deletes a DNS zone. **Important:** - The WHM API 1 adddns function adds an XDNS entry for a domain in the following locations: - The `/var/cpanel/users/USER` file, where `USER` represents the domain's owner. - The `/etc/vdomainaliases/DOMAIN` directory, where `DOMAIN` represents the new zone's domain. - The `/etc/vfilters/DOMAIN` directory, where `DOMAIN` represents the new zone's domain. - This function does **not** automatically delete these entries. You **must** manually delete these entries, or you **cannot** use this domain as a value in other API functions. - You cannot delete other DNS zones that reside on *Write-only* servers in a DNS cluster. **Important:** When you disable the [DNS role](https://go.cpanel.net/serverroles), the system **disables** this function. **NOTE:** You **cannot** use this function to delete temporary domains."
+        }
+      ],
+      "name": "killDns",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. killdns: x-readonly=false; selected POST. The documented success envelope has metadata and no data payload. "
+        }
+      ]
+    },
+    "whm1:mass_edit_dns_zone": {
+      "exclude": {
+        "reason": "The form parameters add/edit are repeated serialized JSON strings and remove is a repeated integer list; the current repeated-parameter contract accepts string items only. The complete operation is excluded rather than dropping remove or treating this as a JSON request body. Tracked under whm-api-client-8x0.1.30.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. mass_edit_dns_zone: The form parameters add/edit are repeated serialized JSON strings and remove is a repeated integer list; the current repeated-parameter contract accepts string items only. The complete operation is excluded rather than dropping remove or treating this as a JSON request body."
+          }
+        ]
+      }
+    },
+    "whm1:remove_zone_key": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 86 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function removes a DNSSEC security key. **Note:** Only servers that run PowerDNS can use DNSSEC. If you call this function on a server that doesn't use PowerDNS, you will receive an error."
+        },
+        {
+          "kind": "documented",
+          "text": "Removing a key is irreversible and can break validation while a registrar DS record still references it. key_id is a public selector, located through fetch_ds_records_for_domains."
+        }
+      ],
+      "params": {
+        "key_id": {
+          "sensitive": false
+        }
+      },
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. remove_zone_key: x-readonly=false; selected POST. The documented success envelope has metadata and no data payload. Key IDs, sizes, types and setup names are public selectors, not private material; key_data is private key material. "
+        }
+      ]
+    },
+    "whm1:removezonerecord": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function deletes a DNS zone record. **Warning:** Incorrect use of this function could cause domains to resolve incorrectly. Exercise **extreme caution** when you remove DNS zone records. To effectively use this function, use the following workflow: 1. Run the `dumpzone` function. 2. Locate the `Line` value that corresponds to the zone record to delete. 3. Use the values from that zone record to formulate the appropriate `removezonerecord` parameters. **Important:** * When you disable the [DNS role](https://go.cpanel.net/serverroles), the system **disables** this function. * You **cannot** use this function to modify temporary domains."
+        },
+        {
+          "kind": "documented",
+          "text": "line is the DNS zone file line number. Omitting serialnum retains the current zone serial number. Use a verified record line; incorrect removal can make domains resolve incorrectly."
+        }
+      ],
+      "name": "removeZoneRecord",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. removezonerecord: x-readonly=false; selected POST. The documented success envelope has metadata and no data payload. "
+        }
+      ]
+    },
+    "whm1:resetzone": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function resets a DNS zone to its default values. This also resets the domain's subdomain DNS records, and restores zone file subdomains in the server's `httpd.conf` file. For example, use this function to restore DNS zones that are corrupt. **Note:** Zone resets preserve valid TXT records, but **all** other records will return to their default values. **Important:** When you disable the [DNS role](https://go.cpanel.net/serverroles), the system **disables** this function. **Note** You **must** include either the `domain` or the `zone` parameters."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply domain or zone; the client does not choose an alternative automatically. Valid TXT records are preserved, all other records reset, subdomain records reset and zone file subdomains are restored in httpd.conf."
+        }
+      ],
+      "name": "resetZone",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. resetzone: x-readonly=false; selected POST. The documented success envelope has metadata and no data payload. "
+        }
+      ]
+    },
+    "whm1:savemxs": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.28 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function creates a new MX record. **Important:** When you disable the [DNS role](https://go.cpanel.net/howtouseserverprofiles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting class retains IN and omitting ttl retains 14400 seconds. Lower preference values have higher MX priority. This creates a record immediately; no retry or rollback is provided."
+        }
+      ],
+      "name": "saveMxs",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. savemxs: x-readonly=false; selected POST. The documented success envelope has metadata and no data payload. "
+        }
+      ]
+    },
+    "whm1:set_nameserver": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 84 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function sets the nameserver software that the remote servers in a DNS cluster run. The system queues the nameserver software that you select until the HTTP request finishes. Then, it sets the remote servers' nameserver software."
+        },
+        {
+          "kind": "documented",
+          "text": "The input names are BIND, PowerDNS or Disabled; returned names are lowercase. A queued message is not completion evidence. The client performs no polling or retry."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. set_nameserver: x-readonly=false; selected POST. "
+        }
+      ]
+    },
+    "whm1:set_nsec3_for_domains": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 86 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function configures the domain to use [Next Secure Record 3](https://tools.ietf.org/html/rfc4470) (NSEC3) semantics. **Note:** Only servers that run PowerDNS can use DNSSEC. If you call this function on a server that doesn't use PowerDNS, you will receive an error."
+        },
+        {
+          "kind": "documented",
+          "text": "nsec3_iterations is 0 through 500; nsec3_narrow=1 is Narrow and 0 Inclusive mode. nsec3_opt_out=1 creates records for all delegations and 0 only secure delegations. nsec3_salt is passed unchanged. Inspect domain enabled/error outcomes separately from metadata."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. set_nsec3_for_domains: x-readonly=false; selected POST. "
+        }
+      ]
+    },
+    "whm1:set_up_dns_resolver_workarounds": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 84 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function creates an [Unbound](http://www.linuxfromscratch.org/blfs/view/svn/server/unbound.html) (`libunbound`) DNS resolver configuration. **Important:** When you disable the [DNS role](https://go.cpanel.net/howtouseserverprofiles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "flags contains only options for which a configuration issue was found. Omitted do-ip6, do-udp and edns-buffer-size options remain absent, and option values remain strings."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. set_up_dns_resolver_workarounds: x-readonly=false; selected POST. "
+        }
+      ]
+    },
+    "whm1:setresolvers": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function configures the server's resolver nameservers. **Warning:** * The nameservers that the server uses as resolvers **must** function correctly. If they do not, the server will experience performance and stability issues. * **Never** set a resolver nameserver to `127.0.0.1` on a cPanel & WHM server."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting nameserver3 retains the documented empty-string default. Explicit empty string is sent unchanged. Incorrect resolvers cause performance/stability problems; never use 127.0.0.1 on a cPanel & WHM server."
+        }
+      ],
+      "name": "setResolvers",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. setresolvers: x-readonly=false; selected POST. The documented success envelope has metadata and no data payload. "
+        }
+      ]
+    },
+    "whm1:unset_nsec3_for_domains": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 86 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function configures the domain to use [Next Secure Record](https://tools.ietf.org/html/rfc4470) (NSEC) semantics instead of [Next Secure Record 3](https://tools.ietf.org/html/rfc4470) (NSEC3) semantics. **Note:** Only servers that run PowerDNS can use DNSSEC. If you call this function on a server that doesn't use PowerDNS, you will receive an error."
+        },
+        {
+          "kind": "documented",
+          "text": "Inspect each domain disabled/error result separately from WHM metadata. NSEC semantics replace NSEC3; the API result does not establish DNSSEC validation or propagation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. unset_nsec3_for_domains: x-readonly=false; selected POST. "
+        }
+      ]
+    },
+    "whm1:update_nameservers_config": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 76 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function updates nameservers in the `wwwacct.conf` file. For more information, read our [Installation Guide - Customize Your Installation](https://go.cpanel.net/advancedinstall) documentation."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting each nameserver/2/3/4 parameter leaves its corresponding NS/NS2/NS3/NS4 setting unchanged. The client does not synthesize nameservers."
+        }
+      ],
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. update_nameservers_config: x-readonly=false; selected POST. The documented success envelope has metadata and no data payload. "
+        }
+      ]
+    },
+    "whm1:update_reverse_dns_cache": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 86 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function queries DNS and updates the map of local IP addresses to reverse DNS names."
+        }
+      ],
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. update_reverse_dns_cache: x-readonly=false; selected POST. The documented success envelope has metadata and no data payload. "
+        }
+      ]
+    },
+    "whm1:updateuserdomains": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 86 (x-cpanel-available-version)."
+        },
+        {
+          "kind": "documented",
+          "text": "This function updates the `/etc/userdomains` file based on the entries in `/var/cpanel/users` directory."
+        }
+      ],
+      "name": "updateUserDomains",
+      "void": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. updateuserdomains: x-readonly=false; selected POST. The documented success envelope has metadata and no data payload. "
+        }
+      ]
+    }
   }
 }
