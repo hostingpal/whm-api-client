@@ -872,3 +872,19 @@ records additional WHM reads and a disposable-account SSL lifecycle on
 contract corrections and remain separate from the two immutable captures above.
 The service reset/install family and rebuild/enqueue missing-data variants are
 source/offline only. No new capture ran for review fixes; `8x0.2.39` remains open.
+
+## WHM DNS management reviewer evidence
+
+The expanded DNS slice has no new committed live capture. The separate
+[PR54 review](https://github.com/hostingpal/whm-api-client/pull/54#pullrequestreview-5720693698)
+reports selected WHM DNSSEC and disposable-account domain/zone calls on
+`11.138.0.19`, with account, home directory and three throwaway zones cleaned.
+Those reports support the observed key-ID compatibility fixes without changing
+any historical artifact or expanding its scope.
+
+Optional exported private `key_content`, imported `new_key_id` and the
+`parseDnsZone().line_index + 1` deletion mapping are backed by the reviewer's
+upstream source inspection. A focused raw-export/import/remove-record pass was
+denied before execution with `[Modify Shared Resources]` and was not retried.
+No raw export or private key value was captured by these corrections. The denied
+operations, server-wide writes and remaining variants stay under `8x0.2.42`.

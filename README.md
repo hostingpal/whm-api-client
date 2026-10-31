@@ -3,10 +3,10 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 79 generated typed groups cover 845 documented operations (see
+The 79 generated typed groups cover 871 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
-usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
-and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
+usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
+management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
 features, domain management, directory access, the complete Email and SSL modules,
 disk quotas, 13 Fileman operations and the complete pinned MySQL, FTP, PostgreSQL
 and Mime sections, plus mail protection through BoxTrapper, EmailAuth, SpamAssassin
@@ -309,7 +309,7 @@ An empty live list does not verify the types of records it never returned.
 | `whm()->accounts()` | `listAccounts()`, `accountSummary()`, `getDomainInfo()`, `createAccount()`, `suspendAccount()`, `unsuspendAccount()`, `removeAccount()`, `changePassword()`, `changePackage()`, `modifyAccount()` |
 | `whm()->webServer()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetHandlers()`, `phpGetDefaultAccountsToFpm()`, `phpGetOldFpmFlag()`, `isConversionInProgress()`, `phpGetVhostsByVersion()` |
 | `whm()->hostingPlans()` | `listPackages()`, `getFeatureMetadata()`, `getFeatureNames()`, `getFeaturelistData()`, `getFeaturelists()`, `getFeaturelistsByPackageTypes()`, `getUsersFeaturesSettings()`, `verifyUserHasFeature()` |
-| `whm()->dns()` | `listZones()`, `parseDnsZone()`, `getZoneRecord()`, `listMxRecords()`, `exportZoneFiles()`, `resolveDomainName()`, `hasLocalAuthority()`, `fetchDsRecordsForDomains()`, `getNameserverConfig()`, `lookupNameserverIp()`, `lookupNameserverIps()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
+| `whm()->dns()` | DNS zone inventory, DNSSEC keys, domains and server DNS administration (40); see [generated methods](src/Api/Whm/Dns.php). |
 | `whm()->authentication()` | SSH keys, providers, external-account links and two-factor authentication (30); see [generated methods](src/Api/Whm/Authentication.php). |
 
 | `whm()->ssl()` | WHM certificate, service SSL and AutoSSL operations (32); see [generated methods](src/Api/Whm/Ssl.php). |
@@ -1612,6 +1612,55 @@ for designated `npr`/`npr.rs`, the best domain for the pinned `whostmgr` service
 example, and the account's certificate inventory. It reads no log contents,
 private-key/component PEM or unspecified provider values and makes no changes.
 Follow-up `8x0.2.39` retains remaining live behavior.
+
+### WHM DNS management
+
+`whm()->dns()` exposes 40 of the 44 pinned DNS functions: sixteen GET reads and
+24 form POST methods for zone inventory, DNSSEC keys, domains, MX records,
+resolvers, nameservers and maintenance. Deprecated `dumpzone` remains excluded.
+Three record-write operations remain under `8x0.1.30`: `addzonerecord` and
+`editzonerecord` require composed form schemas; `mass_edit_dns_zone` combines
+repeated serialized JSON records and integer removal indices.
+
+DNSSEC enable/disable uses repeated domain fields; other selectors retain their
+own scalar contracts. `addZoneKey()` and each `enableDnssecForDomains()` row return
+integer `new_key_id` values, accepting bounded canonical integer strings so the
+IDs can be passed to the key-selector methods. `exportZoneDnskey()` normalizes its
+`key_id` by the same rule. `importZoneKey()` preserves both the pinned
+`import_key_id` integer and the source-backed optional `new_key_id`, with canonical
+integer-string compatibility on the latter. Omitted fields remain absent.
+
+`exportZoneKey()` preserves optional string `key_content` alongside key tag/type.
+That field comes from separately reviewed upstream source, not a new raw export
+observation. It is private key material: protect returned values and raw
+`PayloadMismatchException::$payload` rather than logging them. Import input stays
+sensitive; no export/import replay, automatic retry or rollback is performed.
+
+`removeZoneRecord()` takes a one-based zone-file line. When selecting from
+`parseDnsZone()`, pass `line_index + 1`, never the zero-based index itself. This
+mapping is source-backed and has not been verified by a live record removal.
+Use a current zone read and the applicable serial number; a stale or incorrect
+line can remove the wrong record. `deleteDomain()` can succeed with `type: null`
+when no domain exists, so a successful envelope does not establish deletion.
+Domain deletion has no rollback and does not delete an addon's associated
+subdomain. `resetZone()` requires `domain` or `zone`; it preserves valid TXT
+records but resets other records to defaults, including subdomain records.
+
+The WHM pinned schema lists `nsec3_iterations: 7` and no salt default. These are
+pinned WHM declarations, not a promise about every server version's behavior;
+omitted values are sent as omissions for the server to resolve. DNSSEC and
+resolver/nameserver changes can immediately affect live hosting. Check per-domain
+results independently of WHM metadata. No automatic polling or inference of DNS
+propagation, authority, trust or DNSSEC validity is added.
+
+All methods have offline contracts. The separate WHM reviewer report on
+`11.138.0.19` exercised selected DNSSEC and disposable-account domain/zone calls,
+with account, home directory and all three throwaway zones removed. No new
+committed capture accompanies these corrections. The focused raw-export/import/
+remove-record pass was rejected before execution with `[Modify Shared Resources]`
+and was not retried. Those corrections remain source/offline evidence. Server-wide
+writes and other remaining variants stay under `8x0.2.42`; existing artifacts are
+unchanged.
 
 ### Generic calls
 
