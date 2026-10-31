@@ -57,9 +57,9 @@ final readonly class WebDisk
      * @param bool $destroy Whether to recursively delete the Web Disk account's folder and all of its contents.
      * @param string $user The Web Disk account username.
      * @return DeleteUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/webdisk-settings/webdisk-delete_user
      */
     public function deleteUser(bool $destroy, string $user): ?array
@@ -93,9 +93,9 @@ final readonly class WebDisk
      * @param bool|null $private Whether to set the Web Disk directory's permissions to public or private. Null omits
      *     it.
      * @return SetHomedirResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/webdisk-settings/webdisk-set_homedir
      */
     public function setHomedir(string $homedir, string $user, ?bool $private = null): ?array
@@ -132,9 +132,9 @@ final readonly class WebDisk
      * @param string $user The Web Disk account username.
      * @param bool|null $enabledigest Whether to enable Digest Authentication. Null omits it.
      * @return SetPasswordResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/webdisk-settings/webdisk-set_password
      */
     public function setPassword(
@@ -174,9 +174,9 @@ final readonly class WebDisk
      * @param 'ro'|'rw' $perms The Web Disk account's home directory file permissions.
      * @param string $user The Web Disk account's username.
      * @return SetPermissionsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/webdisk-settings/webdisk-set_permissions
      */
     public function setPermissions(string $perms, string $user): ?array

@@ -59,9 +59,9 @@ final readonly class StatsManager
      * API-map identity: uapi:StatsManager/get_configuration#GET (wire name get_configuration).
      *
      * @return GetConfigurationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/weblog-settings/statsmanager-get_configuration
      */
     public function getConfiguration(): array

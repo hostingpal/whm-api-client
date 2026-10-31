@@ -119,9 +119,9 @@ final readonly class WebsiteBackup
      * @param string|list<string>|null $database A database to include in the archive. Null omits it.
      * @param string|null $email Address to notify when the backup finishes. Null omits it.
      * @return CreateBackupResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/websitebackup/websitebackup-create_backup
      */
@@ -164,9 +164,9 @@ final readonly class WebsiteBackup
      * @param string|list<string> $ids Identifier of a backup to delete, as returned by the
      *     `WebsiteBackup::list_backups` function.
      * @return DeleteBackupResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/websitebackup/websitebackup-delete_backup
      */
@@ -210,9 +210,9 @@ final readonly class WebsiteBackup
      *
      * @param string $domain The website whose backup size to estimate.
      * @return DiskQuotaCheckResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/websitebackup/websitebackup-disk_quota_check
      */
     public function diskQuotaCheck(string $domain): array
@@ -255,9 +255,9 @@ final readonly class WebsiteBackup
      *     function.
      * @param string $path Destination folder for the extracted files, relative to the account's home directory.
      * @return ExtractBackupResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/websitebackup/websitebackup-extract_backup
      */
     public function extractBackup(string $domain, string $id, string $path): array
@@ -294,9 +294,9 @@ final readonly class WebsiteBackup
      *
      * @param string $domain The website whose backups to list.
      * @return ListBackupsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/websitebackup/websitebackup-list_backups
      */
     public function listBackups(string $domain): array
@@ -335,9 +335,9 @@ final readonly class WebsiteBackup
      *
      * @param string $domain The website whose running operations to list.
      * @return ListOperationsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/websitebackup/websitebackup-list_operations
      */
     public function listOperations(string $domain): array
@@ -375,9 +375,9 @@ final readonly class WebsiteBackup
      *
      * @param string $operationId Identifier of the operation to read.
      * @return OperationStatusResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/websitebackup/websitebackup-operation_status
      */
     public function operationStatus(string $operationId): array
@@ -440,9 +440,9 @@ final readonly class WebsiteBackup
      *     typed boolean argument sends only 0 or 1. To leave databases untouched, set this argument to false and omit
      *     database. Null omits it.
      * @return RestoreBackupResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/websitebackup/websitebackup-restore_backup
      */

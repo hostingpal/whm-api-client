@@ -13,11 +13,15 @@
         },
         {
           "kind": "documented",
-          "text": "Generates configuration material to enable two-factor authentication. There are no request arguments. The optional secret and otpauth_str fields are strings containing sensitive authentication material; otpauth_str is the one-time authentication URL for QR encoding. The client does not fetch the URL, render the QR code or compute a TOTP."
+          "text": "Generates configuration material to enable two-factor authentication with no request arguments. The source declares x-readonly=false with no rollback. The optional secret and otpauth_str fields are strings containing sensitive authentication material; otpauth_str is the one-time authentication URL for QR encoding."
         },
         {
-          "kind": "documented",
-          "text": "Uses form POST because the pinned operation declares x-readonly=false. The source declares no rollback; no automatic retry or rollback occurs. Retain optional fields and reject null or absent data. Treat returned configuration and PayloadMismatchException::$payload as sensitive; do not log them. Payload content is not copied into responseMeta()."
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+        },
+        {
+          "kind": "policy",
+          "text": "The client does not fetch the URL, render the QR code or compute a TOTP. Retain optional fields; null or absent data is a payload mismatch. Treat returned configuration and PayloadMismatchException::$payload as sensitive; do not log them. Payload content is not copied into responseMeta()."
         }
       ],
       "method": "POST",
@@ -38,11 +42,23 @@
         },
         {
           "kind": "documented",
-          "text": "Requires teamUser, forwarded unchanged as team_user. The source describes the team username as preceding the account primary domain. Although described as retrieval, this operation declares x-readonly=false and x-rollback=none, so it uses form POST with no automatic retry or rollback."
+          "text": "Requires teamUser. The source describes the team username as preceding the account primary domain. Although described as retrieval, this operation declares x-readonly=false and x-rollback=none."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+        },
+        {
+          "kind": "policy",
+          "text": "Forwards teamUser unchanged as team_user."
         },
         {
           "kind": "documented",
-          "text": "Returns an object with optional integer 0/1 is_enabled and optional string issuer. Preserve disabled zero, empty issuer and omission separately; quoted flags, booleans and null fields are not inferred. An API success does not establish actual login behavior or security enforcement."
+          "text": "Returns an object with optional integer 0/1 is_enabled and optional string issuer."
+        },
+        {
+          "kind": "policy",
+          "text": "Preserve disabled zero, empty issuer and omission separately; quoted flags, booleans and null fields are rejected. API success does not establish actual login behavior or security enforcement."
         }
       ],
       "method": "POST",
@@ -63,11 +79,19 @@
         },
         {
           "kind": "documented",
-          "text": "This read uses GET with no request arguments. The pinned payload contains only status and issuer fields; it does not declare a secret or otpauth URL."
+          "text": "Retrieves configuration with no request arguments. The pinned payload declares is_enabled and issuer, with no secret or otpauth URL."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one GET request without automatic retry."
         },
         {
           "kind": "documented",
-          "text": "Returns an object with optional integer 0/1 is_enabled and optional string issuer. Preserve disabled zero, empty issuer and omission separately; quoted flags, booleans and null fields are not inferred. An API success does not establish actual login behavior or security enforcement."
+          "text": "Returns an object with optional integer 0/1 is_enabled and optional string issuer."
+        },
+        {
+          "kind": "policy",
+          "text": "Preserve disabled zero, empty issuer and omission separately; quoted flags, booleans and null fields are rejected. API success does not establish actual login behavior or security enforcement."
         }
       ]
     },
@@ -79,15 +103,19 @@
         },
         {
           "kind": "documented",
-          "text": "Removes the selected account user from the two-factor authentication userdata file. There are no request arguments. This can change authentication requirements immediately."
+          "text": "Removes the selected account user from the two-factor authentication userdata file with no request arguments. Returns an object with optional integer tfa_removed. The pinned enum contains only 1, meaning removed; failure is described in response metadata."
         },
         {
-          "kind": "documented",
-          "text": "Uses form POST with one attempt and no automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+          "kind": "policy",
+          "text": "This can change authentication requirements immediately."
         },
         {
-          "kind": "documented",
-          "text": "Returns an object with optional integer tfa_removed. The pinned enum contains only 1, meaning removed; failure is described in response metadata. The existing validator enforces integer type without adding general single-value enum validation. UAPI status=0 remains an API failure; null or absent data is a payload mismatch. API success does not establish a subsequent login result."
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+        },
+        {
+          "kind": "policy",
+          "text": "The existing validator enforces integer type without adding general single-value enum validation. UAPI status=0 remains an API failure; null or absent data is a payload mismatch. API success does not establish a subsequent login result."
         }
       ],
       "method": "POST",
@@ -108,15 +136,23 @@
         },
         {
           "kind": "documented",
-          "text": "Requires secret and tfaToken, encoded as secret and tfa_token in a form POST body. Both are sensitive. The source describes a 16-character generated secret and a six-digit TOTP code but declares tfa_token as an integer; preserve that integer contract and an explicit zero without padding, string conversion rules or client-side TOTP generation."
+          "text": "Requires secret and tfaToken. The source describes a 16-character generated secret and a six-digit TOTP code, but the pinned tfa_token schema is integer with maxLength: 6, while its CLI sample quotes tfa_token='528112'."
+        },
+        {
+          "kind": "policy",
+          "text": "Accepts string|int as a client correction to preserve leading zeroes; prefer a string such as '012345'. Native integers and explicit zero remain accepted. Both arguments are sensitive and sent as secret and tfa_token in the form POST body. The client adds no token validator, padding, universal numeric conversion or TOTP generation."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
         },
         {
           "kind": "documented",
-          "text": "Uses form POST with one attempt and no automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+          "text": "Returns an object with optional integer 0/1 tfa_configured. The pinned prose repeats 1 for enabled and disabled while its formal enum is [0, 1]."
         },
         {
-          "kind": "documented",
-          "text": "Returns an object with optional integer 0/1 tfa_configured. The pinned prose repeats 1 for enabled and disabled while its formal enum is [0, 1]; preserve the flag contract without inferring a corrected prose meaning. Quoted flags, booleans, null fields and absent data are rejected. API outcome and payload flags do not prove actual login or security enforcement."
+          "kind": "policy",
+          "text": "Preserve the flag contract without inferring a corrected prose meaning. Quoted flags, booleans, null fields and absent data are rejected. API outcome and payload flags do not prove actual login or security enforcement."
         }
       ],
       "method": "POST",
@@ -125,7 +161,13 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /TwoFactorAuth/set_user_configuration: x-readonly=false and x-rollback=none. Use form POST with no retry or rollback; retain the pinned parameter requiredness, defaults and data schema. Sensitive inputs stay out of query strings and library exception trace arguments."
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /TwoFactorAuth/set_user_configuration: x-readonly=false and x-rollback=none. Use form POST with no retry or rollback; retain the pinned parameter requiredness, defaults and data schema, except for the separately evidenced tfa_token input widening. Sensitive inputs stay out of query strings and library exception trace arguments."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /TwoFactorAuth/set_user_configuration: required tfa_token has integer schema with maxLength: 6, six-digit security-code prose and quoted CLI tfa_token='528112'. Client correction uses the existing string|int scalar override to preserve literal leading-zero strings, with native int compatibility, requiredness and sensitivity unchanged. No live POST or server acceptance observation is claimed; PR66 review 5721152661 identified the loss of leading zeroes."
         }
       ],
       "params": {
@@ -133,7 +175,8 @@
           "sensitive": true
         },
         "tfa_token": {
-          "sensitive": true
+          "sensitive": true,
+          "type": "string|int"
         }
       },
       "order": [

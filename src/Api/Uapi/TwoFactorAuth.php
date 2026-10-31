@@ -58,22 +58,23 @@ final readonly class TwoFactorAuth
      * Documented: Available in cPanel 54 and later; operates on the selected cPanel account. The pinned operation
      * declares no additional role restriction.
      *
-     * Documented: Generates configuration material to enable two-factor authentication. There are no request arguments.
-     * The optional secret and otpauth_str fields are strings containing sensitive authentication material; otpauth_str
-     * is the one-time authentication URL for QR encoding. The client does not fetch the URL, render the QR code or
-     * compute a TOTP.
+     * Documented: Generates configuration material to enable two-factor authentication with no request arguments. The
+     * source declares x-readonly=false with no rollback. The optional secret and otpauth_str fields are strings
+     * containing sensitive authentication material; otpauth_str is the one-time authentication URL for QR encoding.
      *
-     * Documented: Uses form POST because the pinned operation declares x-readonly=false. The source declares no
-     * rollback; no automatic retry or rollback occurs. Retain optional fields and reject null or absent data. Treat
-     * returned configuration and PayloadMismatchException::$payload as sensitive; do not log them. Payload content is
-     * not copied into responseMeta().
+     * Policy: Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a
+     * payload mismatch may accompany a completed change; do not retry automatically.
+     *
+     * Policy: The client does not fetch the URL, render the QR code or compute a TOTP. Retain optional fields; null or
+     * absent data is a payload mismatch. Treat returned configuration and PayloadMismatchException::$payload as
+     * sensitive; do not log them. Payload content is not copied into responseMeta().
      *
      * API-map identity: uapi:TwoFactorAuth/generate_user_configuration#GET (wire name generate_user_configuration).
      *
      * @return GenerateUserConfigurationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/two-factor-settings/twofactorauth-generate_user_configuration
      */
     public function generateUserConfiguration(): array
@@ -95,21 +96,26 @@ final readonly class TwoFactorAuth
      * Documented: Available in cPanel 54 and later; operates on the selected cPanel account. The pinned operation
      * declares no additional role restriction.
      *
-     * Documented: Requires teamUser, forwarded unchanged as team_user. The source describes the team username as
-     * preceding the account primary domain. Although described as retrieval, this operation declares x-readonly=false
-     * and x-rollback=none, so it uses form POST with no automatic retry or rollback.
+     * Documented: Requires teamUser. The source describes the team username as preceding the account primary domain.
+     * Although described as retrieval, this operation declares x-readonly=false and x-rollback=none.
      *
-     * Documented: Returns an object with optional integer 0/1 is_enabled and optional string issuer. Preserve disabled
-     * zero, empty issuer and omission separately; quoted flags, booleans and null fields are not inferred. An API
-     * success does not establish actual login behavior or security enforcement.
+     * Policy: Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a
+     * payload mismatch may accompany a completed change; do not retry automatically.
+     *
+     * Policy: Forwards teamUser unchanged as team_user.
+     *
+     * Documented: Returns an object with optional integer 0/1 is_enabled and optional string issuer.
+     *
+     * Policy: Preserve disabled zero, empty issuer and omission separately; quoted flags, booleans and null fields are
+     * rejected. API success does not establish actual login behavior or security enforcement.
      *
      * API-map identity: uapi:TwoFactorAuth/get_team_user_configuration#GET (wire name get_team_user_configuration).
      *
      * @param string $teamUser The team user's username.
      * @return GetTeamUserConfigurationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/two-factor-settings/twofactorauth-get_team_user_configuration
      */
     public function getTeamUserConfiguration(string $teamUser): array
@@ -131,19 +137,22 @@ final readonly class TwoFactorAuth
      * Documented: Available in cPanel 54 and later; operates on the selected cPanel account. The pinned operation
      * declares no additional role restriction.
      *
-     * Documented: This read uses GET with no request arguments. The pinned payload contains only status and issuer
-     * fields; it does not declare a secret or otpauth URL.
+     * Documented: Retrieves configuration with no request arguments. The pinned payload declares is_enabled and issuer,
+     * with no secret or otpauth URL.
      *
-     * Documented: Returns an object with optional integer 0/1 is_enabled and optional string issuer. Preserve disabled
-     * zero, empty issuer and omission separately; quoted flags, booleans and null fields are not inferred. An API
-     * success does not establish actual login behavior or security enforcement.
+     * Policy: Uses one GET request without automatic retry.
+     *
+     * Documented: Returns an object with optional integer 0/1 is_enabled and optional string issuer.
+     *
+     * Policy: Preserve disabled zero, empty issuer and omission separately; quoted flags, booleans and null fields are
+     * rejected. API success does not establish actual login behavior or security enforcement.
      *
      * API-map identity: uapi:TwoFactorAuth/get_user_configuration#GET (wire name get_user_configuration).
      *
      * @return GetUserConfigurationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/two-factor-settings/twofactorauth-get_user_configuration
      */
     public function getUserConfiguration(): array
@@ -162,23 +171,25 @@ final readonly class TwoFactorAuth
      * Documented: Available in cPanel 54 and later; operates on the selected cPanel account. The pinned operation
      * declares no additional role restriction.
      *
-     * Documented: Removes the selected account user from the two-factor authentication userdata file. There are no
-     * request arguments. This can change authentication requirements immediately.
+     * Documented: Removes the selected account user from the two-factor authentication userdata file with no request
+     * arguments. Returns an object with optional integer tfa_removed. The pinned enum contains only 1, meaning removed;
+     * failure is described in response metadata.
      *
-     * Documented: Uses form POST with one attempt and no automatic retry or rollback. A confirmed API outcome followed
-     * by a payload mismatch may accompany a completed change; do not retry automatically.
+     * Policy: This can change authentication requirements immediately.
      *
-     * Documented: Returns an object with optional integer tfa_removed. The pinned enum contains only 1, meaning
-     * removed; failure is described in response metadata. The existing validator enforces integer type without adding
-     * general single-value enum validation. UAPI status=0 remains an API failure; null or absent data is a payload
-     * mismatch. API success does not establish a subsequent login result.
+     * Policy: Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a
+     * payload mismatch may accompany a completed change; do not retry automatically.
+     *
+     * Policy: The existing validator enforces integer type without adding general single-value enum validation. UAPI
+     * status=0 remains an API failure; null or absent data is a payload mismatch. API success does not establish a
+     * subsequent login result.
      *
      * API-map identity: uapi:TwoFactorAuth/remove_user_configuration#GET (wire name remove_user_configuration).
      *
      * @return RemoveUserConfigurationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/two-factor-settings/twofactorauth-remove_user_configuration
      */
     public function removeUserConfiguration(): array
@@ -200,36 +211,42 @@ final readonly class TwoFactorAuth
      * Documented: Available in cPanel 54 and later; operates on the selected cPanel account. The pinned operation
      * declares no additional role restriction.
      *
-     * Documented: Requires secret and tfaToken, encoded as secret and tfa_token in a form POST body. Both are
-     * sensitive. The source describes a 16-character generated secret and a six-digit TOTP code but declares tfa_token
-     * as an integer; preserve that integer contract and an explicit zero without padding, string conversion rules or
-     * client-side TOTP generation.
+     * Documented: Requires secret and tfaToken. The source describes a 16-character generated secret and a six-digit
+     * TOTP code, but the pinned tfa_token schema is integer with maxLength: 6, while its CLI sample quotes
+     * tfa_token='528112'.
      *
-     * Documented: Uses form POST with one attempt and no automatic retry or rollback. A confirmed API outcome followed
-     * by a payload mismatch may accompany a completed change; do not retry automatically.
+     * Policy: Accepts string|int as a client correction to preserve leading zeroes; prefer a string such as '012345'.
+     * Native integers and explicit zero remain accepted. Both arguments are sensitive and sent as secret and tfa_token
+     * in the form POST body. The client adds no token validator, padding, universal numeric conversion or TOTP
+     * generation.
+     *
+     * Policy: Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a
+     * payload mismatch may accompany a completed change; do not retry automatically.
      *
      * Documented: Returns an object with optional integer 0/1 tfa_configured. The pinned prose repeats 1 for enabled
-     * and disabled while its formal enum is [0, 1]; preserve the flag contract without inferring a corrected prose
-     * meaning. Quoted flags, booleans, null fields and absent data are rejected. API outcome and payload flags do not
-     * prove actual login or security enforcement.
+     * and disabled while its formal enum is [0, 1].
+     *
+     * Policy: Preserve the flag contract without inferring a corrected prose meaning. Quoted flags, booleans, null
+     * fields and absent data are rejected. API outcome and payload flags do not prove actual login or security
+     * enforcement.
      *
      * API-map identity: uapi:TwoFactorAuth/set_user_configuration#GET (wire name set_user_configuration).
      *
      * @param string $secret The 16-character string that UAPI's `TwoFactorAuth::generate_user_configuration` function
      *     generates.
-     * @param int $tfaToken The six-digit security code that the time-based one-time password (TOTP) authentication app
-     *     generates.
+     * @param string|int $tfaToken The six-digit security code that the time-based one-time password (TOTP)
+     *     authentication app generates.
      * @return SetUserConfigurationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/two-factor-settings/twofactorauth-set_user_configuration
      */
     public function setUserConfiguration(
         #[SensitiveParameter]
         string $secret,
         #[SensitiveParameter]
-        int $tfaToken,
+        string|int $tfaToken,
     ): array {
         /** @var SetUserConfigurationResult $result Validated against TwoFactorAuthSpec::SET_USER_CONFIGURATION. */
         $result = ($this->run)(TwoFactorAuthSpec::SET_USER_CONFIGURATION, [

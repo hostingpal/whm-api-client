@@ -1,0 +1,465 @@
+{
+    "schema_version": 1,
+    "read_only_section": {
+        "recipe": "whm-system-packages-review-v1",
+        "status": "passed",
+        "probes": [
+            {
+                "operation": "whm1:version",
+                "variant": "whm1:version#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T07:53:42Z",
+                "revision": "dd72691120690df4d0cc7c6b8c0f62ae447e4fcb",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "25b2e824fcb64ff3bc7afb99bf6000c028372065",
+                "overlay_sha256": "1805f68363f3b2833ff4db0474edc403f586d6b6b71a628ae14828bbb56fdd17",
+                "effective_contract_sha256": "a3b55069b379516f20fcf82f959226d68b68ac515a7e55c0bde8842d39effd60",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.version": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.version": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:package_manager_get_package_info",
+                "variant": "whm1:package_manager_get_package_info#GET",
+                "argument_variant": "ea-apache24",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T07:53:43Z",
+                "revision": "dd72691120690df4d0cc7c6b8c0f62ae447e4fcb",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "25b2e824fcb64ff3bc7afb99bf6000c028372065",
+                "overlay_sha256": "1805f68363f3b2833ff4db0474edc403f586d6b6b71a628ae14828bbb56fdd17",
+                "effective_contract_sha256": "4609695ab72fd3826219bbd3ef6020d5852348cce9f3c9d172cb2b1fde4a1fde",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.packages": [
+                        "list"
+                    ],
+                    "$.data.packages[]": [
+                        "object"
+                    ],
+                    "$.data.packages[].architecture": [
+                        "string"
+                    ],
+                    "$.data.packages[].license": [
+                        "string"
+                    ],
+                    "$.data.packages[].long_description": [
+                        "string"
+                    ],
+                    "$.data.packages[].more_info_url": [
+                        "string"
+                    ],
+                    "$.data.packages[].package": [
+                        "string"
+                    ],
+                    "$.data.packages[].pkg_dep": [
+                        "object"
+                    ],
+                    "$.data.packages[].pkg_dep.conflicts": [
+                        "list"
+                    ],
+                    "$.data.packages[].pkg_dep.conflicts[]": [
+                        "string"
+                    ],
+                    "$.data.packages[].pkg_dep.requires": [
+                        "list"
+                    ],
+                    "$.data.packages[].pkg_dep.requires[]": [
+                        "list",
+                        "string"
+                    ],
+                    "$.data.packages[].pkg_dep.requires[][]": [
+                        "string"
+                    ],
+                    "$.data.packages[].pkg_group": [
+                        "string"
+                    ],
+                    "$.data.packages[].release": [
+                        "string"
+                    ],
+                    "$.data.packages[].repo_name": [
+                        "string"
+                    ],
+                    "$.data.packages[].short_description": [
+                        "string"
+                    ],
+                    "$.data.packages[].size": [
+                        "int"
+                    ],
+                    "$.data.packages[].state": [
+                        "string"
+                    ],
+                    "$.data.packages[].vendor": [
+                        "string"
+                    ],
+                    "$.data.packages[].version": [
+                        "string"
+                    ],
+                    "$.data.packages[].version_installed": [
+                        "string"
+                    ],
+                    "$.data.packages[].version_latest": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.packages": [
+                        "list"
+                    ],
+                    "$.packages[]": [
+                        "object"
+                    ],
+                    "$.packages[].architecture": [
+                        "string"
+                    ],
+                    "$.packages[].license": [
+                        "string"
+                    ],
+                    "$.packages[].long_description": [
+                        "string"
+                    ],
+                    "$.packages[].more_info_url": [
+                        "string"
+                    ],
+                    "$.packages[].package": [
+                        "string"
+                    ],
+                    "$.packages[].pkg_dep": [
+                        "object"
+                    ],
+                    "$.packages[].pkg_dep.conflicts": [
+                        "list"
+                    ],
+                    "$.packages[].pkg_dep.conflicts[]": [
+                        "string"
+                    ],
+                    "$.packages[].pkg_dep.requires": [
+                        "list"
+                    ],
+                    "$.packages[].pkg_dep.requires[]": [
+                        "list",
+                        "string"
+                    ],
+                    "$.packages[].pkg_dep.requires[][]": [
+                        "string"
+                    ],
+                    "$.packages[].pkg_group": [
+                        "string"
+                    ],
+                    "$.packages[].release": [
+                        "string"
+                    ],
+                    "$.packages[].repo_name": [
+                        "string"
+                    ],
+                    "$.packages[].short_description": [
+                        "string"
+                    ],
+                    "$.packages[].size": [
+                        "int"
+                    ],
+                    "$.packages[].state": [
+                        "string"
+                    ],
+                    "$.packages[].vendor": [
+                        "string"
+                    ],
+                    "$.packages[].version": [
+                        "string"
+                    ],
+                    "$.packages[].version_installed": [
+                        "string"
+                    ],
+                    "$.packages[].version_latest": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_rpm_version_data",
+                "variant": "whm1:get_rpm_version_data#GET",
+                "argument_variant": "target-settings",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T07:53:44Z",
+                "revision": "dd72691120690df4d0cc7c6b8c0f62ae447e4fcb",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "25b2e824fcb64ff3bc7afb99bf6000c028372065",
+                "overlay_sha256": "1805f68363f3b2833ff4db0474edc403f586d6b6b71a628ae14828bbb56fdd17",
+                "effective_contract_sha256": "84e1ce2f44743200ec62f7068014d4005a3245cb9dc5c6e6c29198010c414217",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.*": [
+                        "object"
+                    ],
+                    "$.data.*.*": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.*": [
+                        "object"
+                    ],
+                    "$.*.*": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_rpm_version_data",
+                "variant": "whm1:get_rpm_version_data#GET",
+                "argument_variant": "rpm-groups",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T07:53:44Z",
+                "revision": "dd72691120690df4d0cc7c6b8c0f62ae447e4fcb",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "25b2e824fcb64ff3bc7afb99bf6000c028372065",
+                "overlay_sha256": "1805f68363f3b2833ff4db0474edc403f586d6b6b71a628ae14828bbb56fdd17",
+                "effective_contract_sha256": "84e1ce2f44743200ec62f7068014d4005a3245cb9dc5c6e6c29198010c414217",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.*": [
+                        "object"
+                    ],
+                    "$.data.*.*": [
+                        "list"
+                    ],
+                    "$.data.*.*[]": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.*": [
+                        "object"
+                    ],
+                    "$.*.*": [
+                        "list"
+                    ],
+                    "$.*.*[]": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:package_manager_resolve_actions",
+                "variant": "whm1:package_manager_resolve_actions#GET",
+                "argument_variant": "ea-apache24-ea",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T07:53:45Z",
+                "revision": "dd72691120690df4d0cc7c6b8c0f62ae447e4fcb",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "25b2e824fcb64ff3bc7afb99bf6000c028372065",
+                "overlay_sha256": "1805f68363f3b2833ff4db0474edc403f586d6b6b71a628ae14828bbb56fdd17",
+                "effective_contract_sha256": "f47948e550e957fe86a5fae6d67f842ce307359e5c0d1af051db1bb6edf6b1f0",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.install": [
+                        "empty-list"
+                    ],
+                    "$.data.unaffected": [
+                        "list"
+                    ],
+                    "$.data.unaffected[]": [
+                        "string"
+                    ],
+                    "$.data.uninstall": [
+                        "list"
+                    ],
+                    "$.data.uninstall[]": [
+                        "string"
+                    ],
+                    "$.data.upgrade": [
+                        "empty-list"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.install": [
+                        "empty-list"
+                    ],
+                    "$.unaffected": [
+                        "list"
+                    ],
+                    "$.unaffected[]": [
+                        "string"
+                    ],
+                    "$.uninstall": [
+                        "list"
+                    ],
+                    "$.uninstall[]": [
+                        "string"
+                    ],
+                    "$.upgrade": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": []
+            }
+        ]
+    }
+}

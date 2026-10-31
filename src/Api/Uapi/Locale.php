@@ -54,9 +54,9 @@ final readonly class Locale
      * API-map identity: uapi:Locale/get_attributes#GET (wire name get_attributes).
      *
      * @return GetAttributesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/language/locale-get_attributes
      */
     public function getAttributes(): array
@@ -79,9 +79,9 @@ final readonly class Locale
      * API-map identity: uapi:Locale/list_locales#GET (wire name list_locales).
      *
      * @return ListLocalesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/language/locale-list_locales
      */
     public function listLocales(): array
@@ -107,9 +107,9 @@ final readonly class Locale
      *
      * @param string $locale The locale's abbreviated name according to UAPI's `Locale::list_locales` function.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/language/locale-set_locale
      */
     public function setLocale(string $locale): mixed

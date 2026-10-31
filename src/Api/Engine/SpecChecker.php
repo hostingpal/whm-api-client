@@ -188,6 +188,22 @@ final class SpecChecker
                 throw new LogicException('Invalid parameter spec for ' . $name . '.');
             }
 
+            if (
+                array_key_exists('omit_empty', $param)
+                && ($param['omit_empty'] !== true || $param['encoding'] !== 'repeat')
+            ) {
+                throw new LogicException('Invalid "omit_empty" parameter spec.');
+            }
+
+            if (
+                array_key_exists('reject_empty', $param)
+                && ($param['reject_empty'] !== true
+                    || !in_array($param['encoding'], ['scalar', 'repeat'], true)
+                    || array_key_exists('omit_empty', $param))
+            ) {
+                throw new LogicException('Invalid "reject_empty" parameter spec.');
+            }
+
             $suffix = in_array($param['encoding'], ['suffix-numbered', 'suffix-numbered-scalar'], true);
             if (
                 ($suffix && preg_match('/^[A-Za-z_][A-Za-z0-9_]*\*$/D', $wire) !== 1)

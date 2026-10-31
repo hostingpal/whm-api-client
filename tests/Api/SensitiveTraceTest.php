@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\NumberedList;
 use HostingPal\WhmApiClient\Api\RepeatedList;
 use HostingPal\WhmApiClient\Api\RequestMethod;
+use HostingPal\WhmApiClient\Api\Whm\Integrations;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\ApiException;
@@ -49,12 +50,17 @@ final class SensitiveTraceTest extends TestCase
 {
     private const SECRET = 'S3cr3t-Pw';
 
+    private const TOTP = 528112;
+
+    private const STRING_TOTP = '029817';
+
     private string|false $ignoreArgs = false;
 
     protected function setUp(): void
     {
         $this->ignoreArgs = ini_get('zend.exception_ignore_args');
         ini_set('zend.exception_ignore_args', '0');
+        self::assertSame('0', ini_get('zend.exception_ignore_args'));
     }
 
     protected function tearDown(): void
@@ -72,6 +78,21 @@ final class SensitiveTraceTest extends TestCase
 
         try {
             $leak(self::SECRET);
+        } catch (RuntimeException $exception) {
+            $seen = [];
+            self::assertTrue(self::contains($exception->getTrace(), $seen));
+        }
+    }
+
+    public function testTheTraceSearchDetectsUnmarkedIntegerTotpArguments(): void
+    {
+        self::assertSame('0', ini_get('zend.exception_ignore_args'));
+        $leak = static function (int $token): never {
+            throw new RuntimeException('Control failure.');
+        };
+
+        try {
+            $leak(self::TOTP);
         } catch (RuntimeException $exception) {
             $seen = [];
             self::assertTrue(self::contains($exception->getTrace(), $seen));
@@ -178,6 +199,20 @@ final class SensitiveTraceTest extends TestCase
             $seen = [];
             self::assertFalse(self::contains($frames, $seen), 'A library frame argument contains the secret.');
             self::assertStringNotContainsString(self::SECRET, $exception->getTraceAsString());
+        }
+    }
+
+    public function testGuardedTargetsStayOutOfLocalValidationTraceArguments(): void
+    {
+        try {
+            \HostingPal\WhmApiClient\Api\Engine\ArgumentEncoder::encode(
+                ['domains' => ['name' => 'domain', 'encoding' => 'repeat', 'reject_empty' => true]],
+                ['domains' => [self::SECRET, '']],
+            );
+            self::fail('Expected a target-policy failure.');
+        } catch (InvalidArgumentException $exception) {
+            self::assertSecretAbsent($exception);
+            self::assertStringNotContainsString(self::SECRET, $exception->getMessage());
         }
     }
 
@@ -674,6 +709,15 @@ final class SensitiveTraceTest extends TestCase
     /** @return iterable<string, array{'whm'|'direct'|'bridged', Closure(Client): mixed}> */
     private static function secretCalls(): iterable
     {
+        yield 'WHM nonroot transfer password with required true' => [
+            'whm',
+            static fn (Client $client): mixed => $client->whm()->transfers()->createRemoteUserTransferSession(
+                host: 'remote.test',
+                password: self::SECRET,
+                unrestrictedRestore: true,
+            ),
+        ];
+
         foreach (['direct', 'bridged'] as $route) {
             foreach (['cert', 'cabundle'] as $field) {
                 yield $route . ' SSL install ' . $field => [
@@ -692,6 +736,8 @@ final class SensitiveTraceTest extends TestCase
                     $client->uapi($account)->langPhp()->phpIniSetUserContent(self::SECRET, 'vhost', 'npr.rs'),
             ];
         }
+
+        yield from self::accountSecuritySecretCalls();
 
         yield from self::ftpSecretCalls();
         yield from self::postgresqlPasswordCalls();
@@ -784,6 +830,177 @@ final class SensitiveTraceTest extends TestCase
         }
     }
 
+    /** @return iterable<string, array{'direct'|'bridged', Closure(Client): mixed}> */
+    public static function accountSecuritySecretCalls(): iterable
+    {
+        foreach (['direct', 'bridged'] as $route) {
+            $account = $route === 'direct' ? null : 'npr';
+            yield $route . ' GPG export passphrase' => [$route,
+                static fn (Client $client): mixed =>
+                    $client->uapi($account)->gpg()->exportSecretKey('fixture-key', self::SECRET)];
+            yield $route . ' GPG import key' => [$route,
+                static fn (Client $client): mixed => $client->uapi($account)->gpg()->importKey(self::SECRET)];
+            yield $route . ' GPG generate passphrase' => [$route,
+                static fn (Client $client): mixed =>
+                    $client->uapi($account)->gpg()->generateKey('fixture@example.test', 'Fixture', self::SECRET)];
+            yield $route . ' two-factor secret' => [$route,
+                static fn (Client $client): mixed =>
+                    $client->uapi($account)->twoFactorAuth()->setUserConfiguration(self::SECRET, 123456)];
+            yield $route . ' two-factor integer token' => [$route,
+                static fn (Client $client): mixed =>
+                    $client->uapi($account)->twoFactorAuth()->setUserConfiguration('fixture-secret', self::TOTP)];
+            yield $route . ' two-factor string token' => [$route,
+                static fn (Client $client): mixed =>
+                    $client->uapi($account)->twoFactorAuth()->setUserConfiguration(
+                        'fixture-secret',
+                        self::STRING_TOTP,
+                    )];
+        }
+    }
+
+    /**
+     * @param 'direct'|'bridged' $route
+     * @param Closure(Client): mixed $call
+     */
+    #[DataProvider('accountSecuritySecretCalls')]
+    public function testAccountSecurityPayloadFailuresKeepSecretsOutOfTraceArguments(string $route, Closure $call): void
+    {
+        [$client, $http] = self::client($route === 'direct');
+        $http->addResponse(new Response(200, [], $route === 'direct'
+            ? '{"status":1,"data":false}'
+            : '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":false}}}'));
+        try {
+            $call($client);
+            self::fail('Expected a payload mismatch after the confirmed account-security operation.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertTrue($exception->outcomeConfirmed);
+            self::assertCount(1, $http->getRequests());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    #[DataProvider('mysqlRoutes')]
+    public function testReturnedAccountSecuritySecretsStayOutOfFailureTraceArguments(bool $direct): void
+    {
+        foreach (['export', 'generate'] as $operation) {
+            foreach ([0, 1] as $status) {
+                [$client, $http] = self::client($direct);
+                $result = '{"status":' . $status . ',"data":["' . self::SECRET . '"]}';
+                $http->addResponse(new Response(200, [], $direct ? $result
+                    : '{"metadata":{"result":1},"data":{"uapi":' . $result . '}}'));
+                try {
+                    $account = $client->uapi($direct ? null : 'npr');
+                    if ($operation === 'export') {
+                        $account->gpg()->exportSecretKey('fixture-key');
+                    } else {
+                        $account->twoFactorAuth()->generateUserConfiguration();
+                    }
+                    self::fail('Expected the secret-bearing response to fail.');
+                } catch (ApiErrorException | PayloadMismatchException $exception) {
+                    self::assertCount(1, $http->getRequests());
+                    self::assertSecretAbsent($exception);
+                    if ($status === 1) {
+                        self::assertInstanceOf(PayloadMismatchException::class, $exception);
+                        self::assertSame([self::SECRET], $exception->payload);
+                    } else {
+                        self::assertInstanceOf(ApiErrorException::class, $exception);
+                    }
+                }
+            }
+        }
+    }
+
+    /** @return iterable<string, array{Closure(Integrations): mixed, string}> */
+    public static function secretFailures(): iterable
+    {
+        yield 'create subscriber ID' => [static function (Integrations $g): mixed {
+            $g->createIntegrationLink('app', 'billing', '', self::SECRET, '', 'alice', url: 'https://x.test/');
+            return null;
+        }, '{"metadata":{"result":0,"reason":"Denied"}}'];
+        yield 'create fallback URL' => [static function (Integrations $g): mixed {
+            $g->createIntegrationLink('app', 'billing', '', '', '', 'alice', url: self::SECRET);
+            return null;
+        }, '{"metadata":{"result":0,"reason":"Denied"}}'];
+        yield 'create token' => [static function (Integrations $g): mixed {
+            $g->createIntegrationLink('app', 'billing', '', '', self::SECRET, 'alice', url: 'https://x.test/');
+            return null;
+        }, '{"metadata":{"result":0,"reason":"Denied"}}'];
+        yield 'create autologin URL' => [static function (Integrations $g): mixed {
+            $g->createIntegrationLink('app', 'billing', '', '', '', 'alice', autologinTokenUrl: self::SECRET);
+            return null;
+        }, '{"metadata":{"result":0,"reason":"Denied"}}'];
+        yield 'update token' => [
+            static fn (Integrations $g): mixed => $g->updateIntegrationLinkToken('app', self::SECRET, 'alice'),
+            '{"metadata":{"result":0,"reason":"Denied"}}'];
+        foreach (['hook', 'check', 'rollback'] as $field) {
+            yield 'edit ' . $field => [static function (Integrations $g) use ($field): mixed {
+                $g->editHook('hook-id', ...[$field => self::SECRET]);
+                return null;
+            }, '{"metadata":{"result":0,"reason":"Denied"}}'];
+        }
+        yield 'returned config URL on payload mismatch' => [
+            static fn (Integrations $g): mixed => $g->getIntegrationLinkUserConfig('app', 'alice'),
+            '{"metadata":{"result":1},"data":{"userconfig":{"autologin_token_url":"'
+                . '[fixture-secret]' . '","user":false}}}'];
+    }
+
+    /** @param Closure(Integrations): mixed $call */
+    #[DataProvider('secretFailures')]
+    public function testInputAndReturnedIntegrationSecretsStayOutOfExceptionTraces(
+        Closure $call,
+        string $response,
+    ): void {
+        self::assertSame('0', ini_get('zend.exception_ignore_args'));
+        $fixtureResponse = str_replace('[fixture-secret]', self::SECRET, $response);
+        [$client, $http] = self::client(false);
+        $http->addResponse(new Response(200, [], $fixtureResponse));
+        try {
+            $call($client->whm()->integrations());
+            self::fail('Expected fixture failure.');
+        } catch (ApiErrorException | PayloadMismatchException $exception) {
+            self::assertCount(1, $http->getRequests());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
+    /** @return iterable<string, array{Closure(Client): mixed, string}> */
+    public static function commerceMarketSecrets(): iterable
+    {
+        yield 'attribute provider first' => [static function (Client $client): mixed {
+            $client->whm()->market()->setProductAttribute('provider', 'product', 'attribute', self::SECRET);
+            return null;
+        }, '{"metadata":{"result":0}}'];
+        yield 'storefront URL' => [static function (Client $client): mixed {
+            $client->whm()->commerce()->setCommerce(false, self::SECRET);
+            return null;
+        }, '{"metadata":{"result":0}}'];
+        yield 'token input' => [static fn (Client $client): mixed =>
+            $client->whm()->commerce()->validateLoginToken(self::SECRET, 'provider', 'https://example.test'),
+            '{"metadata":{"result":0}}'];
+        yield 'token redirect' => [static fn (Client $client): mixed =>
+            $client->whm()->commerce()->validateLoginToken('token', 'provider', self::SECRET),
+            '{"metadata":{"result":0}}'];
+        yield 'returned token' => [static fn (Client $client): mixed =>
+            $client->whm()->commerce()->validateLoginToken('token', 'provider', 'https://example.test'),
+            '{"metadata":{"result":1},"data":{"payload":[{"access_token":"[fixture-secret]",'
+                . '"refresh_token":false}]}}'];
+    }
+
+    /** @param Closure(Client): mixed $call */
+    #[DataProvider('commerceMarketSecrets')]
+    public function testCommerceAndMarketSecretsStayOutOfExceptionTraces(Closure $call, string $response): void
+    {
+        [$client, $http] = self::client(false);
+        $http->addResponse(new Response(200, [], str_replace('[fixture-secret]', self::SECRET, $response)));
+        try {
+            $call($client);
+            self::fail('Expected fixture failure.');
+        } catch (ApiErrorException | PayloadMismatchException $exception) {
+            self::assertCount(1, $http->getRequests());
+            self::assertSecretAbsent($exception);
+        }
+    }
+
     private static function assertSecretAbsent(Throwable $exception): void
     {
         for ($current = $exception; $current !== null; $current = $current->getPrevious()) {
@@ -792,8 +1009,10 @@ final class SensitiveTraceTest extends TestCase
                 self::contains($current->getTrace(), $seen),
                 'A trace argument of ' . $current::class . ' contains the secret.',
             );
-            self::assertStringNotContainsString(self::SECRET, $current->getTraceAsString());
-            self::assertStringNotContainsString(self::SECRET, $current->getMessage());
+            foreach ([self::SECRET, (string) self::TOTP, self::STRING_TOTP] as $secret) {
+                self::assertStringNotContainsString($secret, $current->getTraceAsString());
+                self::assertStringNotContainsString($secret, $current->getMessage());
+            }
         }
     }
 
@@ -810,15 +1029,21 @@ final class SensitiveTraceTest extends TestCase
      */
     private static function contains(mixed $value, array &$seen): bool
     {
+        if (is_int($value)) {
+            return $value === self::TOTP;
+        }
+
         if (is_string($value)) {
-            return str_contains($value, self::SECRET);
+            return str_contains($value, self::SECRET)
+                || str_contains($value, (string) self::TOTP)
+                || str_contains($value, self::STRING_TOTP);
         }
 
         if ($value instanceof SensitiveParameterValue || $value instanceof MockClient) {
             return false;
         }
 
-        if ($value instanceof MessageInterface && str_contains((string) $value->getBody(), self::SECRET)) {
+        if ($value instanceof MessageInterface && self::contains((string) $value->getBody(), $seen)) {
             return true;
         }
 

@@ -17,7 +17,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use ReflectionMethod;
 use SensitiveParameter;
-use SensitiveParameterValue;
 
 /** Independent literal request and payload contracts, derived from the pinned source. */
 final class UapiGpgTest extends TestCase
@@ -340,6 +339,26 @@ final class UapiGpgTest extends TestCase
         self::assertCount(6, $http->getRequests());
     }
 
+    #[DataProvider('routes')]
+    public function testImportEncodesTheSuppliedStringOnceWithoutAssumingServerDecoding(string $route): void
+    {
+        foreach (
+            [
+                "fixture+\n" => 'key_data=fixture%2B%0A',
+                'fixture%2B%0A' => 'key_data=fixture%252B%250A',
+            ] as $input => $wire
+        ) {
+            [$account, $http] = self::account($route);
+            $http->addResponse(new Response(200, [], self::envelope($route, '{}')));
+            self::assertSame([], $account->gpg()->importKey($input));
+            $request = $http->getLastRequest();
+            self::assertInstanceOf(RequestInterface::class, $request);
+            self::assertSame($wire, (string) $request->getBody());
+            self::assertSame('POST', $request->getMethod());
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
     public function testSecretInputParametersAreMarkedSensitive(): void
     {
         $parameters = [['exportSecretKey', 'passphrase'], ['generateKey', 'passphrase'], ['importKey', 'keyData']];
@@ -353,63 +372,6 @@ final class UapiGpgTest extends TestCase
                 }
             }
             self::assertTrue($found);
-        }
-    }
-
-
-    #[DataProvider('routes')]
-    public function testSensitiveInputsAndReturnedSecretsStayOutOfFailureTraceArguments(string $route): void
-    {
-        $previous = ini_get('zend.exception_ignore_args');
-        ini_set('zend.exception_ignore_args', '0');
-        try {
-            foreach (
-                [
-                ['export_secret_key', 'phrase+%&='], ['generate_key', 'phrase+%&='],
-                ['import_key', "armored+%&=\nkey"]] as [$function, $secret]
-            ) {
-                foreach ([0, 1] as $status) {
-                    [$account, $http] = self::account($route);
-                    $payload = json_encode([$secret], JSON_THROW_ON_ERROR);
-                    $http->addResponse(new Response(200, [], self::envelope($route, $payload, $status)));
-                    try {
-                        self::invoke($account, $function);
-                        self::fail('The synthetic error must fail without exposing secret arguments.');
-                    } catch (ApiErrorException | PayloadMismatchException $error) {
-                        self::assertStringNotContainsString($secret, $error->getMessage());
-                        foreach ($error->getTrace() as $frame) {
-                            self::assertSecretAbsentFromArguments($frame['args'] ?? [], $secret);
-                        }
-                        if ($status === 1) {
-                            self::assertInstanceOf(PayloadMismatchException::class, $error);
-                            self::assertIsArray($error->payload);
-                            self::assertSame($secret, $error->payload[0]);
-                        } else {
-                            self::assertInstanceOf(ApiErrorException::class, $error);
-                        }
-                    }
-                    self::assertCount(1, $http->getRequests());
-                }
-            }
-        } finally {
-            if ($previous !== false) {
-                ini_set('zend.exception_ignore_args', $previous);
-            }
-        }
-    }
-
-    /** @param array<array-key, mixed> $arguments */
-    private static function assertSecretAbsentFromArguments(array $arguments, string $secret): void
-    {
-        foreach ($arguments as $argument) {
-            if ($argument instanceof SensitiveParameterValue) {
-                continue;
-            }
-            if (is_string($argument)) {
-                self::assertStringNotContainsString($secret, $argument);
-            } elseif (is_array($argument)) {
-                self::assertSecretAbsentFromArguments($argument, $secret);
-            }
         }
     }
 }

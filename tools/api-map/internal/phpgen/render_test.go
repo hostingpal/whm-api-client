@@ -125,8 +125,8 @@ func TestRenderDocumentsPayloadMismatchOnlyForPayloadOperations(t *testing.T) {
 		t.Fatalf("Accounts.php does not import PayloadMismatchException")
 	}
 	created := methodDoc(t, accounts, "createAccount")
-	if !strings.Contains(created, throws+" If the API reported success") ||
-		!strings.Contains(created, "any change the operation makes has already taken effect.") {
+	if !strings.Contains(created, throws+" If the API envelope reported success") ||
+		!strings.Contains(created, "the operation may already have changed state; do not retry automatically.") {
 		t.Fatalf("createAccount returns a payload under the flag policy but lacks the confirmed wording:\n%s", created)
 	}
 	if strings.Contains(methodDoc(t, accounts, "suspendAccount"), throws) {

@@ -13,15 +13,15 @@
         },
         {
           "kind": "documented",
-          "text": "Deletes all keys matching keyId. A public-key ID deletes the public key; a public/private pair ID deletes both. The source points to listSecretKeys() for the desired identifier. Key deletion changes account key material and has no documented rollback."
+          "text": "Deletes all keys matching keyId. A public-key ID deletes the public key; a public/private pair ID deletes both. The source points to listSecretKeys() for the desired identifier and declares x-readonly=false with no rollback."
         },
         {
-          "kind": "documented",
-          "text": "Uses form POST with one attempt and no automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
         },
         {
-          "kind": "documented",
-          "text": "Returns a nullable object with no pinned fields. Preserve opaque object fields and explicit null; absent data is a payload mismatch."
+          "kind": "policy",
+          "text": "Preserves the pinned nullable object with no declared fields, including opaque object fields and explicit null. Absent data is a payload mismatch."
         }
       ],
       "method": "POST",
@@ -53,7 +53,11 @@
         },
         {
           "kind": "documented",
-          "text": "Exports the selected public key through GET. keyId is required and forwarded unchanged; the optional key_data field is a string containing key bytes. Omitted fields stay omitted; no null or absent payload is inferred. The client performs no key parsing or cryptographic validation."
+          "text": "Exports the selected public key. keyId is required; the optional key_data field is a string containing key bytes."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses GET and forwards keyId unchanged. Omitted fields stay omitted; null or absent data is a payload mismatch. The client performs no key parsing or cryptographic validation."
         }
       ],
       "params": {
@@ -78,11 +82,15 @@
         },
         {
           "kind": "documented",
-          "text": "Exports private key material using form POST. keyId is required; omit passphrase to preserve server behavior, while an explicit empty string is sent unchanged. The source declares x-readonly=false and no rollback. The client performs no automatic retry or rollback."
+          "text": "Exports private key material. keyId is required and passphrase is optional. The source declares x-readonly=false and no rollback; the optional key_data string contains private key material."
         },
         {
-          "kind": "documented",
-          "text": "The optional key_data string contains private key material. Treat the returned payload and PayloadMismatchException::$payload as sensitive; do not log either. Payload content is not copied into responseMeta(). Omitted key_data stays omitted and null or absent data is a mismatch."
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+        },
+        {
+          "kind": "policy",
+          "text": "Omit passphrase to retain server behavior; an explicit empty string is sent unchanged. Treat the returned payload and PayloadMismatchException::$payload as sensitive; do not log either. Payload content is not copied into responseMeta(). Omitted key_data stays omitted; null or absent data is a mismatch."
         }
       ],
       "method": "POST",
@@ -121,19 +129,23 @@
         },
         {
           "kind": "documented",
-          "text": "Requires email, name and passphrase. Creates key material in the selected account .gnupg directory using system entropy; low entropy can cause long generation times or timeouts. A timeout does not establish whether generation completed."
+          "text": "Requires email, name and passphrase. Creates key material in the selected account .gnupg directory using system entropy; low entropy can cause long generation times or timeouts."
         },
         {
           "kind": "documented",
-          "text": "Omit comment, expire, keysize and noExpire to retain server defaults. expire is a string Unix timestamp defaulting to one year from the current date; keysize defaults to 2048 and the pinned request prose calls its unit bytes. noExpire defaults to 0; explicit false is sent as 0 and true as 1. No client-side precedence between expire and noExpire is inferred."
+          "text": "expire is a string Unix timestamp defaulting to one year from the current date; keysize defaults to 2048 and the pinned request prose calls its unit bytes. noExpire defaults to 0."
         },
         {
-          "kind": "documented",
-          "text": "Uses form POST with one attempt and no automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+          "kind": "policy",
+          "text": "Omit comment, expire, keysize and noExpire to retain server defaults. Explicit false sends 0 and true sends 1. No client-side precedence between expire and noExpire is inferred. A timeout does not establish whether generation completed."
         },
         {
-          "kind": "documented",
-          "text": "Returns a nullable object with no pinned fields. Preserve opaque object fields and explicit null; absent data is a payload mismatch."
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+        },
+        {
+          "kind": "policy",
+          "text": "Preserves the pinned nullable object with no declared fields, including opaque object fields and explicit null. Absent data is a payload mismatch."
         }
       ],
       "method": "POST",
@@ -168,15 +180,27 @@
         },
         {
           "kind": "documented",
-          "text": "Requires keyData, which may contain private key material. Supply the original key string; the form encoder URI-encodes it exactly once as key_data, satisfying the pinned encoding instruction. The client performs no decoding, key parsing or cryptography."
+          "text": "You must URI-encode this value."
         },
         {
           "kind": "documented",
-          "text": "Uses form POST with one attempt and no automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
+          "text": "Requires keyData, which may contain private key material. The pinned parameter example is already percent-encoded and the URL sample double-encodes it, including %250A."
+        },
+        {
+          "kind": "policy",
+          "text": "The form encoder encodes the supplied string once as key_data without decoding, parsing or cryptography. The source examples and instruction leave an encoding conflict: neither raw input nor pre-encoding is established as universally correct. Server decode behavior and preservation of + in key material are unobserved. Verification requires an owned fixture containing + under whm-api-client-8x0.2.54."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a payload mismatch may accompany a completed change; do not retry automatically."
         },
         {
           "kind": "documented",
-          "text": "Returns an object with optional string key_id. Omitted fields stay omitted; null or absent data is a payload mismatch."
+          "text": "Returns an object with optional string key_id."
+        },
+        {
+          "kind": "policy",
+          "text": "Omitted fields stay omitted; null or absent data is a payload mismatch."
         }
       ],
       "method": "POST",
@@ -190,8 +214,7 @@
       ],
       "params": {
         "key_data": {
-          "sensitive": true,
-          "description": "The original GPG key string to import. The client form-encodes this sensitive value once; do not pre-encode it."
+          "sensitive": true
         }
       }
     },
@@ -203,11 +226,23 @@
         },
         {
           "kind": "documented",
-          "text": "Lists public-key metadata using GET with no request arguments. Each row keeps optional algorithm, bits, created, expires, id, type and user_id fields. created and expires remain strings; expires is an empty string when the key never expires. The source describes bits in bits and type as pub."
+          "text": "Lists public-key metadata with no request arguments. Each row has optional algorithm, bits, created, expires, id, type and user_id fields. created and expires are strings; expires is an empty string when the key never expires. The source describes bits in bits and type as pub."
         },
         {
-          "kind": "documented",
-          "text": "Preserve an empty list and omitted row fields. This inventory does not export key contents, prove ownership of newly generated keys, or establish signing, encryption or authentication behavior."
+          "kind": "policy",
+          "text": "Uses GET and preserves empty lists and omitted row fields. This inventory does not export key contents, prove ownership of newly generated keys, or establish signing, encryption or authentication behavior."
+        },
+        {
+          "kind": "observed",
+          "text": "PR66 reviewer 5721152661 reports empty public-key and secret-key lists through direct and bridged GET on 11.138.0.19. Empty lists establish no populated timestamp variants."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Separate PR66 reviewer report 5721152661 at 90c65275313b0f3009aeb2d08321f25eb7b7e558: list_public_keys passed through direct and bridged UAPI GET with empty lists. No populated row or timestamp type is observed. https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5721152661. No live call or capture ran for these corrections."
         }
       ]
     },
@@ -219,11 +254,23 @@
         },
         {
           "kind": "documented",
-          "text": "Lists secret-key metadata using GET with no request arguments. Each row keeps optional algorithm, bits, created, expires, id, type and user_id fields. created and expires remain integer Unix timestamps, unlike public-key inventory strings. The source describes type as sec; do not infer an empty-string or nullable expiry variant."
+          "text": "Lists secret-key metadata with no request arguments. Each row has optional algorithm, bits, created, expires, id, type and user_id fields. The pinned secret-key schema declares integer Unix timestamps for created and expires and describes type as sec; public-key timestamps instead use strings, with empty expiry for non-expiring keys."
         },
         {
-          "kind": "documented",
-          "text": "Preserve an empty list and omitted row fields. Metadata does not export key contents or establish signing, encryption or authentication behavior."
+          "kind": "policy",
+          "text": "Uses GET and retains the pinned integer secret-key timestamp contract. Empty or digit-string timestamps, populated rows and non-expiring secret-key variants are unobserved compatibility risks under whm-api-client-8x0.2.54; strict validation may reject them. Preserve empty lists and omitted fields. Metadata does not export key contents or establish signing, encryption or authentication behavior."
+        },
+        {
+          "kind": "observed",
+          "text": "PR66 reviewer 5721152661 reports empty public-key and secret-key lists through direct and bridged GET on 11.138.0.19. This does not establish populated or non-expiring timestamp types."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Separate PR66 reviewer report 5721152661 at 90c65275313b0f3009aeb2d08321f25eb7b7e558: list_secret_keys passed through direct and bridged UAPI GET with empty lists. No populated row or timestamp type is observed. https://github.com/hostingpal/whm-api-client/pull/66#pullrequestreview-5721152661. No live call or capture ran for these corrections."
         }
       ]
     }

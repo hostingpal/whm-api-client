@@ -105,9 +105,9 @@ final readonly class DirectoryPrivacy
      * @param string $user The username of the user who can access the directory.
      * @param string $password The password for the user.
      * @return AddUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/directory-privacy/directoryprivacy-add_user
      */
     public function addUser(
@@ -156,9 +156,9 @@ final readonly class DirectoryPrivacy
      * @param bool $enabled Whether to enable password protection for the directory.
      * @param string|null $authname The name of the directory protection authorization instance. Null omits it.
      * @return ConfigureDirectoryProtectionResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/directory-privacy/directoryprivacy-configure_directory_protection
      */
     public function configureDirectoryProtection(string $dir, bool $enabled, ?string $authname = null): array
@@ -194,9 +194,9 @@ final readonly class DirectoryPrivacy
      * @param string $dir The absolute directory path on the cPanel account from which to remove a user.
      * @param string $user The username to remove from the directory.
      * @return DeleteUserResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/directory-privacy/directoryprivacy-delete_user
      */
     public function deleteUser(string $dir, string $user): ?array
@@ -230,9 +230,9 @@ final readonly class DirectoryPrivacy
      *
      * @param string $dir The absolute directory path on the cPanel account to check for password protection.
      * @return IsDirectoryProtectedResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/directory-privacy/directoryprivacy-is_directory_protected
      */
     public function isDirectoryProtected(string $dir): array
@@ -262,9 +262,9 @@ final readonly class DirectoryPrivacy
      *
      * @param string $dir The directory path for which to return the subdirectories' privacy information.
      * @return ListDirectoriesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/directory-privacy/directoryprivacy-list_directories
      */
     public function listDirectories(string $dir): array
@@ -290,9 +290,9 @@ final readonly class DirectoryPrivacy
      *
      * @param string $dir The password-protected directory for which to return authorized users.
      * @return ListUsersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/directory-privacy/directoryprivacy-list_users
      */
     public function listUsers(string $dir): array

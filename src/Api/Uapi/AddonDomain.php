@@ -90,9 +90,9 @@ final readonly class AddonDomain
      *     it.
      * @param bool|null $force Accepted for compatibility, but ignored for account-level callers. Null omits it.
      * @return AddAddonDomainResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/addondomain/addondomain-addaddondomain
      */
     public function addAddonDomain(
@@ -151,7 +151,7 @@ final readonly class AddonDomain
      *     field.
      * @param bool|null $disallowDot Whether to remove the dot (`.`) characters from the subdomain label when the system
      *     removes the subdomain. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/addondomain/addondomain-deladdondomain
      */
     public function deleteAddonDomain(string $domain, string $subdomain, ?bool $disallowDot = null): void
@@ -179,9 +179,9 @@ final readonly class AddonDomain
      * @param bool|null $returnHttpsRedirectStatus Whether to include the `can_https_redirect` and
      *     `is_https_redirecting` fields in each entry. Null omits it.
      * @return ListAddonDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/addondomain/addondomain-listaddondomains
      */
     public function listAddonDomains(?string $regex = null, ?bool $returnHttpsRedirectStatus = null): array

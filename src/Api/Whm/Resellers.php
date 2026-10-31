@@ -189,9 +189,9 @@ final readonly class Resellers
      *
      * @param string|null $user A reseller's username, to query that reseller. Null omits it.
      * @return AccountCountsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-settings/resellers-acctcounts
      */
     public function accountCounts(?string $user = null): array
@@ -213,9 +213,9 @@ final readonly class Resellers
      * API-map identity: whm1:get_public_contact#GET (wire name get_public_contact; Account Settings).
      *
      * @return GetPublicContactResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-settings/publiccontact-get_public_contact
      */
     public function getPublicContact(): array
@@ -246,9 +246,9 @@ final readonly class Resellers
      * @param string|null $user The target reseller username. Supply it when using the reviewed root WHM route; the
      *     omitted-user fallback in the pinned description was not implemented by the reviewed source. Null omits it.
      * @return GetResellerIpsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-settings/resellers-getresellerips
      */
     public function getResellerIps(?string $user = null): array
@@ -273,9 +273,9 @@ final readonly class Resellers
      * API-map identity: whm1:listacls#GET (wire name listacls; Account Permissions).
      *
      * @return ListAclsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-permissions/acls-listacls
      */
     public function listAcls(): array
@@ -299,9 +299,9 @@ final readonly class Resellers
      *
      * @param string $account The reseller's username.
      * @return ListEnhancementLimitsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-enhancement-limit/accountenhancements-list_enhancement_limits
      */
     public function listEnhancementLimits(string $account): array
@@ -323,9 +323,9 @@ final readonly class Resellers
      * API-map identity: whm1:listresellers#GET (wire name listresellers; Account Settings).
      *
      * @return ListResellersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-settings/resellers-listresellers
      */
     public function listResellers(): array
@@ -357,9 +357,9 @@ final readonly class Resellers
      * @param int|null $month The month to query, in numeric format. Null omits it.
      * @param int|null $year The year to query, in numeric format. Null omits it.
      * @return ResellerStatsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-settings/resellers-resellerstats
      */
     public function resellerStats(
@@ -483,7 +483,7 @@ final readonly class Resellers
      * @param bool|null $aclUpgradeAccount Whether to allow the reseller to upgrade or downgrade accounts. Null omits
      *     it.
      * @param bool|null $aclViewglobalpackages Whether to allow the reseller to use all global packages. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-permissions/acls-saveacllist
      */
     public function saveAclList(
@@ -726,9 +726,9 @@ final readonly class Resellers
      * @param true|null $aclViewglobalpackages Whether to allow the reseller to use all global packages. Null omits it.
      * @param string|null $acllist The ACL to assign to the reseller. Null omits it.
      * @return SetAclsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-permissions/resellers-setacls
      */
     public function setAcls(
@@ -879,7 +879,7 @@ final readonly class Resellers
      * @param bool $limited Whether to limit account enhancement assignments. true sends limited=1 and requires limit;
      *     false sends limited=0 for unlimited assignments.
      * @param int|null $limit The account enhancement limit amount. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-enhancement-limit/accountenhancements-set_enhancement_limit
      */
     public function setEnhancementLimit(string $account, string $id, bool $limited, ?int $limit = null): void
@@ -905,7 +905,7 @@ final readonly class Resellers
      *
      * @param string|null $name The public contact name of the reseller. Null omits it.
      * @param string|null $url The public contact URL. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-settings/publiccontact-set_public_contact
      */
     public function setPublicContact(?string $name = null, ?string $url = null): void
@@ -932,9 +932,9 @@ final readonly class Resellers
      * @param bool|null $delegate Whether to allocate the reseller a dedicated IP address. Null omits it.
      * @param string|null $ips The IP addresses to allocate to the reseller's account. Null omits it.
      * @return SetResellerIpsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-settings/resellers-setresellerips
      */
     public function setResellerIps(string $user, ?bool $delegate = null, ?string $ips = null): array
@@ -975,7 +975,7 @@ final readonly class Resellers
      *     it.
      * @param bool|null $enablePackageLimits Whether to apply package limits to the reseller. Null omits it.
      * @param bool|null $enableResourceLimits Whether to limit the reseller's resources. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-limits/resellers-setresellerlimits
      */
     public function setResellerLimits(
@@ -1019,7 +1019,7 @@ final readonly class Resellers
      *
      * @param string $user The reseller's username.
      * @param string $ip The IP address to assign to the reseller's account as the main shared IP address.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-settings/resellers-setresellermainip
      */
     public function setResellerMainIp(string $user, string $ip): void
@@ -1041,7 +1041,7 @@ final readonly class Resellers
      * @param string $user The reseller's username.
      * @param string|null $nameservers A comma-separated list of the nameserver domains to assign to the reseller's
      *     account. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-settings/resellers-setresellernameservers
      */
     public function setResellerNameservers(string $user, ?string $nameservers = null): void
@@ -1068,7 +1068,7 @@ final readonly class Resellers
      *     Null omits it.
      * @param string|null $package A hosting plan (package), to modify the reseller's access settings for it. Null omits
      *     it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-limits/resellers-setresellerpackagelimit
      */
     public function setResellerPackageLimit(
@@ -1100,7 +1100,7 @@ final readonly class Resellers
      *
      * @param string $user The account's username.
      * @param bool|null $makeowner Whether to set the account to own itself. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/reseller-account-management/resellers-setupreseller
      */
     public function setupReseller(string $user, ?bool $makeowner = null): void
@@ -1124,7 +1124,7 @@ final readonly class Resellers
      * @param string|null $reason The reason for the reseller's suspension. Null omits it.
      * @param bool|null $disallow Whether to allow only the `root` user to unsuspend the account. Null omits it.
      * @param bool|null $resellerOnly Whether to suspend only the reseller account. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/reseller-account-management/resellers-suspendreseller
      */
     public function suspendReseller(
@@ -1159,9 +1159,9 @@ final readonly class Resellers
      * @param string $user The reseller account's username.
      * @param bool $terminatereseller Whether to terminate the reseller's main account.
      * @return TerminateResellerResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/reseller-account-management/resellers-terminatereseller
      */
     public function terminateReseller(string $user, bool $terminatereseller): array
@@ -1186,7 +1186,7 @@ final readonly class Resellers
      * API-map identity: whm1:unsetupreseller#GET (wire name unsetupreseller; Reseller Account Management).
      *
      * @param string $user The reseller account's username.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/reseller-account-management/resellers-unsetupreseller
      */
     public function unsetupReseller(string $user): void
@@ -1207,7 +1207,7 @@ final readonly class Resellers
      *
      * @param string $user The reseller's username.
      * @param bool|null $resellerOnly Whether to unsuspend only the reseller account. Null omits it.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/reseller-account-management/resellers-unsuspendreseller
      */
     public function unsuspendReseller(string $user, ?bool $resellerOnly = null): void

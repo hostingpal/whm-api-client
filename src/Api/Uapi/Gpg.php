@@ -70,22 +70,22 @@ final readonly class Gpg
      * declares no additional role restriction.
      *
      * Documented: Deletes all keys matching keyId. A public-key ID deletes the public key; a public/private pair ID
-     * deletes both. The source points to listSecretKeys() for the desired identifier. Key deletion changes account key
-     * material and has no documented rollback.
+     * deletes both. The source points to listSecretKeys() for the desired identifier and declares x-readonly=false with
+     * no rollback.
      *
-     * Documented: Uses form POST with one attempt and no automatic retry or rollback. A confirmed API outcome followed
-     * by a payload mismatch may accompany a completed change; do not retry automatically.
+     * Policy: Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a
+     * payload mismatch may accompany a completed change; do not retry automatically.
      *
-     * Documented: Returns a nullable object with no pinned fields. Preserve opaque object fields and explicit null;
-     * absent data is a payload mismatch.
+     * Policy: Preserves the pinned nullable object with no declared fields, including opaque object fields and explicit
+     * null. Absent data is a payload mismatch.
      *
      * API-map identity: uapi:GPG/delete_keypair#GET (wire name delete_keypair).
      *
      * @param string $keyId The ID of the GPG key that you wish to delete.
      * @return DeleteKeypairResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/signing-and-encryption-(gnupg-keys)/gpg-delete_keypair
      */
     public function deleteKeypair(string $keyId): ?array
@@ -104,17 +104,19 @@ final readonly class Gpg
      * Documented: Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation
      * declares no additional role restriction.
      *
-     * Documented: Exports the selected public key through GET. keyId is required and forwarded unchanged; the optional
-     * key_data field is a string containing key bytes. Omitted fields stay omitted; no null or absent payload is
-     * inferred. The client performs no key parsing or cryptographic validation.
+     * Documented: Exports the selected public key. keyId is required; the optional key_data field is a string
+     * containing key bytes.
+     *
+     * Policy: Uses GET and forwards keyId unchanged. Omitted fields stay omitted; null or absent data is a payload
+     * mismatch. The client performs no key parsing or cryptographic validation.
      *
      * API-map identity: uapi:GPG/export_public_key#GET (wire name export_public_key).
      *
      * @param string $keyId The ID of the GPG key.
      * @return ExportPublicKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/signing-and-encryption-(gnupg-keys)/gpg-export_public_key
      */
     public function exportPublicKey(string $keyId): array
@@ -133,22 +135,24 @@ final readonly class Gpg
      * Documented: Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation
      * declares no additional role restriction.
      *
-     * Documented: Exports private key material using form POST. keyId is required; omit passphrase to preserve server
-     * behavior, while an explicit empty string is sent unchanged. The source declares x-readonly=false and no rollback.
-     * The client performs no automatic retry or rollback.
+     * Documented: Exports private key material. keyId is required and passphrase is optional. The source declares
+     * x-readonly=false and no rollback; the optional key_data string contains private key material.
      *
-     * Documented: The optional key_data string contains private key material. Treat the returned payload and
-     * PayloadMismatchException::$payload as sensitive; do not log either. Payload content is not copied into
-     * responseMeta(). Omitted key_data stays omitted and null or absent data is a mismatch.
+     * Policy: Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a
+     * payload mismatch may accompany a completed change; do not retry automatically.
+     *
+     * Policy: Omit passphrase to retain server behavior; an explicit empty string is sent unchanged. Treat the returned
+     * payload and PayloadMismatchException::$payload as sensitive; do not log either. Payload content is not copied
+     * into responseMeta(). Omitted key_data stays omitted; null or absent data is a mismatch.
      *
      * API-map identity: uapi:GPG/export_secret_key#GET (wire name export_secret_key).
      *
      * @param string $keyId The ID of the GPG secret key that you wish to retrieve.
      * @param string|null $passphrase The passphrase of the GPG secret key that you wish to retrieve. Null omits it.
      * @return ExportSecretKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/signing-and-encryption-(gnupg-keys)/gpg-export_secret_key
      */
     public function exportSecretKey(
@@ -171,19 +175,20 @@ final readonly class Gpg
      * declares no additional role restriction.
      *
      * Documented: Requires email, name and passphrase. Creates key material in the selected account .gnupg directory
-     * using system entropy; low entropy can cause long generation times or timeouts. A timeout does not establish
-     * whether generation completed.
+     * using system entropy; low entropy can cause long generation times or timeouts.
      *
-     * Documented: Omit comment, expire, keysize and noExpire to retain server defaults. expire is a string Unix
-     * timestamp defaulting to one year from the current date; keysize defaults to 2048 and the pinned request prose
-     * calls its unit bytes. noExpire defaults to 0; explicit false is sent as 0 and true as 1. No client-side
-     * precedence between expire and noExpire is inferred.
+     * Documented: expire is a string Unix timestamp defaulting to one year from the current date; keysize defaults to
+     * 2048 and the pinned request prose calls its unit bytes. noExpire defaults to 0.
      *
-     * Documented: Uses form POST with one attempt and no automatic retry or rollback. A confirmed API outcome followed
-     * by a payload mismatch may accompany a completed change; do not retry automatically.
+     * Policy: Omit comment, expire, keysize and noExpire to retain server defaults. Explicit false sends 0 and true
+     * sends 1. No client-side precedence between expire and noExpire is inferred. A timeout does not establish whether
+     * generation completed.
      *
-     * Documented: Returns a nullable object with no pinned fields. Preserve opaque object fields and explicit null;
-     * absent data is a payload mismatch.
+     * Policy: Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a
+     * payload mismatch may accompany a completed change; do not retry automatically.
+     *
+     * Policy: Preserves the pinned nullable object with no declared fields, including opaque object fields and explicit
+     * null. Absent data is a payload mismatch.
      *
      * API-map identity: uapi:GPG/generate_key#GET (wire name generate_key).
      *
@@ -196,9 +201,9 @@ final readonly class Gpg
      * @param 1024|2048|3072|4096|null $keysize The new key's size, in bytes. Null omits it.
      * @param bool|null $noExpire Whether to generate the key without an expiration date. Null omits it.
      * @return GenerateKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/signing-and-encryption-(gnupg-keys)/gpg-generate_key
      */
     public function generateKey(
@@ -233,24 +238,30 @@ final readonly class Gpg
      * Documented: Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation
      * declares no additional role restriction.
      *
-     * Documented: Requires keyData, which may contain private key material. Supply the original key string; the form
-     * encoder URI-encodes it exactly once as key_data, satisfying the pinned encoding instruction. The client performs
-     * no decoding, key parsing or cryptography.
+     * Documented: You must URI-encode this value.
      *
-     * Documented: Uses form POST with one attempt and no automatic retry or rollback. A confirmed API outcome followed
-     * by a payload mismatch may accompany a completed change; do not retry automatically.
+     * Documented: Requires keyData, which may contain private key material. The pinned parameter example is already
+     * percent-encoded and the URL sample double-encodes it, including %250A.
      *
-     * Documented: Returns an object with optional string key_id. Omitted fields stay omitted; null or absent data is a
-     * payload mismatch.
+     * Policy: The form encoder encodes the supplied string once as key_data without decoding, parsing or cryptography.
+     * The source examples and instruction leave an encoding conflict: neither raw input nor pre-encoding is established
+     * as universally correct. Server decode behavior and preservation of + in key material are unobserved. Verification
+     * requires an owned fixture containing + under whm-api-client-8x0.2.54.
+     *
+     * Policy: Uses one form POST request without automatic retry or rollback. A confirmed API outcome followed by a
+     * payload mismatch may accompany a completed change; do not retry automatically.
+     *
+     * Documented: Returns an object with optional string key_id.
+     *
+     * Policy: Omitted fields stay omitted; null or absent data is a payload mismatch.
      *
      * API-map identity: uapi:GPG/import_key#GET (wire name import_key).
      *
-     * @param string $keyData The original GPG key string to import. The client form-encodes this sensitive value once;
-     *     do not pre-encode it.
+     * @param string $keyData The key to import.
      * @return ImportKeyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/signing-and-encryption-(gnupg-keys)/gpg-import_key
      */
     public function importKey(
@@ -271,19 +282,22 @@ final readonly class Gpg
      * Documented: Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation
      * declares no additional role restriction.
      *
-     * Documented: Lists public-key metadata using GET with no request arguments. Each row keeps optional algorithm,
-     * bits, created, expires, id, type and user_id fields. created and expires remain strings; expires is an empty
-     * string when the key never expires. The source describes bits in bits and type as pub.
+     * Documented: Lists public-key metadata with no request arguments. Each row has optional algorithm, bits, created,
+     * expires, id, type and user_id fields. created and expires are strings; expires is an empty string when the key
+     * never expires. The source describes bits in bits and type as pub.
      *
-     * Documented: Preserve an empty list and omitted row fields. This inventory does not export key contents, prove
-     * ownership of newly generated keys, or establish signing, encryption or authentication behavior.
+     * Policy: Uses GET and preserves empty lists and omitted row fields. This inventory does not export key contents,
+     * prove ownership of newly generated keys, or establish signing, encryption or authentication behavior.
+     *
+     * Observed: PR66 reviewer 5721152661 reports empty public-key and secret-key lists through direct and bridged GET
+     * on 11.138.0.19. Empty lists establish no populated timestamp variants.
      *
      * API-map identity: uapi:GPG/list_public_keys#GET (wire name list_public_keys).
      *
      * @return ListPublicKeysResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/signing-and-encryption-(gnupg-keys)/gpg-list_public_keys
      */
     public function listPublicKeys(): array
@@ -302,20 +316,25 @@ final readonly class Gpg
      * Documented: Available in cPanel 82 and later; operates on the selected cPanel account. The pinned operation
      * declares no additional role restriction.
      *
-     * Documented: Lists secret-key metadata using GET with no request arguments. Each row keeps optional algorithm,
-     * bits, created, expires, id, type and user_id fields. created and expires remain integer Unix timestamps, unlike
-     * public-key inventory strings. The source describes type as sec; do not infer an empty-string or nullable expiry
-     * variant.
+     * Documented: Lists secret-key metadata with no request arguments. Each row has optional algorithm, bits, created,
+     * expires, id, type and user_id fields. The pinned secret-key schema declares integer Unix timestamps for created
+     * and expires and describes type as sec; public-key timestamps instead use strings, with empty expiry for
+     * non-expiring keys.
      *
-     * Documented: Preserve an empty list and omitted row fields. Metadata does not export key contents or establish
-     * signing, encryption or authentication behavior.
+     * Policy: Uses GET and retains the pinned integer secret-key timestamp contract. Empty or digit-string timestamps,
+     * populated rows and non-expiring secret-key variants are unobserved compatibility risks under
+     * whm-api-client-8x0.2.54; strict validation may reject them. Preserve empty lists and omitted fields. Metadata
+     * does not export key contents or establish signing, encryption or authentication behavior.
+     *
+     * Observed: PR66 reviewer 5721152661 reports empty public-key and secret-key lists through direct and bridged GET
+     * on 11.138.0.19. This does not establish populated or non-expiring timestamp types.
      *
      * API-map identity: uapi:GPG/list_secret_keys#GET (wire name list_secret_keys).
      *
      * @return ListSecretKeysResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/signing-and-encryption-(gnupg-keys)/gpg-list_secret_keys
      */
     public function listSecretKeys(): array

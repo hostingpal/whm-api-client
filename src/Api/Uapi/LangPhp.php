@@ -119,9 +119,9 @@ final readonly class LangPhp
      * @param 'home'|'vhost' $type The type of `php.ini` file.
      * @param string|null $vhost The name of a virtual host. Null omits it.
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_domain_handler
      */
     public function phpGetDomainHandler(string $type, ?string $vhost = null): string
@@ -145,9 +145,9 @@ final readonly class LangPhp
      * @param bool|null $systemDefault Whether to return domains that inherit the system's default PHP version. Null
      *     omits it.
      * @return PhpGetImpactedDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_impacted_domains
      */
@@ -172,9 +172,9 @@ final readonly class LangPhp
      * API-map identity: uapi:LangPHP/php_get_installed_versions#GET (wire name php_get_installed_versions).
      *
      * @return PhpGetInstalledVersionsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_installed_versions
      */
     public function phpGetInstalledVersions(): array
@@ -195,9 +195,9 @@ final readonly class LangPhp
      * API-map identity: uapi:LangPHP/php_get_system_default_version#GET (wire name php_get_system_default_version).
      *
      * @return string|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_system_default_version
      */
     public function phpGetSystemDefaultVersion(): ?string
@@ -227,9 +227,9 @@ final readonly class LangPhp
      *
      * @param string|null $vhost The PHP Virtual Hostname. Null omits it.
      * @return PhpGetVhostVersionsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_get_vhost_versions
      */
     public function phpGetVhostVersions(?string $vhost = null): array
@@ -255,9 +255,9 @@ final readonly class LangPhp
      * @param 'home'|'vhost' $type The type of `php.ini` file.
      * @param string|null $vhost The name of a virtual host. Null omits it.
      * @return PhpIniGetUserBasicDirectivesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_ini_get_user_basic_directives
      */
     public function phpIniGetUserBasicDirectives(string $type, ?string $vhost = null): array
@@ -287,9 +287,9 @@ final readonly class LangPhp
      * @param string $type The type of `php.ini` file.
      * @param string|null $vhost The name of a virtual host. Null omits it.
      * @return PhpIniGetUserContentResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_ini_get_user_content
      */
     public function phpIniGetUserContent(string $type, ?string $vhost = null): array
@@ -311,9 +311,9 @@ final readonly class LangPhp
      * API-map identity: uapi:LangPHP/php_ini_get_user_paths#GET (wire name php_ini_get_user_paths).
      *
      * @return PhpIniGetUserPathsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_ini_get_user_paths
      */
     public function phpIniGetUserPaths(): array
@@ -346,9 +346,9 @@ final readonly class LangPhp
      * @param 'home'|'vhost' $type The type of `php.ini` file.
      * @param string|null $vhost The name of a virtual host. Null omits it.
      * @return mixed
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_ini_set_user_basic_directives
      */
@@ -392,9 +392,9 @@ final readonly class LangPhp
      * @param string $type The type of `php.ini` file.
      * @param string|null $vhost The name of a virtual host. Null omits it.
      * @return PhpIniSetUserContentResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_ini_set_user_content
      */
     public function phpIniSetUserContent(
@@ -427,9 +427,9 @@ final readonly class LangPhp
      * @param string $version The PHP version of a virtual host.
      * @param string|list<string> $vhosts The virtual host's name.
      * @return PhpSetVhostVersionsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/php-settings/langphp-php_set_vhost_versions
      */

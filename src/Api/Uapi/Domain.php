@@ -65,9 +65,9 @@ final readonly class Domain
      * @param string $registered A valid domain name.
      * @param string|null $docroot The path to the domain's document root directory. Null omits it.
      * @return ConvertTemporaryToRegisteredResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain/domain-convert_temporary_to_registered
      */
     public function convertTemporaryToRegistered(string $domain, string $registered, ?string $docroot = null): array
@@ -100,9 +100,9 @@ final readonly class Domain
      *
      * @param string $domain A domain on the cPanel account.
      * @return 0|1
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain/domain-is_temporary_domain
      */
     public function isTemporaryDomain(string $domain): int
@@ -137,9 +137,9 @@ final readonly class Domain
      * @param string $newDomain The new domain name.
      * @param string|null $docroot The path to the domain's document root directory. Null omits it.
      * @return RenameDomainResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain/domain-rename_domain
      */
     public function renameDomain(string $domain, string $newDomain, ?string $docroot = null): array
@@ -166,9 +166,9 @@ final readonly class Domain
      * API-map identity: uapi:Domain/temporary_domain_is_disabled#GET (wire name temporary_domain_is_disabled).
      *
      * @return TemporaryDomainIsDisabledResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain/domain-temporary_domain_is_disabled
      */
     public function temporaryDomainIsDisabled(): array

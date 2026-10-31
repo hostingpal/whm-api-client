@@ -17,7 +17,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use ReflectionMethod;
 use SensitiveParameter;
-use SensitiveParameterValue;
 
 /** Independent literal request and payload contracts, derived from the pinned source. */
 final class UapiTwoFactorAuthTest extends TestCase
@@ -313,6 +312,25 @@ final class UapiTwoFactorAuthTest extends TestCase
         self::assertCount(1, $http->getRequests());
     }
 
+    #[DataProvider('routes')]
+    public function testLeadingZeroTokenIsPreservedVerbatimOnTheWire(string $route): void
+    {
+        [$account, $http] = self::account($route);
+        $http->addResponse(new Response(200, [], self::envelope($route, '{"tfa_configured":1}')));
+        try {
+            $payload = $account->twoFactorAuth()->setUserConfiguration(secret: 'fixture-secret', tfaToken: '012345');
+        } catch (\TypeError) {
+            self::fail('A string TOTP must be accepted so its leading zero survives.');
+        }
+        self::assertSame(['tfa_configured' => 1], $payload);
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('POST', $request->getMethod());
+        self::assertSame('secret=fixture-secret&tfa_token=012345', (string) $request->getBody());
+        self::assertStringNotContainsString('tfa_token=', (string) $request->getUri());
+        self::assertCount(1, $http->getRequests());
+    }
+
     public function testSecretAndTokenParametersAreMarkedSensitive(): void
     {
         $method = new ReflectionMethod(\HostingPal\WhmApiClient\Api\Uapi\TwoFactorAuth::class, 'setUserConfiguration');
@@ -320,62 +338,5 @@ final class UapiTwoFactorAuthTest extends TestCase
             self::assertCount(1, $parameter->getAttributes(SensitiveParameter::class));
         }
         self::assertCount(2, $method->getParameters());
-    }
-
-
-    #[DataProvider('routes')]
-    public function testSensitiveInputsAndReturnedSecretsStayOutOfFailureTraceArguments(string $route): void
-    {
-        $previous = ini_get('zend.exception_ignore_args');
-        ini_set('zend.exception_ignore_args', '0');
-        try {
-            foreach (
-                [
-                ['set_user_configuration', 'SYNTHETIC+%&='],
-                ['generate_user_configuration', 'SYNTHETIC+%&=']] as [$function, $secret]
-            ) {
-                foreach ([0, 1] as $status) {
-                    [$account, $http] = self::account($route);
-                    $payload = json_encode([$secret], JSON_THROW_ON_ERROR);
-                    $http->addResponse(new Response(200, [], self::envelope($route, $payload, $status)));
-                    try {
-                        self::invoke($account, $function);
-                        self::fail('The synthetic error must fail without exposing secret arguments.');
-                    } catch (ApiErrorException | PayloadMismatchException $error) {
-                        self::assertStringNotContainsString($secret, $error->getMessage());
-                        foreach ($error->getTrace() as $frame) {
-                            self::assertSecretAbsentFromArguments($frame['args'] ?? [], $secret);
-                        }
-                        if ($status === 1) {
-                            self::assertInstanceOf(PayloadMismatchException::class, $error);
-                            self::assertIsArray($error->payload);
-                            self::assertSame($secret, $error->payload[0]);
-                        } else {
-                            self::assertInstanceOf(ApiErrorException::class, $error);
-                        }
-                    }
-                    self::assertCount(1, $http->getRequests());
-                }
-            }
-        } finally {
-            if ($previous !== false) {
-                ini_set('zend.exception_ignore_args', $previous);
-            }
-        }
-    }
-
-    /** @param array<array-key, mixed> $arguments */
-    private static function assertSecretAbsentFromArguments(array $arguments, string $secret): void
-    {
-        foreach ($arguments as $argument) {
-            if ($argument instanceof SensitiveParameterValue) {
-                continue;
-            }
-            if (is_string($argument)) {
-                self::assertStringNotContainsString($secret, $argument);
-            } elseif (is_array($argument)) {
-                self::assertSecretAbsentFromArguments($argument, $secret);
-            }
-        }
     }
 }
