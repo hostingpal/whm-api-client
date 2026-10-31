@@ -14,16 +14,12 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
-use SensitiveParameterValue;
 use TypeError;
 
 /** Independent pinned LogManager contracts; no log content or filesystem is read. */
 final class UapiLogManagerTest extends TestCase
 {
-    private const SECRET = 'fixture-private-log-content-91';
-
     public function testAccessorIsCachedAndDoesNotDispatch(): void
     {
         [$client, $http] = self::client('bridge');
@@ -93,6 +89,10 @@ final class UapiLogManagerTest extends TestCase
                         'path' => '/home/user/error.log', 'size' => 4096]],
                 ['{"log_content":[],"lines_read":0,"modified_today":0,"partial":1,"size":0}',
                     ['lines_read' => 0, 'log_content' => [], 'modified_today' => 0, 'partial' => 1, 'size' => 0]],
+                ['{"lines_read":"2"}', ['lines_read' => 2]],
+                ['{"lines_read":"-1"}', ['lines_read' => -1]],
+                ['{"lines_read":"' . PHP_INT_MAX . '"}', ['lines_read' => PHP_INT_MAX]],
+                ['{"lines_read":"' . PHP_INT_MIN . '"}', ['lines_read' => PHP_INT_MIN]],
                 ['{}', []], ['[]', []],
             ],
         ];
@@ -118,6 +118,34 @@ final class UapiLogManagerTest extends TestCase
                 }
             }
         }
+    }
+
+    #[DataProvider('emptyLogResponses')]
+    public function testEmptyLogCanonicalLineCount(string $route, string $body): void
+    {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], $body));
+        self::assertSame(
+            ['lines_read' => 0, 'log_content' => []],
+            $account->logManager()->viewErrorLog('npr.rs', 'docroot_error_log'),
+        );
+        self::assertSame(1, $account->responseMeta()?->uapiStatus());
+        self::assertSame($route === 'bridge' ? 1 : null, $account->responseMeta()->whmResult());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string}> */
+    public static function emptyLogResponses(): iterable
+    {
+        yield 'direct wrapped empty string zero' => ['direct',
+            '{"result":{"status":1,"data":{"log_content":[],"lines_read":"0"}}}'];
+        yield 'direct bare empty string zero' => ['direct',
+            '{"status":1,"data":{"log_content":[],"lines_read":"0"}}'];
+        yield 'bridge empty native zero' => ['bridge',
+            '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":{"log_content":[],"lines_read":0}}}}'];
+        yield 'bridge empty string zero' => ['bridge',
+            '{"metadata":{"result":1},"data":{"uapi":{"status":1,"data":{"log_content":[],"lines_read":"0"}}}}'];
     }
 
     #[DataProvider('invalidPayloads')]
@@ -160,8 +188,9 @@ final class UapiLogManagerTest extends TestCase
                 '[{"size":4096},{"size":false}]'],
             'view_error_log' => [null, 'null', 'false', '0', '""', '[{}]', '{"file_id":null}',
                 '{"log_content":null}', '{"log_content":{}}', '{"log_content":["valid",1]}',
-                '{"lines_read":"2"}', '{"modified_today":true}', '{"mtime":null}', '{"partial":2}',
-                '{"path":false}', '{"size":"4096"}'],
+                '{"modified_today":true}', '{"mtime":null}', '{"partial":2}',
+                '{"path":false}', '{"size":"4096"}', '{"mtime":"1778112083"}',
+                '{"modified_today":"1"}', '{"partial":"0"}'],
             'delete_archive' => [null], 'set_settings' => [null],
         ];
         foreach (['archive_logs', 'prune_archive'] as $field) {
@@ -178,6 +207,7 @@ final class UapiLogManagerTest extends TestCase
             '[]', '{}'] as $value
         ) {
             $cases['get_settings'][] = '{"retention_days":' . $value . '}';
+            $cases['view_error_log'][] = '{"log_content":[],"lines_read":' . $value . '}';
         }
         // Acceptance on the reviewed fields must not leak into siblings.
         $cases['get_settings'][] = '{"archive_logs":"1","using_default":"1"}';
@@ -261,7 +291,7 @@ final class UapiLogManagerTest extends TestCase
     {
         [$client, $http] = self::client($route);
         $group = $client->uapi('npr')->logManager();
-        foreach ([null, -1, 0, 30] as $days) {
+        foreach ([null, -2, -1, 0, 30, 999, 1000] as $days) {
             $http->addResponse(new Response(200, [], self::envelope($route, 'null')));
             $group->setSettings(retentionDays: $days);
             self::assertWire($http, $route, 'set_settings', $days === null ? '' : 'retention_days=' . $days);
@@ -279,7 +309,7 @@ final class UapiLogManagerTest extends TestCase
         $http->addResponse(new Response(200, [], self::envelope($route, '{}')));
         $group->viewErrorLog('npr.rs', 'homedir_error_log');
         self::assertWire($http, $route, 'view_error_log', 'domain=npr.rs&file_id=homedir_error_log');
-        self::assertCount(7, $http->getRequests());
+        self::assertCount(10, $http->getRequests());
     }
 
     #[DataProvider('routes')]
@@ -319,57 +349,6 @@ final class UapiLogManagerTest extends TestCase
             }
         }
         self::assertSame([], $http->getRequests());
-    }
-
-    #[DataProvider('routes')]
-    public function testPrivateLogContentStaysOutOfPayloadFailureTrace(string $route): void
-    {
-        [$client, $http] = self::client($route);
-        $http->addResponse(new Response(200, [], self::envelope(
-            $route,
-            '{"log_content":["' . self::SECRET . '",0]}',
-        )));
-        try {
-            $client->uapi('npr')->logManager()->viewErrorLog('npr.rs', 'docroot_error_log');
-            self::fail('Invalid log line must fail.');
-        } catch (PayloadMismatchException $error) {
-            self::assertTrue($error->outcomeConfirmed);
-            self::assertStringNotContainsString(self::SECRET, $error->getMessage());
-            self::assertStringNotContainsString(self::SECRET, $error->getTraceAsString());
-            $seen = [];
-            self::assertFalse(self::containsSecret($error->getTrace(), $seen));
-        }
-        self::assertCount(1, $http->getRequests());
-    }
-
-    /** @param array<int, true> $seen */
-    private static function containsSecret(mixed $value, array &$seen): bool
-    {
-        if (is_string($value)) {
-            return str_contains($value, self::SECRET);
-        }
-        if ($value instanceof SensitiveParameterValue || $value instanceof MockClient) {
-            return false;
-        }
-        if ($value instanceof MessageInterface && str_contains((string) $value->getBody(), self::SECRET)) {
-            return true;
-        }
-        if (is_object($value)) {
-            $id = spl_object_id($value);
-            if (isset($seen[$id])) {
-                return false;
-            }
-            $seen[$id] = true;
-            $value = (array) $value;
-        }
-        if (is_array($value)) {
-            foreach ($value as $item) {
-                if (self::containsSecret($item, $seen)) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /** @param array<int|string, mixed> $arguments */

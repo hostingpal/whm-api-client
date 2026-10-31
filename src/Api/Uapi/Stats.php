@@ -83,9 +83,9 @@ final readonly class Stats
      *
      * @param string|null $timezone The timezone in which to report the data, in Olson tz format. Null omits it.
      * @return GetBandwidthResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-statistics/stats-get_bandwidth
      */
     public function getBandwidth(?string $timezone = null): array
@@ -120,9 +120,9 @@ final readonly class Stats
      * @param 'error'|'suexec'|null $log The Apache log file to query. Null omits it.
      * @param int|null $maxLines The number of lines to retrieve from the error log. Null omits it.
      * @return GetSiteErrorsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-statistics/stats-get_site_errors
      */
     public function getSiteErrors(string $domain, ?string $log = null, ?int $maxLines = null): array
@@ -158,9 +158,9 @@ final readonly class Stats
      *
      * @param string $domain The domain to retrieve statistics for.
      * @return GetStatsDailyResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-statistics/stats-get_stats_daily
      */
     public function getStatsDaily(string $domain): array
@@ -195,9 +195,9 @@ final readonly class Stats
      * @param 'webalizer'|'analog' $engine The statistics engine.
      * @param 'http'|'ftp'|null $traffic The web traffic type. Null omits it.
      * @return ListSitesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-statistics/stats-list_sites
      */
     public function listSites(string $engine, ?string $traffic = null): array
@@ -227,9 +227,9 @@ final readonly class Stats
      * @param 'analog' $engine The statistics engine.
      * @param bool|null $ssl Whether to return statistics from SSL requests. Null omits it.
      * @return ListStatsByDomainResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-statistics/stats-list_stats_by_domain
      */
     public function listStatsByDomain(string $domain, string $engine, ?bool $ssl = null): array

@@ -1,0 +1,326 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "CPDAVD",
+  "accessor": "cpDavd",
+  "class": "CpDavd",
+  "operations": {
+    "uapi:CPDAVD/add_delegate": {
+      "method": "POST",
+      "order": [
+        "calendar",
+        "delegatee",
+        "delegator",
+        "readonly"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 120 and later; operates on the selected account. Calendar identifiers and delegator/delegatee account addresses are forwarded unchanged."
+        },
+        {
+          "kind": "policy",
+          "text": "Adds a share for the specified calendar; the delegator is its owner and the delegatee is the person receiving access. This changes calendar access, declares no rollback, and is never retried or rolled back by the client. An API result does not establish DAV client authentication or access enforcement."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response is an object with optional integer shared (0/1), independently of UAPI status."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5721214794 on cPanel 11.138.0.19: successful handlers returned null data after changing state; they did not send the pinned shared field. Earlier PayloadMismatchException(outcomeConfirmed=true) followed successful writes."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5721214794 on cPanel 11.138.0.19: the implementation defaults omitted readonly to 1. An omitted update changed a read-write share to read-only, removing write access."
+        },
+        {
+          "kind": "policy",
+          "text": "addDelegate keeps readonly optional; omission leaves upstream default 1 in effect. true sends 1; false sends 0. No local ownership or permission check is inferred."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5721214794 on cPanel 11.138.0.19: mailbox delegatees worked direct but add/update failed bridged with undefined subroutine Cpanel::Email::Accounts::manage_email_accounts_db. No automatic fallback or retry occurs; this report does not establish populated removeDelegate success through the bridge."
+        },
+        {
+          "kind": "policy",
+          "text": "The client accepts missing or null success data as null and validates a present object strictly; omitted shared stays omitted. Do not retry or automatically undo a mutation after outcomeConfirmed=true."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /CPDAVD/add_delegate. Declares x-readonly=false and x-rollback=none; use form POST for calendar sharing changes. All three calendar/delegatee/delegator arguments retain their required source status."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794 at head 2db7f7e077d68a63f89fbb15647202f6da832dc7; server implementation references are reviewer-inspected Cpanel/API/DAV.pm and Cpanel/API/CPDAVD.pm, not a new local server inspection. Successful addDelegate direct, with a row appearing returned null and previously raised outcomeConfirmed=true PayloadMismatchException after the change took effect. Reviewer-inspected _manage/manage_collection never set result data. Use existing optional_payload for missing/null success while retaining the pinned optional shared object and strict flag; no observed shared field or retry/undo is inferred."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794 at head 2db7f7e077d68a63f89fbb15647202f6da832dc7; server implementation references are reviewer-inspected Cpanel/API/DAV.pm and Cpanel/API/CPDAVD.pm, not a new local server inspection. The implementation applies readonly //= 1; omission on update removed write access in the direct lifecycle. Mailbox add/update through the bridge failed undefined manage_email_accounts_db while direct calls worked; remove bridged was only observed on empty state."
+        }
+      ],
+      "optional_payload": true
+    },
+    "uapi:CPDAVD/update_delegate": {
+      "method": "POST",
+      "order": [
+        "calendar",
+        "delegatee",
+        "delegator",
+        "readonly"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 120 and later; operates on the selected account. Calendar identifiers and delegator/delegatee account addresses are forwarded unchanged."
+        },
+        {
+          "kind": "policy",
+          "text": "Updates the specified calendar share; the delegator is its owner and the delegatee is the person receiving access. This changes calendar access, declares no rollback, and is never retried or rolled back by the client. An API result does not establish DAV client authentication or access enforcement."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response is an object with optional integer shared (0/1), independently of UAPI status."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5721214794 on cPanel 11.138.0.19: successful handlers returned null data after changing state; they did not send the pinned shared field. Earlier PayloadMismatchException(outcomeConfirmed=true) followed successful writes."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5721214794 on cPanel 11.138.0.19: the implementation defaults omitted readonly to 1. An omitted update changed a read-write share to read-only, removing write access."
+        },
+        {
+          "kind": "policy",
+          "text": "updateDelegate requires an explicit nonnullable readonly boolean as its fourth argument to prevent accidental loss of write access. true sends 1; false sends 0. No local ownership or permission check is inferred."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5721214794 on cPanel 11.138.0.19: mailbox delegatees worked direct but add/update failed bridged with undefined subroutine Cpanel::Email::Accounts::manage_email_accounts_db. No automatic fallback or retry occurs; this report does not establish populated removeDelegate success through the bridge."
+        },
+        {
+          "kind": "policy",
+          "text": "The client accepts missing or null success data as null and validates a present object strictly; omitted shared stays omitted. Do not retry or automatically undo a mutation after outcomeConfirmed=true."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /CPDAVD/update_delegate. Declares x-readonly=false and x-rollback=none; use form POST for calendar sharing changes. All three calendar/delegatee/delegator arguments retain their required source status."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794 at head 2db7f7e077d68a63f89fbb15647202f6da832dc7; server implementation references are reviewer-inspected Cpanel/API/DAV.pm and Cpanel/API/CPDAVD.pm, not a new local server inspection. Successful updateDelegate direct, with readonly changed returned null and previously raised outcomeConfirmed=true PayloadMismatchException after the change took effect. Reviewer-inspected _manage/manage_collection never set result data. Use existing optional_payload for missing/null success while retaining the pinned optional shared object and strict flag; no observed shared field or retry/undo is inferred."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794 at head 2db7f7e077d68a63f89fbb15647202f6da832dc7; server implementation references are reviewer-inspected Cpanel/API/DAV.pm and Cpanel/API/CPDAVD.pm, not a new local server inspection. The implementation applies readonly //= 1; omission on update removed write access in the direct lifecycle. Mailbox add/update through the bridge failed undefined manage_email_accounts_db while direct calls worked; remove bridged was only observed on empty state."
+        }
+      ],
+      "optional_payload": true,
+      "params": {
+        "readonly": {
+          "required": true
+        }
+      }
+    },
+    "uapi:CPDAVD/remove_delegate": {
+      "method": "POST",
+      "order": [
+        "calendar",
+        "delegatee",
+        "delegator"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 120 and later; operates on the selected account. Calendar identifiers and delegator/delegatee account addresses are forwarded unchanged."
+        },
+        {
+          "kind": "policy",
+          "text": "Removes the specified calendar share; the delegator is its owner and the delegatee is the person whose access is removed. This changes calendar access, declares no rollback, and is never retried or rolled back by the client. An API result does not establish DAV client authentication or access enforcement."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response is an object with optional integer shared (0/1), independently of UAPI status."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5721214794 on cPanel 11.138.0.19: successful handlers returned null data after changing state; they did not send the pinned shared field. Earlier PayloadMismatchException(outcomeConfirmed=true) followed successful writes."
+        },
+        {
+          "kind": "policy",
+          "text": "The client accepts missing or null success data as null and validates a present object strictly; omitted shared stays omitted. Do not retry or automatically undo a mutation after outcomeConfirmed=true."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /CPDAVD/remove_delegate. Declares x-readonly=false and x-rollback=none; use form POST for calendar sharing changes. All three calendar/delegatee/delegator arguments retain their required source status."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794 at head 2db7f7e077d68a63f89fbb15647202f6da832dc7; server implementation references are reviewer-inspected Cpanel/API/DAV.pm and Cpanel/API/CPDAVD.pm, not a new local server inspection. Successful removeDelegate direct, with a row removed returned null and previously raised outcomeConfirmed=true PayloadMismatchException after the change took effect. Reviewer-inspected _manage/manage_collection never set result data. Use existing optional_payload for missing/null success while retaining the pinned optional shared object and strict flag; no observed shared field or retry/undo is inferred."
+        }
+      ],
+      "optional_payload": true
+    },
+    "uapi:CPDAVD/manage_collection": {
+      "method": "POST",
+      "order": [
+        "account",
+        "action",
+        "collection_type",
+        "calendar-color",
+        "description",
+        "name",
+        "path"
+      ],
+      "params": {
+        "calendar-color": {
+          "php": "calendarColor"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 120 and later. account identifies the collection owner. account, action and collection_type are required. The documented actions are create, update and delete; collection types are calendar, tasks and addressbook. No client-side closed-enum validation is added."
+        },
+        {
+          "kind": "observed",
+          "text": "name is required for create. path is required for update/delete; create omission autogenerates <collection_type>-<uuid>. update needs at least one of name, description or calendar-color. Reviewer-inspected source on 11.138.0.19 filters these fields by truthiness: empty strings and \"0\" alone cause an API error and are ignored alongside another field, so they cannot clear a description. These conditional requirements remain server-side. The client sends supplied values unchanged, including empty strings and the exact calendar-color wire field, and adds no cross-field validator."
+        },
+        {
+          "kind": "policy",
+          "text": "Account identifiers and collection paths are forwarded unchanged. This creates, changes or deletes calendars, task lists and address books. The source declares no rollback; the client does not retry, undo deletion or contact any returned DAV URL."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned response is an object with optional integer shared (0/1), independently of UAPI status."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5721214794 on cPanel 11.138.0.19: successful handlers returned null data after changing state; they did not send the pinned shared field. Earlier PayloadMismatchException(outcomeConfirmed=true) followed successful writes."
+        },
+        {
+          "kind": "policy",
+          "text": "The client accepts missing or null success data as null and validates a present object strictly; omitted shared stays omitted. Do not retry or automatically undo a mutation after outcomeConfirmed=true."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /CPDAVD/manage_collection. Declares x-readonly=false and x-rollback=none. account, action and collection_type are required; calendar-color is explicitly optional, name has conditional create-only requiredness in prose, and path is explicitly optional with update/delete conditional requirements. Preserve source requiredness without new cross-field validation and send the hyphenated calendar-color field unchanged as form POST."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794 at head 2db7f7e077d68a63f89fbb15647202f6da832dc7; server implementation references are reviewer-inspected Cpanel/API/DAV.pm and Cpanel/API/CPDAVD.pm, not a new local server inspection. Successful manageCollection create/delete through both routes and update bridged returned null and previously raised outcomeConfirmed=true PayloadMismatchException after the change took effect. Reviewer-inspected _manage/manage_collection never set result data. Use existing optional_payload for missing/null success while retaining the pinned optional shared object and strict flag; no observed shared field or retry/undo is inferred."
+        }
+      ],
+      "optional_payload": true
+    },
+    "uapi:CPDAVD/list_delegates": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 120 and later. Lists sharing configuration in calendars for the selected account; no request arguments or defaults are declared."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a list of sharing records with optional calendar, calname, delegatee, delegator and integer readonly fields. readonly=1 denotes read access only, while 0 remains the native flag. Empty lists and omitted fields remain distinct; no null or quoted-flag variants are inferred. These private ownership/access records are payload data, and inventory does not establish actual DAV client enforcement."
+        }
+      ]
+    },
+    "uapi:CPDAVD/list_users": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 120 and later. Lists users available for CalDAV and CardDAV in the selected account; no request arguments or defaults are declared."
+        },
+        {
+          "kind": "observed",
+          "text": "Review 5721214794 on cPanel 11.138.0.19: both routes return a map keyed by principal, then collection ID, rather than the pinned outer list. The reviewer observed quoted protected flags through both routes. Both dynamic key levels retain their keys locally; evidence paths must wildcard them. Collection records retain all five optional fields: calendar-color, description, displayname, protected and type. Empty maps and omitted fields remain distinct; null is not inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned protected field is integer 0/1; 1 means the collection cannot be deleted through the API. The documented type values are VADDRESSBOOK, VCALENDAR and VTODO."
+        },
+        {
+          "kind": "policy",
+          "text": "protected accepts native integer 0/1 and exact quoted \"0\"/\"1\", normalized to integers. The string type contract adds no closed enum. Private names, descriptions and IDs remain payload data. This read proves no DAV authentication or access enforcement."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "map",
+              "values": {
+                "type": "object",
+                "fields": {
+                  "calendar-color": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "displayname": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "protected": {
+                    "type": "flag",
+                    "accept": [
+                      "string-flag"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794 at head 2db7f7e077d68a63f89fbb15647202f6da832dc7; server implementation references are reviewer-inspected Cpanel/API/DAV.pm and Cpanel/API/CPDAVD.pm, not a new local server inspection. Both routes returned a principal-to-collection map and quoted protected flags. Reviewer inspected $result->data(\\%trusted_pops_hash), contradicting pinned outer items. Replace only the root container, preserving both dynamic map levels and all five optional row fields; accept only exact quoted 0/1 flags. No private dynamic names or content are persisted."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794 at head 2db7f7e077d68a63f89fbb15647202f6da832dc7; server implementation references are reviewer-inspected Cpanel/API/DAV.pm and Cpanel/API/CPDAVD.pm, not a new local server inspection. Both routes returned a principal-to-collection map and quoted protected flags. Reviewer inspected $result->data(\\%trusted_pops_hash), contradicting pinned outer items. Replace only the root container, preserving both dynamic map levels and all five optional row fields; accept only exact quoted 0/1 flags. No private dynamic names or content are persisted."
+        }
+      ]
+    }
+  }
+}

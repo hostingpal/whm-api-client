@@ -70,9 +70,9 @@ final readonly class ExtractInfo
      * API-map identity: uapi:ExtractInfo/finish#GET (wire name finish).
      *
      * @return FinishResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/extractinfo/extractinfo-finish
      */
     public function finish(): array
@@ -109,9 +109,9 @@ final readonly class ExtractInfo
      * API-map identity: uapi:ExtractInfo/progress#GET (wire name progress).
      *
      * @return ProgressResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/extractinfo/extractinfo-progress
      */
     public function progress(): array
@@ -153,9 +153,9 @@ final readonly class ExtractInfo
      * @param string $archive The file path to the backup archive.
      * @param string $directory The destination directory where you want to extract the archive.
      * @return StartResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/extractinfo/extractinfo-start
      */
     public function start(string $archive, string $directory): array

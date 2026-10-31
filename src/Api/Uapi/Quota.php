@@ -72,9 +72,9 @@ final readonly class Quota
      * API-map identity: uapi:Quota/get_local_quota_info#GET (wire name get_local_quota_info).
      *
      * @return GetLocalQuotaInfoResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/disk-quotas/quota-get_local_quota_info
      */
     public function getLocalQuotaInfo(): array
@@ -110,9 +110,9 @@ final readonly class Quota
      * API-map identity: uapi:Quota/get_quota_info#GET (wire name get_quota_info).
      *
      * @return GetQuotaInfoResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/disk-quotas/quota-get_quota_info
      */
     public function getQuotaInfo(): array

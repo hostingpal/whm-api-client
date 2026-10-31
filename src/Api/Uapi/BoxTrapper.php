@@ -139,9 +139,9 @@ final readonly class BoxTrapper
      * @param string $email The email address for which to blacklist messages.
      * @param string|list<string> $queuefiles The filename of the email message to blacklist.
      * @return BlacklistMessagesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-blacklist_messages
      */
@@ -177,9 +177,9 @@ final readonly class BoxTrapper
      * @param bool|null $allLike Whether to delete all messages that resemble the `queuefile` parameter's value. Null
      *     omits it.
      * @return DeleteMessagesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-delete_messages
      */
@@ -219,9 +219,9 @@ final readonly class BoxTrapper
      * @param bool|null $allLike Whether to deliver all messages that resemble the `queuefile` parameter's value. Null
      *     omits it.
      * @return DeliverMessagesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-deliver_messages
      */
@@ -254,9 +254,9 @@ final readonly class BoxTrapper
      *
      * @param string $email A valid email address on the cPanel account.
      * @return GetAllowlistResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-get_allowlist
      */
     public function getAllowlist(string $email): array
@@ -285,9 +285,9 @@ final readonly class BoxTrapper
      *
      * @param string $email A valid email address on the cPanel account.
      * @return GetBlocklistResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-get_blocklist
      */
     public function getBlocklist(string $email): array
@@ -321,9 +321,9 @@ final readonly class BoxTrapper
      *
      * @param string $email The account's email address.
      * @return GetConfigurationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-get_configuration
      */
     public function getConfiguration(string $email): array
@@ -352,9 +352,9 @@ final readonly class BoxTrapper
      * @param string $email A valid email address on the cPanel account.
      * @param 'blacklist'|'returnverify'|'verifyreleased'|'verify' $template The message template.
      * @return string
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-get_email_template
      */
     public function getEmailTemplate(string $email, string $template): string
@@ -382,9 +382,9 @@ final readonly class BoxTrapper
      *
      * @param string $email The account's email address.
      * @return GetForwardersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-get_forwarders
      */
     public function getForwarders(string $email): array
@@ -413,9 +413,9 @@ final readonly class BoxTrapper
      *
      * @param string $email A valid email address on the cPanel account.
      * @return GetIgnorelistResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-get_ignorelist
      */
     public function getIgnorelist(string $email): array
@@ -450,9 +450,9 @@ final readonly class BoxTrapper
      * @param string $email The account's email address.
      * @param int|null $date The date for which to return the log file and its contents. Null omits it.
      * @return GetLogResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-get_log
      */
     public function getLog(string $email, ?int $date = null): array
@@ -482,9 +482,9 @@ final readonly class BoxTrapper
      * @param string $email The account’s name, either an email address or the cPanel user’s username.
      * @param string $queuefile The message's filename.
      * @return GetMessageResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-get_message
      */
     public function getMessage(string $email, string $queuefile): array
@@ -512,9 +512,9 @@ final readonly class BoxTrapper
      *
      * @param string $email The account's email address.
      * @return 0|1
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-get_status
      */
     public function getStatus(string $email): int
@@ -548,9 +548,9 @@ final readonly class BoxTrapper
      * @param string $email The cPanel email account from which to ignore messages.
      * @param string|list<string> $queuefiles The filename of the email message to ignore.
      * @return IgnoreMessagesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-ignore_messages
      */
@@ -576,9 +576,9 @@ final readonly class BoxTrapper
      * API-map identity: uapi:BoxTrapper/list_email_templates#GET (wire name list_email_templates).
      *
      * @return ListEmailTemplatesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-list_email_templates
      */
     public function listEmailTemplates(): array
@@ -607,9 +607,9 @@ final readonly class BoxTrapper
      * @param string $email The email account for which to retrieve queued messages.
      * @param int|null $date The date for which to return queued messages. Null omits it.
      * @return ListQueuedMessagesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-list_queued_messages
      */
     public function listQueuedMessages(string $email, ?int $date = null): array
@@ -646,9 +646,9 @@ final readonly class BoxTrapper
      * @param string|list<string> $queuefiles The filename of the email message to process.
      * @param string|null $email The account's email address. Null omits it.
      * @return ProcessMessagesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-process_messages
      */
@@ -686,9 +686,9 @@ final readonly class BoxTrapper
      * @param 'blacklist'|'verify'|'verifyreleased'|'returnverify' $template The message template.
      * @param string|null $email The account's email address. Null omits it.
      * @return ResetEmailTemplateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-reset_email_template
      */
     public function resetEmailTemplate(string $template, ?string $email = null): ?array
@@ -729,9 +729,9 @@ final readonly class BoxTrapper
      * @param string|null $fromName The name of the person who owns the email account. Null omits it.
      * @param int|float|null $spamScore The account's Apache SpamAssassin™ threshold score. Null omits it.
      * @return SaveConfigurationResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-save_configuration
      */
     public function saveConfiguration(
@@ -781,9 +781,9 @@ final readonly class BoxTrapper
      * @param 'blacklist'|'returnverify'|'verifyreleased'|'verify' $template The message template.
      * @param string $contents The template file's contents.
      * @return SaveEmailTemplateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-save_email_template
      */
     public function saveEmailTemplate(
@@ -825,9 +825,9 @@ final readonly class BoxTrapper
      * @param string $email A valid email address on the cPanel account.
      * @param string|list<string> $rules An array of allowlist rules.
      * @return SetAllowlistResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-set_allowlist
      */
@@ -865,9 +865,9 @@ final readonly class BoxTrapper
      * @param string $email A valid email address on the cPanel account.
      * @param string|list<string> $rules An array of blocklist rules.
      * @return SetBlocklistResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-set_blocklist
      */
@@ -906,9 +906,9 @@ final readonly class BoxTrapper
      * @param string $email The account's email address.
      * @param string|list<string> $forwarders The email addresses to which to forward email messages.
      * @return SetForwardersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-set_forwarders
      */
@@ -946,9 +946,9 @@ final readonly class BoxTrapper
      * @param string $email A valid email address on the cPanel account.
      * @param string|list<string> $rules An array of ignorelist rules.
      * @return SetIgnorelistResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-set_ignorelist
      */
@@ -984,9 +984,9 @@ final readonly class BoxTrapper
      * @param string $email The account's name.
      * @param bool $enabled Whether to enable or disable BoxTrapper for the email account.
      * @return SetStatusResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-set_status
      */
     public function setStatus(string $email, bool $enabled): ?array
@@ -1021,9 +1021,9 @@ final readonly class BoxTrapper
      * @param string|list<string> $queuefiles The filename of the email message to whitelist.
      * @param string|null $email The cPanel account email address for which to whitelist messages. Null omits it.
      * @return WhitelistMessagesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/spam-prevention-(boxtrapper)/boxtrapper-whitelist_messages
      */

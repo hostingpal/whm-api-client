@@ -76,9 +76,9 @@ final readonly class DirectoryProtection
      * @param string $dir The absolute or relative file path in the user's `home` directory for which to return leech
      *     protection information.
      * @return ListDirectoriesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/directory-protection/directoryprotection-list_directories
      */
     public function listDirectories(string $dir): array

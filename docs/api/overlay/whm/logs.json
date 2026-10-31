@@ -13,11 +13,15 @@
         },
         {
           "kind": "documented",
-          "text": "default_retention and per-account retention_days are integer days; zero means logs are retained indefinitely. An explicit null account retention_days means the account uses the server default, while omission remains absent. using_default remains a native boolean, unlike UAPI LogManager integer flags. Account user/domain strings, optional fields and empty account lists are preserved. API success establishes inventory only and does not prove eventual retention enforcement."
+          "text": "default_retention and per-account retention_days are integer days; zero means logs are retained indefinitely. An explicit null account retention_days means the account uses the server default, while omission remains absent. using_default remains a native boolean, unlike UAPI LogManager integer flags. Account user/domain strings, optional fields and empty account lists are preserved."
         },
         {
           "kind": "observed",
-          "text": "The 2026-10-31 WHM capture on cPanel 11.138.0.19 returned default_retention as a numeric string. Only that field accepts lossless canonical in-range integer strings and normalizes them to the public integer result. Account retention_days retains its optional nullable integer contract, and using_default remains native boolean. No sibling normalization is inferred."
+          "text": "The original 2026-10-31 WHM capture on cPanel 11.138.0.19 returned default_retention as a numeric string. Reviewer 5721279104 separately observed native integer custom account retention_days values 30 and 0, boolean using_default and restored default state after clearing an override on that version. These are single WHM-route observations."
+        },
+        {
+          "kind": "policy",
+          "text": "Preserve optional fields, explicit null and empty account lists. Only default_retention accepts canonical signed decimal integer strings within PHP integer bounds and normalizes them to int; account fields stay strict. API success establishes inventory only and does not prove eventual retention enforcement."
         }
       ],
       "evidence": [
@@ -33,6 +37,13 @@
           "date": "2026-10-31",
           "note": "Original immutable capture docs/api/evidence/2026-10-31-log-administration.json, SHA256 093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550, at revision e5476c1b9fd2d8a94f371ab05caee86b46f4ab37: whm1:list_accounts_retention#GET, route whm, method GET, server 11.138.0.19, source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, effective contract SHA256 bfd96205005e54ff67022686ebc3feb11faaf742dfd414081f7e98d2d26c530a. HTTP 200 and API success; payload path $.default_retention is numeric-string with type_mismatch. The pinned field is integer days. Admit only lossless canonical integer strings within PHP integer bounds and normalize to int. No account field or other operation is changed.",
           "fingerprint": "docs/api/evidence/2026-10-31-log-administration.json"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Corrected immutable capture docs/api/evidence/2026-10-31-log-administration-corrected.json, SHA256 743a081ee25a8971df4052534a96c60b05cde3483d9ed624857ccd82912e7255, revision dd5e626ae11f0f6c59e353a17d51bee4868aaa96: whm1:list_accounts_retention#GET, routes whm, method GET, server 11.138.0.19, source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, effective contract SHA256 e0b4d8cad43219a0d65eba3a8130f3c5f6b27edb0c138ac5a69f6e96c71be008. Payload leaf $.default_retention has raw structural type numeric-string. HTTP/API/payload/probe checks pass with zero discrepancies; selected-read acceptance only. Structural evidence does not identify flag values. No view_error_log, write or rotation behavior is established.",
+          "fingerprint": "docs/api/evidence/2026-10-31-log-administration-corrected.json"
         }
       ],
       "response": {
@@ -47,6 +58,13 @@
               "date": "2026-10-31",
               "note": "Original immutable capture docs/api/evidence/2026-10-31-log-administration.json, SHA256 093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550, at revision e5476c1b9fd2d8a94f371ab05caee86b46f4ab37: whm1:list_accounts_retention#GET, route whm, method GET, server 11.138.0.19, source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, effective contract SHA256 bfd96205005e54ff67022686ebc3feb11faaf742dfd414081f7e98d2d26c530a. HTTP 200 and API success; payload path $.default_retention is numeric-string with type_mismatch. The pinned field is integer days. Admit only lossless canonical integer strings within PHP integer bounds and normalize to int. No account field or other operation is changed.",
               "fingerprint": "docs/api/evidence/2026-10-31-log-administration.json"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Corrected immutable capture docs/api/evidence/2026-10-31-log-administration-corrected.json, SHA256 743a081ee25a8971df4052534a96c60b05cde3483d9ed624857ccd82912e7255, revision dd5e626ae11f0f6c59e353a17d51bee4868aaa96: whm1:list_accounts_retention#GET, routes whm, method GET, server 11.138.0.19, source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, effective contract SHA256 e0b4d8cad43219a0d65eba3a8130f3c5f6b27edb0c138ac5a69f6e96c71be008. Payload leaf $.default_retention has raw structural type numeric-string. HTTP/API/payload/probe checks pass with zero discrepancies; selected-read acceptance only. Structural evidence does not identify flag values. No view_error_log, write or rotation behavior is established.",
+              "fingerprint": "docs/api/evidence/2026-10-31-log-administration-corrected.json"
             }
           ]
         }

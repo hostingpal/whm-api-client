@@ -51,20 +51,23 @@ final readonly class Logs
      * Documented: default_retention and per-account retention_days are integer days; zero means logs are retained
      * indefinitely. An explicit null account retention_days means the account uses the server default, while omission
      * remains absent. using_default remains a native boolean, unlike UAPI LogManager integer flags. Account user/domain
-     * strings, optional fields and empty account lists are preserved. API success establishes inventory only and does
-     * not prove eventual retention enforcement.
+     * strings, optional fields and empty account lists are preserved.
      *
-     * Observed: The 2026-10-31 WHM capture on cPanel 11.138.0.19 returned default_retention as a numeric string. Only
-     * that field accepts lossless canonical in-range integer strings and normalizes them to the public integer result.
-     * Account retention_days retains its optional nullable integer contract, and using_default remains native boolean.
-     * No sibling normalization is inferred.
+     * Observed: The original 2026-10-31 WHM capture on cPanel 11.138.0.19 returned default_retention as a numeric
+     * string. Reviewer 5721279104 separately observed native integer custom account retention_days values 30 and 0,
+     * boolean using_default and restored default state after clearing an override on that version. These are single
+     * WHM-route observations.
+     *
+     * Policy: Preserve optional fields, explicit null and empty account lists. Only default_retention accepts canonical
+     * signed decimal integer strings within PHP integer bounds and normalizes them to int; account fields stay strict.
+     * API success establishes inventory only and does not prove eventual retention enforcement.
      *
      * API-map identity: whm1:list_accounts_retention#GET (wire name list_accounts_retention; Logs).
      *
      * @return ListAccountsRetentionResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/web-log-retention/weblogretention-list_accounts_retention
      */
     public function listAccountsRetention(): array

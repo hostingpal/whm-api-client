@@ -33,7 +33,11 @@ trait UapiGroups
 
     private ?ContactUs $contactUsGroup = null;
 
+    private ?CpDavd $cpDavdGroup = null;
+
     private ?CpGreyList $cpGreyListGroup = null;
+
+    private ?Dav $davGroup = null;
 
     private ?DirectoryIndexes $directoryIndexesGroup = null;
 
@@ -68,6 +72,8 @@ trait UapiGroups
     private ?Fileman $filemanGroup = null;
 
     private ?Ftp $ftpGroup = null;
+
+    private ?Gpg $gpgGroup = null;
 
     private ?KnownHosts $knownHostsGroup = null;
 
@@ -122,6 +128,8 @@ trait UapiGroups
     private ?TeamRoles $teamRolesGroup = null;
 
     private ?Themes $themesGroup = null;
+
+    private ?TwoFactorAuth $twoFactorAuthGroup = null;
 
     private ?UserManager $userManagerGroup = null;
 
@@ -244,6 +252,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the CPDAVD operations without making a request.
+     *
+     * The CPDAVD module for UAPI.
+     */
+    public function cpDavd(): CpDavd
+    {
+        return $this->cpDavdGroup ??= new CpDavd($this->run(...));
+    }
+
+    /**
      * Select the cPGreyList operations without making a request.
      *
      * The cPGreyList module for UAPI.
@@ -251,6 +269,16 @@ trait UapiGroups
     public function cpGreyList(): CpGreyList
     {
         return $this->cpGreyListGroup ??= new CpGreyList($this->run(...));
+    }
+
+    /**
+     * Select the DAV operations without making a request.
+     *
+     * The DAV module for UAPI.
+     */
+    public function dav(): Dav
+    {
+        return $this->davGroup ??= new Dav($this->run(...));
     }
 
     /**
@@ -424,6 +452,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the GPG operations without making a request.
+     *
+     * The GPG module for UAPI.
+     */
+    public function gpg(): Gpg
+    {
+        return $this->gpgGroup ??= new Gpg($this->run(...));
+    }
+
+    /**
      * Select the KnownHosts operations without making a request.
      *
      * The KnownHosts module for UAPI.
@@ -466,7 +504,11 @@ trait UapiGroups
     /**
      * Select the LogManager operations without making a request.
      *
-     * The LogManager module for UAPI.
+     * Selected-account log administration. Observed: reviewer 5721279104 inspected Cpanel/API/LogManager.pm on cPanel
+     * 11.138.0.19 and found the shared %API requirements WebServer role and rawlog feature for all six operations.
+     * Neither requirement is declared in the pinned snapshot; disabled-role/feature behavior was not runtime-tested.
+     * Policy: supplied paths/selectors are sent unchanged and the client performs no local filesystem access. Log
+     * contents are private payload data, including explicitly accessible exception payloads.
      */
     public function logManager(): LogManager
     {
@@ -691,6 +733,16 @@ trait UapiGroups
     public function themes(): Themes
     {
         return $this->themesGroup ??= new Themes($this->run(...));
+    }
+
+    /**
+     * Select the TwoFactorAuth operations without making a request.
+     *
+     * The TwoFactorAuth module for UAPI.
+     */
+    public function twoFactorAuth(): TwoFactorAuth
+    {
+        return $this->twoFactorAuthGroup ??= new TwoFactorAuth($this->run(...));
     }
 
     /**

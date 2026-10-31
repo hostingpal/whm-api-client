@@ -4,12 +4,1069 @@
   "group": "Web Server Configuration",
   "accessor": "webServer",
   "operations": {
-    "whm1:is_conversion_in_progress": {"unwrap": "inProgress", "notes": [{"kind": "documented", "text": "Requires the WebServer role."}]},
-    "whm1:php_get_default_accounts_to_fpm": {"unwrap": "default_accounts_to_fpm", "notes": [{"kind": "documented", "text": "Requires the WebServer role."}]},
-    "whm1:php_get_handlers": {"unwrap": "version_handlers", "notes": [{"kind": "documented", "text": "Requires the WebServer role."}]},
-    "whm1:php_get_installed_versions": {"unwrap": "versions", "probe": {"phase": "read-only", "arguments": {}, "routes": ["whm"], "expected": "success"}, "notes": [{"kind": "documented", "text": "Requires EasyApache 4 and the WebServer role."}]},
-    "whm1:php_get_old_fpm_flag": {"unwrap": "old_fpm_flag", "notes": [{"kind": "documented", "text": "Requires the WebServer role."}]},
-    "whm1:php_get_system_default_version": {"unwrap": "version", "probe": {"phase": "read-only", "arguments": {}, "routes": ["whm"], "expected": "success"}, "notes": [{"kind": "documented", "text": "Requires EasyApache 4 and the WebServer role."}]},
-    "whm1:php_get_vhosts_by_version": {"unwrap": "vhosts", "notes": [{"kind": "documented", "text": "Requires EasyApache 4 and the WebServer role."}]}
+    "whm1:convert_all_domains_to_fpm": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 66 and later. This function activates PHP-FPM for any non-PHP-FPM domains on a server.\n\n**Important:**\n\nWhen you disable the [*Web Server*](https://go.cpanel.net/howtouseserverprofiles) role, the system **disables** this function.\n\n**Warning:**\n\nWe **strongly** recommend that you only activate Apache PHP-FPM if your server has at least 2 GB of RAM available, or at least 30 MB of RAM per domain. If you enable PHP-FPM on a server with less than the required RAM, your server may experience severe performance issues."
+        },
+        {
+          "kind": "documented",
+          "text": "Converts existing non-PHP-FPM domains server-wide. The returned build_id identifies a log file, not successful completion or application availability. Configuration can change immediately; no retry or rollback is provided."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /convert_all_domains_to_fpm: x-readonly=false; use form POST, with routing fields retained in the URL. This is one attempt with no client retry or rollback."
+        }
+      ]
+    },
+    "whm1:ea4_get_additional_pkg_prefixes": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 116 and later. This function returns any additional package prefixes set up in the `/etc/cpanel/ea4/additional-pkg-prefixes/` file."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /ea4_get_additional_pkg_prefixes: x-readonly=true; this inventory operation has no secret-bearing request fields and uses GET."
+        }
+      ],
+      "unwrap": "additional_pkg_prefixes"
+    },
+    "whm1:ea4_get_currently_installed_packages": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 62 and later. This function returns a list of the currently-installed EasyApache 4 packages.\n\n**Important:**\n\nWhen you disable the [Web Server role](https://docs.cpanel.net/knowledge-base/general-systems-administration/how-to-use-server-profiles/#roles), the system **disables** this function."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /ea4_get_currently_installed_packages: x-readonly=true; this inventory operation has no secret-bearing request fields and uses GET."
+        }
+      ],
+      "unwrap": "packages"
+    },
+    "whm1:ea4_list_profiles": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. This function returns a list of all [EasyApache 4](https://docs.cpanel.net/ea4/) profiles and the packages that each profile provides.\n\n **Important:**\n\n When you disable the [Web Server](https://docs.cpanel.net/knowledge-base/general-systems-administration/how-to-use-server-profiles/#roles) role, the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Vendor names remain returned keys; cpanel rows alone declare the active flag. Custom and vendor rows declare path. Empty profile lists and omitted row fields retain their meaning."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 through WHM GET, cpanel profile version fields included strings and native integers/floats. The immutable capture establishes numeric versions for cpanel rows only; the reviewer separately observed cloudlinux strings. Original representations are preserved. The failed capture also contains a masked unknown cpanel-row field, which remains unwaived and does not add a typed field."
+        },
+        {
+          "kind": "documented",
+          "text": "The source-family review supports the same string or native integer/float version representation for custom and vendor rows. This is compatibility by row family, without numeric custom/vendor live evidence; strings retain exact spelling and are never normalized."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /ea4_list_profiles: x-readonly=true; this inventory operation has no secret-bearing request fields and uses GET."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-webserver-configuration.json",
+          "note": "Immutable docs/api/evidence/2026-10-31-whm-webserver-configuration.json SHA-256 1522b42c63825127dc0f925e953c545f93ae89ad4c9df2c9d8cc99307a35b31b, revision 3d43621d5ad3acc8a5e4437b916a8701aa77950f, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:ea4_list_profiles#GET on the WHM route with method GET, effective contract SHA-256 5f990a7a711935ca9571413b02f98ca2532f61ef4fc9fd6526cf03841615b1e3, payload path cpanel[].version. The captured $.cpanel[].version types are numeric-string, int and float. Keep the pinned string variant unchanged, including its exact spelling, and accept native integer/float values without string coercion. This capture observes cpanel rows only; subsequent custom/vendor widening rests on source-family review, not this capture. Masked $.cpanel[].* string unknown-field findings remain unwaived; no unknown field is named or added. HTTP 200 and API success preceded a payload mismatch on the original contract; this correction does not rewrite or waive that failed capture."
+        },
+        {
+          "kind": "doc",
+          "version": "review-reported PHP.pm on 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR 58 review5720977511 reports Whostmgr/API/1/Lang/PHP.pm on cPanel 11.138.0.19: custom, cpanel and vendor EasyApache profile rows share the profile version representation family. Numeric custom/vendor versions are compatibility by source family, not locally observed values. Source-only attribution; no local source snapshot/hash or POST observation is claimed."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "cpanel": {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "active": {
+                      "type": "flag"
+                    },
+                    "desc": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "pkgs": {
+                      "type": "list",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "tags": {
+                      "type": "list",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "validation_data": {
+                      "type": "object",
+                      "fields": {
+                        "not_on_server": {
+                          "type": "list",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "version": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "custom": {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "desc": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "pkgs": {
+                      "type": "list",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "tags": {
+                      "type": "list",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "validation_data": {
+                      "type": "object",
+                      "fields": {
+                        "not_on_server": {
+                          "type": "list",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "version": {
+                      "type": "union",
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "values": {
+              "type": "list",
+              "items": {
+                "type": "object",
+                "fields": {
+                  "desc": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "pkgs": {
+                    "type": "list",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "tags": {
+                    "type": "list",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "validation_data": {
+                    "type": "object",
+                    "fields": {
+                      "not_on_server": {
+                        "type": "list",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "version": {
+                    "type": "union",
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /ea4_list_profiles: The data schema declares cpanel and custom profile lists together with additionalProperties vendor-created profile lists. Keep the distinct optional cpanel active flag and declared custom fields, and validate undeclared vendor keys against the documented vendor row list using existing object.values. Every row field is optional; empty lists/maps remain empty."
+            },
+            {
+              "kind": "doc",
+              "version": "review-reported PHP.pm on 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR 58 review5720977511 reports Whostmgr/API/1/Lang/PHP.pm on cPanel 11.138.0.19: custom, cpanel and vendor EasyApache profile rows share the profile version representation family. Numeric custom/vendor versions are compatibility by source family, not locally observed values. Source-only attribution; no local source snapshot/hash or POST observation is claimed."
+            }
+          ]
+        },
+        "cpanel[].version": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-webserver-configuration.json",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-webserver-configuration.json SHA-256 1522b42c63825127dc0f925e953c545f93ae89ad4c9df2c9d8cc99307a35b31b, revision 3d43621d5ad3acc8a5e4437b916a8701aa77950f, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:ea4_list_profiles#GET on the WHM route with method GET, effective contract SHA-256 5f990a7a711935ca9571413b02f98ca2532f61ef4fc9fd6526cf03841615b1e3, payload path cpanel[].version. The captured $.cpanel[].version types are numeric-string, int and float. Keep the pinned string variant unchanged, including its exact spelling, and accept native integer/float values without string coercion. This capture observes cpanel rows only; subsequent custom/vendor widening rests on source-family review, not this capture. Masked $.cpanel[].* string unknown-field findings remain unwaived; no unknown field is named or added. HTTP 200 and API success preceded a payload mismatch on the original contract; this correction does not rewrite or waive that failed capture."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:ea4_metainfo": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 80 and later. This function returns the contents of the `/etc/cpanel/ea4/ea4-metainfo.json` file."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned formal schema documents object values, while the pinned example also contains strings and lists of strings. Those source alternatives remain distinct; no numeric, boolean or null value contract is inferred. An absent file has an unspecified empty value; live behavior remains unverified."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /ea4_metainfo: x-readonly=true; this inventory operation has no secret-bearing request fields and uses GET."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "union",
+              "anyOf": [
+                {
+                  "type": "map",
+                  "values": {
+                    "type": "mixed"
+                  }
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "list",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /ea4_metainfo: The data additionalProperties schema declares object values, while its pinned example declares additional_packages as a string list and default_php_handler, default_php_package and type as strings. Preserve the formal opaque object alternative and only those two additional source-evidenced alternatives. Do not infer number, boolean or null children."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:ea4_recommendations": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 64 and later. This function returns any recommendations attached to your installed\nEasyApache 4 packages. For more information about the recommendation system,\nread our\u00a0[EasyApache 4 Recommendations](https://go.cpanel.net/EasyApache4Recommendations) documentation.\n\n**Important:**\n\nWhen you disable the [Web Server role](https://go.cpanel.net/howtouseserverprofiles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 through WHM GET, top-level recommendation url fields included strings and native booleans. Boolean values are preserved without inferred meaning. Child options[].url remains a string. Masked unknown recommendation-row fields remain unwaived and do not add typed fields."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /ea4_recommendations: x-readonly=true; this inventory operation has no secret-bearing request fields and uses GET."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-webserver-configuration.json",
+          "note": "Immutable docs/api/evidence/2026-10-31-whm-webserver-configuration.json SHA-256 1522b42c63825127dc0f925e953c545f93ae89ad4c9df2c9d8cc99307a35b31b, revision 3d43621d5ad3acc8a5e4437b916a8701aa77950f, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:ea4_recommendations#GET on the WHM route with method GET, effective contract SHA-256 64f465b44664b4deed60983a86b1af69f5322c6d43a17ab6ef91d2e616214e85, payload path {}[].url. The captured $.*[].url types are bool and string. Add only a native boolean alternative to the top recommendation URL field, preserving both boolean values without inventing a false-only enum or meaning. The nested options[].url field was missing in this capture and retains its pinned string contract. Masked $.*[].* list<string> unknown-field findings remain unwaived; no unknown field is named or added. HTTP 200 and API success preceded a payload mismatch on the original contract; this correction does not rewrite or waive that failed capture."
+        }
+      ],
+      "response": {
+        "{}[].url": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "bool"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-webserver-configuration.json",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-webserver-configuration.json SHA-256 1522b42c63825127dc0f925e953c545f93ae89ad4c9df2c9d8cc99307a35b31b, revision 3d43621d5ad3acc8a5e4437b916a8701aa77950f, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:ea4_recommendations#GET on the WHM route with method GET, effective contract SHA-256 64f465b44664b4deed60983a86b1af69f5322c6d43a17ab6ef91d2e616214e85, payload path {}[].url. The captured $.*[].url types are bool and string. Add only a native boolean alternative to the top recommendation URL field, preserving both boolean values without inventing a false-only enum or meaning. The nested options[].url field was missing in this capture and retains its pinned string contract. Masked $.*[].* list<string> unknown-field findings remain unwaived; no unknown field is named or added. HTTP 200 and API success preceded a payload mismatch on the original contract; this correction does not rewrite or waive that failed capture."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:ea4_save_profile": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 64 and later. This function creates an EasyApache 4 profile. This function only writes files to the `/etc/cpanel/ea4/profiles/custom/` directory.\n\n**Important**:\n\n  When you disable the [Web Server role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Writes only /etc/cpanel/ea4/profiles/custom/. filename, display name and packages are required; optional desc defaults to empty string, overwrite to 0, tags to an empty list and version to the string 0. Overwriting can replace an existing profile. already_exists is returned only for an existing filename with overwrite=0; path only on success."
+        },
+        {
+          "kind": "policy",
+          "text": "An explicit empty tags list omits the optional tag field, matching its pinned empty default. Nonempty tag/package lists retain repeated-key encoding; required packages and all other list inputs keep existing validation. Explicit false overwrite is sent as 0. Each request is form-encoded once with no retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /ea4_save_profile: x-readonly=false; use form POST, with routing fields retained in the URL. This is one attempt with no client retry or rollback."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /ea4_save_profile: pkg and tag use style=form with explode=true; examples repeat pkg keys. Encode packages and tags as repeated keys without joining or JSON encoding. filename, name and pkg remain required. Optional desc defaults to empty string, overwrite to 0, tag to [] and version to string 0; omission retains those server defaults. The pinned optional tag array<string> default [] supports explicitly omitting an empty tags list; required pkg remains nonempty under the existing encoder."
+        }
+      ],
+      "params": {
+        "pkg": {
+          "php": "packages",
+          "encoding": "repeat"
+        },
+        "tag": {
+          "php": "tags",
+          "encoding": "repeat",
+          "omit_empty": true
+        }
+      }
+    },
+    "whm1:eol_php_sites": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later. This function counts the number of domains across all cPanel users that are using\nend-of-life (EOL) PHP versions. It determines EOL status by comparing each domain's\nPHP version against the `oldest_supported_version` value from the\n`/etc/cpanel/ea4/ea4-metainfo.json` file."
+        },
+        {
+          "kind": "documented",
+          "text": "Counts domains across all cPanel users against oldest_supported_version in /etc/cpanel/ea4/ea4-metainfo.json; the count is not a PHP package inventory."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /eol_php_sites: x-readonly=true; this inventory operation has no secret-bearing request fields and uses GET."
+        }
+      ],
+      "unwrap": "eol_php_sites"
+    },
+    "whm1:get_fpm_count_and_utilization": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 66 and later. This function provides information that will help you to determine\nwhether your server can handle the workload if you enable PHP-FPM for all domains.\n\n**Important:**\n\nWhen you disable the\n[Web Server role](https://go.cpanel.net/howtouseserverprofiles),\nthe system **disables** this function.\n\n**Warning:**\n\nWe **strongly** recommend that you only activate Apache PHP-FPM if your server\nhas at least 2 GB of RAM available, or at least 30 MB of RAM per domain. If you enable\nPHP-FPM on a server with less than the required RAM, your server may experience severe\nperformance issues."
+        },
+        {
+          "kind": "documented",
+          "text": "memory_needed is approximate megabytes; counts and overload warning remain integer values. Capacity estimates do not establish performance or availability after conversion."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_fpm_count_and_utilization: x-readonly=true; this inventory operation has no secret-bearing request fields and uses GET."
+        }
+      ]
+    },
+    "whm1:is_conversion_in_progress": {
+      "unwrap": "inProgress",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires the WebServer role."
+        }
+      ]
+    },
+    "whm1:php_fpm_config_get": {
+      "exclude": {
+        "reason": "Requires an application/json request body; typed JSON transport remains tracked under whm-api-client-8x0.1.18. Generic calls support form encoding only.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_fpm_config_get: requestBody is required and declares application/json. Domain selectors and PHP INI/pool configuration remain JSON-body fields, not form parameters."
+          }
+        ]
+      }
+    },
+    "whm1:php_fpm_config_set": {
+      "exclude": {
+        "reason": "Requires an application/json request body; typed JSON transport remains tracked under whm-api-client-8x0.1.18. Generic calls support form encoding only.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_fpm_config_set: requestBody is required and declares application/json. Domain selectors and PHP INI/pool configuration remain JSON-body fields, not form parameters."
+          }
+        ]
+      }
+    },
+    "whm1:php_get_default_accounts_to_fpm": {
+      "unwrap": "default_accounts_to_fpm",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires the WebServer role."
+        }
+      ]
+    },
+    "whm1:php_get_handlers": {
+      "unwrap": "version_handlers",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires the WebServer role."
+        }
+      ]
+    },
+    "whm1:php_get_impacted_domains": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 62 and later. This function lists domains that obtain their PHP version from a specified PHP configuration.\n\n**Important:**\n\nWhen you disable the\n[Web Server role](https://docs.cpanel.net/knowledge-base/general-systems-administration/how-to-use-server-profiles/#roles),\nthe system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply domains, systemDefault=true, or both. The pinned formal required flags contradict this explicit prose; both arguments may be omitted individually to support the documented alternatives. At least one selector is required by the server, and systemDefault=false alone returns an error. Parked domains cannot be supplied. Repeated domains retain their order; this operation does not validate these cross-argument conditions locally. No local cross-argument guard is added."
+        },
+        {
+          "kind": "observed",
+          "text": "The PR 58 reviewer observed an API error for a no-argument call on cPanel 11.138.0.19. At least one domain or system_default selector must be supplied; the server error propagates as ApiErrorException without matching its text."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_get_impacted_domains: x-readonly=true; this inventory operation has no secret-bearing request fields and uses GET."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_get_impacted_domains: Both formal parameters say required=true, but both descriptions expressly require either system_default or domain or both. Use evidence-backed required:false on each to expose the documented alternatives; this does not enforce the cross-parameter condition client-side. domain may be passed multiple times, shown as repeated domain keys. The server rejects false system_default without domain, and parked domains cannot be supplied. These source prose alternatives are not live-verified."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19 (reviewer report)",
+          "date": "2026-10-31",
+          "note": "PR 58 review5720977511 reports php_get_impacted_domains with no arguments returns an API error on WHM GET. No local call or capture is claimed."
+        }
+      ],
+      "unwrap": "domains",
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat",
+          "required": false
+        },
+        "system_default": {
+          "required": false
+        }
+      }
+    },
+    "whm1:php_get_installed_versions": {
+      "unwrap": "versions",
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "whm"
+        ],
+        "expected": "success"
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires EasyApache 4 and the WebServer role."
+        }
+      ]
+    },
+    "whm1:php_get_old_fpm_flag": {
+      "unwrap": "old_fpm_flag",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires the WebServer role."
+        }
+      ]
+    },
+    "whm1:php_get_system_default_version": {
+      "unwrap": "version",
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "whm"
+        ],
+        "expected": "success"
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires EasyApache 4 and the WebServer role."
+        }
+      ]
+    },
+    "whm1:php_get_vhost_versions": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 60 and later. This function returns the PHP version of every virtual host that a reseller controls.\n\n**Note:**\n\n  This document **only** applies to systems that run EasyApache 4.\n\n**Important:**\n\n  When you disable the [Web Server role](https://go.cpanel.net/howtouseserverprofiles#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "All row fields remain optional. The pinned PHP version source list has optional domain:string and system_default:integer fields. FPM pool fields remain integers and flags remain strict integer 0/1."
+        },
+        {
+          "kind": "observed",
+          "text": "The immutable WHM GET capture on cPanel 11.138.0.19 records phpversion_source as an object with masked string children; those masked paths establish neither child names nor system_default integer behavior. The original failed capture and strict masked findings remain unchanged and unwaived."
+        },
+        {
+          "kind": "documented",
+          "text": "PR 58 source review reports the object form uses the same domain and system_default fields independently named by the pinned list schema. Accept both list and object forms with those exact optional fields; integer system_default stays strict and no arbitrary map contract is inferred."
+        },
+        {
+          "kind": "policy",
+          "text": "Pool configuration and failure payloads can contain sensitive values; do not log or serialize them."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_get_vhost_versions: x-readonly=true; this inventory operation has no secret-bearing request fields and uses GET."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-webserver-configuration.json",
+          "note": "Immutable docs/api/evidence/2026-10-31-whm-webserver-configuration.json SHA-256 1522b42c63825127dc0f925e953c545f93ae89ad4c9df2c9d8cc99307a35b31b, revision 3d43621d5ad3acc8a5e4437b916a8701aa77950f, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:php_get_vhost_versions#GET on the WHM route with method GET, effective contract SHA-256 74a3e5b25793063379c7c1c1c4f85e0668116b3c9e4f0f256d77a3f2aeaebe38, payload path versions[].phpversion_source. The pinned source declares phpversion_source as a list of objects with optional domain:string and system_default:integer fields, not a scalar string. Keep that exact list alternative. The captured $.versions[].phpversion_source is an object and $.versions[].phpversion_source.* is string. The original correction inferred a string-valued map from masked children; that inference is superseded by the independently pinned domain:string/system_default:integer fields and the review-reported object form. Masked captured children alone identify no keys and establish no integer observation. HTTP 200 and API success preceded a payload mismatch on the original contract; this correction does not rewrite or waive that failed capture."
+        },
+        {
+          "kind": "doc",
+          "version": "review-reported PHP.pm on 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR 58 review5720977511 reports Whostmgr/API/1/Lang/PHP.pm on cPanel 11.138.0.19: php_get_vhost_versions returns the object form with domain and/or native integer system_default, matching the independently named pinned fields. Source-only attribution; no local source snapshot/hash or POST observation is claimed."
+        }
+      ],
+      "unwrap": "versions",
+      "response": {
+        "versions[].phpversion_source": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "domain": {
+                      "type": "string"
+                    },
+                    "system_default": {
+                      "type": "int"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "fields": {
+                  "domain": {
+                    "type": "string"
+                  },
+                  "system_default": {
+                    "type": "int"
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-webserver-configuration.json",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-webserver-configuration.json SHA-256 1522b42c63825127dc0f925e953c545f93ae89ad4c9df2c9d8cc99307a35b31b, revision 3d43621d5ad3acc8a5e4437b916a8701aa77950f, source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:php_get_vhost_versions#GET on the WHM route with method GET, effective contract SHA-256 74a3e5b25793063379c7c1c1c4f85e0668116b3c9e4f0f256d77a3f2aeaebe38, payload path versions[].phpversion_source. The pinned source declares phpversion_source as a list of objects with optional domain:string and system_default:integer fields, not a scalar string. Keep that exact list alternative. The captured $.versions[].phpversion_source is an object and $.versions[].phpversion_source.* is string. The original correction inferred a string-valued map from masked children; that inference is superseded by the independently pinned domain:string/system_default:integer fields and the review-reported object form. Masked captured children alone identify no keys and establish no integer observation. HTTP 200 and API success preceded a payload mismatch on the original contract; this correction does not rewrite or waive that failed capture."
+            },
+            {
+              "kind": "doc",
+              "version": "review-reported PHP.pm on 11.138.0.19",
+              "date": "2026-10-31",
+              "note": "PR 58 review5720977511 reports Whostmgr/API/1/Lang/PHP.pm on cPanel 11.138.0.19: php_get_vhost_versions returns the object form with domain and/or native integer system_default, matching the independently named pinned fields. Source-only attribution; no local source snapshot/hash or POST observation is claimed."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:php_get_vhosts_by_version": {
+      "unwrap": "vhosts",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires EasyApache 4 and the WebServer role."
+        },
+        {
+          "kind": "observed",
+          "text": "The PR 58 reviewer observed that an unknown version returns an empty vhost list on cPanel 11.138.0.19."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19 (reviewer report)",
+          "date": "2026-10-31",
+          "note": "PR 58 review5720977511 reports php_get_vhosts_by_version with an unknown version returns an empty list on WHM GET. No local call or capture is claimed."
+        }
+      ]
+    },
+    "whm1:php_ini_get_content": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. This function returns the contents of a PHP version's `php.ini` file.\n\n**Note:**\n\n  This document **only** applies to systems that run EasyApache 4.\n\n**Important:**\n\n  When you disable the [Web Server role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned INI content and directive values may contain secrets. Treat successful results and PayloadMismatchException::$payload as sensitive and do not log or serialize them. No live configuration-file read is established by offline coverage."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_ini_get_content: x-readonly=true; this inventory operation has no secret-bearing request fields and uses GET."
+        }
+      ],
+      "unwrap": "content"
+    },
+    "whm1:php_ini_get_directives": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. This function returns the directives in the selected PHP version's php.ini file. WHM's\u00a0[*MultiPHP INI Editor*](https://go.cpanel.net/WHMMultiPHPINI) interface (*Home >> Software >> MultiPHP INI Editor*) lists these directives in the *Basic Mode* section.\n\n**Important:**\n\n  When you disable the [Web Server role](https://docs.cpanel.net/knowledge-base/general-systems-administration/how-to-use-server-profiles/#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Returned INI content and directive values may contain secrets. Treat successful results and PayloadMismatchException::$payload as sensitive and do not log or serialize them. No live configuration-file read is established by offline coverage."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_ini_get_directives: x-readonly=true; this inventory operation has no secret-bearing request fields and uses GET."
+        }
+      ],
+      "unwrap": "directives"
+    },
+    "whm1:php_ini_set_content": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. This function changes the contents of a PHP version's php.ini file.\n\n**Notes:**\n\n - This document **only** applies to systems that run EasyApache 4.\n - Due to the limited field length of HTTP GET method calls, we **strongly** recommend that you use the HTTP POST method.\n\n**Important:**\n  When you disable the [Web Server role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "policy",
+          "text": "content is sensitive caller-supplied text. The client form-encodes its exact bytes once; callers do not pre-encode them. This replaces the selected version's php.ini contents and can affect sites using it immediately. No retry or rollback is provided, and no server write/read round trip is established by offline coverage."
+        },
+        {
+          "kind": "documented",
+          "text": "The PR 58 PHP.pm source report places this write in the return {} family. A successful absent or null data member returns null; any present non-null payload retains its existing contract. This is source-only compatibility, unobserved for this POST."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_ini_set_content: x-readonly=false; use form POST, with routing fields retained in the URL. This is one attempt with no client retry or rollback."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_ini_set_content: parameters/content is the exact php.ini text, and the source recommends HTTP POST due to GET length limits. Preserve it as a sensitive form field, not a JSON body or pre-encoded text. The response documents an opaque object."
+        },
+        {
+          "kind": "doc",
+          "version": "review-reported PHP.pm on 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR 58 review5720977511 reports Whostmgr/API/1/Lang/PHP.pm on cPanel 11.138.0.19: php_ini_set_content belongs to the return {} family; successful data may be absent or null. Source-only attribution; no local source snapshot/hash or POST observation is claimed."
+        }
+      ],
+      "params": {
+        "content": {
+          "sensitive": true
+        }
+      },
+      "optional_payload": true
+    },
+    "whm1:php_ini_set_directives": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. This function sets the value of a PHP version's directives.\n\n**Note:**\n\n  This document only applies to systems that run EasyApache 4.\n\n**Important:**\n\n  When you disable the [Web Server](https://go.cpanel.net/serverroles) role , the system **disables** this function."
+        },
+        {
+          "kind": "policy",
+          "text": "Supply each directive as its literal name:value string. The source also shows an inconsistent equals separator in one multiple example; the client forwards caller strings unchanged. Multiple entries repeat the directive key. Values can contain secrets and remain sensitive. Changes affect the selected version's INI settings immediately, with no retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The PR 58 PHP.pm source report places this write in the return {} family. A successful absent or null data member returns null; any present non-null payload retains its existing contract. This is source-only compatibility, unobserved for this POST."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_ini_set_directives: x-readonly=false; use form POST, with routing fields retained in the URL. This is one attempt with no client retry or rollback."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_ini_set_directives: parameters/directive explicitly permits repeating directive keys or incrementing directive-1/directive-2 names. Choose the documented repeated-key representation for one or multiple literal directive:value strings, with sensitive form POST. Do not guess arbitrary dynamic directive fields or parse/rewrite the supplied separators. Response is a documented opaque object."
+        },
+        {
+          "kind": "doc",
+          "version": "review-reported PHP.pm on 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR 58 review5720977511 reports Whostmgr/API/1/Lang/PHP.pm on cPanel 11.138.0.19: php_ini_set_directives belongs to the return {} family; successful data may be absent or null. Source-only attribution; no local source snapshot/hash or POST observation is claimed."
+        }
+      ],
+      "params": {
+        "directive": {
+          "php": "directives",
+          "encoding": "repeat",
+          "sensitive": true
+        }
+      },
+      "optional_payload": true
+    },
+    "whm1:php_set_default_accounts_to_fpm": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 66 and later. This function determines whether to enable PHP-FPM on new accounts and domains on a server.\n\n**Important:**\n\nWhen you disable the [Web Server role](https://docs.cpanel.net/knowledge-base/general-systems-administration/how-to-use-server-profiles/#roles), the system **disables** this function.\n\n**Warning:**\n\nWe **strongly** recommend that you only activate Apache PHP-FPM if your server has at least 2 GB of RAM available, or at least 30 MB of RAM per domain. If you enable PHP-FPM on a server with less than the required RAM, your server may experience severe performance issues."
+        },
+        {
+          "kind": "documented",
+          "text": "This changes the default for new accounts and domains; it does not convert existing domains. Use convertAllDomainsToFpm separately to activate existing non-FPM domains. The pinned source data schema is unconstrained."
+        },
+        {
+          "kind": "documented",
+          "text": "The PR 58 PHP.pm source report places this write in the return {} family. A successful absent or null data member returns null; any present non-null payload retains its existing contract. This is source-only compatibility, unobserved for this POST."
+        },
+        {
+          "kind": "policy",
+          "text": "Explicit false is sent as 0. Preserve any present JSON result without inventing an object or void contract; no retry or rollback is provided."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_set_default_accounts_to_fpm: x-readonly=false; use form POST, with routing fields retained in the URL. This is one attempt with no client retry or rollback."
+        },
+        {
+          "kind": "doc",
+          "version": "review-reported PHP.pm on 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR 58 review5720977511 reports Whostmgr/API/1/Lang/PHP.pm on cPanel 11.138.0.19: php_set_default_accounts_to_fpm belongs to the return {} family; successful data may be absent or null. Source-only attribution; no local source snapshot/hash or POST observation is claimed."
+        }
+      ],
+      "optional_payload": true
+    },
+    "whm1:php_set_handler": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later. This function sets a PHP version's handler.\n\n**Important:**\n\nWhen you disable the [Web Server role](https://docs.cpanel.net/knowledge-base/general-systems-administration/how-to-use-server-profiles/#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "The source documents no data payload. Configuration changes can affect existing PHP applications immediately; the client performs one attempt with no retry or rollback."
+        },
+        {
+          "kind": "policy",
+          "text": "handler remains an open string so values returned by phpGetHandlers(), including future installed handlers, can be supplied unchanged; the PHPDoc enum is suppressed without adding runtime enum validation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_set_handler: x-readonly=false; use form POST, with routing fields retained in the URL. This is one attempt with no client retry or rollback."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 / PR 58 review",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594: php_get_handlers returns open string handler fields while php_set_handler declares a finite handler enum. PR 58 review5720977511 requests read-to-write PHPStan compatibility. Suppress handler enum PHPDoc only; preserve the existing string argument, exact wire values and absence of runtime enum validation. This is a client compatibility decision, not a new local POST observation."
+        }
+      ],
+      "params": {
+        "handler": {
+          "enum_doc": false
+        }
+      }
+    },
+    "whm1:php_set_old_fpm_flag": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 60 and later. This function creates the `/etc/cpanel/ea4/old_fpm_flag` touch file.\n\n**Note:**\n\nIf this touch file exists, the system will **not** display a message that indicates whether your system runs on an outdated PHP-FPM configuration. If you wish to see the message again, delete this touch file.\n\n**Important:**\n\nWhen you disable the [Web Server role](https://docs.cpanel.net/knowledge-base/general-systems-administration/how-to-use-server-profiles/#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates the touch file that suppresses the outdated-configuration notice; it does not convert existing sites. Inspect the returned success flag separately from metadata.result. No retry or rollback is provided."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_set_old_fpm_flag: x-readonly=false; use form POST, with routing fields retained in the URL. This is one attempt with no client retry or rollback."
+        }
+      ]
+    },
+    "whm1:php_set_session_save_path": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 66 and later. This function sets the location of PHP's default session save path.\n\n**Important:**\n\nWhen you disable the [Web Server role](https://docs.cpanel.net/knowledge-base/general-systems-administration/how-to-use-server-profiles/#roles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "The source documents no data payload. Configuration changes can affect existing PHP applications immediately; the client performs one attempt with no retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting overwrite retains 0 and omitting path retains /var/cpanel/php/sessions. Explicit false is sent as 0. The source warns against /tmp or another insecure session directory."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_set_session_save_path: x-readonly=false; use form POST, with routing fields retained in the URL. This is one attempt with no client retry or rollback."
+        }
+      ]
+    },
+    "whm1:php_set_system_default_version": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.52 and later. The version of PHP that you wish to set as the system's default.\n\n* `ea-php81`\n* `inherit`\n* Any custom PHP package name.\n\n**Important:**\n\nWhen you disable the [Web Server role](https://go.cpanel.net/serverroles), the system **disables** this function."
+        },
+        {
+          "kind": "documented",
+          "text": "The source documents no data payload. Configuration changes can affect existing PHP applications immediately; the client performs one attempt with no retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_set_system_default_version: x-readonly=false; use form POST, with routing fields retained in the URL. This is one attempt with no client retry or rollback."
+        }
+      ]
+    },
+    "whm1:php_set_vhost_versions": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 60 and later. This function allows WHM's\n[*MultiPHP Manager*](https://docs.cpanel.net/whm/software/multiphp-manager-for-whm/)\ninterface (*WHM >> Home >> Software >> MultiPHP Manager*) to change the values of a domain.\n\n**Important:**\n\nWhen you disable the\n[Web Server role](https://docs.cpanel.net/knowledge-base/general-systems-administration/how-to-use-server-profiles/#roles),\nthe system **disables** this function.\n\n**Warning:**\n\nWe **strongly** recommend that you only activate Apache PHP-FPM if your server has at\nleast 2 GB of RAM available, or at least 30 MB of RAM per domain. If you enable PHP-FPM\non a server with **less** than the required RAM, your server may experience severe\nperformance issues."
+        },
+        {
+          "kind": "policy",
+          "text": "Multiple vhosts use numbered fields vhost, vhost-1, and so on. Explicit false is sent as 0. The client sends phpFpmPoolParms once in the form field without JSON encoding or decoding, does not validate its inner schema, and retains the existing string|int|null scalar boundary (whm-api-client-8x0.1.23). Treat this configuration text as sensitive. No retry or rollback is provided."
+        },
+        {
+          "kind": "documented",
+          "text": "The PR 58 PHP.pm source report says the operation loads current version/FPM state and changes supplied values: omitting phpFpm preserves the current FPM state. The pinned version prose accepts custom PHP package names and inherit. phpFpmPoolParms is caller-supplied JSON text containing pm_max_children, pm_max_requests and pm_process_idle_timeout; the pinned source declares those properties required and defaults them to 5, 20 and 10. Version and FPM changes can affect existing sites immediately."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_set_vhost_versions: x-readonly=false; use form POST, with routing fields retained in the URL. This is one attempt with no client retry or rollback."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /php_set_vhost_versions: vhost documents incrementing vhost-1/vhost-2 names; use existing numbered encoding (vhost, vhost-1, ...), including scalar single-host support. version prose explicitly accepts any custom PHP package name despite a finite schema enum, so keep string PHPDoc. php_fpm_pool_parms is explicitly a JSON-encoded string containing a hash in a query parameter, not a JSON request body; use existing scalar encoding and require caller-supplied serialized JSON text without decode/re-encode. Existing native scalar boundary is string|int|null (whm-api-client-8x0.1.23)."
+        },
+        {
+          "kind": "doc",
+          "version": "review-reported PHP.pm on 11.138.0.19",
+          "date": "2026-10-31",
+          "note": "PR 58 review5720977511 reports Whostmgr/API/1/Lang/PHP.pm on cPanel 11.138.0.19: php_set_vhost_versions loads the current PHP version and FPM state and changes values supplied by the caller; omitted php_fpm preserves the current state. Source-only attribution; no local source snapshot/hash or POST observation is claimed."
+        }
+      ],
+      "params": {
+        "version": {
+          "enum_doc": false
+        },
+        "vhost": {
+          "php": "vhosts",
+          "encoding": "numbered"
+        },
+        "php_fpm_pool_parms": {
+          "encoding": "scalar",
+          "sensitive": true
+        }
+      }
+    }
   }
 }

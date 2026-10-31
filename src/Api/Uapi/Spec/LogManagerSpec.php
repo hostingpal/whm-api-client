@@ -111,7 +111,7 @@ final class LogManagerSpec
             'type' => 'object',
             'fields' => [
                 'file_id' => ['type' => 'string'],
-                'lines_read' => ['type' => 'int'],
+                'lines_read' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'log_content' => ['type' => 'list', 'items' => ['type' => 'string']],
                 'modified_today' => ['type' => 'flag'],
                 'mtime' => ['type' => 'int'],

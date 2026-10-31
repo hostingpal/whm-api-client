@@ -73,9 +73,9 @@ final readonly class DynamicDns
      * @param string $domain The fully-qualified domain name to create as a DDNS domain.
      * @param string|null $description A human-readable string that describes the domain. Null omits it.
      * @return CreateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dynamic-dns/dynamicdns-create
      */
     public function create(string $domain, ?string $description = null): array
@@ -110,9 +110,9 @@ final readonly class DynamicDns
      *
      * @param string $id The DDNS domain’s ID.
      * @return DeleteResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dynamic-dns/dynamicdns-delete
      */
     public function delete(
@@ -144,9 +144,9 @@ final readonly class DynamicDns
      * API-map identity: uapi:DynamicDNS/list#GET (wire name list).
      *
      * @return ListDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dynamic-dns/dynamicdns-list
      */
     public function listDomains(): array
@@ -180,9 +180,9 @@ final readonly class DynamicDns
      *
      * @param string $id The DDNS domain’s ID.
      * @return RecreateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dynamic-dns/dynamicdns-recreate
      */
     public function recreate(
@@ -217,7 +217,7 @@ final readonly class DynamicDns
      *
      * @param string $id The DDNS domain’s ID.
      * @param string $description A human-readable string that describes the domain.
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/dynamic-dns/dynamicdns-set_description
      */
     public function setDescription(

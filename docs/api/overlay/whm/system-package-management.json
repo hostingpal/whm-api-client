@@ -1,0 +1,640 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "System Package Management",
+  "class": "SystemPackages",
+  "accessor": "systemPackages",
+  "description": "Server RPM metadata, package inventory, plugin processes and queued package actions.",
+  "operations": {
+    "whm1:delete_rpm_version": {
+      "name": "deleteRpmVersion",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.32 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "The source compares this operation to /usr/local/cpanel/scripts/update_local_rpm_versions --del section.key value and strongly recommends /usr/local/cpanel/scripts/check_cpanel_pkgs afterward."
+        },
+        {
+          "kind": "policy",
+          "text": "Client behavior: a valid returned data.status of 0 does not cause an exception when metadata.result is 1. Only the WHM envelope outcome is checked; callers must inspect the returned status independently to determine whether the RPM metadata edit succeeded. The client does not retry or roll back. The source command examples are documentation only; the client does not execute them."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /delete_rpm_version GET declares x-readonly=false. Use form POST for this mutation, keeping routing in the URL."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /delete_rpm_version parameters/key is an RPM metadata key or target, such as 3rdparty; it is not authentication or private key material. Preserve the ordinary string boundary."
+        }
+      ],
+      "params": {
+        "key": {
+          "sensitive": false
+        }
+      }
+    },
+    "whm1:edit_rpm_version": {
+      "name": "editRpmVersion",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.32 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "The source compares this operation to /usr/local/cpanel/scripts/update_local_rpm_versions --edit section.key value and strongly recommends /usr/local/cpanel/scripts/check_cpanel_pkgs afterward."
+        },
+        {
+          "kind": "policy",
+          "text": "Client behavior: a valid returned data.status of 0 does not cause an exception when metadata.result is 1. Only the WHM envelope outcome is checked; callers must inspect the returned status independently to determine whether the RPM metadata edit succeeded. The client does not retry or roll back. The source command examples are documentation only; the client does not execute them."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /edit_rpm_version GET declares x-readonly=false. Use form POST for this mutation, keeping routing in the URL."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /edit_rpm_version parameters/key is an RPM metadata key or target, such as 3rdparty; it is not authentication or private key material. Preserve the ordinary string boundary."
+        }
+      ],
+      "params": {
+        "key": {
+          "sensitive": false
+        }
+      }
+    },
+    "whm1:get_rpm_version_data": {
+      "name": "getRpmVersionData",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.32 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Omit key to request all RPM keys in the section; a supplied key requests that key. The pinned source describes dynamic RPM keys mapped to string lists, either in a key map or in a section map containing key maps."
+        },
+        {
+          "kind": "observed",
+          "text": "Independent review on 11.138.0.19 reported target_settings returning 46 string values and rpm_groups string lists passing. This is the earlier reviewer report, distinct from the later structural capture."
+        },
+        {
+          "kind": "observed",
+          "text": "The immutable 2026-10-31 reviewed capture on 11.138.0.19 observed section-map structure for both fixed RPM reads: string leaves for the target-settings argument variant and string-list leaves for rpm-groups. Dynamic key identities and counts remain masked. This capture does not establish flat key-map responses."
+        },
+        {
+          "kind": "policy",
+          "text": "The client accepts strings or string lists as dynamic leaves in both map families. The pinned flat key-map family remains supported; the later capture observed the section-map family. Empty maps and lists remain empty. No deeper tree, numeric, boolean or null leaves are accepted."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_rpm_version_data GET declares x-readonly=true. Use GET for this read."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_rpm_version_data parameters/key is an RPM metadata key or target, such as 3rdparty; it is not authentication or private key material. Preserve the ordinary string boundary."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent review of dfba7249295d31f14866c3f896044094910391d3 on 11.138.0.19 reported target_settings returning 46 plain string values and rpm_groups string lists passing. This records the attributed reviewer report; it does not infer dynamic key identities or counts from the separate masked capture. No recursive, numeric, boolean or nullable leaves were established.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/60#pullrequestreview-5721000633"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-system-packages-reviewed.json",
+          "note": "Immutable docs/api/evidence/2026-10-31-whm-system-packages-reviewed.json SHA-256 44b3540940eeda781608957a57d12e5b9b5bdf10343c84f4f5a272e071d156ed at revision dd72691120690df4d0cc7c6b8c0f62ae447e4fcb, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:get_rpm_version_data#GET through the WHM GET route, effective contract SHA-256 84e1ce2f44743200ec62f7068014d4005a3245cb9dc5c6e6c29198010c414217: the target-settings argument variant observed payload $ object, $.* object and $.*.* string; rpm-groups observed $ object, $.* object, $.*.* list and $.*.*[] string. Both returned HTTP 200, API success, passed payload validation and zero discrepancies in the strict five-GET review recipe. This establishes section-map string and string-list leaf structure for these fixed reads on this revision/version; wildcard key identities and counts remain unknown. Preserve the pinned flat key-map alternative, which this capture did not observe. No runtime or type-contract change is needed."
+        }
+      ],
+      "params": {
+        "key": {
+          "sensitive": false
+        }
+      },
+      "response": {
+        "": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "object",
+                "fields": {},
+                "values": {
+                  "type": "union",
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "list",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "object",
+                "fields": {},
+                "values": {
+                  "type": "object",
+                  "fields": {},
+                  "values": {
+                    "type": "union",
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "list",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_rpm_version_data data/oneOf describes key-to-string-list and section-to-key-to-string-list alternatives. Keep those two complete map families and source string-list leaves; source does not document scalar leaves."
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent review of dfba7249295d31f14866c3f896044094910391d3 on 11.138.0.19 reported target_settings returning 46 plain string values and rpm_groups string lists passing. This records the attributed reviewer report; it does not infer dynamic key identities or counts from the separate masked capture. No recursive, numeric, boolean or nullable leaves were established.",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/60#pullrequestreview-5721000633"
+            },
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "fingerprint": "docs/api/evidence/2026-10-31-whm-system-packages-reviewed.json",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-system-packages-reviewed.json SHA-256 44b3540940eeda781608957a57d12e5b9b5bdf10343c84f4f5a272e071d156ed at revision dd72691120690df4d0cc7c6b8c0f62ae447e4fcb, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:get_rpm_version_data#GET through the WHM GET route, effective contract SHA-256 84e1ce2f44743200ec62f7068014d4005a3245cb9dc5c6e6c29198010c414217: the target-settings argument variant observed payload $ object, $.* object and $.*.* string; rpm-groups observed $ object, $.* object, $.*.* list and $.*.*[] string. Both returned HTTP 200, API success, passed payload validation and zero discrepancies in the strict five-GET review recipe. This establishes section-map string and string-list leaf structure for these fixed reads on this revision/version; wildcard key identities and counts remain unknown. Preserve the pinned flat key-map alternative, which this capture did not observe. No runtime or type-contract change is needed."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:install_rpm_plugin": {
+      "name": "installRpmPlugin",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 64 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts a background plugin installation. The returned pid and log_entry identify the process; successful submission does not establish completion. The client does not poll, fetch logs, retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /install_rpm_plugin GET declares x-readonly=false. Use form POST for this mutation, keeping routing in the URL."
+        }
+      ]
+    },
+    "whm1:list_rpms": {
+      "name": "listRpms",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.32 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Lists required but uninstalled RPM dependencies; it does not list every installed RPM. Omitting target requests all targets, and no packages are installed."
+        },
+        {
+          "kind": "documented",
+          "text": "The source compares this operation to /usr/local/cpanel/scripts/check_cpanel_pkgs --list-only --targets[target]."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, the immutable 2026-10-31 capture observed HTTP/API success with the data member absent. listRpms() returns null for that metadata-only success while validating the pinned rpms string-list object whenever non-null data is present. The existing optional-payload mechanism also accepts explicit null data; that null variant was not observed in this capture. Neither absent nor null data establishes that no RPM packages are missing. The original capture remains failed and unchanged."
+        },
+        {
+          "kind": "policy",
+          "text": "The source command example is documentation only; the client does not execute it."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /list_rpms GET declares x-readonly=true. Use GET for this read."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Immutable docs/api/evidence/2026-10-31-whm-system-packages.json SHA-256 5b6cc329c55b456106ce0a06a54f0169bb6f58c558267b1960054bf2cfcd8450 at revision 072dc900fb51a388fc40211407f05f08f68d6e53, pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. whm1:list_rpms#GET through the WHM GET route returned HTTP 200 and API success, but response $.data and payload $ were missing, producing missing_required at $. Effective contract SHA-256 e12cd3759cc3d0d99b3324ff4918e27fbab563697b84627dd9ab33d042077922. Enable optional_payload for this operation only, retaining the pinned optional rpms string-list field and strict non-null payload validation. The existing mechanism also accepts explicit null, which this observation does not establish. No empty-inventory meaning, sibling operation, additional field or waiver is inferred; preserve the failed artifact unchanged.",
+          "fingerprint": "docs/api/evidence/2026-10-31-whm-system-packages.json"
+        }
+      ],
+      "optional_payload": true
+    },
+    "whm1:package_manager_fixcache": {
+      "name": "fixCache",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 64 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Attempts to repair yum cache issues. The source documents cache_seems_ok_now as literal 1, returned only on success; the current generated validator accepts native integers and does not enforce that single-value enum. Failure returns metadata only and remains an API failure. A repair changes server cache state, with no client retry or rollback."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_fixcache GET declares x-readonly=false. Use form POST for this mutation, keeping routing in the URL."
+        }
+      ]
+    },
+    "whm1:package_manager_get_build_log": {
+      "name": "getBuildLog",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "build is the process ID returned by submitActions(); offset is a byte position, and the returned offset is the last byte position read. still_running is an integer 0/1 flag. Log content is private payload data, never executed or automatically followed; the client does not poll."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_get_build_log GET declares x-readonly=true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:package_manager_get_package_info": {
+      "name": "getPackageInfo",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "The source requires exactly one selector family: namespaces or packages, each as one string or a nonempty sequential string list encoded with repeated ns or package keys. The source marks both required but explicitly makes them alternatives; both formal required flags conflict with the documented selector alternatives. Namespace prose permits ea and values returned by ea4_get_additional_pkg_prefixes, including the altea example, while the formal enum lists only ea. This discrepancy remains unresolved. Omitted disableExcludes preserves the default 0; explicit false sends 0. more_info_url may be null; omitted fields remain omitted."
+        },
+        {
+          "kind": "observed",
+          "text": "Independent review clarification on 11.138.0.19 observed ea-apache24 requires containing strings and nested lists of strings (27 items, including two- or three-string alternatives), and vendor as a string on six packages. Conflicts remained strings. Four uninstalled packages returned version_installed as an empty string, while two installed packages returned nonempty strings; null was not observed and is not accepted."
+        },
+        {
+          "kind": "documented",
+          "text": "The separately inspected package-manager source describes a requirement as a package name or an array reference of alternatives (an OR-list), and flattens conflicts to package-name strings. Nested requirement lists preserve alternative package strings, without an invented tuple or closed item count. The dnf vendor source uses a placeholder, so no vendor identity or literal value is guaranteed."
+        },
+        {
+          "kind": "policy",
+          "text": "Caller responsibility: provide exactly one of namespaces or packages as required by the source. The client makes each individually optional so either family is callable; it does not reject an omitted selector or both families locally. This is not a guarantee that such calls succeed on the server."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_get_package_info GET declares x-readonly=true. Use GET for this read."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_get_package_info description requires either ns or package, and each parameter forbids the other. Despite both formal required:true flags, make each individually optional so either documented selector family is callable; callers must provide exactly one family. Both parameter descriptions explicitly repeat the same wire key for multiple values. ns formal enum [ea] contradicts prose permitting prefixes returned by ea4_get_additional_pkg_prefixes, with altea as the repeated example. Suppress only the closed enum PHPDoc, preserving string input and the documented discrepancy."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/60#issuecomment-6540746696",
+          "note": "Independent reviewer clarification 6540746696 reports a read-only GET covering six packages, with ea-apache24 requires as 27 strings/nested string lists (nested lists had two or three strings). Separately inspected package-manager source POD defines each requirement item as package or arrayref OR-list; conflicts are flattened package-name strings. Keep pinned string items plus list<string>, without fixed lengths or named tuple fields; conflicts remains unchanged. Source inspection is distinct from the live observation and pinned OpenAPI string-only example."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/60#issuecomment-6540746696",
+          "note": "Reviewer clarification 6540746696 withdrew the nullable version_installed request: four uninstalled packages returned an empty string and two installed packages nonempty strings; no null observed. Preserve pinned nonnullable optional string and distinguish omission from empty string. This scope does not establish a universal installed-state predicate."
+        }
+      ],
+      "params": {
+        "ns": {
+          "php": "namespaces",
+          "encoding": "repeat",
+          "required": false,
+          "enum_doc": false
+        },
+        "package": {
+          "php": "packages",
+          "encoding": "repeat",
+          "required": false
+        },
+        "disable-excludes": {
+          "php": "disableExcludes"
+        }
+      },
+      "order": [
+        "ns",
+        "package",
+        "disable-excludes"
+      ],
+      "response": {
+        "packages[].pkg_dep.requires[]": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "list",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/60#issuecomment-6540746696",
+              "note": "Independent reviewer clarification 6540746696 reports a read-only GET covering six packages, with ea-apache24 requires as 27 strings/nested string lists (nested lists had two or three strings). Separately inspected package-manager source POD defines each requirement item as package or arrayref OR-list; conflicts are flattened package-name strings. Keep pinned string items plus list<string>, without fixed lengths or named tuple fields; conflicts remains unchanged. Source inspection is distinct from the live observation and pinned OpenAPI string-only example."
+            }
+          ]
+        },
+        "packages[].vendor": {
+          "add": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/60#issuecomment-6540746696",
+              "note": "Reviewer clarification 6540746696 observed vendor as a string across six packages on 11.138.0.19. Add only this optional string field absent from the pinned OpenAPI. Source inspection reports the dnf implementation hardcodes a placeholder; no literal, reliable vendor identity, nullable value or other type is inferred."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:package_manager_is_performing_actions": {
+      "name": "isPerformingActions",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "build identifies the process returned by submitActions(). active 0 means the process is inactive, independently of API success; it does not establish that package installation succeeded. The client does not poll or retry."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_is_performing_actions GET declares x-readonly=true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:package_manager_list_packages": {
+      "name": "listPackages",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting state preserves the server default any; installed, not_installed and updatable select the documented inventory states. RPM package names remain payload data. This read changes no packages."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_list_packages GET declares x-readonly=true. Use GET for this read."
+        }
+      ]
+    },
+    "whm1:package_manager_resolve_actions": {
+      "name": "resolveActions",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Determines prospective install, uninstall, upgrade and unaffected package lists without submitting them. The source requires packages and marks namespaces optional. Both accept a string or nonempty sequential string list and repeat their exact wire keys. Namespace prose permits additional discovered prefixes such as altea despite the formal ea-only enum. Inspect all returned lists; planning is not installation or completion."
+        },
+        {
+          "kind": "observed",
+          "text": "Independent review on 11.138.0.19 observed an omitted namespace failing with Namespace is required and a supplied namespace passing. The pinned source still marks ns optional."
+        },
+        {
+          "kind": "policy",
+          "text": "The client requires both packages and a non-null namespaces argument before I/O, correcting the source optional namespace flag from the reviewed server behavior. Other parameter types and repeated-key encoding remain unchanged."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_resolve_actions GET declares x-readonly=true. Use GET for this read."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_resolve_actions package is required and ns optional. Both descriptions explicitly allow repeated identical keys for multiple values. Namespace prose permits ea and additional prefixes from ea4_get_additional_pkg_prefixes and gives ns=altea, while its formal enum contains only ea. Suppress only the closed enum PHPDoc; retain string input and required package selection."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent review of dfba7249295d31f14866c3f896044094910391d3 on 11.138.0.19 observed package_manager_resolve_actions without ns failing with Namespace is required, and a supplied namespace passing. Override only ns requiredness; retain the pinned string/repeated-key encoding, required package and all other arguments.",
+          "fingerprint": "https://github.com/hostingpal/whm-api-client/pull/60#pullrequestreview-5721000633"
+        }
+      ],
+      "params": {
+        "package": {
+          "php": "packages",
+          "encoding": "repeat"
+        },
+        "ns": {
+          "php": "namespaces",
+          "encoding": "repeat",
+          "enum_doc": false,
+          "required": true
+        }
+      },
+      "order": [
+        "package",
+        "ns"
+      ]
+    },
+    "whm1:package_manager_submit_actions": {
+      "name": "submitActions",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.52 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Queues package installation, removal and upgrades as background tasks. Each action family is optional; omit it for no action of that kind, or pass one string or a nonempty sequential string list with repeated identical keys. The returned build is a process ID; API success does not establish completion. The client does not poll, retry or roll back package changes."
+        },
+        {
+          "kind": "policy",
+          "text": "Caller responsibility: supply the intended nonempty package actions before calling. The client has no nonempty combination guard: omitted actions POST an empty body, and empty scalar strings are sent unchanged; empty lists are rejected locally. Do not rely on server rejection or assume an empty submission is harmless or a no-op. A returned build does not establish successful package changes."
+        },
+        {
+          "kind": "policy",
+          "text": "install: omission sends no parameter for this family; an empty string is still sent. Supply an intended package name or nonempty string list; the client does not enforce a nonempty scalar or a nonempty combination of action families."
+        },
+        {
+          "kind": "policy",
+          "text": "uninstall: omission sends no parameter for this family; an empty string is still sent. Supply an intended package name or nonempty string list; the client does not enforce a nonempty scalar or a nonempty combination of action families."
+        },
+        {
+          "kind": "policy",
+          "text": "upgrade: omission sends no parameter for this family; an empty string is still sent. Supply an intended package name or nonempty string list; the client does not enforce a nonempty scalar or a nonempty combination of action families."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_submit_actions GET declares x-readonly=false. Use form POST for this mutation, keeping routing in the URL."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_submit_actions install, uninstall and upgrade are optional strings whose descriptions explicitly permit repeating each identical parameter key. Omission means no action of that kind. Use the reviewed repeated-key string/string-list encoding."
+        }
+      ],
+      "params": {
+        "install": {
+          "encoding": "repeat"
+        },
+        "uninstall": {
+          "encoding": "repeat"
+        },
+        "upgrade": {
+          "encoding": "repeat"
+        }
+      }
+    },
+    "whm1:package_manager_upgrade": {
+      "name": "upgrade",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 54 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Downloads and installs server package updates. The returned build is a process ID and does not establish update completion; the client does not poll, retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /package_manager_upgrade GET declares x-readonly=false. Use form POST for this mutation, keeping routing in the URL."
+        }
+      ]
+    },
+    "whm1:uninstall_rpm_plugin": {
+      "name": "uninstallRpmPlugin",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 64 and later; operates on server package management."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts a background plugin uninstall. The returned pid and log_entry identify the process; successful submission does not establish completion. The client does not poll, fetch logs, retry or roll back."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /uninstall_rpm_plugin GET declares x-readonly=false. Use form POST for this mutation, keeping routing in the URL."
+        }
+      ]
+    }
+  }
+}
