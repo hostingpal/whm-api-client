@@ -1237,7 +1237,7 @@ final class AccountsSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
-                'quota_enabled' => ['type' => 'flag'],
+                'quota_enabled' => ['type' => 'flag', 'accept' => ['string-flag']],
             ],
         ],
     ];

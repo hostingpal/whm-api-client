@@ -959,6 +959,10 @@
         {
           "kind": "documented",
           "text": "quota_enabled is a native integer 0|1 indicating whether quotas are enabled on at least one home-directory mount, separate from API success."
+        },
+        {
+          "kind": "observed",
+          "text": "The immutable first capture docs/api/evidence/2026-10-31-whm-account-management.json at revision 1149479923f388157a43d42ec8eebf68204e71b1 on 11.138.0.19 records a numeric-string at $.quota_enabled. Only the exact quoted flags 0 and 1 normalize to integer 0|1; omission remains omitted. This correction does not apply to sibling flags or resolve the separate get_maximum_users finding."
         }
       ],
       "evidence": [
@@ -967,8 +971,29 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned x-readonly is true. Use GET for this read."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "The immutable docs/api/evidence/2026-10-31-whm-account-management.json (SHA-256 ad4f89f9606d05366cba3078dbe8ac5c2c9f471a10c6dfdc44b1281f5e29def9) captured whm1:quota_enabled#GET via the WHM route at revision 1149479923f388157a43d42ec8eebf68204e71b1 on 11.138.0.19. Its $.quota_enabled payload leaf is numeric-string and caused a type mismatch. The pinned schema is an integer 0|1 flag; accept and normalize only the exact strings \"0\" and \"1\", with no other numeric-string coercion or sibling-field correction."
         }
-      ]
+      ],
+      "response": {
+        "quota_enabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "The immutable docs/api/evidence/2026-10-31-whm-account-management.json (SHA-256 ad4f89f9606d05366cba3078dbe8ac5c2c9f471a10c6dfdc44b1281f5e29def9) captured whm1:quota_enabled#GET via the WHM route at revision 1149479923f388157a43d42ec8eebf68204e71b1 on 11.138.0.19. Its $.quota_enabled payload leaf is numeric-string and caused a type mismatch. The pinned schema is an integer 0|1 flag; accept and normalize only the exact strings \"0\" and \"1\", with no other numeric-string coercion or sibling-field correction."
+            }
+          ]
+        }
+      }
     },
     "whm1:set_digest_auth": {
       "name": "setDigestAuth",

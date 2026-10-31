@@ -1809,6 +1809,11 @@ final readonly class Accounts
      * Documented: quota_enabled is a native integer 0|1 indicating whether quotas are enabled on at least one
      * home-directory mount, separate from API success.
      *
+     * Observed: The immutable first capture docs/api/evidence/2026-10-31-whm-account-management.json at revision
+     * 1149479923f388157a43d42ec8eebf68204e71b1 on 11.138.0.19 records a numeric-string at $.quota_enabled. Only the
+     * exact quoted flags 0 and 1 normalize to integer 0|1; omission remains omitted. This correction does not apply to
+     * sibling flags or resolve the separate get_maximum_users finding.
+     *
      * API-map identity: whm1:quota_enabled#GET (wire name quota_enabled; Bandwidth and Disk Quotas).
      *
      * @return QuotaEnabledResult

@@ -271,7 +271,12 @@ final class WhmAccountManagementTest extends TestCase
         yield 'ACL field null' => ['myPrivileges', 'myprivs', [], '{"privileges":[{"all":null}]}'];
         yield 'ACL privileges root is list' => ['myPrivileges', 'myprivs', [], '{"privileges":{"all":0}}'];
         yield 'ACL list item is object' => ['myPrivileges', 'myprivs', [], '{"privileges":[1]}'];
-        yield 'quota flag' => ['quotaEnabled', 'quota_enabled', [], '{"quota_enabled":true}'];
+        $invalidQuotaFlags = ['2', '"2"', '"01"', '"00"', '1.0', '0.0', 'true', 'false', 'null',
+            '"+1"', '"-0"', '" 1"', '"1 "', '"1.0"'];
+        foreach ($invalidQuotaFlags as $flag) {
+            yield 'quota invalid flag ' . $flag => [
+                'quotaEnabled', 'quota_enabled', [], '{"quota_enabled":' . $flag . '}'];
+        }
         yield 'docroot null' => ['setPrimaryDomainDocroot', 'set_primary_domain_docroot',
             ['public_html/new', 'fixture'],
             '{"documentroot":null}'];
@@ -550,6 +555,33 @@ final class WhmAccountManagementTest extends TestCase
         $http->addResponse(new Response(200, [], self::envelope('myprivs', $payload)));
         self::assertSame(['privileges' => [$row]], $client->whm()->accounts()->myPrivileges());
         self::assertCount(61, $row);
+    }
+
+    /** @return iterable<string, array{string, array<string, int>}> */
+    public static function canonicalQuotaFlags(): iterable
+    {
+        yield 'native zero' => ['{"quota_enabled":0}', ['quota_enabled' => 0]];
+        yield 'native one' => ['{"quota_enabled":1}', ['quota_enabled' => 1]];
+        yield 'quoted zero' => ['{"quota_enabled":"0"}', ['quota_enabled' => 0]];
+        yield 'quoted one' => ['{"quota_enabled":"1"}', ['quota_enabled' => 1]];
+        yield 'omitted field' => ['{}', []];
+    }
+
+    /** @param array<string, int> $expected */
+    #[DataProvider('canonicalQuotaFlags')]
+    public function testOnlyCanonicalQuotedQuotaFlagsNormalize(string $payload, array $expected): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('quota_enabled', $payload)));
+        try {
+            $result = $client->whm()->accounts()->quotaEnabled();
+        } catch (PayloadMismatchException) {
+            self::fail('Canonical native/quoted 0|1 quota flags and omission must be accepted.');
+        }
+        self::assertSame($expected, $result);
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertRequest($http, 'quota_enabled', 'GET', '');
+        self::assertCount(1, $http->getRequests());
     }
 
     private static function canonical(mixed $value): mixed
