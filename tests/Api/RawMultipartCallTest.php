@@ -555,12 +555,18 @@ final class RawMultipartCallTest extends TestCase
         }
         $sends = 0;
         $body = null;
+        $conversionResult = null;
+        $readError = null;
+        $wrapperReached = false;
         $client = self::client($direct, static function (RequestInterface $request) use (
             $mode,
             $direct,
             $stream,
             &$sends,
             &$body,
+            &$conversionResult,
+            &$readError,
+            &$wrapperReached,
         ): ResponseInterface {
             ++$sends;
             $body = $request->getBody();
@@ -574,12 +580,11 @@ final class RawMultipartCallTest extends TestCase
                 );
             }
             if ($mode === 'string') {
-                self::assertSame('', (string) $body);
+                $conversionResult = (string) $body;
             } elseif (in_array($mode, ['swallowed', 'network', 'request', 'other', 'runtime'], true)) {
                 $readError = self::caught(static fn () => $body->getContents());
-                self::assertInstanceOf(RuntimeException::class, $readError);
-                self::assertNotInstanceOf(ApiException::class, $readError);
                 if ($mode !== 'swallowed') {
+                    $wrapperReached = true;
                     throw self::clientFailure($mode, $request);
                 }
             } else {
@@ -594,6 +599,19 @@ final class RawMultipartCallTest extends TestCase
             ['private-query-name' => 'private-query-value'],
         ));
         self::assertInstanceOf(ApiException::class, $error);
+        // Assert callback outcomes here, outside the production health-first catch.
+        if ($mode === 'string') {
+            self::assertSame('', $conversionResult);
+        } else {
+            self::assertNull($conversionResult);
+        }
+        if (in_array($mode, ['swallowed', 'network', 'request', 'other', 'runtime'], true)) {
+            self::assertInstanceOf(RuntimeException::class, $readError);
+            self::assertNotInstanceOf(ApiException::class, $readError);
+        } else {
+            self::assertNull($readError);
+        }
+        self::assertSame(in_array($mode, ['network', 'request', 'other', 'runtime'], true), $wrapperReached);
         // A recorded body failure is not an original PSR interface classification.
         self::assertNotInstanceOf(TransportException::class, $error);
         self::assertNull($error->getPrevious());
