@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 86 typed groups cover 1,060 documented operations:
+and cPanel UAPI surface. The 87 typed groups cover 1,074 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -1668,6 +1668,53 @@ further commands are tracked under `gwi`. Go is a
 development-tool choice, not a runtime dependency of the PHP package. Preserve pinned documentation snapshots and
 refresh them explicitly; routine checks must remain offline. The tool design
 is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
+
+
+## WHM support-ticket administration
+
+`whm()->supportTickets()` covers all fourteen pinned functions: four GET reads
+classified `x-readonly=true` and ten form POST operations. Required integer server
+and ticket selectors remain required, including for `list()`. Grant/list SSH
+usernames can be omitted; revoke requires one. Omission does not infer root.
+Grant secure IDs, OAuth codes and redirect URIs remain sensitive.
+
+The source auths/servers list repair follows explicit array prose and item schemas.
+Support-agreement dates preserve optional null values; flags remain integer 0|1.
+Reviewed source-family compatibility also permits null on optional support-contact
+fields and on the conditional nested grant timestamp for `NOT_AUTHED` rows.
+Those nulls are inferred from source prose, not explicit pinned nullable flags or
+live payload observations. Omission, null and exact empty strings stay distinct.
+Grant/revoke echoed server and ticket IDs use the existing bounded canonical
+integer-string normalization, with native integers preserved and invalid strings
+rejected. Other IDs, timestamps, strict siblings and input types are unchanged.
+
+Agreement acceptance and OAuth validation have source-documented void results.
+SSH-test startup returns null for successful absent/null data and preserves a
+present opaque object, including unknown nested fields; malformed present values
+still fail after API success. This compatibility remains source-inferred and
+offline-tested. A payload error can occur after state changed: never retry a
+mutation automatically. Required fields and API outcome checks remain enforced.
+
+The PR65 reviewer reports `getSupportAgreement()`, `getSupportInfo()`,
+`whitelistCheck()` and `list()` through WHM GET on `11.138.0.19` with this client's
+stateless token authentication all raising `ApiErrorException`:
+"The system failed to restore the saved session." These failed reads establish no
+successful payload compatibility. The pinned URL samples use `/cpsess##########/`
+and the OAuth source says the validated token is stored on the current session.
+A WHM session appears required according to the reviewer's inference; the session
+code path was not traced, and this is not a universal authentication diagnosis.
+The client has no session or cookie handling. It remains uncertain whether
+`validateOauth2Code()` could succeed yet leave no reusable session for later calls.
+All ten POST methods remain unobserved. Session compatibility and remaining live
+variants stay open under `8x0.2.53`; no live call or capture ran for these fixes.
+
+Stub-ticket creation, access grants/revocations, firewall changes, remote SSH
+checks, OAuth exchange/session state and agreement acceptance can have external
+or server effects. Returned support text, tokens, links and commands are payload
+data and never executed or fetched. API success does not establish remote SSH
+access or security enforcement. Exact per-method version floors remain in PHPDoc.
+All fourteen methods have independent offline contracts; generated coverage,
+offline validation and the separate reviewer report remain distinct.
 
 
 ## WHM Commerce and Market

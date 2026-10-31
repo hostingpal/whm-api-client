@@ -51,6 +51,8 @@ trait WhmGroups
 
     private ?Ssl $sslGroup = null;
 
+    private ?SupportTickets $supportTicketsGroup = null;
+
     private ?SystemPackages $systemPackagesGroup = null;
 
     private ?Transfers $transfersGroup = null;
@@ -268,6 +270,27 @@ trait WhmGroups
     public function ssl(): Ssl
     {
         return $this->sslGroup ??= new Ssl($this->run(...));
+    }
+
+    /**
+     * Select the cPanel Support Tickets operations without making a request.
+     *
+     * WHM API 1 functions in the documented cPanel Support Tickets group. Observed: The PR65 reviewer called
+     * getSupportAgreement(), getSupportInfo(), whitelistCheck() and list() through WHM GET on 11.138.0.19 with this
+     * client's stateless token authentication. All four raised ApiErrorException: "The system failed to restore the
+     * saved session." These failed reads establish no successful payload compatibility. All ten POST methods remain
+     * unobserved. Documented: The pinned URL examples use /cpsess##########/json-api/, agreement and support-info reads
+     * require a cPanelID token in the current session, and validateOauth2Code() stores the validated token on the
+     * current session. Inference: A WHM session appears to be required, based on the reviewer's reading of the failure
+     * and source text; the session code path was not traced. This is not a universal authentication diagnosis. The
+     * client has no session or cookie handling. It remains uncertain whether validateOauth2Code() could succeed yet
+     * leave no reusable session for later calls. Policy: Keep these typed contracts available with this compatibility
+     * limit; no session management, automatic retry or inferred success is added. Session compatibility and all
+     * unobserved methods remain open under whm-api-client-8x0.2.53.
+     */
+    public function supportTickets(): SupportTickets
+    {
+        return $this->supportTicketsGroup ??= new SupportTickets($this->run(...));
     }
 
     /**
