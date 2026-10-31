@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "Security",
+  "accessor": "security",
+  "class": "Security",
+  "description": "WHM root login IP restrictions. Changes can remove root password access to the control panel; no automatic retry or rollback is provided.",
+  "operations": {
+    "whm1:allow_all_whm_root_access": {
+      "name": "allowAllWhmRootAccess",
+      "method": "POST",
+      "void": true,
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 108 and later. Removes all IP-based restrictions on root login to cPanel and WHM. The documented success response contains metadata only, with no data payload."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy: use form POST and send one request without automatic retry or rollback. This changes control-panel root login policy; no SSH or firewall behavior is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /allow_all_whm_root_access declares x-readonly=false, cPanel available version 108 and a metadata-only response. Use form POST and void; no live restriction change was performed."
+        }
+      ]
+    },
+    "whm1:restrict_whm_root_access": {
+      "name": "restrictWhmRootAccess",
+      "method": "POST",
+      "params": {
+        "cidr": {
+          "php": "cidrs",
+          "encoding": "repeat"
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel and WHM 108 and later. Replaces all previous root login CIDR restrictions; include previous patterns when adding new ones. Existing root logins are not terminated, and root resellers are not restricted. The API manages /var/cpanel/authorized_whm_root_ips; upstream strongly recommends against direct file modification because improper formatting can remove all cPanel and WHM access using the root password."
+        },
+        {
+          "kind": "documented",
+          "text": "cidrs accepts one CIDR string or a nonempty sequential list of strings sent as repeated cidr fields, as the pinned CLI and URL examples show. The returned optional cidr field is a reduced list of permitted CIDR addresses, distinct from the WHM envelope outcome. The response is an object with an optional string list; absent data and explicit null are not documented success payloads."
+        },
+        {
+          "kind": "policy",
+          "text": "Client policy: forward supplied CIDR strings unchanged, including an explicit empty string, without local address validation or normalization. This does not establish server acceptance of empty or malformed CIDRs. Use form POST and send one request without automatic retry or rollback; a payload error after API success does not undo a policy change. No SSH or firewall behavior is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /restrict_whm_root_access declares x-readonly=false, cPanel available version 108 and required cidr with a string schema and no minimum length. Its parameter note permits multiple occurrences, and both CLI and URL examples repeat the exact cidr key; use the existing repeat encoder for scalar/list input. The data schema is an object with optional cidr array of strings. Preserve source replacement, session and root-reseller caveats; no live restriction change was performed."
+        }
+      ]
+    }
+  }
+}

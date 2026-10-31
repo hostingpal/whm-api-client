@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 78 generated typed groups cover 813 documented operations (see
+The 79 generated typed groups cover 815 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1940,3 +1940,24 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+## WHM root-access restrictions
+
+`whm()->security()` covers both pinned Security functions, available from cPanel
+108, as form POST. restrictWhmRootAccess() accepts one CIDR string or a nonempty
+sequential string list, repeating the exact cidr field. Values are encoded once
+and forwarded unchanged; the client adds no CIDR validation or normalization.
+Empty explicit strings are forwarded without claiming server acceptance.
+
+Restrictions replace the prior list; include existing patterns that must remain.
+The source states that existing sessions are not terminated and root resellers
+are not affected. Its file-modification/root-password lockout warning remains in
+generated PHPDoc. Do not infer SSH/firewall behavior from these WHM calls. Methods
+add no retries, rollback, automatic recovery or enforcement guarantees.
+
+allowAllWhmRootAccess() has a source-documented void response. Restriction returns
+an object with optional cidr string list; absent/null payloads fail and unknown
+fields follow the existing validator policy. Both methods have offline contracts,
+including scalar/repeated encoding, invalid lists and metadata reset. No live root
+access, allowlist, connectivity or session change ran. All controlled live work
+remains under `8x0.2.59`.

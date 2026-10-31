@@ -4428,3 +4428,24 @@ All 23 POST methods and remaining successful-access variants remain unobserved
 under `8x0.2.40`. No credential, key, private URL or TFA secret was read, no state
 changed and no new live capture ran. The original three-GET artifact is complete
 and immutable.
+
+## WHM root-access restrictions
+
+`whm()->security()` covers both pinned Security functions, available from cPanel
+108, as form POST. restrictWhmRootAccess() accepts one CIDR string or a nonempty
+sequential string list, repeating the exact cidr field. Values are encoded once
+and forwarded unchanged; the client adds no CIDR validation or normalization.
+Empty explicit strings are forwarded without claiming server acceptance.
+
+Restrictions replace the prior list; include existing patterns that must remain.
+The source states that existing sessions are not terminated and root resellers
+are not affected. Its file-modification/root-password lockout warning remains in
+generated PHPDoc. Do not infer SSH/firewall behavior from these WHM calls. Methods
+add no retries, rollback, automatic recovery or enforcement guarantees.
+
+allowAllWhmRootAccess() has a source-documented void response. Restriction returns
+an object with optional cidr string list; absent/null payloads fail and unknown
+fields follow the existing validator policy. Both methods have offline contracts,
+including scalar/repeated encoding, invalid lists and metadata reset. No live root
+access, allowlist, connectivity or session change ran. All controlled live work
+remains under `8x0.2.59`.

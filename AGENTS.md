@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 78 typed groups cover 813 documented operations:
+and cPanel UAPI surface. The 79 typed groups cover 815 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -1409,6 +1409,28 @@ further commands are tracked under `gwi`. Go is a
 development-tool choice, not a runtime dependency of the PHP package. Preserve pinned documentation snapshots and
 refresh them explicitly; routine checks must remain offline. The tool design
 is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
+
+
+## WHM root-access restrictions
+
+`whm()->security()` covers both pinned Security functions, available from cPanel
+108, as form POST. restrictWhmRootAccess() accepts one CIDR string or a nonempty
+sequential string list, repeating the exact cidr field. Values are encoded once
+and forwarded unchanged; the client adds no CIDR validation or normalization.
+Empty explicit strings are forwarded without claiming server acceptance.
+
+Restrictions replace the prior list; include existing patterns that must remain.
+The source states that existing sessions are not terminated and root resellers
+are not affected. Its file-modification/root-password lockout warning remains in
+generated PHPDoc. Do not infer SSH/firewall behavior from these WHM calls. Methods
+add no retries, rollback, automatic recovery or enforcement guarantees.
+
+allowAllWhmRootAccess() has a source-documented void response. Restriction returns
+an object with optional cidr string list; absent/null payloads fail and unknown
+fields follow the existing validator policy. Both methods have offline contracts,
+including scalar/repeated encoding, invalid lists and metadata reset. No live root
+access, allowlist, connectivity or session change ran. All controlled live work
+remains under `8x0.2.59`.
 
 ## Architecture and Conventions
 
