@@ -1,0 +1,656 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "Login Security (cPHulk)",
+  "accessor": "cpHulk",
+  "class": "CpHulk",
+  "description": "Server-wide cPHulk login security, configuration, address lists and history. Configuration and list changes affect login policy immediately; history removals are destructive. Returned commands and login records are payload data and may contain sensitive information. The cPanel 11.138.0.19 review used GET reads only; all fifteen writes across the reviewed cPHulk and Greylisting slice remain unobserved.",
+  "operations": {
+    "whm1:batch_create_cphulk_records": {
+      "exclude": {
+        "reason": "Requires a JSON request body; deferred under whm-api-client-8x0.1.18. Generic form calls do not implement JSON transport.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "The pinned batch_create_cphulk_records operation declares application/json requestBody."
+          }
+        ]
+      }
+    },
+    "whm1:cphulk_status": {
+      "name": "status",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cphulk_status x-readonly=true: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned cphulk_status x-cpanel-available-version is 11.48; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        }
+      ]
+    },
+    "whm1:create_cphulk_record": {
+      "name": "createRecord",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned create_cphulk_record x-readonly=false: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The ip description documents incremented names; its pinned single-value CLI uses ip directly. The reviewed existing numbered encoder emits ip for the first value, then ip-1, ip-2. The source alternative ip-1 first-index spelling remains unverified; no different starting-index support is inferred."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned create_cphulk_record x-cpanel-available-version is 11.48; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "ip",
+        "list_name",
+        "comment",
+        "skip_enabled_check"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "A string sends the documented single ip parameter. A list emits ip, ip-1, ip-2 through the existing numbered encoding; alternative starting indices have no live verification."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted skipEnabledCheck preserves the server check; false is sent as 0 and true as 1. When cPHulk is disabled, a checked request can fail with cPHulk is disabled on the server."
+        }
+      ],
+      "params": {
+        "ip": {
+          "php": "ips",
+          "encoding": "numbered"
+        }
+      }
+    },
+    "whm1:delete_cphulk_record": {
+      "name": "deleteRecord",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned delete_cphulk_record x-readonly=false: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The ip description documents incremented names; its pinned single-value CLI uses ip directly. The reviewed existing numbered encoder emits ip for the first value, then ip-1, ip-2. The source alternative ip-1 first-index spelling remains unverified; no different starting-index support is inferred."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned delete_cphulk_record x-cpanel-available-version is 11.48; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "ip",
+        "list_name",
+        "skip_enabled_check"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "A string sends the documented single ip parameter. A list emits ip, ip-1, ip-2 through the existing numbered encoding; alternative starting indices have no live verification."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted skipEnabledCheck preserves the server check; false is sent as 0 and true as 1. When cPHulk is disabled, a checked request can fail with cPHulk is disabled on the server."
+        }
+      ],
+      "params": {
+        "ip": {
+          "php": "ips",
+          "encoding": "numbered"
+        }
+      }
+    },
+    "whm1:disable_cphulk": {
+      "name": "disable",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned disable_cphulk x-readonly=false: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The pinned successful response documents metadata only, with no data payload."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned disable_cphulk x-cpanel-available-version is 11.48; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "void": true,
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes server-wide login protection immediately. The client does not retry or roll back service changes."
+        }
+      ]
+    },
+    "whm1:enable_cphulk": {
+      "name": "enable",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned enable_cphulk x-readonly=false: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The pinned successful response documents metadata only, with no data payload."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned enable_cphulk x-cpanel-available-version is 11.48; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "void": true,
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes server-wide login protection immediately. The client does not retry or roll back service changes."
+        }
+      ]
+    },
+    "whm1:flush_cphulk_login_history": {
+      "name": "flushLoginHistory",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned flush_cphulk_login_history x-readonly=false: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned flush_cphulk_login_history x-cpanel-available-version is 11.48; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes cPHulk login history; the selected-IP variant also unblocks the selected addresses. This destructive operation has no client rollback or automatic retry."
+        }
+      ]
+    },
+    "whm1:flush_cphulk_login_history_for_ips": {
+      "name": "flushLoginHistoryForIps",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned flush_cphulk_login_history_for_ips x-readonly=false: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. The ip description documents incremented names; its pinned single-value CLI uses ip directly. The reviewed existing numbered encoder emits ip for the first value, then ip-1, ip-2. The source alternative ip-1 first-index spelling remains unverified; no different starting-index support is inferred."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned flush_cphulk_login_history_for_ips x-cpanel-available-version is 11.50; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "ip"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.50 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "A string sends the documented single ip parameter. A list emits ip, ip-1, ip-2 through the existing numbered encoding; alternative starting indices have no live verification."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes cPHulk login history; the selected-IP variant also unblocks the selected addresses. This destructive operation has no client rollback or automatic retry."
+        }
+      ],
+      "params": {
+        "ip": {
+          "php": "ips",
+          "encoding": "numbered"
+        }
+      }
+    },
+    "whm1:get_countries_with_known_ip_ranges": {
+      "name": "getCountriesWithKnownIpRanges",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned get_countries_with_known_ip_ranges x-readonly=true: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned get_countries_with_known_ip_ranges x-cpanel-available-version is 70; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 70 and later."
+        }
+      ]
+    },
+    "whm1:get_cphulk_brutes": {
+      "name": "getBrutes",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned get_cphulk_brutes x-readonly=true: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned get_cphulk_brutes x-cpanel-available-version is 11.48; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Canonical integer-string timeleft compatibility is inferred from the shared _get_cphulk_login_history source and the observed failed-login rows. This history was empty in the cPanel 11.138.0.19 review, so no populated result for this operation was observed. Only canonical strings within PHP integer bounds are normalized; other fields remain strict."
+        }
+      ],
+      "response": {
+        "brutes[].timeleft": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218: Whostmgr/API/1/cPHulk.pm on cPanel 11.138.0.19 routes get_cphulk_brutes and get_cphulk_failed_logins through the same _get_cphulk_login_history backend. Only the 110 failed-login rows supplied observed whole digit-string timeleft values; get_cphulk_brutes was empty. Canonical bounded integer-string compatibility here is inferred from that shared source and verified offline, not from populated results of this operation. Preserve the pinned timeleft type and all sibling fields. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:get_cphulk_excessive_brutes": {
+      "name": "getExcessiveBrutes",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned get_cphulk_excessive_brutes x-readonly=true: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned get_cphulk_excessive_brutes x-cpanel-available-version is 11.48; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Canonical integer-string timeleft compatibility is inferred from the shared _get_cphulk_login_history source and the observed failed-login rows. This history was empty in the cPanel 11.138.0.19 review, so no populated result for this operation was observed. Only canonical strings within PHP integer bounds are normalized; other fields remain strict."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned number contract retains native integer and float timeleft values. The separate string branch accepts only canonical bounded integer strings, not decimal, exponent, leading-zero or overflow strings. Fractional timeleft remains supported by the pinned schema but was not observed."
+        }
+      ],
+      "response": {
+        "excessive_brutes[].timeleft": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218: Whostmgr/API/1/cPHulk.pm on cPanel 11.138.0.19 routes get_cphulk_excessive_brutes and get_cphulk_failed_logins through the same _get_cphulk_login_history backend. Only the 110 failed-login rows supplied observed whole digit-string timeleft values; get_cphulk_excessive_brutes was empty. Canonical bounded integer-string compatibility here is inferred from that shared source and verified offline, not from populated results of this operation. Preserve the pinned timeleft type and all sibling fields. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:get_cphulk_failed_logins": {
+      "name": "getFailedLogins",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned get_cphulk_failed_logins x-readonly=true: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned get_cphulk_failed_logins x-cpanel-available-version is 11.48; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218 of 0ab1b3511b360ea3b4b6c8a5d1fdab46d6b9f829: WHM GET get_cphulk_failed_logins on cPanel 11.138.0.19 returned 110 rows, all with whole digit-string timeleft values, causing the original integer contract to fail. Accept canonical integer strings within PHP integer bounds only and normalize to int. Fractional values were not observed; no other row fields are widened. The review printed types and field names only, not login values."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19, the reviewed WHM GET returned 110 failed-login rows with whole digit-string timeleft values. Canonical integer strings within PHP integer bounds normalize to int; other fields remain strict. Decimal, leading-zero, exponent and out-of-range strings are not accepted. No fractional timeleft was observed."
+        }
+      ],
+      "response": {
+        "failed_logins[].timeleft": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218 of 0ab1b3511b360ea3b4b6c8a5d1fdab46d6b9f829: WHM GET get_cphulk_failed_logins on cPanel 11.138.0.19 returned 110 rows, all with whole digit-string timeleft values, causing the original integer contract to fail. Accept canonical integer strings within PHP integer bounds only and normalize to int. Fractional values were not observed; no other row fields are widened. The review printed types and field names only, not login values."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:get_cphulk_user_brutes": {
+      "name": "getUserBrutes",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned get_cphulk_user_brutes x-readonly=true: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned get_cphulk_user_brutes x-cpanel-available-version is 11.48; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Canonical integer-string timeleft compatibility is inferred from the shared _get_cphulk_login_history source and the observed failed-login rows. This history was empty in the cPanel 11.138.0.19 review, so no populated result for this operation was observed. Only canonical strings within PHP integer bounds are normalized; other fields remain strict."
+        }
+      ],
+      "response": {
+        "user_brutes[].timeleft": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218: Whostmgr/API/1/cPHulk.pm on cPanel 11.138.0.19 routes get_cphulk_user_brutes and get_cphulk_failed_logins through the same _get_cphulk_login_history backend. Only the 110 failed-login rows supplied observed whole digit-string timeleft values; get_cphulk_user_brutes was empty. Canonical bounded integer-string compatibility here is inferred from that shared source and verified offline, not from populated results of this operation. Preserve the pinned timeleft type and all sibling fields. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:load_cphulk_config": {
+      "name": "loadConfig",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned load_cphulk_config x-readonly=true: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned load_cphulk_config x-cpanel-available-version is 11.48; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        }
+      ]
+    },
+    "whm1:read_cphulk_records": {
+      "name": "readRecords",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned read_cphulk_records x-readonly=true: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned read_cphulk_records x-cpanel-available-version is 11.48; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "list_name",
+        "skip_enabled_check"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted skipEnabledCheck preserves the server check; false is sent as 0 and true as 1. When cPHulk is disabled, a checked request can fail with cPHulk is disabled on the server."
+        }
+      ]
+    },
+    "whm1:save_cphulk_config": {
+      "name": "saveConfig",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned save_cphulk_config x-readonly=false: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned save_cphulk_config x-cpanel-available-version is 11.48; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218: savecphulkconf in the reviewed cPHulk source copies old_conf_ref[key] for omitted configuration keys. saveConfig therefore preserves current values for omitted settings, separately from skip_enabled_check request behavior. This is source-only evidence from cPanel 11.138.0.19; no configuration write was performed."
+        }
+      ],
+      "order": [
+        "block_brute_force_with_firewall",
+        "block_excessive_brute_force_with_firewall",
+        "brute_force_period_mins",
+        "command_to_run_on_brute_force",
+        "command_to_run_on_excessive_brute_force",
+        "ip_based_protection",
+        "ip_brute_force_period_mins",
+        "lookback_period_min",
+        "mark_as_brute",
+        "max_failures",
+        "max_failures_byip",
+        "notify_on_brute",
+        "notify_on_root_login",
+        "notify_on_root_login_for_known_netblock",
+        "skip_enabled_check",
+        "username_based_protection",
+        "username_based_protection_for_root",
+        "username_based_protection_local_origin"
+      ],
+      "params": {
+        "command_to_run_on_brute_force": {
+          "sensitive": true
+        },
+        "command_to_run_on_excessive_brute_force": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted skipEnabledCheck preserves the server check; false is sent as 0 and true as 1. When cPHulk is disabled, a checked request can fail with cPHulk is disabled on the server."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes server-wide security policy. Command inputs may execute when protection is triggered and may contain secrets; they are sensitive arguments and are sent once as form data. Reviewed savecphulkconf source retains each omitted configuration key from its current value, making this a partial update; it does not reset omitted settings to defaults. Explicit zero and false remain supplied values."
+        },
+        {
+          "kind": "documented",
+          "text": "Preserve minutes versus seconds: lookback_time is seconds, lookback_period_min is minutes, and brute-force periods have explicit minute/second names. mark_as_brute describes a two-week block while the excessive-brute command description refers to a one-day block; these pinned descriptions are retained without reconciling their durations."
+        },
+        {
+          "kind": "documented",
+          "text": "ipBasedProtection=false precludes firewall-block and IP-period settings per source. can_temp_ban_firewall=0 also makes those capabilities unavailable. The optional nullable warning and conditional restart_ssh remain distinct from omission; no restart behavior is inferred from an absent field."
+        }
+      ]
+    },
+    "whm1:set_cphulk_config_key": {
+      "name": "setConfigKey",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned set_cphulk_config_key x-readonly=false: reads use GET and mutations use form POST. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned set_cphulk_config_key x-cpanel-available-version is 70; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "key",
+        "value"
+      ],
+      "params": {
+        "key": {
+          "sensitive": false
+        },
+        "value": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 70 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes server-wide security policy. Command inputs may execute when protection is triggered and may contain secrets; they are sensitive arguments and are sent once as form data."
+        },
+        {
+          "kind": "documented",
+          "text": "Preserve minutes versus seconds: lookback_time is seconds, lookback_period_min is minutes, and brute-force periods have explicit minute/second names. mark_as_brute describes a two-week block while the excessive-brute command description refers to a one-day block; these pinned descriptions are retained without reconciling their durations."
+        },
+        {
+          "kind": "documented",
+          "text": "The key selects the interpretation of value: integer flags, minutes/seconds, failure counts, command strings or comma-separated country codes. The scalar string|int union is preserved without inventing per-key validation."
+        }
+      ]
+    }
+  }
+}

@@ -1030,8 +1030,8 @@ final readonly class Accounts
      * pass already serialized object text, not a JSON list of usernames. Omitted stopOnFailure defaults to 0; the
      * updated list identifies users forced to change their password on their next login.
      *
-     * Documented: Client behavior: usersJson is form-encoded once as caller-supplied text; the client does not parse
-     * it, convert a PHP array to JSON or validate its object structure.
+     * Policy: Client behavior: usersJson is form-encoded once as caller-supplied text; the client does not parse it,
+     * convert a PHP array to JSON or validate its object structure.
      *
      * API-map identity: whm1:forcepasswordchange#GET (wire name forcepasswordchange; Passwords).
      *
@@ -1203,8 +1203,8 @@ final readonly class Accounts
      * strictly integer. This names a newly inspected response field and does not identify the field in any historical
      * masked artifact.
      *
-     * Documented: Client behavior: omitted users or maximum_users stays absent. Do not treat an absent limit field as
-     * zero or infer unlimited licensing from an empty result; inspect the returned fields explicitly.
+     * Policy: Client behavior: omitted users or maximum_users stays absent. Do not treat an absent limit field as zero
+     * or infer unlimited licensing from an empty result; inspect the returned fields explicitly.
      *
      * API-map identity: whm1:get_maximum_users#GET (wire name get_maximum_users; Account Creation).
      *
@@ -1881,7 +1881,7 @@ final readonly class Accounts
      * port 2078 with a recognized CA removes the documented need for Digest Authentication. The pinned envelope
      * declares no data payload.
      *
-     * Documented: Client behavior: expose only enabledigest and omit the digestauth alias to prevent conflicting flags.
+     * Policy: Client behavior: expose only enabledigest and omit the digestauth alias to prevent conflicting flags.
      * Call setDigestAuth(user, password, enabledigest); password remains sensitive.
      *
      * API-map identity: whm1:set_digest_auth#GET (wire name set_digest_auth; Account Management).
@@ -2070,7 +2070,7 @@ final readonly class Accounts
      * optional. Supply at least one ID. Omitted checkExists, checkQuota and protectSystem default to 1. checkQuota
      * applies only to UIDs and cannot check filesystems without quota tracking. Removing tracking is immediate.
      *
-     * Documented: Client behavior: supply uid or gid explicitly before calling untrackAcctId(). The client preserves
+     * Policy: Client behavior: supply uid or gid explicitly before calling untrackAcctId(). The client preserves
      * explicit zero and false and does not select a target ID automatically.
      *
      * API-map identity: whm1:untrack_acct_id#GET (wire name untrack_acct_id; Account Management).

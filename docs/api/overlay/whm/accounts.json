@@ -376,7 +376,7 @@
           "text": "The pinned users_json format=json example is a username-keyed object such as {\"user1\":1,\"user2\":1}; pass already serialized object text, not a JSON list of usernames. Omitted stopOnFailure defaults to 0; the updated list identifies users forced to change their password on their next login."
         },
         {
-          "kind": "documented",
+          "kind": "policy",
           "text": "Client behavior: usersJson is form-encoded once as caller-supplied text; the client does not parse it, convert a PHP array to JSON or validate its object structure."
         }
       ],
@@ -483,7 +483,7 @@
           "text": "The independent 11.138.0.19 review observed maximum_users as a string and no users field. maximum_users accepts canonical bounded integer strings and native integers, normalizing to int; users stays optional and strictly integer. This names a newly inspected response field and does not identify the field in any historical masked artifact."
         },
         {
-          "kind": "documented",
+          "kind": "policy",
           "text": "Client behavior: omitted users or maximum_users stays absent. Do not treat an absent limit field as zero or infer unlimited licensing from an empty result; inspect the returned fields explicitly."
         }
       ],
@@ -1150,7 +1150,7 @@
           "text": "Changes Digest Authentication immediately and requires the account password even when disabling it. The pin documents digestauth as an alias for enabledigest without defining conflicting-value precedence. SSL on port 2078 with a recognized CA removes the documented need for Digest Authentication. The pinned envelope declares no data payload."
         },
         {
-          "kind": "documented",
+          "kind": "policy",
           "text": "Client behavior: expose only enabledigest and omit the digestauth alias to prevent conflicting flags. Call setDigestAuth(user, password, enabledigest); password remains sensitive."
         }
       ],
@@ -1317,7 +1317,7 @@
           "text": "The pinned uid/gid descriptions require uid, gid or both, even though each formal parameter is optional. Supply at least one ID. Omitted checkExists, checkQuota and protectSystem default to 1. checkQuota applies only to UIDs and cannot check filesystems without quota tracking. Removing tracking is immediate."
         },
         {
-          "kind": "documented",
+          "kind": "policy",
           "text": "Client behavior: supply uid or gid explicitly before calling untrackAcctId(). The client preserves explicit zero and false and does not select a target ID automatically."
         }
       ],

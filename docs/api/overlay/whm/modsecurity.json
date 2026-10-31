@@ -1,0 +1,1169 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "Web Server Security (ModSecurity)",
+  "accessor": "modSecurity",
+  "class": "ModSecurity",
+  "description": "Server-scoped ModSecurity configuration, staged rules, vendor lifecycle and diagnostics. Requires the Web Server role. Deployment may restart Apache; API outcomes and per-item results remain distinct. Safety guidance: treat returned rule text, configuration, settings and logs as sensitive. Configuration text may contain secrets; logs can include request data, IP addresses and sensitive transaction fragments. Avoid logging these payloads. The cPanel 11.138.0.19 review exercised GET reads only; all thirty form POST operations remain unobserved.",
+  "operations": {
+    "whm1:modsec_add_rule": {
+      "name": "addRule",
+      "params": {
+        "rule": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Adds only to the staging file; deployAllRuleChanges() is a separate operation. The source leaves config, config_active, staged, vendor_active and vendor_id unconstrained; their values remain mixed."
+        }
+      ]
+    },
+    "whm1:modsec_add_vendor": {
+      "name": "addVendor",
+      "params": {
+        "url": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The server obtains vendor metadata and a compatible rule archive from the supplied URL. This can fetch remote content and install a rule set; a successful call does not establish rule enforcement."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting enabled retains the documented default 1: the server installs and enables the remote vendor rule set. Pass enabled=false explicitly to install without enabling it."
+        }
+      ]
+    },
+    "whm1:modsec_assemble_config_text": {
+      "name": "assembleConfigText",
+      "params": {
+        "text": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "For a single upload, set both init and final. Omitted flags retain server defaults; deploy=false stages without deployment. This call can deploy configuration when deploy=true."
+        }
+      ]
+    },
+    "whm1:modsec_batch_settings": {
+      "name": "batchSettings",
+      "params": {
+        "state": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The typed signature supports a single setting. Indexed setting_id1/state1/remove1 families remain unavailable through this signature (whm-api-client-8x0.1.24). remove=true makes the state value ignored by the server, but the formal source still requires state. State can contain a SecHttpBlKey access key and is sensitive."
+        },
+        {
+          "kind": "documented",
+          "text": "Use setting IDs 0 through 9, as limited by the pinned source. The shared Settings.pm defaults may be strings or integers, and updated_settings[].default preserves either exactly. This default correction is source-backed and tested offline; batch writes were not observed."
+        }
+      ],
+      "response": {
+        "updated_settings[].default": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "int"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/ModSecurity/Settings.pm on cPanel 11.138.0.19 contains string defaults such as Off as well as integer 1500. The pinned /modsec_get_settings default already declares string or integer for this shared setting metadata. Preserve both exactly in modsec_batch_settings.updated_settings[].default; do not coerce numeric strings or widen other fields. All batch writes are unobserved; this correction is source-backed and tested offline. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:modsec_check_rule": {
+      "name": "checkRule",
+      "params": {
+        "rule": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "POST follows the pinned x-readonly=false declaration. API success only confirms the check ran; inspect valid and optional problem to decide whether the rule passed validation."
+        }
+      ]
+    },
+    "whm1:modsec_clone_rule": {
+      "name": "cloneRule",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates a copy with a new rule ID. Its integer identifiers can be passed directly to disableRule() and undisableRule(), which also preserve their documented string inputs."
+        }
+      ]
+    },
+    "whm1:modsec_deploy_all_rule_changes": {
+      "name": "deployAllRuleChanges",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Can restart Apache. Inspect every outcomes[].ok and the optional failed list independently of API success; failed validation restores the original configuration and preserves staged changes."
+        }
+      ]
+    },
+    "whm1:modsec_deploy_rule_changes": {
+      "name": "deployRuleChanges",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Can restart Apache. Failed validation restores the original configuration and keeps staged changes. The source declares an unconstrained data node, which remains mixed when present."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source ends this operation with return {}. An omitted data payload is accepted and returns null; present payloads retain their unconstrained mixed contract, including explicit null. Whether WHM omits data for this operation has not been observed. This source-backed compatibility is tested offline; no server-wide write was run."
+        }
+      ],
+      "optional_payload": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/API/1/ModSecurity.pm on cPanel 11.138.0.19 ends modsec_deploy_rule_changes with return {}. The pinned response has an unconstrained data schema. Set optional_payload for a potentially omitted data member while preserving the existing mixed payload type and Flag outcome policy. Neither omission nor a successful write payload was observed; this is reviewed upstream-source compatibility with offline replay only. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:modsec_deploy_settings_changes": {
+      "name": "deploySettingsChanges",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Deploys settings prepared with setSetting() and attempts to restart Apache. Failed validation restores the settings file. The source does not define payload fields; present payloads remain mixed."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source ends this operation with return {}. An omitted data payload is accepted and returns null; present payloads retain their unconstrained mixed contract, including explicit null. Whether WHM omits data for this operation has not been observed. This source-backed compatibility is tested offline; no server-wide write was run."
+        }
+      ],
+      "optional_payload": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/API/1/ModSecurity.pm on cPanel 11.138.0.19 ends modsec_deploy_settings_changes with return {}. The pinned response has an unconstrained data schema. Set optional_payload for a potentially omitted data member while preserving the existing mixed payload type and Flag outcome policy. Neither omission nor a successful write payload was observed; this is reviewed upstream-source compatibility with offline replay only. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:modsec_disable_rule": {
+      "name": "disableRule",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Accepts the pinned string ID or an integer returned by rule inventory/clone operations, allowing direct chaining under strict_types. String IDs retain leading zeros without conversion. The source documents no data payload. This input compatibility is verified offline; no rule write was observed."
+        }
+      ],
+      "params": {
+        "id": {
+          "type": "string|int"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657 identifies integer rule IDs from clone/inventory operations versus the pinned string id parameter on /modsec_disable_rule. The evidence-gated scalar string|int override preserves existing strings, including leading zeros, and permits direct integer chaining without a TypeError. This is pinned/source interoperability with offline replay only; all rule writes are unobserved. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:modsec_disable_vendor": {
+      "name": "disableVendor",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Individually enabled configuration files remain enabled. The empty source data schema remains mixed rather than inventing fields or requiring an object."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source ends this operation with return {}. An omitted data payload is accepted and returns null; present payloads retain their unconstrained mixed contract, including explicit null. Whether WHM omits data for this operation has not been observed. This source-backed compatibility is tested offline; no server-wide write was run."
+        }
+      ],
+      "optional_payload": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/API/1/ModSecurity.pm on cPanel 11.138.0.19 ends modsec_disable_vendor with return {}. The pinned response has an unconstrained data schema. Set optional_payload for a potentially omitted data member while preserving the existing mixed payload type and Flag outcome policy. Neither omission nor a successful write payload was observed; this is reviewed upstream-source compatibility with offline replay only. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:modsec_disable_vendor_configs": {
+      "name": "disableVendorConfigs",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Inspect outcomes[].active and outcomes[].ok and any exception for each file; API success alone does not establish that every configuration was disabled."
+        }
+      ]
+    },
+    "whm1:modsec_disable_vendor_updates": {
+      "name": "disableVendorUpdates",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source ends this operation with return {}. An omitted data payload is accepted and returns null; present payloads retain their unconstrained mixed contract, including explicit null. Whether WHM omits data for this operation has not been observed. This source-backed compatibility is tested offline; no server-wide write was run."
+        }
+      ],
+      "optional_payload": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/API/1/ModSecurity.pm on cPanel 11.138.0.19 ends modsec_disable_vendor_updates with return {}. The pinned response has an unconstrained data schema. Set optional_payload for a potentially omitted data member while preserving the existing mixed payload type and Flag outcome policy. Neither omission nor a successful write payload was observed; this is reviewed upstream-source compatibility with offline replay only. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:modsec_discard_all_rule_changes": {
+      "name": "discardAllRuleChanges",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Discards staged changes for all configuration files. Inspect per-file outcomes[].ok and the optional failed list independently of API success."
+        }
+      ]
+    },
+    "whm1:modsec_discard_rule_changes": {
+      "name": "discardRuleChanges",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the selected configuration staging file, losing its staged changes. The empty source data schema remains unconstrained."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source ends this operation with return {}. An omitted data payload is accepted and returns null; present payloads retain their unconstrained mixed contract, including explicit null. Whether WHM omits data for this operation has not been observed. This source-backed compatibility is tested offline; no server-wide write was run."
+        }
+      ],
+      "optional_payload": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/API/1/ModSecurity.pm on cPanel 11.138.0.19 ends modsec_discard_rule_changes with return {}. The pinned response has an unconstrained data schema. Set optional_payload for a potentially omitted data member while preserving the existing mixed payload type and Flag outcome policy. Neither omission nor a successful write payload was observed; this is reviewed upstream-source compatibility with offline replay only. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:modsec_edit_rule": {
+      "name": "editRule",
+      "params": {
+        "rule": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Writes edits to the staging file only; deployment is a separate operation. The integer rule ID is also accepted by disableRule() and undisableRule()."
+        }
+      ]
+    },
+    "whm1:modsec_enable_vendor": {
+      "name": "enableVendor",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Individually disabled configuration files remain disabled. Enabling the vendor does not establish effective request blocking."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source ends this operation with return {}. An omitted data payload is accepted and returns null; present payloads retain their unconstrained mixed contract, including explicit null. Whether WHM omits data for this operation has not been observed. This source-backed compatibility is tested offline; no server-wide write was run."
+        }
+      ],
+      "optional_payload": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/API/1/ModSecurity.pm on cPanel 11.138.0.19 ends modsec_enable_vendor with return {}. The pinned response has an unconstrained data schema. Set optional_payload for a potentially omitted data member while preserving the existing mixed payload type and Flag outcome policy. Neither omission nor a successful write payload was observed; this is reviewed upstream-source compatibility with offline replay only. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:modsec_enable_vendor_configs": {
+      "name": "enableVendorConfigs",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Inspect per-file outcomes[].active, outcomes[].ok and optional exception independently of the API result."
+        }
+      ]
+    },
+    "whm1:modsec_enable_vendor_updates": {
+      "name": "enableVendorUpdates",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source ends this operation with return {}. An omitted data payload is accepted and returns null; present payloads retain their unconstrained mixed contract, including explicit null. Whether WHM omits data for this operation has not been observed. This source-backed compatibility is tested offline; no server-wide write was run."
+        }
+      ],
+      "optional_payload": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/API/1/ModSecurity.pm on cPanel 11.138.0.19 ends modsec_enable_vendor_updates with return {}. The pinned response has an unconstrained data schema. Set optional_payload for a potentially omitted data member while preserving the existing mixed payload type and Flag outcome policy. Neither omission nor a successful write payload was observed; this is reviewed upstream-source compatibility with offline replay only. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:modsec_get_config_text": {
+      "name": "getConfigText",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        }
+      ]
+    },
+    "whm1:modsec_get_configs": {
+      "name": "getConfigs",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        }
+      ]
+    },
+    "whm1:modsec_get_configs_with_changes_pending": {
+      "name": "getConfigsWithChangesPending",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 an idle server with no pending rule changes returns result=0, so ApiErrorException is the expected idle outcome. Flag checking remains enabled because other failures also use result=0; the client does not match error text. The original failed capture remains failed and unwaived under whm-api-client-8x0.2.34."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657 establishes the idle condition observed by WHM GET on cPanel 11.138.0.19: modsec_get_configs_with_changes_pending sets result=0 when no rule changes are pending. Reviewer source inspection also identifies configs when changes exist and other failures using result=0. Preserve Flag outcome checks and ApiErrorException without matching error text. No successful pending-config result or write is established; the immutable capture remains failed and unwaived under whm-api-client-8x0.2.34."
+        }
+      ]
+    },
+    "whm1:modsec_get_log": {
+      "name": "getLog",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Keep nullable log fields distinct from omission. timezone is an integer here, unlike the string timezone in reportRule() hits. meta_msg and meta_offset accept null from the shared log-record contract; this nullable populated-row compatibility is supported by pinned wording and offline replay, not a live populated log."
+        },
+        {
+          "kind": "observed",
+          "text": "On cPanel 11.138.0.19 the reviewed WHM GET returned a data list nested inside the API payload object, including an empty list. The returned value preserves this wrapper. No populated log was observed."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "data": {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "action_desc": {
+                      "type": "string"
+                    },
+                    "file_exists": {
+                      "type": "flag"
+                    },
+                    "handler": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "host": {
+                      "type": "string"
+                    },
+                    "http_method": {
+                      "type": "string"
+                    },
+                    "http_status": {
+                      "type": "int"
+                    },
+                    "http_version": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "int"
+                    },
+                    "ip": {
+                      "type": "string"
+                    },
+                    "justification": {
+                      "type": "string"
+                    },
+                    "meta_file": {
+                      "type": "string"
+                    },
+                    "meta_id": {
+                      "type": "int"
+                    },
+                    "meta_line": {
+                      "type": "int"
+                    },
+                    "meta_logdata": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "meta_msg": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "meta_offset": {
+                      "type": "int",
+                      "nullable": true
+                    },
+                    "meta_rev": {
+                      "type": "int",
+                      "nullable": true
+                    },
+                    "meta_severity": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "meta_uri": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "reportable": {
+                      "type": "flag"
+                    },
+                    "timestamp": {
+                      "type": "string"
+                    },
+                    "timezone": {
+                      "type": "int"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657 of d4662c48348b983109e4deffceb346a467ffc183: WHM GET modsec_get_log on cPanel 11.138.0.19 returned an object containing data: [] inside the WHM envelope data. The prior bare-list contract failed even for this empty result. Only the wrapper and empty list were observed; no populated log fields were observed."
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /modsec_get_log data.items supplies these 23 optional row fields. Preserve every field and its original type except the reviewed nullable meta_msg and meta_offset. meta_offset says not always available, matching nullable meta_uri; /modsec_report_rule hits declare nullable meta_msg for the same log data. Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657 confirms the nullable correction by pinned wording and offline replay, not a populated live log."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657 of d4662c48348b983109e4deffceb346a467ffc183: WHM GET modsec_get_log on cPanel 11.138.0.19 returned an object containing data: [] inside the WHM envelope data. The prior bare-list contract failed even for this empty result. Only the wrapper and empty list were observed; no populated log fields were observed."
+        }
+      ]
+    },
+    "whm1:modsec_get_rules": {
+      "name": "getRules",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply config or vendorId as required by the source prose; both formal parameters remain optional to preserve the selector alternatives. Rule text and metadata may contain sensitive data."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted excludeBareComments and excludeOtherDirectives both default to 1. These defaults hide bare comments and other directives; pass false explicitly for the corresponding content. The client preserves omission rather than sending a default."
+        },
+        {
+          "kind": "observed",
+          "text": "Calling with neither config nor vendorId raised ApiErrorException during the cPanel 11.138.0.19 WHM GET review. A populated real configuration could not be read on that installation."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed Chunk.pm defines a returned vendor_id as a string, including an empty string when not applicable. Keep that string contract; null is not inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: WHM GET modsec_get_rules without config or vendor_id raised ApiErrorException on cPanel 11.138.0.19. No real configurations were available, so populated rule rows remain unobserved."
+        },
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/ModSecurity/Chunk.pm describes vendor_id as a string, or empty string if not applicable. The existing returned string type is retained without adding null."
+        }
+      ]
+    },
+    "whm1:modsec_get_settings": {
+      "name": "getSettings",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Setting state can contain a SecHttpBlKey access key. Treat settings and validator data as sensitive payloads; returned validators describe frontend checks, not proof that current settings are secure."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed Settings.pm source supports string and integer state values. Both forms are preserved without coercion, including empty and numeric strings; default retains the same lossless union. Integer state compatibility is source-backed and tested offline."
+        },
+        {
+          "kind": "observed",
+          "text": "The cPanel 11.138.0.19 WHM GET review returned ten settings rows with string state values. This observation does not establish integer state results or any write response."
+        }
+      ],
+      "response": {
+        "settings[].state": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "int"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/API/1/ModSecurity.pm on cPanel 11.138.0.19 returns a get_settings() row from modsec_set_setting; Whostmgr/ModSecurity/Settings.pm holds string and integer setting states/defaults. Reuse the complete pinned /modsec_get_settings settings[] record, including optional engine/missing integers, string validator arg/name, and string-or-integer default/state without coercion. All twelve optional fields and nested row fields are retained. Live getSettings state values were strings in ten rows; integer state and every setSetting result are source-backed/offline only, because no write was run. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      },
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: WHM GET modsec_get_settings on cPanel 11.138.0.19 returned ten populated rows whose state fields were all strings. Values were not printed; the review inspected key names and type classes only. This observation does not cover integer state values or set/batch writes."
+        }
+      ]
+    },
+    "whm1:modsec_get_vendors": {
+      "name": "getVendors",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns metadata only; the client does not fetch returned archive, report or vendor URLs. Installation, update and in-use fields describe different states."
+        }
+      ]
+    },
+    "whm1:modsec_is_installed": {
+      "name": "isInstalled",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The installed flag is nested under data in the API data payload. An installed module does not establish that rules are active or blocking requests."
+        }
+      ]
+    },
+    "whm1:modsec_make_config_active": {
+      "name": "makeConfigActive",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Adds a configuration include. The client does not retry or undo the change; API success does not establish request filtering behavior."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source ends this operation with return {}. An omitted data payload is accepted and returns null; present payloads retain their unconstrained mixed contract, including explicit null. Whether WHM omits data for this operation has not been observed. This source-backed compatibility is tested offline; no server-wide write was run."
+        }
+      ],
+      "optional_payload": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/API/1/ModSecurity.pm on cPanel 11.138.0.19 ends modsec_make_config_active with return {}. The pinned response has an unconstrained data schema. Set optional_payload for a potentially omitted data member while preserving the existing mixed payload type and Flag outcome policy. Neither omission nor a successful write payload was observed; this is reviewed upstream-source compatibility with offline replay only. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:modsec_make_config_inactive": {
+      "name": "makeConfigInactive",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes a configuration include. The client does not retry or undo the change."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source ends this operation with return {}. An omitted data payload is accepted and returns null; present payloads retain their unconstrained mixed contract, including explicit null. Whether WHM omits data for this operation has not been observed. This source-backed compatibility is tested offline; no server-wide write was run."
+        }
+      ],
+      "optional_payload": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/API/1/ModSecurity.pm on cPanel 11.138.0.19 ends modsec_make_config_inactive with return {}. The pinned response has an unconstrained data schema. Set optional_payload for a potentially omitted data member while preserving the existing mixed payload type and Flag outcome policy. Neither omission nor a successful write payload was observed; this is reviewed upstream-source compatibility with offline replay only. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:modsec_preview_vendor": {
+      "name": "previewVendor",
+      "params": {
+        "url": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "POST follows the pinned x-readonly=false declaration even though this returns metadata. The supplied metadata URL can cause a server-side fetch; this is not a local parse."
+        }
+      ]
+    },
+    "whm1:modsec_remove_rule": {
+      "name": "removeRule",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the selected rule using the source integer ID contract. No client retry or rollback is provided."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source ends this operation with return {}. An omitted data payload is accepted and returns null; present payloads retain their unconstrained mixed contract, including explicit null. Whether WHM omits data for this operation has not been observed. This source-backed compatibility is tested offline; no server-wide write was run."
+        }
+      ],
+      "optional_payload": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/API/1/ModSecurity.pm on cPanel 11.138.0.19 ends modsec_remove_rule with return {}. The pinned response has an unconstrained data schema. Set optional_payload for a potentially omitted data member while preserving the existing mixed payload type and Flag outcome policy. Neither omission nor a successful write payload was observed; this is reviewed upstream-source compatibility with offline replay only. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:modsec_remove_setting": {
+      "name": "removeSetting",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source ends this operation with return {}. An omitted data payload is accepted and returns null; present payloads retain their unconstrained mixed contract, including explicit null. Whether WHM omits data for this operation has not been observed. This source-backed compatibility is tested offline; no server-wide write was run."
+        }
+      ],
+      "optional_payload": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/API/1/ModSecurity.pm on cPanel 11.138.0.19 ends modsec_remove_setting with return {}. The pinned response has an unconstrained data schema. Set optional_payload for a potentially omitted data member while preserving the existing mixed payload type and Flag outcome policy. Neither omission nor a successful write payload was observed; this is reviewed upstream-source compatibility with offline replay only. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:modsec_remove_vendor": {
+      "name": "removeVendor",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the vendor includes, disablement directives, configuration files and metadata file. The source documents no data payload."
+        }
+      ]
+    },
+    "whm1:modsec_report_rule": {
+      "name": "reportRule",
+      "params": {
+        "email": {
+          "sensitive": true
+        },
+        "message": {
+          "sensitive": true
+        },
+        "type": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "send=true submits event data, message and contact email to a remote receiver; send=false prepares the report without sending. The formal row_ids schema is integer despite comma-separated multi-ID prose and examples, so this typed method accepts one row ID only (whm-api-client-8x0.1.24). Report content may contain sensitive request data. Report hits preserve their string timezone and nullable message separately from getLog()."
+        },
+        {
+          "kind": "documented",
+          "text": "Report hits preserve nullable meta_msg and meta_offset. The offset correction follows pinned unavailable-field wording shared with getLog(); it is verified offline only. No report operation was exercised in the cPanel 11.138.0.19 review."
+        }
+      ],
+      "response": {
+        "report": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "email": {
+                  "type": "string"
+                },
+                "hits": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "action_desc": {
+                        "type": "string"
+                      },
+                      "handler": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "host": {
+                        "type": "string"
+                      },
+                      "http_method": {
+                        "type": "string"
+                      },
+                      "http_status": {
+                        "type": "int"
+                      },
+                      "http_version": {
+                        "type": "string"
+                      },
+                      "id": {
+                        "type": "int"
+                      },
+                      "ip": {
+                        "type": "string"
+                      },
+                      "justification": {
+                        "type": "string"
+                      },
+                      "meta_file": {
+                        "type": "string"
+                      },
+                      "meta_id": {
+                        "type": "int"
+                      },
+                      "meta_line": {
+                        "type": "int"
+                      },
+                      "meta_logdata": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "meta_msg": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "meta_offset": {
+                        "type": "int",
+                        "nullable": true
+                      },
+                      "meta_rev": {
+                        "type": "int",
+                        "nullable": true
+                      },
+                      "meta_severity": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "meta_uri": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "timestamp": {
+                        "type": "string"
+                      },
+                      "timezone": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "message": {
+                  "type": "string"
+                },
+                "rule_text": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.48",
+              "date": "2026-10-31",
+              "note": "Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /modsec_report_rule response data.report explicitly says an array of objects and declares items with these fields, but omits type: array. Restore the evidenced list shape without changing item requiredness. Nullable-leaf corrections have separate evidence below."
+            },
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594, /modsec_report_rule hits.meta_offset says not always available, matching nullable meta_uri; meta_msg is already explicitly nullable. Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657 requests nullable meta_offset on both operations sharing the log data. This is pinned-source and offline-replay compatibility only: no populated log or report operation was observed."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:modsec_set_config_text": {
+      "name": "setConfigText",
+      "params": {
+        "text": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Stages the supplied contents; deployRuleChanges() is a separate operation. The source data schema is unconstrained and remains mixed when present."
+        },
+        {
+          "kind": "documented",
+          "text": "Reviewed upstream source ends this operation with return {}. An omitted data payload is accepted and returns null; present payloads retain their unconstrained mixed contract, including explicit null. Whether WHM omits data for this operation has not been observed. This source-backed compatibility is tested offline; no server-wide write was run."
+        }
+      ],
+      "optional_payload": true,
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/API/1/ModSecurity.pm on cPanel 11.138.0.19 ends modsec_set_config_text with return {}. The pinned response has an unconstrained data schema. Set optional_payload for a potentially omitted data member while preserving the existing mixed payload type and Flag outcome policy. Neither omission nor a successful write payload was observed; this is reviewed upstream-source compatibility with offline replay only. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:modsec_set_setting": {
+      "name": "setSetting",
+      "params": {
+        "state": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Prepares settings for deploySettingsChanges(); changing state is not evidence of deployed enforcement. State can contain a SecHttpBlKey access key and is sensitive. Reviewed upstream source returns the same optional record as getSettings(), including engine/missing and string validator arg/name. default and state preserve string or integer values exactly, including empty and numeric strings. This response correction is source-backed and tested offline; no setting write was observed."
+        }
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "default": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "int"
+                  }
+                ]
+              },
+              "description": {
+                "type": "string"
+              },
+              "directive": {
+                "type": "string"
+              },
+              "engine": {
+                "type": "int"
+              },
+              "missing": {
+                "type": "int"
+              },
+              "name": {
+                "type": "string"
+              },
+              "radio_options": {
+                "type": "list",
+                "items": {
+                  "type": "object",
+                  "fields": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "option": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "setting_id": {
+                "type": "int"
+              },
+              "state": {
+                "type": "union",
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "int"
+                  }
+                ]
+              },
+              "type": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              },
+              "validation": {
+                "type": "list",
+                "items": {
+                  "type": "union",
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "fields": {
+                        "arg": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657: Whostmgr/API/1/ModSecurity.pm on cPanel 11.138.0.19 returns a get_settings() row from modsec_set_setting; Whostmgr/ModSecurity/Settings.pm holds string and integer setting states/defaults. Reuse the complete pinned /modsec_get_settings settings[] record, including optional engine/missing integers, string validator arg/name, and string-or-integer default/state without coercion. All twelve optional fields and nested row fields are retained. Live getSettings state values were strings in ten rows; integer state and every setSetting result are source-backed/offline only, because no write was run. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:modsec_undisable_rule": {
+      "name": "undisableRule",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.46 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Accepts the pinned string ID or an integer returned by rule inventory/clone operations, allowing direct chaining under strict_types. String IDs retain leading zeros without conversion. The source documents no data payload. This input compatibility is verified offline; no rule write was observed."
+        }
+      ],
+      "params": {
+        "id": {
+          "type": "string|int"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Review https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657 identifies integer rule IDs from clone/inventory operations versus the pinned string id parameter on /modsec_undisable_rule. The evidence-gated scalar string|int override preserves existing strings, including leading zeros, and permits direct integer chaining without a TypeError. This is pinned/source interoperability with offline replay only; all rule writes are unobserved. Pinned WHM source SHA256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:modsec_update_vendor": {
+      "name": "updateVendor",
+      "params": {
+        "url": {
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.48 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The server obtains current vendor metadata and rules from the supplied URL. Inspect diagnostics and vendor state separately; API success does not establish enforcement."
+        }
+      ]
+    }
+  }
+}
