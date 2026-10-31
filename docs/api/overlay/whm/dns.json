@@ -4,21 +4,213 @@
   "group": "DNS",
   "accessor": "dns",
   "operations": {
-    "whm1:dumpzone": {"exclude": {"reason": "Deprecated; use parse_dns_zone, which returns the same zone data in a different format.", "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-13", "note": "Flagged deprecated: true; This function is deprecated."}]}},
-    "whm1:export_zone_files": {"params": {"zone": {"php": "zones", "encoding": "repeat"}}, "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-15", "note": "The pinned zone parameter is an array of zones, which WHM reads as repeated zone keys (docs/api/source-audit.md, Request contracts)."}]},
-    "whm1:fetch_ds_records_for_domains": {"params": {"domain": {"php": "domains", "encoding": "repeat"}}, "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-15", "note": "The pinned domain description documents fetching several domains by repeating the domain parameter (or by incrementing it as domain-1, domain-2); the list is sent as repeated domain keys."}]},
+    "whm1:dumpzone": {
+      "exclude": {
+        "reason": "Deprecated; use parse_dns_zone, which returns the same zone data in a different format.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-13",
+            "note": "Flagged deprecated: true; This function is deprecated."
+          }
+        ]
+      }
+    },
+    "whm1:export_zone_files": {
+      "params": {
+        "zone": {
+          "php": "zones",
+          "encoding": "repeat"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-15",
+          "note": "The pinned zone parameter is an array of zones, which WHM reads as repeated zone keys (docs/api/source-audit.md, Request contracts)."
+        }
+      ]
+    },
+    "whm1:fetch_ds_records_for_domains": {
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-15",
+          "note": "The pinned domain description documents fetching several domains by repeating the domain parameter (or by incrementing it as domain-1, domain-2); the list is sent as repeated domain keys."
+        }
+      ]
+    },
     "whm1:get_nameserver_config": {},
-    "whm1:getzonerecord": {"name": "getZoneRecord", "response": {"record[].preference": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "getzonerecord returned record[].preference of an MX record as a decimal string, although the pinned MX schema declares an integer; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]}, "record[].serial": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "getzonerecord returned record[].serial of the SOA record as a decimal string, although the pinned SOA schema declares an integer; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]}, "record[].refresh": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "getzonerecord returned record[].refresh of the SOA record as a decimal string, although the pinned SOA schema declares an integer; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]}, "record[].retry": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "getzonerecord returned record[].retry of the SOA record as a decimal string, although the pinned SOA schema declares an integer; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]}, "record[].expire": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "getzonerecord returned record[].expire of the SOA record as a decimal string, although the pinned SOA schema declares an integer; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]}}},
-    "whm1:has_local_authority": {"params": {"domain": {"php": "domains", "encoding": "repeat"}}, "evidence": [{"kind": "doc", "version": "pinned 2026-10-13", "date": "2026-10-15", "note": "The pinned domain description documents checking several domains by repeating the domain parameter (or by incrementing it as domain-1, domain-2); the list is sent as repeated domain keys."}], "response": {"records[].error": {"nullable": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "has_local_authority returned records[].error as an explicit null when the authority check succeeded, although the pinned schema declares a string returned only on failure; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]}}},
-    "whm1:is_alias_available": {"response": {"resolver": {"nullable": true, "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "is_alias_available returned resolver as an explicit null when no PowerDNS resolver setting exists, although the pinned schema declares a string; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]}}},
+    "whm1:getzonerecord": {
+      "name": "getZoneRecord",
+      "response": {
+        "record[].preference": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-15",
+              "note": "getzonerecord returned record[].preference of an MX record as a decimal string, although the pinned MX schema declares an integer; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"
+            }
+          ]
+        },
+        "record[].serial": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-15",
+              "note": "getzonerecord returned record[].serial of the SOA record as a decimal string, although the pinned SOA schema declares an integer; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"
+            }
+          ]
+        },
+        "record[].refresh": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-15",
+              "note": "getzonerecord returned record[].refresh of the SOA record as a decimal string, although the pinned SOA schema declares an integer; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"
+            }
+          ]
+        },
+        "record[].retry": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-15",
+              "note": "getzonerecord returned record[].retry of the SOA record as a decimal string, although the pinned SOA schema declares an integer; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"
+            }
+          ]
+        },
+        "record[].expire": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-15",
+              "note": "getzonerecord returned record[].expire of the SOA record as a decimal string, although the pinned SOA schema declares an integer; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"
+            }
+          ]
+        }
+      }
+    },
+    "whm1:has_local_authority": {
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-15",
+          "note": "The pinned domain description documents checking several domains by repeating the domain parameter (or by incrementing it as domain-1, domain-2); the list is sent as repeated domain keys."
+        }
+      ],
+      "response": {
+        "records[].error": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-15",
+              "note": "has_local_authority returned records[].error as an explicit null when the authority check succeeded, although the pinned schema declares a string returned only on failure; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"
+            }
+          ]
+        }
+      }
+    },
+    "whm1:is_alias_available": {
+      "response": {
+        "resolver": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-15",
+              "note": "is_alias_available returned resolver as an explicit null when no PowerDNS resolver setting exists, although the pinned schema declares a string; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"
+            }
+          ]
+        }
+      }
+    },
     "whm1:is_https_available": {},
     "whm1:is_svcb_available": {},
-    "whm1:listmxs": {"name": "listMxRecords", "response": {"record[].preference": {"accept": ["numeric-string"], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "listmxs returned record[].preference as a decimal string, although the pinned schema declares an integer; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]}}},
-    "whm1:listzones": {"name": "listZones"},
-    "whm1:lookupnsip": {"name": "lookupNameserverIp"},
-    "whm1:lookupnsips": {"name": "lookupNameserverIps", "notes": [{"kind": "observed", "text": "Returns ipv6 as an empty string, rather than omitting it, when the nameserver has no IPv6 address."}], "evidence": [{"kind": "live", "version": "11.138.0.15", "date": "2026-10-15", "note": "lookupnsips returned ipv6 as an empty string for a nameserver without an IPv6 address, although the pinned description says the field is returned only when an IPv6 address exists; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"}]},
+    "whm1:listmxs": {
+      "name": "listMxRecords",
+      "response": {
+        "record[].preference": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.15",
+              "date": "2026-10-15",
+              "note": "listmxs returned record[].preference as a decimal string, although the pinned schema declares an integer; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"
+            }
+          ]
+        }
+      }
+    },
+    "whm1:listzones": {
+      "name": "listZones"
+    },
+    "whm1:lookupnsip": {
+      "name": "lookupNameserverIp"
+    },
+    "whm1:lookupnsips": {
+      "name": "lookupNameserverIps",
+      "notes": [
+        {
+          "kind": "observed",
+          "text": "Returns ipv6 as an empty string, rather than omitting it, when the nameserver has no IPv6 address."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "live",
+          "version": "11.138.0.15",
+          "date": "2026-10-15",
+          "note": "lookupnsips returned ipv6 as an empty string for a nameserver without an IPv6 address, although the pinned description says the field is returned only when an IPv6 address exists; docs/api/source-audit.md#runtime-observations-2026-10-15-dns-slice"
+        }
+      ]
+    },
     "whm1:parse_dns_zone": {},
-    "whm1:resolvedomainname": {"name": "resolveDomainName"},
+    "whm1:resolvedomainname": {
+      "name": "resolveDomainName"
+    },
     "whm1:activate_zone_key": {
       "method": "POST",
       "notes": [
@@ -264,7 +456,7 @@
           "text": "The pinned type:null payload means the domain does not exist on the server, including when the WHM envelope reports success. Inspect type rather than treating absence of an exception as proof that a domain was deleted."
         },
         {
-          "kind": "documented",
+          "kind": "policy",
           "text": "Client behavior: treat domain deletion as irreversible. The client provides no rollback or automatic retry and does not turn the documented type:null absent-domain result into an exception."
         }
       ],
@@ -360,7 +552,7 @@
           "text": "The independent WHM review on 11.138.0.19 returned new_key_id as digit strings. These identifiers now normalize to int so they can be passed directly to typed key selectors under strict_types. Native integers and canonical bounded integer strings are accepted; omitted IDs stay absent. This is a reviewed correction to the pinned string response, not additional observed boundary coverage."
         },
         {
-          "kind": "documented",
+          "kind": "policy",
           "text": "Client behavior: omitted optional arguments stay omitted; the client does not fill in pinned defaults or infer WHM defaults from the UAPI version schedule. Supply explicit NSEC3 settings when a particular configuration is required."
         }
       ],
@@ -481,7 +673,7 @@
           "text": "key_id is a public selector. The pinned response declares key_tag and key_type; the reviewed WHM source additionally returns optional string key_content containing the exported private key. This added field is source-backed, not raw-export live evidence."
         },
         {
-          "kind": "documented",
+          "kind": "policy",
           "text": "Client behavior: treat key_content and raw payloads attached to PayloadMismatchException as secret material. Preserve the exported text exactly for backup or import and do not log successful results or exception payloads. The client performs no automatic key removal, import, retry or rollback."
         }
       ],
@@ -716,7 +908,7 @@
           "text": "At least one selector, domain or zone, is required by the upstream contract even though both formal parameters are optional. Resetting is destructive: valid TXT records are preserved, all other records return to defaults, subdomain records reset and zone file subdomains are restored in httpd.conf."
         },
         {
-          "kind": "documented",
+          "kind": "policy",
           "text": "Client behavior: supply domain or zone explicitly before calling resetZone(). The client does not choose a selector, back up the zone, roll changes back or retry automatically."
         }
       ],

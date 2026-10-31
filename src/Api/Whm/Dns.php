@@ -523,7 +523,7 @@ final readonly class Dns
      * envelope reports success. Inspect type rather than treating absence of an exception as proof that a domain was
      * deleted.
      *
-     * Documented: Client behavior: treat domain deletion as irreversible. The client provides no rollback or automatic
+     * Policy: Client behavior: treat domain deletion as irreversible. The client provides no rollback or automatic
      * retry and does not turn the documented type:null absent-domain result into an exception.
      *
      * API-map identity: whm1:delete_domain#GET (wire name delete_domain; Domain Management).
@@ -605,9 +605,9 @@ final readonly class Dns
      * canonical bounded integer strings are accepted; omitted IDs stay absent. This is a reviewed correction to the
      * pinned string response, not additional observed boundary coverage.
      *
-     * Documented: Client behavior: omitted optional arguments stay omitted; the client does not fill in pinned defaults
-     * or infer WHM defaults from the UAPI version schedule. Supply explicit NSEC3 settings when a particular
-     * configuration is required.
+     * Policy: Client behavior: omitted optional arguments stay omitted; the client does not fill in pinned defaults or
+     * infer WHM defaults from the UAPI version schedule. Supply explicit NSEC3 settings when a particular configuration
+     * is required.
      *
      * API-map identity: whm1:enable_dnssec_for_domains#GET (wire name enable_dnssec_for_domains; DNS Security).
      *
@@ -729,7 +729,7 @@ final readonly class Dns
      * source additionally returns optional string key_content containing the exported private key. This added field is
      * source-backed, not raw-export live evidence.
      *
-     * Documented: Client behavior: treat key_content and raw payloads attached to PayloadMismatchException as secret
+     * Policy: Client behavior: treat key_content and raw payloads attached to PayloadMismatchException as secret
      * material. Preserve the exported text exactly for backup or import and do not log successful results or exception
      * payloads. The client performs no automatic key removal, import, retry or rollback.
      *
@@ -1166,8 +1166,8 @@ final readonly class Dns
      * parameters are optional. Resetting is destructive: valid TXT records are preserved, all other records return to
      * defaults, subdomain records reset and zone file subdomains are restored in httpd.conf.
      *
-     * Documented: Client behavior: supply domain or zone explicitly before calling resetZone(). The client does not
-     * choose a selector, back up the zone, roll changes back or retry automatically.
+     * Policy: Client behavior: supply domain or zone explicitly before calling resetZone(). The client does not choose
+     * a selector, back up the zone, roll changes back or retry automatically.
      *
      * API-map identity: whm1:resetzone#GET (wire name resetzone; Domain Management).
      *

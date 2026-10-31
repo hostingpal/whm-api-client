@@ -3870,6 +3870,673 @@ and the location of partial-rename warnings remain unobserved under `8x0.2.33`.
 The corrected nine-GET artifact already passes; no new capture is needed merely
 to clear discrepancies, and the original failed artifact is preserved.
 
+## WHM ModSecurity administration
+
+`whm()->modSecurity()` exposes all 38 pinned functions: eight reads use GET and
+thirty mutations or validation helpers use form POST. Rule and configuration text,
+report messages and setting states remain sensitive inputs. As safety guidance,
+treat returned settings and audit log fragments as private payload data; this is
+reviewer judgment, not a statement from the pinned operation text or a claim that
+secret values were observed. Configuration paths are forwarded without rewriting.
+
+Rule staging, deployment and discard are separate operations. Config activation,
+vendor enablement and automatic vendor updates also have distinct effects. API
+success does not establish that a policy has been deployed or blocks HTTP traffic.
+Vendor preview/add/update may fetch remote content, and `reportRule(send: true)`
+can transmit log information and contact details to a third party. The client adds
+no retries, rollback, URL fetching or automatic deployment.
+
+`batchSettings()` currently supports the pinned single-setting arguments. Its
+indexed multi-setting families remain under `8x0.1.24`. `reportRule()` retains the
+formal integer row-ID input; the contradictory prose's comma-separated multi-ID
+form is also deferred there. The source restricts batch setting IDs to 0 through 9.
+The twelve source-backed empty-result mutations accept an omitted or null payload
+while retaining any returned mixed data; they are not weakened to void. Omitted
+wire payloads on those writes remain unobserved.
+
+`getLog()` preserves the inner `data` list wrapper, including an empty log.
+Log/report `meta_offset` and `meta_msg` accept source-family nullability; populated
+null rows remain unobserved. Get/set settings share the reviewed row shape,
+including exact `string|int` state/default values. Batch defaults keep that same
+union. The report result's array-of-objects prose repairs its omitted container
+type while preserving every declared hit field. Integer rule IDs from getters
+can be passed directly to `disableRule()` and `undisableRule()`.
+
+Omitting `enabled` in `addVendor()` installs and enables the remote rule set by
+default. `getRules()` defaults to excluding bare comments and other directives;
+with neither config nor vendor selector it raises `ApiErrorException` on the
+reviewed server. These defaults are retained without implicit client actions.
+
+All 38 methods have independent offline contract tests. The bounded live recipe
+selects only WHM version, configuration inventory, pending configuration names,
+vendor inventory and installation status. It reads no raw rule/configuration text,
+audit logs or secret-bearing setting states; no protection, vendor, report or
+configuration action runs. Follow-up `8x0.2.34` retains the remaining live behavior
+and source gaps.
+
+## WHM ModSecurity inventory capture
+
+The immutable [WHM ModSecurity capture](evidence/2026-10-31-whm-modsecurity.json) at
+`cd205ab2452ee9a8f215d579f4f9d69baa2c3e9a` on `11.138.0.19` records five HTTP 200
+observations. WHM version, configuration inventory, vendor inventory and
+installation status pass API, payload and probe checks. Both inventories are
+empty, so their populated rows remain unobserved. The pending-configuration read
+fails at the API layer. The reviewer established that the ordinary idle state
+uses result 0 when no rule changes are pending; it therefore raises the expected
+`ApiErrorException` under `Flag`. Other failures also use result 0, so no error-text
+matching or special success exception is introduced. There are zero payload
+discrepancies, while strict assessment remains failed and unwaived for that API error.
+
+No raw rule/configuration text, audit logs or secret-bearing settings were read.
+No scan, policy, vendor, report, deployment or configuration change ran, and no
+returned URL was fetched. The other thirty-four methods were outside this committed catalog.
+Follow-up `8x0.2.34` retains the failed read and all unobserved behavior; this
+capture does not establish request blocking or enforcement. No repeated capture
+was run merely to obtain a passing result. SHA-256:
+`673fd065ffdf05bdb8a1c1dd5af5bcb770a8280aa556cc4a5f2d9fbbd516ab9c`.
+
+### Independent ModSecurity review observations
+
+[Claude review 5720447657](https://github.com/hostingpal/whm-api-client/pull/47#pullrequestreview-5720447657)
+reports read-only WHM checks on cPanel `11.138.0.19`. The empty log establishes
+its inner `data` wrapper, and all ten populated settings rows had string states.
+The shared set-result record, integer setting alternatives, nullable log/report
+fields and twelve optional mutation payloads are source/offline corrections;
+no server-wide write or populated log row was observed. The reviewer printed
+only keys and type classes, not rule, log or setting values.
+
+Configuration and vendor inventories were empty; installed status and settings
+reads passed. Missing selectors for rules, unknown configuration text and the
+normal idle pending-config state raise API errors. No populated rules/configuration
+text or any of the thirty write/helper operations ran. These reports remain
+separate from the immutable five-GET capture, whose failed idle observation stays
+unwaived under `8x0.2.34`. All existing artifacts are preserved; no new capture was
+run to clear the failure.
+
+## WHM login and mail protection
+
+`whm()->cpHulk()` implements sixteen pinned cPHulk functions, and
+`whm()->mail()` implements fourteen Greylisting functions. Fifteen reads use GET;
+fifteen mutations use form POST. The JSON batch-record operation remains under
+`8x0.1.18`. The provider-configuration setter is excluded under `8x0.1.25` because
+its `PROVIDERKEY` placeholder represents a dynamic parameter name, not a literal
+wire field. The pre-existing Mail SNI exclusion stays intact.
+
+cPHulk configuration can change login protection, firewall blocking and commands
+run after attacks. Command and generic configuration-value inputs remain sensitive.
+Enabling or disabling protection, editing trusted or blocked addresses, and flushing
+login history take effect on the selected server; the client does not retry or
+roll them back. Per-item results and service flags remain separate from API success.
+Greylisting time settings retain their documented units and defaults, and trusted
+provider changes affect future mail handling without proving delivery behavior.
+
+Documented IP/provider lists use the reviewed base-name then `-1`, `-2` encoding.
+Alternative prose using a `-0` first index remains unverified. In `saveConfig()`,
+omitted cPHulk options preserve their current values, as established by the
+reviewed partial-update source; explicit false and zero remain distinct. Other
+operations retain their method-specific omission rules. Response maps preserve
+dynamic keys and optional fields. The source-backed untrust correction retains
+provider error strings in `providers_failed` and `ips_untrusted` records in
+`providers_untrusted`; provider IP entries are lists of the four known fields.
+Trusted-host creation preserves per-IP error strings instead of silently dropping
+those dynamic failures. Save-config enabled flags use the same exact quoted 0/1
+compatibility as load, based on the shared source result; no save was observed.
+
+All four history reads accept bounded canonical integer-string `timeleft` values.
+The excessive-history result also retains its original native integer/float form;
+fractional strings, noncanonical strings and overflow are not newly accepted.
+Only the failed-login string values were observed; the other histories use shared
+source inference. Native fractional values and stored-row null comments remain
+unobserved under `8x0.2.35`.
+
+On the reviewed server Greylisting is disabled. Its reads raise `ApiErrorException`
+while disabled, except status and numeric configuration, which still work. This
+is a version-specific reviewer observation, separate from the committed capture.
+The client does not enable the service or waive API outcomes to populate evidence.
+
+All thirty methods have independent offline contract coverage. The fixed eight-GET
+catalog selects WHM version, cPHulk status and country inventory, and Greylisting
+status, server netblock trust, common-provider configuration, numeric configuration
+and trusted-host inventory. It reads no authentication logs, deferred-message
+records or configured command text. It changes no protection, trust, history or
+mail state and sends no messages. Follow-up `8x0.2.35` retains all unobserved
+variants and enforcement behavior.
+
+## WHM login and mail protection capture
+
+The initial [login/mail-protection capture](evidence/2026-10-31-whm-login-mail-protection.json)
+at `b99dd1f35aa591deb7803dc7f298296f1338a33b` on `11.138.0.19` records eight HTTP 200
+observations: four API/payload/probe passes, three API failures and one successful
+API response with a payload mismatch. Only `load_cpgreylist_config`'s
+`cpgreylist_config.is_enabled` is a numeric string; compatibility is narrowed to
+exact string flags `0` and `1` at that leaf, leaving sibling flags unchanged.
+
+Server netblock trust, common-provider configuration and trusted-host inventory
+fail at the API layer. The sanitized evidence does not establish their cause;
+these errors remain unwaived. No login logs, deferred messages or command text
+were read, and no security, trust, history, configuration or mail state changed.
+The initial capture remains failed and immutable. Remaining variants and behavior
+stay under `8x0.2.35`. SHA-256:
+`60326d0c8bc7435124aca7c178c99a3dea11a1ab06476f9afff59e9411ac6f9d`.
+
+The corrected [login/mail-protection capture](evidence/2026-10-31-whm-login-mail-protection-corrected.json)
+at `8f1a4b91a556ca73f5be9db5ad6170d2e481bd0c` on `11.138.0.19` records eight HTTP 200
+observations: five API/payload/probe passes, the same three API failures and zero
+payload discrepancies. The reviewed Greylisting flag now passes exact string-flag
+normalization; numeric configuration limits and sibling flags retain their types.
+Country inventory is populated. Failed Greylisting inventories establish no row
+schemas; the reviewer separately diagnosed disabled Greylisting as their cause.
+Strict assessment remains failed without a waiver.
+
+No authentication logs, deferred messages, command text, mutation or notification
+was involved. Both artifacts remain immutable. API status does not establish
+login blocking, mail delivery or enforcement. Follow-up `8x0.2.35` owns the
+remaining failures, methods and variants. SHA-256:
+`27fd32d3b51e8195a3f027b4890f55ad68a440bb706aabf3862b84f6582e6a27`.
+
+### Independent login and mail protection review
+
+[Claude review 5720507218](https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218)
+reports WHM GET checks on cPanel `11.138.0.19`, printing only key names and type
+classes. All 110 failed-login rows carried whole digit-string `timeleft` values.
+The other three histories were empty; their compatibility follows the shared
+source routine. Fractional native values remain supported by the excessive-history
+number schema, but were not observed. The canonical string correction does not
+admit fractional strings or overflow-to-float.
+
+The untrust maps, provider IP list, save-config quoted flag and trusted-host error
+map corrections are source/offline evidence. All fifteen writes remain unobserved
+because they are server-wide and some can cause lockout. Source returns an empty
+string for an absent creation comment; stored-row null comments remain unobserved.
+Existing numbered encoding is unchanged.
+
+The reviewer established disabled Greylisting as the cause of all three captured
+API failures. Status and configuration still work while it is disabled. No service
+enablement, mutation or repeat capture ran. Both immutable artifacts retain their
+failed/unwaived status under `8x0.2.35`, and the reviewer reports do not expand the
+committed eight-GET catalog or establish login/mail enforcement.
+
+## WHM reseller administration
+
+`whm()->resellers()` covers all 21 pinned functions: seven reads use GET and
+fourteen mutations use form POST. The group manages reseller privileges, ACL
+lists, resource/package limits, delegated IPs, nameservers, account enhancements
+and lifecycle operations. Each method retains its pinned version and role notes.
+
+`setupReseller()` grants reseller privileges; ownership changes follow its explicit
+`makeowner` option. Suspension and restoration retain the `reseller-only` option,
+while termination can remove the reseller and owned accounts. Read the individual
+method's destructive/default caveats before calling it. The client performs one
+request without retry or rollback; API success and account-level outcomes remain
+separate. Suspension reasons are sensitive inputs.
+
+ACL save and assignment have different semantics; `acl-all` grants root-level
+privileges. `setAcls()` accepts only `true` or omission for each assignment
+switch: upstream grants any present `acl-*` key regardless of its value. Native
+`?true` parameters reject false, zero, numeric one and strings before dispatch,
+including calls from files without strict types. True sends `1`; null omits the
+key. The overriding `user` alias is excluded, so `reseller` is the sole typed
+target. `saveAclList()` retains boolean flags: false sends `0` and removes that
+privilege. Both operations replace the complete set; omitted inline assignment
+privileges are removed, and omitted save flags default to zero. Read the current
+set before constructing a replacement. Use either a named ACL list or inline
+switches, never both; with neither, the inline assignment clears all privileges.
+
+Prefer named arguments. `suspendReseller(user, reason, ...)`,
+`setResellerMainIp(user, ip)` and `terminateReseller(user, terminatereseller)`
+put resource identifiers first. The pinned `acl-disallow-shell` description
+contradicts its wire name; no interpretation beyond that contradiction is
+asserted. `setEnhancementLimit(limited: true)` sends `limited=1`, and false sends
+zero. `setResellerIps()` defaults omitted `delegate` to one and returns the
+`getResellerIps()` shape according to the reviewed source; these writes remain
+unobserved. Other omission behavior is documented only where the source supports
+it. IP/nameserver lists use their documented serialization; the client does not
+infer or validate a new network configuration.
+
+All 21 functions have independent offline fixtures, including every documented
+ACL input flag and privilege response field. The bounded live catalog reads WHM
+version, default account counts, public contact details, reseller IPs without a user,
+ACL lists and reseller names. It supplies no guessed reseller identifier, changes
+no accounts, privileges, limits, contact details, IPs or nameservers, and does not
+fetch returned contact URLs. Empty inventories do not establish populated row
+contracts. Follow-up `8x0.2.36` retains the remaining live behavior and variants.
+
+## WHM reseller inventory capture
+
+The initial [reseller capture](evidence/2026-10-31-whm-resellers.json) at
+`8acce7c186a2815c5f81275acfa053a6f52d3e3c` on `11.138.0.19` records six HTTP 200
+observations: four API/payload/probe passes, one successful API response with a
+payload mismatch and one API failure. `acctcounts` returns an exact empty string
+at `reseller.limit`. Compatibility preserves that literal alongside the pinned
+integer/null alternatives; its meaning is not inferred and it is not converted
+to zero or null. Sibling counters keep their original contracts.
+
+The `getresellerips` call without a user fails at the API layer. The sanitized
+artifact alone does not establish the cause; the separate reviewer diagnosis
+below identifies the omitted user. No failure is waived. ACL and reseller
+inventories are empty; public contact name and
+URL are empty strings. No account, ACL, privilege, limit, contact, IP or nameserver
+changed, and no returned URL was fetched. The artifact remains failed and
+immutable; follow-up `8x0.2.36` retains remaining variants and lifecycle behavior.
+SHA-256: `76e0be8605fc048ab03c9bfd82c0fb98fefbf93d170c0fb619cde5902339c753`.
+
+The [corrected reseller capture](evidence/2026-10-31-whm-resellers-corrected.json)
+at `e8751c3ff59e7be77a1726669dc2b80181a7fca2` on `11.138.0.19` records six
+HTTP-200 observations, five API/payload/probe passes and one unchanged API failure
+from `getresellerips`. The account-count limit now preserves its observed empty
+string alongside the documented integer/null alternatives. No meaning is assigned
+to that empty string, and sibling fields retain their original contracts. There
+are zero discrepancies; strict status remains failed because of the API failure.
+
+ACL and reseller inventories remain empty, and public contact strings are empty.
+No account, ACL, limit, contact, IP or nameserver setting changed. The initial failed
+artifact remains unchanged; follow-up `8x0.2.36` retains the API failure and all
+unobserved operations/variants. Corrected SHA-256:
+`7ae3954f188d2128dceab3fd1e61d5bc6133761105778ad30788996c161817eb`.
+
+### Independent reseller review and remaining mutation gap
+
+[Claude review 5720544221](https://github.com/hostingpal/whm-api-client/pull/49#pullrequestreview-5720544221)
+reports WHM GET checks on cPanel `11.138.0.19`. `getResellerIps()` without a
+user as root failed because the source reads `user` without a default; a named
+non-reseller also raised an API error. This diagnoses the retained capture failure
+without changing its strict failed status or rerunning it. ACL/reseller inventories
+were empty, so populated row contracts remain unobserved.
+
+Presence-only ACL assignment, full-set replacement, target-alias removal, signature
+ordering and delegated-IP defaults are source-backed and tested offline. The
+reviewer's attempted disposable reseller lifecycle was denied before execution,
+with no specific reason beyond the permission classifier judging it dangerous.
+[Clarification 6537927871](https://github.com/hostingpal/whm-api-client/pull/49#issuecomment-6537927871)
+records the exact attempted command scope and confirms no test account, home
+directory or ACL list remained; no mutation ran and no alternate-form retry was
+attempted. The rejection is not attributed to a particular operation. All fourteen
+write methods remain unobserved under `8x0.2.36`; no new capture, privilege change
+or lifecycle ran for these corrections. Reviewer reports remain separate from
+the immutable six-GET artifacts.
+
+## WHM IP address administration
+
+`whm()->ipAddresses()` exposes all sixteen pinned IPv4, IPv6 and NAT functions.
+Six reads use GET and ten mutations or NAT-check helpers use form POST. Each
+method retains its source availability floor and parameter order. Addresses,
+netmasks, ranges and notes are forwarded without rewriting or new validation.
+
+`getSharedIp()` preserves the literal `~` value when no shared address exists.
+IPv6 inventory retains the `SHARED` range name, optional rows and lists, and
+integer status flags. Only the observed IPv6 range `enabled` field additionally
+accepts exact quoted 0/1 flags, and its `mostrecent` and `note` fields accept null.
+Other fields retain their reviewed contracts. Explicit false becomes zero,
+while omitted options retain server defaults.
+
+`disableIpv6Account()` returns null for absent/null data on clean success,
+following reviewed upstream source. Present failure fields remain validated,
+including mixed `reason` values; inspect them even after envelope success. This
+write response is source-backed and offline-tested, not live-observed.
+`addIps()` returns void; pinned per-address messages remain available at
+`responseMeta()->whm['output']['messages']`.
+
+On `11.138.0.19`, the reviewer observed `getIpv6RangeUsage()` returning the upstream
+constants `used=20`, `free=1000000` and `forbidden=65536`. These placeholders do
+not measure actual address capacity or utilization on that version.
+
+`deleteIp(skipIfShutdown: true)` prevents removal when the interface is already
+down; false or omission permits removal. The switch does not shut it down. NAT
+and site-IP changes can alter connectivity and hosted configuration. Account IPv6
+enablement/disablement and range removal are separate operations. Read each
+method's selector and destructive/default caveats before calling it. The client
+adds no retries, rollback, NAT probing or network reconfiguration beyond the
+single requested operation. API success does not prove reachability, DNS, mail
+routing, HTTP delivery or TLS behavior.
+
+All sixteen methods have independent offline contracts. The fixed five-GET live
+catalog selects WHM version, the default shared IP, IPv6 ranges and IPv4/IPv6
+inventories. It guesses no address or range, performs no NAT check and changes
+no account, address, interface, mapping or network state. Empty inventories do
+not establish populated row schemas. Follow-up `8x0.2.37` retains all unobserved
+variants and lifecycle behavior.
+
+The initial [WHM IP-address capture](evidence/2026-10-31-whm-ip-addresses.json) at
+`adb1dfdca8c5308315ef1cad23d902675798d579` on `11.138.0.19` records five successful
+HTTP/API observations and four payload/probe passes. `ipv6_range_list` has three
+known-field differences: a numeric-string `enabled`, and null `mostrecent` and
+`note`. Those findings support exact quoted-flag compatibility only for that
+operation's `enabled`, and nullable strings only for its other two fields. The
+structural artifact does not establish both quoted flag values were observed.
+Sibling fields and all other operations retain their existing contracts.
+
+IPv4 addresses, IPv6 addresses and range rows are populated; shared-IP lookup
+returns a string. Empty range-user lists establish no populated user elements.
+No network, address, range or NAT setting changed, and no address/range identifier
+was guessed for a probe. Strict status remains failed in this original artifact,
+which is immutable. Follow-up `8x0.2.37` retains unobserved variants and mutations.
+Initial SHA-256:
+`439b50dbddb6d3577889ac9013a154ffde1151a8b4a53b8292c674e5ff1b3900`.
+
+The [corrected IP-address capture](evidence/2026-10-31-whm-ip-addresses-corrected.json)
+at `fde160d4c41a1651405d9a2c985941c71a6d57da` on `11.138.0.19` passes all five
+HTTP/API/payload/probe checks and strict assessment with zero discrepancies.
+The three operation-specific IPv6 range corrections now pass. IPv4, IPv6 and
+range inventories are populated; the range-user lists remain empty. This verifies
+only the four inventory operations plus version, not address/range lifecycle,
+NAT behavior, exclusion semantics or network configuration changes. No mutation
+ran. The initial failed artifact stays unchanged and `8x0.2.37` remains open.
+Corrected SHA-256:
+`185dd1b1d6728a6aad76ce258f60f1177f08e9f368c85935667e713889a9a552`.
+
+### PR50 reviewed corrections and evidence limits
+
+[Claude review 5720554070](https://github.com/hostingpal/whm-api-client/pull/50#pullrequestreview-5720554070)
+reports read-only WHM checks on `11.138.0.19`, including range usage, public/shared
+IP reads and unknown-range error handling. The observed usage placeholders are
+separate from the committed inventory captures. The clean IPv6-disable response
+comes from reviewed `Whostmgr/API/1/IPv6.pm` source; regression tests accept absent
+or null successful data while retaining strict validation of present data.
+Pinned `/delip/get` values establish the corrected shutdown-skip description,
+and `/addips/get` supplies the metadata message contract. No new live request or
+capture ran for these corrections. All ten form POST methods, including the NAT
+check helper, remain unobserved under `8x0.2.37`. Both historical artifacts remain
+immutable; no schema finding was waived or replayed.
+
+## Expanded WHM server administration
+
+`whm()->server()` now exposes 76 of the 79 pinned Server Administration functions,
+including 72 additions for services, profiles, updates, configuration, linked nodes,
+notifications, licensing and inventory. The new calls use 23 GET requests and 49
+form POST requests. The four existing server methods retain their contracts.
+Missing read-only declarations remain conservative POST calls, including the
+three namespaced EcosystemFeatures functions.
+
+JSON connected-application saving remains under `8x0.1.18`, binary configuration
+upload under `8x0.1.19`, and `system_needs_reboot` under `8x0.1.27`. The latter's
+result fields are envelope siblings outside `data`; neither the typed runner nor
+the generic call currently preserves that result. No misleading void method is
+provided. Connected-application reads preserve declared typed fields and opaque
+additional properties through the existing object-values mechanism. Treat their
+results and service/configuration values as private payload data.
+
+Profile activation accepts documented serialized JSON text in its optional role
+argument, with one form-encoding pass. Its native `string|int` boundary does not
+establish integer semantics or automatic object encoding; supply a JSON string.
+The typing limitation remains under `8x0.1.23` before release. Available-tier
+maps preserve the five pinned named fields alongside dynamic values. Both
+service-configuration reads document `dovecot`; undocumented services are outside
+the contract, and null data from such a service can fail validation. Configuration
+values can contain credential material, including the observed key name
+`hulk_auth_passwd`; neither the review nor committed evidence records its value.
+Treat returned values and raw payloads attached to exceptions as sensitive.
+The full configuration and individual-key reads retain the same string, integer
+or nested map values with opaque contents.
+
+On `11.138.0.19`, the reviewer observed quoted role flags and digit strings
+in both application-importance reads. Compatibility uses the established bounded
+canonical-integer normalization policy; the observation does not establish every
+accepted spelling or boundary. Strict flag values and integer bounds remain. The documented empty
+node-linkage object is source-backed and offline-tested; populated linked-node
+behavior remains unobserved. Per-method availability, role requirements,
+omission, null and explicit false/zero behavior remain in generated PHPDoc.
+
+For update preferences, `RPMUP` or `SARULESUP` set to `never` requires the
+administrator to run `scripts/update-packages`; it does not make updates
+unnecessary. Feature-management inputs retain the pinned single feature-ID
+description without an unsupported comma-separated batch claim.
+
+EULA acceptance, license purchase, reboot/restart, updates, profile activation,
+node linking, configuration changes and notification tests are explicit operations.
+They may have legal, financial, connectivity or service effects; the client adds
+no automatic invocation, retry, rollback or completion polling. Credential, token,
+configuration and notification inputs remain sensitive. API success or a job ID
+does not establish completion, service health or remote connectivity.
+
+Independent offline contracts cover all 72 additions and preserve the original
+four. The bounded eight-GET catalog reads version, contact-event importance,
+available/current profiles, password-strength policy, installed software versions,
+service status and dashboard hostname. Optional selectors are omitted. It reads
+no credentials, linked-node secrets, arbitrary configuration values or sockets,
+and sends no notification, URL probe or mutation. Follow-up `8x0.2.38` retains
+unobserved variants and operational behavior.
+
+The initial [expanded server capture](evidence/2026-10-31-whm-server-administration.json)
+at `4eecbe249c754341f454db573a1a475731dc8b9c` on `11.138.0.19` records eight
+HTTP/API successes and six payload/probe passes. Contact-event `importance` and
+nine minimum-password-strength fields are numeric strings rather than pinned
+integers. Only those ten leaves gain lossless canonical integer-string
+normalization; other fields and operations retain their contracts. Structural
+numeric-string evidence alone does not establish every spelling accepted by the
+normalization policy; noncanonical strings, fractions and overflow remain invalid.
+
+Installed versions retain one masked unknown-field observation with string values;
+service rows retain one masked unknown object observation with integer/string
+children. Masking identifies neither names nor counts. Both stay untyped and
+unwaived under `8x0.2.38`. Profile, contact-importance and service records are
+populated. No configuration, credential, service, profile, license, notification
+or node operation changed anything, and no secret-bearing read was selected.
+The initial capture remains failed and immutable. SHA-256:
+`69d1296be7b3170ce6c6e8468aee28b03a3c6633b4b9c0b374f3ffbd5844e296`.
+
+The [corrected expanded server capture](evidence/2026-10-31-whm-server-administration-corrected.json)
+at `742eaa8419eca4c9021ff0cc87ff6504a08e477e` on `11.138.0.19` passes all eight
+HTTP/API/payload/probe checks. The ten integer-leaf corrections now pass. Strict
+assessment remains failed for the same two masked unknown-field observations in
+installed versions and service rows, with zero acknowledgments and no new typed
+unknown fields. Masking identifies neither underlying names nor field counts.
+
+All original observations and artifacts remain unchanged. These reads establish
+only the selected inventory and policy responses, not service health, completed
+updates, profile activation, licensing, node connectivity or notification delivery.
+No mutation, credential read or URL request ran. Follow-up `8x0.2.38` retains the
+unknown findings and unobserved variants. Corrected SHA-256:
+`db24e53879fff4754369b984969640b51ea483713ad71c735d6d1bb1be88f6b8`.
+
+### PR51 reviewed corrections and evidence limits
+
+[Claude review 5720579254](https://github.com/hostingpal/whm-api-client/pull/51#pullrequestreview-5720579254)
+reports type-only WHM reads on `11.138.0.19` covering all 27 GET methods. It
+observes quoted role flags, digit strings for both application
+importance methods, and object-valued Dovecot configuration keys. These reports
+remain separate from the eight-GET structural captures. The empty node-linkage
+object and named tier fields follow the pinned source, not populated node or
+tier observations. Unknown service configuration nulls remain outside the
+documented Dovecot contract; no broad null compatibility is inferred.
+
+All 49 POST methods remain unobserved. Successful linked-server lookup and
+populated linked inventories require linked servers; tweak-setting null/integer
+variants also remain unobserved under `8x0.2.38`. Profile-activation input typing
+remains under `8x0.1.23` before release. No new live call or capture ran for these
+corrections. Both historical captures remain immutable, and their two masked
+unknown-field observations stay strict failures without acknowledgment or waiver.
+
+## WHM authentication
+
+`whm()->authentication()` exposes 30 of the 32 pinned Authentication operations
+for SSH keys, authentication providers, external-account links and two-factor
+configuration/policy. Seven use GET and 23 use form POST. Deprecated `accesshash`
+remains excluded; JSON `twofactorauth_set_tfa_config_for_user` remains under
+`8x0.1.18`. The login-URL method uses POST as a conservative client privacy
+policy, despite the pinned GET-only declaration. The pinned redirect example has
+a `state` value; it does not establish that redirects always contain tokens.
+Live POST compatibility remains unverified. Reviewed upstream `Market.pm` code
+routes through a provider and may make an outbound call; the reviewer did not
+execute it. Generated notes distinguish client policy from documented facts and
+observed behavior.
+
+Key material, passphrases, provider configurations, redirect URLs and TFA secrets
+and tokens remain sensitive. Returned keys, provider URLs/configuration and TFA
+configuration are private payload data. The client does not follow returned URLs;
+upstream provider calls may have their own outbound behavior as described above.
+Remote SSH connection checking is explicit and performs no automatic follow-up.
+Key generation/import/authorization/deletion, provider/link changes and TFA changes
+can alter access immediately. Preserve abort/overwrite, keep-file and authorization
+defaults and inspect per-item results separately from API metadata. No retry or
+rollback is added. Source versions and conditional input caveats remain in PHPDoc.
+
+`authorizeSshKey()` accepts file-only authorization by omitting `text`; if both
+are supplied, the pinned contract gives text precedence. The file argument remains
+required and names a public key under `/root/.ssh`. Successful remote SSH checks
+permit null `comment`, `protocol_versions` and `server_software` as documented.
+These POST paths are source-backed and offline-tested. External-account link and
+unlink methods take the local username first. Unset provider values retain null;
+client ID/secret nulls and absent/null TFA `primary_account` are source-family
+compatibility, not observations from executing those POST methods.
+
+Provider display configurations accept caller-serialized JSON containing the
+pinned `color`, `display_name`, `icon`, `icon_type`, `label` and `textcolor` keys,
+as a form field encoded once. The native `string|int` boundary has no documented
+integer semantics or automatic object encoding. Before release, `8x0.1.23` must
+also cover this content-based query schema, separately from JSON-body transport.
+TFA removal currently
+supports scalar `user`; the separately documented `user-1`/`user-2` family remains
+under `8x0.1.21`, without assuming equivalence to another numbered encoding.
+A user listed as modified may have had no TFA settings; it does not prove removal
+changed a configured account.
+
+All 30 methods have independent offline contracts. The fixed three-GET catalog
+reads WHM version, issuer names and policy status only. It retrieves no keys, TFA
+secrets, provider configuration or login URLs, opens no remote SSH connection,
+and changes no account, authentication policy or provider. Follow-up `8x0.2.40`
+retains remaining source/live coverage.
+
+The [WHM authentication metadata capture](evidence/2026-10-31-whm-authentication.json)
+at `e88583ed1e3a5d2e255f11389a90afad6ba740b2` on `11.138.0.19` passes all three
+HTTP/API/payload/probe checks and strict assessment with zero discrepancies. It
+observes only WHM version, issuer-name strings and the integer TFA policy flag.
+No provider, credential, key, login-URL, TFA-secret or linked-account data was read.
+No authentication state changed and no remote connection or URL request occurred.
+
+This establishes no successful login, SSH access, TFA challenge, provider/link
+operation or mutation compatibility, including the effective POST login-URL method.
+All remaining operations and variants stay under `8x0.2.40`. Immutable SHA-256:
+`79245a336ed4daacbc6ac02c1bc48a3c72f64dee68f42987b5ab1dafb6366c81`.
+
+### PR52 reviewed corrections and evidence limits
+
+[Claude review 5720627530](https://github.com/hostingpal/whm-api-client/pull/52#pullrequestreview-5720627530)
+reports seven WHM GET methods on `11.138.0.19`, including an unset provider field
+with null value and an explicit `npr` user filter. Those observations remain
+separate from the committed three-GET capture. Provider field values were already
+optional/nullable in the generated contract; the correction records provenance.
+Client ID/secret nulls and TFA primary-account nullability remain source-family
+compatibility; primary-account omission was already supported. SSH success nulls,
+file-only authorization and username-first link inputs follow the pinned text and
+offline regressions. No POST operation was exercised for these corrections.
+
+The generator's additional Policy note label identifies client transport,
+sensitivity and encoding decisions without presenting them as upstream facts or
+live observations. Existing observed-note live-evidence requirements remain.
+The login-URL POST is still unverified; the reviewed provider call is source-only.
+All 23 POST methods and remaining successful-access variants remain unobserved
+under `8x0.2.40`. No credential, key, private URL or TFA secret was read, no state
+changed and no new live capture ran. The original three-GET artifact is complete
+and immutable.
+
+## WHM SSL certificate management
+
+`whm()->ssl()` exposes 32 of the 34 pinned SSL Certificates operations: ten GET
+reads and 22 form POST calls, including source-classified POST fetch operations.
+Provider reset/selection remains excluded under `8x0.1.28` because `x_*` denotes
+dynamic input names, not a literal parameter. Provider inventories preserve strict
+named fields and opaque additional values; treat returned provider data as private.
+
+PEM, private-key, CA-bundle and passphrase inputs remain sensitive. Domain exclusion
+arrays use documented numbered names; deferred installation uses repeated fields
+whose five lists callers must align by position, including each certificate and
+private key. Neither the client nor its type checks validate equal lengths or
+pairing. An empty bundle requests server-side bundle download. The metadata setter accepts caller-serialized JSON text encoded once as
+a form field; its current native `string|int` boundary does not establish integer
+semantics or automatic object encoding (`8x0.1.23`). This is not a JSON request body.
+
+Generation stores key/CSR material even when certificate generation is skipped.
+Service certificate installation requires a separate service restart; the client
+does not perform it. Exclusion replacement, disable/reset/install and background
+checks can alter hosting behavior; queued work or a PID does not establish
+issuance, renewal, installation or TLS delivery. No retry, rollback or polling is
+added. `installSsl()` returns its own `status` and `warning_domains` alongside
+the checked WHM envelope outcome. Callers must inspect those fields: a successful
+`metadata.result` does not imply nested `status: 1`, and nested failure is not
+converted into an exception. `listCertificates()` without `user` includes all
+accounts' certificate metadata; specify the intended account when isolation is
+required. Virtual-host deletion has no rollback and must not be retried simply
+because response validation failed after a confirmed outcome.
+
+Certificate fields preserve omission, native values and literal dotted keys.
+Separate WHM reviewer observations support string terms-of-service acceptance
+(despite the conflicting pinned flag), canonical integer strings in best-service
+expiry and FQDN certificate dates/length, exact quoted flags, and null FQDN
+verification-error/issuer-organization values. Vhost self-signed flags preserve
+the exact empty string without assigning it new meaning; deletion flags accept
+exact quoted 0/1. The five shared reset/install service-certificate leaves use
+source-family compatibility only; those writes were not observed.
+`fetchServiceSslComponents()` keeps its native integer contracts, and unconfirmed
+vhost `subject.commonName` variants stay unsupported.
+
+`rebuildInstalledSslDatabase()` is a documented no-op. It and deferred enqueue
+accept absent/null successful data as reviewed source-only compatibility, while
+present payloads keep their existing opaque-data validation. No missing/null
+response from either method was observed.
+
+All 32 methods have independent offline contracts. The bounded nine-GET catalog
+reads version, schedule, log catalog metadata, metadata flags, problems/exclusions
+for designated `npr`/`npr.rs`, the best domain for the pinned `whostmgr` service
+example, and the account's certificate inventory. It reads no log contents,
+private-key/component PEM or unspecified provider values and makes no changes.
+Follow-up `8x0.2.39` retains remaining live behavior.
+
+The initial [WHM SSL capture](evidence/2026-10-31-whm-ssl.json) at
+`df3a6341a08d85eb9c011e617db7edbcc2c967cc` on `11.138.0.19` records nine
+HTTP/API successes and seven payload/probe passes. The best-service-domain
+expiration is null. Certificate inventory has null owner-list items and literal
+`issuer.organizationName` values, plus numeric-string modulus lengths and expiry
+timestamps. Five operation-specific field rules preserve these observed variants;
+other fields and WHM/UAPI operations remain unchanged. Owner-list null items do
+not make the list itself nullable, and no meaning is assigned to null values.
+
+Integer-string compatibility stays canonical and lossless, rejecting noncanonical
+strings, fractional values and overflow. Structural evidence does not establish
+every accepted canonical spelling. No provider data, private key, component PEM
+or log contents were read and no mutation or URL request ran. The original strict
+assessment stays failed and immutable; `8x0.2.39` retains remaining live behavior.
+Initial SHA-256:
+`f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29`.
+
+The [corrected WHM SSL capture](evidence/2026-10-31-whm-ssl-corrected.json) at
+`4317e1af1a4065134fae5e8addbd6c9cf083e985` on `11.138.0.19` passes all nine
+HTTP/API/payload/probe checks and strict assessment with zero discrepancies.
+The five operation-specific corrections pass, with populated certificate inventory.
+No installation, service restart, TLS serving/trust, AutoSSL issuance/renewal,
+provider configuration or key lifecycle behavior is established.
+
+No certificate, exclusion, configuration or scheduling setting changed. No private
+key, component PEM, provider payload or log content was read, and no URL was fetched.
+The original failed artifact stays unchanged; `8x0.2.39` retains unobserved behavior.
+Corrected SHA-256:
+`1e3117fc43dc790b0891b3571313b44f60953ce4b6e0d20305c0bc32ccacb498`.
+
+### PR53 independent review and correction boundaries
+
+[Claude review 5720639651](https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651)
+reports WHM observations on `11.138.0.19`, with type-only output and a disposable
+`wrvssl` account created and removed by the reviewer. The account-scoped
+exclusion cycle and install/delete operations used a locally generated
+self-signed certificate. Those reports remain separate from the committed
+nine-GET captures and do not expand their scope.
+
+The reported normal-data failures identify the exact terms-of-service string,
+best-service expiry, FQDN certificate fields, empty vhost self-signed flag and
+quoted deletion flag. The corresponding service reset/install family corrections
+are source/offline evidence; no server-wide write was run. The dismissed vhost
+`subject.commonName` remains unchanged. Nested install status and warning domains
+must be inspected independently of the checked metadata outcome.
+
+Only rebuild and deferred enqueue permit an omitted/null successful payload under
+the reviewed zero-property/opaque-object source contract. These response variants
+remain unobserved; present values are still validated. The client performs no
+automatic retry, rollback or alignment check for the five enqueue lists.
+
+No new live request, capture, credential/private-key read, server-wide write or
+URL fetch ran for these corrections. Both prior artifacts are immutable.
+Remaining operations, variants, TLS serving/trust, issuance and service-certificate
+changes stay open under `8x0.2.39`; input gaps `8x0.1.28` and `8x0.1.23` remain.
+
 ## Expanded WHM DNS management
 
 `whm()->dns()` exposes 40 of the 44 pinned DNS functions: sixteen GET reads and
