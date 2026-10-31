@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 49 generated typed groups cover 447 documented operations (see
+The 50 generated typed groups cover 463 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1373,3 +1373,31 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+## WHM IP address administration
+
+`whm()->ipAddresses()` exposes all sixteen pinned IPv4, IPv6 and NAT functions.
+Six reads use GET and ten mutations or NAT-check helpers use form POST. Each
+method retains its source availability floor and parameter order. Addresses,
+netmasks, ranges and notes are forwarded without rewriting or new validation.
+
+`getSharedIp()` preserves the literal `~` value when no shared address exists.
+IPv6 inventory retains the `SHARED` range name, optional rows and lists, and
+integer status flags. Null, omission and mixed failure reasons follow each
+operation's source. Explicit false becomes zero, while omitted options retain
+server defaults.
+
+IP deletion can shut down a network interface depending on its options; NAT and
+site-IP changes can alter connectivity and hosted configuration. Account IPv6
+enablement/disablement and range removal are separate operations. Read each
+method's selector and destructive/default caveats before calling it. The client
+adds no retries, rollback, NAT probing or network reconfiguration beyond the
+single requested operation. API success does not prove reachability, DNS, mail
+routing, HTTP delivery or TLS behavior.
+
+All sixteen methods have independent offline contracts. The fixed five-GET live
+catalog selects WHM version, the default shared IP, IPv6 ranges and IPv4/IPv6
+inventories. It guesses no address or range, performs no NAT check and changes
+no account, address, interface, mapping or network state. Empty inventories do
+not establish populated row schemas. Follow-up `8x0.2.37` retains all unobserved
+variants and lifecycle behavior.

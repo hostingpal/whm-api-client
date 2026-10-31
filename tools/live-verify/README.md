@@ -1095,3 +1095,18 @@ The token selector and seven pinned fields absent on `npr` are excluded; no wire
 form is established for those seven. No mutation or token retrieval ran. Earlier
 EA4 failures and masked findings remain immutable and unwaived under `8x0.2.28`.
 Reviewer mutation/lifecycle reports remain separate from this committed read capture.
+
+## WHM IP address inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-ip-addresses.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-ip-addresses.json
+```
+
+Five fixed GETs read version, the default shared IP, IPv6 ranges, IPv4 addresses
+and IPv6 addresses. Existing exact request guards, opt-in, committed-input checks,
+verified TLS and structural evidence capture apply. No address/range is guessed;
+no NAT check, address change, interface shutdown, account move or mapping update
+runs. The evidence cannot establish routing, reachability or application delivery.
+Keep remaining live variants under `8x0.2.37`.

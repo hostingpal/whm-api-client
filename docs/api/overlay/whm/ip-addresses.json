@@ -1,0 +1,462 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "IP Address Management",
+  "class": "IpAddresses",
+  "accessor": "ipAddresses",
+  "operations": {
+    "whm1:addips": {
+      "name": "addIps",
+      "method": "POST",
+      "order": [
+        "ips",
+        "netmask",
+        "excludes"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11. The client performs one request without automatic retries, rollback or polling."
+        },
+        {
+          "kind": "documented",
+          "text": "Adds an IPv4 address or Class C CIDR range by attempting to add aliases to the main network interface. It rebuilds /etc/ipaddrpool, stores addresses in /etc/ips and uses ipaliases to activate them at startup. The documented CIDR range mask is 24 through 30. These changes can affect server networking."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply excludes as a comma-delimited address string. Omission excludes no addresses; the multiple-address example includes an inconsistent excludes= prefix, while the parameter description specifies the address list itself. The client forwards the supplied string once without adding a prefix or validating network syntax."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /addips/get declares x-readonly=false and x-cpanel-available-version=11; selected transport is POST. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:delip": {
+      "name": "deleteIp",
+      "method": "POST",
+      "order": [
+        "ip",
+        "ethernetdev",
+        "skipifshutdown"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11. The client performs one request without automatic retries, rollback or polling."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the specified IPv4 address from the server and can affect network connectivity. ethernetDev names its bound network alias; omission retains the documented empty-string default. skipIfShutdown=true prevents removal when the interface is down; false sends 0 and permits removal. Omission retains the documented 0 default."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /delip/get declares x-readonly=false and x-cpanel-available-version=11; selected transport is POST. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned optional integer enum [0,1] request switch is exposed as bool and encoded as 1/0. Null omits it and retains the documented server default; explicit false sends 0."
+        }
+      ],
+      "params": {
+        "ethernetdev": {
+          "php": "ethernetDev"
+        },
+        "skipifshutdown": {
+          "php": "skipIfShutdown",
+          "encoding": "bool"
+        }
+      }
+    },
+    "whm1:get_public_ip": {
+      "name": "getPublicIp",
+      "method": "GET",
+      "order": [
+        "ip"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 62. The client performs one request without automatic retries, rollback or polling."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a public address for the supplied public or private IPv4 address, including 1:1 NAT configurations. The main public address is also used for license verification. The returned string does not establish network reachability."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /get_public_ip/get declares x-readonly=true and x-cpanel-available-version=62; selected transport is GET. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:get_shared_ip": {
+      "name": "getSharedIp",
+      "method": "GET",
+      "order": [
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 62. The client performs one request without automatic retries, rollback or polling."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting user selects the currently authenticated WHM user. The payload ip is a string and may be the tilde character (~) when that user has no shared IP address; this sentinel is preserved unchanged."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /get_shared_ip/get declares x-readonly=true and x-cpanel-available-version=62; selected transport is GET. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:ipv6_disable_account": {
+      "name": "disableIpv6Account",
+      "method": "POST",
+      "order": [
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.40. The client performs one request without automatic retries, rollback or polling. Disabling the Web Server role disables this operation. For all IPv6 features to function properly, cpsrvd must listen on IPv6 addresses (Listen on IPv6 Addresses in Tweak Settings)."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply user as a comma-delimited account-name string. Disabling IPv6 unbinds the address from the server and the account loses it; enabling it again assigns a different address. The optional fail_cnt and failures list report account failures separately from the WHM result. Inspect them even after envelope success."
+        },
+        {
+          "kind": "documented",
+          "text": "The failures records have optional name and reason fields. The pinned reason schema has only prose and an example, without a type; its value remains mixed rather than an invented string-only contract."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /ipv6_disable_account/get declares x-readonly=false and x-cpanel-available-version=11.40; selected transport is POST. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:ipv6_enable_account": {
+      "name": "enableIpv6Account",
+      "method": "POST",
+      "order": [
+        "range",
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.40. The client performs one request without automatic retries, rollback or polling. Disabling the Web Server role disables this operation. For all IPv6 features to function properly, cpsrvd must listen on IPv6 addresses (Listen on IPv6 Addresses in Tweak Settings)."
+        },
+        {
+          "kind": "documented",
+          "text": "Supply user as a comma-delimited account-name string and range as a configured range name. SHARED selects the server shared IPv6 address. Configure dedicated ranges with ipv6_range_add or the IPv6 Ranges interface, or configure a shared address in Basic WebHost Manager Setup or /etc/wwwacct.conf, before assignment. This operation changes account address assignments."
+        },
+        {
+          "kind": "documented",
+          "text": "The optional fail_cnt and account-keyed failures/ipv6 maps report per-account results separately from the WHM envelope. Inspect failures even after envelope success; map keys and IPv6 address strings are retained."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /ipv6_enable_account/get declares x-readonly=false and x-cpanel-available-version=11.40; selected transport is POST. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:ipv6_range_add": {
+      "name": "addIpv6Range",
+      "method": "POST",
+      "order": [
+        "name",
+        "range",
+        "enabled",
+        "note"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.40. The client performs one request without automatic retries, rollback or polling. Disabling the Web Server role disables this operation. For all IPv6 features to function properly, cpsrvd must listen on IPv6 addresses (Listen on IPv6 Addresses in Tweak Settings)."
+        },
+        {
+          "kind": "documented",
+          "text": "Adds an IPv6 CIDR range for account assignments. The name SHARED is reserved and cannot be used. enabled=true makes the range available, while false reserves it; omission retains the documented default 1. Omitted note retains the documented null default, while an explicit empty string is sent."
+        },
+        {
+          "kind": "documented",
+          "text": "This operation cannot modify the shared IPv6 address; configure that address in Basic WebHost Manager Setup or /etc/wwwacct.conf."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /ipv6_range_add/get declares x-readonly=false and x-cpanel-available-version=11.40; selected transport is POST. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned optional integer enum [0,1] request switch is exposed as bool and encoded as 1/0. Null omits it and retains the documented server default; explicit false sends 0."
+        }
+      ],
+      "params": {
+        "enabled": {
+          "encoding": "bool"
+        }
+      }
+    },
+    "whm1:ipv6_range_edit": {
+      "name": "editIpv6Range",
+      "method": "POST",
+      "order": [
+        "name",
+        "new_name",
+        "note"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.40. The client performs one request without automatic retries, rollback or polling. Disabling the Web Server role disables this operation. For all IPv6 features to function properly, cpsrvd must listen on IPv6 addresses (Listen on IPv6 Addresses in Tweak Settings)."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes the range name and/or note. Omitting newName keeps the old name, and omitting note leaves the old note unchanged; explicit empty strings are forwarded. SHARED cannot be edited and cannot be the new name."
+        },
+        {
+          "kind": "documented",
+          "text": "This operation cannot modify the shared IPv6 address; configure that address in Basic WebHost Manager Setup or /etc/wwwacct.conf."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /ipv6_range_edit/get declares x-readonly=false and x-cpanel-available-version=11.40; selected transport is POST. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:ipv6_range_list": {
+      "name": "listIpv6Ranges",
+      "method": "GET",
+      "order": [],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.40. The client performs one request without automatic retries, rollback or polling. Disabling the Web Server role disables this operation. For all IPv6 features to function properly, cpsrvd must listen on IPv6 addresses (Listen on IPv6 Addresses in Tweak Settings)."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns optional range records, with native integer 0/1 enabled flags, textual IPv6/CIDR addresses, account-name lists and reclaimed-address lists. SHARED denotes the main shared IPv6 address; omitted fields and empty lists remain distinct."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /ipv6_range_list/get declares x-readonly=true and x-cpanel-available-version=11.40; selected transport is GET. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:ipv6_range_remove": {
+      "name": "removeIpv6Range",
+      "method": "POST",
+      "order": [
+        "name"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.40. The client performs one request without automatic retries, rollback or polling. Disabling the Web Server role disables this operation. For all IPv6 features to function properly, cpsrvd must listen on IPv6 addresses (Listen on IPv6 Addresses in Tweak Settings)."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the named IPv6 range from the server, changing the available address pool. This operation cannot modify the shared IPv6 address; configure that address in Basic WebHost Manager Setup or /etc/wwwacct.conf. No automatic recovery or reassignment is promised."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /ipv6_range_remove/get declares x-readonly=false and x-cpanel-available-version=11.40; selected transport is POST. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:ipv6_range_usage": {
+      "name": "getIpv6RangeUsage",
+      "method": "GET",
+      "order": [
+        "name"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.40. The client performs one request without automatic retries, rollback or polling. Disabling the Web Server role disables this operation. For all IPv6 features to function properly, cpsrvd must listen on IPv6 addresses (Listen on IPv6 Addresses in Tweak Settings)."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns optional integer forbidden, free and used counts for the named range. Counts, zero values and omitted fields remain distinct; no numeric-string or floating-point coercion is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /ipv6_range_usage/get declares x-readonly=true and x-cpanel-available-version=11.40; selected transport is GET. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:listips": {
+      "name": "listIps",
+      "method": "GET",
+      "order": [],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11. The client performs one request without automatic retries, rollback or polling."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns optional server IPv4 records including network-interface, netmask, network and public-address strings and native integer 0/1 active, dedicated, mainaddr, removable and used flags. Inventory flags do not establish reachability or authorize removal."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /listips/get declares x-readonly=true and x-cpanel-available-version=11; selected transport is GET. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:listipv6s": {
+      "name": "listIpv6s",
+      "method": "GET",
+      "order": [],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11. The client performs one request without automatic retries, rollback or polling."
+        },
+        {
+          "kind": "documented",
+          "text": "Lists IPv6 addresses bound to server network interfaces. Address strings retain their textual representation; an empty ip list and an omitted ip member stay distinct."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /listipv6s/get declares x-readonly=true and x-cpanel-available-version=11; selected transport is GET. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:nat_checkip": {
+      "name": "checkNatIp",
+      "method": "POST",
+      "order": [
+        "ip"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.40. The client performs one request without automatic retries, rollback or polling."
+        },
+        {
+          "kind": "documented",
+          "text": "Validates the public IP address for a local IPv4 address on a NAT-configured server. Although the operation name describes a check and the source path uses GET, x-readonly=false selects form POST. It is excluded from the fixed live-read catalog; its checked_ip payload does not prove end-to-end reachability."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /nat_checkip/get declares x-readonly=false and x-cpanel-available-version=11.40; selected transport is POST. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:nat_set_public_ip": {
+      "name": "setNatPublicIp",
+      "method": "POST",
+      "order": [
+        "local_ip",
+        "public_ip"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.40. The client performs one request without automatic retries, rollback or polling."
+        },
+        {
+          "kind": "documented",
+          "text": "Pairs localIp with publicIp on a NAT-configured server, changing its NAT address mapping. Both strings are forwarded under local_ip/public_ip without client-side network validation; successful metadata does not establish external reachability."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /nat_set_public_ip/get declares x-readonly=false and x-cpanel-available-version=11.40; selected transport is POST. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:setsiteip": {
+      "name": "setSiteIp",
+      "method": "POST",
+      "order": [
+        "ip",
+        "domain",
+        "user"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11. The client performs one request without automatic retries, rollback or polling."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes a site or account IPv4 address and can affect hosted services immediately. The source requires either user or domain; each remains optional in the signature because the requirement is conditional. The client forwards whichever selectors are supplied without inventing exclusivity or choosing precedence when both are present."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned WHM /setsiteip/get declares x-readonly=false and x-cpanel-available-version=11; selected transport is POST. Canonical x-tagGroups identity is IP Address Management, covering IPv4 Address Settings, IPv6 Address Settings and Network Address Translation rather than the first IP Addresses tag. Response properties and requiredness are preserved without normalization. Source decompressed SHA-256: 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    }
+  }
+}

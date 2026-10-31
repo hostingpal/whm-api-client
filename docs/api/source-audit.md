@@ -3273,3 +3273,31 @@ live responses. All 60 prior JSON artifacts and 24 pinned-source files are uncha
 The correction passed 31,127 offline tests / 233,646 assertions plus formatting,
 maximum PHPStan, strict Composer, source/map/generation and full Go tests/vet.
 No settings or resources were changed, so no mutation cleanup was needed.
+
+## WHM IP address administration
+
+`whm()->ipAddresses()` exposes all sixteen pinned IPv4, IPv6 and NAT functions.
+Six reads use GET and ten mutations or NAT-check helpers use form POST. Each
+method retains its source availability floor and parameter order. Addresses,
+netmasks, ranges and notes are forwarded without rewriting or new validation.
+
+`getSharedIp()` preserves the literal `~` value when no shared address exists.
+IPv6 inventory retains the `SHARED` range name, optional rows and lists, and
+integer status flags. Null, omission and mixed failure reasons follow each
+operation's source. Explicit false becomes zero, while omitted options retain
+server defaults.
+
+IP deletion can shut down a network interface depending on its options; NAT and
+site-IP changes can alter connectivity and hosted configuration. Account IPv6
+enablement/disablement and range removal are separate operations. Read each
+method's selector and destructive/default caveats before calling it. The client
+adds no retries, rollback, NAT probing or network reconfiguration beyond the
+single requested operation. API success does not prove reachability, DNS, mail
+routing, HTTP delivery or TLS behavior.
+
+All sixteen methods have independent offline contracts. The fixed five-GET live
+catalog selects WHM version, the default shared IP, IPv6 ranges and IPv4/IPv6
+inventories. It guesses no address or range, performs no NAT check and changes
+no account, address, interface, mapping or network state. Empty inventories do
+not establish populated row schemas. Follow-up `8x0.2.37` retains all unobserved
+variants and lifecycle behavior.

@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 49 typed groups cover 447 documented operations:
+and cPanel UAPI surface. The 50 typed groups cover 463 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -1181,3 +1181,31 @@ Beads block to `CLAUDE.md` (do not run `bd setup claude` to re-add one).
 Preserve the generated Beads blocks and keep project-specific additions outside
 them. If `bd setup` regenerates a Beads block with profile-neutral wording,
 re-apply the team-maintainer wording; the Git Workflow section is authoritative.
+
+## WHM IP address administration
+
+`whm()->ipAddresses()` exposes all sixteen pinned IPv4, IPv6 and NAT functions.
+Six reads use GET and ten mutations or NAT-check helpers use form POST. Each
+method retains its source availability floor and parameter order. Addresses,
+netmasks, ranges and notes are forwarded without rewriting or new validation.
+
+`getSharedIp()` preserves the literal `~` value when no shared address exists.
+IPv6 inventory retains the `SHARED` range name, optional rows and lists, and
+integer status flags. Null, omission and mixed failure reasons follow each
+operation's source. Explicit false becomes zero, while omitted options retain
+server defaults.
+
+IP deletion can shut down a network interface depending on its options; NAT and
+site-IP changes can alter connectivity and hosted configuration. Account IPv6
+enablement/disablement and range removal are separate operations. Read each
+method's selector and destructive/default caveats before calling it. The client
+adds no retries, rollback, NAT probing or network reconfiguration beyond the
+single requested operation. API success does not prove reachability, DNS, mail
+routing, HTTP delivery or TLS behavior.
+
+All sixteen methods have independent offline contracts. The fixed five-GET live
+catalog selects WHM version, the default shared IP, IPv6 ranges and IPv4/IPv6
+inventories. It guesses no address or range, performs no NAT check and changes
+no account, address, interface, mapping or network state. Empty inventories do
+not establish populated row schemas. Follow-up `8x0.2.37` retains all unobserved
+variants and lifecycle behavior.
