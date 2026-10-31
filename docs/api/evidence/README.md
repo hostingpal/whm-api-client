@@ -645,3 +645,57 @@ text or any of the thirty write/helper operations ran. These reports remain
 separate from the immutable five-GET capture, whose failed idle observation stays
 unwaived under `8x0.2.34`. All existing artifacts are preserved; no new capture was
 run to clear the failure.
+
+## WHM login and mail protection capture
+
+The initial [login/mail-protection capture](2026-10-31-whm-login-mail-protection.json)
+at `b99dd1f35aa591deb7803dc7f298296f1338a33b` on `11.138.0.19` records eight HTTP 200
+observations: four API/payload/probe passes, three API failures and one successful
+API response with a payload mismatch. Only `load_cpgreylist_config`'s
+`cpgreylist_config.is_enabled` is a numeric string; compatibility is narrowed to
+exact string flags `0` and `1` at that leaf, leaving sibling flags unchanged.
+
+Server netblock trust, common-provider configuration and trusted-host inventory
+fail at the API layer. The sanitized evidence does not establish their cause;
+these errors remain unwaived. No login logs, deferred messages or command text
+were read, and no security, trust, history, configuration or mail state changed.
+The initial capture remains failed and immutable. Remaining variants and behavior
+stay under `8x0.2.35`. SHA-256:
+`60326d0c8bc7435124aca7c178c99a3dea11a1ab06476f9afff59e9411ac6f9d`.
+
+The corrected [login/mail-protection capture](2026-10-31-whm-login-mail-protection-corrected.json)
+at `8f1a4b91a556ca73f5be9db5ad6170d2e481bd0c` on `11.138.0.19` records eight HTTP 200
+observations: five API/payload/probe passes, the same three API failures and zero
+payload discrepancies. The reviewed Greylisting flag now passes exact string-flag
+normalization; numeric configuration limits and sibling flags retain their types.
+Country inventory is populated. Failed Greylisting inventories establish no row
+schemas; the reviewer separately diagnosed disabled Greylisting as their cause.
+Strict assessment remains failed without a waiver.
+
+No authentication logs, deferred messages, command text, mutation or notification
+was involved. Both artifacts remain immutable. API status does not establish
+login blocking, mail delivery or enforcement. Follow-up `8x0.2.35` owns the
+remaining failures, methods and variants. SHA-256:
+`27fd32d3b51e8195a3f027b4890f55ad68a440bb706aabf3862b84f6582e6a27`.
+
+### Independent login and mail protection review
+
+[Claude review 5720507218](https://github.com/hostingpal/whm-api-client/pull/48#pullrequestreview-5720507218)
+reports WHM GET checks on cPanel `11.138.0.19`, printing only key names and type
+classes. All 110 failed-login rows carried whole digit-string `timeleft` values.
+The other three histories were empty; their compatibility follows the shared
+source routine. Fractional native values remain supported by the excessive-history
+number schema, but were not observed. The canonical string correction does not
+admit fractional strings or overflow-to-float.
+
+The untrust maps, provider IP list, save-config quoted flag and trusted-host error
+map corrections are source/offline evidence. All fifteen writes remain unobserved
+because they are server-wide and some can cause lockout. Source returns an empty
+string for an absent creation comment; stored-row null comments remain unobserved.
+Existing numbered encoding is unchanged.
+
+The reviewer established disabled Greylisting as the cause of all three captured
+API failures. Status and configuration still work while it is disabled. No service
+enablement, mutation or repeat capture ran. Both immutable artifacts retain their
+failed/unwaived status under `8x0.2.35`, and the reviewer reports do not expand the
+committed eight-GET catalog or establish login/mail enforcement.
