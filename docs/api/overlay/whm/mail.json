@@ -389,14 +389,39 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned load_cpgreylist_config x-cpanel-available-version is 11.50; preserve this exact availability floor in the generated method documentation. Source WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Immutable docs/api/evidence/2026-10-31-whm-login-mail-protection.json (SHA-256 60326d0c8bc7435124aca7c178c99a3dea11a1ab06476f9afff59e9411ac6f9d), captured at revision b99dd1f35aa591deb7803dc7f298296f1338a33b through WHM GET load_cpgreylist_config, records HTTP/API success and a numeric-string type mismatch solely at $.cpgreylist_config.is_enabled. The pinned leaf is an integer 0|1 flag, so compatibility accepts only exact quoted 0/1 and normalizes them to integers. The structural artifact does not preserve the original scalar value or establish other numeric strings, sibling fields or operations. The original capture remains failed; its three API errors are unwaived."
         }
       ],
       "notes": [
         {
           "kind": "documented",
           "text": "Available in cPanel & WHM 11.50 and later."
+        },
+        {
+          "kind": "observed",
+          "text": "On 11.138.0.19 the immutable initial capture at b99dd1f35aa591deb7803dc7f298296f1338a33b records a numeric-string at cpgreylist_config.is_enabled. Only exact quoted 0/1 flags are normalized to integer 0/1 at this leaf; other values and sibling fields remain strict. The original artifact remains failed and does not establish the original scalar value."
         }
-      ]
+      ],
+      "response": {
+        "cpgreylist_config.is_enabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Immutable docs/api/evidence/2026-10-31-whm-login-mail-protection.json (SHA-256 60326d0c8bc7435124aca7c178c99a3dea11a1ab06476f9afff59e9411ac6f9d), captured at revision b99dd1f35aa591deb7803dc7f298296f1338a33b through WHM GET load_cpgreylist_config, records HTTP/API success and a numeric-string type mismatch solely at $.cpgreylist_config.is_enabled. The pinned leaf is an integer 0|1 flag, so compatibility accepts only exact quoted 0/1 and normalizes them to integers. The structural artifact does not preserve the original scalar value or establish other numeric strings, sibling fields or operations. The original capture remains failed; its three API errors are unwaived."
+            }
+          ]
+        }
+      }
     },
     "whm1:read_cpgreylist_deferred_entries": {
       "name": "readCpgreylistDeferredEntries",

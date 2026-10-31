@@ -453,6 +453,11 @@ final readonly class Mail
      *
      * Documented: Available in cPanel & WHM 11.50 and later.
      *
+     * Observed: On 11.138.0.19 the immutable initial capture at b99dd1f35aa591deb7803dc7f298296f1338a33b records a
+     * numeric-string at cpgreylist_config.is_enabled. Only exact quoted 0/1 flags are normalized to integer 0/1 at this
+     * leaf; other values and sibling fields remain strict. The original artifact remains failed and does not establish
+     * the original scalar value.
+     *
      * API-map identity: whm1:load_cpgreylist_config#GET (wire name load_cpgreylist_config; Spam Protection
      * (Greylisting)).
      *

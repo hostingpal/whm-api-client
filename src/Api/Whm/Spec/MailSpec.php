@@ -224,7 +224,7 @@ final class MailSpec
                     'fields' => [
                         'child_timeout_secs' => ['type' => 'int'],
                         'initial_block_time_mins' => ['type' => 'int'],
-                        'is_enabled' => ['type' => 'flag'],
+                        'is_enabled' => ['type' => 'flag', 'accept' => ['string-flag']],
                         'is_exim_enabled' => ['type' => 'flag'],
                         'max_child_procs' => ['type' => 'int'],
                         'must_try_time_mins' => ['type' => 'int'],

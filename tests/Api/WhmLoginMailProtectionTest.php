@@ -472,6 +472,108 @@ final class WhmLoginMailProtectionTest extends TestCase
         self::assertSame('key=country_whitelist&value=RS%2CUS', self::body($http));
     }
 
+    /** @return iterable<string, array{string, int}> */
+    public static function observedGreylistingEnabledFlags(): iterable
+    {
+        yield 'quoted zero' => ['"0"', 0];
+        yield 'quoted one' => ['"1"', 1];
+        yield 'native zero' => ['0', 0];
+        yield 'native one' => ['1', 1];
+    }
+
+    #[DataProvider('observedGreylistingEnabledFlags')]
+    public function testObservedGreylistingEnabledFlagNormalizesOnlyExactQuotedFlags(string $wire, int $expected): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(
+            'load_cpgreylist_config',
+            '{"cpgreylist_config":{"is_enabled":' . $wire . ',"is_exim_enabled":0,"spf_bypass":1}}',
+        )));
+        self::assertSame([
+            'cpgreylist_config' => ['is_enabled' => $expected, 'is_exim_enabled' => 0, 'spf_bypass' => 1],
+        ], $client->whm()->mail()->loadCpgreylistConfig());
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function invalidObservedGreylistingEnabledFlags(): iterable
+    {
+        foreach (
+            [
+            '"00"', '"01"', '"0.0"', '"1.0"', '"-0"', '"+1"', '" 1"', '"1 "', '""', '"2"',
+            '"1e0"', 'true', 'false', 'null', '0.0', '1.0', '2', '-1', '[]', '{}',
+            ] as $wire
+        ) {
+            yield $wire => [$wire];
+        }
+    }
+
+    #[DataProvider('invalidObservedGreylistingEnabledFlags')]
+    public function testObservedGreylistingEnabledFlagRejectsNoncanonicalStringsAndOtherTypes(string $wire): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(
+            'load_cpgreylist_config',
+            '{"cpgreylist_config":{"is_enabled":' . $wire . '}}',
+        )));
+        try {
+            $client->whm()->mail()->loadCpgreylistConfig();
+            self::fail('Only native flags and exact quoted zero/one may be accepted.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertSame($exception->metadata, $client->whm()->responseMeta());
+            self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
+    /** @return iterable<string, array{string, Call, string}> */
+    public static function observedGreylistingFlagStrictSiblings(): iterable
+    {
+        yield 'load Exim flag' => ['load_cpgreylist_config',
+            static fn (WhmClient $w): array => $w->mail()->loadCpgreylistConfig(),
+            '{"cpgreylist_config":{"is_exim_enabled":"0"}}'];
+        yield 'load SPF flag' => ['load_cpgreylist_config',
+            static fn (WhmClient $w): array => $w->mail()->loadCpgreylistConfig(),
+            '{"cpgreylist_config":{"spf_bypass":"1"}}'];
+        yield 'load integer timeout' => ['load_cpgreylist_config',
+            static fn (WhmClient $w): array => $w->mail()->loadCpgreylistConfig(),
+            '{"cpgreylist_config":{"child_timeout_secs":"5"}}'];
+        yield 'save enabled flag' => ['save_cpgreylist_config',
+            static fn (WhmClient $w): array => $w->mail()->saveCpgreylistConfig(spfBypass: false),
+            '{"cpgreylist_config":{"is_enabled":"0"}}'];
+        yield 'Greylisting status' => ['cpgreylist_status',
+            static fn (WhmClient $w): array => $w->mail()->cpgreylistStatus(), '{"is_enabled":"1"}'];
+        yield 'cPHulk load enabled flag' => ['load_cphulk_config',
+            static fn (WhmClient $w): array => $w->cpHulk()->loadConfig(),
+            '{"cphulk_config":{"is_enabled":"1"}}'];
+        yield 'netblock trusted flag' => ['cpgreylist_is_server_netblock_trusted',
+            static fn (WhmClient $w): array => $w->mail()->cpgreylistIsServerNetblockTrusted(),
+            '{"ip_blocks":{"192.0.2.0/24":"0"}}'];
+        yield 'provider configuration flag' => ['cpgreylist_load_common_mail_providers_config',
+            static fn (WhmClient $w): array => $w->mail()->cpgreylistLoadCommonMailProvidersConfig(),
+            '{"autotrust_new_common_mail_providers":"1"}'];
+    }
+
+    /** @param Call $call */
+    #[DataProvider('observedGreylistingFlagStrictSiblings')]
+    public function testObservedGreylistingEnabledCorrectionPreservesStrictSiblingFields(
+        string $operation,
+        Closure $call,
+        string $payload,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($operation, $payload)));
+        try {
+            $call($client->whm());
+            self::fail('The observed enabled-flag correction must not broaden sibling fields.');
+        } catch (PayloadMismatchException $exception) {
+            self::assertSame($exception->metadata, $client->whm()->responseMeta());
+            self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+            self::assertCount(1, $http->getRequests());
+        }
+    }
+
     /**
      * Read the mutable transport request state.
      *
