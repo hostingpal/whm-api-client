@@ -1713,3 +1713,17 @@ catalog reads version, missing required RPMs with target omitted, and packages
 filtered to installed. It runs no action planning, installation, removal, upgrade,
 cache repair or build-log read. Inventory results do not prove package lifecycle
 behavior. Remaining live work stays under `8x0.2.46`.
+
+
+The corrected package-inventory capture at `b8ebf87` on `11.138.0.19` records
+three HTTP/API/payload/probe passes. `listRpms()` accepts the observed metadata-only
+success through its optional-payload boundary; present objects and rpms lists
+remain validated. That boundary also permits explicit null, which was not observed.
+Neither absent nor null data establishes an empty set of missing dependencies.
+
+Strict assessment remains failed for the root `missing_required` discrepancy
+on the absent list_rpms payload. It remains unwaived under `8x0.2.46`; the initial
+failed capture is immutable. Installed-package rows were populated. No package
+installation/removal/upgrade, cache repair, action planning or log read ran.
+Corrected artifact SHA-256:
+`870dcf28decf6b60de972f9876115506ca2ee129a0b7b3c64e683e73016af1d4`.

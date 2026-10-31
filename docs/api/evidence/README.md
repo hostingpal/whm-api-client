@@ -753,3 +753,12 @@ attempted. The rejection is not attributed to a particular operation. All fourte
 write methods remain unobserved under `8x0.2.36`; no new capture, privilege change
 or lifecycle ran for these corrections. Reviewer reports remain separate from
 the immutable six-GET artifacts.
+
+## WHM system-package inventory, 2026-10-31
+
+- `2026-10-31-whm-system-packages.json` at `072dc90`: three HTTP/API successes, two payload/probe passes. list_rpms omitted data. SHA-256 `5b6cc329c55b456106ce0a06a54f0169bb6f58c558267b1960054bf2cfcd8450`.
+- `2026-10-31-whm-system-packages-corrected.json` at `b8ebf87`: three HTTP/API/payload/probe passes; strict assessment still records root missing_required for list_rpms without a waiver. SHA-256 `870dcf28decf6b60de972f9876115506ca2ee129a0b7b3c64e683e73016af1d4`.
+
+Both run fixed GETs on `11.138.0.19`. Present package rows were populated;
+absence does not establish zero missing dependencies. No package action, cache
+repair or log read ran. Follow-up `8x0.2.46` remains open.
