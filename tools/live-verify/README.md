@@ -1257,6 +1257,30 @@ for this normal idle state as well as other failures; do not match error text or
 waive the immutable capture. Separate reviewer log/settings reads do not expand
 this catalog, and all thirty server-wide write/helper operations remain unobserved.
 
+## WHM login and mail protection inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-login-mail-protection.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-login-mail-protection.json
+```
+
+The fixed eight GET requests read WHM version, cPHulk status/country inventory,
+and Greylisting status, server netblock trust, common-provider configuration,
+configuration limits and trusted hosts. Existing exact request guards, opt-in,
+committed-input checks, verified TLS and structural evidence capture apply.
+Authentication logs, deferred mail records and configured command text are
+excluded. No protection, trust, history, configuration or mail state is changed,
+and no message is sent. Source/runtime gaps remain under `8x0.2.35`.
+
+
+The three retained API failures were independently diagnosed as disabled Greylisting
+on `11.138.0.19`; status and configuration reads still work. Preserve both failed
+artifacts and strict assessments without waivers. Do not enable Greylisting or
+repeat the catalog merely to make it pass. Separate reviewer login-history reads
+and source-backed write-result corrections do not expand this eight-GET capture;
+all fifteen server-wide/lockout writes remain unobserved.
+
 ## WHM API tools
 
 Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-api-tools.php --output=docs/api/evidence/YYYY-MM-DD-whm-api-tools.json`.

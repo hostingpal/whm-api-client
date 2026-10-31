@@ -21,11 +21,15 @@ trait WhmGroups
 
     private ?Backups $backupsGroup = null;
 
+    private ?CpHulk $cpHulkGroup = null;
+
     private ?Databases $databasesGroup = null;
 
     private ?Dns $dnsGroup = null;
 
     private ?HostingPlans $hostingPlansGroup = null;
+
+    private ?Mail $mailGroup = null;
 
     private ?ModSecurity $modSecurityGroup = null;
 
@@ -75,6 +79,19 @@ trait WhmGroups
     }
 
     /**
+     * Select the Login Security (cPHulk) operations without making a request.
+     *
+     * Server-wide cPHulk login security, configuration, address lists and history. Configuration and list changes
+     * affect login policy immediately; history removals are destructive. Returned commands and login records are
+     * payload data and may contain sensitive information. The cPanel 11.138.0.19 review used GET reads only; all
+     * fifteen writes across the reviewed cPHulk and Greylisting slice remain unobserved.
+     */
+    public function cpHulk(): CpHulk
+    {
+        return $this->cpHulkGroup ??= new CpHulk($this->run(...));
+    }
+
+    /**
      * Select the Databases operations without making a request.
      *
      * WHM API 1 functions in the documented Databases group.
@@ -102,6 +119,20 @@ trait WhmGroups
     public function hostingPlans(): HostingPlans
     {
         return $this->hostingPlansGroup ??= new HostingPlans($this->run(...));
+    }
+
+    /**
+     * Select the Mail operations without making a request.
+     *
+     * Server-wide mail operations, including Greylisting policy, trusted hosts, common providers and deferred triplets.
+     * Trust and configuration changes alter mail deferral policy. Returned triplets contain sender and recipient
+     * addresses; the client does not deliver mail or fetch returned addresses. The cPanel 11.138.0.19 review used GET
+     * reads with Greylisting disabled; all fifteen writes across the reviewed cPHulk and Greylisting slice remain
+     * unobserved.
+     */
+    public function mail(): Mail
+    {
+        return $this->mailGroup ??= new Mail($this->run(...));
     }
 
     /**
