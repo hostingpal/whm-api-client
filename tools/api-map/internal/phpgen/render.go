@@ -193,7 +193,7 @@ func groupClass(g effective.Group) string {
 		}
 	}
 	for _, op := range g.Operations {
-		if op.MultipartUploads != nil || op.MultipartUpload != nil {
+		if op.MultipartUploads != nil || op.MultipartUpload != nil || op.MultipartUploadFamily != nil {
 			uses = append(uses, "HostingPal\\WhmApiClient\\Upload", "InvalidArgumentException")
 		}
 	}
@@ -365,7 +365,7 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		w.line(indent + " *     or this account handle uses the unsupported WHM bridge.")
 	} else if op.MultipartUpload != nil {
 		w.line(indent + " * @throws InvalidArgumentException If the upload or multipart fields are invalid; no retry occurs.")
-	} else if op.MultipartUploads != nil {
+	} else if op.MultipartUploads != nil || op.MultipartUploadFamily != nil {
 		w.line(indent + " * @throws InvalidArgumentException If uploads are empty, keyed, invalid, or this handle uses the WHM bridge.")
 	} else if rejectEmpty {
 		w.line(indent + " * @throws InvalidArgumentException If an explicit target is absent, blank, zero, or an invalid string list.")
@@ -494,6 +494,13 @@ func specClass(g effective.Group) string {
 			}
 			w.line("        'outcome' => " + phpString(op.Outcome) + ",")
 		}
+		if d := op.MultipartUploadFamily; d != nil {
+			w.line("        'multipart_upload_family' => [")
+			w.line("            'php' => " + phpString(d.PHP) + ",")
+			w.line("            'source' => " + phpString(d.Source) + ",")
+			w.line("            'routes' => " + phpString(d.Routes) + ",")
+			w.line("        ],")
+		}
 		if d := op.MultipartUpload; d != nil {
 			w.line("        'multipart_upload' => [")
 			w.line("            'php' => " + phpString(d.PHP) + ",")
@@ -523,7 +530,7 @@ func specClass(g effective.Group) string {
 		} else {
 			w.line("        'params' => [")
 			for _, p := range op.Params {
-				if (p.Input != nil && p.Encoding != "json") || (op.MultipartUploads != nil && p.PHP == op.MultipartUploads.PHP) {
+				if (p.Input != nil && p.Encoding != "json") || (op.MultipartUploads != nil && p.PHP == op.MultipartUploads.PHP) || (op.MultipartUploadFamily != nil && p.PHP == op.MultipartUploadFamily.PHP) {
 					continue
 				}
 				setting := ""

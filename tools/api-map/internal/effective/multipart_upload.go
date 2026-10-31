@@ -14,7 +14,7 @@ func (b *builder) multipartUpload(op model.Operation, v model.Variant, ov overla
 		return nil
 	}
 	d := ov.MultipartUpload
-	if ov.Body != "multipart" || op.Family != "whm1" || v.Method != "POST" || d == nil || !IsMethodName(d.PHP) || reservedArguments[d.PHP] || d.Source != "file" || d.Text != "module" || d.PHP == d.Text || ov.MultipartUploads != nil || ov.JSONBody != nil || len(ov.Params) > 0 || len(ov.Order) > 0 || len(ov.BodyFields) > 0 || len(ov.AdditionalMethods) > 0 || len(*params) > 0 || len(v.Parameters) > 0 {
+	if ov.Body != "multipart" || op.Family != "whm1" || v.Method != "POST" || d == nil || !IsMethodName(d.PHP) || reservedArguments[d.PHP] || d.Source != "file" || d.Text != "module" || d.PHP == d.Text || ov.MultipartUploadFamily != nil || ov.MultipartUploads != nil || ov.JSONBody != nil || len(ov.Params) > 0 || len(ov.Order) > 0 || len(ov.BodyFields) > 0 || len(ov.AdditionalMethods) > 0 || len(*params) > 0 || len(v.Parameters) > 0 {
 		return fail("requires WHM POST with only the reviewed scalar source and text body")
 	}
 	if v.OperationLocator.Pointer == nil {

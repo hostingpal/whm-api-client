@@ -82,11 +82,19 @@ type MultipartUpload struct {
 	Text   string `json:"text"`
 }
 
+// MultipartUploadFamily selects an evidenced scalar or nonempty one-based Upload list.
+type MultipartUploadFamily struct {
+	PHP    string `json:"php"`
+	Source string `json:"source"`
+	Routes string `json:"routes"`
+}
+
 type Operation struct {
-	MultipartUpload   *MultipartUpload   `json:"multipart_upload,omitempty"`
-	MultipartUploads  *MultipartUploads  `json:"multipart_uploads,omitempty"`
-	AdditionalMethods []AdditionalMethod `json:"additional_methods,omitempty"`
-	Name              string             `json:"name,omitempty"`
+	MultipartUploadFamily *MultipartUploadFamily `json:"multipart_upload_family,omitempty"`
+	MultipartUpload       *MultipartUpload       `json:"multipart_upload,omitempty"`
+	MultipartUploads      *MultipartUploads      `json:"multipart_uploads,omitempty"`
+	AdditionalMethods     []AdditionalMethod     `json:"additional_methods,omitempty"`
+	Name                  string                 `json:"name,omitempty"`
 	// Function qualifies a bare WHM function with one source-evidenced namespace.
 	// It preserves the canonical identity and leaf; UAPI corrections are forbidden.
 	Function string `json:"function,omitempty"`

@@ -6349,3 +6349,60 @@ remain under 8x0.30.8/.30.9. Parent PR84/source and PR86 preparation-exception
 integration gates, POSIX source paths and reliable-size metadata follow-ups
 remain external-owned and unwaived. Historical source snapshots and live
 artifacts are unchanged.
+
+
+### Backup binary restore uploads (2026-10-31)
+
+`uapi()->backup()` generates `restoreDatabases(Upload|array $files, ?int $timeout = null,
+?bool $verbose = null)`, `restoreEmailFilters(Upload|array $backups, ?int $timeout = null,
+?bool $verbose = null)`, `restoreEmailForwarders(Upload|array $backups, ?int $timeout = null,
+?bool $verbose = null)` and `restoreFiles(Upload|array $backups, ?string $directory = null,
+?int $timeout = null, ?bool $verbose = null)`. Arrays are precisely non-empty-list<Upload>.
+Every public value is sensitive. Scalars emit bare `file` for databases or `backup`
+for the other methods; lists emit `file-1`/`backup-1`, then `-2`, even for a singleton.
+Order and duplicate filenames survive one streaming POST; no path-string inference,
+sparse renumbering or Fileman-specific filename filter applies.
+
+These new binary methods initially require direct cPanel UAPI by client policy
+pending route evidence, not an upstream bridge prohibition. Server-path query
+`backup` alternatives are separately bound, explicitly omitted and deferred under
+`8x0.30.9`; no mixed mode is accepted. Optional query values are encoded once;
+null omits, false/zero survive. Database restore requires cPanel 84 and the MySQL
+Client role; filters/forwarders require cPanel 86 and Receive Mail; file restore
+requires cPanel 86 and File Storage. Omission retains timeout 7200 seconds for the
+first three, 172800 for files; 0 disables timeout. The documented minimum 0 adds
+no new runtime minimum validation. Files' omitted directory defaults to user home;
+supplied bytes are forwarded without an inferred relative-path base. Verbose
+selects extra information from each source's module-specific restore logs.
+
+Each returns `array{log_id?:string,log_path?:string,messages?:list<string>}` under
+ordinary Flag outcome handling. An actual empty object is valid; missing, null,
+list or malformed data raises PayloadMismatchException, retaining metadata and
+outcomeConfirmed=true after status success. No message unwrapping, log fetching,
+completion, atomicity or per-file-success inference is added. Restoration changes
+server state with no rollback and no retry after API, payload or transport failure.
+No live restore ran; offline checks establish request/envelope/lifecycle behavior.
+
+Exactly four canonical UAPI operations are added: 1,112 total (525 UAPI, 587 WHM),
+91 groups and 185 generated outputs (184 PHP files and coverage). The new narrow
+`multipart_upload_family` descriptor `{php,source,routes:direct}` is mutually
+exclusive with Fileman's `multipart_uploads`, WHM's `multipart_upload` and JSON.
+Source-bound lowering preserves absent body/schema requiredness and uses prose's
+required upload alternative. Streaming, source preparation, transport, old generated
+operations and SSL bridge behavior remain unchanged. Inherited PR84/source and
+PR86 preparation-exception/metadata acceptance gates remain external-owned and
+unwaived; this adoption does not resolve them.
+
+Pinned source binding: decompressed cpanel.openapi.json.gz SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`, source version
+11.138.0.10. Exact bases are `/paths/~1Backup~1restore_databases/post`,
+`/paths/~1Backup~1restore_email_filters/post`,
+`/paths/~1Backup~1restore_email_forwarders/post`, and
+`/paths/~1Backup~1restore_files/post`. Each overlay binds its operation description,
+requestBody description, literal binary body-property pointer, optional query
+`/parameters/0` omission, and required response data object. Neither requestBody.required
+nor the body schema required array is present. These source facts remain unchanged;
+the required native Upload|array argument expresses the selected upload mode.
+The JSON/zero-length HTTP stubs are attributed source inconsistencies and do not
+override formal multipart/prose contracts. All three result leaves are optional;
+strict object opt-in is deliberately limited to these four new roots.

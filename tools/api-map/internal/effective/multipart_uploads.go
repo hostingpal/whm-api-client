@@ -16,7 +16,7 @@ func (b *builder) multipartUploads(op model.Operation, v model.Variant, ov overl
 		return nil
 	}
 	d := ov.MultipartUploads
-	if ov.Body != "multipart" || op.Family != "uapi" || v.Method != "POST" || d == nil || !IsMethodName(d.PHP) || reservedArguments[d.PHP] || d.Routes != "direct" || d.Start == nil || *d.Start != 0 || !regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_-]*$`).MatchString(d.Prefix) || d.Source != d.Prefix+strconv.Itoa(*d.Start) || d.FilenameForbidden != "<>;" || len(ov.BodyFields) > 0 || len(ov.AdditionalMethods) > 0 {
+	if ov.Body != "multipart" || op.Family != "uapi" || v.Method != "POST" || d == nil || !IsMethodName(d.PHP) || reservedArguments[d.PHP] || d.Routes != "direct" || d.Start == nil || *d.Start != 0 || !regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_-]*$`).MatchString(d.Prefix) || d.Source != d.Prefix+strconv.Itoa(*d.Start) || d.FilenameForbidden != "<>;" || ov.MultipartUploadFamily != nil || len(ov.BodyFields) > 0 || len(ov.AdditionalMethods) > 0 {
 		return fail("require a direct UAPI POST, required zero-based binary list and explicit filename policy")
 	}
 	if v.OperationLocator.Pointer == nil {

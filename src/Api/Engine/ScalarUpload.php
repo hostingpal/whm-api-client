@@ -22,6 +22,7 @@ final class ScalarUpload
         if (
             ($spec['body'] ?? null) !== 'multipart' || ($spec['method'] ?? null) !== 'POST'
             || array_key_exists('module', $spec) || array_key_exists('multipart_uploads', $spec)
+            || array_key_exists('multipart_upload_family', $spec)
             || array_key_exists('json_body', $spec) || ($spec['params'] ?? null) !== []
             || !is_array($body) || count($body) !== 3 || !is_string($body['php'] ?? null)
             || preg_match('/\A[a-z][A-Za-z0-9]*\z/', $body['php']) !== 1

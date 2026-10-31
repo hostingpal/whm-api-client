@@ -22,6 +22,8 @@ use LogicException;
  * - body: optional 'form' (default), 'multipart' (POST: reviewed UAPI string/list bodies
  *   or the reviewed WHM scalar text/file descriptor) or 'json' (POST).
  * - multipart_upload: reviewed WHM required module text and scalar Upload only;
+ * - multipart_upload_family: reviewed UAPI scalar or nonempty one-based Upload lists;
+ *   php argument, literal source and direct route policy. Mutually exclusive with other upload descriptors.
  * - multipart_uploads: only for reviewed UAPI multipart POST binary lists;
  *   {php: required sensitive Upload-list argument, prefix: literal indexed name
  *   prefix, start: 0, routes: 'direct', filename_forbidden: '<>;'}. Fixed params

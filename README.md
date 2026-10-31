@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 91 generated typed groups cover 1,108 documented operations (see
+The 91 generated typed groups cover 1,112 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -664,9 +664,9 @@ foreach ($result['uploads'] ?? [] as $upload) {
 This is offline typed coverage of one additional canonical UAPI operation, with
 no new live upload claim. PR74's attributed raw server observations on
 `11.138.0.19` informed the reviewed outcome/size/filename decisions and are
-separate from this client. Four Backup binary restores remain for later adoption
-(`8x0.30.8`/`.30.9`); WHM configuration upload is now typed. The nine
-multipart inventory entries are not nine verified typed endpoints.
+separate from this client. The four Backup binary restores and WHM configuration
+upload are now typed. Their offline coverage does not establish live compatibility;
+Backup server-path alternatives remain deferred under `8x0.30.9`.
 
 
 `copyFile(source, destination)`, `moveFile(source, destination)` and
@@ -1279,12 +1279,12 @@ separate from immutable capture evidence; see the source audit. Format-only
 
 ### Account backup and restoration
 
-The account-backup section exposes 32 compatible methods across `backup()`,
+The account-backup section exposes 36 compatible methods across `backup()`,
 `restore()`, `wordPressBackup()`, `wordPressRestore()`, `backupInfo()`,
 `extractInfo()` and `websiteBackup()`. Eight explicit reads use GET; 24 operations
-use form POST. Four binary multipart Backup restore endpoints remain excluded
-under `8x0.1.19`, including their alternative server-path modes; generic form access
-does not establish typed upload coverage.
+use form POST and four Backup restore operations use streaming binary multipart POST.
+Their alternative server-path query modes remain omitted under `8x0.30.9`;
+generic form access does not establish compatibility with those modes.
 
 Full backups preserve sensitive remote passwords and SSH key passphrases; `keyName`
 is an existing key identifier, not private-key content. The pinned prerequisite
@@ -1435,8 +1435,8 @@ $client->whm()->modSecurity()->updateSettings(settings: [
 
 This emits `setting_id1=1&state1=On&setting_id2=2&state2=Off&remove2=0`;
 there is no `remove1`. Empty state strings, integer zero and string `'0'` remain
-values. The alias adds one public method, while canonical coverage remains 1,108
-operations (521 UAPI and 587 WHM), 91 groups and 185 generated files (184 PHP files plus the coverage document).
+values. The alias adds one public method, while canonical coverage is now 1,112
+operations (525 UAPI and 587 WHM), 91 groups and 185 generated files (184 PHP files plus the coverage document).
 
 The twelve source-backed empty-result mutations accept an omitted or null payload
 while retaining any returned mixed data; they are not weakened to void. Omitted
@@ -2428,14 +2428,15 @@ not establish typed coverage or verification of that operation.
 The [pinned request-body inventory](docs/api/source-inventory.json) includes 13
 JSON operations (8 WHM, 5 UAPI) and 9 multipart operations (1 WHM, 8 UAPI).
 StatsManager/save_configuration is the first typed JSON-body adopter; the other
-12 JSON-body operations and remaining multipart operations stay excluded. Typed
-JSON-body machinery is available; remaining selection/source/route audit is
+12 JSON-body operations stay excluded. All nine pinned multipart operations now
+have typed methods, with operation-specific source and route limits and offline
+coverage; this does not establish live compatibility. Typed JSON-body machinery is available; remaining selection/source/route audit is
 tracked under `whm-api-client-8x0.29.6`.
 Raw `callJson()` provides JSON transport without a typed contract or endpoint
 compatibility claim; `call()` remains GET/form-only. Selected typed
 operation support is tracked under `whm-api-client-8x0.1.18` (JSON). Fileman is
 the first typed binary multipart adopter. WHM configuration upload is also typed;
-the remaining four Backup binary methods stay under `8x0.30.8`/`.30.9`. Complete execution-contract coverage remains
+the four Backup binary methods are typed, with server-path modes deferred under `8x0.30.9`. Complete execution-contract coverage remains
 open under `whm-api-client-8x0.1`.
 
 ```php
@@ -2530,11 +2531,12 @@ it does not report a changed-files count. The source's multipart schema requires
 both fields even though `requestBody.required` is absent. The empty JSON HTTP
 sample and port 2083 do not override multipart or normal WHM routing.
 
-This implementation adds exactly one canonical WHM operation: total coverage is
-1,108 operations (521 UAPI, 587 WHM), 91 groups and 185 generated outputs. Tests
+This implementation added exactly one canonical WHM operation. After Backup
+upload adoption, total coverage is 1,112 operations (525 UAPI, 587 WHM), 91 groups and 185 generated outputs. Tests
 verify request bytes, routing, stream ownership, metadata and failures offline.
 No live configuration restore was run; Fileman fixture authorization does not
-cover a root configuration restore. Four Backup uploads remain excluded.
+cover a root configuration restore. The four Backup binary uploads are now typed;
+server-path query modes remain deferred.
 
 ### Raw multipart calls
 
@@ -3228,3 +3230,46 @@ Empty feature update disables all features, while empty create has no specified 
 Empty optional maps still dispatch the fixed request. These seven form POST methods
 are offline-verified only; source contracts and typed coverage establish no successful
 live mutation, account conversion, provider registration or feature change.
+
+
+### Backup binary restore uploads (2026-10-31)
+
+`uapi()->backup()` generates `restoreDatabases(Upload|array $files, ?int $timeout = null,
+?bool $verbose = null)`, `restoreEmailFilters(Upload|array $backups, ?int $timeout = null,
+?bool $verbose = null)`, `restoreEmailForwarders(Upload|array $backups, ?int $timeout = null,
+?bool $verbose = null)` and `restoreFiles(Upload|array $backups, ?string $directory = null,
+?int $timeout = null, ?bool $verbose = null)`. Arrays are precisely non-empty-list<Upload>.
+Every public value is sensitive. Scalars emit bare `file` for databases or `backup`
+for the other methods; lists emit `file-1`/`backup-1`, then `-2`, even for a singleton.
+Order and duplicate filenames survive one streaming POST; no path-string inference,
+sparse renumbering or Fileman-specific filename filter applies.
+
+These new binary methods initially require direct cPanel UAPI by client policy
+pending route evidence, not an upstream bridge prohibition. Server-path query
+`backup` alternatives are separately bound, explicitly omitted and deferred under
+`8x0.30.9`; no mixed mode is accepted. Optional query values are encoded once;
+null omits, false/zero survive. Database restore requires cPanel 84 and the MySQL
+Client role; filters/forwarders require cPanel 86 and Receive Mail; file restore
+requires cPanel 86 and File Storage. Omission retains timeout 7200 seconds for the
+first three, 172800 for files; 0 disables timeout. The documented minimum 0 adds
+no new runtime minimum validation. Files' omitted directory defaults to user home;
+supplied bytes are forwarded without an inferred relative-path base. Verbose
+selects extra information from each source's module-specific restore logs.
+
+Each returns `array{log_id?:string,log_path?:string,messages?:list<string>}` under
+ordinary Flag outcome handling. An actual empty object is valid; missing, null,
+list or malformed data raises PayloadMismatchException, retaining metadata and
+outcomeConfirmed=true after status success. No message unwrapping, log fetching,
+completion, atomicity or per-file-success inference is added. Restoration changes
+server state with no rollback and no retry after API, payload or transport failure.
+No live restore ran; offline checks establish request/envelope/lifecycle behavior.
+
+Exactly four canonical UAPI operations are added: 1,112 total (525 UAPI, 587 WHM),
+91 groups and 185 generated outputs (184 PHP files and coverage). The new narrow
+`multipart_upload_family` descriptor `{php,source,routes:direct}` is mutually
+exclusive with Fileman's `multipart_uploads`, WHM's `multipart_upload` and JSON.
+Source-bound lowering preserves absent body/schema requiredness and uses prose's
+required upload alternative. Streaming, source preparation, transport, old generated
+operations and SSL bridge behavior remain unchanged. Inherited PR84/source and
+PR86 preparation-exception/metadata acceptance gates remain external-owned and
+unwaived; this adoption does not resolve them.

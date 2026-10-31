@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 91 typed groups cover 1,108 documented operations:
+and cPanel UAPI surface. The 91 typed groups cover 1,112 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -983,12 +983,12 @@ were assessed separately in the reviewer report in `docs/api/source-audit.md`. N
 `8x0.2.31` retains the unobserved methods and variants. SHA-256:
 `6c0d5ace2ea0795b778c68f552bd2d0852ab8848fb26bc213823ce4916bb63a0`.
 
-The account-backup section exposes 32 compatible methods across `backup()`,
+The account-backup section exposes 36 compatible methods across `backup()`,
 `restore()`, `wordPressBackup()`, `wordPressRestore()`, `backupInfo()`,
 `extractInfo()` and `websiteBackup()`. Eight explicit reads use GET; 24 operations
-use form POST. Four binary multipart Backup restore endpoints remain excluded
-under `8x0.1.19`, including their alternative server-path modes; generic form access
-does not establish typed upload coverage.
+use form POST and four Backup restore operations use streaming binary multipart POST.
+Their alternative server-path query modes remain omitted under `8x0.30.9`;
+generic form access does not establish compatibility with those modes.
 
 Full backups preserve sensitive remote passwords and SSH key passphrases; `keyName`
 is an existing key identifier, not private-key content. The pinned prerequisite
@@ -3010,7 +3010,7 @@ this adoption changes no Upload or source/stream contract.
 
 
 The WHM configuration-upload adoption adds exactly one canonical operation:
-current coverage is 1,108 operations (521 UAPI, 587 WHM), 91 groups and 185
+coverage at that adoption was 1,108 operations (521 UAPI, 587 WHM), 91 groups and 185
 outputs. `whm()->server()->restoreConfigFromUpload(module, Upload)` uses the
 separate evidence-bound `multipart_upload` descriptor `{php, source, text}`.
 Its only reviewed shape is required `module` literal text followed by scalar
@@ -3026,7 +3026,51 @@ rollback, transactional or restart guarantee. Empty JSON sample/port 2083 are
 source inconsistencies. No live root restore or Fileman fixture restore ran.
 The disjoint descriptor is mutually exclusive with multipart_uploads and JSON;
 Fileman's required list, query placement and direct-only policy remain intact.
-Four Backup binary methods remain in 8x0.30.8/.30.9. Inherited PR84/source,
+Four Backup binary methods were deferred at that adoption; they are now delivered
+below, with server-path modes remaining in 8x0.30.9. Inherited PR84/source,
 PR86 preparation-exception mapping, POSIX source-path and reliable-size/metadata
 integration gates remain external-owned and unwaived. Upload factories, bounded
 stream/source/transport primitives and pinned sources/evidence are unchanged.
+
+
+### Backup binary restore uploads (2026-10-31)
+
+`uapi()->backup()` generates `restoreDatabases(Upload|array $files, ?int $timeout = null,
+?bool $verbose = null)`, `restoreEmailFilters(Upload|array $backups, ?int $timeout = null,
+?bool $verbose = null)`, `restoreEmailForwarders(Upload|array $backups, ?int $timeout = null,
+?bool $verbose = null)` and `restoreFiles(Upload|array $backups, ?string $directory = null,
+?int $timeout = null, ?bool $verbose = null)`. Arrays are precisely non-empty-list<Upload>.
+Every public value is sensitive. Scalars emit bare `file` for databases or `backup`
+for the other methods; lists emit `file-1`/`backup-1`, then `-2`, even for a singleton.
+Order and duplicate filenames survive one streaming POST; no path-string inference,
+sparse renumbering or Fileman-specific filename filter applies.
+
+These new binary methods initially require direct cPanel UAPI by client policy
+pending route evidence, not an upstream bridge prohibition. Server-path query
+`backup` alternatives are separately bound, explicitly omitted and deferred under
+`8x0.30.9`; no mixed mode is accepted. Optional query values are encoded once;
+null omits, false/zero survive. Database restore requires cPanel 84 and the MySQL
+Client role; filters/forwarders require cPanel 86 and Receive Mail; file restore
+requires cPanel 86 and File Storage. Omission retains timeout 7200 seconds for the
+first three, 172800 for files; 0 disables timeout. The documented minimum 0 adds
+no new runtime minimum validation. Files' omitted directory defaults to user home;
+supplied bytes are forwarded without an inferred relative-path base. Verbose
+selects extra information from each source's module-specific restore logs.
+
+Each returns `array{log_id?:string,log_path?:string,messages?:list<string>}` under
+ordinary Flag outcome handling. An actual empty object is valid; missing, null,
+list or malformed data raises PayloadMismatchException, retaining metadata and
+outcomeConfirmed=true after status success. No message unwrapping, log fetching,
+completion, atomicity or per-file-success inference is added. Restoration changes
+server state with no rollback and no retry after API, payload or transport failure.
+No live restore ran; offline checks establish request/envelope/lifecycle behavior.
+
+Exactly four canonical UAPI operations are added: 1,112 total (525 UAPI, 587 WHM),
+91 groups and 185 generated outputs (184 PHP files and coverage). The new narrow
+`multipart_upload_family` descriptor `{php,source,routes:direct}` is mutually
+exclusive with Fileman's `multipart_uploads`, WHM's `multipart_upload` and JSON.
+Source-bound lowering preserves absent body/schema requiredness and uses prose's
+required upload alternative. Streaming, source preparation, transport, old generated
+operations and SSL bridge behavior remain unchanged. Inherited PR84/source and
+PR86 preparation-exception/metadata acceptance gates remain external-owned and
+unwaived; this adoption does not resolve them.
