@@ -1308,12 +1308,195 @@ failed and unwaived. The observed account limit
 empty string is preserved without inferred semantics. ACL/reseller inventories
 are empty. No settings changed; historical evidence and follow-up `8x0.2.36` remain.
 
+## WHM IP address inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-ip-addresses.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-ip-addresses.json
+```
+
+Five fixed GETs read version, the default shared IP, IPv6 ranges, IPv4 addresses
+and IPv6 addresses. Existing exact request guards, opt-in, committed-input checks,
+verified TLS and structural evidence capture apply. No address/range is guessed;
+no NAT check, address change, interface shutdown, account move or mapping update
+runs. The evidence cannot establish routing, reachability or application delivery.
+Keep remaining live variants under `8x0.2.37`.
+
+The corrected WHM IP-address capture at `fde160d` on `11.138.0.19` passes all five
+GET observations and strict assessment with zero discrepancies. IPv6 range
+`enabled` accepts exact quoted flags; `mostrecent` and `note` accept null only
+where observed. IPv4/IPv6/range rows are populated; range-user lists are empty.
+No network or address/range change ran. The original failed capture is immutable
+and follow-up `8x0.2.37` retains all remaining live coverage.
+
+## Expanded WHM server inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-server-administration.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-server-administration.json
+```
+
+Eight fixed GETs read version, contact-event importances, available/current
+profiles, minimum password-strength policy, installed versions, service status
+and dashboard hostname. Optional filters/selectors remain omitted. Existing
+exact request guards, opt-in, committed-input checks, verified TLS and structural
+capture apply. No credential, linked-node secret, arbitrary config or socket
+inventory is requested. No EULA, purchase, reboot/restart, update, activation,
+node-link, configuration, notification or URL-verification operation runs.
+Successful inventory does not establish service health, completion or remote
+connectivity. Remaining source/live variants stay under `8x0.2.38`.
+
+The corrected expanded WHM server capture at `742eaa8` on `11.138.0.19` passes
+all eight HTTP/API/payload/probe checks. Ten evidenced integer leaves accept
+canonical integer strings losslessly; siblings remain unchanged. Strict status
+still fails for two masked unknown-field observations in installed versions and
+service rows. They remain untyped and unwaived; no key identity/count is inferred.
+No mutation or private configuration read ran. Historical artifacts remain
+immutable and `8x0.2.38` retains remaining live coverage and unknown findings.
+
+## WHM authentication metadata
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-authentication.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-authentication.json
+```
+
+Three exact parameterless GETs read version, TFA issuer names and policy status.
+The existing guard, opt-in, committed inputs, TLS verification, structural capture
+and no-retry rules apply. Provider and login URLs, keys, credential configuration,
+TFA secrets and linked-account data are omitted. No remote connection, URL request,
+key operation, provider/link/policy change or notification runs. This establishes
+no successful login, TFA challenge or SSH authorization; `8x0.2.40` retains other
+operations and variants, and strict findings remain failed without waivers.
+
+The WHM authentication capture at `e88583e` on `11.138.0.19` passes all three
+GET observations and strict assessment with zero discrepancies. Only version,
+issuer names and the integer policy flag were read. No secret, private URL, key,
+configuration or link data was requested, and no state changed. It establishes
+no login, TFA challenge, SSH access or mutation compatibility. `8x0.2.40` remains
+open for all unobserved functions and variants.
+
+## WHM SSL inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-ssl.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-ssl.json
+```
+
+Nine exact GET requests read version, AutoSSL schedule, log catalog metadata,
+metadata flags, designated account/domain problems and exclusions, the best
+SSL domain for the pinned `whostmgr` example and certificate metadata for `npr`.
+The request guard, opt-in, committed inputs, verified TLS, structural-only capture
+and no-retry behavior are unchanged. Provider payloads, private keys, component
+PEM and log contents are omitted. No certificate generation, installation, reset,
+removal, provider/configuration change, background check or notification occurs.
+No returned URL is fetched. Strict findings remain failures; `8x0.2.39` retains
+unobserved operations and variants.
+
+The corrected WHM SSL capture at `4317e1a` on `11.138.0.19` passes all nine GET
+observations and strict assessment with zero discrepancies. Five evidenced leaves
+preserve best-domain null expiry, nullable certificate owner items and issuer
+organization, and canonical integer-string modulus/expiry values. No sibling or
+UAPI contract changed. Certificate inventory is populated; no mutation or private
+material read ran. The initial artifact is immutable and `8x0.2.39` remains open.
+
+## Expanded WHM account inventory
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-account-management.php --output=docs/api/evidence/YYYY-MM-DD-whm-account-management.json`.
+
+Nine fixed GETs read version, user counts, disk usage, home roots, enhancement/user
+inventories, privileges and quota availability. Optional selectors are omitted.
+Existing exact request guards, committed inputs, opt-in, verified TLS and structural
+capture apply. No passwords, private links or account/configuration mutations are
+selected. No conversion, purchase or message runs. Strict discrepancies remain
+failures; remaining behavior and variants stay under `8x0.2.41`.
+
+## WHM hosting plans
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-hosting-plans.php --output=docs/api/evidence/YYYY-MM-DD-whm-hosting-plans.json`.
+
+The original two fixed GETs read version and matchpkgs without selectors. A
+reviewer received an empty match result while listPackages returned a plan on
+11.138.0.19; the cause is unknown. Selector omission does not guarantee complete
+inventory. Preserve the completed artifact; do not rerun it merely for green. Existing
+exact request guards, committed inputs, opt-in, verified TLS and structural-only
+capture apply. No package or feature mutation, arbitrary file read, template
+execution or URL fetch runs. Findings stay unwaived; `8x0.2.43` retains live gaps.
+
+
+### Reviewed hosting-plan contracts
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-hosting-plans-review.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-hosting-plans-reviewed.json
+```
+
+The separate `whm-hosting-plans-review-v1` recipe adds the explicitly requested
+`getPackageInfo('default')` and `getAvailableApplications()` reads, alongside WHM
+version. The stock default package is grounded in the reviewer report, not an
+inferred default for the required `name` parameter. Its exact request guards,
+explicit live opt-in, committed-input checks and structural-only publication are
+unchanged. No write, arbitrary file selector, template execution or URL fetch is
+included. It writes a new immutable artifact; the original capture is preserved.
+
+The requested 2026-10-31 run is complete in
+`docs/api/evidence/2026-10-31-whm-hosting-plans-reviewed.json` at `1336c4d`.
+All three HTTP/API/payload/probe outcomes pass; two masked application item and
+subitem unknown-field observations retain a failed, unwaived strict assessment
+under `8x0.2.43`. Do not rerun this completed capture merely to clear findings.
+
+## WHM API tools
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-api-tools.php --output=docs/api/evidence/YYYY-MM-DD-whm-api-tools.json`.
+
+Five parameterless GETs select version, applist, api_token_list, get_api_calls and
+get_api_pages. Token-list schema contains metadata, not raw credentials. Usage
+entries are function names or file paths. Only masked structural evidence is
+persisted. Existing committed-input, exact request guard, opt-in, verified TLS
+and new-only output requirements apply. No token/session change, secret lookup,
+login-link creation or URL fetch runs. Follow-up `8x0.2.44` retains unobserved behavior.
+
+The completed `465be19` capture has five GET observations covering four typed
+API-tools reads plus version; it does not cover AppConfig. Its masked empty-list
+unknown-field observation remains strict failed and unwaived. The separately
+reviewed `result` wrapper correction does not alter the historical artifact or
+establish its hidden key identity/count. No repeat is required merely for green
+status, and no credential/session action is part of this recipe.
+
+## Expanded WHM web-server inventory
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-webserver-configuration.php --output=docs/api/evidence/YYYY-MM-DD-whm-webserver-configuration.json`.
+
+Nine fixed parameterless GETs read version and eight EasyApache/PHP inventories.
+Only masked structural evidence is persisted. Existing committed-input, exact
+request guard, opt-in, verified TLS and new-only output requirements apply.
+No INI content, arbitrary file or private configuration selector is supplied;
+no conversion/profile/PHP/FPM mutation or URL fetch runs. `8x0.2.45` retains gaps.
+
+Both committed web-server captures are complete and immutable. Their two
+masked unknown observations remain strict failed and unwaived, explicitly
+nonblocking in review 5720977511. The separate reviewer INI reads and source
+corrections do not expand this fixed catalog. No repeated capture or server
+configuration write is required merely for integration or green status.
+
 ## WHM transfer metadata
 
-Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-transfers.php --output=docs/api/evidence/YYYY-MM-DD-whm-transfers.json`.
+The original `whm-transfers.php` recipe captured version, available modules and
+`npr` username validation in `2026-10-31-whm-transfers.json` at `a5badae`.
+That three-GET capture strictly passes and is complete; do not replay it just
+for integration. The catalog now also includes the source/observed module name
+`FeatureListRemoteRoot`, with exact local GET arguments and no remote contact.
 
-Three fixed GETs read version, available_transfer_modules and validate_system_user
-with user=npr. Committed inputs, exact request guards, opt-in, verified TLS and
-new-only structural output are required. No remote credentials/hosts, session IDs,
-log reads, transfer/control/archive mutations or URL fetches occur.
-Follow-up `8x0.2.47` retains unobserved behavior.
+The separate `whm-transfers-review.php` recipe selects only version and that
+module-schema read for the requested new evidence. Use both the normal live
+opt-in and designated `npr` account/domain guards; it records sanitized structure
+from the same raw responses through committed generated code. Schema text stays
+inert and no embedded URLs are followed. This recipe supplies no remote host,
+credential, session ID, log or archive path. It performs no POST or resource
+change. All eight writes and populated session/log/analysis variants remain
+unobserved under `8x0.2.47`. Preserve every historical artifact and discrepancy.

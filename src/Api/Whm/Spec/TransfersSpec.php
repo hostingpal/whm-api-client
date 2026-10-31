@@ -51,18 +51,18 @@ final class TransfersSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
+            'host' => ['name' => 'host', 'encoding' => 'scalar'],
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
             'commTransport' => ['name' => 'comm_transport', 'encoding' => 'scalar'],
             'compressed' => ['name' => 'compressed', 'encoding' => 'bool'],
             'copyResellerPrivs' => ['name' => 'copy_reseller_privs', 'encoding' => 'bool'],
             'enableCustomPkgacct' => ['name' => 'enable_custom_pkgacct', 'encoding' => 'bool'],
-            'host' => ['name' => 'host', 'encoding' => 'scalar'],
             'lowPriority' => ['name' => 'low_priority', 'encoding' => 'bool'],
             'restoreThreads' => ['name' => 'restore_threads', 'encoding' => 'scalar'],
             'transferThreads' => ['name' => 'transfer_threads', 'encoding' => 'scalar'],
             'unencrypted' => ['name' => 'unencrypted', 'encoding' => 'bool'],
             'unrestrictedRestore' => ['name' => 'unrestricted_restore', 'encoding' => 'bool'],
             'useBackups' => ['name' => 'use_backups', 'encoding' => 'bool'],
-            'user' => ['name' => 'user', 'encoding' => 'scalar'],
             'password' => ['name' => 'password', 'encoding' => 'scalar'],
             'port' => ['name' => 'port', 'encoding' => 'scalar'],
             'rootEscalationMethod' => ['name' => 'root_escalation_method', 'encoding' => 'scalar'],
@@ -87,7 +87,7 @@ final class TransfersSpec
         'params' => [
             'host' => ['name' => 'host', 'encoding' => 'scalar'],
             'password' => ['name' => 'password', 'encoding' => 'scalar'],
-            'unrestrictedRestore' => ['name' => 'unrestricted_restore', 'encoding' => 'scalar'],
+            'unrestrictedRestore' => ['name' => 'unrestricted_restore', 'encoding' => 'bool'],
         ],
         'returns' => [
             'type' => 'object',
@@ -113,8 +113,8 @@ final class TransfersSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
-            'logfile' => ['name' => 'logfile', 'encoding' => 'scalar'],
             'transferSessionId' => ['name' => 'transfer_session_id', 'encoding' => 'scalar'],
+            'logfile' => ['name' => 'logfile', 'encoding' => 'scalar'],
         ],
         'returns' => [
             'type' => 'object',
@@ -280,7 +280,7 @@ final class TransfersSpec
                 'remote' => [
                     'type' => 'object',
                     'fields' => [
-                        'conflicts' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+                        'conflicts' => ['type' => 'mixed'],
                         'cpversion' => ['type' => 'string'],
                         'dbs' => [
                             'type' => 'object',

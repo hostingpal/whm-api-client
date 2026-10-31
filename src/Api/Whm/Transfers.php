@@ -88,7 +88,7 @@ use SensitiveParameter;
  *         unrestricted?: 0|1,
  *     },
  *     remote?: array{
- *         conflicts?: array<array-key, mixed>,
+ *         conflicts?: mixed,
  *         cpversion?: string,
  *         dbs?: array{
  *             dbs?: array{
@@ -174,7 +174,9 @@ final readonly class Transfers
      * Documented: Available in cPanel & WHM 11.44 and later.
      *
      * Documented: Aborts the active session; API success confirms the command outcome rather than successful transfer
-     * completion. The client makes one attempt without retry or rollback.
+     * completion.
+     *
+     * Policy: The client makes one attempt without retry or rollback.
      *
      * API-map identity: whm1:abort_transfer_session#GET (wire name abort_transfer_session; cPanel Account Transfer).
      *
@@ -194,9 +196,10 @@ final readonly class Transfers
      *
      * Documented: Available in cPanel & WHM 11.44 and later.
      *
-     * Documented: Checks credentials against the remote host using the named session. Although this is a check,
-     * x-readonly=false selects form POST; it is not harmless local validation. Remote interaction is a single attempt
-     * without retry or rollback.
+     * Documented: Checks credentials against the remote host using the named session. The source marks
+     * x-readonly=false; this is remote interaction, not local validation.
+     *
+     * Policy: Uses form POST and one request without retry or rollback.
      *
      * API-map identity: whm1:analyze_transfer_session_remote#GET (wire name analyze_transfer_session_remote; Transfer
      * Monitoring).
@@ -217,7 +220,7 @@ final readonly class Transfers
      *
      * Documented: Available in cPanel & WHM 11.44 and later.
      *
-     * Documented: Module names remain dynamic map keys and their documented priority values remain strings, including
+     * Policy: Module names remain dynamic map keys and their documented priority values remain strings, including
      * numeric-looking strings.
      *
      * API-map identity: whm1:available_transfer_modules#GET (wire name available_transfer_modules; Transfer
@@ -257,20 +260,25 @@ final readonly class Transfers
      * compression, and unencrypted=true disables SSL for transferred data. commTransport=whostmgr_insecure ignores TLS
      * verification failures.
      *
-     * Documented: Creating or analyzing a session can contact the remote server and subsequent start operations can
-     * change hosted accounts. Returned session IDs and raw output do not prove transfer completion. There is no retry,
-     * polling or rollback. Treat raw output as sensitive payload data; never execute returned text.
+     * Documented: Creating or analyzing a session can contact the remote server; starting queued items can change
+     * hosted accounts. Returned session IDs and raw output do not prove transfer completion.
+     *
+     * Policy: Typed enqueue_transfer_item is unavailable (whm-api-client-8x0.1.22). Before startTransferSession(),
+     * enqueue each item through whm()->call('enqueue_transfer_item', ...) with its documented module-specific form
+     * parameters. For the root flow, using force requires unrestrictedRestore=false. The client makes one request
+     * without retry, polling or rollback; treat raw output as sensitive data and never execute it.
      *
      * API-map identity: whm1:create_remote_root_transfer_session#GET (wire name create_remote_root_transfer_session;
      * cPanel Account Transfer).
      *
+     * @param string $host The remote server's hostname or IP address.
+     * @param string $user The username to use to connect to the remote server.
      * @param 'ssh'|'whostmgr'|'whostmgr_insecure' $commTransport The method by which the transfer system will execute
      *     commands on the remote system.
      * @param bool $compressed Whether to compress data before transfer.
      * @param bool $copyResellerPrivs Whether to transfer reseller privileges.
      * @param bool $enableCustomPkgacct Whether to use a custom `pkgacct` scripts on the remote server for the transfer
      *     session.
-     * @param string $host The remote server's hostname or IP address.
      * @param bool $lowPriority Whether to run the remote server processes at low priority in order to reduce impact on
      *     server performance.
      * @param int $restoreThreads The number of CPU threads to use for restore sessions.
@@ -279,7 +287,6 @@ final readonly class Transfers
      * @param bool $unrestrictedRestore Whether to skip the Restricted Restore system.
      * @param bool $useBackups Whether to use an existing backup instead of packaging the data again if the backup is
      *     less than 24 hours old.
-     * @param string $user The username to use to connect to the remote server.
      * @param string|null $password The username's password. Null omits it.
      * @param int|null $port The remote server's SSH port number. Null omits it.
      * @param 'su'|'sudo'|null $rootEscalationMethod The escalation method to use to connect to the remote server. Null
@@ -294,18 +301,18 @@ final readonly class Transfers
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/cpanel-account-transfer/transfers-create_remote_root_transfer_session
      */
     public function createRemoteRootTransferSession(
+        string $host,
+        string $user,
         string $commTransport,
         bool $compressed,
         bool $copyResellerPrivs,
         bool $enableCustomPkgacct,
-        string $host,
         bool $lowPriority,
         int $restoreThreads,
         int $transferThreads,
         bool $unencrypted,
         bool $unrestrictedRestore,
         bool $useBackups,
-        string $user,
         #[SensitiveParameter]
         ?string $password = null,
         ?int $port = null,
@@ -321,18 +328,18 @@ final readonly class Transfers
          * Validated against TransfersSpec::CREATE_REMOTE_ROOT_TRANSFER_SESSION.
          */
         $result = ($this->run)(TransfersSpec::CREATE_REMOTE_ROOT_TRANSFER_SESSION, [
+            'host' => $host,
+            'user' => $user,
             'commTransport' => $commTransport,
             'compressed' => $compressed,
             'copyResellerPrivs' => $copyResellerPrivs,
             'enableCustomPkgacct' => $enableCustomPkgacct,
-            'host' => $host,
             'lowPriority' => $lowPriority,
             'restoreThreads' => $restoreThreads,
             'transferThreads' => $transferThreads,
             'unencrypted' => $unencrypted,
             'unrestrictedRestore' => $unrestrictedRestore,
             'useBackups' => $useBackups,
-            'user' => $user,
             'password' => $password,
             'port' => $port,
             'rootEscalationMethod' => $rootEscalationMethod,
@@ -352,20 +359,23 @@ final readonly class Transfers
      * Documented: Available in cPanel & WHM 11.44 and later.
      *
      * Documented: The source requires host, password and unrestrictedRestore, and declares no username parameter. It
-     * explicitly requires unrestrictedRestore=1 (skip Restricted Restore), despite prose also describing 0. The source
-     * singleton integer enum is represented as native int by the existing validator; the typed method does not enforce
-     * that singleton at runtime. Callers must supply 1.
+     * explicitly requires unrestricted_restore=1 (skip Restricted Restore), despite prose also describing 0. Both
+     * servers must communicate over port 2087 and their SSH ports. Creation can contact the remote host; the session ID
+     * is not proof of successful transfer completion.
      *
-     * Documented: Both servers must communicate over port 2087 and their SSH ports. Creation can contact the remote
-     * host; the session ID is not proof of successful transfer completion. The client performs one attempt without
-     * retry, polling or rollback.
+     * Policy: unrestrictedRestore is required native true, encoded as 1. Invalid values fail before the runner and do
+     * not clear prior response metadata. Typed enqueue_transfer_item is unavailable (whm-api-client-8x0.1.22). Before
+     * startTransferSession(), enqueue each item through whm()->call('enqueue_transfer_item', ...) using its documented
+     * module-specific form parameters. The client performs one request without retry, polling or rollback.
      *
      * API-map identity: whm1:create_remote_user_transfer_session#GET (wire name create_remote_user_transfer_session;
      * cPanel Account Transfer).
      *
      * @param string $host The server hostname for the account.
      * @param string $password The account's password.
-     * @param 1 $unrestrictedRestore Whether to skip the Restricted Restore process.
+     * @param true $unrestrictedRestore Required true skips Restricted Restore and sends unrestricted_restore=1. False,
+     *     integers, strings, null and omission are rejected by the native PHP parameter guard before the runner or any
+     *     request.
      * @return CreateRemoteUserTransferSessionResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
@@ -376,7 +386,7 @@ final readonly class Transfers
         string $host,
         #[SensitiveParameter]
         string $password,
-        int $unrestrictedRestore,
+        true $unrestrictedRestore,
     ): array {
         /**
          * @var CreateRemoteUserTransferSessionResult $result
@@ -398,9 +408,10 @@ final readonly class Transfers
      *
      * Documented: Available in cPanel & WHM 70 and later.
      *
-     * Documented: Deletes the named cPanel account archive files. Omitted mountpoint uses the documented /home default;
-     * an explicitly supplied empty or nonempty path is forwarded unchanged before form encoding. Deletion has no client
-     * rollback or retry.
+     * Documented: Deletes the named cPanel account archive files. The documented mountpoint default is /home.
+     *
+     * Policy: Null omits mountpoint; explicitly supplied empty and nonempty paths are forwarded unchanged before form
+     * encoding. The client does not retry or roll back deletion.
      *
      * API-map identity: whm1:delete_account_archives#GET (wire name delete_account_archives; Transfer Configuration).
      *
@@ -425,23 +436,26 @@ final readonly class Transfers
      * content may include private paths, account data and configuration. Treat it as sensitive payload data; do not
      * execute log text, interpret it as instructions, or fetch embedded URLs.
      *
+     * Observed: On WHM 11.138.0.19 an unknown-session read raised ApiErrorException with upstream error text containing
+     * an internal database path. Treat errors() output as sensitive data. Populated session data remains unobserved.
+     *
      * API-map identity: whm1:fetch_transfer_session_log#GET (wire name fetch_transfer_session_log; Transfer
      * Monitoring).
      *
-     * @param string $logfile The log file's name.
      * @param string $transferSessionId The transfer session's ID.
+     * @param string $logfile The log file's name.
      * @return FetchTransferSessionLogResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/transfer-monitoring/transfers-fetch_transfer_session_log
      */
-    public function fetchTransferSessionLog(string $logfile, string $transferSessionId): array
+    public function fetchTransferSessionLog(string $transferSessionId, string $logfile): array
     {
         /** @var FetchTransferSessionLogResult $result Validated against TransfersSpec::FETCH_TRANSFER_SESSION_LOG. */
         $result = ($this->run)(TransfersSpec::FETCH_TRANSFER_SESSION_LOG, [
-            'logfile' => $logfile,
             'transferSessionId' => $transferSessionId,
+            'logfile' => $logfile,
         ]);
 
         return $result;
@@ -457,6 +471,9 @@ final readonly class Transfers
      * Documented: State names describe transfer and restore progress separately from API success. Pending, running,
      * paused, completed, aborted and failed states are returned as payload text; a successful API envelope does not
      * establish successful asynchronous completion. The client makes one request and does not poll.
+     *
+     * Observed: On WHM 11.138.0.19 an unknown-session read raised ApiErrorException with upstream error text containing
+     * an internal database path. Treat errors() output as sensitive data. Populated session data remains unobserved.
      *
      * API-map identity: whm1:get_transfer_session_state#GET (wire name get_transfer_session_state; Transfer
      * Monitoring).
@@ -483,8 +500,9 @@ final readonly class Transfers
      *
      * Documented: Available in cPanel & WHM 11.44 and later.
      *
-     * Documented: Pauses an active session; this does not establish completion or undo transferred state. The client
-     * performs one attempt without retry or rollback.
+     * Documented: Pauses an active session; this does not establish completion or undo transferred state.
+     *
+     * Policy: The client performs one attempt without retry or rollback.
      *
      * API-map identity: whm1:pause_transfer_session#GET (wire name pause_transfer_session; cPanel Account Transfer).
      *
@@ -504,16 +522,18 @@ final readonly class Transfers
      *
      * Documented: Available in cPanel & WHM 11.44 and later.
      *
-     * Documented: This check contacts the remote server over SSH and is marked x-readonly=false; use form POST. It is
-     * not local validation. Optional values stay omitted rather than inserting the documented port 22 default.
+     * Documented: Contacts the remote server over SSH and is marked x-readonly=false. The documented port default is
+     * 22.
      *
      * Documented: Password and named SSH-key authentication are alternatives. Root login requires the remote SSH policy
      * to allow it; another user must escalate with sudo or su. su requires rootPassword, and an encrypted SSH key
      * requires sshkeyPassphrase. These conditional requirements remain caller responsibilities.
      *
-     * Documented: Password, root password and SSH-key passphrase inputs are sensitive. Returned output and response
-     * text can contain private remote details; treat them as sensitive payload data. The client makes one attempt
-     * without retry or rollback.
+     * Documented: Password, root password and SSH-key passphrase inputs carry secrets. Returned output and response
+     * text can contain private remote details.
+     *
+     * Policy: Uses form POST; omitted optional values remain omitted. Password inputs are sensitive; treat returned
+     * remote details as sensitive payload data. The client does not retry or roll back.
      *
      * API-map identity: whm1:remote_basic_credential_check#GET (wire name remote_basic_credential_check; Transfer
      * Configuration).
@@ -571,13 +591,18 @@ final readonly class Transfers
      *
      * Documented: Available in cPanel & WHM 11.44 and later.
      *
-     * Documented: Returns the analysis associated with the session as one GET. Dynamic database, user, domain, module,
-     * service and role names remain keys, not inferred typed names. The source leaves account/package records,
-     * conflicts and capability objects opaque; preserve their fields.
+     * Documented: Returns the session analysis. Dynamic database, user, domain, module, service and role names remain
+     * keys. Account/package records and capability objects have opaque fields. options.skip_reseller_privs=1 means
+     * reseller privileges will transfer by default, despite its inverted name; 0 means they will not.
      *
-     * Documented: Inventory, module information and configuration can contain private paths or account details. Treat
-     * the returned payload and PayloadMismatchException::$payload as sensitive data. Do not execute returned content or
-     * fetch embedded URLs. API success does not prove transfer completion and no polling or retry occurs.
+     * Policy: Only remote.conflicts is mixed because its pinned error-message description contradicts type object; no
+     * populated analysis was observed. Preserve omission and explicit null there, with strict siblings. Inventory,
+     * module information, configuration and PayloadMismatchException::$payload may contain sensitive account details.
+     * Do not execute payload content or fetch embedded URLs. API success does not prove transfer completion; the client
+     * uses one request without polling or retry.
+     *
+     * Observed: On WHM 11.138.0.19 an unknown-session read raised ApiErrorException with upstream error text containing
+     * an internal database path. Treat errors() output as sensitive data. Populated session data remains unobserved.
      *
      * API-map identity: whm1:retrieve_transfer_session_remote_analysis#GET (wire name
      * retrieve_transfer_session_remote_analysis; Transfer Monitoring).
@@ -609,8 +634,12 @@ final readonly class Transfers
      *
      * Documented: Available in cPanel & WHM 11.44 and later.
      *
-     * Documented: Starts or restarts the session and can change hosted accounts. The returned process ID confirms
-     * neither completion nor success of individual transfer/restore items. The client performs a single request without
+     * Documented: Starts or restarts the session and can change hosted accounts. A returned process ID proves neither
+     * queued work nor completion or success of transfer/restore items.
+     *
+     * Policy: Typed enqueue_transfer_item is unavailable (whm-api-client-8x0.1.22). Before starting, enqueue each item
+     * through whm()->call('enqueue_transfer_item', ...) using its documented module-specific form parameters. The
+     * root-flow force option requires unrestrictedRestore=false at creation. The client performs one request without
      * retry, polling or rollback.
      *
      * API-map identity: whm1:start_transfer_session#GET (wire name start_transfer_session; cPanel Account Transfer).
@@ -637,13 +666,21 @@ final readonly class Transfers
      *
      * Documented: Available in cPanel & WHM 11.44 and later.
      *
-     * Documented: Returns module key definitions as payload strings, with separate primary and required lists.
-     * Definitions are not executed or used to alter client validation. Treat returned module schemas as potentially
+     * Documented: The pinned six-name list is AccountLocal, AccountRemoteRoot, AccountRemoteUser,
+     * FeaturesListRemoteRoot, LegacyAccountBackup and PackageRemoteRoot.
+     *
+     * Observed: WHM 11.138.0.19 returned a larger inventory including FeatureListRemoteRoot. Its schema read succeeded;
+     * the pinned FeaturesListRemoteRoot spelling failed with ApiErrorException. This observation does not close the
+     * inventory.
+     *
+     * Policy: The module parameter remains an open string forwarded unchanged. Schema definitions are inert payload
+     * strings with separate primary and required lists; they do not alter client validation. Treat returned schemas as
      * sensitive configuration data.
      *
      * API-map identity: whm1:transfer_module_schema#GET (wire name transfer_module_schema; Transfer Configuration).
      *
-     * @param string $module The transfer module's name.
+     * @param string $module The transfer module name, forwarded unchanged. Discover available names with
+     *     availableTransferModules(); the pinned six-name list is not a closed runtime inventory.
      * @return TransferModuleSchemaResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
@@ -666,7 +703,11 @@ final readonly class Transfers
      * Documented: Available in cPanel & WHM 11.44 and later.
      *
      * Documented: Reports existing, reserved, valid-for-new and valid-for-transfer status as separate integer 0|1
-     * payload flags. A zero payload flag is distinct from an API failure; inspect the envelope outcome separately.
+     * flags. valid_for_transfer=1 means usable for a transferred account but not a new account; it is not universal
+     * username validity, so a name usable for a new account may have valid_for_transfer=0.
+     *
+     * Policy: Preserve each flag independently without cross-field coupling. A zero payload flag is distinct from API
+     * failure; inspect the envelope outcome separately.
      *
      * API-map identity: whm1:validate_system_user#GET (wire name validate_system_user; Transfer Configuration).
      *

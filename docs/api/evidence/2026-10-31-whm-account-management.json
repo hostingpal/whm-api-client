@@ -1,0 +1,955 @@
+{
+    "schema_version": 1,
+    "read_only_section": {
+        "recipe": "whm-account-management-v1",
+        "status": "failed",
+        "probes": [
+            {
+                "operation": "whm1:version",
+                "variant": "whm1:version#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:50:36Z",
+                "revision": "1149479923f388157a43d42ec8eebf68204e71b1",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "cca35b41339bacc32edca265cc8a488b268b1f46",
+                "overlay_sha256": "108352b100b98635c85b691df51b8362a7eeb4a98e01c75bc0cecc2f8b94a932",
+                "effective_contract_sha256": "a3b55069b379516f20fcf82f959226d68b68ac515a7e55c0bde8842d39effd60",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.version": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.version": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_current_users_count",
+                "variant": "whm1:get_current_users_count#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:50:37Z",
+                "revision": "1149479923f388157a43d42ec8eebf68204e71b1",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "cca35b41339bacc32edca265cc8a488b268b1f46",
+                "overlay_sha256": "108352b100b98635c85b691df51b8362a7eeb4a98e01c75bc0cecc2f8b94a932",
+                "effective_contract_sha256": "996e97e7aff280c77961b7184ef3fa4236e2df144a359dec730c19c05f8e1dd4",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.users": [
+                        "int"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.users": [
+                        "int"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_disk_usage",
+                "variant": "whm1:get_disk_usage#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:50:37Z",
+                "revision": "1149479923f388157a43d42ec8eebf68204e71b1",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "cca35b41339bacc32edca265cc8a488b268b1f46",
+                "overlay_sha256": "108352b100b98635c85b691df51b8362a7eeb4a98e01c75bc0cecc2f8b94a932",
+                "effective_contract_sha256": "82dbb824ce38a0e3dfe4f589f19582efadc8ab98e9b4251555b37186464dae62",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.accounts": [
+                        "list"
+                    ],
+                    "$.data.accounts[]": [
+                        "object"
+                    ],
+                    "$.data.accounts[].blocks_limit": [
+                        "null"
+                    ],
+                    "$.data.accounts[].blocks_used": [
+                        "int"
+                    ],
+                    "$.data.accounts[].inodes_limit": [
+                        "null"
+                    ],
+                    "$.data.accounts[].inodes_used": [
+                        "int"
+                    ],
+                    "$.data.accounts[].user": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.accounts": [
+                        "list"
+                    ],
+                    "$.accounts[]": [
+                        "object"
+                    ],
+                    "$.accounts[].blocks_limit": [
+                        "null"
+                    ],
+                    "$.accounts[].blocks_used": [
+                        "int"
+                    ],
+                    "$.accounts[].inodes_limit": [
+                        "null"
+                    ],
+                    "$.accounts[].inodes_used": [
+                        "int"
+                    ],
+                    "$.accounts[].user": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_homedir_roots",
+                "variant": "whm1:get_homedir_roots#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:50:37Z",
+                "revision": "1149479923f388157a43d42ec8eebf68204e71b1",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "cca35b41339bacc32edca265cc8a488b268b1f46",
+                "overlay_sha256": "108352b100b98635c85b691df51b8362a7eeb4a98e01c75bc0cecc2f8b94a932",
+                "effective_contract_sha256": "fc307a32bf34820f6731aca5ec8a479cd57584b3326d5b7c7c6094fd1978fea6",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.payload": [
+                        "list"
+                    ],
+                    "$.data.payload[]": [
+                        "object"
+                    ],
+                    "$.data.payload[].path": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.payload": [
+                        "list"
+                    ],
+                    "$.payload[]": [
+                        "object"
+                    ],
+                    "$.payload[].path": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_maximum_users",
+                "variant": "whm1:get_maximum_users#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:50:38Z",
+                "revision": "1149479923f388157a43d42ec8eebf68204e71b1",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "cca35b41339bacc32edca265cc8a488b268b1f46",
+                "overlay_sha256": "108352b100b98635c85b691df51b8362a7eeb4a98e01c75bc0cecc2f8b94a932",
+                "effective_contract_sha256": "d25300439b260ed2d0469a6834e3a600b2a083477e1fa0c8355d56f6e018860a",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.*": [
+                        "numeric-string"
+                    ],
+                    "$.data.users": [
+                        "missing"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.*": [
+                        "numeric-string"
+                    ],
+                    "$.users": [
+                        "missing"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$.*",
+                        "kind": "unknown_field"
+                    }
+                ]
+            },
+            {
+                "operation": "whm1:list_account_enhancements",
+                "variant": "whm1:list_account_enhancements#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:50:38Z",
+                "revision": "1149479923f388157a43d42ec8eebf68204e71b1",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "cca35b41339bacc32edca265cc8a488b268b1f46",
+                "overlay_sha256": "108352b100b98635c85b691df51b8362a7eeb4a98e01c75bc0cecc2f8b94a932",
+                "effective_contract_sha256": "5013c9e742d49856b1fbef33145c5254fab9de8554c9249e2617d49faba31047",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.enhancements": [
+                        "empty-list"
+                    ],
+                    "$.data.enhancements.id": [
+                        "missing"
+                    ],
+                    "$.data.enhancements.name": [
+                        "missing"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.enhancements": [
+                        "empty-list"
+                    ],
+                    "$.enhancements.id": [
+                        "missing"
+                    ],
+                    "$.enhancements.name": [
+                        "missing"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:list_users",
+                "variant": "whm1:list_users#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:50:38Z",
+                "revision": "1149479923f388157a43d42ec8eebf68204e71b1",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "cca35b41339bacc32edca265cc8a488b268b1f46",
+                "overlay_sha256": "108352b100b98635c85b691df51b8362a7eeb4a98e01c75bc0cecc2f8b94a932",
+                "effective_contract_sha256": "e1214fbac6ae19aa4a18e7c8368922ae8d5de07c5ef457a07672f19aa21d0c7f",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.users": [
+                        "list"
+                    ],
+                    "$.data.users[]": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.users": [
+                        "list"
+                    ],
+                    "$.users[]": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:myprivs",
+                "variant": "whm1:myprivs#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:50:38Z",
+                "revision": "1149479923f388157a43d42ec8eebf68204e71b1",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "cca35b41339bacc32edca265cc8a488b268b1f46",
+                "overlay_sha256": "108352b100b98635c85b691df51b8362a7eeb4a98e01c75bc0cecc2f8b94a932",
+                "effective_contract_sha256": "feaef543e56fecb965305bfb145965b0790d6f37a0dc9d6dee3de901661b98ac",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.privileges": [
+                        "list"
+                    ],
+                    "$.data.privileges[]": [
+                        "object"
+                    ],
+                    "$.data.privileges[].*": [
+                        "int"
+                    ],
+                    "$.data.privileges[].acct-summary": [
+                        "int"
+                    ],
+                    "$.data.privileges[].add-pkg": [
+                        "int"
+                    ],
+                    "$.data.privileges[].add-pkg-ip": [
+                        "int"
+                    ],
+                    "$.data.privileges[].add-pkg-shell": [
+                        "int"
+                    ],
+                    "$.data.privileges[].all": [
+                        "int"
+                    ],
+                    "$.data.privileges[].allow-addoncreate": [
+                        "int"
+                    ],
+                    "$.data.privileges[].allow-emaillimits-pkgs": [
+                        "int"
+                    ],
+                    "$.data.privileges[].allow-parkedcreate": [
+                        "int"
+                    ],
+                    "$.data.privileges[].allow-shell": [
+                        "int"
+                    ],
+                    "$.data.privileges[].allow-unlimited-bw-pkgs": [
+                        "int"
+                    ],
+                    "$.data.privileges[].allow-unlimited-disk-pkgs": [
+                        "int"
+                    ],
+                    "$.data.privileges[].allow-unlimited-pkgs": [
+                        "int"
+                    ],
+                    "$.data.privileges[].basic-system-info": [
+                        "int"
+                    ],
+                    "$.data.privileges[].basic-whm-functions": [
+                        "int"
+                    ],
+                    "$.data.privileges[].clustering": [
+                        "int"
+                    ],
+                    "$.data.privileges[].cors-proxy-get": [
+                        "int"
+                    ],
+                    "$.data.privileges[].cpanel-api": [
+                        "int"
+                    ],
+                    "$.data.privileges[].cpanel-integration": [
+                        "int"
+                    ],
+                    "$.data.privileges[].create-acct": [
+                        "int"
+                    ],
+                    "$.data.privileges[].create-dns": [
+                        "int"
+                    ],
+                    "$.data.privileges[].create-user-session": [
+                        "int"
+                    ],
+                    "$.data.privileges[].demo-setup": [
+                        "int"
+                    ],
+                    "$.data.privileges[].digest-auth": [
+                        "int"
+                    ],
+                    "$.data.privileges[].edit-account": [
+                        "int"
+                    ],
+                    "$.data.privileges[].edit-dns": [
+                        "int"
+                    ],
+                    "$.data.privileges[].edit-mx": [
+                        "int"
+                    ],
+                    "$.data.privileges[].edit-pkg": [
+                        "int"
+                    ],
+                    "$.data.privileges[].file-restore": [
+                        "int"
+                    ],
+                    "$.data.privileges[].generate-email-config": [
+                        "int"
+                    ],
+                    "$.data.privileges[].kill-acct": [
+                        "int"
+                    ],
+                    "$.data.privileges[].kill-dns": [
+                        "int"
+                    ],
+                    "$.data.privileges[].limit-bandwidth": [
+                        "int"
+                    ],
+                    "$.data.privileges[].list-accts": [
+                        "int"
+                    ],
+                    "$.data.privileges[].list-pkgs": [
+                        "int"
+                    ],
+                    "$.data.privileges[].locale-edit": [
+                        "int"
+                    ],
+                    "$.data.privileges[].mailcheck": [
+                        "int"
+                    ],
+                    "$.data.privileges[].manage-api-tokens": [
+                        "int"
+                    ],
+                    "$.data.privileges[].manage-dns-records": [
+                        "int"
+                    ],
+                    "$.data.privileges[].manage-oidc": [
+                        "int"
+                    ],
+                    "$.data.privileges[].manage-styles": [
+                        "int"
+                    ],
+                    "$.data.privileges[].mysql-info": [
+                        "int"
+                    ],
+                    "$.data.privileges[].news": [
+                        "int"
+                    ],
+                    "$.data.privileges[].ns-config": [
+                        "int"
+                    ],
+                    "$.data.privileges[].park-dns": [
+                        "int"
+                    ],
+                    "$.data.privileges[].passwd": [
+                        "int"
+                    ],
+                    "$.data.privileges[].quota": [
+                        "int"
+                    ],
+                    "$.data.privileges[].rearrange-accts": [
+                        "int"
+                    ],
+                    "$.data.privileges[].resftp": [
+                        "int"
+                    ],
+                    "$.data.privileges[].restart": [
+                        "int"
+                    ],
+                    "$.data.privileges[].show-bandwidth": [
+                        "int"
+                    ],
+                    "$.data.privileges[].ssl": [
+                        "int"
+                    ],
+                    "$.data.privileges[].ssl-buy": [
+                        "int"
+                    ],
+                    "$.data.privileges[].ssl-gencrt": [
+                        "int"
+                    ],
+                    "$.data.privileges[].ssl-info": [
+                        "int"
+                    ],
+                    "$.data.privileges[].stats": [
+                        "int"
+                    ],
+                    "$.data.privileges[].status": [
+                        "int"
+                    ],
+                    "$.data.privileges[].suspend-acct": [
+                        "int"
+                    ],
+                    "$.data.privileges[].thirdparty": [
+                        "int"
+                    ],
+                    "$.data.privileges[].track-email": [
+                        "int"
+                    ],
+                    "$.data.privileges[].upgrade-account": [
+                        "int"
+                    ],
+                    "$.data.privileges[].viewglobalpackages": [
+                        "int"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.privileges": [
+                        "list"
+                    ],
+                    "$.privileges[]": [
+                        "object"
+                    ],
+                    "$.privileges[].*": [
+                        "int"
+                    ],
+                    "$.privileges[].acct-summary": [
+                        "int"
+                    ],
+                    "$.privileges[].add-pkg": [
+                        "int"
+                    ],
+                    "$.privileges[].add-pkg-ip": [
+                        "int"
+                    ],
+                    "$.privileges[].add-pkg-shell": [
+                        "int"
+                    ],
+                    "$.privileges[].all": [
+                        "int"
+                    ],
+                    "$.privileges[].allow-addoncreate": [
+                        "int"
+                    ],
+                    "$.privileges[].allow-emaillimits-pkgs": [
+                        "int"
+                    ],
+                    "$.privileges[].allow-parkedcreate": [
+                        "int"
+                    ],
+                    "$.privileges[].allow-shell": [
+                        "int"
+                    ],
+                    "$.privileges[].allow-unlimited-bw-pkgs": [
+                        "int"
+                    ],
+                    "$.privileges[].allow-unlimited-disk-pkgs": [
+                        "int"
+                    ],
+                    "$.privileges[].allow-unlimited-pkgs": [
+                        "int"
+                    ],
+                    "$.privileges[].basic-system-info": [
+                        "int"
+                    ],
+                    "$.privileges[].basic-whm-functions": [
+                        "int"
+                    ],
+                    "$.privileges[].clustering": [
+                        "int"
+                    ],
+                    "$.privileges[].cors-proxy-get": [
+                        "int"
+                    ],
+                    "$.privileges[].cpanel-api": [
+                        "int"
+                    ],
+                    "$.privileges[].cpanel-integration": [
+                        "int"
+                    ],
+                    "$.privileges[].create-acct": [
+                        "int"
+                    ],
+                    "$.privileges[].create-dns": [
+                        "int"
+                    ],
+                    "$.privileges[].create-user-session": [
+                        "int"
+                    ],
+                    "$.privileges[].demo-setup": [
+                        "int"
+                    ],
+                    "$.privileges[].digest-auth": [
+                        "int"
+                    ],
+                    "$.privileges[].edit-account": [
+                        "int"
+                    ],
+                    "$.privileges[].edit-dns": [
+                        "int"
+                    ],
+                    "$.privileges[].edit-mx": [
+                        "int"
+                    ],
+                    "$.privileges[].edit-pkg": [
+                        "int"
+                    ],
+                    "$.privileges[].file-restore": [
+                        "int"
+                    ],
+                    "$.privileges[].generate-email-config": [
+                        "int"
+                    ],
+                    "$.privileges[].kill-acct": [
+                        "int"
+                    ],
+                    "$.privileges[].kill-dns": [
+                        "int"
+                    ],
+                    "$.privileges[].limit-bandwidth": [
+                        "int"
+                    ],
+                    "$.privileges[].list-accts": [
+                        "int"
+                    ],
+                    "$.privileges[].list-pkgs": [
+                        "int"
+                    ],
+                    "$.privileges[].locale-edit": [
+                        "int"
+                    ],
+                    "$.privileges[].mailcheck": [
+                        "int"
+                    ],
+                    "$.privileges[].manage-api-tokens": [
+                        "int"
+                    ],
+                    "$.privileges[].manage-dns-records": [
+                        "int"
+                    ],
+                    "$.privileges[].manage-oidc": [
+                        "int"
+                    ],
+                    "$.privileges[].manage-styles": [
+                        "int"
+                    ],
+                    "$.privileges[].mysql-info": [
+                        "int"
+                    ],
+                    "$.privileges[].news": [
+                        "int"
+                    ],
+                    "$.privileges[].ns-config": [
+                        "int"
+                    ],
+                    "$.privileges[].park-dns": [
+                        "int"
+                    ],
+                    "$.privileges[].passwd": [
+                        "int"
+                    ],
+                    "$.privileges[].quota": [
+                        "int"
+                    ],
+                    "$.privileges[].rearrange-accts": [
+                        "int"
+                    ],
+                    "$.privileges[].resftp": [
+                        "int"
+                    ],
+                    "$.privileges[].restart": [
+                        "int"
+                    ],
+                    "$.privileges[].show-bandwidth": [
+                        "int"
+                    ],
+                    "$.privileges[].ssl": [
+                        "int"
+                    ],
+                    "$.privileges[].ssl-buy": [
+                        "int"
+                    ],
+                    "$.privileges[].ssl-gencrt": [
+                        "int"
+                    ],
+                    "$.privileges[].ssl-info": [
+                        "int"
+                    ],
+                    "$.privileges[].stats": [
+                        "int"
+                    ],
+                    "$.privileges[].status": [
+                        "int"
+                    ],
+                    "$.privileges[].suspend-acct": [
+                        "int"
+                    ],
+                    "$.privileges[].thirdparty": [
+                        "int"
+                    ],
+                    "$.privileges[].track-email": [
+                        "int"
+                    ],
+                    "$.privileges[].upgrade-account": [
+                        "int"
+                    ],
+                    "$.privileges[].viewglobalpackages": [
+                        "int"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:quota_enabled",
+                "variant": "whm1:quota_enabled#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:50:39Z",
+                "revision": "1149479923f388157a43d42ec8eebf68204e71b1",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "cca35b41339bacc32edca265cc8a488b268b1f46",
+                "overlay_sha256": "108352b100b98635c85b691df51b8362a7eeb4a98e01c75bc0cecc2f8b94a932",
+                "effective_contract_sha256": "4fc067865169d589dd7e1b9271a83e3a99a7c7a36b88826c8b6336b6a72475de",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "failed",
+                "probe_outcome": "failed",
+                "failure_kind": "payload_mismatch",
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.quota_enabled": [
+                        "numeric-string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.quota_enabled": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$.quota_enabled",
+                        "kind": "type_mismatch"
+                    }
+                ]
+            }
+        ]
+    }
+}

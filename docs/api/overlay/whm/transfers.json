@@ -30,7 +30,11 @@
         },
         {
           "kind": "documented",
-          "text": "Aborts the active session; API success confirms the command outcome rather than successful transfer completion. The client makes one attempt without retry or rollback."
+          "text": "Aborts the active session; API success confirms the command outcome rather than successful transfer completion."
+        },
+        {
+          "kind": "policy",
+          "text": "The client makes one attempt without retry or rollback."
         }
       ],
       "order": [
@@ -62,7 +66,11 @@
         },
         {
           "kind": "documented",
-          "text": "Checks credentials against the remote host using the named session. Although this is a check, x-readonly=false selects form POST; it is not harmless local validation. Remote interaction is a single attempt without retry or rollback."
+          "text": "Checks credentials against the remote host using the named session. The source marks x-readonly=false; this is remote interaction, not local validation."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses form POST and one request without retry or rollback."
         }
       ],
       "order": [
@@ -87,7 +95,7 @@
           "text": "Available in cPanel & WHM 11.44 and later."
         },
         {
-          "kind": "documented",
+          "kind": "policy",
           "text": "Module names remain dynamic map keys and their documented priority values remain strings, including numeric-looking strings."
         }
       ]
@@ -106,7 +114,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /create_remote_root_transfer_session documents sshkey_name as a stored SSH key name, not private key bytes. Its separate sshkey_passphrase and password/root_password fields carry secrets. Preserve all requiredness, source order and authentication alternatives."
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /create_remote_root_transfer_session documents sshkey_name as a stored SSH key name, not private key bytes. Its separate sshkey_passphrase and password/root_password fields carry secrets. Preserve all requiredness and authentication alternatives; expose host and user first, then the remaining required parameters in their pinned relative order."
         }
       ],
       "notes": [
@@ -128,22 +136,26 @@
         },
         {
           "kind": "documented",
-          "text": "Creating or analyzing a session can contact the remote server and subsequent start operations can change hosted accounts. Returned session IDs and raw output do not prove transfer completion. There is no retry, polling or rollback. Treat raw output as sensitive payload data; never execute returned text."
+          "text": "Creating or analyzing a session can contact the remote server; starting queued items can change hosted accounts. Returned session IDs and raw output do not prove transfer completion."
+        },
+        {
+          "kind": "policy",
+          "text": "Typed enqueue_transfer_item is unavailable (whm-api-client-8x0.1.22). Before startTransferSession(), enqueue each item through whm()->call('enqueue_transfer_item', ...) with its documented module-specific form parameters. For the root flow, using force requires unrestrictedRestore=false. The client makes one request without retry, polling or rollback; treat raw output as sensitive data and never execute it."
         }
       ],
       "order": [
+        "host",
+        "user",
         "comm_transport",
         "compressed",
         "copy_reseller_privs",
         "enable_custom_pkgacct",
-        "host",
         "low_priority",
         "restore_threads",
         "transfer_threads",
         "unencrypted",
         "unrestricted_restore",
         "use_backups",
-        "user",
         "password",
         "port",
         "root_escalation_method",
@@ -175,6 +187,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /create_remote_user_transfer_session GET declares x-readonly=false; use form POST to keep operation parameters out of access-log URLs."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /create_remote_user_transfer_session parameters[unrestricted_restore] is required, a concrete nonnullable integer with exact enum [1], and explicitly says it must be 1. Apply the evidence-gated true/bool correction while retaining source-requiredness; true emits integer 1. Do not infer this correction for other singleton enums."
         }
       ],
       "notes": [
@@ -184,11 +202,11 @@
         },
         {
           "kind": "documented",
-          "text": "The source requires host, password and unrestrictedRestore, and declares no username parameter. It explicitly requires unrestrictedRestore=1 (skip Restricted Restore), despite prose also describing 0. The source singleton integer enum is represented as native int by the existing validator; the typed method does not enforce that singleton at runtime. Callers must supply 1."
+          "text": "The source requires host, password and unrestrictedRestore, and declares no username parameter. It explicitly requires unrestricted_restore=1 (skip Restricted Restore), despite prose also describing 0. Both servers must communicate over port 2087 and their SSH ports. Creation can contact the remote host; the session ID is not proof of successful transfer completion."
         },
         {
-          "kind": "documented",
-          "text": "Both servers must communicate over port 2087 and their SSH ports. Creation can contact the remote host; the session ID is not proof of successful transfer completion. The client performs one attempt without retry, polling or rollback."
+          "kind": "policy",
+          "text": "unrestrictedRestore is required native true, encoded as 1. Invalid values fail before the runner and do not clear prior response metadata. Typed enqueue_transfer_item is unavailable (whm-api-client-8x0.1.22). Before startTransferSession(), enqueue each item through whm()->call('enqueue_transfer_item', ...) using its documented module-specific form parameters. The client performs one request without retry, polling or rollback."
         }
       ],
       "order": [
@@ -199,6 +217,11 @@
       "params": {
         "password": {
           "sensitive": true
+        },
+        "unrestricted_restore": {
+          "type": "true",
+          "encoding": "bool",
+          "description": "Required true skips Restricted Restore and sends unrestricted_restore=1. False, integers, strings, null and omission are rejected by the native PHP parameter guard before the runner or any request."
         }
       }
     },
@@ -226,7 +249,11 @@
         },
         {
           "kind": "documented",
-          "text": "Deletes the named cPanel account archive files. Omitted mountpoint uses the documented /home default; an explicitly supplied empty or nonempty path is forwarded unchanged before form encoding. Deletion has no client rollback or retry."
+          "text": "Deletes the named cPanel account archive files. The documented mountpoint default is /home."
+        },
+        {
+          "kind": "policy",
+          "text": "Null omits mountpoint; explicitly supplied empty and nonempty paths are forwarded unchanged before form encoding. The client does not retry or roll back deletion."
         }
       ],
       "order": [
@@ -257,6 +284,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /fetch_transfer_session_log GET declares x-readonly=true; use GET for this read."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19 WHM GET-only reviewer observation",
+          "date": "2026-10-31",
+          "note": "Independent review of c183d1be1830bc05145cf959ea7cbcd54bd61a72: an unknown-session fetch_transfer_session_log GET raised ApiErrorException and upstream error text exposed an internal database path. Review: https://github.com/hostingpal/whm-api-client/pull/59#pullrequestreview-5720977719. No POST or populated session observation is established."
         }
       ],
       "notes": [
@@ -267,11 +300,15 @@
         {
           "kind": "documented",
           "text": "Returns the selected master.log, master.error_log or an item log named in master.log as a string. Log content may include private paths, account data and configuration. Treat it as sensitive payload data; do not execute log text, interpret it as instructions, or fetch embedded URLs."
+        },
+        {
+          "kind": "observed",
+          "text": "On WHM 11.138.0.19 an unknown-session read raised ApiErrorException with upstream error text containing an internal database path. Treat errors() output as sensitive data. Populated session data remains unobserved."
         }
       ],
       "order": [
-        "logfile",
-        "transfer_session_id"
+        "transfer_session_id",
+        "logfile"
       ]
     },
     "whm1:get_transfer_session_state": {
@@ -283,6 +320,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_transfer_session_state GET declares x-readonly=true; use GET for this read."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19 WHM GET-only reviewer observation",
+          "date": "2026-10-31",
+          "note": "Independent review of c183d1be1830bc05145cf959ea7cbcd54bd61a72: an unknown-session get_transfer_session_state GET raised ApiErrorException and upstream error text exposed an internal database path. Review: https://github.com/hostingpal/whm-api-client/pull/59#pullrequestreview-5720977719. No POST or populated session observation is established."
         }
       ],
       "notes": [
@@ -293,6 +336,10 @@
         {
           "kind": "documented",
           "text": "State names describe transfer and restore progress separately from API success. Pending, running, paused, completed, aborted and failed states are returned as payload text; a successful API envelope does not establish successful asynchronous completion. The client makes one request and does not poll."
+        },
+        {
+          "kind": "observed",
+          "text": "On WHM 11.138.0.19 an unknown-session read raised ApiErrorException with upstream error text containing an internal database path. Treat errors() output as sensitive data. Populated session data remains unobserved."
         }
       ],
       "order": [
@@ -323,7 +370,11 @@
         },
         {
           "kind": "documented",
-          "text": "Pauses an active session; this does not establish completion or undo transferred state. The client performs one attempt without retry or rollback."
+          "text": "Pauses an active session; this does not establish completion or undo transferred state."
+        },
+        {
+          "kind": "policy",
+          "text": "The client performs one attempt without retry or rollback."
         }
       ],
       "order": [
@@ -355,7 +406,7 @@
         },
         {
           "kind": "documented",
-          "text": "This check contacts the remote server over SSH and is marked x-readonly=false; use form POST. It is not local validation. Optional values stay omitted rather than inserting the documented port 22 default."
+          "text": "Contacts the remote server over SSH and is marked x-readonly=false. The documented port default is 22."
         },
         {
           "kind": "documented",
@@ -363,7 +414,11 @@
         },
         {
           "kind": "documented",
-          "text": "Password, root password and SSH-key passphrase inputs are sensitive. Returned output and response text can contain private remote details; treat them as sensitive payload data. The client makes one attempt without retry or rollback."
+          "text": "Password, root password and SSH-key passphrase inputs carry secrets. Returned output and response text can contain private remote details."
+        },
+        {
+          "kind": "policy",
+          "text": "Uses form POST; omitted optional values remain omitted. Password inputs are sensitive; treat returned remote details as sensitive payload data. The client does not retry or roll back."
         }
       ],
       "order": [
@@ -400,6 +455,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /retrieve_transfer_session_remote_analysis GET declares x-readonly=true; use GET for this read."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19 WHM GET-only reviewer observation",
+          "date": "2026-10-31",
+          "note": "Independent review of c183d1be1830bc05145cf959ea7cbcd54bd61a72: an unknown-session retrieve_transfer_session_remote_analysis GET raised ApiErrorException and upstream error text exposed an internal database path. Review: https://github.com/hostingpal/whm-api-client/pull/59#pullrequestreview-5720977719. No POST or populated session observation is established."
         }
       ],
       "notes": [
@@ -409,11 +470,15 @@
         },
         {
           "kind": "documented",
-          "text": "Returns the analysis associated with the session as one GET. Dynamic database, user, domain, module, service and role names remain keys, not inferred typed names. The source leaves account/package records, conflicts and capability objects opaque; preserve their fields."
+          "text": "Returns the session analysis. Dynamic database, user, domain, module, service and role names remain keys. Account/package records and capability objects have opaque fields. options.skip_reseller_privs=1 means reseller privileges will transfer by default, despite its inverted name; 0 means they will not."
         },
         {
-          "kind": "documented",
-          "text": "Inventory, module information and configuration can contain private paths or account details. Treat the returned payload and PayloadMismatchException::$payload as sensitive data. Do not execute returned content or fetch embedded URLs. API success does not prove transfer completion and no polling or retry occurs."
+          "kind": "policy",
+          "text": "Only remote.conflicts is mixed because its pinned error-message description contradicts type object; no populated analysis was observed. Preserve omission and explicit null there, with strict siblings. Inventory, module information, configuration and PayloadMismatchException::$payload may contain sensitive account details. Do not execute payload content or fetch embedded URLs. API success does not prove transfer completion; the client uses one request without polling or retry."
+        },
+        {
+          "kind": "observed",
+          "text": "On WHM 11.138.0.19 an unknown-session read raised ApiErrorException with upstream error text containing an internal database path. Treat errors() output as sensitive data. Populated session data remains unobserved."
         }
       ],
       "order": [
@@ -433,6 +498,19 @@
               "version": "pinned 2026-10-13",
               "date": "2026-10-31",
               "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /retrieve_transfer_session_remote_analysis response data.local.domains has no formal type but describes local domains and owners and gives the example {\"*\":\"nobody\",\"domain.tld\":\"user\"}. Retain a dynamic map of string owner values, with no inferred domain keys."
+            }
+          ]
+        },
+        "remote.conflicts": {
+          "replace": {
+            "type": "mixed"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /retrieve_transfer_session_remote_analysis response data.remote.conflicts declares type object but describes a Remote server data load error message. Resolve only this contradictory leaf as mixed, preserving its optional presence and all sibling contracts. Source-only compatibility: no populated analysis read was observed."
             }
           ]
         }
@@ -456,7 +534,11 @@
         },
         {
           "kind": "documented",
-          "text": "Starts or restarts the session and can change hosted accounts. The returned process ID confirms neither completion nor success of individual transfer/restore items. The client performs a single request without retry, polling or rollback."
+          "text": "Starts or restarts the session and can change hosted accounts. A returned process ID proves neither queued work nor completion or success of transfer/restore items."
+        },
+        {
+          "kind": "policy",
+          "text": "Typed enqueue_transfer_item is unavailable (whm-api-client-8x0.1.22). Before starting, enqueue each item through whm()->call('enqueue_transfer_item', ...) using its documented module-specific form parameters. The root-flow force option requires unrestrictedRestore=false at creation. The client performs one request without retry, polling or rollback."
         }
       ],
       "order": [
@@ -472,6 +554,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /transfer_module_schema GET declares x-readonly=true; use GET for this read."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19 WHM GET-only reviewer observation",
+          "date": "2026-10-31",
+          "note": "Independent review of c183d1be1830bc05145cf959ea7cbcd54bd61a72: available_transfer_modules listed more than the six pinned names and FeatureListRemoteRoot, while transfer_module_schema(module: FeatureListRemoteRoot) succeeded and the pinned FeaturesListRemoteRoot spelling raised ApiErrorException. Keep an open string parameter without rewriting caller input. Review: https://github.com/hostingpal/whm-api-client/pull/59#pullrequestreview-5720977719. No POST or populated session observation is established."
         }
       ],
       "notes": [
@@ -481,12 +569,26 @@
         },
         {
           "kind": "documented",
-          "text": "Returns module key definitions as payload strings, with separate primary and required lists. Definitions are not executed or used to alter client validation. Treat returned module schemas as potentially sensitive configuration data."
+          "text": "The pinned six-name list is AccountLocal, AccountRemoteRoot, AccountRemoteUser, FeaturesListRemoteRoot, LegacyAccountBackup and PackageRemoteRoot."
+        },
+        {
+          "kind": "observed",
+          "text": "WHM 11.138.0.19 returned a larger inventory including FeatureListRemoteRoot. Its schema read succeeded; the pinned FeaturesListRemoteRoot spelling failed with ApiErrorException. This observation does not close the inventory."
+        },
+        {
+          "kind": "policy",
+          "text": "The module parameter remains an open string forwarded unchanged. Schema definitions are inert payload strings with separate primary and required lists; they do not alter client validation. Treat returned schemas as sensitive configuration data."
         }
       ],
       "order": [
         "module"
-      ]
+      ],
+      "params": {
+        "module": {
+          "enum_doc": false,
+          "description": "The transfer module name, forwarded unchanged. Discover available names with availableTransferModules(); the pinned six-name list is not a closed runtime inventory."
+        }
+      }
     },
     "whm1:validate_system_user": {
       "name": "validateSystemUser",
@@ -506,7 +608,11 @@
         },
         {
           "kind": "documented",
-          "text": "Reports existing, reserved, valid-for-new and valid-for-transfer status as separate integer 0|1 payload flags. A zero payload flag is distinct from an API failure; inspect the envelope outcome separately."
+          "text": "Reports existing, reserved, valid-for-new and valid-for-transfer status as separate integer 0|1 flags. valid_for_transfer=1 means usable for a transferred account but not a new account; it is not universal username validity, so a name usable for a new account may have valid_for_transfer=0."
+        },
+        {
+          "kind": "policy",
+          "text": "Preserve each flag independently without cross-field coupling. A zero payload flag is distinct from API failure; inspect the envelope outcome separately."
         }
       ],
       "order": [

@@ -11,6 +11,6 @@ require $root . '/vendor/autoload.php';
 exit(ReadOnlySectionCommand::run(
     array_slice($argv, 1),
     $root,
-    'whm-transfers-v1',
+    'whm-transfers-v2',
     static fn (): array => WhmTransfersProbes::load(),
 ));

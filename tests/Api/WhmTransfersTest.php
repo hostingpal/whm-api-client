@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Api;
 
+use HostingPal\WhmApiClient\Api\Engine\ArgumentEncoder;
+use HostingPal\WhmApiClient\Api\Engine\SpecChecker;
+use HostingPal\WhmApiClient\Api\Whm\Spec\TransfersSpec;
 use HostingPal\WhmApiClient\Api\Whm\Transfers;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
 use HostingPal\WhmApiClient\Exception\HttpException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
 use HostingPal\WhmApiClient\Http\HttpTransport;
+use HostingPal\WhmApiClient\Tests\Fixtures\WeakTransferCaller;
 use Http\Mock\Client as MockClient;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
@@ -19,6 +23,8 @@ use Psr\Http\Message\RequestInterface;
 use ReflectionMethod;
 use ReflectionParameter;
 use SensitiveParameter;
+use SensitiveParameterValue;
+use TypeError;
 
 final class WhmTransfersTest extends TestCase
 {
@@ -58,24 +64,25 @@ final class WhmTransfersTest extends TestCase
         yield 'analyze credentials' => ['analyzeTransferSessionRemote', 'analyze_transfer_session_remote', 'POST',
             ['session &id'], 'transfer_session_id=session%20%26id', null];
         yield 'available modules' => ['availableTransferModules', 'available_transfer_modules', 'GET', [], '',
-            '{"modules":{"AccountRemoteRoot":"6000","PackageRemoteRoot":"0"}}'];
+            '{"modules":{"AccountRemoteRoot":"6000","PackageRemoteRoot":"255"}}'];
         yield 'root creation all fields' => ['createRemoteRootTransferSession', 'create_remote_root_transfer_session',
-            'POST', ['ssh', false, true, false, 'remote &host.test', true, 2, 3, false, false, true, 'fixture user',
+            'POST', ['remote &host.test', 'fixture user', 'ssh', false, true, false, true, 2, 3, false, false, true,
                 'p& =+', 2222, 'su', 'root&secret', 'named key', 'key&pass'],
-            'comm_transport=ssh&compressed=0&copy_reseller_privs=1&enable_custom_pkgacct=0&host=remote%20%26host.test'
+            'host=remote%20%26host.test&user=fixture%20user&comm_transport=ssh&compressed=0'
+                . '&copy_reseller_privs=1&enable_custom_pkgacct=0'
                 . '&low_priority=1&restore_threads=2&transfer_threads=3&unencrypted=0&unrestricted_restore=0'
-                . '&use_backups=1&user=fixture%20user&password=p%26%20%3D%2B&port=2222&root_escalation_method=su'
+                . '&use_backups=1&password=p%26%20%3D%2B&port=2222&root_escalation_method=su'
                 . '&root_password=root%26secret&sshkey_name=named%20key&sshkey_passphrase=key%26pass',
             '{"analyze_rawout":"Synthetic remote details","create_rawout":"Synthetic credential output",'
                 . '"transfer_session_id":"session &id"}'];
         yield 'nonroot creation no invented username' => ['createRemoteUserTransferSession',
-            'create_remote_user_transfer_session', 'POST', ['remote.test', 'p& =+', 1],
+            'create_remote_user_transfer_session', 'POST', ['remote.test', 'p& =+', true],
             'host=remote.test&password=p%26%20%3D%2B&unrestricted_restore=1', '{"transfer_session_id":"session"}'];
         yield 'archive deletion explicit empty location' => ['deleteAccountArchives', 'delete_account_archives',
             'POST', ['fixture &user', ''], 'user=fixture%20%26user&mountpoint=', null];
         yield 'log text stays text' => ['fetchTransferSessionLog', 'fetch_transfer_session_log', 'GET',
-            ['item-TRANSFER_AccountRemoteUser_fixture', 'session &id'],
-            'logfile=item-TRANSFER_AccountRemoteUser_fixture&transfer_session_id=session%20%26id',
+            ['session &id', 'item-TRANSFER_AccountRemoteUser_fixture'],
+            'transfer_session_id=session%20%26id&logfile=item-TRANSFER_AccountRemoteUser_fixture',
             '{"log":"{\"action\":\"complete\"}\nSynthetic private path /home/fixture\n"}'];
         yield 'state' => ['getTransferSessionState', 'get_transfer_session_state', 'GET', ['session &id'],
             'transfer_session_id=session%20%26id', '{"state_name":"FAILED"}'];
@@ -97,7 +104,7 @@ final class WhmTransfersTest extends TestCase
                 . '"primary":["user"],"required":["user","localuser"]}}'];
         yield 'username outcome not payload boolean' => ['validateSystemUser', 'validate_system_user', 'GET',
             ['fixture &user'], 'user=fixture%20%26user',
-            '{"exists":0,"reserved":0,"valid_for_new":1,"valid_for_transfer":1}'];
+            '{"exists":0,"reserved":0,"valid_for_new":1,"valid_for_transfer":0}'];
     }
 
     /** @param array<array-key, mixed> $arguments */
@@ -123,19 +130,21 @@ final class WhmTransfersTest extends TestCase
     public static function optionalInputs(): iterable
     {
         yield 'root required fields only' => ['createRemoteRootTransferSession', 'create_remote_root_transfer_session',
-            ['whostmgr', false, false, false, 'remote.test', false, 1, 1, false, false, false, 'root'],
-            'comm_transport=whostmgr&compressed=0&copy_reseller_privs=0&enable_custom_pkgacct=0&host=remote.test'
+            ['remote.test', 'root', 'whostmgr', false, false, false, false, 1, 1, false, false, false],
+            'host=remote.test&user=root&comm_transport=whostmgr&compressed=0'
+                . '&copy_reseller_privs=0&enable_custom_pkgacct=0'
                 . '&low_priority=0&restore_threads=1&transfer_threads=1&unencrypted=0&unrestricted_restore=0'
-                . '&use_backups=0&user=root'];
+                . '&use_backups=0'];
         yield 'root key authentication optional password omitted' => ['createRemoteRootTransferSession',
             'create_remote_root_transfer_session', ['commTransport' => 'whostmgr_insecure', 'compressed' => true,
                 'copyResellerPrivs' => true, 'enableCustomPkgacct' => true, 'host' => 'remote.test',
                 'lowPriority' => true, 'restoreThreads' => 1, 'transferThreads' => 1, 'unencrypted' => true,
                 'unrestrictedRestore' => true, 'useBackups' => true, 'user' => 'root', 'password' => null,
                 'sshkeyName' => 'key'],
-            'comm_transport=whostmgr_insecure&compressed=1&copy_reseller_privs=1&enable_custom_pkgacct=1'
-                . '&host=remote.test&low_priority=1&restore_threads=1&transfer_threads=1&unencrypted=1'
-                . '&unrestricted_restore=1&use_backups=1&user=root&sshkey_name=key'];
+            'host=remote.test&user=root&comm_transport=whostmgr_insecure&compressed=1'
+                . '&copy_reseller_privs=1&enable_custom_pkgacct=1'
+                . '&low_priority=1&restore_threads=1&transfer_threads=1&unencrypted=1'
+                . '&unrestricted_restore=1&use_backups=1&sshkey_name=key'];
         yield 'credential defaults omitted' => ['remoteBasicCredentialCheck', 'remote_basic_credential_check',
             ['remote.test', 'root'], 'host=remote.test&user=root'];
         yield 'credential null omitted and empty secret retained' => ['remoteBasicCredentialCheck',
@@ -172,10 +181,10 @@ final class WhmTransfersTest extends TestCase
     {
         yield 'modules' => ['availableTransferModules', 'available_transfer_modules', []];
         yield 'root' => ['createRemoteRootTransferSession', 'create_remote_root_transfer_session',
-            ['ssh', false, false, false, 'remote.test', false, 1, 1, false, false, false, 'root']];
+            ['remote.test', 'root', 'ssh', false, false, false, false, 1, 1, false, false, false]];
         yield 'nonroot' => ['createRemoteUserTransferSession', 'create_remote_user_transfer_session',
-            ['remote.test', 'synthetic', 1]];
-        yield 'log' => ['fetchTransferSessionLog', 'fetch_transfer_session_log', ['master.log', 'session']];
+            ['remote.test', 'synthetic', true]];
+        yield 'log' => ['fetchTransferSessionLog', 'fetch_transfer_session_log', ['session', 'master.log']];
         yield 'state' => ['getTransferSessionState', 'get_transfer_session_state', ['session']];
         yield 'credentials' => ['remoteBasicCredentialCheck', 'remote_basic_credential_check', ['remote.test', 'root']];
         yield 'analysis' => ['retrieveTransferSessionRemoteAnalysis', 'retrieve_transfer_session_remote_analysis',
@@ -209,12 +218,12 @@ final class WhmTransfersTest extends TestCase
             '{"modules":{"AccountRemoteRoot":6000}}'];
         yield 'root session id strict string' => ['createRemoteRootTransferSession',
             'create_remote_root_transfer_session',
-            ['ssh', false, false, false, 'remote.test', false, 1, 1, false, false, false, 'root'],
+            ['remote.test', 'root', 'ssh', false, false, false, false, 1, 1, false, false, false],
             '{"transfer_session_id":1}'];
         yield 'nonroot session id null forbidden' => ['createRemoteUserTransferSession',
-            'create_remote_user_transfer_session', ['remote.test', 'synthetic', 1], '{"transfer_session_id":null}'];
+            'create_remote_user_transfer_session', ['remote.test', 'synthetic', true], '{"transfer_session_id":null}'];
         yield 'log is not parsed JSON' => ['fetchTransferSessionLog', 'fetch_transfer_session_log',
-            ['master.log', 'session'], '{"log":{"action":"complete"}}'];
+            ['session', 'master.log'], '{"log":{"action":"complete"}}'];
         yield 'state string strict' => ['getTransferSessionState', 'get_transfer_session_state', ['session'],
             '{"state_name":0}'];
         yield 'credential output strict' => ['remoteBasicCredentialCheck', 'remote_basic_credential_check',
@@ -247,7 +256,6 @@ final class WhmTransfersTest extends TestCase
             'node services strings' => '{"remote":{"linked_nodes":[{"enabled_services":[0]}]}}',
             'node settings flags' => '{"remote":{"linked_nodes":[{"system_settings":{"Mail":{"setting":2}}}]}}',
             'capability value opaque object' => '{"remote":{"linked_nodes":[{"worker_capabilities":{"Mail":1}}]}}',
-            'conflicts object only' => '{"remote":{"conflicts":null}}',
             'reseller native int' => '{"remote":{"resellers":{"fixture":"1"}}}',
             ] as $label => $payload
         ) {
@@ -334,6 +342,124 @@ final class WhmTransfersTest extends TestCase
         self::assertSame('password', $parameter->getName());
         self::assertCount(1, $parameter->getAttributes(SensitiveParameter::class));
     }
+
+    /** @return iterable<string, array{string}> */
+    public static function conflictPayloads(): iterable
+    {
+        foreach (
+            ['object' => '{"opaque":[1,null]}', 'string' => '"Synthetic load error"',
+            'list' => '[1,"x",null]', 'integer' => '1', 'boolean' => 'false', 'null' => 'null'] as $label => $value
+        ) {
+            yield $label => ['{"remote":{"conflicts":' . $value . ',"has_disk_used":1}}'];
+        }
+    }
+
+    #[DataProvider('conflictPayloads')]
+    public function testOnlyContradictoryConflictsLeafAcceptsOpaqueValues(string $payload): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(
+            'retrieve_transfer_session_remote_analysis',
+            $payload,
+        )));
+        self::assertSame(
+            json_decode($payload, true, 512, JSON_THROW_ON_ERROR),
+            $client->whm()->transfers()->retrieveTransferSessionRemoteAnalysis('session'),
+        );
+        self::assertCount(1, $http->getRequests());
+    }
+
+    public function testRequiredTrueUsesExistingCheckedBoolEncoderAndHasNoDefault(): void
+    {
+        $parameter = (new ReflectionMethod(Transfers::class, 'createRemoteUserTransferSession'))->getParameters()[2];
+        self::assertSame('true', (string) $parameter->getType());
+        self::assertFalse($parameter->isOptional());
+        self::assertFalse($parameter->allowsNull());
+        SpecChecker::check(TransfersSpec::CREATE_REMOTE_USER_TRANSFER_SESSION);
+        self::assertSame(['unrestricted_restore' => 1], ArgumentEncoder::encode(
+            TransfersSpec::CREATE_REMOTE_USER_TRANSFER_SESSION['params'],
+            ['unrestrictedRestore' => true],
+        ));
+    }
+
+    /** @return iterable<string, array{array<string, mixed>, bool}> */
+    public static function forbiddenUnrestrictedRestore(): iterable
+    {
+        foreach ([false, true] as $weak) {
+            foreach ([false, 0, 1, '1', null] as $value) {
+                yield ($weak ? 'weak ' : 'strict ') . get_debug_type($value) . var_export($value, true)
+                    => [['unrestrictedRestore' => $value], $weak];
+            }
+            yield ($weak ? 'weak ' : 'strict ') . 'omitted' => [[], $weak];
+        }
+    }
+
+    /** @param array<string, mixed> $arguments */
+    #[DataProvider('forbiddenUnrestrictedRestore')]
+    public function testForbiddenCredentialInputNeverReachesHttpOrExposesLibraryTraceSecrets(
+        array $arguments,
+        bool $weak,
+    ): void {
+        [$client, $http] = self::client();
+        $previous = ini_get('zend.exception_ignore_args');
+        ini_set('zend.exception_ignore_args', '0');
+        try {
+            $inputs = ['host' => 'remote.test', 'password' => 'synthetic-private-password', ...$arguments];
+            self::call($client->whm()->transfers(), 'createRemoteUserTransferSession', $inputs, $weak);
+            self::fail('Only explicit true may reach the credential-bearing request.');
+        } catch (TypeError $error) {
+            foreach ($error->getTrace() as $frame) {
+                if (str_starts_with($frame['class'] ?? '', 'HostingPal\\WhmApiClient\\Api\\')) {
+                    self::assertLibraryTraceValueHasNoPassword($frame['args'] ?? []);
+                }
+            }
+        } finally {
+            ini_set('zend.exception_ignore_args', $previous === false ? '1' : $previous);
+        }
+        self::assertSame([], $http->getRequests());
+    }
+
+    public function testWeakCallerTrueSendsExactlyOneEncodedRequiredValue(): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('create_remote_user_transfer_session', '{}')));
+        self::assertSame([], WeakTransferCaller::call(
+            $client->whm()->transfers(),
+            'createRemoteUserTransferSession',
+            ['host' => 'remote.test', 'password' => 'synthetic', 'unrestrictedRestore' => true],
+        ));
+        self::assertRequest(
+            $http,
+            'create_remote_user_transfer_session',
+            'POST',
+            'host=remote.test&password=synthetic&unrestricted_restore=1',
+        );
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @param array<array-key, mixed> $arguments */
+    private static function call(Transfers $group, string $method, array $arguments, bool $weak): mixed
+    {
+        if ($weak) {
+            return WeakTransferCaller::call($group, $method, $arguments);
+        }
+        return $group->{$method}(...$arguments);
+    }
+
+    private static function assertLibraryTraceValueHasNoPassword(mixed $value): void
+    {
+        if ($value instanceof SensitiveParameterValue) {
+            return;
+        }
+        if (is_array($value)) {
+            foreach ($value as $nested) {
+                self::assertLibraryTraceValueHasNoPassword($nested);
+            }
+            return;
+        }
+        self::assertNotSame('synthetic-private-password', $value);
+    }
+
 
     private static function assertRequest(MockClient $http, string $operation, string $verb, string $wire): void
     {

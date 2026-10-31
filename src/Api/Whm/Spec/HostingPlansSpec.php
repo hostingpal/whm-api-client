@@ -13,6 +13,280 @@ namespace HostingPal\WhmApiClient\Api\Whm\Spec;
  */
 final class HostingPlansSpec
 {
+    public const ADD_OVERRIDE_FEATURES_FOR_USER = [
+        'function' => 'add_override_features_for_user',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'features' => ['name' => 'features', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const ADDPKG = [
+        'function' => 'addpkg',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+            'packageExtensions' => ['name' => '_PACKAGE_EXTENSIONS', 'encoding' => 'scalar'],
+            'bwlimit' => ['name' => 'bwlimit', 'encoding' => 'scalar'],
+            'cgi' => ['name' => 'cgi', 'encoding' => 'bool'],
+            'cpmod' => ['name' => 'cpmod', 'encoding' => 'scalar'],
+            'digestauth' => ['name' => 'digestauth', 'encoding' => 'bool'],
+            'featurelist' => ['name' => 'featurelist', 'encoding' => 'scalar'],
+            'frontpage' => ['name' => 'frontpage', 'encoding' => 'bool'],
+            'hasshell' => ['name' => 'hasshell', 'encoding' => 'bool'],
+            'ip' => ['name' => 'ip', 'encoding' => 'scalar'],
+            'language' => ['name' => 'language', 'encoding' => 'scalar'],
+            'maxDeferFailPercentage' => ['name' => 'MAX_DEFER_FAIL_PERCENTAGE', 'encoding' => 'scalar'],
+            'maxEmailPerHour' => ['name' => 'MAX_EMAIL_PER_HOUR', 'encoding' => 'scalar'],
+            'maxEmailacctQuota' => ['name' => 'max_emailacct_quota', 'encoding' => 'scalar'],
+            'maxTeamUsers' => ['name' => 'max_team_users', 'encoding' => 'scalar'],
+            'maxaddon' => ['name' => 'maxaddon', 'encoding' => 'scalar'],
+            'maxftp' => ['name' => 'maxftp', 'encoding' => 'scalar'],
+            'maxlst' => ['name' => 'maxlst', 'encoding' => 'scalar'],
+            'maxpark' => ['name' => 'maxpark', 'encoding' => 'scalar'],
+            'maxpop' => ['name' => 'maxpop', 'encoding' => 'scalar'],
+            'maxsql' => ['name' => 'maxsql', 'encoding' => 'scalar'],
+            'maxsub' => ['name' => 'maxsub', 'encoding' => 'scalar'],
+            'quota' => ['name' => 'quota', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'pkg' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const ADDPKGEXT = [
+        'function' => 'addpkgext',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+            'extensions' => ['name' => '_PACKAGE_EXTENSIONS', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'pkg' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const DELETE_FEATURELIST = [
+        'function' => 'delete_featurelist',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'featurelist' => ['name' => 'featurelist', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'deleted_featurelist' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const KILLPKG = [
+        'function' => 'killpkg',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'pkgname', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
+    ];
+
+    public const DELPKGEXT = [
+        'function' => 'delpkgext',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+            'extensions' => ['name' => '_DELETE_EXTENSIONS', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'pkg' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const EDITPKG = [
+        'function' => 'editpkg',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'name', 'encoding' => 'scalar'],
+            'packageExtensions' => ['name' => '_PACKAGE_EXTENSIONS', 'encoding' => 'scalar'],
+            'bwlimit' => ['name' => 'bwlimit', 'encoding' => 'scalar'],
+            'cgi' => ['name' => 'cgi', 'encoding' => 'bool'],
+            'cpmod' => ['name' => 'cpmod', 'encoding' => 'scalar'],
+            'digestauth' => ['name' => 'digestauth', 'encoding' => 'bool'],
+            'featurelist' => ['name' => 'featurelist', 'encoding' => 'scalar'],
+            'frontpage' => ['name' => 'frontpage', 'encoding' => 'bool'],
+            'hasshell' => ['name' => 'hasshell', 'encoding' => 'bool'],
+            'ip' => ['name' => 'ip', 'encoding' => 'scalar'],
+            'language' => ['name' => 'language', 'encoding' => 'scalar'],
+            'maxDeferFailPercentage' => ['name' => 'max_defer_fail_percentage', 'encoding' => 'scalar'],
+            'maxEmailPerHour' => ['name' => 'max_email_per_hour', 'encoding' => 'scalar'],
+            'maxEmailacctQuota' => ['name' => 'max_emailacct_quota', 'encoding' => 'scalar'],
+            'maxTeamUsers' => ['name' => 'max_team_users', 'encoding' => 'scalar'],
+            'maxaddon' => ['name' => 'maxaddon', 'encoding' => 'scalar'],
+            'maxftp' => ['name' => 'maxftp', 'encoding' => 'scalar'],
+            'maxlst' => ['name' => 'maxlst', 'encoding' => 'scalar'],
+            'maxpark' => ['name' => 'maxpark', 'encoding' => 'scalar'],
+            'maxpop' => ['name' => 'maxpop', 'encoding' => 'scalar'],
+            'maxsql' => ['name' => 'maxsql', 'encoding' => 'scalar'],
+            'maxsub' => ['name' => 'maxsub', 'encoding' => 'scalar'],
+            'quota' => ['name' => 'quota', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'pkg' => ['type' => 'string'],
+            ],
+        ],
+    ];
+
+    public const GET_AVAILABLE_APPLICATIONS = [
+        'function' => 'get_available_applications',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'applicationsList' => ['name' => 'applications_list', 'encoding' => 'scalar'],
+            'file' => ['name' => 'file', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'groups' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'acl' => ['type' => 'string', 'nullable' => true],
+                            'description' => ['type' => 'string'],
+                            'dnsonly_ok' => ['type' => 'string', 'nullable' => true],
+                            'file' => ['type' => 'string'],
+                            'group' => ['type' => 'string'],
+                            'groupdesc' => ['type' => 'string'],
+                            'grouporder' => ['type' => 'int'],
+                            'imgtype' => ['type' => 'string'],
+                            'items' => [
+                                'type' => 'list',
+                                'items' => [
+                                    'type' => 'object',
+                                    'fields' => [
+                                        'acl' => ['type' => 'string', 'nullable' => true],
+                                        'description' => ['type' => 'string'],
+                                        'dnsonly_ok' => ['type' => 'string', 'nullable' => true],
+                                        'file' => ['type' => 'string'],
+                                        'group' => ['type' => 'string'],
+                                        'imgtype' => ['type' => 'string'],
+                                        'itemdesc' => ['type' => 'string'],
+                                        'itemorder' => ['type' => 'int'],
+                                        'key' => ['type' => 'string'],
+                                        'minimum_accounts_needed' => ['type' => 'int'],
+                                        'multiuser_required' => ['type' => 'int'],
+                                        'role' => [
+                                            'type' => 'union',
+                                            'anyOf' => [
+                                                [
+                                                    'type' => 'object',
+                                                    'fields' => [
+                                                        'match' => ['type' => 'string'],
+                                                        'roles' => ['type' => 'list', 'items' => ['type' => 'string']],
+                                                    ],
+                                                ],
+                                                ['type' => 'string'],
+                                            ],
+                                        ],
+                                        'searchtext' => ['type' => 'string'],
+                                        'service' => [
+                                            'type' => 'union',
+                                            'anyOf' => [
+                                                [
+                                                    'type' => 'object',
+                                                    'fields' => [
+                                                        'match' => ['type' => 'string'],
+                                                        'services' => [
+                                                            'type' => 'list',
+                                                            'items' => ['type' => 'string'],
+                                                        ],
+                                                    ],
+                                                ],
+                                                ['type' => 'string'],
+                                            ],
+                                        ],
+                                        'subitems' => [
+                                            'type' => 'list',
+                                            'items' => [
+                                                'type' => 'object',
+                                                'fields' => [
+                                                    'acl' => ['type' => 'string', 'nullable' => true],
+                                                    'breadcrumb' => ['type' => 'string'],
+                                                    'dnsonly_ok' => ['type' => 'string', 'nullable' => true],
+                                                    'file' => ['type' => 'string'],
+                                                    'group' => ['type' => 'string'],
+                                                    'itemdesc' => ['type' => 'string'],
+                                                    'key' => ['type' => 'string'],
+                                                    'parent' => ['type' => 'int'],
+                                                    'searchtext' => ['type' => 'string'],
+                                                    'target' => ['type' => 'string'],
+                                                    'type' => ['type' => 'string'],
+                                                    'url' => ['type' => 'string'],
+                                                ],
+                                                'required' => [
+                                                    'type',
+                                                    'acl',
+                                                    'breadcrumb',
+                                                    'dnsonly_ok',
+                                                    'file',
+                                                    'group',
+                                                    'parent',
+                                                    'url',
+                                                ],
+                                            ],
+                                        ],
+                                        'subtype' => ['type' => 'string'],
+                                        'target' => ['type' => 'string'],
+                                        'type' => ['type' => 'string'],
+                                        'url' => ['type' => 'string'],
+                                    ],
+                                    'required' => ['type', 'acl', 'file', 'group', 'itemorder', 'url'],
+                                ],
+                            ],
+                            'key' => ['type' => 'string'],
+                            'searchtext' => ['type' => 'string'],
+                            'subtype' => ['type' => 'string'],
+                            'target' => ['type' => 'string'],
+                            'type' => ['type' => 'string'],
+                        ],
+                        'required' => ['type', 'dnsonly_ok', 'file', 'group', 'groupdesc', 'grouporder'],
+                    ],
+                ],
+                'raw' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'itemdesc' => ['type' => 'string'],
+                            'type' => ['type' => 'string'],
+                        ],
+                        'required' => ['itemdesc', 'type'],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
     public const GET_FEATURE_METADATA = [
         'function' => 'get_feature_metadata',
         'method' => 'GET',
@@ -123,6 +397,145 @@ final class HostingPlansSpec
                         'standard' => ['type' => 'list', 'items' => ['type' => 'string']],
                     ],
                     'required' => ['standard'],
+                ],
+            ],
+        ],
+    ];
+
+    public const GETPKGEXTENSIONFORM = [
+        'function' => '_getpkgextensionform',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'pkg', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'html' => ['type' => 'string'],
+            ],
+        ],
+        'optional' => true,
+    ];
+
+    public const GETPKGINFO = [
+        'function' => 'getpkginfo',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'name' => ['name' => 'pkg', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'pkg' => [
+                    'type' => 'object',
+                    'values' => ['type' => 'mixed'],
+                    'fields' => [
+                        'BWLIMIT' => [
+                            'type' => 'union',
+                            'nullable' => true,
+                            'anyOf' => [
+                                ['type' => 'int', 'accept' => ['numeric-string']],
+                                ['type' => 'string', 'literal' => 'unlimited'],
+                            ],
+                        ],
+                        'CGI' => ['type' => 'flag'],
+                        'CPMOD' => ['type' => 'string'],
+                        'DIGESTAUTH' => ['type' => 'string'],
+                        'FEATURELIST' => ['type' => 'string'],
+                        'FRONTPAGE' => ['type' => 'flag'],
+                        'HASSHELL' => ['type' => 'flag'],
+                        'IP' => ['type' => 'flag'],
+                        'LANG' => ['type' => 'string'],
+                        'MAXADDON' => [
+                            'type' => 'union',
+                            'nullable' => true,
+                            'anyOf' => [
+                                ['type' => 'int', 'accept' => ['numeric-string']],
+                                ['type' => 'string', 'literal' => 'unlimited'],
+                            ],
+                        ],
+                        'MAXFTP' => [
+                            'type' => 'union',
+                            'nullable' => true,
+                            'anyOf' => [
+                                ['type' => 'int', 'accept' => ['numeric-string']],
+                                ['type' => 'string', 'literal' => 'unlimited'],
+                            ],
+                        ],
+                        'MAXLST' => [
+                            'type' => 'union',
+                            'nullable' => true,
+                            'anyOf' => [
+                                ['type' => 'int', 'accept' => ['numeric-string']],
+                                ['type' => 'string', 'literal' => 'unlimited'],
+                            ],
+                        ],
+                        'MAXPARK' => [
+                            'type' => 'union',
+                            'nullable' => true,
+                            'anyOf' => [
+                                ['type' => 'int', 'accept' => ['numeric-string']],
+                                ['type' => 'string', 'literal' => 'unlimited'],
+                            ],
+                        ],
+                        'MAXPOP' => [
+                            'type' => 'union',
+                            'nullable' => true,
+                            'anyOf' => [
+                                ['type' => 'int', 'accept' => ['numeric-string']],
+                                ['type' => 'string', 'literal' => 'unlimited'],
+                            ],
+                        ],
+                        'MAXSQL' => [
+                            'type' => 'union',
+                            'nullable' => true,
+                            'anyOf' => [
+                                ['type' => 'int', 'accept' => ['numeric-string']],
+                                ['type' => 'string', 'literal' => 'unlimited'],
+                            ],
+                        ],
+                        'MAXSUB' => [
+                            'type' => 'union',
+                            'nullable' => true,
+                            'anyOf' => [
+                                ['type' => 'int', 'accept' => ['numeric-string']],
+                                ['type' => 'string', 'literal' => 'unlimited'],
+                            ],
+                        ],
+                        'MAX_DEFER_FAIL_PERCENTAGE' => [
+                            'type' => 'union',
+                            'anyOf' => [
+                                ['type' => 'int', 'accept' => ['numeric-string']],
+                                ['type' => 'string', 'literal' => 'unlimited'],
+                            ],
+                        ],
+                        'MAX_EMAILACCT_QUOTA' => [
+                            'type' => 'union',
+                            'anyOf' => [
+                                ['type' => 'int', 'accept' => ['numeric-string']],
+                                ['type' => 'string', 'literal' => 'unlimited'],
+                            ],
+                        ],
+                        'MAX_EMAIL_PER_HOUR' => [
+                            'type' => 'union',
+                            'anyOf' => [
+                                ['type' => 'int', 'accept' => ['numeric-string']],
+                                ['type' => 'string', 'literal' => 'unlimited'],
+                            ],
+                        ],
+                        'MAX_TEAM_USERS' => ['type' => 'int', 'nullable' => true, 'accept' => ['numeric-string']],
+                        'QUOTA' => [
+                            'type' => 'union',
+                            'nullable' => true,
+                            'anyOf' => [
+                                ['type' => 'int', 'accept' => ['numeric-string']],
+                                ['type' => 'string', 'literal' => 'unlimited'],
+                            ],
+                        ],
+                        '_PACKAGE_EXTENSIONS' => ['type' => 'string'],
+                    ],
                 ],
             ],
         ],
@@ -255,7 +668,7 @@ final class HostingPlansSpec
                                     ['type' => 'string'],
                                 ],
                             ],
-                            'MAX_TEAM_USERS' => ['type' => 'int', 'nullable' => true],
+                            'MAX_TEAM_USERS' => ['type' => 'int', 'nullable' => true, 'accept' => ['numeric-string']],
                             'QUOTA' => [
                                 'type' => 'union',
                                 'anyOf' => [
@@ -271,6 +684,160 @@ final class HostingPlansSpec
             ],
         ],
         'unwrap' => 'pkg',
+    ];
+
+    public const MATCHPKGS = [
+        'function' => 'matchpkgs',
+        'method' => 'GET',
+        'outcome' => 'flag',
+        'params' => [
+            'packageExtensions' => ['name' => '_PACKAGE_EXTENSIONS', 'encoding' => 'scalar'],
+            'bwlimit' => ['name' => 'BWLIMIT', 'encoding' => 'scalar'],
+            'cgi' => ['name' => 'CGI', 'encoding' => 'bool'],
+            'cpmod' => ['name' => 'CPMOD', 'encoding' => 'scalar'],
+            'digestauth' => ['name' => 'DIGESTAUTH', 'encoding' => 'scalar'],
+            'featurelist' => ['name' => 'FEATURELIST', 'encoding' => 'scalar'],
+            'hasshell' => ['name' => 'HASSHELL', 'encoding' => 'bool'],
+            'ip' => ['name' => 'IP', 'encoding' => 'scalar'],
+            'lang' => ['name' => 'LANG', 'encoding' => 'scalar'],
+            'maxDeferFailPercentage' => ['name' => 'MAX_DEFER_FAIL_PERCENTAGE', 'encoding' => 'scalar'],
+            'maxEmailPerHour' => ['name' => 'MAX_EMAIL_PER_HOUR', 'encoding' => 'scalar'],
+            'maxEmailacctQuota' => ['name' => 'MAX_EMAILACCT_QUOTA', 'encoding' => 'scalar'],
+            'maxTeamUsers' => ['name' => 'MAX_TEAM_USERS', 'encoding' => 'scalar'],
+            'maxaddon' => ['name' => 'MAXADDON', 'encoding' => 'scalar'],
+            'maxftp' => ['name' => 'MAXFTP', 'encoding' => 'scalar'],
+            'maxlst' => ['name' => 'MAXLST', 'encoding' => 'scalar'],
+            'maxpark' => ['name' => 'MAXPARK', 'encoding' => 'scalar'],
+            'maxpop' => ['name' => 'MAXPOP', 'encoding' => 'scalar'],
+            'maxsql' => ['name' => 'MAXSQL', 'encoding' => 'scalar'],
+            'maxsub' => ['name' => 'MAXSUB', 'encoding' => 'scalar'],
+            'quota' => ['name' => 'QUOTA', 'encoding' => 'scalar'],
+        ],
+        'returns' => [
+            'type' => 'object',
+            'fields' => [
+                'pkg' => [
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'BWLIMIT' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
+                            ],
+                            'CGI' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'flag'],
+                                    ['type' => 'string'],
+                                ],
+                            ],
+                            'CPMOD' => ['type' => 'string'],
+                            'DIGESTAUTH' => ['type' => 'string'],
+                            'FEATURELIST' => ['type' => 'string'],
+                            'FRONTPAGE' => ['type' => 'int'],
+                            'HASSHELL' => ['type' => 'string'],
+                            'IP' => ['type' => 'string'],
+                            'LANG' => ['type' => 'string'],
+                            'MAXADDON' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
+                            ],
+                            'MAXFTP' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
+                            ],
+                            'MAXLST' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
+                            ],
+                            'MAXPARK' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
+                            ],
+                            'MAXPOP' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
+                            ],
+                            'MAXSQL' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
+                            ],
+                            'MAXSUB' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
+                            ],
+                            'MAX_DEFER_FAIL_PERCENTAGE' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
+                            ],
+                            'MAX_EMAILACCT_QUOTA' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
+                            ],
+                            'MAX_EMAIL_PER_HOUR' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
+                            ],
+                            'MAX_TEAM_USERS' => ['type' => 'int', 'nullable' => true, 'accept' => ['numeric-string']],
+                            'QUOTA' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'int', 'accept' => ['numeric-string']],
+                                    ['type' => 'string', 'literal' => 'unlimited'],
+                                ],
+                            ],
+                            '_PACKAGE_EXTENSIONS' => ['type' => 'string'],
+                            'name' => ['type' => 'string'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    public const REMOVE_OVERRIDE_FEATURES_FOR_USER = [
+        'function' => 'remove_override_features_for_user',
+        'method' => 'POST',
+        'outcome' => 'flag',
+        'params' => [
+            'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'features' => ['name' => 'features', 'encoding' => 'scalar'],
+        ],
+        'returns' => null,
     ];
 
     public const VERIFY_USER_HAS_FEATURE = [

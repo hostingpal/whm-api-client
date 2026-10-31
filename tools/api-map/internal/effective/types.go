@@ -44,6 +44,7 @@ type Param struct {
 	Description string
 	Required    bool
 	Sensitive   bool
+	OmitEmpty   bool `json:",omitempty"` // explicit omission of [] for optional repeat string-list inputs
 }
 
 // Operation is one generated method and its spec constant.

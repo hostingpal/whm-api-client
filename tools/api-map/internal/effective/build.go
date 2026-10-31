@@ -337,6 +337,9 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		documented[p.Name] = true
 		if o, ok := ov.Params[p.Name]; ok && o.Omit {
 			omitted[p.Name] = true
+			if o.OmitEmpty != nil {
+				b.problem(op.ID + ": omitted parameter " + p.Name + " cannot have omit_empty")
+			}
 			if o.Wire != "" {
 				b.problem(op.ID + ": omitted parameter " + p.Name + " cannot have wire corrections")
 			}
@@ -383,6 +386,14 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		if o.Encoding != "" {
 			param.PHPType, param.DocType, param.Encoding = encodingTypes(o.Encoding, param)
 		}
+		if o.OmitEmpty != nil {
+			if !*o.OmitEmpty || decl["required"] == true || param.Required || param.Encoding != "repeat" ||
+				!b.schemas.stringList(p.Locator.SourceID, decl["schema"]) {
+				b.problem(op.ID + ": parameter " + p.Name + ": omit_empty requires true on an optional repeat-encoded string-list source and optional final requiredness")
+			} else {
+				param.OmitEmpty = true
+			}
+		}
 		if o.Wire != "" && (!overlay.IsCorrectedWireName(p.Name) || !overlay.IsCorrectedWireName(o.Wire) ||
 			param.Encoding != "scalar" || (spec.Type != "string" && spec.Type != "int" && spec.Type != "number")) {
 			b.problem(op.ID + ": parameter " + p.Name + ": wire correction requires simple names and a scalar string, integer or number source")
@@ -391,10 +402,10 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		// encoder, so no false or numeric value can reach the wire. This is an
 		// explicit reviewed correction, never inferred from other singleton enums.
 		if o.Type == "true" {
-			if decl["required"] == true || param.Required || spec.Type != "int" || spec.Nullable ||
+			if (decl["required"] == true) != param.Required || spec.Type != "int" || spec.Nullable ||
 				!b.schemas.presenceOnlyInteger(p.Locator.SourceID, decl["schema"]) || o.Wire != "" ||
 				(o.Encoding != "" && o.Encoding != "bool") {
-				b.problem(op.ID + ": parameter " + p.Name + ": true type correction requires an optional scalar integer source with exact enum [1], optional final requiredness, no wire correction and absent or bool encoding")
+				b.problem(op.ID + ": parameter " + p.Name + ": true type correction requires a concrete nonnullable scalar integer source with exact enum [1], unchanged requiredness, no wire correction and absent or bool encoding")
 			} else {
 				param.PHPType, param.DocType, param.Encoding = "true", "true", "bool"
 			}

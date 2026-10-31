@@ -30,6 +30,17 @@ final class WhmTransfersProbes
                 static fn (Client $client): mixed => $client->whm()->transfers()->availableTransferModules(),
             ),
             new Probe(
+                'whm1:transfer_module_schema',
+                'whm',
+                TransfersSpec::TRANSFER_MODULE_SCHEMA,
+                'https://test.oblak.host:2087/json-api/transfer_module_schema?api.version=1'
+                . '&module=FeatureListRemoteRoot',
+                static fn (Client $client): mixed => $client->whm()->transfers()->transferModuleSchema(
+                    module: 'FeatureListRemoteRoot',
+                ),
+                argumentVariant: 'feature-list-remote-root',
+            ),
+            new Probe(
                 'whm1:validate_system_user',
                 'whm',
                 TransfersSpec::VALIDATE_SYSTEM_USER,

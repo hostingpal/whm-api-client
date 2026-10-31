@@ -69,3 +69,42 @@ func TestRenderReviewedPresenceParameterCorrection(t *testing.T) {
 		t.Fatalf("presence input must use the existing bool encoder:\n%s", spec)
 	}
 }
+
+func TestRenderRequiredTrueParameterCorrection(t *testing.T) {
+	raw, err := os.ReadFile("../effective/testdata/fixture-map.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var m model.Map
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.UseNumber()
+	if err := decoder.Decode(&m); err != nil {
+		t.Fatal(err)
+	}
+	for _, op := range m.Operations {
+		if op.ID == "whm1:createacct" {
+			for _, p := range op.Variants[0].Parameters {
+				if p.Name == "plan" {
+					p.Definition["required"] = true
+					p.Definition["schema"] = map[string]any{"type": "integer", "enum": []any{json.Number("1")}}
+				}
+			}
+		}
+	}
+	var file overlay.File
+	if err := json.Unmarshal([]byte(`{"family":"whm1","group":"Accounts","accessor":"accounts","operations":{"whm1:createacct":{"name":"createAccount","params":{"plan":{"type":"true","encoding":"bool"}},"evidence":[{"kind":"doc","version":"pinned fixture","date":"2026-10-31","note":"Required singleton integer [1]."}]}}}`), &file); err != nil {
+		t.Fatal(err)
+	}
+	result, err := effective.Build(m, overlay.Set{Config: overlay.Config{Scope: "listed"}, Files: []overlay.File{file}})
+	if err != nil || len(result.Problems) != 0 {
+		t.Fatalf("build: %v %v", err, result.Problems)
+	}
+	files := Render(result)
+	class := string(files["src/Api/Whm/Accounts.php"])
+	if !strings.Contains(class, "true $plan,") || strings.Contains(class, "?true $plan") {
+		t.Fatalf("required true signature missing:\n%s", class)
+	}
+	if !strings.Contains(string(files["src/Api/Whm/Spec/AccountsSpec.php"]), "'plan' => ['name' => 'plan', 'encoding' => 'bool'],") {
+		t.Fatal("existing bool encoding missing")
+	}
+}
