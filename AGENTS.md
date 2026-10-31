@@ -1266,3 +1266,10 @@ ACL lists and reseller names. It supplies no guessed reseller identifier, change
 no accounts, privileges, limits, contact details, IPs or nameservers, and does not
 fetch returned contact URLs. Empty inventories do not establish populated row
 contracts. Follow-up `8x0.2.36` retains the remaining live behavior and variants.
+
+The corrected WHM reseller capture at `e8751c3` on `11.138.0.19` has six HTTP-200
+observations, five API/payload/probe passes, one unchanged `getresellerips` API
+failure and zero discrepancies. Strict status remains failed. Account-count
+`reseller.limit` preserves `int|null|''` without assigning meaning to empty string;
+siblings remain strict. ACL/reseller inventories are empty. No mutation ran,
+initial evidence remains immutable, and `8x0.2.36` owns remaining coverage.

@@ -479,3 +479,17 @@ URL are empty strings. No account, ACL, privilege, limit, contact, IP or nameser
 changed, and no returned URL was fetched. The artifact remains failed and
 immutable; follow-up `8x0.2.36` retains remaining variants and lifecycle behavior.
 SHA-256: `76e0be8605fc048ab03c9bfd82c0fb98fefbf93d170c0fb619cde5902339c753`.
+
+The [corrected reseller capture](2026-10-31-whm-resellers-corrected.json)
+at `e8751c3ff59e7be77a1726669dc2b80181a7fca2` on `11.138.0.19` records six
+HTTP-200 observations, five API/payload/probe passes and one unchanged API failure
+from `getresellerips`. The account-count limit now preserves its observed empty
+string alongside the documented integer/null alternatives. No meaning is assigned
+to that empty string, and sibling fields retain their original contracts. There
+are zero discrepancies; strict status remains failed because of the API failure.
+
+ACL and reseller inventories remain empty, and public contact strings are empty.
+No account, ACL, limit, contact, IP or nameserver setting changed. The initial failed
+artifact remains unchanged; follow-up `8x0.2.36` retains the API failure and all
+unobserved operations/variants. Corrected SHA-256:
+`7ae3954f188d2128dceab3fd1e61d5bc6133761105778ad30788996c161817eb`.

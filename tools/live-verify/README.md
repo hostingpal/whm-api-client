@@ -1142,3 +1142,9 @@ opt-in, committed-input checks, verified TLS and structural capture remain activ
 No reseller is selected by a guessed identifier and no account, privilege, limit,
 contact, IP or nameserver is changed. Returned URLs are not fetched. Keep remaining
 variants and lifecycle verification under `8x0.2.36`.
+
+The corrected reseller capture at `e8751c3` passes five of six API/payload/probe
+checks with zero discrepancies. `getresellerips` still fails at the API; its cause
+is not established and strict status remains failed. The observed account limit
+empty string is preserved without inferred semantics. ACL/reseller inventories
+are empty. No settings changed; historical evidence and follow-up `8x0.2.36` remain.
