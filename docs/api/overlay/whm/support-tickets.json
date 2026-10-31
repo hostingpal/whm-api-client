@@ -1,0 +1,421 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "cPanel Support Tickets",
+  "class": "SupportTickets",
+  "accessor": "supportTickets",
+  "operations": {
+    "whm1:ticket_create_stub_ticket": {
+      "name": "createStubTicket",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 60. Uses one form POST request without automatic retries, polling or rollback. The pinned request-body prose also appears on read-only functions; GET follows their explicit x-readonly=true classification. No live calls are included in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "Creates a stub ticket used to create a cPanel support ticket. The returned secure_id is a private token and ticket_id is an integer selector for later operations; never log the token or infer that a completed support ticket or remote access exists."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_create_stub_ticket has x-readonly=false, x-cpanel-available-version=60, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:ticket_get_support_agreement": {
+      "name": "getSupportAgreement",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 60. Uses one GET request without automatic retries, polling or rollback. The pinned request-body prose also appears on read-only functions; GET follows their explicit x-readonly=true classification. No live calls are included in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires a cPanelID token in the current session and retrieves agreement text and acceptance metadata from the Customer Portal. accepted remains integer 0|1; accepted_date and accepted_date_human independently preserve omitted versus explicit null. Agreement HTML and download/view URLs are payload data: the client never renders, fetches or accepts them."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_get_support_agreement has x-readonly=true, x-cpanel-available-version=60, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:ticket_get_support_info": {
+      "name": "getSupportInfo",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 78.0.6. Uses one GET request without automatic retries, polling or rollback. The pinned request-body prose also appears on read-only functions; GET follows their explicit x-readonly=true classification. No live calls are included in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "Requires a cPanelID token in the current session. This read can consult support services and return license-holder contact information. Architecture and distro support integers include -1 for unknown; binary flags remain integer 0|1. An empty pub_tech_contact causes the server to use pub_support_contact according to the source; the client does not synthesize values or fetch returned links."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_get_support_info has x-readonly=true, x-cpanel-available-version=78.0.6, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:ticket_grant": {
+      "name": "grant",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.44. Uses one form POST request without automatic retries, polling or rollback. The pinned request-body prose also appears on read-only functions; GET follows their explicit x-readonly=true classification. No live calls are included in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "Installs a Customer Portal SSH key and may change server-wide support access and firewall whitelist state. secureId is sensitive. Omitted sshUsername lets the server retrieve the username from the ticket; no root default is inferred. Inspect each firewall status and non_fatals even after API success. Success does not establish remote SSH access or security enforcement."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_grant has x-readonly=false, x-cpanel-available-version=11.44, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "secure_id",
+        "server_num",
+        "ticket_id",
+        "ssh_username"
+      ],
+      "params": {
+        "secure_id": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:ticket_list": {
+      "name": "list",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.44. Uses one GET request without automatic retries, polling or rollback. The pinned request-body prose also appears on read-only functions; GET follows their explicit x-readonly=true classification. No live calls are included in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned source requires serverNum and ticketId despite the inventory-style name. Omitted sshUsername lets the server select the user from the ticket; no root default is inferred. The auths and nested servers are lists of optional-field objects, as expressly described by the source. Ticket subjects, SSH destinations and non-fatal support text are payload data and are never executed, contacted or logged automatically."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_list has x-readonly=true, x-cpanel-available-version=11.44, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "server_num",
+        "ticket_id",
+        "ssh_username"
+      ],
+      "response": {
+        "auths": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "servers": {
+                  "type": "list",
+                  "items": {
+                    "type": "object",
+                    "fields": {
+                      "auth_status": {
+                        "type": "string"
+                      },
+                      "auth_time": {
+                        "type": "int"
+                      },
+                      "server_name": {
+                        "type": "string"
+                      },
+                      "server_num": {
+                        "type": "int"
+                      },
+                      "ssh": {
+                        "type": "string"
+                      },
+                      "ssh_username": {
+                        "type": "string"
+                      },
+                      "whm_ip": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "ticket_id": {
+                  "type": "int"
+                },
+                "ticket_status": {
+                  "type": "string"
+                },
+                "ticket_subject": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned data.auths and auths.items.properties.servers each omit type but explicitly say \"An array of objects\" and provide object item schemas. Repair only those missing array types, preserving all optional item fields and strict integer identifiers/timestamps. No populated live result is claimed. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:ticket_remove_closed": {
+      "name": "removeClosed",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.44. Uses one form POST request without automatic retries, polling or rollback. The pinned request-body prose also appears on read-only functions; GET follows their explicit x-readonly=true classification. No live calls are included in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes support SSH keys and closed support tickets and can affect server-wide firewall whitelist state. Inspect revoked_keys, non_fatals and every available firewall status; csf_wl_status is absent when CSF is unavailable. API success alone does not establish remote access removal or firewall enforcement."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_remove_closed has x-readonly=false, x-cpanel-available-version=11.44, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:ticket_revoke": {
+      "name": "revoke",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.44. Uses one form POST request without automatic retries, polling or rollback. The pinned request-body prose also appears on read-only functions; GET follows their explicit x-readonly=true classification. No live calls are included in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes the Customer Portal SSH key identified by required serverNum, sshUsername and ticketId. This can change server-wide support access and firewall whitelist state. Inspect revoked_keys, non_fatals and individual firewall statuses even after API success; remote access removal and security enforcement are not proven by the API envelope."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_revoke has x-readonly=false, x-cpanel-available-version=11.44, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "server_num",
+        "ssh_username",
+        "ticket_id"
+      ]
+    },
+    "whm1:ticket_ssh_test": {
+      "name": "sshTest",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.44. Uses one form POST request without automatic retries, polling or rollback. The pinned request-body prose also appears on read-only functions; GET follows their explicit x-readonly=true classification. No live calls are included in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "Contacts the Customer Portal to verify its SSH connection to the server. This operation uses form POST despite its diagnostic name. The payload result and non_fatals are separate from API metadata.result; success does not establish all remote-access or security properties."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_ssh_test has x-readonly=false, x-cpanel-available-version=11.44, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "server_num",
+        "ticket_id"
+      ]
+    },
+    "whm1:ticket_ssh_test_start": {
+      "name": "sshTestStart",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 60. Uses one form POST request without automatic retries, polling or rollback. The pinned request-body prose also appears on read-only functions; GET follows their explicit x-readonly=true classification. No live calls are included in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "Initiates an SSH connection test through the support service, using form POST. The pinned response declares an opaque object with no field contract: retain arbitrary object fields and reject null or absent data. Returned commands, tokens and links are payload data and are never executed or fetched. A successful start does not establish completed SSH connectivity."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_ssh_test_start has x-readonly=false, x-cpanel-available-version=60, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "server_num",
+        "ticket_id"
+      ]
+    },
+    "whm1:ticket_update_service_agreement_approval": {
+      "name": "updateServiceAgreementApproval",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 60. Uses one form POST request without automatic retries, polling or rollback. The pinned request-body prose also appears on read-only functions; GET follows their explicit x-readonly=true classification. No live calls are included in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "Records acceptance of the specified Technical Support Agreement version in the Customer Portal with the user login and acceptance date/time. This is an agreement acceptance action, not an agreement read. The source specifies no data payload; inspect responseMeta() for API outcome."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_update_service_agreement_approval has x-readonly=false, x-cpanel-available-version=60, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "version"
+      ],
+      "void": true
+    },
+    "whm1:ticket_validate_oauth2_code": {
+      "name": "validateOauth2Code",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 60. Uses one form POST request without automatic retries, polling or rollback. The pinned request-body prose also appears on read-only functions; GET follows their explicit x-readonly=true classification. No live calls are included in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "Exchanges the sensitive OAuth2 code for a token and stores it in the current session. redirectUri is also sensitive because callback query data can contain credentials or state. Both values are sent once as form data and encoded once; the client does not follow the redirect. The source specifies no data payload; inspect responseMeta() for API outcome."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_validate_oauth2_code has x-readonly=false, x-cpanel-available-version=60, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ],
+      "order": [
+        "code",
+        "redirect_uri"
+      ],
+      "params": {
+        "code": {
+          "sensitive": true
+        },
+        "redirect_uri": {
+          "sensitive": true
+        }
+      },
+      "void": true
+    },
+    "whm1:ticket_whitelist_check": {
+      "name": "whitelistCheck",
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.44. Uses one GET request without automatic retries, polling or rollback. The pinned request-body prose also appears on read-only functions; GET follows their explicit x-readonly=true classification. No live calls are included in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "Checks the correlation between server firewall whitelists and support access grants. Returned chain_status and problem are payload diagnostics, separately from the API outcome; they do not independently establish firewall enforcement or remote access."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_whitelist_check has x-readonly=true, x-cpanel-available-version=11.44, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:ticket_whitelist_setup": {
+      "name": "whitelistSetup",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.44. Uses one form POST request without automatic retries, polling or rollback. The pinned request-body prose also appears on read-only functions; GET follows their explicit x-readonly=true classification. No live calls are included in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "Adds cPanel Support IP addresses to the server firewall whitelist; it does not change the cPHulk whitelist. The source logs errors to /usr/local/cpanel/logs/error_log. Inspect payload chain_status even when metadata.result indicates API success; no security enforcement guarantee is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_whitelist_setup has x-readonly=false, x-cpanel-available-version=11.44, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    },
+    "whm1:ticket_whitelist_unsetup": {
+      "name": "whitelistUnsetup",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel & WHM 11.44. Uses one form POST request without automatic retries, polling or rollback. The pinned request-body prose also appears on read-only functions; GET follows their explicit x-readonly=true classification. No live calls are included in this slice."
+        },
+        {
+          "kind": "documented",
+          "text": "Removes cPanel Support IP addresses from the server firewall whitelist; it does not change the cPHulk whitelist. The source logs errors to /usr/local/cpanel/logs/error_log. Inspect payload chain_status even when metadata.result indicates API success; no security enforcement guarantee is inferred."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ticket_whitelist_unsetup has x-readonly=false, x-cpanel-available-version=11.44, and the reviewed parameter and 200-response schemas. Canonical WHM x-tagGroups assigns Support Access and Ticket Management tags to cPanel Support Tickets. Preserve source requiredness, omission, scalar wire types and optional result fields. All operations say they are unavailable through the command line; mutating operations use form POST. WHM OpenAPI SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        }
+      ]
+    }
+  }
+}

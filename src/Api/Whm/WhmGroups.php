@@ -37,6 +37,8 @@ trait WhmGroups
 
     private ?Server $serverGroup = null;
 
+    private ?SupportTickets $supportTicketsGroup = null;
+
     private ?WebServer $webServerGroup = null;
 
     /**
@@ -171,6 +173,16 @@ trait WhmGroups
     public function server(): Server
     {
         return $this->serverGroup ??= new Server($this->run(...));
+    }
+
+    /**
+     * Select the cPanel Support Tickets operations without making a request.
+     *
+     * WHM API 1 functions in the documented cPanel Support Tickets group.
+     */
+    public function supportTickets(): SupportTickets
+    {
+        return $this->supportTicketsGroup ??= new SupportTickets($this->run(...));
     }
 
     /**

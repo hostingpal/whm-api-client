@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 77 typed groups cover 783 documented operations:
+and cPanel UAPI surface. The 78 typed groups cover 797 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -1352,6 +1352,33 @@ further commands are tracked under `gwi`. Go is a
 development-tool choice, not a runtime dependency of the PHP package. Preserve pinned documentation snapshots and
 refresh them explicitly; routine checks must remain offline. The tool design
 is tracked under `whm-api-client-gwi`; Laravel integration is separate work.
+
+
+## WHM support-ticket administration
+
+`whm()->supportTickets()` covers all fourteen pinned functions. Four source-declared
+reads use GET and ten ticket/access/SSH/OAuth operations use form POST. The source's
+required integer server and ticket IDs remain required, including for list().
+Grant/list SSH usernames can be omitted; revoke requires one. Omission does not
+infer root. Grant secure IDs, OAuth codes and redirect URIs remain sensitive.
+
+The source auths/servers list repair follows explicit array prose and item schemas.
+Support-agreement dates preserve optional null values; flags remain integer 0|1.
+Agreement acceptance and OAuth validation have source-documented void results.
+SSH-test startup instead returns a non-null opaque object and rejects absent/null
+data. Other optional fields retain their source types, including integer -1 where
+specified. No additional enum enforcement, client retries or rollback is added.
+
+Stub-ticket creation, access grants/revocations, firewall changes, remote SSH
+checks, OAuth exchange/session state and agreement acceptance can have external
+or server effects. Returned support text, tokens, links and commands are payload
+data and never executed or fetched. API success does not establish remote SSH
+access or security enforcement. Exact per-method version floors remain in PHPDoc.
+
+All fourteen methods have offline contracts. No live calls or capture ran for
+this slice: no support ticket, access, firewall, SSH, OAuth or agreement state was
+changed. Every live method/variant remains under `8x0.2.53` for a separately scoped
+verification fixture. Offline typed coverage is distinct from live compatibility.
 
 ## Architecture and Conventions
 

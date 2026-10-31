@@ -4345,3 +4345,29 @@ variants also remain unobserved under `8x0.2.38`. Profile-activation input typin
 remains under `8x0.1.23` before release. No new live call or capture ran for these
 corrections. Both historical captures remain immutable, and their two masked
 unknown-field observations stay strict failures without acknowledgment or waiver.
+
+## WHM support-ticket administration
+
+`whm()->supportTickets()` covers all fourteen pinned functions. Four source-declared
+reads use GET and ten ticket/access/SSH/OAuth operations use form POST. The source's
+required integer server and ticket IDs remain required, including for list().
+Grant/list SSH usernames can be omitted; revoke requires one. Omission does not
+infer root. Grant secure IDs, OAuth codes and redirect URIs remain sensitive.
+
+The source auths/servers list repair follows explicit array prose and item schemas.
+Support-agreement dates preserve optional null values; flags remain integer 0|1.
+Agreement acceptance and OAuth validation have source-documented void results.
+SSH-test startup instead returns a non-null opaque object and rejects absent/null
+data. Other optional fields retain their source types, including integer -1 where
+specified. No additional enum enforcement, client retries or rollback is added.
+
+Stub-ticket creation, access grants/revocations, firewall changes, remote SSH
+checks, OAuth exchange/session state and agreement acceptance can have external
+or server effects. Returned support text, tokens, links and commands are payload
+data and never executed or fetched. API success does not establish remote SSH
+access or security enforcement. Exact per-method version floors remain in PHPDoc.
+
+All fourteen methods have offline contracts. No live calls or capture ran for
+this slice: no support ticket, access, firewall, SSH, OAuth or agreement state was
+changed. Every live method/variant remains under `8x0.2.53` for a separately scoped
+verification fixture. Offline typed coverage is distinct from live compatibility.
