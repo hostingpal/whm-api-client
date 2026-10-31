@@ -400,12 +400,19 @@
         },
         "records": {
           "$ref": "#/$defs/records"
+        },
+        "json": {
+          "type": "object",
+          "properties": {"alias": {"type": "string", "minLength": 1}},
+          "required": ["alias"],
+          "additionalProperties": false
         }
       },
       "required": [
         "php"
       ],
       "additionalProperties": false,
+      "dependentRequired": {"json": ["source"]},
       "oneOf": [
         {
           "required": [

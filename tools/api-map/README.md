@@ -362,6 +362,22 @@ arguments. All record arguments are trace protected. `sensitive: true` is a
 separate secret classification requiring canonical POST; a false descriptor
 cannot downgrade a sensitive source field. Records require canonical form bodies.
 
+A source input can explicitly select `"json": {"alias": "ProviderDisplayInput"}`
+to expose its pinned `content.application/json.schema` as a structured PHP value
+in one ordinary form field. This requires a canonical form body and a query
+parameter with exactly that content media entry and no sibling schema. The same
+source hash/parameter-pointer evidence is required. The `Input` alias and strict
+request grammar derive from the selected schema, including scalar, list and object
+roots; they are independent of whole-body JSON's object-only/no-query policy.
+Required allowed null emits JSON `null`; optional nullable roots are unsupported,
+while optional nonnullable null omits the field. Unknown object keys, invalid types,
+integer object keys, nonsequential lists and invalid UTF-8 fail before dispatch.
+Empty object input `[]` becomes `{}`. Serialization occurs once before the existing
+form encoding, preserving strings and input order without default insertion or
+provider validation. The whole input is sensitive. The legacy canonical string
+mapping remains unchanged; selecting this companion does not add an operation or
+establish live compatibility.
+
 An additional method changes only inputs. Generated alias specs inherit the
 canonical route, method, selected variant, response shape/result alias,
 optional/unwrap rules and outcome, replacing only `params`. No separate response,
@@ -376,8 +392,9 @@ with a resolvable schema, no sibling `schema`, and absent or `scalar` encoding.
 They become native `string` arguments (`?string` when optional), carrying caller-serialized
 JSON text in the existing query/form field. Collection and type overrides, other or
 multiple media, unresolved/missing schemas, content on body fields and sibling schemas
-fail generation. This mapping does not parse, validate or re-encode JSON, introduce
-structured PHP arguments, or provide JSON request bodies. Null omission and one outer
+fail generation. This default mapping does not parse, validate or re-encode JSON
+or provide JSON request bodies. The explicit additional-method JSON-field selection above is the
+separate opt-in for structured PHP arguments. Null omission and one outer
 form/query encoding pass retain their existing behavior. Strict callers get native
 `TypeError` before the generated method or metadata reset; weak callers retain PHP coercion.
 Unlisted/excluded operations remain ungenerated.

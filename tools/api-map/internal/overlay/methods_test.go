@@ -36,3 +36,25 @@ func TestAdditionalMethodsSchemaRejectsDriftingContracts(t *testing.T) {
 		}
 	}
 }
+
+func TestAdditionalJSONFieldSchema(t *testing.T) {
+	method := `{"name":"configure","inputs":[{"php":"configuration","source":"search","json":{"alias":"ConfigurationInput"}}]}`
+	content := func(m string) string {
+		return strings.Replace(validWHM, `"name": "listAccounts",`, `"name": "listAccounts", "additional_methods":[`+m+`],`, 1)
+	}
+	if _, err := Load(writeOverlay(t, "listed", map[string]string{"whm/Accounts.json": content(method)})); err != nil {
+		t.Fatal(err)
+	}
+	for _, bad := range []string{
+		strings.Replace(method, `"json":{"alias":"ConfigurationInput"}`, `"json":{"alias":"ConfigurationInput","routes":"direct"}`, 1),
+		strings.Replace(method, `"json":{"alias":"ConfigurationInput"}`, `"json":{}`, 1),
+		strings.Replace(method, `"json":{"alias":"ConfigurationInput"}`, `"json":null`, 1),
+		strings.Replace(method, `"json":{"alias":"ConfigurationInput"}`, `"json":{"alias":"ConfigurationInput","schema":{}}`, 1),
+		strings.Replace(method, `"source":"search",`, ``, 1),
+		strings.Replace(method, `"json":`, `"Json":`, 1),
+	} {
+		if _, err := Load(writeOverlay(t, "listed", map[string]string{"whm/Accounts.json": content(bad)})); err == nil {
+			t.Errorf("bad JSON field accepted: %s", bad)
+		}
+	}
+}

@@ -63,6 +63,13 @@ use LogicException;
  *   Every field uses the original row position; no independent-list compaction.
  *   Additional generated method constants inherit the canonical operation spec
  *   and replace only params, sharing route, method, outcome and return schema.
+ *   Encoding 'json' requires json: {required: bool, schema: strict
+ *   StructuredJsonSchema descriptor}; it stays in params under one original wire
+ *   name. Validate and serialize the complete value once, then form-encode the
+ *   resulting string once. This is distinct from body=json and json_body: no JSON
+ *   content-type or root routing guard applies inside this field. Required null
+ *   is present JSON null when allowed. Optional nonnullable null means absence;
+ *   optional nullable roots are unsupported. Malformed descriptors fail before I/O.
  * - returns: required key; a type spec (see ShapeValidator for the grammar), or
  *   an explicit null for a void operation.
  * - unwrap: optional string naming a field declared in an object "returns";

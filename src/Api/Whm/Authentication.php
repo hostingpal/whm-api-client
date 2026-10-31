@@ -8,6 +8,7 @@ use Closure;
 use HostingPal\WhmApiClient\Api\Whm\Spec\AuthenticationSpec;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
+use InvalidArgumentException;
 use SensitiveParameter;
 
 /**
@@ -157,6 +158,15 @@ use SensitiveParameter;
  * }
  * @phpstan-type TwoFactorAuthSetTfaConfigResult array{
  *     success?: 0|1,
+ * }
+ *
+ * @phpstan-type ProviderDisplayInput array{
+ *     color?: string,
+ *     display_name?: string,
+ *     icon?: string,
+ *     icon_type?: string,
+ *     label?: string,
+ *     textcolor?: string,
  * }
  */
 final readonly class Authentication
@@ -870,12 +880,21 @@ final readonly class Authentication
      *
      * Documented: Available in cPanel 54 and later.
      *
-     * Documented: The pinned configurations query parameter requires JSON-encoded key-value text with the documented
-     * keys color, display_name, icon, icon_type, label and textcolor.
+     * Documented: The pinned configurations query parameter carries JSON-encoded key-value text for color,
+     * display_name, icon, icon_type, label and textcolor. The effective request uses form POST.
      *
-     * Policy: Supply caller-serialized JSON, form-encoded once; do not pass a PHP object. The native argument is a
-     * string representing the content-based query parameter; JSON syntax is not validated. Configuration JSON is
-     * sensitive. Client policy: send one request without automatic retry or rollback.
+     * Documented: On cPanel 11.138.0.19, set_display_configuration merges supplied keys over the current configuration;
+     * omitted keys retain their current values. Every call writes the full merged configuration, including {}
+     * (structured []). This pins current values and defaults for that provider/service and prevents later upstream
+     * defaults from applying. An empty call is neither a reset nor a write-free no-op. The server requires color and
+     * textcolor to match ^[0-9a-fA-F]{3,6}$ without a leading #. A key unsupported by the provider, such as icon when
+     * the provider has no icon, can pass local shape validation and still be rejected upstream. These are upstream
+     * constraints; the client does not validate colors or provider-specific key availability.
+     *
+     * Policy: setProviderDisplayConfigurations() accepts caller-serialized string text without parsing or reencoding.
+     * configureProviderDisplay() validates structured PHP input, serializes it once into the configurations form field
+     * and then form-encodes once. Configuration inputs are sensitive. Omitted members remain absent in the request; []
+     * sends {}. Client policy: send one request without automatic retry or rollback.
      *
      * API-map identity: whm1:set_provider_display_configurations#GET (wire name set_provider_display_configurations;
      * External Authentication).
@@ -900,6 +919,56 @@ final readonly class Authentication
             'configurations' => $configurations,
             'providerId' => $providerId,
             'serviceName' => $serviceName,
+        ]);
+    }
+
+    /**
+     * Update identity provider login interface appearance.
+     *
+     * This function sets the display configuration for the login button of an external authentication identity
+     * provider.
+     *
+     * Documented: Available in cPanel 54 and later.
+     *
+     * Documented: The pinned configurations query parameter carries JSON-encoded key-value text for color,
+     * display_name, icon, icon_type, label and textcolor. The effective request uses form POST.
+     *
+     * Documented: On cPanel 11.138.0.19, set_display_configuration merges supplied keys over the current configuration;
+     * omitted keys retain their current values. Every call writes the full merged configuration, including {}
+     * (structured []). This pins current values and defaults for that provider/service and prevents later upstream
+     * defaults from applying. An empty call is neither a reset nor a write-free no-op. The server requires color and
+     * textcolor to match ^[0-9a-fA-F]{3,6}$ without a leading #. A key unsupported by the provider, such as icon when
+     * the provider has no icon, can pass local shape validation and still be rejected upstream. These are upstream
+     * constraints; the client does not validate colors or provider-specific key availability.
+     *
+     * Policy: setProviderDisplayConfigurations() accepts caller-serialized string text without parsing or reencoding.
+     * configureProviderDisplay() validates structured PHP input, serializes it once into the configurations form field
+     * and then form-encodes once. Configuration inputs are sensitive. Omitted members remain absent in the request; []
+     * sends {}. Client policy: send one request without automatic retry or rollback.
+     *
+     * API-map identity: whm1:set_provider_display_configurations#GET (wire name set_provider_display_configurations;
+     * External Authentication).
+     *
+     * @param string $providerId The identity provider's key.
+     * @param 'cpaneld'|'whostmgrd'|'webmaild' $serviceName The cPanel & WHM service's name.
+     * @param ProviderDisplayInput $configurations Structured PHP value from the selected source schema. String contents
+     *     are preserved without fetching URLs or opening files; source defaults remain upstream. Omitted members stay
+     *     absent. Empty object input [] serializes to {}. Validated JSON value in one form field; serialized once
+     *     before form encoding.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws InvalidArgumentException If a structured JSON field is invalid; no request is sent.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/external-authentication/authentication-set_provider_display_configurations
+     */
+    public function configureProviderDisplay(
+        string $providerId,
+        string $serviceName,
+        #[SensitiveParameter]
+        array $configurations,
+    ): void {
+        ($this->run)(AuthenticationSpec::CONFIGURE_PROVIDER_DISPLAY, [
+            'providerId' => $providerId,
+            'serviceName' => $serviceName,
+            'configurations' => $configurations,
         ]);
     }
 

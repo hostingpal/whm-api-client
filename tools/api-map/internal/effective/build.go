@@ -715,12 +715,18 @@ func (b *builder) finish(groups map[string]*Group) {
 		for _, op := range group.Operations {
 			for _, method := range op.Methods() {
 				for _, p := range method.Params {
-					if p.Records == nil {
+					alias := ""
+					if p.Encoding == "json" {
+						alias = p.DocType
+					} else if p.Records != nil {
+						alias = p.Records.Alias
+					}
+					if alias == "" {
 						continue
 					}
-					key := strings.ToLower(p.Records.Alias)
+					key := strings.ToLower(alias)
 					if typeAliases[key] {
-						b.problem("group " + group.Name + ": duplicate type alias " + p.Records.Alias)
+						b.problem("group " + group.Name + ": duplicate type alias " + alias)
 					}
 					typeAliases[key] = true
 				}

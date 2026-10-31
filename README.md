@@ -1785,11 +1785,39 @@ unlink methods take the local username first. Unset provider values retain null;
 client ID/secret nulls and absent/null TFA `primary_account` are source-family
 compatibility, not observations from executing those POST methods.
 
-Provider display configurations accept caller-serialized JSON containing the
-pinned `color`, `display_name`, `icon`, `icon_type`, `label` and `textcolor` keys,
-as a form field encoded once. The native argument is `string`. The scalar input
-correction under `8x0.1.23` is complete for this parameter; JSON-body transport
-remains separate work.
+Provider display offers two input forms for the same operation. The existing
+`setProviderDisplayConfigurations(string $configurations, string $providerId,
+string $serviceName)` accepts caller-serialized text unchanged, including malformed
+or empty JSON text. The companion accepts a required structured PHP array:
+
+```php
+$client->whm()->authentication()->configureProviderDisplay(
+    providerId: 'cpanelid',
+    serviceName: 'cpaneld',
+    configurations: ['display_name' => 'Hosting login', 'label' => 'Sign in'],
+);
+```
+
+The six keys `color`, `display_name`, `icon`, `icon_type`, `label` and `textcolor`
+are optional nonnullable strings; unknown keys and other value types fail before
+I/O. Missing members stay absent. The client adds no color, MIME or base64 checks,
+fetches no icon URL and opens no icon file. The source `icon_type` default
+`image/svg+xml` remains upstream. Each string stays a string, including JSON-looking
+contents. Input order is preserved. The complete value is serialized once into
+one `configurations` form field, then form-encoded once; `[]` sends
+`configurations=%7B%7D` (`{}`). This is a form POST, with no JSON request header.
+On cPanel 11.138.0.19, both methods merge supplied keys over the
+current configuration; omitted keys retain their current values. Every call writes
+the full merged configuration, including an empty object. This pins current values
+and defaults for that provider/service, preventing later upstream default changes
+from applying. It is not a reset or a write-free no-op. The server requires `color`
+and `textcolor` to match `^[0-9a-fA-F]{3,6}$`, without a leading `#`. A key the
+provider does not support, such as `icon` on a provider without an icon, can pass
+local shape validation and still fail upstream. These upstream constraints are
+not additional local validators. Configuration input is sensitive; one attempt has
+no automatic retry or rollback. This source/offline companion adds no canonical operation and establishes no new live provider-write
+compatibility.
+
 TFA removal currently
 supports scalar `user`; the separately documented `user-1`/`user-2` family remains
 under `8x0.1.21`, without assuming equivalence to another numbered encoding.

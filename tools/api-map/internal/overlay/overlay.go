@@ -41,10 +41,14 @@ type AdditionalMethod struct {
 	Name   string        `json:"name"`
 	Inputs []MethodInput `json:"inputs"`
 }
+type JSONField struct {
+	Alias string `json:"alias"`
+}
 type MethodInput struct {
-	PHP     string   `json:"php"`
-	Source  string   `json:"source,omitempty"`
-	Records *Records `json:"records,omitempty"`
+	JSON    *JSONField `json:"json,omitempty"`
+	PHP     string     `json:"php"`
+	Source  string     `json:"source,omitempty"`
+	Records *Records   `json:"records,omitempty"`
 }
 type Records struct {
 	Alias     string        `json:"alias"`

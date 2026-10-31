@@ -18,7 +18,8 @@ use stdClass;
  * An explicit reject_empty policy rejects null, blank/zero strings and invalid
  * string-list targets before omission/encoding; it never changes unflagged inputs.
  * An explicit omit_empty parameter setting also omits exactly an empty list.
- * Unguarded null arguments are omitted, so explicit null and omission send
+ * JSON fields use their explicit requiredness to preserve allowed JSON null.
+ * Other unguarded null arguments are omitted, so explicit null and omission send
  * the same request for those parameters. Flags become 0/1; repeated, WHM-numbered
  * and suffix-numbered marker rules expand into OrderedFields without collapsing
  * names or losing their argument origin. Finite float scalars become strings that
@@ -68,10 +69,13 @@ final class ArgumentEncoder
                 if (!is_string($name)) {
                     throw new LogicException('Invalid parameter argument name.');
                 }
+                if (($param['encoding'] ?? null) === 'json') {
+                    JsonFieldEncoder::check($param['json'] ?? null);
+                }
                 if (($param['encoding'] ?? null) === 'records') {
                     RecordEncoder::check($param['records'] ?? null);
                 }
-                $exact = in_array($param['encoding'] ?? null, ['scalar', 'bool', 'repeat', 'numbered'], true);
+                $exact = in_array($param['encoding'] ?? null, ['scalar', 'bool', 'repeat', 'numbered', 'json'], true);
                 if (($param['encoding'] ?? null) === 'collection') {
                     $collection = CollectionEncoder::check($param['collection'] ?? null);
                     $exact = $collection['kind'] === 'repeat' || $collection['allow_scalar'];
@@ -90,6 +94,9 @@ final class ArgumentEncoder
                 RecordEncoder::append($encoded, $name, $param['records'] ?? null, $value);
 
                 continue;
+            }
+            if (is_array($param) && ($param['encoding'] ?? null) === 'json') {
+                $value = JsonFieldEncoder::encode($param['json'], array_key_exists($name, $arguments), $value);
             }
             if ($value === null) {
                 continue;
@@ -111,7 +118,7 @@ final class ArgumentEncoder
             }
 
             $encodedValue = match ($param['encoding'] ?? null) {
-                'scalar' => self::scalar($value),
+                'scalar', 'json' => self::scalar($value),
                 'bool' => is_bool($value)
                     ? ($value ? 1 : 0)
                     : throw new LogicException('Flag arguments must be booleans.'),

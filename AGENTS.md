@@ -1545,11 +1545,16 @@ unlink methods take the local username first. Unset provider values retain null;
 client ID/secret nulls and absent/null TFA `primary_account` are source-family
 compatibility, not observations from executing those POST methods.
 
-Provider display configurations accept caller-serialized JSON containing the
-pinned `color`, `display_name`, `icon`, `icon_type`, `label` and `textcolor` keys,
-as a form field encoded once. The native `string` argument preserves supplied
-serialized bytes without automatic object encoding or JSON syntax validation.
-This content-based query schema does not introduce JSON-body transport.
+Provider display retains the caller-serialized string method and adds
+`configureProviderDisplay(providerId, serviceName, configurations)` with a required
+structured array of six optional nonnullable string fields: `color`, `display_name`,
+`icon`, `icon_type`, `label` and `textcolor`. One serialization in one form field
+is separate from whole-body JSON; `[]` sends `{}`. On reviewed `11.138.0.19`, both
+methods merge supplied keys and always persist the complete merged configuration,
+including empty input, pinning current values/defaults for that provider/service.
+The version-scoped source note covers upstream color and provider-key constraints;
+do not add local enum/regex/provider validators. The legacy string method preserves
+its supplied serialized bytes without object encoding or JSON syntax validation.
 TFA removal currently
 supports scalar `user`; the separately documented `user-1`/`user-2` family remains
 under `8x0.1.21`, without assuming equivalence to another numbered encoding.

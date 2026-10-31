@@ -117,6 +117,7 @@ These symbols share one canonical operation, route and response contract; counts
 
 | Canonical operation | Public methods |
 | --- | --- |
+| `whm1:set_provider_display_configurations` | `authentication()->setProviderDisplayConfigurations()`, `authentication()->configureProviderDisplay()` |
 | `whm1:modsec_batch_settings` | `modSecurity()->batchSettings()`, `modSecurity()->updateSettings()` |
 
 ## Excluded operations

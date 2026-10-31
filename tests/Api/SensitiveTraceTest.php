@@ -423,14 +423,17 @@ final class SensitiveTraceTest extends TestCase
             $http->addResponse(self::failedResponse($route, $failure));
         }
 
+        $exception = null;
         try {
             $call($client);
-            self::fail('Expected ' . $expected . '.');
-        } catch (Throwable $exception) {
-            self::assertInstanceOf($expected, $exception);
-            self::assertCount(1, $http->getRequests());
-            self::assertSecretAbsent($exception);
+        } catch (Throwable $caught) {
+            $exception = $caught;
         }
+        self::assertInstanceOf($expected, $exception);
+        self::assertSame($expected, $exception::class);
+        self::assertCount(1, $http->getRequests());
+        self::assertNull($exception->getPrevious());
+        self::assertSecretAbsent($exception);
     }
 
     /** @return iterable<string, array{'whm'|'direct'|'bridged', Closure(Client): mixed, string, class-string<Throwable>}> */
@@ -446,6 +449,52 @@ final class SensitiveTraceTest extends TestCase
             foreach ($failures as $failure => $expected) {
                 yield $name . ', ' . $failure => [$route, $call, $failure, $expected];
             }
+        }
+    }
+
+    #[DataProvider('invalidProviderDisplayConfigurations')]
+    public function testProviderDisplayLocalFailuresRedactKeysAndValues(string $failure): void
+    {
+        $configuration = match ($failure) {
+            'unknown private key and value' => [self::SECRET => self::SECRET],
+            'wrong nested value' => ['label' => [self::SECRET => self::SECRET]],
+            'invalid UTF-8 value' => ['label' => self::SECRET . "\xff"],
+            'invalid UTF-8 private key' => [self::SECRET . "\xff" => self::SECRET],
+            'integer key' => [1 => self::SECRET],
+            default => [self::SECRET],
+        };
+        [$client, $http] = self::client(false);
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1}}'));
+        $handle = $client->whm();
+        $handle->call('version');
+        self::assertNotNull($handle->responseMeta());
+        $exception = null;
+        try {
+            $group = $handle->authentication();
+            (new ReflectionMethod($group, 'configureProviderDisplay'))->getClosure($group)(
+                'provider',
+                'cpaneld',
+                $configuration,
+            );
+        } catch (Throwable $caught) {
+            $exception = $caught;
+        }
+        self::assertInstanceOf(InvalidArgumentException::class, $exception);
+        self::assertSame(InvalidArgumentException::class, $exception::class);
+        self::assertNull($exception->getPrevious());
+        self::assertSecretAbsent($exception);
+        self::assertNull($handle->responseMeta());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function invalidProviderDisplayConfigurations(): iterable
+    {
+        foreach (
+            ['unknown private key and value', 'wrong nested value', 'invalid UTF-8 value',
+            'invalid UTF-8 private key', 'integer key', 'list'] as $failure
+        ) {
+            yield $failure => [$failure];
         }
     }
 
@@ -1137,6 +1186,16 @@ final class SensitiveTraceTest extends TestCase
     /** @return iterable<string, array{'whm'|'direct'|'bridged', Closure(Client): mixed}> */
     private static function secretCalls(): iterable
     {
+        yield 'WHM structured provider display JSON field' => [
+            'whm',
+            static function (Client $client): void {
+                $client->whm()->authentication()->configureProviderDisplay(
+                    'provider',
+                    'cpaneld',
+                    ['label' => self::SECRET, 'icon' => self::SECRET],
+                );
+            },
+        ];
         yield 'direct typed StatsManager JSON body' => [
             'direct',
             static fn (Client $client): mixed => $client->uapi()->statsManager()->saveConfiguration([
