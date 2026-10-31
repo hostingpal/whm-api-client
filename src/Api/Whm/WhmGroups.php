@@ -19,6 +19,8 @@ trait WhmGroups
 
     private ?Backups $backupsGroup = null;
 
+    private ?Databases $databasesGroup = null;
+
     private ?Dns $dnsGroup = null;
 
     private ?HostingPlans $hostingPlansGroup = null;
@@ -55,6 +57,16 @@ trait WhmGroups
     public function backups(): Backups
     {
         return $this->backupsGroup ??= new Backups($this->run(...));
+    }
+
+    /**
+     * Select the Databases operations without making a request.
+     *
+     * WHM API 1 functions in the documented Databases group.
+     */
+    public function databases(): Databases
+    {
+        return $this->databasesGroup ??= new Databases($this->run(...));
     }
 
     /**

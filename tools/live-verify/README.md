@@ -1180,6 +1180,59 @@ external-authentication unlink, host-key mutation/verification, login or URL fet
 runs. Strict assessment accepts no discrepancies or acknowledgments. Follow-up
 `8x0.2.31` retains all unobserved methods, variants and enforcement behavior.
 
+## Account backup and restoration
+
+`account-backup-restoration.php` binds `account-backup-restoration-v1` to nine
+exact GET observations: WHM version plus Backup/list_backups, Restore/get_users,
+WordPressBackup/any_running and WordPressRestore/any_running through direct UAPI
+and the WHM bridge for `npr`. All are explicitly source-readonly and parameterless;
+no site, backup ID, archive or path is guessed.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/account-backup-restoration.php \
+  --output=docs/api/evidence/account-backup-restoration-new.json
+```
+
+The existing exact URI/method/body guard, committed inputs, both tokens, TLS,
+no retries and new-only output rules apply. Captures preserve structural paths
+and types only, masking dynamic keys and never fetching returned SSE URLs or files.
+No creation, remote transfer, extraction, restoration, cancel/cleanup, deletion,
+tracking reset or email notification runs. Fourteen newer operations remain
+outside this catalog: ten use conservative POST selection, while four WebsiteBackup
+mutations have explicit pinned POST/form contracts. Strict assessment
+accepts no discrepancies or acknowledgments; `8x0.2.32` retains all source/live gaps.
+
+## WHM database administration
+
+`whm-databases.php` binds `whm-databases-v1` to nine exact WHM GETs: version,
+current/latest/installable MySQL versions, database optimization information,
+database users, databases, MySQL database/user details for `npr`, and remote profile
+activation status. Only the account-detail read supplies `user=npr`; all others
+have only `api.version=1`. The source-declared status fields include no credentials.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/whm-databases.php \
+  --output=docs/api/evidence/whm-databases-new.json
+```
+
+The shared command requires both tokens and committed inputs even though this
+catalog uses only WHM. Exact URI/method/body guards, verified TLS, no retries and
+new-only output publication remain unchanged. Structural-only evidence wildcards
+database/profile keys and never persists values. Profile credential reads and
+background-upgrade status requiring an ID are excluded; no ID or network target
+is guessed. No upgrade, checker run, profile creation/validation/activation,
+password, rename or configuration mutation occurs. Strict assessment accepts no
+discrepancies or acknowledgments; `8x0.2.33` retains remaining live behavior.
+
+
+The corrected nine-GET artifact at `00ba48d` is already complete and strictly
+passing; retain it and the initial failed artifact. Separate reviewer profile-read
+and disposable-account lifecycle observations in review 5720420360 do not expand
+this catalog. Profile responses and unvalidated exception payloads may contain
+plaintext passwords; the catalog still excludes those credential reads.
+
 ## Expanded WHM account inventory
 
 Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-account-management.php --output=docs/api/evidence/YYYY-MM-DD-whm-account-management.json`.

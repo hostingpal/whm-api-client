@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 64 typed groups cover 583 documented operations:
+and cPanel UAPI surface. The 72 typed groups cover 641 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -896,6 +896,155 @@ Strict assessment remains failed for the API errors, without a waiver. Causes
 were assessed separately in the reviewer report in `docs/api/source-audit.md`. No mutation ran. Both artifacts remain immutable and follow-up
 `8x0.2.31` retains the unobserved methods and variants. SHA-256:
 `6c0d5ace2ea0795b778c68f552bd2d0852ab8848fb26bc213823ce4916bb63a0`.
+
+The account-backup section exposes 32 compatible methods across `backup()`,
+`restore()`, `wordPressBackup()`, `wordPressRestore()`, `backupInfo()`,
+`extractInfo()` and `websiteBackup()`. Eight explicit reads use GET; 24 operations
+use form POST. Four binary multipart Backup restore endpoints remain excluded
+under `8x0.1.19`, including their alternative server-path modes; generic form access
+does not establish typed upload coverage.
+
+Full backups preserve sensitive remote passwords and SSH key passphrases; `keyName`
+is an existing key identifier, not private-key content. The pinned prerequisite
+text names `SSL::generate_key` and API2 `SSH::importkey`; this UAPI slice does not
+implement API2 key import. Omitting the completion-email
+argument sends no notification. A PID, backup ID or restore ID does not establish
+completion. Restore paths retain required slash conventions and are passed unchanged;
+`overwrite` is required and can replace original content. Source role/version and
+WordPress Manager plugin requirements remain in each generated method.
+
+WordPress results preserve optional fields, null and opaque-object alternatives.
+`WordPressRestore/any_running` preserves both the flat pinned examples and the
+formal optional `items` wrapper, including `any_running`, `sites` and `last_outcome`.
+The `sites` list keeps its known row shape; its formal object alternative is
+unstructured and only documented as empty. No populated keyed-record shape is
+inferred. Both `any_running` placements preserve the documented integer 0/1 values.
+Cancellation and cleanup have their documented result meanings and do not imply
+successful restoration or archive deletion. Returned SSE URLs are never fetched.
+
+BackupInfo, ExtractInfo and WebsiteBackup omit `x-readonly`. Ten methods use the
+conservative form POST fallback; WebsiteBackup creation, deletion, extraction and
+restoration have explicit pinned POST/form contracts and known mutation effects.
+Their POST responses are outside the committed read-only capture; separate reviewer
+lifecycle observations are recorded in the source audit.
+BackupInfo reset clears completion tracking without canceling a run or deleting
+archives. ExtractInfo start records a baseline/marker and extracts no files;
+finish clears that marker after either success or failure. Paths refer to server-side
+account files. The documented estimate limitations remain visible.
+
+WebsiteBackup uses repeated `database` and `ids` fields, preserving order and
+values. Creation with omitted databases backs up files only; omitted email sends
+no notification. Restore defaults differ: databases restore unless
+`restoreDatabases: false` is supplied. Restore merges and overwrites matching files
+by default; `clean: true` can remove later additions. These optional boolean
+switches preserve omission and encode explicit false/true as 0/1. Archive deletion is destructive,
+per-ID failures stay separate from API status, and source ID/domain association
+limits remain explicit. Background operation IDs mean submitted work; inspect
+operation status and errors/warnings for completion. Server database snapshots do
+not imply an atomic site rollback. No client retry or rollback is introduced.
+
+All 32 methods have offline contracts. The fixed nine-GET catalog selects WHM
+version plus account backup inventory, restore-user inventory and both WordPress
+`anyRunning()` reads through both routes. It guesses no site or path and excludes
+all unknown-risk calls, writes, extraction, restoration, deletion and notifications.
+Remaining source/live behavior stays under `8x0.2.32`.
+
+`BackupInfo::reset()` and `ExtractInfo::finish()` accept boolean and integer 0/1
+cleared flags. Quota checks normalize canonical, bounded integer strings only at
+`estimatedBytes` and `availableBytes`. On reviewed cPanel `11.138.0.19`, WordPress
+backup/restore modules were unavailable on both routes. Disabled server backups
+prevented `queryFileInfo()` and `restoreFile()` while `getUsers()` still returned
+an empty list. Missing-archive `ExtractInfo::start()` raises `ApiErrorException`.
+These installation-specific observations preserve normal error handling.
+
+WordPressBackup `cancel()` and `start()` return an optional string `site`,
+preserving the pinned outer type across format-only alternatives. Their generated
+input currently accepts `string|int`; supply a string site as documented. Integer
+site semantics are not established. The generator limitation is tracked under
+`8x0.1.23`; it does not weaken the response contract.
+
+## Account backup and restoration capture
+
+The immutable [account-backup capture](docs/api/evidence/2026-10-31-account-backup-restoration.json)
+at `e7b4a42` on `11.138.0.19` records nine HTTP 200 observations. WHM version,
+Backup/list_backups and Restore/get_users on both routes pass API, payload and
+probe checks. Both inventories are empty; populated rows remain unobserved.
+WordPressBackup/any_running and WordPressRestore/any_running fail at the API layer
+on both routes. The sanitized evidence does not establish the cause, and no
+response contract is widened from those failures. There are zero payload
+discrepancies, while strict assessment remains failed for the four API errors.
+
+No backup or restore job, extraction, cleanup, cancellation, message or filesystem
+change ran in this capture. No POST method is represented by the artifact;
+reviewer lifecycle reports remain separate evidence. Follow-up `8x0.2.32` retains the unobserved operations,
+plugin availability and lifecycle behavior. No repeat capture was run merely to
+seek a passing status. SHA-256:
+`c06b329f50f2ebd16ae43d52a7be4afb8b37d0267956d2d557287113209956f3`.
+
+`whm()->databases()` exposes 26 compatible database-administration methods: nine
+explicit reads use GET and seventeen operations use form POST. The JSON
+`update_sql_config` endpoint remains excluded under `8x0.1.18`. Remote profile reads
+marked non-readonly in the pinned source also use POST, and their returned password
+fields remain sensitive payload data.
+
+The profile-list source misplaces `additionalProperties`. Its dynamic-name prose
+and multi-profile example establish a root profile map containing exactly the eight
+documented optional fields. Profile-read ports accept bounded canonical integer
+strings observed on the stock localhost profile. The two list flags accept exact
+quoted 0/1 from the pinned example; live values were native integers. Typed
+`cpcloud` create-result flags use source-family compatibility only; no profile
+write was observed. Database/profile keys remain unchanged and wildcarded in
+evidence. Unknown-user `mysql_databases: null` remains distinct from an existing
+account's empty list; it is not a universal account-existence test. Missing and
+null root object payloads remain invalid. Six explicitly metadata-only
+rename/password operations return void. Both profile reads can expose plaintext
+`mysql_pass` in `PayloadMismatchException::$payload`; do not log that raw payload.
+
+Database passwords, SSH/root passwords and key passphrases remain sensitive.
+Stored SSH key names are identifiers. Optional credentials retain documented
+alternatives and conditional requirements without invented validation. Explicit
+false/zero/empty values remain distinct from omission. Root-password updates retain
+the pinned `update_config` and root client-configuration caveats.
+
+Renames can copy data/grants and delete original resources. The pinned rename
+warning describes possible partial failure, but its response location has not
+been observed; no WHM warnings accessor or text-based detector is implied.
+Check the API outcome and explicitly read affected inventory after a rename.
+Profile activation can change credentials, network access and server configuration.
+Password setters take user before password; rename methods take old name before
+new name, with optional `cpuser` last. Passwords retain sensitive-parameter marking.
+
+Pass discovered upgrade versions as exact strings, such as `version: '10.10'`.
+The evidence-gated input union also preserves existing integer/float callers;
+casting a string to float can change the requested version to `10.1`. Upgrades
+have no rollback, and selecting the same version reinstalls the engine. Upgrade
+checks/starters return initiation information and require separate status
+inspection. Available versions do not establish upgrade compatibility or
+completion. The client does not poll, retry or roll back these operations;
+method-specific role/version/prefix caveats remain in generated documentation.
+
+All 26 methods have offline contracts. The fixed nine-GET catalog reads WHM
+version, current/latest/installable database versions, optimization information,
+database/user inventory, `npr` database details and profile-activation status.
+It retrieves no profile passwords and guesses no upgrade ID or remote host.
+No upgrade/checker run, profile validation/activation, password change, rename or
+configuration write occurs. Source/live gaps remain under `8x0.2.33`.
+
+The corrected [WHM database capture](docs/api/evidence/2026-10-31-whm-databases-corrected.json) at
+`00ba48d402f0a60cd975ec38cf5166545a8c0286` on `11.138.0.19` passes all nine
+HTTP/API/payload/probe observations and strict assessment, with zero discrepancies.
+Optimization map records now establish the named `name`, `reason` and `value`
+string leaves. The selected prefix flag passes exact string-flag normalization;
+activation state retains both explicit null fields. Installable version rows are
+present, while database/user inventories are empty. Empty inventories do not
+establish their populated row schemas.
+
+The other eighteen methods were outside this committed catalog. This capture
+read no profile credentials and ran no upgrade, checker, profile activation,
+password, rename or configuration change. Successful inventory calls establish neither upgrade safety nor
+completion, remote trust or service enforcement. The initial failed artifact is
+unchanged; follow-up `8x0.2.33` owns the remaining variants. SHA-256:
+`b97b7f1bbf91bccc8d048026a1d99c38ecaa049730c165507fde5fe53b111ba1`.
 
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill

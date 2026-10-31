@@ -531,3 +531,78 @@ separate reviewer assessment is recorded in the source audit. No mutation ran.
 Both artifacts remain immutable and follow-up
 `8x0.2.31` retains the unobserved methods and variants. SHA-256:
 `6c0d5ace2ea0795b778c68f552bd2d0852ab8848fb26bc213823ce4916bb63a0`.
+
+## Account backup and restoration capture
+
+The immutable [account-backup capture](2026-10-31-account-backup-restoration.json)
+at `e7b4a42` on `11.138.0.19` records nine HTTP 200 observations. WHM version,
+Backup/list_backups and Restore/get_users on both routes pass API, payload and
+probe checks. Both inventories are empty; populated rows remain unobserved.
+WordPressBackup/any_running and WordPressRestore/any_running fail at the API layer
+on both routes. The sanitized evidence does not establish the cause, and no
+response contract is widened from those failures. There are zero payload
+discrepancies, while strict assessment remains failed for the four API errors.
+
+No backup or restore job, extraction, cleanup, cancellation, message or filesystem
+change ran in this capture. No POST method is represented by the artifact;
+reviewer lifecycle reports remain separate evidence. Follow-up `8x0.2.32` retains the unobserved operations,
+plugin availability and lifecycle behavior. No repeat capture was run merely to
+seek a passing status. SHA-256:
+`c06b329f50f2ebd16ae43d52a7be4afb8b37d0267956d2d557287113209956f3`.
+
+## WHM database administration capture
+
+The initial [WHM database capture](2026-10-31-whm-databases.json) at
+`e0ac45dfd43464abec2d87f7883aca2b1ab5fe6e` on `11.138.0.19` records nine HTTP
+200 and successful-API observations: six payload/probe passes and three payload
+failures. Database optimizations return an object map under `payload`; the
+container mismatch masks its row field names. The compatible map alternative
+uses the same optional `name`, `reason` and `value` string fields as the pinned
+list schema. Those row names are source-based interpretation, not named live
+proof from this artifact. The original list alternative remains supported.
+
+The selected account's `mysql_config.use_db_prefix` is a numeric string;
+compatibility accepts only exact string flags `0` and `1`. Profile activation
+status returns explicit null for `job_in_progress` and `last_job_details`.
+These narrow corrections preserve omission and every pinned field. No profile
+credentials were requested, and no upgrade, checker, profile, password, database
+or user change ran. The initial artifact stays failed and immutable. Follow-up
+`8x0.2.33` retains remaining behavior and variants. SHA-256:
+`263cf2cfb1d5ec0c0c8a3fe6884e9b7611bc636db38f9977512cb052dd7e3a47`.
+
+The corrected [WHM database capture](2026-10-31-whm-databases-corrected.json) at
+`00ba48d402f0a60cd975ec38cf5166545a8c0286` on `11.138.0.19` passes all nine
+HTTP/API/payload/probe observations and strict assessment, with zero discrepancies.
+Optimization map records now establish the named `name`, `reason` and `value`
+string leaves. The selected prefix flag passes exact string-flag normalization;
+activation state retains both explicit null fields. Installable version rows are
+present, while database/user inventories are empty. Empty inventories do not
+establish their populated row schemas.
+
+The other eighteen methods were outside this committed catalog. This capture
+read no profile credentials and ran no upgrade, checker, profile activation,
+password, rename or configuration change. Successful inventory calls establish neither upgrade safety nor
+completion, remote trust or service enforcement. The initial failed artifact is
+unchanged; follow-up `8x0.2.33` owns the remaining variants. SHA-256:
+`b97b7f1bbf91bccc8d048026a1d99c38ecaa049730c165507fde5fe53b111ba1`.
+
+### Independent database review observations
+
+[Claude review 5720420360](https://github.com/hostingpal/whm-api-client/pull/46#pullrequestreview-5720420360)
+reports WHM checks on cPanel `11.138.0.19` with MySQL 8.4, separate from the
+committed nine-GET capture. Both profile reads returned canonical digit-string
+ports; their plaintext password values were not printed. Quoted list flags and
+create-result `cpcloud` compatibility are pinned-example/source-family evidence,
+not live mutation observations. Unknown-user database inventory returned success
+with a null database list; an existing empty account returned an empty list.
+
+The reviewer created and removed disposable account `wrvdb` and its database
+resources while checking all six MySQL/PostgreSQL rename and password methods,
+followed by populated inventory. Unknown rename sources, profile names and upgrade
+IDs raised API errors; no directory was created for the unknown upgrade ID.
+These reviewer reports do not expand the immutable capture or establish server-wide
+write coverage. No upgrade, checker run, root-password change or remote-profile
+create/update/delete/validate/activate ran. A running activation step's `end_time`
+and the location of partial-rename warnings remain unobserved under `8x0.2.33`.
+The corrected nine-GET artifact already passes; no new capture is needed merely
+to clear discrepancies, and the original failed artifact is preserved.
