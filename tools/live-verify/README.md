@@ -1197,3 +1197,10 @@ PEM and log contents are omitted. No certificate generation, installation, reset
 removal, provider/configuration change, background check or notification occurs.
 No returned URL is fetched. Strict findings remain failures; `8x0.2.39` retains
 unobserved operations and variants.
+
+The corrected WHM SSL capture at `4317e1a` on `11.138.0.19` passes all nine GET
+observations and strict assessment with zero discrepancies. Five evidenced leaves
+preserve best-domain null expiry, nullable certificate owner items and issuer
+organization, and canonical integer-string modulus/expiry values. No sibling or
+UAPI contract changed. Certificate inventory is populated; no mutation or private
+material read ran. The initial artifact is immutable and `8x0.2.39` remains open.

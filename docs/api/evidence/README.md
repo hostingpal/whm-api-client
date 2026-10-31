@@ -548,3 +548,16 @@ or log contents were read and no mutation or URL request ran. The original stric
 assessment stays failed and immutable; `8x0.2.39` retains remaining live behavior.
 Initial SHA-256:
 `f1bded7e795124bb9d053a568a002b17db6b03766a4ec19cd9a416363142ea29`.
+
+The [corrected WHM SSL capture](2026-10-31-whm-ssl-corrected.json) at
+`4317e1af1a4065134fae5e8addbd6c9cf083e985` on `11.138.0.19` passes all nine
+HTTP/API/payload/probe checks and strict assessment with zero discrepancies.
+The five operation-specific corrections pass, with populated certificate inventory.
+No installation, service restart, TLS serving/trust, AutoSSL issuance/renewal,
+provider configuration or key lifecycle behavior is established.
+
+No certificate, exclusion, configuration or scheduling setting changed. No private
+key, component PEM, provider payload or log content was read, and no URL was fetched.
+The original failed artifact stays unchanged; `8x0.2.39` retains unobserved behavior.
+Corrected SHA-256:
+`1e3117fc43dc790b0891b3571313b44f60953ce4b6e0d20305c0bc32ccacb498`.

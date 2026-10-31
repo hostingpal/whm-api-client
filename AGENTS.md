@@ -1380,3 +1380,10 @@ for designated `npr`/`npr.rs`, the best domain for the pinned `whostmgr` service
 example, and the account's certificate inventory. It reads no log contents,
 private-key/component PEM or unspecified provider values and makes no changes.
 Follow-up `8x0.2.39` retains remaining live behavior.
+
+The corrected WHM SSL capture at `4317e1a` on `11.138.0.19` passes all nine GET
+observations and strict assessment with zero discrepancies. Five evidenced leaves
+preserve best-domain null expiry, nullable certificate owner items and issuer
+organization, and canonical integer-string modulus/expiry values. No sibling or
+UAPI contract changed. Certificate inventory is populated; no mutation or private
+material read ran. The initial artifact is immutable and `8x0.2.39` remains open.
