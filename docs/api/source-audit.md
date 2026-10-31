@@ -2895,3 +2895,105 @@ unwaived under `8x0.2.25`; the earlier artifact retains its original failures.
 Daily/report/analyzer collections remain empty. The capture covers the fixed
 catalog, not every possible argument or display combination. SHA-256:
 `9f3548970abc522615faa8822cac7aa8bd28a576cfd1047b4849be056ebba736`.
+
+## DNSSEC and Dynamic DNS (2026-10-31)
+
+The DNSSEC and Dynamic DNS groups cover all seventeen pinned functions.
+`dnssec()` exposes key lifecycle, DNSKEY/private-key export, DS records and NSEC
+settings; `dynamicDns()` exposes creation, inventory, ID replacement, description
+updates and deletion. DNSKEY/DS reads and Dynamic DNS inventory use GET; the other
+fourteen methods use form POST, including private-key export.
+
+DNSSEC requires the DNS role and retains each method's version and registrar
+requirements. Disabling DNSSEC destroys its keys and requires registrar record
+removal; the client provides no retry or rollback. Dynamic domain/key maps retain
+their returned keys, optional fields and per-domain results separately from the
+API envelope. Single-domain calls use the documented `domain` argument; the
+`domain-0`/`domain-1` family remains tracked under `8x0.1.21`.
+Omitting `keySetup` retains `classic` even with `algoNum: 13`; choose `simple`
+explicitly for the documented combined-key setup above algorithm 8. Key removal
+is irreversible and can break validation while registrar DS records reference it.
+Reviewed key identifiers normalize canonical in-range integer strings to integers
+for direct use in subsequent typed key methods. Digest algorithm identifiers also
+accept that narrow conversion; other flags and numeric fields remain strict.
+Export payloads expose an optional `success` flag, with no promised `error` field.
+
+Imported key material and Dynamic DNS input IDs are sensitive parameters.
+`exportZoneKey()` results and `PayloadMismatchException::$payload` can contain
+private keys; do not log either. `fetchDsRecords()` may also return private-key
+material, and Dynamic DNS IDs form part
+of update URLs; treat those result values as sensitive and do not fetch update
+URLs while inspecting inventory. `recreate()` replaces the DDNS identifier and
+invalidates its previous update URL; deletion also invalidates its update URL.
+`setDescription()` returns no payload. Deletion's source `number` enum `[0, 1]` becomes an integer `0|1` flag under
+the existing generator; zero means the identifier did not exist for deletion.
+Omitted timestamps and explicit null `last_update_time` remain distinct.
+
+The live catalog reads only DS records for `npr.rs`, Dynamic DNS inventory for
+`npr`, and WHM version. It makes no key, registrar, DNS-record or DDNS changes.
+Unobserved live variants remain tracked under `8x0.2.26`; API responses alone do
+not establish DNS propagation or DNSSEC validation by resolvers.
+
+The original pinned OpenAPI schemas misplace `additionalProperties` inside
+`properties` for several dynamic domain/key maps. Explicit return-name prose and
+response examples establish those maps; operation-specific overlay replacements
+repair the malformed nodes without changing the pinned source or inferring a
+literal field named `additionalProperties`. The fetch-DS example also places
+`nsec_details` under keys while the formal schema declares it beside keys; the
+formal sibling location remains the contract. Reviewed quoted-number examples
+support only the individually annotated fields. All other field types retain
+the source boundary.
+
+### DNS inventory capture
+
+The immutable [DNS security capture](evidence/2026-10-31-dns-security.json) at
+`372df7834484b8ff696d677e764f3b114a1ed2ac` on `11.138.0.19` passes all five GET
+observations: WHM version and both `DNSSEC/fetch_ds_records` and `DynamicDNS/list`
+through direct UAPI and the WHM bridge. HTTP/API/payload/probe checks and strict
+assessment pass with zero discrepancies. The DS result contains an empty object
+for the selected domain, with `keys` and `nsec_details` absent; DDNS inventory is
+an empty list. This establishes neither populated key/DDNS row schemas nor the
+example-based quoted-number variants. No key, record, registrar or application
+state changed, and no update URL was fetched. The other fifteen methods have no committed lifecycle capture; follow-up
+`8x0.2.26` retains that evidence work. SHA-256:
+`70811e4a21e6be51745f22738020410062ad98cc756539265ea8003c576c73e6`.
+
+
+### DNSSEC and Dynamic DNS external review corrections
+
+[Claude's review of `476d418`](https://github.com/hostingpal/whm-api-client/pull/39#pullrequestreview-5720009405)
+independently exercised the full lifecycle on `npr.rs` through both routes. The
+report establishes populated numeric-string variants for NSEC details, key
+creation times and digest algorithms, export key IDs, and add/import key IDs.
+The existing example-backed conversions for NSEC and creation times remain;
+the correction adds digest/export conversions and returns integer add/import
+IDs for strict typed chaining. Malformed, overflow, null and omission handling
+has independent regression coverage. `nsec_details` remains beside `keys`, and
+`nsec3_narrow` and DDNS deletion flags remain integers.
+
+The reviewer reports restoring the zone to unsecured/no keys, verifying its
+file hash against baseline and removing every DDNS test entry. These are
+attributed reviewer observations, with no server version supplied in the review,
+and are separate from the immutable five-GET artifact. They do not turn that
+empty-zone capture into populated or mutation evidence. The final integration
+capture retains the bounded five-GET recipe; DNSSEC enablement remains outside
+that recipe, as permitted by the review. No lifecycle is replayed for evidence.
+
+
+### Final integrated DNS inventory capture
+
+The immutable [reviewed DNS capture](evidence/2026-10-31-dns-security-reviewed.json)
+at `71e31f15379fd63a7ee19015421405cd2a93d1cc` follows normal integration of PR38.
+On cPanel `11.138.0.19`, all five GET observations pass HTTP/API/payload/probe and
+strict checks with zero discrepancies. DS results again contain an empty object
+for the selected domain, with `keys` and `nsec_details` absent; both DDNS lists
+are empty. This verifies the integrated read path, not the populated numeric
+fields, private-key exports or lifecycle mutations. Those remain covered by
+independent offline tests and the separately attributed reviewer report.
+
+The bounded recipe intentionally performs no DNSSEC enablement, registrar, key,
+record or DDNS change, as permitted by review 5720009405. No update URL was fetched.
+The initial artifact and every earlier evidence file remain unchanged. Remaining
+committed populated/mutation evidence stays under `8x0.2.26`; no further read-only
+capture is outstanding from this review request. SHA-256:
+`8be0fe648505873d0f36221e0ef750954b5268469399ac2de804ef8c1e5d3b56`.

@@ -344,3 +344,36 @@ offline-tested. Ten of the eleven new functions pass through both routes; error-
 payloads remain unobserved. No settings, analyzer execution or log mutation ran.
 The original capture stays unchanged. Corrected artifact SHA-256:
 `904c85e93c2774646f68ddbbf38685355164f6bec9c1f19bc8e3d72e96438521`.
+
+### DNS inventory capture
+
+The immutable [DNS security capture](2026-10-31-dns-security.json) at
+`372df7834484b8ff696d677e764f3b114a1ed2ac` on `11.138.0.19` passes all five GET
+observations: WHM version and both `DNSSEC/fetch_ds_records` and `DynamicDNS/list`
+through direct UAPI and the WHM bridge. HTTP/API/payload/probe checks and strict
+assessment pass with zero discrepancies. The DS result contains an empty object
+for the selected domain, with `keys` and `nsec_details` absent; DDNS inventory is
+an empty list. This establishes neither populated key/DDNS row schemas nor the
+example-based quoted-number variants. No key, record, registrar or application
+state changed, and no update URL was fetched. The other fifteen methods remain
+offline-tested; follow-up `8x0.2.26` retains their live work. SHA-256:
+`70811e4a21e6be51745f22738020410062ad98cc756539265ea8003c576c73e6`.
+
+
+### Final integrated DNS inventory capture
+
+The immutable [reviewed DNS capture](2026-10-31-dns-security-reviewed.json)
+at `71e31f15379fd63a7ee19015421405cd2a93d1cc` follows normal integration of PR38.
+On cPanel `11.138.0.19`, all five GET observations pass HTTP/API/payload/probe and
+strict checks with zero discrepancies. DS results again contain an empty object
+for the selected domain, with `keys` and `nsec_details` absent; both DDNS lists
+are empty. This verifies the integrated read path, not the populated numeric
+fields, private-key exports or lifecycle mutations. Those remain covered by
+independent offline tests and the separately attributed reviewer report.
+
+The bounded recipe intentionally performs no DNSSEC enablement, registrar, key,
+record or DDNS change, as permitted by review 5720009405. No update URL was fetched.
+The initial artifact and every earlier evidence file remain unchanged. Remaining
+committed populated/mutation evidence stays under `8x0.2.26`; no further read-only
+capture is outstanding from this review request. SHA-256:
+`8be0fe648505873d0f36221e0ef750954b5268469399ac2de804ef8c1e5d3b56`.

@@ -963,3 +963,29 @@ expected label on every labeled record and rejects missing, wrong, reordered or
 duplicate labels and mixed labeled/unlabeled repeats. Historical unlabeled
 catalogs retain duplicate rejection and their original record shape. No failure
 or discrepancy acknowledgment is introduced.
+
+## DNSSEC and Dynamic DNS inventory
+
+The fixed `dns-security-v1` catalog contains five GET observations: WHM version,
+`DNSSEC/fetch_ds_records(domain: 'npr.rs')` and `DynamicDNS/list` through direct
+UAPI and the WHM bridge for `npr`. It neither guesses key identifiers nor fetches
+DDNS update URLs, and performs no DNSSEC, registrar, key or domain mutation.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/dns-security.php \
+  --output=docs/api/evidence/dns-security-new.json
+```
+
+Both test tokens and committed inputs are required. The exact-URI GET guard
+rejects method, body and target changes before dispatch. The report stores only
+structural types/paths: private-key strings, DDNS IDs and domain-map keys are
+never persisted as values. Strict assessment requires all five observations to
+pass without discrepancies or acknowledgments. An unavailable API remains failed
+evidence. Follow-up `8x0.2.26` owns the remaining operation and payload variants.
+
+The [DNS security capture](../../docs/api/evidence/2026-10-31-dns-security.json) at
+`372df78` on `11.138.0.19` passes all five GET observations and strict assessment
+with zero discrepancies. DS detail objects and the DDNS inventory are empty;
+populated fields and the other fifteen methods remain offline coverage. No DNS,
+key, registrar or DDNS state changed. Follow-up `8x0.2.26` remains open.

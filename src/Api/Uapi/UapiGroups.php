@@ -29,11 +29,15 @@ trait UapiGroups
 
     private ?Dns $dnsGroup = null;
 
+    private ?Dnssec $dnssecGroup = null;
+
     private ?Domain $domainGroup = null;
 
     private ?DomainInfo $domainInfoGroup = null;
 
     private ?DomainLookup $domainLookupGroup = null;
+
+    private ?DynamicDns $dynamicDnsGroup = null;
 
     private ?Email $emailGroup = null;
 
@@ -154,6 +158,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the DNSSEC operations without making a request.
+     *
+     * The DNSSEC module for UAPI.
+     */
+    public function dnssec(): Dnssec
+    {
+        return $this->dnssecGroup ??= new Dnssec($this->run(...));
+    }
+
+    /**
      * Select the Domain operations without making a request.
      *
      * The Domain module for UAPI.
@@ -181,6 +195,16 @@ trait UapiGroups
     public function domainLookup(): DomainLookup
     {
         return $this->domainLookupGroup ??= new DomainLookup($this->run(...));
+    }
+
+    /**
+     * Select the DynamicDNS operations without making a request.
+     *
+     * The DynamicDNS module for UAPI.
+     */
+    public function dynamicDns(): DynamicDns
+    {
+        return $this->dynamicDnsGroup ??= new DynamicDns($this->run(...));
     }
 
     /**
