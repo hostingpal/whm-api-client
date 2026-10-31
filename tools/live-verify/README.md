@@ -1280,3 +1280,13 @@ artifacts and strict assessments without waivers. Do not enable Greylisting or
 repeat the catalog merely to make it pass. Separate reviewer login-history reads
 and source-backed write-result corrections do not expand this eight-GET capture;
 all fifteen server-wide/lockout writes remain unobserved.
+
+## WHM transfer metadata
+
+Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-transfers.php --output=docs/api/evidence/YYYY-MM-DD-whm-transfers.json`.
+
+Three fixed GETs read version, available_transfer_modules and validate_system_user
+with user=npr. Committed inputs, exact request guards, opt-in, verified TLS and
+new-only structural output are required. No remote credentials/hosts, session IDs,
+log reads, transfer/control/archive mutations or URL fetches occur.
+Follow-up `8x0.2.47` retains unobserved behavior.

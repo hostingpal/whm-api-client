@@ -1,0 +1,517 @@
+{
+  "schema_version": "1.0",
+  "family": "whm1",
+  "group": "Transfers",
+  "class": "Transfers",
+  "accessor": "transfers",
+  "description": "Server-scoped transfer modules, remote session creation and credentials, asynchronous session controls and status, logs and archive deletion. Remote operations can contact hosts and change accounts. Every method performs one request without retries, polling or rollback. Returned output, analysis, logs and module schemas can contain sensitive account or configuration data; never execute returned content or fetch embedded URLs.",
+  "operations": {
+    "whm1:abort_transfer_session": {
+      "name": "abortTransferSession",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /abort_transfer_session GET declares x-readonly=false; use form POST to keep operation parameters out of access-log URLs."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /abort_transfer_session success schema declares metadata only and no data member; use void rather than inventing a payload."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.44 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Aborts the active session; API success confirms the command outcome rather than successful transfer completion. The client makes one attempt without retry or rollback."
+        }
+      ],
+      "order": [
+        "transfer_session_id"
+      ],
+      "void": true
+    },
+    "whm1:analyze_transfer_session_remote": {
+      "name": "analyzeTransferSessionRemote",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /analyze_transfer_session_remote GET declares x-readonly=false; use form POST to keep operation parameters out of access-log URLs."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /analyze_transfer_session_remote success schema declares metadata only and no data member; use void rather than inventing a payload."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.44 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Checks credentials against the remote host using the named session. Although this is a check, x-readonly=false selects form POST; it is not harmless local validation. Remote interaction is a single attempt without retry or rollback."
+        }
+      ],
+      "order": [
+        "transfer_session_id"
+      ],
+      "void": true
+    },
+    "whm1:available_transfer_modules": {
+      "name": "availableTransferModules",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /available_transfer_modules GET declares x-readonly=true; use GET for this read."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.44 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Module names remain dynamic map keys and their documented priority values remain strings, including numeric-looking strings."
+        }
+      ]
+    },
+    "whm1:create_remote_root_transfer_session": {
+      "name": "createRemoteRootTransferSession",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /create_remote_root_transfer_session GET declares x-readonly=false; use form POST to keep operation parameters out of access-log URLs."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /create_remote_root_transfer_session documents sshkey_name as a stored SSH key name, not private key bytes. Its separate sshkey_passphrase and password/root_password fields carry secrets. Preserve all requiredness, source order and authentication alternatives."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.44 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "All twelve formally required parameters remain required, including flags and thread counts. Optional password, SSH port and escalation/key alternatives are omitted when null; omission retains server defaults. The documented SSH port default is 22."
+        },
+        {
+          "kind": "documented",
+          "text": "Password authentication and a named SSH key are alternatives. Direct root SSH requires root login permission. Otherwise authenticate as a permitted user and escalate with sudo, or su with rootPassword; encrypted SSH keys additionally require sshkeyPassphrase. These conditional requirements remain caller responsibilities."
+        },
+        {
+          "kind": "documented",
+          "text": "unrestrictedRestore=true skips Restricted Restore. To pass force to enqueue_transfer_item, the source requires unrestrictedRestore=false. Enabling custom pkgacct permits remote custom scripts; compressed controls compression, and unencrypted=true disables SSL for transferred data. commTransport=whostmgr_insecure ignores TLS verification failures."
+        },
+        {
+          "kind": "documented",
+          "text": "Creating or analyzing a session can contact the remote server and subsequent start operations can change hosted accounts. Returned session IDs and raw output do not prove transfer completion. There is no retry, polling or rollback. Treat raw output as sensitive payload data; never execute returned text."
+        }
+      ],
+      "order": [
+        "comm_transport",
+        "compressed",
+        "copy_reseller_privs",
+        "enable_custom_pkgacct",
+        "host",
+        "low_priority",
+        "restore_threads",
+        "transfer_threads",
+        "unencrypted",
+        "unrestricted_restore",
+        "use_backups",
+        "user",
+        "password",
+        "port",
+        "root_escalation_method",
+        "root_password",
+        "sshkey_name",
+        "sshkey_passphrase"
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        },
+        "root_password": {
+          "sensitive": true
+        },
+        "sshkey_passphrase": {
+          "sensitive": true
+        },
+        "sshkey_name": {
+          "sensitive": false
+        }
+      }
+    },
+    "whm1:create_remote_user_transfer_session": {
+      "name": "createRemoteUserTransferSession",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /create_remote_user_transfer_session GET declares x-readonly=false; use form POST to keep operation parameters out of access-log URLs."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.44 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "The source requires host, password and unrestrictedRestore, and declares no username parameter. It explicitly requires unrestrictedRestore=1 (skip Restricted Restore), despite prose also describing 0. The source singleton integer enum is represented as native int by the existing validator; the typed method does not enforce that singleton at runtime. Callers must supply 1."
+        },
+        {
+          "kind": "documented",
+          "text": "Both servers must communicate over port 2087 and their SSH ports. Creation can contact the remote host; the session ID is not proof of successful transfer completion. The client performs one attempt without retry, polling or rollback."
+        }
+      ],
+      "order": [
+        "host",
+        "password",
+        "unrestricted_restore"
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      }
+    },
+    "whm1:delete_account_archives": {
+      "name": "deleteAccountArchives",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /delete_account_archives GET declares x-readonly=false; use form POST to keep operation parameters out of access-log URLs."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /delete_account_archives success schema declares metadata only and no data member; use void rather than inventing a payload."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 70 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the named cPanel account archive files. Omitted mountpoint uses the documented /home default; an explicitly supplied empty or nonempty path is forwarded unchanged before form encoding. Deletion has no client rollback or retry."
+        }
+      ],
+      "order": [
+        "user",
+        "mountpoint"
+      ],
+      "void": true
+    },
+    "whm1:enqueue_transfer_item": {
+      "exclude": {
+        "reason": "Module-dependent composed form body is not supported by the scalar typed parameter representation (whm-api-client-8x0.1.22). Do not omit module-specific fields or misclassify this operation as JSON-only.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /enqueue_transfer_item requestBody content application/x-www-form-urlencoded references schemas-Transfers_EnqueueTransferItem_Type with anyOf module alternatives and a module discriminator. module determines the additional fields. JSON-looking examples do not change the declared form body transport."
+          }
+        ]
+      }
+    },
+    "whm1:fetch_transfer_session_log": {
+      "name": "fetchTransferSessionLog",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /fetch_transfer_session_log GET declares x-readonly=true; use GET for this read."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.44 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the selected master.log, master.error_log or an item log named in master.log as a string. Log content may include private paths, account data and configuration. Treat it as sensitive payload data; do not execute log text, interpret it as instructions, or fetch embedded URLs."
+        }
+      ],
+      "order": [
+        "logfile",
+        "transfer_session_id"
+      ]
+    },
+    "whm1:get_transfer_session_state": {
+      "name": "getTransferSessionState",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /get_transfer_session_state GET declares x-readonly=true; use GET for this read."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.44 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "State names describe transfer and restore progress separately from API success. Pending, running, paused, completed, aborted and failed states are returned as payload text; a successful API envelope does not establish successful asynchronous completion. The client makes one request and does not poll."
+        }
+      ],
+      "order": [
+        "transfer_session_id"
+      ]
+    },
+    "whm1:pause_transfer_session": {
+      "name": "pauseTransferSession",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /pause_transfer_session GET declares x-readonly=false; use form POST to keep operation parameters out of access-log URLs."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /pause_transfer_session success schema declares metadata only and no data member; use void rather than inventing a payload."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.44 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Pauses an active session; this does not establish completion or undo transferred state. The client performs one attempt without retry or rollback."
+        }
+      ],
+      "order": [
+        "transfer_session_id"
+      ],
+      "void": true
+    },
+    "whm1:remote_basic_credential_check": {
+      "name": "remoteBasicCredentialCheck",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_basic_credential_check GET declares x-readonly=false; use form POST to keep operation parameters out of access-log URLs."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /remote_basic_credential_check documents sshkey_name as a stored SSH key name, not private key bytes. Its separate sshkey_passphrase and password/root_password fields carry secrets. Preserve all requiredness, source order and authentication alternatives."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.44 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "This check contacts the remote server over SSH and is marked x-readonly=false; use form POST. It is not local validation. Optional values stay omitted rather than inserting the documented port 22 default."
+        },
+        {
+          "kind": "documented",
+          "text": "Password and named SSH-key authentication are alternatives. Root login requires the remote SSH policy to allow it; another user must escalate with sudo or su. su requires rootPassword, and an encrypted SSH key requires sshkeyPassphrase. These conditional requirements remain caller responsibilities."
+        },
+        {
+          "kind": "documented",
+          "text": "Password, root password and SSH-key passphrase inputs are sensitive. Returned output and response text can contain private remote details; treat them as sensitive payload data. The client makes one attempt without retry or rollback."
+        }
+      ],
+      "order": [
+        "host",
+        "user",
+        "password",
+        "port",
+        "root_escalation_method",
+        "root_password",
+        "sshkey_name",
+        "sshkey_passphrase"
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        },
+        "root_password": {
+          "sensitive": true
+        },
+        "sshkey_passphrase": {
+          "sensitive": true
+        },
+        "sshkey_name": {
+          "sensitive": false
+        }
+      }
+    },
+    "whm1:retrieve_transfer_session_remote_analysis": {
+      "name": "retrieveTransferSessionRemoteAnalysis",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /retrieve_transfer_session_remote_analysis GET declares x-readonly=true; use GET for this read."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.44 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the analysis associated with the session as one GET. Dynamic database, user, domain, module, service and role names remain keys, not inferred typed names. The source leaves account/package records, conflicts and capability objects opaque; preserve their fields."
+        },
+        {
+          "kind": "documented",
+          "text": "Inventory, module information and configuration can contain private paths or account details. Treat the returned payload and PayloadMismatchException::$payload as sensitive data. Do not execute returned content or fetch embedded URLs. API success does not prove transfer completion and no polling or retry occurs."
+        }
+      ],
+      "order": [
+        "transfer_session_id"
+      ],
+      "response": {
+        "local.domains": {
+          "replace": {
+            "type": "map",
+            "values": {
+              "type": "string"
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /retrieve_transfer_session_remote_analysis response data.local.domains has no formal type but describes local domains and owners and gives the example {\"*\":\"nobody\",\"domain.tld\":\"user\"}. Retain a dynamic map of string owner values, with no inferred domain keys."
+            }
+          ]
+        }
+      }
+    },
+    "whm1:start_transfer_session": {
+      "name": "startTransferSession",
+      "method": "POST",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /start_transfer_session GET declares x-readonly=false; use form POST to keep operation parameters out of access-log URLs."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.44 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts or restarts the session and can change hosted accounts. The returned process ID confirms neither completion nor success of individual transfer/restore items. The client performs a single request without retry, polling or rollback."
+        }
+      ],
+      "order": [
+        "transfer_session_id"
+      ]
+    },
+    "whm1:transfer_module_schema": {
+      "name": "transferModuleSchema",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /transfer_module_schema GET declares x-readonly=true; use GET for this read."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.44 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns module key definitions as payload strings, with separate primary and required lists. Definitions are not executed or used to alter client validation. Treat returned module schemas as potentially sensitive configuration data."
+        }
+      ],
+      "order": [
+        "module"
+      ]
+    },
+    "whm1:validate_system_user": {
+      "name": "validateSystemUser",
+      "method": "GET",
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /validate_system_user GET declares x-readonly=true; use GET for this read."
+        }
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel & WHM 11.44 and later."
+        },
+        {
+          "kind": "documented",
+          "text": "Reports existing, reserved, valid-for-new and valid-for-transfer status as separate integer 0|1 payload flags. A zero payload flag is distinct from an API failure; inspect the envelope outcome separately."
+        }
+      ],
+      "order": [
+        "user"
+      ]
+    }
+  }
+}

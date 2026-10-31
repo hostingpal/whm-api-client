@@ -4055,3 +4055,38 @@ API failures. Status and configuration still work while it is disabled. No servi
 enablement, mutation or repeat capture ran. Both immutable artifacts retain their
 failed/unwaived status under `8x0.2.35`, and the reviewer reports do not expand the
 committed eight-GET catalog or establish login/mail enforcement.
+
+
+## WHM account transfers
+
+`whm()->transfers()` exposes fourteen of fifteen pinned functions: six GET reads
+and eight form POST operations for remote transfer sessions, lifecycle control,
+module metadata, account analysis, logs and archive deletion. Module-dependent
+`enqueue_transfer_item` remains excluded under `8x0.1.22`: its composed form
+schema cannot yet be represented without dropping parameters. Conflicting JSON
+examples do not change that formal form-body contract.
+
+Passwords, root passwords and SSH-key passphrases remain sensitive. A key name is
+an identifier, distinct from its passphrase. Remote credential checks and analysis
+can contact another server; session creation/start/control can change account state.
+Per-method authentication alternatives, required ports, restoration restrictions,
+custom-package-script risks, concurrency and encryption flags remain documented.
+The non-root creation contract has no username argument; none is invented.
+
+Source response distinctions remain strict: abort, analysis initiation, archive
+deletion and pause return void; other results retain their pinned objects, lists,
+maps and optional fields. Analysis local-domain ownership preserves the
+source-described dynamic string map. Module priority stays a string. The non-root
+unrestricted-restore argument documents literal 1, while the native integer boundary
+does not introduce new single-value enum enforcement. Transfer status or API
+success does not establish completed migration, restoration or serving behavior.
+
+Archive deletion can remove backup files; omitted mountpoint behavior follows the
+source. Logs and remote analysis can contain private paths and configuration.
+The client adds no retry, polling, rollback, implicit remote login or URL fetch.
+
+All fourteen methods have independent offline contracts. The fixed three-GET
+catalog reads version, available modules and username validation for designated
+`npr`. It supplies no remote host, session ID, log or archive path, performs no
+credential check or transfer/control/deletion, and does not guess identifiers.
+Remaining live behavior stays under `8x0.2.47`.
