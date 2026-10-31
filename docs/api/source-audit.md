@@ -3434,3 +3434,14 @@ was guessed for a probe. Strict status remains failed in this original artifact,
 which is immutable. Follow-up `8x0.2.37` retains unobserved variants and mutations.
 Initial SHA-256:
 `439b50dbddb6d3577889ac9013a154ffde1151a8b4a53b8292c674e5ff1b3900`.
+
+The [corrected IP-address capture](evidence/2026-10-31-whm-ip-addresses-corrected.json)
+at `fde160d4c41a1651405d9a2c985941c71a6d57da` on `11.138.0.19` passes all five
+HTTP/API/payload/probe checks and strict assessment with zero discrepancies.
+The three operation-specific IPv6 range corrections now pass. IPv4, IPv6 and
+range inventories are populated; the range-user lists remain empty. This verifies
+only the four inventory operations plus version, not address/range lifecycle,
+NAT behavior, exclusion semantics or network configuration changes. No mutation
+ran. The initial failed artifact stays unchanged and `8x0.2.37` remains open.
+Corrected SHA-256:
+`185dd1b1d6728a6aad76ce258f60f1177f08e9f368c85935667e713889a9a552`.

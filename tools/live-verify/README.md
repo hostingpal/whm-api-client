@@ -1141,3 +1141,10 @@ verified TLS and structural evidence capture apply. No address/range is guessed;
 no NAT check, address change, interface shutdown, account move or mapping update
 runs. The evidence cannot establish routing, reachability or application delivery.
 Keep remaining live variants under `8x0.2.37`.
+
+The corrected WHM IP-address capture at `fde160d` on `11.138.0.19` passes all five
+GET observations and strict assessment with zero discrepancies. IPv6 range
+`enabled` accepts exact quoted flags; `mostrecent` and `note` accept null only
+where observed. IPv4/IPv6/range rows are populated; range-user lists are empty.
+No network or address/range change ran. The original failed capture is immutable
+and follow-up `8x0.2.37` retains all remaining live coverage.
