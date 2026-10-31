@@ -25,7 +25,9 @@ use InvalidArgumentException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
 use Psr\Http\Client\RequestExceptionInterface;
+use RuntimeException;
 use SensitiveParameter;
+use Throwable;
 
 /**
  * Share configuration and the request lifecycle across API family implementations.
@@ -278,7 +280,19 @@ abstract class AbstractApiClient
         try {
             try {
                 $response = $this->transport->send($method->value, $uri, $headers, $content);
-            } catch (ClientExceptionInterface $exception) {
+            } catch (Throwable $exception) {
+                if ($content instanceof StreamingMultipartBody) {
+                    try {
+                        $content->assertHealthy();
+                    } catch (RuntimeException) {
+                        // Recorded body failure takes precedence over a client's
+                        // wrapper, including after transport has released sources.
+                        throw new ApiException('API multipart body read failed; remote state may have changed.');
+                    }
+                }
+                if (!$exception instanceof ClientExceptionInterface) {
+                    throw $exception;
+                }
                 throw new TransportException(
                     match (true) {
                         $exception instanceof NetworkExceptionInterface => TransportFailure::Network,

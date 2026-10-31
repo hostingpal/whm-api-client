@@ -11,9 +11,11 @@ use HostingPal\WhmApiClient\Api\RepeatedList;
 use HostingPal\WhmApiClient\Api\SuffixNumberedList;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
+use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\HttpException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
 use HostingPal\WhmApiClient\Exception\TransportException;
+use HostingPal\WhmApiClient\Exception\TransportFailure;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\Http\StreamingMultipartBody;
 use HostingPal\WhmApiClient\Response\CallResult;
@@ -22,14 +24,18 @@ use HostingPal\WhmApiClient\Upload;
 use InvalidArgumentException;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\Response;
+use Nyholm\Psr7\Stream;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Client\NetworkExceptionInterface;
+use Psr\Http\Client\RequestExceptionInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use ReflectionMethod;
+use ReflectionProperty;
 use RuntimeException;
 use Throwable;
 
@@ -523,50 +529,182 @@ final class RawMultipartCallTest extends TestCase
         }
     }
 
-    public function testRecordedReadFailureCannotBecomeAcceptedEnvelopeOrRetry(): void
+    /** @return iterable<string, array{bool, string}> */
+    public static function recordedReadFailures(): iterable
     {
-        foreach (['early-eof', 'throw', 'swallowed'] as $mode) {
-            $stream = new UploadProbeStream('bytes');
-            if ($mode === 'early-eof') {
-                $stream->reportedSize = 20;
-            } else {
-                $stream->throwRead = true;
+        foreach ([false, true] as $direct) {
+            foreach (
+                ['early-eof', 'collision', 'propagated', 'swallowed', 'string',
+                'network', 'request', 'other', 'runtime'] as $mode
+            ) {
+                yield ($direct ? 'direct ' : 'WHM ') . $mode => [$direct, $mode];
             }
-            $sends = 0;
-            $body = null;
-            $client = self::client(true, static function (RequestInterface $request) use (
-                $mode,
-                &$sends,
-                &$body,
-            ): ResponseInterface {
-                ++$sends;
-                $body = $request->getBody();
-                if ($mode === 'swallowed') {
-                    self::assertInstanceOf(
-                        RuntimeException::class,
-                        self::caught(static fn () => $body->getContents()),
-                    );
-                } else {
-                    $body->getContents();
-                }
-                return self::success(true);
-            });
-            $error = self::caught(static fn () => self::call(
-                $client,
-                true,
-                [['name' => 'file', 'value' => Upload::fromStream('file', $stream)]],
-            ));
-            self::assertInstanceOf(RuntimeException::class, $error);
-            self::assertNull($error->getPrevious());
-            self::assertStringNotContainsString('private-stream-content-secret', $error->getMessage());
-            self::assertSame(1, $sends);
-            self::assertNull($client->uapi()->responseMeta());
-            self::assertSame(0, $stream->closes);
-            self::assertSame(0, $stream->detaches);
-            self::assertSame(0, $stream->seeks);
-            self::assertInstanceOf(StreamingMultipartBody::class, $body);
-            self::assertFalse($body->isReadable());
         }
+    }
+
+    #[DataProvider('recordedReadFailures')]
+    public function testRecordedReadFailureUsesApiExceptionAndNeverAcceptsEnvelopeOrRetries(
+        bool $direct,
+        string $mode,
+    ): void {
+        $stream = new UploadProbeStream($mode === 'collision' ? str_repeat('x', 1000) : 'bytes');
+        if ($mode === 'early-eof') {
+            $stream->reportedSize = 20;
+        } elseif ($mode !== 'collision') {
+            $stream->throwRead = true;
+        }
+        $sends = 0;
+        $body = null;
+        $client = self::client($direct, static function (RequestInterface $request) use (
+            $mode,
+            $direct,
+            $stream,
+            &$sends,
+            &$body,
+        ): ResponseInterface {
+            ++$sends;
+            $body = $request->getBody();
+            if ($mode === 'collision') {
+                // Fault-inject only the test source after the random boundary is
+                // known, without adding a public boundary override or seam.
+                $boundary = substr($request->getHeaderLine('Content-Type'), strlen('multipart/form-data; boundary='));
+                (new ReflectionProperty($stream, 'inner'))->setValue(
+                    $stream,
+                    Stream::create(str_pad($boundary, 1000, 'x')),
+                );
+            }
+            if ($mode === 'string') {
+                self::assertSame('', (string) $body);
+            } elseif (in_array($mode, ['swallowed', 'network', 'request', 'other', 'runtime'], true)) {
+                $readError = self::caught(static fn () => $body->getContents());
+                self::assertInstanceOf(RuntimeException::class, $readError);
+                self::assertNotInstanceOf(ApiException::class, $readError);
+                if ($mode !== 'swallowed') {
+                    throw self::clientFailure($mode, $request);
+                }
+            } else {
+                $body->getContents();
+            }
+            return self::success($direct);
+        });
+        $error = self::caught(static fn () => self::call(
+            $client,
+            $direct,
+            [['name' => 'private-part-name', 'value' => Upload::fromStream('private-filename', $stream)]],
+            ['private-query-name' => 'private-query-value'],
+        ));
+        self::assertInstanceOf(ApiException::class, $error);
+        // A recorded body failure is not an original PSR interface classification.
+        self::assertNotInstanceOf(TransportException::class, $error);
+        self::assertNull($error->getPrevious());
+        self::assertNull($error->metadata);
+        foreach (['private-stream-content-secret', 'private-client-message', 'private-filename'] as $secret) {
+            self::assertStringNotContainsString($secret, $error->getMessage());
+        }
+        self::assertSame(1, $sends);
+        self::assertNull(($direct ? $client->uapi() : $client->whm())->responseMeta());
+        self::assertSame(0, $stream->closes);
+        self::assertSame(0, $stream->detaches);
+        self::assertSame(0, $stream->seeks);
+        self::assertInstanceOf(StreamingMultipartBody::class, $body);
+        self::assertFalse($body->isReadable());
+    }
+
+    /** @return iterable<string, array{bool, string, TransportFailure|null}> */
+    public static function healthyClientFailures(): iterable
+    {
+        foreach ([false, true] as $direct) {
+            foreach (
+                ['network' => TransportFailure::Network, 'request' => TransportFailure::Request,
+                'other' => TransportFailure::Other, 'runtime' => null] as $mode => $classification
+            ) {
+                yield ($direct ? 'direct ' : 'WHM ') . $mode => [$direct, $mode, $classification];
+            }
+        }
+    }
+
+    #[DataProvider('healthyClientFailures')]
+    public function testHealthyMultipartKeepsOriginalPsrClassificationAndUnrelatedRuntimeIdentity(
+        bool $direct,
+        string $mode,
+        ?TransportFailure $classification,
+    ): void {
+        $stream = new UploadProbeStream(str_repeat('x', 30000));
+        $sends = 0;
+        $cause = null;
+        $client = self::client($direct, static function (RequestInterface $request) use (
+            $mode,
+            &$sends,
+            &$cause,
+        ): ResponseInterface {
+            ++$sends;
+            $request->getBody()->read(8192);
+            $cause = self::clientFailure($mode, $request);
+            throw $cause;
+        });
+        $error = self::caught(static fn () => self::call(
+            $client,
+            $direct,
+            [['name' => 'file', 'value' => Upload::fromStream('file', $stream)]],
+        ));
+        self::assertInstanceOf(RuntimeException::class, $cause);
+        if ($classification === null) {
+            self::assertSame($cause, $error);
+            self::assertNotInstanceOf(ApiException::class, $error);
+        } else {
+            self::assertInstanceOf(TransportException::class, $error);
+            self::assertSame($classification, $error->failure);
+            self::assertSame('RuntimeException@anonymous', $error->causeClass);
+            self::assertSame('private-client-message', $error->causeMessage);
+            self::assertNull($error->metadata);
+        }
+        self::assertNull($error->getPrevious());
+        self::assertNull(($direct ? $client->uapi() : $client->whm())->responseMeta());
+        self::assertSame(1, $sends);
+        self::assertGreaterThan(0, $stream->tell());
+        self::assertLessThan(30000, $stream->tell());
+        self::assertSame(0, $stream->closes);
+        self::assertSame(0, $stream->detaches);
+        self::assertSame(0, $stream->seeks);
+    }
+
+    private static function clientFailure(string $mode, RequestInterface $request): RuntimeException
+    {
+        return match ($mode) {
+            'network' => new class (
+                'private-client-message',
+                $request,
+            ) extends RuntimeException implements NetworkExceptionInterface {
+                public function __construct(string $message, private readonly RequestInterface $request)
+                {
+                    parent::__construct($message);
+                }
+
+                public function getRequest(): RequestInterface
+                {
+                    return $this->request;
+                }
+            },
+            'request' => new class (
+                'private-client-message',
+                $request,
+            ) extends RuntimeException implements RequestExceptionInterface {
+                public function __construct(string $message, private readonly RequestInterface $request)
+                {
+                    parent::__construct($message);
+                }
+
+                public function getRequest(): RequestInterface
+                {
+                    return $this->request;
+                }
+            },
+            'other' => new class (
+                'private-client-message',
+            ) extends RuntimeException implements ClientExceptionInterface {
+            },
+            default => new RuntimeException('private-client-message'),
+        };
     }
 
     private static function openPathCount(string $path): int

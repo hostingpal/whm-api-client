@@ -2515,7 +2515,11 @@ Construction and incremental reads are bounded; an injected HTTP client may
 buffer, and explicit PSR `getContents()`/string conversion can allocate the body.
 Owned files close on success, partial consumption and failure. Borrowed streams
 are never closed, detached or rewound. A read error or detected boundary collision
-can follow partial delivery. One call makes one attempt: no retry, rollback or
+can follow partial delivery. Recorded body failures become a static, unchained
+`ApiException` at the public API boundary, including when the HTTP client swallows
+or wraps the stream error. They are not classified as an original PSR client
+exception; healthy-body PSR classifications and unrelated vendor exceptions keep
+their existing behavior. One call makes one attempt: no retry, rollback or
 remote file ownership/cleanup is inferred from any outcome.
 
 Standard `CallResult`, envelope errors and metadata handling apply without endpoint

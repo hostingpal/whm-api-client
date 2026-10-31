@@ -2478,6 +2478,11 @@ remaining compatibility stay under `8x0.2.46`; no repeat is needed for integrati
   probes verify an unknown source's size assertion. Full preparation precedes reads;
   exact total Content-Length is mandatory. Owned files release on all exits,
   including partial consumption and pre-transport failures after body creation.
+  Recorded streaming-body failure becomes a static unchained ApiException before
+  original PSR client classification, including swallowed/wrapped failures. Healthy
+  body/client exceptions retain existing classification or propagation; do not
+  relabel synthetic errors as original PSR interfaces. Source/stream primitives
+  retain their RuntimeException contract.
   One invocation is one attempt; never retry, roll back or infer remote ownership.
   Generic Flag can discard data/per-file reasons on status 0; explicit Unchecked
   retains raw CallResult data without endpoint schema guarantees. This adds no
