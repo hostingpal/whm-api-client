@@ -69,7 +69,19 @@ final class SpamAssassinSpec
         'outcome' => 'flag',
         'params' => [
             'preference' => ['name' => 'preference', 'encoding' => 'scalar'],
-            'value' => ['name' => 'value', 'encoding' => 'scalar'],
+            'value' => [
+                'name' => 'value',
+                'encoding' => 'collection',
+                'collection' => [
+                    'kind' => 'indexed',
+                    'item_type' => 'string',
+                    'allow_scalar' => true,
+                    'empty' => 'reject',
+                    'prefix' => 'value',
+                    'separator' => '-',
+                    'start' => 0,
+                ],
+            ],
         ],
         'returns' => [
             'type' => 'object',

@@ -187,7 +187,7 @@ func groupClass(g effective.Group) string {
 			if isMultiple(p.Encoding) {
 				uses = append(uses, "InvalidArgumentException")
 			}
-			if p.Sensitive {
+			if redactArgument(p) {
 				uses = append(uses, "SensitiveParameter")
 			}
 		}
@@ -325,6 +325,11 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	w.line(indent + "}")
 }
 
+// Collection contents are always trace-protected, independently of transport secrecy.
+func redactArgument(p effective.Param) bool {
+	return p.Sensitive || p.Collection != nil
+}
+
 func signature(w *writer, op effective.Operation, ret *effective.TypeSpec) {
 	native := "void"
 	if ret != nil {
@@ -337,7 +342,7 @@ func signature(w *writer, op effective.Operation, ret *effective.TypeSpec) {
 		if !p.Required {
 			parts[i] += " = null"
 		}
-		sensitive = sensitive || p.Sensitive
+		sensitive = sensitive || redactArgument(p)
 	}
 	single := "    public function " + op.PHPName + "(" + strings.Join(parts, ", ") + "): " + native
 	if !sensitive && len(single) <= lineWidth {
@@ -347,7 +352,7 @@ func signature(w *writer, op effective.Operation, ret *effective.TypeSpec) {
 	}
 	w.line("    public function " + op.PHPName + "(")
 	for i, p := range op.Params {
-		if p.Sensitive {
+		if redactArgument(p) {
 			w.line("        #[SensitiveParameter]")
 		}
 		w.line("        " + parts[i] + ",")

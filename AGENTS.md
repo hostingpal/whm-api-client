@@ -333,8 +333,12 @@ DNSSEC requires the DNS role and retains each method's version and registrar
 requirements. Disabling DNSSEC destroys its keys and requires registrar record
 removal; the client provides no retry or rollback. Dynamic domain/key maps retain
 their returned keys, optional fields and per-domain results separately from the
-API envelope. Single-domain calls use the documented `domain` argument; the
-`domain-0`/`domain-1` family remains tracked under `8x0.1.21`.
+API envelope. `enableDnssec()`, `disableDnssec()` and `fetchDsRecords()` accept
+`domain` as a string or a nonempty sequential string list. Scalars retain `domain`;
+arrays always use zero-based `domain-0`/`domain-1`, including singleton arrays.
+Other DNSSEC methods retain their existing arguments. Remaining indexed families
+and source contradictions stay under `8x0.1.21`; this input support adds no live
+batch coverage.
 Omitting `keySetup` retains `classic` even with `algoNum: 13`; choose `simple`
 explicitly for the documented combined-key setup above algorithm 8. Key removal
 is irreversible and can break validation while registrar DS records reference it.
@@ -700,8 +704,10 @@ complete preference object; declared fields remain strict. required_score list
 items preserve observed numeric strings alongside native integers and floats.
 The malformed literal additionalProperties source node is not a returned field.
 Fingerprint every dynamic key as a wildcard, even on type failure. Default object
-specs still discard unreviewed fields. The scalar update preference argument does
-not yet cover indexed value-0/value-1 inputs (`8x0.1.20`). Do not infer filtering enforcement
+specs still discard unreviewed fields. updateUserPreference value accepts a scalar
+string or nonempty sequential string list encoded as value-0/value-1. Null/omission
+still removes settings; reject [] before HTTP. Preserve string items, empty strings,
+zero, order and duplicates. Do not infer filtering enforcement
 from API results or execute message delivery/Spam Box clearing as routine tests.
 The corrected mail-protection read catalog at a063db0 on 11.138.0.19 passes all
 19 API/payload checks, while strict status retains two PTR nested unknown-field

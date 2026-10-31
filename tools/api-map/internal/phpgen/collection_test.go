@@ -68,3 +68,15 @@ func TestRenderExplicitCollectionNativeDocAndCompleteSpec(t *testing.T) {
 		}
 	}
 }
+
+func TestRenderNonsecretCollectionStillRedactsPublicFrame(t *testing.T) {
+	var param effective.Param
+	if err := json.Unmarshal([]byte(`{"Wire":"domain","PHP":"domain","Encoding":"collection","PHPType":"string|array","DocType":"string|non-empty-list<string>","Required":true,"collection":{"kind":"indexed","item_type":"string","allow_scalar":true,"empty":"reject","prefix":"domain","separator":"-","start":0}}`), &param); err != nil {
+		t.Fatal(err)
+	}
+	result := effective.Result{Groups: []effective.Group{{Family: "uapi", Name: "Examples", Class: "Examples", Accessor: "examples", Operations: []effective.Operation{{Function: "example", PHPName: "example", Constant: "EXAMPLE", Method: "GET", Outcome: "flag", Params: []effective.Param{param}}}}}}
+	class := string(Render(result)["src/Api/Uapi/Examples.php"])
+	if param.Sensitive || !strings.Contains(class, "use SensitiveParameter;") || !strings.Contains(class, "#[SensitiveParameter]\n        string|array $domain,") {
+		t.Fatalf("nonsecret collection missing public-frame protection:\n%s", class)
+	}
+}

@@ -115,7 +115,10 @@ Operation entries (all keys optional):
   must be nonempty and sequential, preserving order, duplicates, empty strings,
   zero and false for the selected item type. Optional null still omits the whole
   argument. Native array/scalar unions and `non-empty-list<T>` PHPDoc are generated;
-  all collection arguments receive `SensitiveParameter`. Collection descriptors
+  all collection arguments receive `SensitiveParameter` for trace protection,
+  independently of secret-bearing transport classification. Source/overlay secret
+  decisions still require POST; ordinary read-only collection inputs retain GET.
+  Collection descriptors
   cannot combine with `encoding`, `type`, `wire`, `omit`, `omit_empty` or
   `reject_empty`. Static indexed overlaps fail generation; expanded collisions
   fail before dispatch, retaining the ordered-field engine's origin checks.

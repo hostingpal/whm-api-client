@@ -64,8 +64,6 @@ func (b *builder) collection(op model.Operation, source model.Parameter, ov over
 		param.PHPType = c.ItemType + "|array"
 		param.DocType = c.ItemType + "|" + param.DocType
 	}
-	// Every collection-bearing generated frame redacts its complete argument.
-	param.Sensitive = true
 }
 
 // indexedBase returns literal text preceding a canonical numeric index.

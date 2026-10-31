@@ -395,8 +395,12 @@ DNSSEC requires the DNS role and retains each method's version and registrar
 requirements. Disabling DNSSEC destroys its keys and requires registrar record
 removal; the client provides no retry or rollback. Dynamic domain/key maps retain
 their returned keys, optional fields and per-domain results separately from the
-API envelope. Single-domain calls use the documented `domain` argument; the
-`domain-0`/`domain-1` family remains tracked under `8x0.1.21`.
+API envelope. `enableDnssec()`, `disableDnssec()` and `fetchDsRecords()` accept
+`domain` as a string or a nonempty sequential string list. Scalars retain `domain`;
+arrays always use zero-based `domain-0`/`domain-1`, including singleton arrays.
+Other DNSSEC methods retain their existing arguments. Remaining indexed families
+and source contradictions stay under `8x0.1.21`; this input support adds no live
+batch coverage.
 Omitting `keySetup` retains `classic` even with `algoNum: 13`; choose `simple`
 explicitly for the documented combined-key setup above algorithm 8. Key removal
 is irreversible and can break validation while registrar DS records reference it.
@@ -942,9 +946,11 @@ custom keys. Custom values have no general pinned type and remain opaque in
 both reads and updates, which return the complete preference object.
 `required_score` lists accept integers, floats and observed numeric strings;
 strings retain their exact precision and formatting. `updateUserPreference()` accepts
-one scalar `value`; omission removes settings, while empty string and string `0`
-remain explicit values. The documented `value-0`/`value-1` multi-value family is
-not yet represented by the typed signature (`whm-api-client-8x0.1.20`). `clearSpamBox()` deletes all Spam Box
+a string or nonempty sequential string list for `value`. Scalars retain `value`;
+arrays use zero-based `value-0`/`value-1`, including singleton arrays. Omission or
+null removes settings; `[]` is rejected before HTTP. Empty strings, string `0`,
+order and duplicates remain exact. One preference is updated per call; no live
+list-mutation compatibility is established. `clearSpamBox()` deletes all Spam Box
 contents across the selected account and has no individual-mailbox selector.
 
 Greylisting selected-domain methods send repeated plural `domains` keys, following

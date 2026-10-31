@@ -176,7 +176,7 @@
         },
         {
           "kind": "documented",
-          "text": "This interface accepts one domain string. The pinned prose also documents domain-0/domain-1/domain-2, but that zero-based family is not exposed by this signature; no list encoding or delimiter is inferred."
+          "text": "Accepts one domain string or a nonempty sequential string list. Scalars use domain; lists use domain-0/domain-1 starting at zero, including a singleton list. Empty, sparse, associative and non-string lists fail before dispatch. This documented input family does not establish live batch compatibility."
         },
         {
           "kind": "documented",
@@ -189,6 +189,14 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /DNSSEC/disable_dnssec declares x-readonly=false; use POST. The source snapshot's decompressed SHA-256 is 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DNSSEC~1disable_dnssec/get/parameters/0",
+          "note": "Pinned parameter description and multiple example establish domain-0/domain-1 with zero-based indices. Preserve unsuffixed scalar input and use the indexed spelling for every nonempty string list, including a singleton. Reject empty lists before dispatch; null retains optional omission only where already allowed. The copied note says enable DNSSEC; this is an upstream wording error, not live batch evidence."
         }
       ],
       "response": {
@@ -208,6 +216,19 @@
             }
           ]
         }
+      },
+      "params": {
+        "domain": {
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "domain",
+            "separator": "-",
+            "start": 0
+          }
+        }
       }
     },
     "uapi:DNSSEC/enable_dnssec": {
@@ -222,7 +243,7 @@
         },
         {
           "kind": "documented",
-          "text": "This interface accepts one domain string. The pinned prose also documents domain-0/domain-1/domain-2, but that zero-based family is not exposed by this signature; no list encoding or delimiter is inferred."
+          "text": "Accepts one domain string or a nonempty sequential string list. Scalars use domain; lists use domain-0/domain-1 starting at zero, including a singleton list. Empty, sparse, associative and non-string lists fail before dispatch. This documented input family does not establish live batch compatibility."
         },
         {
           "kind": "documented",
@@ -277,6 +298,14 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /DNSSEC/enable_dnssec parameter use_nsec3 is a 0/1 integer switch. Expose it as bool and encode true as 1 and false as 0; omitted optional switches retain their server defaults."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DNSSEC~1enable_dnssec/get/parameters/0",
+          "note": "Pinned parameter description and multiple example establish domain-0/domain-1 with zero-based indices. Preserve unsuffixed scalar input and use the indexed spelling for every nonempty string list, including a singleton. Reject empty lists before dispatch; null retains optional omission only where already allowed."
         }
       ],
       "params": {
@@ -294,6 +323,17 @@
         },
         "use_nsec3": {
           "encoding": "bool"
+        },
+        "domain": {
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "domain",
+            "separator": "-",
+            "start": 0
+          }
         }
       },
       "response": {
@@ -469,7 +509,7 @@
         },
         {
           "kind": "documented",
-          "text": "This interface accepts one domain string. The pinned prose also documents domain-0/domain-1/domain-2, but that zero-based family is not exposed by this signature; no list encoding or delimiter is inferred."
+          "text": "Accepts one domain string or a nonempty sequential string list. Scalars use domain; lists use domain-0/domain-1 starting at zero, including a singleton list. Empty, sparse, associative and non-string lists fail before dispatch. This documented input family does not establish live batch compatibility."
         },
         {
           "kind": "documented",
@@ -496,6 +536,14 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /DNSSEC/fetch_ds_records declares x-readonly=true; use GET. The source snapshot's decompressed SHA-256 is 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1DNSSEC~1fetch_ds_records/get/parameters/0",
+          "note": "Pinned parameter description and multiple example establish domain-0/domain-1 with zero-based indices. Preserve unsuffixed scalar input and use the indexed spelling for every nonempty string list, including a singleton. Reject empty lists before dispatch; null retains optional omission only where already allowed. The copied note says enable DNSSEC; this is an upstream wording error, not live batch evidence."
         }
       ],
       "response": {
@@ -624,6 +672,19 @@
               "note": "Reviewer lifecycle observations at https://github.com/hostingpal/whm-api-client/pull/39#pullrequestreview-5720009405 against revision 476d418a0c9bf9781208af9ed1f885bb3d29f4d6 on npr.rs through direct UAPI and the WHM bridge. Actual fetch_ds_records method GET observed the schema-correct sibling nsec_details and digit strings at nsec_details.nsec3_iterations, nsec3_opt_out, nsec3_hash_algo_num, keys[].created and keys[].digests[].algo_num. Preserve the existing example-backed normalizations and add canonical in-range integer-string acceptance only for digest algo_num; no source enum or minimum is newly enforced. nsec3_opt_out remains exact 0/1 and nsec3_narrow remains strict integer 0/1. Preserve every field, optional presence and null rejection. The server version is not recorded in the review. Reviewer-reported runtime evidence is separate from the committed five-GET capture, which observed no enabled DNSSEC zone. No private key, digest or other live payload values are persisted here."
             }
           ]
+        }
+      },
+      "params": {
+        "domain": {
+          "collection": {
+            "kind": "indexed",
+            "item_type": "string",
+            "allow_scalar": true,
+            "empty": "reject",
+            "prefix": "domain",
+            "separator": "-",
+            "start": 0
+          }
         }
       }
     },

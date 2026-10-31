@@ -43,7 +43,7 @@ func TestCollectionPreciseEffectiveTypes(t *testing.T) {
 				t.Fatal(problems)
 			}
 			p := groupByClass(t, result, "Accounts").Operations[0].Params[0]
-			if p.PHPType != tc.native || p.DocType != tc.doc || p.Encoding != "collection" || !p.Sensitive || !p.Required {
+			if p.PHPType != tc.native || p.DocType != tc.doc || p.Encoding != "collection" || p.Sensitive || !p.Required {
 				t.Fatalf("incorrect collection contract: %+v", p)
 			}
 		})
@@ -211,6 +211,58 @@ func TestCollectionRejectsTypedRepeatLegacyNumberedOverlapInBothOrders(t *testin
 			_, problems := buildProblems(t, m, set)
 			if !strings.Contains(problems, "overlapping") {
 				t.Fatalf("new typed repeat overlapping legacy numbered family accepted; problems=%q", problems)
+			}
+		})
+	}
+}
+
+// Trace redaction for ordinary lists must not turn an inventory GET into POST;
+// actual secret names and explicit sensitive decisions still require POST.
+func TestCollectionTraceRedactionPreservesTransportPolicy(t *testing.T) {
+	for _, tc := range []struct {
+		name, wire, decision, method, want, problem string
+	}{
+		{"plain inferred GET", "username", "", "", "GET", ""},
+		{"plain explicit GET", "username", "", "GET", "GET", ""},
+		{"explicit nonsecret GET", "username", `,"sensitive":false`, "GET", "GET", ""},
+		{"explicit secret inferred POST", "username", `,"sensitive":true`, "", "POST", ""},
+		{"explicit secret refuses GET", "username", `,"sensitive":true`, "GET", "", "secret-bearing parameters require POST"},
+		{"secret name inferred POST", "password", "", "", "POST", ""},
+		{"secret name refuses GET", "password", "", "GET", "", "secret-bearing parameters require POST"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m := fixtureMap(t)
+			for i := range m.Operations {
+				if m.Operations[i].ID != "whm1:createacct" {
+					continue
+				}
+				v := &m.Operations[i].Variants[0]
+				v.Parameters = v.Parameters[:1]
+				v.Parameters[0].Name = tc.wire
+				v.Parameters[0].Definition["name"] = tc.wire
+				v.Risk.Classification = "read-only"
+			}
+			var op overlay.Operation
+			raw := `{"name":"createAccount","params":{"` + tc.wire + `":{"collection":` + indexedDescriptor + tc.decision + `}},"evidence":[{"kind":"doc","version":"synthetic fixture only","date":"2026-10-31","note":"Fixture collection transport policy","source_sha256":"y","pointer":"/paths/~1createacct/get/parameters/0"}]}`
+			if err := json.Unmarshal([]byte(raw), &op); err != nil {
+				t.Fatal(err)
+			}
+			op.Method = tc.method
+			set := fixtureOverlay("listed")
+			set.Files[1].Operations["whm1:createacct"] = op
+			result, problems := buildProblems(t, m, set)
+			if tc.problem != "" {
+				if !strings.Contains(problems, tc.problem) {
+					t.Fatalf("secret transport policy bypassed: %s", problems)
+				}
+				return
+			}
+			if problems != "" {
+				t.Fatal(problems)
+			}
+			got := groupByClass(t, result, "Accounts").Operations[0]
+			if got.Method != tc.want || got.Params[0].Sensitive != (tc.wire == "password" || tc.decision == `,"sensitive":true`) {
+				t.Fatalf("transport/redaction policy lost: %+v", got)
 			}
 		})
 	}

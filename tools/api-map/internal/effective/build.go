@@ -466,9 +466,6 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		if o.Sensitive != nil {
 			param.Sensitive = *o.Sensitive
 		}
-		if param.Collection != nil {
-			param.Sensitive = true
-		}
 		if !IsMethodName(param.PHP) || reservedArguments[param.PHP] {
 			b.problem(op.ID + ": parameter " + p.Name + " needs an overlay php name")
 		}

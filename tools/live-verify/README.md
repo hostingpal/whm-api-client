@@ -1685,3 +1685,27 @@ inventory plus version is observed. No commerce route, commission ID, product,
 private token, OAuth exchange, mutation or URL fetch ran. The separately reported
 PR64 reviewer Commerce/commission reads do not change this completed capture or
 catalog. All remaining live variants stay under 8x0.2.52.
+
+
+## DNSSEC singleton indexed-input read
+
+`dnssec-indexed-input-v1` is a separate opt-in catalog with exactly three GETs:
+WHM version, then direct and bridged `fetchDsRecords(domain: ['npr.rs'])`.
+Both DS observations carry `argument_variant: singleton-domain-list`. Exact
+`domain-0=npr.rs` URLs, the `npr` account, GET method and empty request bodies are
+guarded; the existing runner makes one attempt per probe and keeps only sanitized
+structural evidence. The historical `dns-security-v1` catalog is unchanged.
+
+After code review and explicit capture authorization, select a fresh output path:
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/dnssec-indexed-input.php \
+  --output=docs/api/evidence/dnssec-indexed-input-new.json
+```
+
+The command requires both existing test tokens and committed repository context.
+A successful result establishes singleton-list wire acceptance only. It establishes
+no multi-domain batch, populated DS field, mutation, propagation or DNSSEC resolver
+coverage. Existing artifacts and discrepancy policies are never changed by this
+catalog.
