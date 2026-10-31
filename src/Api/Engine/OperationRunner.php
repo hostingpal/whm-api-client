@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace HostingPal\WhmApiClient\Api\Engine;
 
 use Closure;
-use HostingPal\WhmApiClient\Api\AbstractApiClient;
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Exception\ApiException;
 use HostingPal\WhmApiClient\Exception\InvalidResponseException;
@@ -25,7 +24,6 @@ use SensitiveParameter;
  * policy, and runs the shared request lifecycle, so metadata is cleared before
  * any parameter validation or I/O. This class adds no retries and no state.
  *
- * @phpstan-import-type Parameters from AbstractApiClient
  * @internal
  */
 final class OperationRunner
@@ -42,15 +40,14 @@ final class OperationRunner
      *
      * @param array<mixed> $spec Generated operation spec.
      * @param array<string, mixed> $arguments Named arguments of the generated method.
-     * @param Closure(array<mixed>, Parameters): ApiResponse $dispatch
+     * @param Closure(array<mixed>, OrderedFields): ApiResponse $dispatch
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the envelope and outcome were accepted but the payload differs from the
      *     spec; under the flag policy the operation took effect.
      * @throws LogicException If the spec is malformed or the arguments disagree with it.
      * @throws InvalidArgumentException If a float is non-finite or an explicit target policy fails (ArgumentEncoder),
-     *     or raised by the
-     *     shared encoder through the dispatch closure, after the metadata reset, when multi-value contents
-     *     are invalid. The handles clear metadata before calling run(), so neither leaves stale metadata.
+     *     or if collection contents or expanded fields are invalid. The handles clear metadata before
+     *     calling run(), so rejection before dispatch never leaves stale metadata.
      */
     public static function run(
         array $spec,

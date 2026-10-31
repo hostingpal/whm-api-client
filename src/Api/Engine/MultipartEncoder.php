@@ -27,23 +27,42 @@ final class MultipartEncoder
      * Empty strings remain explicit fields; an empty field set still includes the
      * closing delimiter. Values are validated before boundary selection or I/O.
      *
-     * @param Parameters $parameters
+     * @param Parameters|OrderedFields $parameters
      * @return array{string, string}
      * @throws InvalidArgumentException If a field is not a string or its name is unsafe.
      */
-    public static function encode(#[SensitiveParameter] array $parameters): array
+    public static function encode(#[SensitiveParameter] array|OrderedFields $parameters): array
     {
-        foreach ($parameters as $name => $value) {
+        $fields = [];
+        if ($parameters instanceof OrderedFields) {
+            foreach ($parameters->all() as $field) {
+                if (!$field['multipart']) {
+                    throw new InvalidArgumentException('Multipart fields require safe names and string values.');
+                }
+                $fields[] = ['name' => $field['name'], 'value' => $field['value']];
+            }
+        } else {
+            foreach ($parameters as $name => $value) {
+                $fields[] = ['name' => (string) $name, 'value' => $value];
+            }
+        }
+        $strings = [];
+        foreach ($fields as $field) {
+            $name = $field['name'];
+            $value = $field['value'];
             if (preg_match('/\A[A-Za-z0-9_.-]+\z/', (string) $name) !== 1 || !is_string($value)) {
                 throw new InvalidArgumentException('Multipart fields require safe names and string values.');
             }
+            $strings[] = ['name' => $name, 'value' => $value];
         }
         do {
             $boundary = 'whm-api-' . bin2hex(random_bytes(24));
-        } while (self::collides($parameters, $boundary));
+        } while (self::collides(array_column($strings, 'value'), $boundary));
 
         $body = '';
-        foreach ($parameters as $name => $value) {
+        foreach ($strings as $field) {
+            $name = $field['name'];
+            $value = $field['value'];
             $body .= '--' . $boundary . "\r\nContent-Disposition: form-data; name=\"" . $name . "\"\r\n\r\n"
                 . $value . "\r\n";
         }
@@ -54,7 +73,7 @@ final class MultipartEncoder
     /**
      * Check all string values for a candidate delimiter without logging them.
      *
-     * @param array<string, string> $parameters
+     * @param array<array-key, string> $parameters
      */
     private static function collides(#[SensitiveParameter] array $parameters, string $boundary): bool
     {

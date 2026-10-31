@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient;
 use HostingPal\WhmApiClient\Api\AbstractApiClient;
 use HostingPal\WhmApiClient\Api\Engine\OperationRunner;
 use HostingPal\WhmApiClient\Api\Engine\OperationSpec;
+use HostingPal\WhmApiClient\Api\Engine\OrderedFields;
 use HostingPal\WhmApiClient\Api\OutcomePolicy;
 use HostingPal\WhmApiClient\Api\RequestBodyFormat;
 use HostingPal\WhmApiClient\Api\RequestMethod;
@@ -154,9 +155,8 @@ final class UapiClient extends AbstractApiClient
      * Route a generated operation for this account through direct cPanel or WHM.
      *
      * @param array<mixed> $spec
-     * @param Parameters $parameters
      */
-    private function dispatch(array $spec, #[SensitiveParameter] array $parameters): ApiResponse
+    private function dispatch(array $spec, #[SensitiveParameter] OrderedFields $parameters): ApiResponse
     {
         return $this->request(
             OperationSpec::text($spec, 'module'),
@@ -172,20 +172,21 @@ final class UapiClient extends AbstractApiClient
      * Route every UAPI request through this account-bound helper.
      *
      * Groups supply operation names and endpoint parameters. The bound module,
-     * account, API version, and function take precedence over bridge parameters
-     * and are removed from caller parameters. Execution clears metadata before
+     * account, API version, and function are reserved on the bridge. Generated
+     * fields reject collisions before filtering; generic arrays retain reserved
+     * field removal. Execution clears metadata before
      * parameter validation or I/O, then retains usable envelope metadata before
      * API or group-level payload errors. Post keeps the routing fields in the
      * query string and encodes operation parameters in the selected form or
      * multipart body. Multipart routing support does not imply live coverage.
      *
-     * @param Parameters $parameters
+     * @param Parameters|OrderedFields $parameters
      */
     private function request(
         string $module,
         string $operation,
         #[SensitiveParameter]
-        array $parameters,
+        array|OrderedFields $parameters,
         RequestMethod $method,
         OutcomePolicy $outcome = OutcomePolicy::Flag,
         RequestBodyFormat $bodyFormat = RequestBodyFormat::Form,
@@ -197,13 +198,19 @@ final class UapiClient extends AbstractApiClient
                 'cpanel.module' => $module,
                 'cpanel.function' => $operation,
             ];
-            $parameters = array_diff_key($parameters, $reserved);
+            if ($parameters instanceof OrderedFields) {
+                $parameters->assertNoReserved(array_keys($reserved));
+                $query = $method === RequestMethod::Get ? $parameters->withRouting($reserved) : $reserved;
+            } else {
+                $parameters = array_diff_key($parameters, $reserved);
+                $query = $reserved + $parameters;
+            }
 
             $route = ResponseRoute::BridgedUapi;
 
             return $method === RequestMethod::Post
                 ? $this->executePost('/json-api/uapi_cpanel', $reserved, $parameters, $route, $outcome, $bodyFormat)
-                : $this->executeGet('/json-api/uapi_cpanel', $reserved + $parameters, $route, $outcome);
+                : $this->executeGet('/json-api/uapi_cpanel', $query, $route, $outcome);
         }
 
         $path = '/execute/' . $module . '/' . $operation;

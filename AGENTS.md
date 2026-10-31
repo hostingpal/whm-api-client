@@ -2352,13 +2352,23 @@ remaining compatibility stay under `8x0.2.46`; no repeat is needed for integrati
   handle (WHM and UAPI handles own route construction, with one account-bound UAPI
   helper for direct and bridged execution), validates the payload
   with `ShapeValidator` and the internal `PayloadReader`, which attaches the response
-  snapshot to every failure, and unwraps the result. Reserved bridge fields take
-  precedence over endpoint parameters. Generated multi-value parameters pass caller
-  input through as `RepeatedList` (repeated keys, overlay encoding `repeat`) or
-  `NumberedList` (WHM `name`, `name-1`, ..., encoding `numbered`); generic `call()` also
-  accepts a plain `list<string>` as repeated keys. The shared encoder validates the
-  contents after the metadata reset. Selectors only bind callbacks
-  and cache groups; they perform no I/O or metadata reset.
+  snapshot to every failure, and unwraps the result. `ArgumentEncoder` returns an
+  internal `OrderedFields` accumulator of expanded literal names/values, PHP argument
+  origins and opaque repeat-family identities. Different origins cannot emit the
+  same wire name; only intentional repeats from one family may share it. Handles
+  reject generated collisions with routing reservations before any filtering:
+  WHM reserves `api.version`; bridged UAPI also reserves `cpanel.user`,
+  `cpanel.module` and `cpanel.function`. Direct UAPI keeps its existing route rules.
+  `withRouting()` prepends routing fields while retaining original provenance.
+  Future collection encoders append fields rather than merging associative maps.
+  `ParameterExpander` shares existing marker rules: `RepeatedList` repeats keys,
+  `NumberedList` emits `name`, `name-1`, ... and `SuffixNumberedList` replaces its
+  terminal wildcard with 1, 2, ... . Generic `call()` retains its associative input,
+  plain repeated string lists, reserved-field filtering and suffix-only collision
+  policy. All collection validation follows the metadata reset, before I/O; form
+  names and values are encoded once. SSL multipart retains safe scalar string
+  fields and literal value bytes. Selectors only bind callbacks and cache groups;
+  they perform no I/O or metadata reset.
 - Requests declare their method and outcome policy. `RequestMethod::Get` places
   parameters in the query string; `RequestMethod::Post` keeps the routing fields
   (`api.version`, bridge `cpanel.*`) in the query string and form-encodes the
