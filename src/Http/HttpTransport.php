@@ -11,6 +11,7 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 use SensitiveParameter;
 
@@ -73,6 +74,13 @@ final readonly class HttpTransport
      * omit authorization values and any secret-bearing query or form parameters; the
      * PSR request handed to the client still carries them.
      *
+     * Supplied streams attach directly without copying. Ordinary caller streams
+     * remain caller-owned. Internal multipart bodies supply exact framing headers
+     * and release their owned sources after every synchronous exit, including a
+     * response before complete consumption. A recorded multipart read failure is
+     * checked even if the client swallowed it (including PSR string conversion).
+     * A partial read alone is not an error or proof of complete delivery.
+     *
      * @param array<string, string|list<string>> $headers
      *
      * @throws ClientExceptionInterface
@@ -84,18 +92,38 @@ final readonly class HttpTransport
         #[SensitiveParameter]
         array $headers = [],
         #[SensitiveParameter]
-        ?string $body = null,
+        string|StreamInterface|null $body = null,
     ): ResponseInterface {
-        $request = $this->requestFactory->createRequest($method, $uri);
+        try {
+            if ($body instanceof StreamingMultipartBody) {
+                $body->assertHealthy();
+            }
+            $request = $this->requestFactory->createRequest($method, $uri);
 
-        foreach ($headers as $name => $value) {
-            $request = $request->withHeader($name, $value);
+            foreach ($headers as $name => $value) {
+                $request = $request->withHeader($name, $value);
+            }
+
+            if ($body !== null) {
+                $request = $request->withBody(
+                    $body instanceof StreamInterface ? $body : $this->streamFactory->createStream($body),
+                );
+            }
+            if ($body instanceof StreamingMultipartBody) {
+                $request = $request->withHeader('Content-Type', $body->contentType())
+                    ->withHeader('Content-Length', (string) $body->getSize())
+                    ->withoutHeader('Transfer-Encoding');
+            }
+
+            $response = $this->httpClient->sendRequest($request);
+            if ($body instanceof StreamingMultipartBody) {
+                $body->assertHealthy();
+            }
+            return $response;
+        } finally {
+            if ($body instanceof StreamingMultipartBody) {
+                $body->close();
+            }
         }
-
-        if ($body !== null) {
-            $request = $request->withBody($this->streamFactory->createStream($body));
-        }
-
-        return $this->httpClient->sendRequest($request);
     }
 }

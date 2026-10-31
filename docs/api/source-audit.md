@@ -6842,3 +6842,22 @@ Unsupported sources can produce incorrect lengths or truncated content. Genuine
 empty regular files remain supported; callers can materialize unsupported source
 bytes and pass them to `fromString()`. No server request, source refresh or new
 historical evidence accompanies this correction.
+
+
+## Streaming multipart integration (PR85)
+
+The internal streaming encoder/body and transport slice preserves PR84's
+reliable-size source prerequisite, genuine empty-file support and over-read
+regression alongside short-read and read-request instrumentation. Internal
+multipart bodies retain exact framing, bounded reads, one synchronous attempt
+and owned-source release; public multipart calls, typed adoption and API-layer
+exception translation remain separate work, with the latter owned by PR86.
+
+[PR85 review 5724320853](https://github.com/hostingpal/whm-api-client/pull/85#pullrequestreview-5724320853)
+reports direct UAPI Fileman uploads on `11.138.0.19` through the streaming layer
+and a disposable account, with byte comparisons, bounded memory, failure checks
+and reported resource cleanup. That review covers only `e7f04f7..7169c69`.
+These are attributed reviewer observations, not a new capture or live validation
+of this combined revision. Combined offline integration checks are recorded
+separately; no server request, source refresh or evidence rewrite accompanies
+this integration. Existing platform and source-truthfulness limits remain.
