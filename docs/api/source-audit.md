@@ -6610,3 +6610,83 @@ preserved. No server/image/file change or live API call ran. Offline typed cover
 does not establish transformation correctness, image format support, collision or
 HTTP-serving behavior; follow-up `whm-api-client-8x0.2.60` remains open. Inherited
 parent/source/upload acceptance work remains external-owned and unwaived.
+
+
+### Complete UAPI CCS calendar delegation typed adoption (2026-10-31)
+
+The complete five-function CCS module is adopted as generated `Ccs`, accessed via
+`uapi()->ccs()`, using existing machinery only. Source:
+`docs/api/sources/2026-10-13/cpanel.openapi.json.gz`, decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`.
+The exact selected pointers are `/paths/~1CCS~1add_delegate/get`,
+`/paths/~1CCS~1list_delegates/get`, `/paths/~1CCS~1list_users/get`,
+`/paths/~1CCS~1remove_delegate/get` and `/paths/~1CCS~1update_delegate/get`.
+All are nondeprecated GET source variants with `x-cpanel-available-version:cPanel
+90` and a description requiring the installed Calendar and Contacts Server cPanel
+plugin. CCS is a separate external plugin module from native CPDAVD. Prior
+CPDAVD delivery, live behavior, response corrections and default 1 are not reused.
+No plugin installation, provisioning or migration is implemented.
+
+The two lists have `x-readonly:true` and remain GET. Add, remove and update have
+`x-readonly:false`, `x-rollback:none` and use form POST under the established
+mutation policy. These are transport decisions from GET source variants, not
+claims of documented POST variants. Under each mutation's `/parameters`, indices
+0 and 1 are required string delegatee and delegator with format email, preserving
+pinned public argument order and existing scalar rules. Case, plus, percent,
+ampersand and non-ASCII bytes are not normalized and receive form encoding once.
+No new address validator or sensitivity policy is introduced; routing stays in
+the URL and arguments in the body.
+
+Add's `/parameters/2/schema` contains optional integer readonly enum [1,0] and
+default 0, so existing enum lowering supplies `?bool $readonly = null`.
+Update's `/parameters/2/schema` is optional integer with default 0 but no enum;
+its `/parameters/2/description` explicitly says 1 read-only and 0 full access.
+Operation-scoped `encoding:bool` uses this exact hash/schema/description evidence
+without a Param.Type or global integer-to-bool rule. Both public methods preserve
+null/omitted fields and emit false/true as 0/1. Both sources declare default 0;
+this is a documented default, not observed installed-plugin behavior. Omission
+can select full access; callers should choose explicitly when necessary. The
+client injects no default and adds no implicit read, merge, retry or rollback.
+
+For add, remove and update, the formal result properties have no `data` member,
+so existing source lowering yields void under normal Flag handling. No nullable
+opaque-object substitute or CPDAVD optional-payload correction is added.
+`list_delegates`' `/responses/200/content/application~1json/schema/properties/result/properties/data`
+is a nullable array of objects with optional nonnullable string delegatee and
+delegator and integer enum [1,0] read_only. Existing lowering gives a nullable list
+and a strict 0|1 payload flag distinct from UAPI status. Preserve null versus
+empty list; missing data and malformed rows/fields mismatch. The exact wire key
+is read_only, unlike CPDAVD readonly; no calendar or calname field is invented.
+
+`list_users`' corresponding data schema is an object with additionalProperties
+containing only a UUID description and no formal type. The parent examples are
+strings, but prose/examples do not supply the absent additional-value schema.
+The reviewed ruling retains the existing `map` with `values:mixed` and
+`array<array-key,mixed>` PHPDoc, without a response correction. Dynamic usernames,
+PHP numeric-key behavior, nested opaque JSON values and empty containers are
+preserved. Empty objects and legacy empty-array-map compatibility remain valid;
+null, absence, nonempty lists and scalar roots mismatch. Consumers inspect values
+until a separately evidenced refinement; no UUID validator or inferred keynames
+are added and identities are not converted into a list.
+
+Independent real-client/mock-HTTP fixtures cover every function through direct
+UAPI and the WHM bridge, exact method/path/query/body/auth/Content-Type and one
+send, omitted/null/false/true readonly, strict native type rejection before
+metadata reset, nullable/empty/populated/mixed optional delegation rows, strict
+payload flags, opaque username maps and malformed/absent read payloads. Void
+success with absent data, UAPI failure before payload checks, outer-WHM failure
+precedence, HTTP/transport one-attempt behavior, metadata lifecycle, reflection
+and literal expected specs are covered. Expectations are independent of generated
+specs and source examples. No tests or runtime exception handler swallows assertion
+failures. Existing generator/runtime/schema and old overlays/contracts are unchanged.
+
+Baseline `0898b8b23929b57c233aa3065be8c460aa2f8d23` has 1,117 operations
+(529 UAPI, 588 WHM), 92 groups and 187 generated outputs. CCS adds exactly five
+canonical UAPI operations and one group: 1,122 operations (534 UAPI, 588 WHM),
+93 groups and 189 outputs (188 PHP files plus coverage). Sources, map checksum,
+immutable evidence and the prior audit prefix remain unchanged. No live call,
+plugin installation, calendar/contact read or delegate mutation ran. Offline
+requests and contract coverage do not establish installed-plugin compatibility,
+applied permissions or permission enforcement. Follow-up `whm-api-client-8x0.2.61`
+remains open; delivery is `whm-api-client-8x0.4.19`. Required PHP 8.3 CI and inherited
+parent/source/upload acceptance work remain external-owned and unwaived.

@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 92 generated typed groups cover 1,117 documented operations (see
+The 93 generated typed groups cover 1,122 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1450,8 +1450,8 @@ $client->whm()->modSecurity()->updateSettings(settings: [
 
 This emits `setting_id1=1&state1=On&setting_id2=2&state2=Off&remove2=0`;
 there is no `remove1`. Empty state strings, integer zero and string `'0'` remain
-values. The alias adds one public method, while canonical coverage is now 1,117
-operations (529 UAPI and 588 WHM), 92 groups and 187 generated files (186 PHP files plus the coverage document).
+values. The alias adds one public method, while canonical coverage is now 1,122
+operations (534 UAPI and 588 WHM), 93 groups and 189 generated files (188 PHP files plus the coverage document).
 
 The twelve source-backed empty-result mutations accept an omitted or null payload
 while retaining any returned mixed data; they are not weakened to void. Omitted
@@ -3364,3 +3364,50 @@ transformations and HTTP image behavior remain open under `8x0.2.60`.
 Exactly four canonical operations are added: 1,117 total (529 UAPI, 588 WHM),
 92 groups and 187 generated outputs (186 PHP files plus coverage). Source schemas,
 historical evidence, shared runtime and generator grammar are unchanged.
+
+
+### UAPI CCS calendar delegation (2026-10-31)
+
+`uapi()->ccs()` covers all five pinned CCS functions, available from cPanel 90.
+They require the installed **Calendar and Contacts Server** cPanel plugin. CCS is
+separate from the native CPDAVD module; its observations and defaults do not
+establish CCS behavior. The client does not install or migrate the plugin or
+provision calendars.
+
+```php
+$ccs = $client->uapi('example')->ccs();
+$users = $ccs->listUsers();
+$delegations = $ccs->listDelegates();
+$ccs->addDelegate(delegatee: 'guest@example.test', delegator: 'owner@example.test', readonly: true);
+$ccs->updateDelegate(delegatee: 'guest@example.test', delegator: 'owner@example.test', readonly: false);
+$ccs->removeDelegate(delegatee: 'guest@example.test', delegator: 'owner@example.test');
+```
+
+The two reads use GET; the three mutations use form POST and return void under
+ordinary UAPI status handling because their pinned responses have no data member.
+Addresses retain their exact bytes and existing scalar conventions, encoded once
+in the body. Optional `readonly` on add and update is a native nullable boolean:
+omission/null omits the field, false sends 0 and true sends 1. Both sources declare
+default 0 (full access); this is not an observed server guarantee. Omission can
+select source full access, so explicitly choose the intended permission when it
+matters. The client injects no default and adds no implicit read, merge, retry or
+rollback. Mutations declare no rollback; API success alone does not establish
+applied calendar permissions or their enforcement.
+
+`listDelegates()` preserves null separately from an empty list. Rows have optional
+nonnullable string `delegatee`/`delegator` and integer `read_only` (0|1): zero is full
+access, one is read-only access, independent of UAPI status. Missing data or wrong
+kinds/types raise a payload mismatch. `listUsers()` returns a dynamic
+username-to-UUID map with `array<array-key, mixed>` PHPDoc. The formal additional
+value schema has UUID prose and string examples but no type, so opaque JSON values
+retain their types and keys retain existing PHP numeric-key behavior. Callers
+inspect values; there is no inferred UUID validator or string-only correction.
+Empty objects and the existing empty-array map compatibility are preserved;
+null/missing data, nonempty lists and scalar roots mismatch.
+
+Exactly five canonical UAPI operations and one group are added over `0898b8b`:
+1,122 operations (534 UAPI, 588 WHM), 93 groups and 189 generated outputs (188 PHP
+files plus coverage). Existing generator/runtime machinery is unchanged. No live
+calls, plugin installation, calendar/contact reads or delegation mutations ran.
+Installed-plugin behavior, response compatibility and permission enforcement remain
+open under `whm-api-client-8x0.2.61`.

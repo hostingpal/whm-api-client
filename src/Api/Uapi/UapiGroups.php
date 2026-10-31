@@ -27,6 +27,8 @@ trait UapiGroups
 
     private ?BoxTrapper $boxTrapperGroup = null;
 
+    private ?Ccs $ccsGroup = null;
+
     private ?ClamScanner $clamScannerGroup = null;
 
     private ?ContactInformation $contactInformationGroup = null;
@@ -219,6 +221,16 @@ trait UapiGroups
     public function boxTrapper(): BoxTrapper
     {
         return $this->boxTrapperGroup ??= new BoxTrapper($this->run(...));
+    }
+
+    /**
+     * Select the CCS operations without making a request.
+     *
+     * The CCS module for UAPI.
+     */
+    public function ccs(): Ccs
+    {
+        return $this->ccsGroup ??= new Ccs($this->run(...));
     }
 
     /**
