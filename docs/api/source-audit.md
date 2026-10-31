@@ -6818,3 +6818,27 @@ upstream. Both public methods inherit the version-scoped overlay note. No local
 color, enum or provider validator is added. These are reviewer source facts,
 not runtime observations. No server call, credential access, source refresh,
 provider URL fetch or evidence capture accompanies this integration.
+
+
+## Multipart source primitive correction (PR84)
+
+The source-only foundation adds no multipart dispatch. PR84 review
+5724182215 identified seven tests whose RuntimeException catches swallowed
+PHPUnit failures and a PreparedUploadSet unserialization release gadget. The
+corrected tests assert exact exception classes after the catch, and cover an
+unasserted cursor beyond the total, borrowed over-read, genuine empty regular
+files, colon-containing relative paths and serialization refusal. Prepared sets
+refuse both serialization directions; empty/uninitialized destruction remains
+safe and forged payloads cannot install foreign release targets. Internal
+preparation failures remain RuntimeException; public mapping belongs to PR86.
+
+The `8x0.30.11` local metadata finding distinguishes source support from runtime
+detection: virtual/generated pseudo-files can report regular-file mode and size
+zero while containing bytes. Supported path sources require stable, reliable
+byte-size metadata; borrowed size/cursor metadata must likewise be truthful.
+The library cannot detect every misleading source without content reads and does
+not blacklist paths, probe beyond declared lengths, drain or buffer them.
+Unsupported sources can produce incorrect lengths or truncated content. Genuine
+empty regular files remain supported; callers can materialize unsupported source
+bytes and pass them to `fromString()`. No server request, source refresh or new
+historical evidence accompanies this correction.

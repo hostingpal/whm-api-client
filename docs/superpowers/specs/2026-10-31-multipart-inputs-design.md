@@ -142,7 +142,8 @@ All source-bearing and filename arguments/frames are sensitive. Factory objects
 are descriptors; factories perform no HTTP request, file open, content read or
 stream seek. Paths are local filesystem paths only, never PHP wrappers or URLs.
 Relative paths are anchored to the working directory when the descriptor is
-created. A path's basename supplies the default filename; overrides are explicit.
+created. Prefix relative POSIX filenames containing a colon with `./`, for example
+`./report:2026.csv`, to avoid URI-scheme ambiguity. A path's basename supplies the default filename; overrides are explicit.
 Factories may reject invalid descriptor metadata, including a negative explicit
 size, without altering handle metadata because no API attempt has begun. The first
 three `fromStream()` arguments and their names remain unchanged; optional fourth
@@ -178,7 +179,14 @@ their own streams or logging PSR requests.
 For `fromPath()`, open a readable regular local file in binary mode during request
 preparation, after structural and route validation. Fail before HTTP if a path
 cannot be opened or is not a regular file. Symlinks to regular local files are
-allowed. Close every handle the library opened on success, preparation failure,
+allowed, including genuine empty regular files. Callers must supply path sources
+with stable, reliable byte-size metadata. Virtual/generated pseudo-files with
+misleading sizes are unsupported even when reported as regular files. This is a
+caller prerequisite, not a promise to detect every unsupported source: no path
+blacklist or extra-byte probe establishes metadata reliability. Unsupported sources
+can yield incorrect lengths or truncated content; callers can materialize their
+bytes themselves and use `fromString()` instead. Close every handle the library
+opened on success, preparation failure,
 transport failure and response failure. Do not delete or modify the source file.
 
 For `fromStream()`, borrow the stream and consume it from the position at which
@@ -199,7 +207,10 @@ size or position is unknown and no exact remainder can be derived, require that
 assertion. If explicit and derived remaining lengths are both known, reject a
 disagreement before HTTP and before reading any source. Reject invalid lengths
 or out-of-bounds positions locally. The caller must supply an accurate assertion
-and must not mutate or advance the stream during a call.
+and must not mutate or advance the stream during a call. Borrowed metadata must
+be truthful; supplying an explicit size cannot override disagreement with the
+derived remainder. The library checks consistency, but cannot establish metadata
+truthfulness without reading the source.
 
 Reject the same borrowed `StreamInterface` object in two parts of one request:
 its shared mutable cursor cannot represent independent files. Different wrappers
