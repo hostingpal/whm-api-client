@@ -116,17 +116,27 @@ Operation entries (all keys optional):
   must be nonempty and sequential, preserving order, duplicates, empty strings,
   zero and false for the selected item type. Optional null still omits the whole
   argument. Native array/scalar unions and `non-empty-list<T>` PHPDoc are generated;
-  all collection arguments receive `SensitiveParameter` for trace protection,
+  source string/integer enum literals appear in both the scalar alternative and
+  the list item type, including resolved item references. `enum_doc: false`
+  retains its explicit documentation override; boolean flag conversion stays
+  `bool`. An evidenced `string|int` widening retains source literals for the
+  source kind and admits the other kind without inventing literals. Literal
+  schemas that cannot be represented truthfully fail generation with a parameter
+  diagnostic rather than silently widening. This adds no runtime enum validation.
+  All collection arguments receive `SensitiveParameter` for trace protection,
   independently of secret-bearing transport classification. Source/overlay secret
   decisions still require POST; ordinary read-only collection inputs retain GET.
   `kind: "map"` requires `allow_scalar: false`, `empty: "allow"` or `"reject"`,
   and a mandatory literal `prefix` (empty or `[A-Za-z_][A-Za-z0-9_-]*`); it forbids
   separator/start. For example `{"kind":"map","item_type":"bool",
   "allow_scalar":false,"empty":"allow","prefix":""}` accepts a feature map,
-  while prefix `MXCHECK-` appends caller keys literally. No prefix stripping or
+  while prefix `copymysqldb-` appends caller keys literally. No prefix stripping or
   wildcard inference occurs. The native type is `array` (`?array` when optional),
   with `array<string,T>` or `non-empty-array<string,T>` PHPDoc. An allowed empty map
   emits no dynamic fields, while fixed fields and the request still dispatch.
+  Optional `reject_prefixed_keys: true` requires a nonempty map prefix and
+  rejects caller keys already beginning with that prefix without rewriting. Only
+  the two AutoSSL provider descriptors declare it; other maps remain literal.
   Map values must match the declared strict scalar item type, backed by the
   source scalar schema and matching parameter evidence. Keys must be nonempty
   valid UTF-8 strings without U+0000–U+001F/U+007F; integer keys, including PHP's
@@ -136,10 +146,9 @@ Operation entries (all keys optional):
   emitted; use `php` to give placeholder parameters a meaningful public name.
   Actual map collisions with fixed, other map/list and route fields fail before
   dispatch in either order without exposing keys or values in diagnostics.
-  Collection descriptors
-  cannot combine with `encoding`, `type`, `wire`, `omit`, `omit_empty` or
-  `reject_empty`. Static indexed overlaps fail generation; expanded collisions
-  fail before dispatch, retaining the ordered-field engine's origin checks.
+  Collection descriptors cannot combine with `encoding`, `type`, `wire`, `omit`, `omit_empty` or
+  `reject_empty`. Static indexed overlaps fail generation and whole-spec lint;
+  expanded collisions fail before dispatch, retaining the ordered-field engine's origin checks.
   Each collection override needs operation-level `doc` evidence with
   `source_sha256` matching that source parameter's locator and `pointer` matching
   its parameter JSON pointer or that pointer plus `/description`. These structured
@@ -248,6 +257,17 @@ Operation entries (all keys optional):
   literal); generated PHPStan types retain it. This opt-in constraint is never
   inferred from upstream enums and is invalid on other types. Only `replace` may
   address the payload root, with the empty path.
+
+A narrowly evidenced retrieval exception can restore an omitted payload contract:
+only WHM GET operations with `x-readonly=true`, a resolved plain 200 JSON object
+whose only property is `metadata`, and no payload issue or partial alternatives
+qualify. The overlay must supply exactly one root response replacement with an
+unadorned `mixed` spec and valid correction-level `live` evidence. `void`,
+`optional_payload`, `unwrap`, exclusions, compositions and payload siblings do
+not qualify. This preserves opaque observed data without inferring fields;
+missing data still fails in the existing runtime. Ordinary corrections to a
+documented payload remain unchanged. PR70 review 5721307565 supplies the
+attributed retrieval observation; it is separate from source-only corrections.
 
 The generator reads the pinned schemas as follows. `allOf` merges its parts and
 its sibling `properties`/`required`, skipping parts that carry only annotations.

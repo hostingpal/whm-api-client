@@ -27,10 +27,11 @@ func (w *writer) doc(indent, text string) {
 }
 
 // paramDoc writes one "@param <type> $name" tag. The tag head always stays on a
-// single line: when it would exceed lineWidth the literal doc type is replaced
-// by the parameter's plain type (string|list<string> for list encodings). Only
-// the description wraps, with continuation lines indented four spaces after
-// the asterisk.
+// single line. Legacy heads exceeding lineWidth use the parameter's plain type
+// (string|list<string> for list encodings). Collection heads retain precise literal
+// types even when overlong: preserving their enum contract takes precedence over
+// the plain-type fallback. Only the description wraps, with continuation lines
+// indented four spaces after the asterisk.
 func (w *writer) paramDoc(indent string, p effective.Param, description string) {
 	// Enum literals come from the pinned documents and could contain "*/".
 	docType := escapeDoc(paramDocType(p))
@@ -184,7 +185,7 @@ func groupClass(g effective.Group) string {
 			uses = append(uses, rootNamespace+`\Exception\PayloadMismatchException`)
 		}
 		for _, p := range op.Params {
-			if isMultiple(p.Encoding) {
+			if isMultiple(p.Encoding) || p.RejectEmpty {
 				uses = append(uses, "InvalidArgumentException")
 			}
 			if redactArgument(p) {
@@ -279,6 +280,7 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	w.line(indent + " *")
 	multi := false
 	scalarMulti := false
+	namedMap := false
 	omitEmpty := false
 	rejectEmpty := false
 	for _, p := range op.Params {
@@ -293,6 +295,7 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 		omitEmpty = omitEmpty || p.OmitEmpty
 		rejectEmpty = rejectEmpty || p.RejectEmpty
 		multi = multi || isMultiple(p.Encoding)
+		namedMap = namedMap || (p.Collection != nil && p.Collection.Kind == "map")
 		scalarMulti = scalarMulti || p.Encoding == "suffix-numbered-scalar" || p.Collection != nil
 	}
 	if ret != nil {
@@ -309,7 +312,10 @@ func method(w *writer, g effective.Group, op effective.Operation) {
 	if rejectEmpty {
 		w.line(indent + " * @throws InvalidArgumentException If an explicit target is absent, blank, zero, or an invalid string list.")
 	} else if multi {
-		if omitEmpty {
+		if namedMap {
+			w.line(indent + " * @throws InvalidArgumentException If map keys, values, empty policy, or expanded names are invalid;")
+			w.line(indent + " *     list inputs must be nonempty, sequential, and contain supported values.")
+		} else if omitEmpty {
 			w.line(indent + " * @throws InvalidArgumentException If a non-omittable list argument is empty,")
 			w.line(indent + " *     or any list is keyed or contains non-strings.")
 		} else if scalarMulti {
@@ -449,6 +455,9 @@ func specClass(g effective.Group) string {
 					w.line("                    'item_type' => " + phpString(c.ItemType) + ",")
 					w.line(fmt.Sprintf("                    'allow_scalar' => %t,", *c.AllowScalar))
 					w.line("                    'empty' => " + phpString(c.Empty) + ",")
+					if c.RejectPrefixedKeys != nil {
+						w.line("                    'reject_prefixed_keys' => true,")
+					}
 					if c.Kind == "indexed" || c.Kind == "map" {
 						w.line("                    'prefix' => " + phpString(*c.Prefix) + ",")
 					}

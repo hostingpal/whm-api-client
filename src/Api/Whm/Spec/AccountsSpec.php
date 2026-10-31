@@ -1099,7 +1099,7 @@ final class AccountsSpec
     public const MASSMODIFYACCT = [
         'function' => 'massmodifyacct',
         'method' => 'POST',
-        'outcome' => 'flag',
+        'outcome' => 'unchecked',
         'params' => [
             'user' => [
                 'name' => 'user',
@@ -1138,17 +1138,6 @@ final class AccountsSpec
             'maxDeferFailPercentage' => ['name' => 'MAX_DEFER_FAIL_PERCENTAGE', 'encoding' => 'scalar'],
             'maxEmailacctQuota' => ['name' => 'MAX_EMAILACCT_QUOTA', 'encoding' => 'scalar'],
             'maxEmailPerHour' => ['name' => 'MAX_EMAIL_PER_HOUR', 'encoding' => 'scalar'],
-            'mxPriorities' => [
-                'name' => 'MXCHECK-*',
-                'encoding' => 'collection',
-                'collection' => [
-                    'kind' => 'map',
-                    'item_type' => 'int',
-                    'allow_scalar' => false,
-                    'empty' => 'allow',
-                    'prefix' => 'MXCHECK-',
-                ],
-            ],
             'outgoingEmailSuspended' => ['name' => 'OUTGOING_EMAIL_SUSPENDED', 'encoding' => 'bool'],
             'owner' => ['name' => 'OWNER', 'encoding' => 'scalar'],
             'pushbulletAccessToken' => ['name' => 'PUSHBULLET_ACCESS_TOKEN', 'encoding' => 'scalar'],

@@ -40,6 +40,9 @@ use LogicException;
  *   hyphens); index separator/start fields are forbidden. Each nonempty UTF-8
  *   string key without ASCII control bytes is appended literally to that prefix.
  *   Integer keys (including PHP-coerced numeric strings) and non-array inputs fail.
+ *   Optional reject_prefixed_keys: true requires a nonempty map prefix and rejects
+ *   caller keys beginning with that prefix without stripping or rewriting them.
+ *   It is declared only for the two AutoSSL provider maps. Other maps remain literal.
  *   Empty allowed maps emit no dynamic fields; the request still dispatches.
  *   Map PHPDoc is array<string,T> or non-empty-array<string,T>; top-level null
  *   omits optional arguments. Generated collections receive SensitiveParameter

@@ -174,7 +174,8 @@
             "allow_scalar": false,
             "empty": "allow",
             "prefix": "copymysqldb-"
-          }
+          },
+          "description": "Map from old database logical names to new database names. Keys omit the client-added copymysqldb- prefix. Purely numeric keys are rejected because PHP coerces them to integer keys and their original spelling cannot be recovered. Literal key bytes and insertion order are preserved, including names that themselves begin copymysqldb-. Null or [] copies no databases."
         },
         "movemysqldb": {
           "php": "moveMysqlDatabases",
@@ -882,7 +883,7 @@
       ]
     },
     "whm1:massmodifyacct": {
-      "name": "massmodifyacct",
+      "name": "massModifyAccount",
       "method": "POST",
       "order": [
         "user"
@@ -901,14 +902,7 @@
           }
         },
         "MXCHECK-*": {
-          "php": "mxPriorities",
-          "collection": {
-            "kind": "map",
-            "item_type": "int",
-            "allow_scalar": false,
-            "empty": "allow",
-            "prefix": "MXCHECK-"
-          }
+          "omit": true
         },
         "PUSHBULLET_ACCESS_TOKEN": {
           "sensitive": true
@@ -919,7 +913,7 @@
           "kind": "doc",
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
-          "note": "The pinned MXCHECK-* parameter encodes caller-chosen database/domain names in the key. No current typed encoding represents that keyed mapping. Dropping this parameter would hide a documented operation feature."
+          "note": "Pinned MXCHECK-* claims integer priorities, but its payload example contains word values. Omit this newly adopted parameter through the established exclusion mechanism rather than publishing an ineffective typed control. Existing modifyAccount arguments remain unchanged."
         },
         {
           "kind": "doc",
@@ -935,27 +929,34 @@
           "date": "2026-10-31",
           "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
           "pointer": "/paths/~1massmodifyacct/get/parameters/26",
-          "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594; #/paths/~1massmodifyacct/get/parameters/26. MXCHECK- followed by the primary domain carries integer priority, for example MXCHECK-example.com=10."
+          "note": "Pinned MXCHECK-* priority parameter is deliberately excluded. The reviewer on 11.138.0.19 sent remote, secondary, local, auto, 10, 1 and 0 through massmodifyacct and modifyacct; all calls succeeded while the inspected MXCHECK-domain remained 0. This is scoped evidence of no observed effect, not a universal version claim or a replacement word-valued contract. https://github.com/hostingpal/whm-api-client/pull/77#pullrequestreview-5723287220"
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "One real and one missing account produced metadata.result=0 with per-user results [1,0], while the real account changed. user-1 numbering and populated extended payload passed. Reviewer report, not a local capture: https://github.com/hostingpal/whm-api-client/pull/77#pullrequestreview-5723287220"
         }
       ],
       "notes": [
         {
           "kind": "documented",
-          "text": "Uses form POST. Each call makes one attempt, with no automatic retry or rollback. Typed input support is source-backed and has no live mutation verification in this slice."
+          "text": "Uses form POST. Each call makes one attempt, with no automatic retry or rollback."
         },
         {
-          "kind": "documented",
-          "text": "All 51 case-sensitive source fields are retained. user accepts a scalar or nonempty sequential list with user-1/user-2 suffixes. mxPriorities adds literal MXCHECK- to domain suffix keys and preserves integer zero; null or [] sends no priorities."
+          "kind": "policy",
+          "text": "Retains 50 case-sensitive source fields. user accepts a scalar or nonempty sequential list with user-1/user-2 suffixes. MXCHECK-* is excluded after the reviewer observed successful calls with no effect; no replacement argument is inferred."
         },
         {
           "kind": "documented",
           "text": "Hosting-plan changes can overwrite custom account settings. Renaming database objects can move data and require application changes; restoration can fail, and successful renames can still warn about original database/grant deletion failures. Preserve root-only BACKUP and cross-reseller OWNER permissions and the Web Server role restriction on enabling CGI."
         },
         {
-          "kind": "documented",
-          "text": "Inspect every per-user payload result, reason, warnings and messages. Outer success does not establish every account succeeded. PUSHBULLET_ACCESS_TOKEN remains sensitive. Existing omission, unlimited and flag semantics are unchanged."
+          "kind": "observed",
+          "text": "Uses OutcomePolicy::Unchecked: metadata.result 0 can accompany partially applied changes. Inspect responseMeta() and every per-user payload result, reason, warnings and messages, including all-failed rows. Integer 0/1 envelope results and the required payload are still validated. A payload mismatch has outcomeConfirmed=false; do not retry or roll back automatically. PUSHBULLET_ACCESS_TOKEN remains sensitive."
         }
-      ]
+      ],
+      "outcome": "unchecked"
     },
     "whm1:modify_account_enhancement": {
       "name": "modifyAccountEnhancement",

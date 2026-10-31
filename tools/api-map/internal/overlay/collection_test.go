@@ -103,3 +103,23 @@ func TestNamedMapSchemaAndExplicitFacts(t *testing.T) {
 		}
 	}
 }
+
+func TestNamedMapOptionalPrefixRejectionPolicy(t *testing.T) {
+	for _, tc := range []struct {
+		descriptor string
+		valid      bool
+	}{
+		{`{"kind":"map","item_type":"string","allow_scalar":false,"empty":"allow","prefix":"x_","reject_prefixed_keys":true}`, true},
+		{`{"kind":"map","item_type":"string","allow_scalar":false,"empty":"allow","prefix":"x_","reject_prefixed_keys":false}`, false},
+		{`{"kind":"map","item_type":"string","allow_scalar":false,"empty":"allow","prefix":"x_","reject_prefixed_keys":null}`, false},
+		{`{"kind":"map","item_type":"string","allow_scalar":false,"empty":"allow","prefix":"x_","reject_prefixed_keys":"true"}`, false},
+		{`{"kind":"map","item_type":"string","allow_scalar":false,"empty":"allow","prefix":"","reject_prefixed_keys":true}`, false},
+		{`{"kind":"repeat","item_type":"string","allow_scalar":false,"empty":"reject","reject_prefixed_keys":true}`, false},
+		{`{"kind":"indexed","item_type":"string","allow_scalar":false,"empty":"reject","prefix":"x","separator":"-","start":1,"reject_prefixed_keys":true}`, false},
+	} {
+		_, err := Load(writeOverlay(t, "listed", map[string]string{"whm/Accounts.json": collectionContent(tc.descriptor)}))
+		if (err == nil) != tc.valid {
+			t.Errorf("prefix policy validation: %s: %v", tc.descriptor, err)
+		}
+	}
+}
