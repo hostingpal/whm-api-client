@@ -138,6 +138,10 @@ final class WhmMailManagementTest extends TestCase
         yield 'mail SNI always enabled' => ['enable_mail_sni', 'enableMailSni', 'POST',
             static fn (WhmClient $w): array => $w->mail()->enableMailSni('example.test'), 'domain=example.test',
             '{"failed_domains":{"unowned.test":"not owned"},"updated_domains":{}}'];
+        yield 'mail SNI numbered domains' => ['enable_mail_sni', 'enableMailSni', 'POST',
+            static fn (WhmClient $w): array => $w->mail()->enableMailSni(['a.example.test', 'b.example.test']),
+            'domain=a.example.test&domain-1=b.example.test',
+            '{"failed_domains":{"b.example.test":"not owned"},"updated_domains":{}}'];
         yield 'ensure DKIM keys may replace keys' => ['ensure_dkim_keys_exist', 'ensureDkimKeysExist', 'POST',
             static fn (WhmClient $w): array => $w->mail()->ensureDkimKeysExist(['a.example.test', 'b.example.test']),
             'domain=a.example.test&domain=b.example.test',
@@ -317,6 +321,11 @@ final class WhmMailManagementTest extends TestCase
             '{"payload":[{"domain":"example.test","error":"","expected":"v=spf1 -all",'
                 . '"ip_address":"2001:db8::1","ip_version":6,"records":[{"current":"v=spf1 -all",'
                 . '"reason":"synthetic","state":"FAIL"}],"state":"VALID"}]}'];
+        yield 'SPF validation repeated domains' => ['validate_current_spfs', 'validateCurrentSpfs', 'GET',
+            static fn (WhmClient $w): array => $w->mail()->validateCurrentSpfs(['a.example.test', 'b.example.test']),
+            'domain=a.example.test&domain=b.example.test',
+            '{"payload":[{"domain":"a.example.test","records":[],"state":"MISSING"},'
+                . '{"domain":"b.example.test","error":"synthetic lookup failure","state":"ERROR"}]}'];
         yield 'private Exim syntax text uses POST' => ['validate_exim_configuration_syntax',
             'validateEximConfigurationSyntax', 'POST',
             static fn (WhmClient $w): array => $w->mail()->validateEximConfigurationSyntax("begin acl\nA&B=+%", 'acl'),
@@ -594,6 +603,8 @@ final class WhmMailManagementTest extends TestCase
             yield 'numbered domains ' . $i => ['fetchDkimPrivateKeys', [$bad]];
             yield 'numbered keys ' . $i => ['installDkimPrivateKeys', ['example.test', $bad]];
             yield 'numbered MX hosts ' . $i => ['setManualMxRedirects', ['example.test', $bad]];
+            yield 'numbered SNI domains ' . $i => ['enableMailSni', [$bad]];
+            yield 'repeated SPF domains ' . $i => ['validateCurrentSpfs', [$bad]];
         }
     }
 

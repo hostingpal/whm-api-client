@@ -1281,6 +1281,55 @@ repeat the catalog merely to make it pass. Separate reviewer login-history reads
 and source-backed write-result corrections do not expand this eight-GET capture;
 all fifteen server-wide/lockout writes remain unobserved.
 
+## WHM reseller inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-resellers.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-resellers.json
+```
+
+The fixed six GET requests read WHM version, account counts, public contact data,
+reseller IPs, ACL lists and reseller names. Optional user arguments are omitted;
+this does not establish an authenticated-user default. The reviewed root
+`getresellerips` call fails because its source requires an actual user value,
+while a named non-reseller also fails. Preserve this historical recipe and failed
+artifact; do not substitute a guessed selector or rerun merely for green.
+The existing exact request guard,
+opt-in, committed-input checks, verified TLS and structural capture remain active.
+No reseller is selected by a guessed identifier and no account, privilege, limit,
+contact, IP or nameserver is changed. Returned URLs are not fetched. Keep remaining
+variants and lifecycle verification under `8x0.2.36`.
+
+The corrected reseller capture at `e8751c3` passes five of six API/payload/probe
+checks with zero discrepancies. `getresellerips` still fails at the API; the
+separate reviewer report attributes it to the omitted user. Strict status remains
+failed and unwaived. The observed account limit
+empty string is preserved without inferred semantics. ACL/reseller inventories
+are empty. No settings changed; historical evidence and follow-up `8x0.2.36` remain.
+
+## WHM IP address inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-ip-addresses.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-ip-addresses.json
+```
+
+Five fixed GETs read version, the default shared IP, IPv6 ranges, IPv4 addresses
+and IPv6 addresses. Existing exact request guards, opt-in, committed-input checks,
+verified TLS and structural evidence capture apply. No address/range is guessed;
+no NAT check, address change, interface shutdown, account move or mapping update
+runs. The evidence cannot establish routing, reachability or application delivery.
+Keep remaining live variants under `8x0.2.37`.
+
+The corrected WHM IP-address capture at `fde160d` on `11.138.0.19` passes all five
+GET observations and strict assessment with zero discrepancies. IPv6 range
+`enabled` accepts exact quoted flags; `mostrecent` and `note` accept null only
+where observed. IPv4/IPv6/range rows are populated; range-user lists are empty.
+No network or address/range change ran. The original failed capture is immutable
+and follow-up `8x0.2.37` retains all remaining live coverage.
+
 ## Expanded WHM mail inventory
 
 Run `WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs php tools/live-verify/whm-mail-management.php --output=docs/api/evidence/YYYY-MM-DD-whm-mail-management.json`.

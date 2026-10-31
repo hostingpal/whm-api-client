@@ -443,7 +443,7 @@ final class MailSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'domains' => ['name' => 'domain', 'encoding' => 'numbered'],
         ],
         'returns' => [
             'type' => 'object',
@@ -1310,7 +1310,7 @@ final class MailSpec
         'method' => 'GET',
         'outcome' => 'flag',
         'params' => [
-            'domain' => ['name' => 'domain', 'encoding' => 'scalar'],
+            'domains' => ['name' => 'domain', 'encoding' => 'repeat'],
         ],
         'returns' => [
             'type' => 'object',

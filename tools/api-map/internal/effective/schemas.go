@@ -408,6 +408,23 @@ func (s schemas) envelopeData(op model.Operation, sourceID string, envelope map[
 	return payloadInfo{issue: "the 200 envelope documents neither properties nor alternatives"}
 }
 
+// presenceOnlyInteger identifies only the concrete source schema supported by
+// the reviewed presence-input correction. It does not infer input behavior.
+func (s schemas) presenceOnlyInteger(sourceID string, node any) bool {
+	obj, _, _, ok := s.follow(sourceID, node)
+	if !ok || obj["type"] != "integer" || isNullable(obj) {
+		return false
+	}
+	for _, key := range []string{"allOf", "anyOf", "oneOf", "discriminator"} {
+		if _, present := obj[key]; present {
+			return false
+		}
+	}
+	// enumDoc preserves quoted strings, duplicates, null and other literals
+	// distinctly, so only the exact singleton integer literal matches.
+	return s.enumDoc(sourceID, node) == "1"
+}
+
 // enumDoc renders a schema's enum as a PHPStan literal union, or "" when absent.
 func (s schemas) enumDoc(sourceID string, node any) string {
 	obj, _, _, ok := s.follow(sourceID, node)

@@ -1041,6 +1041,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /enable_mail_sni x-readonly=false; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 11.48. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned domain parameter explicitly says that multiple domains use additional numbered parameters, for example domain-1 and domain-2. The existing numbered encoder emits domain then domain-1/domain-2 and preserves the documented scalar form. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
       ],
       "notes": [
@@ -1051,11 +1057,21 @@
         {
           "kind": "documented",
           "text": "Mail SNI is always enabled. This call makes no changes and succeeds with a warning; updated_domains is always empty and failed_domains reports domains not owned by the caller. Disabling Mail SNI always fails."
+        },
+        {
+          "kind": "documented",
+          "text": "A scalar sends the documented domain field. A sequential nonempty list sends domain, domain-1, domain-2 as explicitly documented additional numbered parameters. Scalar compatibility is retained. Mail SNI remains always enabled; this operation makes no changes and returns its documented warning semantics."
         }
       ],
       "order": [
         "domain"
-      ]
+      ],
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "numbered"
+        }
+      }
     },
     "whm1:ensure_dkim_keys_exist": {
       "name": "ensureDkimKeysExist",
@@ -2324,6 +2340,12 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "Pinned /validate_current_spfs x-readonly=true; mutations use form POST and reads use GET, except sensitive raw Exim configuration validation text uses POST under the existing private-input policy. Available from cPanel & WHM 78. No new live compatibility is claimed. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "The pinned domain multiple-alternative example is domain=example.com domain=example2.com domain=example3.com. This explicitly establishes repeated same-name domain fields for validation. The separate install_spf_records paired record serialization remains unresolved and is unchanged. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594."
         }
       ],
       "notes": [
@@ -2333,12 +2355,18 @@
         },
         {
           "kind": "documented",
-          "text": "Validates the selected domain SPF record. Preserve aggregate domain state, per-record state/reason, IPv4/IPv6 address and integer ip_version separately. No additional multi-domain encoding is inferred because this pinned parameter does not document one."
+          "text": "A scalar sends one domain field. A sequential nonempty list repeats domain wire fields exactly as the pinned multiple-alternative example. No numbered starting-index spelling is inferred. Aggregate domain state, per-record state/reason, IPv4/IPv6 address and integer ip_version remain distinct. This GET validates SPF records and does not install or replace records."
         }
       ],
       "order": [
         "domain"
-      ]
+      ],
+      "params": {
+        "domain": {
+          "php": "domains",
+          "encoding": "repeat"
+        }
+      }
     },
     "whm1:validate_exim_configuration_syntax": {
       "name": "validateEximConfigurationSyntax",

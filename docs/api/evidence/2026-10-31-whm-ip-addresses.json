@@ -1,0 +1,436 @@
+{
+    "schema_version": 1,
+    "read_only_section": {
+        "recipe": "whm-ip-addresses-v1",
+        "status": "failed",
+        "probes": [
+            {
+                "operation": "whm1:version",
+                "variant": "whm1:version#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:53:13Z",
+                "revision": "adb1dfdca8c5308315ef1cad23d902675798d579",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "1dda092b79c26803903cb1fc8036bc9a0ff243b3",
+                "overlay_sha256": "9a431c813c189497001ea34c91c7a55f1a4dc1c2bc3cbeb9ad5bd467fec55b5b",
+                "effective_contract_sha256": "a3b55069b379516f20fcf82f959226d68b68ac515a7e55c0bde8842d39effd60",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.version": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.version": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_shared_ip",
+                "variant": "whm1:get_shared_ip#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:53:14Z",
+                "revision": "adb1dfdca8c5308315ef1cad23d902675798d579",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "1dda092b79c26803903cb1fc8036bc9a0ff243b3",
+                "overlay_sha256": "9a431c813c189497001ea34c91c7a55f1a4dc1c2bc3cbeb9ad5bd467fec55b5b",
+                "effective_contract_sha256": "cb5ef62f12dd8d636037c43f076d4f28297935647711d2901e5b7a0e316c1f27",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.ip": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.ip": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:ipv6_range_list",
+                "variant": "whm1:ipv6_range_list#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:53:14Z",
+                "revision": "adb1dfdca8c5308315ef1cad23d902675798d579",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "1dda092b79c26803903cb1fc8036bc9a0ff243b3",
+                "overlay_sha256": "9a431c813c189497001ea34c91c7a55f1a4dc1c2bc3cbeb9ad5bd467fec55b5b",
+                "effective_contract_sha256": "e6bbf362ff1aa7673d4dd040cb9c53fd5148108f0b11079ca7e5fc24c33baf89",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "failed",
+                "probe_outcome": "failed",
+                "failure_kind": "payload_mismatch",
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.range": [
+                        "list"
+                    ],
+                    "$.data.range[]": [
+                        "object"
+                    ],
+                    "$.data.range[].CIDR": [
+                        "string"
+                    ],
+                    "$.data.range[].enabled": [
+                        "numeric-string"
+                    ],
+                    "$.data.range[].first": [
+                        "string"
+                    ],
+                    "$.data.range[].last": [
+                        "string"
+                    ],
+                    "$.data.range[].mostrecent": [
+                        "null"
+                    ],
+                    "$.data.range[].name": [
+                        "string"
+                    ],
+                    "$.data.range[].note": [
+                        "null"
+                    ],
+                    "$.data.range[].owner": [
+                        "string"
+                    ],
+                    "$.data.range[].range_users": [
+                        "empty-list"
+                    ],
+                    "$.data.range[].reclaimed": [
+                        "missing"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.range": [
+                        "list"
+                    ],
+                    "$.range[]": [
+                        "object"
+                    ],
+                    "$.range[].CIDR": [
+                        "string"
+                    ],
+                    "$.range[].enabled": [
+                        "numeric-string"
+                    ],
+                    "$.range[].first": [
+                        "string"
+                    ],
+                    "$.range[].last": [
+                        "string"
+                    ],
+                    "$.range[].mostrecent": [
+                        "null"
+                    ],
+                    "$.range[].name": [
+                        "string"
+                    ],
+                    "$.range[].note": [
+                        "null"
+                    ],
+                    "$.range[].owner": [
+                        "string"
+                    ],
+                    "$.range[].range_users": [
+                        "empty-list"
+                    ],
+                    "$.range[].reclaimed": [
+                        "missing"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$.range[].enabled",
+                        "kind": "type_mismatch"
+                    },
+                    {
+                        "path": "$.range[].mostrecent",
+                        "kind": "type_mismatch"
+                    },
+                    {
+                        "path": "$.range[].note",
+                        "kind": "type_mismatch"
+                    }
+                ]
+            },
+            {
+                "operation": "whm1:listips",
+                "variant": "whm1:listips#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:53:14Z",
+                "revision": "adb1dfdca8c5308315ef1cad23d902675798d579",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "1dda092b79c26803903cb1fc8036bc9a0ff243b3",
+                "overlay_sha256": "9a431c813c189497001ea34c91c7a55f1a4dc1c2bc3cbeb9ad5bd467fec55b5b",
+                "effective_contract_sha256": "7271950c7a42c875fa3a38103b89ef090792de83775406e317ab7e2c48ffebfc",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.ip": [
+                        "list"
+                    ],
+                    "$.data.ip[]": [
+                        "object"
+                    ],
+                    "$.data.ip[].active": [
+                        "int"
+                    ],
+                    "$.data.ip[].dedicated": [
+                        "int"
+                    ],
+                    "$.data.ip[].if": [
+                        "string"
+                    ],
+                    "$.data.ip[].ip": [
+                        "string"
+                    ],
+                    "$.data.ip[].mainaddr": [
+                        "int"
+                    ],
+                    "$.data.ip[].netmask": [
+                        "string"
+                    ],
+                    "$.data.ip[].network": [
+                        "string"
+                    ],
+                    "$.data.ip[].public_ip": [
+                        "string"
+                    ],
+                    "$.data.ip[].removable": [
+                        "int"
+                    ],
+                    "$.data.ip[].used": [
+                        "int"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.ip": [
+                        "list"
+                    ],
+                    "$.ip[]": [
+                        "object"
+                    ],
+                    "$.ip[].active": [
+                        "int"
+                    ],
+                    "$.ip[].dedicated": [
+                        "int"
+                    ],
+                    "$.ip[].if": [
+                        "string"
+                    ],
+                    "$.ip[].ip": [
+                        "string"
+                    ],
+                    "$.ip[].mainaddr": [
+                        "int"
+                    ],
+                    "$.ip[].netmask": [
+                        "string"
+                    ],
+                    "$.ip[].network": [
+                        "string"
+                    ],
+                    "$.ip[].public_ip": [
+                        "string"
+                    ],
+                    "$.ip[].removable": [
+                        "int"
+                    ],
+                    "$.ip[].used": [
+                        "int"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:listipv6s",
+                "variant": "whm1:listipv6s#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T01:53:15Z",
+                "revision": "adb1dfdca8c5308315ef1cad23d902675798d579",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "1dda092b79c26803903cb1fc8036bc9a0ff243b3",
+                "overlay_sha256": "9a431c813c189497001ea34c91c7a55f1a4dc1c2bc3cbeb9ad5bd467fec55b5b",
+                "effective_contract_sha256": "8850a2c763828c7bf4744b4fac9fa4ff1aacb9d9783ca31877a73a9fa3a8226b",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.ip": [
+                        "list"
+                    ],
+                    "$.data.ip[]": [
+                        "object"
+                    ],
+                    "$.data.ip[].ip": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.ip": [
+                        "list"
+                    ],
+                    "$.ip[]": [
+                        "object"
+                    ],
+                    "$.ip[].ip": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            }
+        ]
+    }
+}

@@ -1079,19 +1079,24 @@ final readonly class Mail
      * Documented: Mail SNI is always enabled. This call makes no changes and succeeds with a warning; updated_domains
      * is always empty and failed_domains reports domains not owned by the caller. Disabling Mail SNI always fails.
      *
+     * Documented: A scalar sends the documented domain field. A sequential nonempty list sends domain, domain-1,
+     * domain-2 as explicitly documented additional numbered parameters. Scalar compatibility is retained. Mail SNI
+     * remains always enabled; this operation makes no changes and returns its documented warning semantics.
+     *
      * API-map identity: whm1:enable_mail_sni#GET (wire name enable_mail_sni; Mail Server Settings).
      *
-     * @param string $domain The account's domain.
+     * @param string|list<string> $domains The account's domain.
      * @return EnableMailSniResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
+     * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-server-settings/ssl-enable_mail_sni
      */
-    public function enableMailSni(string $domain): array
+    public function enableMailSni(string|array $domains): array
     {
         /** @var EnableMailSniResult $result Validated against MailSpec::ENABLE_MAIL_SNI. */
-        $result = ($this->run)(MailSpec::ENABLE_MAIL_SNI, ['domain' => $domain]);
+        $result = ($this->run)(MailSpec::ENABLE_MAIL_SNI, ['domains' => $domains]);
 
         return $result;
     }
@@ -2441,23 +2446,25 @@ final readonly class Mail
      *
      * Documented: Available in cPanel & WHM 78 and later.
      *
-     * Documented: Validates the selected domain SPF record. Preserve aggregate domain state, per-record state/reason,
-     * IPv4/IPv6 address and integer ip_version separately. No additional multi-domain encoding is inferred because this
-     * pinned parameter does not document one.
+     * Documented: A scalar sends one domain field. A sequential nonempty list repeats domain wire fields exactly as the
+     * pinned multiple-alternative example. No numbered starting-index spelling is inferred. Aggregate domain state,
+     * per-record state/reason, IPv4/IPv6 address and integer ip_version remain distinct. This GET validates SPF records
+     * and does not install or replace records.
      *
      * API-map identity: whm1:validate_current_spfs#GET (wire name validate_current_spfs; Mail DNS Settings).
      *
-     * @param string $domain The domain for which to check the SPF records.
+     * @param string|list<string> $domains The domain for which to check the SPF records.
      * @return ValidateCurrentSpfsResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
+     * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/mail-dns-settings/emailauth-validate_current_spfs
      */
-    public function validateCurrentSpfs(string $domain): array
+    public function validateCurrentSpfs(string|array $domains): array
     {
         /** @var ValidateCurrentSpfsResult $result Validated against MailSpec::VALIDATE_CURRENT_SPFS. */
-        $result = ($this->run)(MailSpec::VALIDATE_CURRENT_SPFS, ['domain' => $domain]);
+        $result = ($this->run)(MailSpec::VALIDATE_CURRENT_SPFS, ['domains' => $domains]);
 
         return $result;
     }

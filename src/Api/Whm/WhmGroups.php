@@ -27,9 +27,13 @@ trait WhmGroups
 
     private ?HostingPlans $hostingPlansGroup = null;
 
+    private ?IpAddresses $ipAddressesGroup = null;
+
     private ?Mail $mailGroup = null;
 
     private ?ModSecurity $modSecurityGroup = null;
+
+    private ?Resellers $resellersGroup = null;
 
     private ?Server $serverGroup = null;
 
@@ -109,6 +113,16 @@ trait WhmGroups
     }
 
     /**
+     * Select the IP Address Management operations without making a request.
+     *
+     * WHM API 1 functions in the documented IP Address Management group.
+     */
+    public function ipAddresses(): IpAddresses
+    {
+        return $this->ipAddressesGroup ??= new IpAddresses($this->run(...));
+    }
+
+    /**
      * Select the Mail operations without making a request.
      *
      * Server-wide mail authentication and DNS settings, incoming blocks, account outgoing-mail controls, mailbox and
@@ -135,6 +149,19 @@ trait WhmGroups
     public function modSecurity(): ModSecurity
     {
         return $this->modSecurityGroup ??= new ModSecurity($this->run(...));
+    }
+
+    /**
+     * Select the Resellers operations without making a request.
+     *
+     * Reseller account inventory, privileges, ownership and limits. Both ACL write methods replace the whole privilege
+     * set; read current privileges before constructing the desired replacement. The cPanel 11.138.0.19 review exercised
+     * GET reads only. All fourteen write contracts remain supported by pinned documentation, reviewed upstream source
+     * and offline tests, without live mutation coverage.
+     */
+    public function resellers(): Resellers
+    {
+        return $this->resellersGroup ??= new Resellers($this->run(...));
     }
 
     /**
