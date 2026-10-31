@@ -2743,3 +2743,51 @@ observations, not inferred from ordinary owner fields here. Every earlier JSON
 artifact from both merged parents is byte-identical, including failed captures.
 The evidence commit changes only documentation/artifacts; executable code and
 effective contracts remain those of the captured revision.
+
+## Repository deployment and Passenger applications (2026-10-31)
+
+The repository, deployment and Passenger groups cover fourteen pinned functions.
+`versionControl()` manages cPanel Git repositories, `versionControlDeployment()`
+starts and inspects deployment tasks, and `passengerApps()` manages Application
+Manager registrations. Passenger inventory uses GET; the other thirteen methods
+use form POST, including repository and deployment retrievals whose source marks
+them `x-readonly=false`.
+
+Repository `sourceRepository` is caller-supplied JSON text, sent once as a form
+parameter. The client does not JSON-encode a PHP object or decode/re-encode the
+string. The existing scalar parameter boundary is `string|int|null`; supply the
+documented serialized JSON string, or omit it. Clone URLs may contain credentials,
+so this argument stays sensitive. Repository deletion permanently removes the
+repository directory contents. Updating a branch can pull remote changes;
+source URLs cannot be changed by the update method.
+
+Deployment requires a clean working tree, branches and a checked-in `.cpanel.yml`.
+Returned task IDs and event/log URLs do not prove completion and are not fetched
+by the client. Preserve the source's distinct create/retrieve deployment-ID
+representations. Creation's unspecified `last_update` schema includes a null-only
+enum but remains mixed under the current effective validator; no stronger field
+contract is invented.
+
+Passenger registration requires an existing application; unregistering it does
+not delete its files. Environment names and values use matching repeated fields;
+supply one value per name. Editing environment variables replaces the current
+set. Values remain sensitive, and opaque returned environment objects preserve
+their fields. Inventory `enabled` has an unspecified schema and remains mixed;
+mutation flags retain their declared types. `ensureDeps()` starts asynchronous
+installation. These methods manage Application Manager; the pinned source
+recommends WebApp for applications deployed with that newer feature.
+
+The bounded live catalog reads only WHM version and Passenger inventory on both
+routes. Repository/deployment POST reads, mutations and populated/secret-bearing
+variants remain tracked under `8x0.2.27`. No deployment, dependency installation,
+repository deletion or application configuration change is part of that catalog.
+
+All request encodings and response fields come from the original pinned source.
+`source_repository` declares parameter-level JSON content, not a JSON body;
+explicit scalar encoding preserves pre-serialized text. Passenger form/explode
+array declarations establish repeated environment fields. The edit value field
+omits `explode`, whose form-style default is true; registration states it
+explicitly. Existing transport, generator, validation and evidence policies are
+unchanged. Optional opaque mutation objects preserve null/object/missing
+distinctions; source-specific differences in nullable branches and deployment
+fields are covered by independent literal fixtures.

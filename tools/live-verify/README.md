@@ -906,3 +906,23 @@ at `06001e0` on `11.138.0.19` passes all seven GETs, both-route identity/zero ch
 and strict assessment with zero discrepancies. Both information responses contain
 the preserved empty-string size. No content was read or resource changed. Earlier
 captures remain unchanged; do not repeat the run just for handoff.
+
+## Application-management inventory
+
+The `application-deployment-v1` catalog contains three GET observations: WHM
+version and `PassengerApps/list_applications` through direct UAPI and the WHM
+bridge for `npr`. Repository/deployment retrieval methods use form POST because their source
+declares `x-readonly=false`, and are outside this GET catalog. No registration, enablement,
+deployment, repository removal or dependency installation runs.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/application-deployment.php \
+  --output=docs/api/evidence/application-deployment-new.json
+```
+
+Both tokens and committed inputs are required. Exact URI/method/body guards apply;
+structural evidence retains no environment values, application-name keys, paths,
+clone URLs, commit messages or log text. Returned URLs are never fetched. Strict
+assessment requires every original observation to pass without discrepancies or
+acknowledgments. Follow-up `8x0.2.27` owns all unobserved operations and variants.

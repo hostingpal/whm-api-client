@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "VersionControlDeployment",
+  "class": "VersionControlDeployment",
+  "accessor": "versionControlDeployment",
+  "operations": {
+    "uapi:VersionControlDeployment/create": {
+      "name": "create",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 74 and later for the selected cPanel account. The pinned source declares x-readonly=false and x-rollback=none, including retrieval functions; this method uses form POST. The client performs one request with no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Deploys changes from the selected cPanel-managed repository. Deployment requires a valid checked-in .cpanel.yml in the top-level directory, one or more local or remote branches, and a clean working tree. Pulling uses --ff-only: HEAD must already be up to date or capable of fast-forwarding. Failed prerequisites disable deployment functionality and hide deployment information."
+        },
+        {
+          "kind": "documented",
+          "text": "The response fields are optional. deploy_id is a string here, while retrieve returns integer deploy_id. timestamps.queued is a string and preserves its fractional timestamp spelling. Task IDs, log paths and SSE URLs are payload data; request success does not establish deployment completion and the client does not follow or poll them."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /VersionControlDeployment/create GET variant declares x-readonly=false and x-rollback=none. Preserve that source classification and use form POST. The complete pinned parameters and data schema are retained; parameter content application/json describes serialized parameter text, not a JSON request body."
+        }
+      ]
+    },
+    "uapi:VersionControlDeployment/delete": {
+      "name": "delete",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 74 and later for the selected cPanel account. The pinned source declares x-readonly=false and x-rollback=none, including retrieval functions; this method uses form POST. The client performs one request with no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Deletes the deployment task identified by the supplied deployId string. This operation is distinct from deleting a repository; it does not claim to undo a deployment. Empty strings and the string 0 are forwarded unchanged."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is a payload mismatch. Existing empty-object compatibility also accepts an empty JSON list, but not a nonempty list."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /VersionControlDeployment/delete GET variant declares x-readonly=false and x-rollback=none. Preserve that source classification and use form POST. The complete pinned parameters and data schema are retained; parameter content application/json describes serialized parameter text, not a JSON request body."
+        }
+      ]
+    },
+    "uapi:VersionControlDeployment/retrieve": {
+      "name": "retrieve",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 74 and later for the selected cPanel account. The pinned source declares x-readonly=false and x-rollback=none, including retrieval functions; this method uses form POST. The client performs one request with no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Retrieves deployment-task status for the selected account. The pinned source still declares x-readonly=false, so this retrieval retains form POST. Deployment requires a checked-in top-level .cpanel.yml, branches and a clean working tree; otherwise the server hides deployment information and disables deployment functionality."
+        },
+        {
+          "kind": "documented",
+          "text": "All row fields are optional. deploy_id is an integer here, unlike the string returned by create. repository_state.date is an integer Unix timestamp; active, canceled, failed, queued and succeeded timestamps are strings. A status timestamp is returned only when that state occurred according to the pinned source. Preserve omission and string precision; do not invent nullable fields."
+        },
+        {
+          "kind": "documented",
+          "text": "Task IDs, log paths and SSE URLs remain payload data. Request success means the status request succeeded, not that deployment succeeded; inspect task state separately. The client performs no polling, log reads or SSE connections."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /VersionControlDeployment/retrieve GET variant declares x-readonly=false and x-rollback=none. Preserve that source classification and use form POST. The complete pinned parameters and data schema are retained; parameter content application/json describes serialized parameter text, not a JSON request body."
+        }
+      ]
+    }
+  }
+}

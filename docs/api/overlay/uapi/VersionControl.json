@@ -1,0 +1,153 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "VersionControl",
+  "class": "VersionControl",
+  "accessor": "versionControl",
+  "operations": {
+    "uapi:VersionControl/create": {
+      "name": "create",
+      "method": "POST",
+      "order": [
+        "repository_root",
+        "name",
+        "type",
+        "source_repository"
+      ],
+      "params": {
+        "source_repository": {
+          "encoding": "scalar",
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 72 and later for the selected cPanel account. The pinned source declares x-readonly=false and x-rollback=none, including retrieval functions; this method uses form POST. The client performs one request with no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "repositoryRoot is first and is forwarded unchanged. The pinned prose describes the path as absolute and relative to the user home directory; the client does not infer a relative base or normalize it. A missing directory is created, while an existing repository is added to cPanel management. The only documented type is git."
+        },
+        {
+          "kind": "documented",
+          "text": "sourceRepository must be caller-supplied JSON text describing url and optional remote_name; the documented remote_name default is origin. Omitting sourceRepository creates an empty repository. The client sends that text once as the source_repository form field and does not JSON-encode it again. Existing scalar encoding has a string|int native boundary; integer acceptance does not establish valid JSON-object semantics. Clone URLs can contain credentials, so the argument is sensitive."
+        },
+        {
+          "kind": "documented",
+          "text": "The response fields are optional. branch may be null while cloning or when no local branches exist; available_branches is a non-null list here. The source last_update declares a null-only enum without a type; the current effective contract remains mixed and does not enforce that enum. Do not infer a commit object or successful clone completion from it."
+        },
+        {
+          "kind": "documented",
+          "text": "source_repository and tasks are returned only for cloning. Task IDs and SSE URLs are returned data, not evidence of completion; this call does not follow SSE URLs or poll tasks. Clone URL lists can be empty without Shell Access and can include a nonstandard SSH port."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /VersionControl/create GET variant declares x-readonly=false and x-rollback=none. Preserve that source classification and use form POST. The complete pinned parameters and data schema are retained; parameter content application/json describes serialized parameter text, not a JSON request body."
+        }
+      ]
+    },
+    "uapi:VersionControl/delete": {
+      "name": "delete",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 72 and later for the selected cPanel account. The pinned source declares x-readonly=false and x-rollback=none, including retrieval functions; this method uses form POST. The client performs one request with no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Permanently deletes the entire contents of the repository directory, not just its cPanel registration. The data cannot be recovered by this operation. Only repositories present in the cPanel repository cache can be deleted; verify the exact target before calling."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned nullable object has no field schema. Preserve opaque object fields and explicit null; an absent data member is a payload mismatch. Existing empty-object compatibility also accepts an empty JSON list, but not a nonempty list."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /VersionControl/delete GET variant declares x-readonly=false and x-rollback=none. Preserve that source classification and use form POST. The complete pinned parameters and data schema are retained; parameter content application/json describes serialized parameter text, not a JSON request body."
+        }
+      ]
+    },
+    "uapi:VersionControl/retrieve": {
+      "name": "retrieve",
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 72 and later for the selected cPanel account. The pinned source declares x-readonly=false and x-rollback=none, including retrieval functions; this method uses form POST. The client performs one request with no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "fields is caller-supplied comma-separated text, with * requesting all fields. Omitting it leaves the server default * in effect; an explicit empty string is forwarded. Repository path character and cPanel-controlled-directory restrictions follow the pinned description."
+        },
+        {
+          "kind": "documented",
+          "text": "All row fields are optional. available_branches may be null for a bare repository, and branch and last_update may be null. Empty lists, omitted fields and explicit null remain distinct. deployable is the integer 0 or 1; it describes repository deployability rather than task completion. last_deployment is optional but its pinned schema is not nullable here."
+        },
+        {
+          "kind": "documented",
+          "text": "Commit dates and deployment dates are integer Unix timestamps. Tasks may describe create or deploy actions and include optional SSE URLs. These identifiers and URLs are payload data; no polling, deployment or URL fetching is performed. The formal row schema governs nesting despite inconsistent nesting in the pinned examples."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /VersionControl/retrieve GET variant declares x-readonly=false and x-rollback=none. Preserve that source classification and use form POST. The complete pinned parameters and data schema are retained; parameter content application/json describes serialized parameter text, not a JSON request body."
+        }
+      ]
+    },
+    "uapi:VersionControl/update": {
+      "name": "update",
+      "method": "POST",
+      "order": [
+        "repository_root",
+        "branch",
+        "name",
+        "source_repository"
+      ],
+      "params": {
+        "source_repository": {
+          "encoding": "scalar",
+          "sensitive": true
+        }
+      },
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 72 and later for the selected cPanel account. The pinned source declares x-readonly=false and x-rollback=none, including retrieval functions; this method uses form POST. The client performs one request with no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "repositoryRoot identifies the repository and is first. The repository type, root and source URL cannot be changed. Supplying branch is required to pull remote changes; omitting branch does not pull. Other omitted parameters leave their current settings unchanged, and empty strings remain explicit inputs."
+        },
+        {
+          "kind": "documented",
+          "text": "sourceRepository must be caller-supplied JSON text. The source permits changing remote_name only and expressly forbids modifying url. The text is sent once in the source_repository form field without another JSON encoding step. Existing scalar encoding has a string|int native boundary; integer acceptance does not establish valid JSON-object semantics. Treat the argument as sensitive because source data can contain credentials."
+        },
+        {
+          "kind": "documented",
+          "text": "All response fields are optional. branch, last_update and last_deployment may be null. Unlike retrieve, available_branches is not nullable but its string items may be null in this operation. The task schema has no sse_url field here; do not infer it from create or retrieve. Task IDs and successful API status do not prove pull or deployment completion."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /VersionControl/update GET variant declares x-readonly=false and x-rollback=none. Preserve that source classification and use form POST. The complete pinned parameters and data schema are retained; parameter content application/json describes serialized parameter text, not a JSON request body."
+        }
+      ]
+    }
+  }
+}
