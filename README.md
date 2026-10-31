@@ -446,8 +446,11 @@ The subsequent 27-GET review capture passes every HTTP/API outcome and 25 payloa
 checks, including all three query depths, Analog sites and populated `suexec`
 rows. Its two StatsBar role mismatches establish the bounded-map correction;
 two additional masked unknown-field findings remain strict and unwaived. The
-artifact stays failed, and the subsequent role correction is offline-tested.
-See `docs/api/source-audit.md` for the exact revision, hash and coverage limits.
+artifact stays failed. After Claude verified the corrected code, a separate
+27-GET capture at `023d2dd` passed all HTTP/API/payload/probe checks on that
+contract. It remains strictly failed only for the same two masked unknown-field
+findings, which are unwaived. See `docs/api/source-audit.md` for both immutable
+artifacts, exact revisions, hashes and coverage limits.
 
 The Fileman group implements 13 of 14 pinned functions: directory autocomplete,
 file information, file content and directory listings use GET; content saving,

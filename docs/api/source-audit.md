@@ -2873,3 +2873,25 @@ depths while retaining each pinned `#GET` variant and the exact URI guard. The
 shared read-only assessor checks ordered labels and rejects missing, extra,
 duplicate or mixed labeled/unlabeled identities. Unlabeled existing catalogs keep
 their evidence format; no discrepancy acknowledgment policy changes.
+
+
+### First capture of the reviewed role-map contract
+
+[Claude's review of `023d2dd`](https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5720098872)
+verified the corrected code, including all 46 StatsBar display keys (28 populated,
+18 empty) through both routes, then requested one capture of the final contract.
+The immutable [reviewed-contract capture](evidence/2026-10-31-resource-statistics-reviewed-contract.json)
+at `023d2dd00f4aee6a6ab06523944c48586f6dc77f` on `11.138.0.19` contains 27 GETs:
+one WHM version read and thirteen reads through each UAPI route. All 27 HTTP,
+API, payload and probe checks pass, including the mixed StatsBar list and its
+role map. No extra request, mutation or log-content persistence occurred.
+
+Strict assessment remains failed solely for the two StatsBar `$[].*` unknown-field
+observations. Their full masked payload fingerprints match the preceding failed
+capture on their respective routes (direct string; bridge null/string); the prior
+role type mismatch is absent under the corrected contract. That structural match
+does not identify unknown names or counts. Both findings remain unmodeled and
+unwaived under `8x0.2.25`; the earlier artifact retains its original failures.
+Daily/report/analyzer collections remain empty. The capture covers the fixed
+catalog, not every possible argument or display combination. SHA-256:
+`9f3548970abc522615faa8822cac7aa8bd28a576cfd1047b4849be056ebba736`.
