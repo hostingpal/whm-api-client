@@ -1131,3 +1131,19 @@ Beads block to `CLAUDE.md` (do not run `bd setup claude` to re-add one).
 Preserve the generated Beads blocks and keep project-specific additions outside
 them. If `bd setup` regenerates a Beads block with profile-neutral wording,
 re-apply the team-maintainer wording; the Git Workflow section is authoritative.
+
+The corrected [WHM database capture](docs/api/evidence/2026-10-31-whm-databases-corrected.json) at
+`00ba48d402f0a60cd975ec38cf5166545a8c0286` on `11.138.0.19` passes all nine
+HTTP/API/payload/probe observations and strict assessment, with zero discrepancies.
+Optimization map records now establish the named `name`, `reason` and `value`
+string leaves. The selected prefix flag passes exact string-flag normalization;
+activation state retains both explicit null fields. Installable version rows are
+present, while database/user inventories are empty. Empty inventories do not
+establish their populated row schemas.
+
+The other eighteen methods remain offline-tested. No profile credentials were
+read and no upgrade, checker, profile activation, password, rename or configuration
+change ran. Successful inventory calls establish neither upgrade safety nor
+completion, remote trust or service enforcement. The initial failed artifact is
+unchanged; follow-up `8x0.2.33` owns the remaining variants. SHA-256:
+`b97b7f1bbf91bccc8d048026a1d99c38ecaa049730c165507fde5fe53b111ba1`.
