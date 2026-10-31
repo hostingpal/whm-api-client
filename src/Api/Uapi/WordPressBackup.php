@@ -121,11 +121,10 @@ final readonly class WordPressBackup
      * active; ok=1 means it was cancelled. Inspect this flag separately from API status. The source promises no
      * rollback of the backup work already performed.
      *
-     * Documented: The pinned site input is a string URL without a protocol prefix. Supply a string. The current
-     * generator loses the outer type across format-only anyOf alternatives, so the generated native input boundary
-     * remains string|int; this does not establish integer site semantics or validate domain/path formats. The
-     * input-narrowing limitation is tracked under whm-api-client-8x0.1.23. The optional response site field retains the
-     * known source string type and rejects null or non-string values.
+     * Documented: The pinned site input is a string URL without a protocol prefix. The generated native argument
+     * preserves the outer string type across format-only anyOf alternatives. The client does not validate domain or
+     * URL/path formats. The optional response site field retains the known source string type and rejects null or
+     * non-string values.
      *
      * Observed: On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged
      * UAPI because Cpanel/API/WordPressBackup.pm was missing. The installed cpanel-wpx-plugin did not provide a usable
@@ -281,11 +280,10 @@ final readonly class WordPressBackup
      * Documented: Starts a single WordPress site backup. backup_id and sse_url describe the background process; a
      * successful API response does not establish completed backup creation. The returned SSE path is not followed.
      *
-     * Documented: The pinned site input is a string URL without a protocol prefix. Supply a string. The current
-     * generator loses the outer type across format-only anyOf alternatives, so the generated native input boundary
-     * remains string|int; this does not establish integer site semantics or validate domain/path formats. The
-     * input-narrowing limitation is tracked under whm-api-client-8x0.1.23. The optional response site field retains the
-     * known source string type and rejects null or non-string values.
+     * Documented: The pinned site input is a string URL without a protocol prefix. The generated native argument
+     * preserves the outer string type across format-only anyOf alternatives. The client does not validate domain or
+     * URL/path formats. The optional response site field retains the known source string type and rejects null or
+     * non-string values.
      *
      * Observed: On the reviewed cPanel 11.138.0.19 installation, this method failed through both direct and bridged
      * UAPI because Cpanel/API/WordPressBackup.pm was missing. The installed cpanel-wpx-plugin did not provide a usable
