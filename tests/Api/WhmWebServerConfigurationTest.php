@@ -82,6 +82,31 @@ final class WhmWebServerConfigurationTest extends TestCase
                 'name' => 'New', 'packages' => 'ea-apache24'],
             'POST', 'filename=new.json&name=New&pkg=ea-apache24', '{"already_exists":1}', ['already_exists' => 1],
         ];
+        yield 'empty optional tags omit exactly that field' => [
+            'ea4_save_profile', 'ea4SaveProfile', ['filename' => 'new.json', 'name' => 'New',
+                'packages' => ['ea-apache24'], 'tags' => []],
+            'POST', 'filename=new.json&name=New&pkg=ea-apache24', '{}', [],
+        ];
+        yield 'future installed handler stays exact on write' => [
+            'php_set_handler', 'phpSetHandler', ['handler' => 'future+handler', 'version' => 'custom-php84'],
+            'POST', 'handler=future%2Bhandler&version=custom-php84', null, null,
+        ];
+        foreach (
+            [
+            ['php_ini_set_content', 'phpIniSetContent', ['content' => 'synthetic', 'version' => 'ea-php84'],
+                'content=synthetic&version=ea-php84'],
+            ['php_ini_set_directives', 'phpIniSetDirectives', ['directives' => 'a:1', 'version' => 'ea-php84'],
+                'directive=a%3A1&version=ea-php84'],
+            ['php_set_default_accounts_to_fpm', 'phpSetDefaultAccountsToFpm', ['defaultAccountsToFpm' => false],
+                'default_accounts_to_fpm=0'],
+            ] as [$operation, $method, $arguments, $body]
+        ) {
+            foreach ([null, 'null'] as $payload) {
+                yield $method . ($payload === null ? ' absent data' : ' null data') => [
+                    $operation, $method, $arguments, 'POST', $body, $payload, null,
+                ];
+            }
+        }
         yield 'EOL domain count' => [
             'eol_php_sites', 'eolPhpSites', [], 'GET', '', '{"eol_php_sites":0}', 0,
         ];
@@ -277,16 +302,16 @@ final class WhmWebServerConfigurationTest extends TestCase
             '{"versions":[{"is_suspended":"0"}]}'];
         yield 'vhost pool numeric string' => ['php_get_vhost_versions', 'phpGetVhostVersions', [],
             '{"versions":[{"php_fpm_pool_parms":{"pm_max_requests":"20"}}]}'];
-        yield 'vhost source object is not source list' => ['php_get_vhost_versions', 'phpGetVhostVersions', [],
-            '{"versions":[{"phpversion_source":{"system_default":1}}]}'];
+        yield 'vhost source object rejects quoted integer' => ['php_get_vhost_versions', 'phpGetVhostVersions', [],
+            '{"versions":[{"phpversion_source":{"system_default":"1"}}]}'];
         yield 'INI content null' => ['php_ini_get_content', 'phpIniGetContent', ['version' => 'ea-php84'],
             '{"content":null}'];
         yield 'directive current value integer' => ['php_ini_get_directives', 'phpIniGetDirectives',
             ['version' => 'ea-php84'], '{"directives":[{"value":1}]}'];
         yield 'content write scalar result' => ['php_ini_set_content', 'phpIniSetContent',
             ['content' => 'synthetic', 'version' => 'ea-php84'], 'true'];
-        yield 'directive write null result' => ['php_ini_set_directives', 'phpIniSetDirectives',
-            ['directives' => 'allow_url_fopen:0', 'version' => 'ea-php84'], 'null'];
+        yield 'directive write scalar result' => ['php_ini_set_directives', 'phpIniSetDirectives',
+            ['directives' => 'allow_url_fopen:0', 'version' => 'ea-php84'], 'true'];
         yield 'old FPM success quoted' => ['php_set_old_fpm_flag', 'phpSetOldFpmFlag', [], '{"success":"0"}'];
     }
 
@@ -319,6 +344,9 @@ final class WhmWebServerConfigurationTest extends TestCase
             }
             yield $name . ' scalar' => [$operation, $method, $arguments, '7'];
             yield $name . ' populated list' => [$operation, $method, $arguments, '[1]'];
+            if (in_array($operation, ['php_ini_set_content', 'php_ini_set_directives'], true)) {
+                continue;
+            }
             yield $name . ' explicit null' => [$operation, $method, $arguments, 'null'];
             yield $name . ' absent data' => [$operation, $method, $arguments, null];
         }
@@ -362,13 +390,15 @@ final class WhmWebServerConfigurationTest extends TestCase
     /** @return iterable<string, array{string, string, string, array<array-key, mixed>}> */
     public static function observedKnownFieldVariants(): iterable
     {
-        // Synthetic values and map keys exercise only structural types from the immutable 3d43621 capture.
-        yield 'only cpanel profile version accepts native numeric variants' => [
+        // Literal fixtures distinguish pinned fields, observed types, and source-family compatibility.
+        yield 'all profile version families preserve string and native numeric variants' => [
             'ea4_list_profiles', 'ea4ListProfiles',
             '{"cpanel":[{"version":"1.20"},{"version":2},{"version":1.25}],'
-                . '"custom":[{"version":"1.20"}],"synthetic-vendor":[{"version":"2.00"}]}',
+                . '"custom":[{"version":"1.20"},{"version":2},{"version":1.25}],'
+                . '"synthetic-vendor":[{"version":"2.00"},{"version":3},{"version":2.5}]}',
             ['cpanel' => [['version' => '1.20'], ['version' => 2], ['version' => 1.25]],
-                'custom' => [['version' => '1.20']], 'synthetic-vendor' => [['version' => '2.00']]],
+                'custom' => [['version' => '1.20'], ['version' => 2], ['version' => 1.25]],
+                'synthetic-vendor' => [['version' => '2.00'], ['version' => 3], ['version' => 2.5]]],
         ];
         yield 'top recommendation URL preserves both boolean values without invented meaning' => [
             'ea4_recommendations', 'ea4Recommendations',
@@ -378,13 +408,13 @@ final class WhmWebServerConfigurationTest extends TestCase
         ['url' => false], ['url' => true],
                 ['options' => [['url' => 'https://example.test/option']], 'url' => 'https://example.test/info']]],
         ];
-        yield 'vhost source map preserves synthetic keys and exact string values alongside pinned list' => [
+        yield 'vhost source object preserves independently pinned fields alongside pinned list' => [
             'php_get_vhost_versions', 'phpGetVhostVersions',
-            '{"versions":[{"phpversion_source":{"synthetic-source":"0","synthetic-version":"ea-php84"}},'
+            '{"versions":[{"phpversion_source":{"domain":"example.test","system_default":1}},'
                 . '{"phpversion_source":[{"domain":"example.test"},{"system_default":1}]},'
                 . '{"phpversion_source":{}},{}]}',
             [
-        ['phpversion_source' => ['synthetic-source' => '0', 'synthetic-version' => 'ea-php84']],
+        ['phpversion_source' => ['domain' => 'example.test', 'system_default' => 1]],
                 ['phpversion_source' => [['domain' => 'example.test'], ['system_default' => 1]]],
                 ['phpversion_source' => []], []],
         ];
@@ -413,12 +443,13 @@ final class WhmWebServerConfigurationTest extends TestCase
                 'ea4_list_profiles', 'ea4ListProfiles', '{"cpanel":[{"version":' . $value . '}]}',
             ];
         }
-        yield 'custom profile version remains string' => [
-            'ea4_list_profiles', 'ea4ListProfiles', '{"custom":[{"version":2}]}',
-        ];
-        yield 'dynamic vendor profile version remains string' => [
-            'ea4_list_profiles', 'ea4ListProfiles', '{"synthetic-vendor":[{"version":1.25}]}',
-        ];
+        foreach (['custom', 'synthetic-vendor'] as $family) {
+            foreach (['null', 'true', '[]', '{}'] as $value) {
+                yield $family . ' version rejects ' . $value => [
+                    'ea4_list_profiles', 'ea4ListProfiles', '{"' . $family . '":[{"version":' . $value . '}]}',
+                ];
+            }
+        }
         yield 'cpanel active flag remains integer' => [
             'ea4_list_profiles', 'ea4ListProfiles', '{"cpanel":[{"active":false}]}',
         ];
@@ -430,11 +461,25 @@ final class WhmWebServerConfigurationTest extends TestCase
         yield 'child recommendation URL remains string' => [
             'ea4_recommendations', 'ea4Recommendations', '{"synthetic-package":[{"options":[{"url":false}]}]}',
         ];
-        foreach (['null', 'true', '0', '1.5', '[]', '{}'] as $value) {
-            yield 'vhost source map child rejects ' . $value => [
+        foreach (['null', 'true', '"1"', '1.5', '[]', '{}'] as $value) {
+            yield 'vhost source object integer child rejects ' . $value => [
                 'php_get_vhost_versions', 'phpGetVhostVersions',
-                '{"versions":[{"phpversion_source":{"synthetic-source":' . $value . '}}]}',
+                '{"versions":[{"phpversion_source":{"system_default":' . $value . '}}]}',
             ];
+        }
+        foreach (
+            ['domain' => ['null', 'true', '1', '1.5', '[]', '{}'],
+            'system_default' => ['null', 'true', '"1"', '1.0', '[]', '{}']] as $field => $values
+        ) {
+            foreach ($values as $value) {
+                foreach ([false, true] as $list) {
+                    $source = '{"' . $field . '":' . $value . '}';
+                    yield 'strict source ' . $field . ' ' . $value . ($list ? ' list' : ' object') => [
+                        'php_get_vhost_versions', 'phpGetVhostVersions',
+                        '{"versions":[{"phpversion_source":' . ($list ? '[' . $source . ']' : $source) . '}]}',
+                    ];
+                }
+            }
         }
         yield 'vhost source scalar string was never pinned or observed' => [
             'php_get_vhost_versions', 'phpGetVhostVersions', '{"versions":[{"phpversion_source":"ea-php84"}]}',
@@ -465,6 +510,58 @@ final class WhmWebServerConfigurationTest extends TestCase
         } catch (PayloadMismatchException $exception) {
             self::assertTrue($exception->outcomeConfirmed);
             self::assertSame($exception->metadata, $client->whm()->responseMeta());
+        }
+        self::assertCount(1, $http->getRequests());
+    }
+
+    public function testDiscoveredHandlerStringCanBePassedToHandlerWrite(): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(
+            'php_get_handlers',
+            '{"version_handlers":[{"current_handler":"future+handler","available_handlers":["future+handler"],'
+            . '"version":"custom-php84"}]}',
+        )));
+        $handlers = $client->whm()->webServer()->phpGetHandlers();
+        $http->addResponse(new Response(200, [], self::envelope('php_set_handler', null)));
+        $client->whm()->webServer()->phpSetHandler(
+            handler: $handlers[0]['current_handler'] ?? 'fallback',
+            version: $handlers[0]['version'] ?? 'custom-php84',
+        );
+        $request = $http->getLastRequest();
+        self::assertInstanceOf(RequestInterface::class, $request);
+        self::assertSame('handler=future%2Bhandler&version=custom-php84', (string) $request->getBody());
+        self::assertCount(2, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, array<array-key, mixed>}> */
+    public static function invalidProfileLists(): iterable
+    {
+        yield 'required packages stay nonempty' => ['packages', []];
+        yield 'tags keyed' => ['tags', ['key' => 'value']];
+        yield 'tags nonstring' => ['tags', [1]];
+        yield 'tags nested' => ['tags', [['value']]];
+    }
+
+    /** @param array<array-key, mixed> $value */
+    #[DataProvider('invalidProfileLists')]
+    public function testInvalidListsClearMetadataAndDoNotDispatch(string $argument, array $value): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope(
+            'ea4_get_additional_pkg_prefixes',
+            '{"additional_pkg_prefixes":[]}',
+        )));
+        $client->whm()->webServer()->ea4GetAdditionalPkgPrefixes();
+        self::assertNotNull($client->whm()->responseMeta());
+        try {
+            $group = $client->whm()->webServer();
+            (new ReflectionMethod($group, 'ea4SaveProfile'))->invokeArgs($group, [$argument => $value] + [
+                'filename' => 'new.json', 'name' => 'New', 'packages' => ['ea-apache24'],
+            ]);
+            self::fail('Malformed list must be rejected.');
+        } catch (\InvalidArgumentException) {
+            self::assertNull($client->whm()->responseMeta());
         }
         self::assertCount(1, $http->getRequests());
     }

@@ -389,8 +389,8 @@ final class WhmAccountsTest extends TestCase
             'accounts', 'accountSummary', ['npr'], 'accountsummary', '{"acct":[{"suspendtime":false}]}',
         ];
         yield 'packages without pkg' => ['hostingPlans', 'listPackages', [], 'listpkgs', '{"pkgs":[]}'];
-        yield 'packages string team users' => [
-            'hostingPlans', 'listPackages', [], 'listpkgs', '{"pkg":[{"MAX_TEAM_USERS":"5"}]}',
+        yield 'packages noncanonical string team users' => [
+            'hostingPlans', 'listPackages', [], 'listpkgs', '{"pkg":[{"MAX_TEAM_USERS":"05"}]}',
         ];
         yield 'create data not an object' => ['accounts', 'createAccount', ['x'], 'createacct', '["ns1"]'];
         yield 'create integer nameserver' => ['accounts', 'createAccount', ['x'], 'createacct', '{"nameserver":1}'];

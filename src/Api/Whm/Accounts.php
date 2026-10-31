@@ -70,6 +70,60 @@ use SensitiveParameter;
  * @phpstan-type ChangePasswordResult array{
  *     app?: list<string>,
  * }
+ * @phpstan-type ConvertAddonFetchConversionDetailsResult array{
+ *     domain?: string,
+ *     job_end_time?: int,
+ *     job_id?: int,
+ *     job_start_time?: int,
+ *     job_status?: string,
+ *     source_acct?: string,
+ *     steps?: list<array{
+ *         end_time?: int,
+ *         start_time?: int,
+ *         status?: string,
+ *         step_name?: string,
+ *         warnings?: string,
+ *     }>,
+ *     target_acct?: string,
+ * }
+ * @phpstan-type ConvertAddonFetchDomainDetailsResult array{
+ *     docroot?: string,
+ *     has_dedicated_ip?: 0|1,
+ *     has_ssl_cert_installed?: 0|1,
+ *     ip?: string,
+ *     is_sni_supported?: 0|1,
+ *     number_of_autoresponders?: int,
+ *     number_of_domain_forwarders?: int,
+ *     number_of_email_accounts?: int,
+ *     number_of_email_forwarders?: int,
+ *     owner?: string,
+ * }
+ * @phpstan-type ConvertAddonGetConversionStatusResult array<array-key, array{
+ *     job_end_time?: int,
+ *     job_id?: string,
+ *     job_status?: string,
+ *     source_acct?: string,
+ * }>
+ * @phpstan-type ConvertAddonListAddonDomainsResult array<array-key, array{
+ *     docroot?: string,
+ *     domain_type?: string,
+ *     ip?: string,
+ *     ipv6?: string,
+ *     owner?: string,
+ *     reseller?: string,
+ *     subdomain?: string,
+ * }>
+ * @phpstan-type ConvertAddonListConversionsResult array{
+ *     conversions?: list<array{
+ *         domain?: string,
+ *         end_time?: int,
+ *         job_id?: int,
+ *         source_acct?: string,
+ *         start_time?: int,
+ *         status?: string,
+ *         target_acct?: string,
+ *     }>,
+ * }
  * @phpstan-type CreateAccountResult array{
  *     ip?: string,
  *     nameserver?: string,
@@ -85,6 +139,50 @@ use SensitiveParameter;
  *     nameserverentry3?: string|null,
  *     nameserverentry4?: string|null,
  *     package?: string,
+ * }
+ * @phpstan-type CreateAccountEnhancementResult array{
+ *     name?: string,
+ * }
+ * @phpstan-type DomainUserDataResult array{
+ *     userdata?: array{
+ *         customlog?: list<array{
+ *             format?: string,
+ *             target?: string,
+ *         }>,
+ *         documentroot?: string,
+ *         group?: string,
+ *         hascgi?: 0|1,
+ *         homedir?: string,
+ *         ip?: string,
+ *         owner?: string,
+ *         phpopenbasedirprotect?: 0|1,
+ *         port?: int,
+ *         scriptalias?: list<array{
+ *             path?: string,
+ *             url?: string,
+ *         }>,
+ *         serveradmin?: string,
+ *         serveralias?: string,
+ *         servername?: string,
+ *         usecanonicalname?: string,
+ *         user?: string,
+ *         userdirprotect?: string,
+ *     },
+ * }
+ * @phpstan-type ForcePasswordChangeResult array{
+ *     updated?: list<string>,
+ * }
+ * @phpstan-type GetCurrentUsersCountResult array{
+ *     users?: int,
+ * }
+ * @phpstan-type GetDiskUsageResult array{
+ *     accounts?: list<array{
+ *         blocks_limit?: int|null,
+ *         blocks_used?: int,
+ *         inodes_limit?: int|null,
+ *         inodes_used?: int,
+ *         user?: string,
+ *     }>,
  * }
  * @phpstan-type GetDomainInfoResult array{
  *     domains?: list<array{
@@ -102,6 +200,77 @@ use SensitiveParameter;
  *         port_ssl?: int,
  *         user?: string,
  *         user_owner?: string,
+ *     }>,
+ * }
+ * @phpstan-type GetDomainOwnerResult array{
+ *     user?: string|null,
+ * }
+ * @phpstan-type GetHomedirRootsResult array{
+ *     payload?: list<array{
+ *         path?: string,
+ *     }>,
+ * }
+ * @phpstan-type GetMaximumUsersResult array{
+ *     maximum_users?: int,
+ *     users?: int,
+ * }
+ * @phpstan-type GetPasswordStrengthResult array{
+ *     strength?: int,
+ * }
+ * @phpstan-type GetUpgradeOpportunitiesResult array{
+ *     upgrade_opportunities?: array<array-key, array{
+ *         bw_limit?: array{
+ *             last_month?: array{
+ *                 fraction?: int|float,
+ *                 near?: 0|1,
+ *                 reached?: 0|1,
+ *             },
+ *             messages?: list<string>,
+ *             this_month?: array{
+ *                 fraction?: int|float,
+ *                 near?: 0|1,
+ *                 reached?: 0|1,
+ *             },
+ *         },
+ *         disk_usage?: array{
+ *             messages?: list<string>,
+ *             relative_to_fixed_amount?: array{
+ *                 fraction?: int|float|null,
+ *                 near?: 0|1|null,
+ *                 reached?: 0|1|null,
+ *                 threshold_blocks?: int|null,
+ *             },
+ *             relative_to_quota?: array{
+ *                 fraction?: int|float|null,
+ *                 near?: 0|1|null,
+ *                 reached?: 0|1|null,
+ *                 threshold_blocks?: int|null,
+ *             },
+ *         },
+ *         messages?: list<string>,
+ *     }>,
+ * }
+ * @phpstan-type GetUsersLinksResult array<array-key, string>
+ * @phpstan-type HasDigestAuthResult array{
+ *     digestauth?: 0|1,
+ * }
+ * @phpstan-type HasMycnfForCpuserResult array{
+ *     has_mycnf_for_cpuser?: 0|1,
+ * }
+ * @phpstan-type LimitBandwidthResult array{
+ *     bwlimits?: list<array{
+ *         bwlimit?: int,
+ *         bwlimitenable?: 0|1,
+ *         domains?: list<string>,
+ *         human_bwlimit?: string,
+ *         human_bwused?: string,
+ *         unlimited?: 0|1,
+ *     }>,
+ * }
+ * @phpstan-type ListAccountEnhancementsResult array{
+ *     enhancements?: list<array{
+ *         id?: string,
+ *         name?: string,
  *     }>,
  * }
  * @phpstan-type ListAccountsResult list<array{
@@ -152,11 +321,123 @@ use SensitiveParameter;
  *     unix_startdate?: int,
  *     user?: string,
  * }>
+ * @phpstan-type ListLockedAccountsResult array{
+ *     account?: list<string>,
+ * }
+ * @phpstan-type ListSuspendedResult array{
+ *     account?: list<array{
+ *         is_locked?: 0|1,
+ *         owner?: string,
+ *         reason?: string,
+ *         time?: string,
+ *         unixtime?: int,
+ *         user?: string,
+ *     }>,
+ * }
+ * @phpstan-type ListUsersResult array{
+ *     users?: list<string>,
+ * }
  * @phpstan-type ModifyAccountResult array{
  *     cpuser?: array<array-key, mixed>,
  *     domain?: string,
  *     setshell?: string,
  *     user?: string,
+ * }
+ * @phpstan-type ModifyAccountEnhancementResult array{
+ *     id?: string,
+ *     name?: string,
+ * }
+ * @phpstan-type MyPrivilegesResult array{
+ *     privileges?: list<array{
+ *         'acct-summary'?: 0|1,
+ *         'add-pkg'?: 0|1,
+ *         'add-pkg-ip'?: 0|1,
+ *         'add-pkg-shell'?: 0|1,
+ *         all?: 0|1,
+ *         'allow-addoncreate'?: 0|1,
+ *         'allow-emaillimits-pkgs'?: 0|1,
+ *         'allow-parkedcreate'?: 0|1,
+ *         'allow-shell'?: int,
+ *         'allow-unlimited-bw-pkgs'?: 0|1,
+ *         'allow-unlimited-disk-pkgs'?: 0|1,
+ *         'allow-unlimited-pkgs'?: 0|1,
+ *         'basic-system-info'?: 0|1,
+ *         'basic-whm-functions'?: 0|1,
+ *         clustering?: 0|1,
+ *         'cors-proxy-get'?: 0|1,
+ *         'cpanel-api'?: 0|1,
+ *         'cpanel-integration'?: 0|1,
+ *         'create-acct'?: 0|1,
+ *         'create-dns'?: 0|1,
+ *         'create-user-session'?: 0|1,
+ *         'demo-setup'?: 0|1,
+ *         'digest-auth'?: 0|1,
+ *         'edit-account'?: 0|1,
+ *         'edit-dns'?: 0|1,
+ *         'edit-mx'?: 0|1,
+ *         'edit-pkg'?: 0|1,
+ *         'file-restore'?: 0|1,
+ *         'generate-email-config'?: 0|1,
+ *         'kill-acct'?: 0|1,
+ *         'kill-dns'?: 0|1,
+ *         'limit-bandwidth'?: 0|1,
+ *         'list-accts'?: 0|1,
+ *         'list-pkgs'?: int,
+ *         'locale-edit'?: 0|1,
+ *         mailcheck?: 0|1,
+ *         'manage-api-tokens'?: 0|1,
+ *         'manage-dns-records'?: 0|1,
+ *         'manage-oidc'?: 0|1,
+ *         'manage-styles'?: 0|1,
+ *         'mysql-info'?: 0|1,
+ *         news?: 0|1,
+ *         'ns-config'?: 0|1,
+ *         'park-dns'?: 0|1,
+ *         passwd?: 0|1,
+ *         quota?: 0|1,
+ *         'rearrange-accts'?: 0|1,
+ *         resftp?: 0|1,
+ *         restart?: 0|1,
+ *         'show-bandwidth'?: 0|1,
+ *         ssl?: 0|1,
+ *         'ssl-buy'?: 0|1,
+ *         'ssl-gencrt'?: 0|1,
+ *         'ssl-info'?: 0|1,
+ *         stats?: 0|1,
+ *         status?: 0|1,
+ *         'suspend-acct'?: 0|1,
+ *         thirdparty?: 0|1,
+ *         'track-email'?: 0|1,
+ *         'upgrade-account'?: 0|1,
+ *         viewglobalpackages?: 0|1,
+ *         ...<array-key, mixed>
+ *     }>,
+ * }
+ * @phpstan-type QuotaEnabledResult array{
+ *     quota_enabled?: 0|1,
+ * }
+ * @phpstan-type SetPrimaryDomainDocrootResult array{
+ *     documentroot?: string,
+ * }
+ * @phpstan-type ShowBandwidthResult array{
+ *     acct?: list<array{
+ *         bwusage?: list<array{
+ *             deleted?: 0|1,
+ *             domain?: string,
+ *             usage?: int,
+ *         }>,
+ *         deleted?: 0|1,
+ *         limit?: int|'unlimited'|'N/A',
+ *         maindomain?: string,
+ *         owner?: string,
+ *         reseller?: 0|1,
+ *         totalbytes?: int,
+ *         user?: string,
+ *     }>,
+ *     month?: int,
+ *     reseller?: string,
+ *     totalused?: int,
+ *     year?: int,
  * }
  */
 final readonly class Accounts
@@ -212,6 +493,28 @@ final readonly class Accounts
     }
 
     /**
+     * Assign Account Enhancement.
+     *
+     * This function assigns an Account Enhancement to a cPanel account.
+     *
+     * Documented: Available from cPanel 11.98.
+     *
+     * Documented: Assigns the named enhancement immediately to the specified cPanel account.
+     *
+     * API-map identity: whm1:assign_account_enhancement#GET (wire name assign_account_enhancement; Account
+     * Enhancements).
+     *
+     * @param string $account The username of the account.
+     * @param string $name The name of the account enhancement.
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-enhancements/accountenhancements-assign_account_enhancement
+     */
+    public function assignAccountEnhancement(string $account, string $name): void
+    {
+        ($this->run)(AccountsSpec::ASSIGN_ACCOUNT_ENHANCEMENT, ['account' => $account, 'name' => $name]);
+    }
+
+    /**
      * Update user hosting plan.
      *
      * This function changes a cPanel account's hosting plan (package).
@@ -264,6 +567,162 @@ final readonly class Accounts
             'dbPassUpdate' => $dbPassUpdate,
             'digestauth' => $digestauth,
         ]);
+
+        return $result;
+    }
+
+    /**
+     * Return additional domain conversion details.
+     *
+     * This function returns the details of a conversion from an addon domain to an account. Use WHM API 1's
+     * `convert_addon_domain_to_account` to start a conversion.
+     *
+     * Documented: Available from cPanel 58.
+     *
+     * Documented: Requires the Web Server role. Returned job and step statuses are payload data; a successful API
+     * envelope does not establish conversion completion. No polling or retry is performed.
+     *
+     * API-map identity: whm1:convert_addon_fetch_conversion_details#GET (wire name
+     * convert_addon_fetch_conversion_details; Domain Information).
+     *
+     * @param int $jobId The conversion's job identification number.
+     * @return ConvertAddonFetchConversionDetailsResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/convertaddon-convert_addon_fetch_conversion_details
+     */
+    public function convertAddonFetchConversionDetails(int $jobId): array
+    {
+        /**
+         * @var ConvertAddonFetchConversionDetailsResult $result
+         * Validated against AccountsSpec::CONVERT_ADDON_FETCH_CONVERSION_DETAILS.
+         */
+        $result = ($this->run)(AccountsSpec::CONVERT_ADDON_FETCH_CONVERSION_DETAILS, ['jobId' => $jobId]);
+
+        return $result;
+    }
+
+    /**
+     * Return additional domain data.
+     *
+     * This function retrieves domain data for an addon domain.
+     *
+     * Documented: Available from cPanel 56.
+     *
+     * Documented: Requires the Web Server role. This reads addon-domain data without starting a conversion.
+     *
+     * API-map identity: whm1:convert_addon_fetch_domain_details#GET (wire name convert_addon_fetch_domain_details;
+     * Domain Information).
+     *
+     * @param string $domain The addon domain for which to retrieve details.
+     * @return ConvertAddonFetchDomainDetailsResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/convertaddon-convert_addon_fetch_domain_details
+     */
+    public function convertAddonFetchDomainDetails(string $domain): array
+    {
+        /**
+         * @var ConvertAddonFetchDomainDetailsResult $result
+         * Validated against AccountsSpec::CONVERT_ADDON_FETCH_DOMAIN_DETAILS.
+         */
+        $result = ($this->run)(AccountsSpec::CONVERT_ADDON_FETCH_DOMAIN_DETAILS, ['domain' => $domain]);
+
+        return $result;
+    }
+
+    /**
+     * Return conversion status for additional domain.
+     *
+     * This function returns the status of the convert addon domain to account process for specified conversion jobs.
+     * For data about the conversion status of all jobs, use the WHM API 1 `convert_addon_fetch_conversion_details`
+     * function.
+     *
+     * Documented: Available from cPanel 58.
+     *
+     * Documented: Requires the Web Server role. This method accepts one native integer job_id. The pinned multiple-job
+     * prose starts job_id-0 while its example starts job_id-1; the contradictory indexed family remains excluded from
+     * this signature under whm-api-client-8x0.1.21. Job statuses are separate from API success and are not polled.
+     *
+     * API-map identity: whm1:convert_addon_get_conversion_status#GET (wire name convert_addon_get_conversion_status;
+     * Domain Information).
+     *
+     * @param int $jobId The conversion's job identification number.
+     * @return ConvertAddonGetConversionStatusResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/convertaddon-convert_addon_get_conversion_status
+     */
+    public function convertAddonGetConversionStatus(int $jobId): array
+    {
+        /**
+         * @var ConvertAddonGetConversionStatusResult $result
+         * Validated against AccountsSpec::CONVERT_ADDON_GET_CONVERSION_STATUS.
+         */
+        $result = ($this->run)(AccountsSpec::CONVERT_ADDON_GET_CONVERSION_STATUS, ['jobId' => $jobId]);
+
+        return $result;
+    }
+
+    /**
+     * Return current user's additional domains.
+     *
+     * This function returns a list of addon domains that belong to the current user.
+     *
+     * Documented: Available from cPanel 56.
+     *
+     * Documented: Requires the Web Server role. Domain names remain dynamic map keys; the returned records are
+     * inventory, not proof of a successful conversion.
+     *
+     * API-map identity: whm1:convert_addon_list_addon_domains#GET (wire name convert_addon_list_addon_domains; Domain
+     * Information).
+     *
+     * @return ConvertAddonListAddonDomainsResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/convertaddon-convert_addon_list_addon_domains
+     */
+    public function convertAddonListAddonDomains(): array
+    {
+        /**
+         * @var ConvertAddonListAddonDomainsResult $result
+         * Validated against AccountsSpec::CONVERT_ADDON_LIST_ADDON_DOMAINS.
+         */
+        $result = ($this->run)(AccountsSpec::CONVERT_ADDON_LIST_ADDON_DOMAINS, []);
+
+        return $result;
+    }
+
+    /**
+     * Return additional domains conversion queue.
+     *
+     * This function returns a list of addon domains undergoing conversion into cPanel accounts.
+     *
+     * Documented: Available from cPanel 58.
+     *
+     * Documented: Requires the Web Server role. Conversion job statuses and timestamps remain payload data and do not
+     * trigger polling.
+     *
+     * API-map identity: whm1:convert_addon_list_conversions#GET (wire name convert_addon_list_conversions; Domain
+     * Information).
+     *
+     * @return ConvertAddonListConversionsResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/convertaddon-convert_addon_list_conversions
+     */
+    public function convertAddonListConversions(): array
+    {
+        /**
+         * @var ConvertAddonListConversionsResult $result
+         * Validated against AccountsSpec::CONVERT_ADDON_LIST_CONVERSIONS.
+         */
+        $result = ($this->run)(AccountsSpec::CONVERT_ADDON_LIST_CONVERSIONS, []);
 
         return $result;
     }
@@ -458,6 +917,201 @@ final readonly class Accounts
     }
 
     /**
+     * Create Account Enhancement.
+     *
+     * This function creates a new account enhancement.
+     *
+     * Documented: Available from cPanel 11.98.
+     *
+     * Documented: The ID must be an account-enhancement ID defined by a third-party plugin. listAccountEnhancements()
+     * lists valid IDs. This creates the enhancement immediately.
+     *
+     * API-map identity: whm1:create_account_enhancement#GET (wire name create_account_enhancement; Account
+     * Enhancements).
+     *
+     * @param string $id The identifier of the item you are targeting.
+     * @param string $name The name of the account enhancement.
+     * @return CreateAccountEnhancementResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-enhancements/accountenhancements-create_account_enhancement
+     */
+    public function createAccountEnhancement(string $id, string $name): array
+    {
+        /** @var CreateAccountEnhancementResult $result Validated against AccountsSpec::CREATE_ACCOUNT_ENHANCEMENT. */
+        $result = ($this->run)(AccountsSpec::CREATE_ACCOUNT_ENHANCEMENT, ['id' => $id, 'name' => $name]);
+
+        return $result;
+    }
+
+    /**
+     * Remove an Account Enhancement.
+     *
+     * This function removes an account enhancement.
+     *
+     * Documented: Available from cPanel 98.
+     *
+     * Documented: Deletes the named account enhancement immediately. The pinned success envelope has no data payload.
+     *
+     * API-map identity: whm1:delete_account_enhancement#GET (wire name delete_account_enhancement; Account
+     * Enhancements).
+     *
+     * @param string $name The name of the account enhancement.
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-enhancements/accountenhancements-delete_account_enhancement
+     */
+    public function deleteAccountEnhancement(string $name): void
+    {
+        ($this->run)(AccountsSpec::DELETE_ACCOUNT_ENHANCEMENT, ['name' => $name]);
+    }
+
+    /**
+     * Return domain user information.
+     *
+     * This function retrieves domain data.
+     *
+     * Documented: Available from cPanel 11.32.
+     *
+     * Documented: Returns Apache domain userdata. userdirprotect remains a string, including the exact empty string.
+     * The separately evidenced port and two flag conversions do not change other userdata fields.
+     *
+     * Observed: The independent 11.138.0.19 review observed a digit-string port and quoted hascgi/phpopenbasedirprotect
+     * flags. port normalizes canonical bounded integer strings; only exact quoted 0/1 flags are accepted for the two
+     * switches. phpversion remains outside the typed contract.
+     *
+     * API-map identity: whm1:domainuserdata#GET (wire name domainuserdata; Domain Information).
+     *
+     * @param string $domain The account's main domain.
+     * @return DomainUserDataResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/accounts-domainuserdata
+     */
+    public function domainUserData(string $domain): array
+    {
+        /** @var DomainUserDataResult $result Validated against AccountsSpec::DOMAINUSERDATA. */
+        $result = ($this->run)(AccountsSpec::DOMAINUSERDATA, ['domain' => $domain]);
+
+        return $result;
+    }
+
+    /**
+     * Update cPanel account disk quota.
+     *
+     * This function modifies a user's disk quota.
+     *
+     * Documented: Available from cPanel 11.
+     *
+     * Documented: Quota is in megabytes (MB); 0 and unlimited grant unlimited disk space. This changes the account
+     * quota immediately and has no documented data payload.
+     *
+     * API-map identity: whm1:editquota#GET (wire name editquota; Bandwidth and Disk Quotas).
+     *
+     * @param string $user The cPanel account username.
+     * @param string|int $quota The account's new quota.
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/bandwidth-and-disk-quotas/accounts-editquota
+     */
+    public function editQuota(string $user, string|int $quota): void
+    {
+        ($this->run)(AccountsSpec::EDITQUOTA, ['user' => $user, 'quota' => $quota]);
+    }
+
+    /**
+     * Enable forced password update.
+     *
+     * This function forces a user to change the account password after the next login attempt.
+     *
+     * Documented: Available from cPanel 11.32.
+     *
+     * Documented: The pinned users_json format=json example is a username-keyed object such as {"user1":1,"user2":1};
+     * pass already serialized object text, not a JSON list of usernames. Omitted stopOnFailure defaults to 0; the
+     * updated list identifies users forced to change their password on their next login.
+     *
+     * Policy: Client behavior: usersJson is form-encoded once as caller-supplied text; the client does not parse it,
+     * convert a PHP array to JSON or validate its object structure.
+     *
+     * API-map identity: whm1:forcepasswordchange#GET (wire name forcepasswordchange; Passwords).
+     *
+     * @param string $usersJson Already serialized JSON object mapping usernames to 1, for example
+     *     {"user1":1,"user2":1}. The pinned example is an object map, not a JSON list of usernames. The system forces
+     *     the named users to change their passwords at next login.
+     * @param bool|null $stopOnFailure Whether to halt the function if it experiences an error. Null omits it.
+     * @return ForcePasswordChangeResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/passwords/accounts-forcepasswordchange
+     */
+    public function forcePasswordChange(string $usersJson, ?bool $stopOnFailure = null): array
+    {
+        /** @var ForcePasswordChangeResult $result Validated against AccountsSpec::FORCEPASSWORDCHANGE. */
+        $result = ($this->run)(AccountsSpec::FORCEPASSWORDCHANGE, [
+            'usersJson' => $usersJson,
+            'stopOnFailure' => $stopOnFailure,
+        ]);
+
+        return $result;
+    }
+
+    /**
+     * Return cPanel accounts total number.
+     *
+     * This function returns the number of cPanel accounts on the server.
+     *
+     * Documented: Available from cPanel 78.
+     *
+     * Documented: Returns the current cPanel account count as an optional native integer field.
+     *
+     * API-map identity: whm1:get_current_users_count#GET (wire name get_current_users_count; Account Creation).
+     *
+     * @return GetCurrentUsersCountResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-creation/accounts-get_current_users_count
+     */
+    public function getCurrentUsersCount(): array
+    {
+        /** @var GetCurrentUsersCountResult $result Validated against AccountsSpec::GET_CURRENT_USERS_COUNT. */
+        $result = ($this->run)(AccountsSpec::GET_CURRENT_USERS_COUNT, []);
+
+        return $result;
+    }
+
+    /**
+     * Return all cPanel accounts disk usage.
+     *
+     * This function lists the disk usage status of the system's user accounts. This also lists information about file
+     * system object (inode) usage.
+     *
+     * Documented: Available from cPanel 80.
+     *
+     * Documented: blocks_limit and blocks_used are in kibibytes (KiB), while inodes_limit and inodes_used count
+     * filesystem objects. Explicit null limits mean unlimited; omission remains distinct. Omitted cacheMode defaults to
+     * on (fast, potentially inaccurate); off ignores the quota cache.
+     *
+     * API-map identity: whm1:get_disk_usage#GET (wire name get_disk_usage; Bandwidth and Disk Quotas).
+     *
+     * @param 'on'|'off'|null $cacheMode Each cPanel & WHM server maintains a cache of users’ disk quota usage. Null
+     *     omits it.
+     * @return GetDiskUsageResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/bandwidth-and-disk-quotas/diskusage-get_disk_usage
+     */
+    public function getDiskUsage(?string $cacheMode = null): array
+    {
+        /** @var GetDiskUsageResult $result Validated against AccountsSpec::GET_DISK_USAGE. */
+        $result = ($this->run)(AccountsSpec::GET_DISK_USAGE, ['cacheMode' => $cacheMode]);
+
+        return $result;
+    }
+
+    /**
      * Return all domains information.
      *
      * This function returns information about each domain on the server.
@@ -474,6 +1128,302 @@ final readonly class Accounts
     {
         /** @var GetDomainInfoResult $result Validated against AccountsSpec::GET_DOMAIN_INFO. */
         $result = ($this->run)(AccountsSpec::GET_DOMAIN_INFO, []);
+
+        return $result;
+    }
+
+    /**
+     * Return domain owner.
+     *
+     * This function lists the owner of a domain.
+     *
+     * Documented: Available from cPanel 78.
+     *
+     * Documented: An explicit null user means the caller does not own the account or the domain does not exist;
+     * omission remains distinct from null.
+     *
+     * API-map identity: whm1:getdomainowner#GET (wire name getdomainowner; Domain Information).
+     *
+     * @param string $domain A domain on the system that is owned by the user calling this function.
+     * @return GetDomainOwnerResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/domain-information/accounts-getdomainowner
+     */
+    public function getDomainOwner(string $domain): array
+    {
+        /** @var GetDomainOwnerResult $result Validated against AccountsSpec::GETDOMAINOWNER. */
+        $result = ($this->run)(AccountsSpec::GETDOMAINOWNER, ['domain' => $domain]);
+
+        return $result;
+    }
+
+    /**
+     * Return home directories list.
+     *
+     * This function returns all the directories where the system stores users' home directories. It returns them in
+     * descending order, based on the current amount of available free disk space for each directory. For example, the
+     * first directory the function lists has the most available free disk space.
+     *
+     * Documented: Available from cPanel 88.
+     *
+     * Documented: Home-directory parents are ordered by available free disk space, descending. This inventory does not
+     * change where new home directories are created.
+     *
+     * API-map identity: whm1:get_homedir_roots#GET (wire name get_homedir_roots; Account Management).
+     *
+     * @return GetHomedirRootsResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-get_homedir_roots
+     */
+    public function getHomedirRoots(): array
+    {
+        /** @var GetHomedirRootsResult $result Validated against AccountsSpec::GET_HOMEDIR_ROOTS. */
+        $result = ($this->run)(AccountsSpec::GET_HOMEDIR_ROOTS, []);
+
+        return $result;
+    }
+
+    /**
+     * Return maximum accounts for license.
+     *
+     * This function returns the maximum number of cPanel accounts that the server's license allows.
+     *
+     * Documented: Available from cPanel 78.
+     *
+     * Documented: The pinned response describes optional users as a native integer account limit, with 0 meaning
+     * unlimited. The independently observed maximum_users field is retained separately. This read does not purchase or
+     * change a license.
+     *
+     * Observed: The independent 11.138.0.19 review observed maximum_users as a string and no users field. maximum_users
+     * accepts canonical bounded integer strings and native integers, normalizing to int; users stays optional and
+     * strictly integer. This names a newly inspected response field and does not identify the field in any historical
+     * masked artifact.
+     *
+     * Policy: Client behavior: omitted users or maximum_users stays absent. Do not treat an absent limit field as zero
+     * or infer unlimited licensing from an empty result; inspect the returned fields explicitly.
+     *
+     * API-map identity: whm1:get_maximum_users#GET (wire name get_maximum_users; Account Creation).
+     *
+     * @return GetMaximumUsersResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-creation/accounts-get_maximum_users
+     */
+    public function getMaximumUsers(): array
+    {
+        /** @var GetMaximumUsersResult $result Validated against AccountsSpec::GET_MAXIMUM_USERS. */
+        $result = ($this->run)(AccountsSpec::GET_MAXIMUM_USERS, []);
+
+        return $result;
+    }
+
+    /**
+     * Return password strength.
+     *
+     * This function measures the strength of a password.
+     *
+     * Documented: Available from cPanel 11.
+     *
+     * Documented: The pinned read-only operation accepts a password. It uses sensitive form POST to keep that password
+     * out of request URLs. The returned integer strength remains separate from API success.
+     *
+     * API-map identity: whm1:get_password_strength#GET (wire name get_password_strength; Passwords).
+     *
+     * @param string $password The password.
+     * @return GetPasswordStrengthResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/passwords/accounts-get_password_strength
+     */
+    public function getPasswordStrength(
+        #[SensitiveParameter]
+        string $password,
+    ): array {
+        /** @var GetPasswordStrengthResult $result Validated against AccountsSpec::GET_PASSWORD_STRENGTH. */
+        $result = ($this->run)(AccountsSpec::GET_PASSWORD_STRENGTH, ['password' => $password]);
+
+        return $result;
+    }
+
+    /**
+     * Get upgrade opportunities.
+     *
+     * This function lists accounts that could benefit from upgrading to a different package. The listed accounts may be
+     * nearing (or exceeding) resource usage thresholds.
+     *
+     * Documented: Available from cPanel 11.
+     *
+     * Documented: Omitted diskThresholdBlocks defaults to 2097152 blocks; omitted nearnessFraction defaults to 0.8.
+     * Thresholds use blocks and nearness uses a fraction of 1. Account names remain dynamic keys. Nullable disk-check
+     * fields, 0, omission and empty maps remain distinct.
+     *
+     * API-map identity: whm1:get_upgrade_opportunities#GET (wire name get_upgrade_opportunities; Account Management).
+     *
+     * @param int|null $diskThresholdBlocks A fixed number of blocks to use as an alternative disk usage threshold. Null
+     *     omits it.
+     * @param int|float|null $nearnessFraction The fraction of 1 at which to consider usage "near". Null omits it.
+     * @return GetUpgradeOpportunitiesResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-get_upgrade_opportunities
+     */
+    public function getUpgradeOpportunities(
+        ?int $diskThresholdBlocks = null,
+        int|float|null $nearnessFraction = null,
+    ): array {
+        /** @var GetUpgradeOpportunitiesResult $result Validated against AccountsSpec::GET_UPGRADE_OPPORTUNITIES. */
+        $result = ($this->run)(AccountsSpec::GET_UPGRADE_OPPORTUNITIES, [
+            'diskThresholdBlocks' => $diskThresholdBlocks,
+            'nearnessFraction' => $nearnessFraction,
+        ]);
+
+        return $result;
+    }
+
+    /**
+     * Return cPanel account theme's app keys and URLs.
+     *
+     * This function returns a list of application keys (appkeys) and the URLs that correspond to applications for the
+     * cPanel user's theme. Use the appkey values for the `app` parameter's value in the WHM API 1 `create_user_session`
+     * function.
+     *
+     * Documented: Available from cPanel 11.50.
+     *
+     * Documented: Returns theme appkey-to-URL values; treat URLs as private payload data and do not log or fetch them.
+     * The service schema/default is cpaneld, while the descriptive bullet says cpanel; this discrepancy is retained
+     * without inventing a corrected value.
+     *
+     * API-map identity: whm1:get_users_links#GET (wire name get_users_links; Styles).
+     *
+     * @param string $user The requested user's username.
+     * @param 'cpaneld'|'webmail'|null $service The interface for which to filter results: Null omits it.
+     * @return GetUsersLinksResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/styles/plugins-get_users_links
+     */
+    public function getUsersLinks(string $user, ?string $service = null): array
+    {
+        /** @var GetUsersLinksResult $result Validated against AccountsSpec::GET_USERS_LINKS. */
+        $result = ($this->run)(AccountsSpec::GET_USERS_LINKS, ['user' => $user, 'service' => $service]);
+
+        return $result;
+    }
+
+    /**
+     * Validate cPanel account Digest Authentication.
+     *
+     * This function checks whether Digest Authentication is enabled for a cPanel user. Windows® Vista, Windows® 7,
+     * and Windows® 8 require Digest Authentication support in order to access Web Disk over an unencrypted connection.
+     *
+     * Documented: Available from cPanel 11.34.
+     *
+     * Documented: Checks Digest Authentication support for Web Disk over an unencrypted connection. The digestauth
+     * field is a native integer 0|1 flag.
+     *
+     * API-map identity: whm1:has_digest_auth#GET (wire name has_digest_auth; Account Management).
+     *
+     * @param string $user The cPanel account username.
+     * @return HasDigestAuthResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/sys-has_digest_auth
+     */
+    public function hasDigestAuth(string $user): array
+    {
+        /** @var HasDigestAuthResult $result Validated against AccountsSpec::HAS_DIGEST_AUTH. */
+        $result = ($this->run)(AccountsSpec::HAS_DIGEST_AUTH, ['user' => $user]);
+
+        return $result;
+    }
+
+    /**
+     * Validate MySQL Configuration file.
+     *
+     * This function checks whether a cPanel user's home directory contains a valid .my.cnf file.
+     *
+     * Documented: Available from cPanel 11.40.
+     *
+     * Documented: Checks for a valid .my.cnf in the selected account home; a successful API envelope remains separate
+     * from the 0|1 presence flag.
+     *
+     * API-map identity: whm1:has_mycnf_for_cpuser#GET (wire name has_mycnf_for_cpuser; Account Management).
+     *
+     * @param string $user The cPanel account username.
+     * @return HasMycnfForCpuserResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/sys-has_mycnf_for_cpuser
+     */
+    public function hasMycnfForCpuser(string $user): array
+    {
+        /** @var HasMycnfForCpuserResult $result Validated against AccountsSpec::HAS_MYCNF_FOR_CPUSER. */
+        $result = ($this->run)(AccountsSpec::HAS_MYCNF_FOR_CPUSER, ['user' => $user]);
+
+        return $result;
+    }
+
+    /**
+     * Update cPanel account bandwidth quota.
+     *
+     * This function modifies a cPanel account's bandwidth quota.
+     *
+     * Documented: Available from cPanel 11.
+     *
+     * Documented: bwlimit is in megabytes (MB). Omitted bwlimit defaults to unlimited; both 0 and unlimited grant
+     * unlimited bandwidth. Returned domains and formatted strings remain distinct from numeric quotas.
+     *
+     * API-map identity: whm1:limitbw#GET (wire name limitbw; Bandwidth and Disk Quotas).
+     *
+     * @param string $user The username of a cPanel account on the server.
+     * @param string|int|null $bwlimit The account's new bandwidth quota, in megabytes (MB). Null omits it.
+     * @return LimitBandwidthResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/bandwidth-and-disk-quotas/bandwidth-limitbw
+     */
+    public function limitBandwidth(string $user, string|int|null $bwlimit = null): array
+    {
+        /** @var LimitBandwidthResult $result Validated against AccountsSpec::LIMITBW. */
+        $result = ($this->run)(AccountsSpec::LIMITBW, ['user' => $user, 'bwlimit' => $bwlimit]);
+
+        return $result;
+    }
+
+    /**
+     * Return Account Enhancements.
+     *
+     * This function retrieves all existing account enhancements on the system.
+     *
+     * Documented: Available from cPanel 98.
+     *
+     * Documented: Returns a list of enhancements with optional id and name strings. This repairs the pinned node that
+     * omits its collection type; only an empty list was observed, so populated row types are source-backed and
+     * offline-tested. Additional warnings remain in responseMeta()->whm output metadata.
+     *
+     * API-map identity: whm1:list_account_enhancements#GET (wire name list_account_enhancements; Account Enhancements).
+     *
+     * @return ListAccountEnhancementsResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-enhancements/accountenhancements-list_account_enhancements
+     */
+    public function listAccountEnhancements(): array
+    {
+        /** @var ListAccountEnhancementsResult $result Validated against AccountsSpec::LIST_ACCOUNT_ENHANCEMENTS. */
+        $result = ($this->run)(AccountsSpec::LIST_ACCOUNT_ENHANCEMENTS, []);
 
         return $result;
     }
@@ -508,6 +1458,84 @@ final readonly class Accounts
             'searchmethod' => $searchmethod,
             'want' => $want,
         ]);
+
+        return $result;
+    }
+
+    /**
+     * Return suspended cPanel accounts.
+     *
+     * This function lists locked accounts on the server. Only WHM users with `root`-level privileges can unsuspend
+     * locked accounts.
+     *
+     * Documented: Available from cPanel 11.40.
+     *
+     * Documented: Returns the optional account list of locked account usernames.
+     *
+     * API-map identity: whm1:listlockedaccounts#GET (wire name listlockedaccounts; Suspensions).
+     *
+     * @return ListLockedAccountsResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/suspensions/accounts-listlockedaccounts
+     */
+    public function listLockedAccounts(): array
+    {
+        /** @var ListLockedAccountsResult $result Validated against AccountsSpec::LISTLOCKEDACCOUNTS. */
+        $result = ($this->run)(AccountsSpec::LISTLOCKEDACCOUNTS, []);
+
+        return $result;
+    }
+
+    /**
+     * Return suspended cPanel accounts and information.
+     *
+     * This function lists suspended accounts on the server.
+     *
+     * Documented: Available from cPanel 11.
+     *
+     * Documented: Suspension time text stays a string while unixtime stays a native integer. The per-account is_locked
+     * flag is separate from API success.
+     *
+     * API-map identity: whm1:listsuspended#GET (wire name listsuspended; Suspensions).
+     *
+     * @return ListSuspendedResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/suspensions/accounts-listsuspended
+     */
+    public function listSuspended(): array
+    {
+        /** @var ListSuspendedResult $result Validated against AccountsSpec::LISTSUSPENDED. */
+        $result = ($this->run)(AccountsSpec::LISTSUSPENDED, []);
+
+        return $result;
+    }
+
+    /**
+     * Return root and cPanel accounts.
+     *
+     * This function lists the cPanel user accounts and the `root` user on the server.
+     *
+     * Documented: Available from cPanel 11.
+     *
+     * Documented: Returns the optional list of account usernames. Empty lists remain empty and omitted fields remain
+     * omitted.
+     *
+     * API-map identity: whm1:list_users#GET (wire name list_users; Account Management).
+     *
+     * @return ListUsersResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-list_users
+     */
+    public function listUsers(): array
+    {
+        /** @var ListUsersResult $result Validated against AccountsSpec::LIST_USERS. */
+        $result = ($this->run)(AccountsSpec::LIST_USERS, []);
 
         return $result;
     }
@@ -735,6 +1763,94 @@ final readonly class Accounts
     }
 
     /**
+     * Update Account Enhancement.
+     *
+     * This function modifies an account enhancement.
+     *
+     * Documented: Available from cPanel 11.98.
+     *
+     * Documented: Modifies the named enhancement when id is supplied. Supplying only one of id or name makes no change;
+     * because this signature requires name, omitting id is the documented no-op. The new id must be an account
+     * enhancement ID defined by a third-party plugin; listAccountEnhancements() lists valid IDs.
+     *
+     * API-map identity: whm1:modify_account_enhancement#GET (wire name modify_account_enhancement; Account
+     * Enhancements).
+     *
+     * @param string $name The name of the account enhancement.
+     * @param string|null $id The account enhancement's new identifier. Null omits it.
+     * @return ModifyAccountEnhancementResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-enhancements/accountenhancements-modify_account_enhancement
+     */
+    public function modifyAccountEnhancement(string $name, ?string $id = null): array
+    {
+        /** @var ModifyAccountEnhancementResult $result Validated against AccountsSpec::MODIFY_ACCOUNT_ENHANCEMENT. */
+        $result = ($this->run)(AccountsSpec::MODIFY_ACCOUNT_ENHANCEMENT, ['name' => $name, 'id' => $id]);
+
+        return $result;
+    }
+
+    /**
+     * Return cPanel account system privileges.
+     *
+     * This function retrieves the current user's Access Control List (ACL) privileges.
+     *
+     * Documented: Available from cPanel 11.
+     *
+     * Documented: Returns a list of current authenticated-user ACL privilege objects, including third-party ACL fields
+     * whose unspecified values remain opaque. Named flag fields retain native integer 0|1 semantics; allow-shell and
+     * list-pkgs retain their pinned unrestricted integer types.
+     *
+     * API-map identity: whm1:myprivs#GET (wire name myprivs; Account Management).
+     *
+     * @return MyPrivilegesResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/acls-myprivs
+     */
+    public function myPrivileges(): array
+    {
+        /** @var MyPrivilegesResult $result Validated against AccountsSpec::MYPRIVS. */
+        $result = ($this->run)(AccountsSpec::MYPRIVS, []);
+
+        return $result;
+    }
+
+    /**
+     * Validate cPanel account quotas.
+     *
+     * This function checks if quotas are enabled on at least one of a user's /home directory mounts.
+     *
+     * Documented: Available from cPanel 11.
+     *
+     * Documented: quota_enabled is a native integer 0|1 indicating whether quotas are enabled on at least one
+     * home-directory mount, separate from API success.
+     *
+     * Observed: The immutable first capture docs/api/evidence/2026-10-31-whm-account-management.json at revision
+     * 1149479923f388157a43d42ec8eebf68204e71b1 on 11.138.0.19 records a numeric-string at $.quota_enabled. Only the
+     * exact quoted flags 0 and 1 normalize to integer 0|1; omission remains omitted. This correction does not apply to
+     * sibling flags or resolve the separate get_maximum_users finding.
+     *
+     * API-map identity: whm1:quota_enabled#GET (wire name quota_enabled; Bandwidth and Disk Quotas).
+     *
+     * @return QuotaEnabledResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/bandwidth-and-disk-quotas/quota-quota_enabled
+     */
+    public function quotaEnabled(): array
+    {
+        /** @var QuotaEnabledResult $result Validated against AccountsSpec::QUOTA_ENABLED. */
+        $result = ($this->run)(AccountsSpec::QUOTA_ENABLED, []);
+
+        return $result;
+    }
+
+    /**
      * Delete cPanel account.
      *
      * This function deletes a cPanel or WHM account.
@@ -749,6 +1865,144 @@ final readonly class Accounts
     public function removeAccount(string $username, ?bool $keepdns = null): void
     {
         ($this->run)(AccountsSpec::REMOVEACCT, ['username' => $username, 'keepdns' => $keepdns]);
+    }
+
+    /**
+     * Enable or disable Digest Authentication.
+     *
+     * This function enables or disables Digest Authentication for an account. Windows Vista®, Windows® 7, and
+     * Windows® 8 requires that you enable Digest Authentication support in order to access your Web Disk over a clear
+     * text, unencrypted connection.
+     *
+     * Documented: Available from cPanel 11.
+     *
+     * Documented: Changes Digest Authentication immediately and requires the account password even when disabling it.
+     * The pin documents digestauth as an alias for enabledigest without defining conflicting-value precedence. SSL on
+     * port 2078 with a recognized CA removes the documented need for Digest Authentication. The pinned envelope
+     * declares no data payload.
+     *
+     * Policy: Client behavior: expose only enabledigest and omit the digestauth alias to prevent conflicting flags.
+     * Call setDigestAuth(user, password, enabledigest); password remains sensitive.
+     *
+     * API-map identity: whm1:set_digest_auth#GET (wire name set_digest_auth; Account Management).
+     *
+     * @param string $user The account's username.
+     * @param string $password The account's password.
+     * @param bool $enabledigest Whether to enable Digest Authentication for the account.
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/sys-set_digest_auth
+     */
+    public function setDigestAuth(
+        string $user,
+        #[SensitiveParameter]
+        string $password,
+        bool $enabledigest,
+    ): void {
+        ($this->run)(AccountsSpec::SET_DIGEST_AUTH, [
+            'user' => $user,
+            'password' => $password,
+            'enabledigest' => $enabledigest,
+        ]);
+    }
+
+    /**
+     * Change document root for cPanel account primary domain.
+     *
+     * This function changes the document root for a cPanel account's primary domain.
+     *
+     * Documented: Available from cPanel 11.
+     *
+     * Documented: docroot must be relative to the account home directory, begin with public_html/, and name a directory
+     * that already exists. This function does not create the directory or move files; ensure the files exist in the new
+     * path. Parked domains (ServerAlias entries) inherit the new root. AutoSSL HTTP-01 renewals fail if the new root is
+     * empty or missing at renewal time. The returned documentroot is an absolute path. Use UAPI
+     * SubDomain::changedocroot for addon domains or subdomains. To revert, call this function again with the original
+     * path; the client forwards input unchanged and performs no automatic rollback.
+     *
+     * Observed: On 11.138.0.19, the independent review received success and documentroot for public_html/nope while
+     * that directory was missing. The pinned existing-directory rule is a caller responsibility: a successful response
+     * does not establish that the target directory exists.
+     *
+     * API-map identity: whm1:set_primary_domain_docroot#GET (wire name set_primary_domain_docroot; Account Management).
+     *
+     * @param string $username The cPanel account username whose primary domain's document root you want to change.
+     * @param string $docroot The new document root as a path relative to the account's home directory.
+     * @return SetPrimaryDomainDocrootResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-set_primary_domain_docroot
+     */
+    public function setPrimaryDomainDocroot(string $username, string $docroot): array
+    {
+        /** @var SetPrimaryDomainDocrootResult $result Validated against AccountsSpec::SET_PRIMARY_DOMAIN_DOCROOT. */
+        $result = ($this->run)(AccountsSpec::SET_PRIMARY_DOMAIN_DOCROOT, [
+            'username' => $username,
+            'docroot' => $docroot,
+        ]);
+
+        return $result;
+    }
+
+    /**
+     * Return cPanel account bandwidth information.
+     *
+     * This function retrieves account bandwidth information.
+     *
+     * Documented: Available from cPanel 11.
+     *
+     * Documented: Bandwidth limits, totals and domain usage are in bytes. Omitted month/year use the current values and
+     * omitted showres queries all users. Both search and searchtype must be supplied for filtering; the search is a
+     * PCRE string, encoded once.
+     *
+     * Observed: The independent 11.138.0.19 review observed digit strings for totalused and acct[].bwusage[].usage.
+     * These byte counts accept canonical strings within PHP integer bounds and normalize to int, including values
+     * larger than 32-bit integers. This first review did not establish compatibility for other numeric leaves;
+     * bwlimited has no typed contract from it.
+     *
+     * Observed: A subsequent independent WHM review on 11.138.0.19 observed native integer acct[].limit, digit strings
+     * for explicit limits, and a nonnumeric string for an unset or zero limit. The type-only live output did not
+     * establish the nonnumeric spelling; the literals below are source-based.
+     *
+     * Documented: Source inspection on 11.138.0.19 establishes exact acct[].limit literals unlimited for the stored
+     * zero-limit alternative and N/A in the deleted-users branch. Both pass through the bandwidth conversion unchanged.
+     * These spellings are source-backed; N/A was not observed in the reviewer reads, which establish no timing for
+     * deleted-user rows.
+     *
+     * Policy: Client behavior: acct[].limit accepts native integers and canonical integer strings within PHP integer
+     * bounds, normalizing only the numeric strings to int. Exact unlimited and N/A remain distinct strings, neither
+     * mapped to zero. Omitted limits remain absent, sibling fields keep their contracts, and bwlimited remains untyped.
+     *
+     * API-map identity: whm1:showbw#GET (wire name showbw; Bandwidth and Disk Quotas).
+     *
+     * @param int|null $month The month to query, in numeric format. Null omits it.
+     * @param string|null $search A Perl Compatible Regular Expression (PCRE) that filters the results. Null omits it.
+     * @param 'domain'|'owner'|'user'|'ip'|'package'|null $searchtype The account information to query. Null omits it.
+     * @param string|null $showres The reseller to query. Null omits it.
+     * @param int|null $year The year to query. Null omits it.
+     * @return ShowBandwidthResult
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
+     *     any change the operation makes has already taken effect.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/bandwidth-and-disk-quotas/bandwidth-showbw
+     */
+    public function showBandwidth(
+        ?int $month = null,
+        ?string $search = null,
+        ?string $searchtype = null,
+        ?string $showres = null,
+        ?int $year = null,
+    ): array {
+        /** @var ShowBandwidthResult $result Validated against AccountsSpec::SHOWBW. */
+        $result = ($this->run)(AccountsSpec::SHOWBW, [
+            'month' => $month,
+            'search' => $search,
+            'searchtype' => $searchtype,
+            'showres' => $showres,
+            'year' => $year,
+        ]);
+
+        return $result;
     }
 
     /**
@@ -782,6 +2036,29 @@ final readonly class Accounts
     }
 
     /**
+     * Unassign Account Enhancement.
+     *
+     * This function removes an Account Enhancement from a cPanel account.
+     *
+     * Documented: Available from cPanel 11.98.
+     *
+     * Documented: Unassigns the named enhancement immediately from the selected account. The pinned envelope declares
+     * no data payload.
+     *
+     * API-map identity: whm1:unassign_account_enhancement#GET (wire name unassign_account_enhancement; Account
+     * Enhancements).
+     *
+     * @param string $account The username of the account.
+     * @param string $name The name of the account enhancement.
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-enhancements/accountenhancements-unassign_account_enhancement
+     */
+    public function unassignAccountEnhancement(string $account, string $name): void
+    {
+        ($this->run)(AccountsSpec::UNASSIGN_ACCOUNT_ENHANCEMENT, ['account' => $account, 'name' => $name]);
+    }
+
+    /**
      * Unsuspend cPanel account.
      *
      * This function unsuspends an account.
@@ -796,5 +2073,68 @@ final readonly class Accounts
     public function unsuspendAccount(string $user, ?bool $retainServiceProxies = null): void
     {
         ($this->run)(AccountsSpec::UNSUSPENDACCT, ['user' => $user, 'retainServiceProxies' => $retainServiceProxies]);
+    }
+
+    /**
+     * Remove UID or GID from tracked list.
+     *
+     * This function removes a user identification number (UID) or group identification number (GID) from the tracked ID
+     * list.
+     *
+     * Documented: Available from cPanel 58.
+     *
+     * Documented: The pinned uid/gid descriptions require uid, gid or both, even though each formal parameter is
+     * optional. Supply at least one ID. Omitted checkExists, checkQuota and protectSystem default to 1. checkQuota
+     * applies only to UIDs and cannot check filesystems without quota tracking. Removing tracking is immediate.
+     *
+     * Policy: Client behavior: supply uid or gid explicitly before calling untrackAcctId(). The client preserves
+     * explicit zero and false and does not select a target ID automatically.
+     *
+     * API-map identity: whm1:untrack_acct_id#GET (wire name untrack_acct_id; Account Management).
+     *
+     * @param int|null $uid The user ID to remove from the track list. Null omits it.
+     * @param int|null $gid The group ID to remove from the track list. Null omits it.
+     * @param bool|null $checkExists Whether to prevent removal of user or group IDs currently in use. Null omits it.
+     * @param bool|null $checkQuota Whether to prevent removal of the user ID if the quota system tracks associated
+     *     files. Null omits it.
+     * @param bool|null $protectSystem Whether to prevent removal of system user or group IDs. Null omits it.
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-untrack_acct_id
+     */
+    public function untrackAcctId(
+        ?int $uid = null,
+        ?int $gid = null,
+        ?bool $checkExists = null,
+        ?bool $checkQuota = null,
+        ?bool $protectSystem = null,
+    ): void {
+        ($this->run)(AccountsSpec::UNTRACK_ACCT_ID, [
+            'uid' => $uid,
+            'gid' => $gid,
+            'checkExists' => $checkExists,
+            'checkQuota' => $checkQuota,
+            'protectSystem' => $protectSystem,
+        ]);
+    }
+
+    /**
+     * Validate new cPanel account username.
+     *
+     * This function checks for username conflicts during account creation.
+     *
+     * Documented: Available from cPanel 58.
+     *
+     * Documented: Username conflicts are reported through the API failure metadata, not a boolean data payload. This
+     * does not reserve or create the account.
+     *
+     * API-map identity: whm1:verify_new_username#GET (wire name verify_new_username; Account Creation).
+     *
+     * @param string $user The account that you wish to create.
+     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
+     * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-creation/nameconflict-verify_new_username
+     */
+    public function verifyNewUsername(string $user): void
+    {
+        ($this->run)(AccountsSpec::VERIFY_NEW_USERNAME, ['user' => $user]);
     }
 }

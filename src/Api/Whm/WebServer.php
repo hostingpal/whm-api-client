@@ -45,7 +45,7 @@ use SensitiveParameter;
  *         validation_data?: array{
  *             not_on_server?: list<string>,
  *         },
- *         version?: string,
+ *         version?: string|int|float,
  *     }>,
  *     ...<array-key, list<array{
  *         desc?: string,
@@ -56,7 +56,7 @@ use SensitiveParameter;
  *         validation_data?: array{
  *             not_on_server?: list<string>,
  *         },
- *         version?: string,
+ *         version?: string|int|float,
  *     }>>
  * }
  * @phpstan-type Ea4MetainfoResult array<array-key, array<array-key, mixed>|string|list<string>>
@@ -109,7 +109,10 @@ use SensitiveParameter;
  *     phpversion_source?: list<array{
  *         domain?: string,
  *         system_default?: int,
- *     }>|array<array-key, string>,
+ *     }>|array{
+ *         domain?: string,
+ *         system_default?: int,
+ *     },
  *     version?: string,
  *     vhost?: string,
  * }>
@@ -245,9 +248,13 @@ final readonly class WebServer
      * declare path. Empty profile lists and omitted row fields retain their meaning.
      *
      * Observed: On cPanel 11.138.0.19 through WHM GET, cpanel profile version fields included strings and native
-     * integers/floats. Their original representations are preserved; custom and vendor row version fields remain
-     * strings. The failed capture also contains a masked unknown cpanel-row field, which remains unwaived and does not
-     * add a typed field.
+     * integers/floats. The immutable capture establishes numeric versions for cpanel rows only; the reviewer separately
+     * observed cloudlinux strings. Original representations are preserved. The failed capture also contains a masked
+     * unknown cpanel-row field, which remains unwaived and does not add a typed field.
+     *
+     * Documented: The source-family review supports the same string or native integer/float version representation for
+     * custom and vendor rows. This is compatibility by row family, without numeric custom/vendor live evidence; strings
+     * retain exact spelling and are never normalized.
      *
      * API-map identity: whm1:ea4_list_profiles#GET (wire name ea4_list_profiles; EasyApache Settings).
      *
@@ -336,9 +343,12 @@ final readonly class WebServer
      *
      * Documented: Writes only /etc/cpanel/ea4/profiles/custom/. filename, display name and packages are required;
      * optional desc defaults to empty string, overwrite to 0, tags to an empty list and version to the string 0.
-     * Package and tag lists use repeated keys. Explicit false overwrite is sent as 0. Overwriting can replace an
-     * existing profile; no retry or rollback is provided. already_exists is returned only for an existing filename with
+     * Overwriting can replace an existing profile. already_exists is returned only for an existing filename with
      * overwrite=0; path only on success.
+     *
+     * Policy: An explicit empty tags list omits the optional tag field, matching its pinned empty default. Nonempty
+     * tag/package lists retain repeated-key encoding; required packages and all other list inputs keep existing
+     * validation. Explicit false overwrite is sent as 0. Each request is form-encoded once with no retry or rollback.
      *
      * API-map identity: whm1:ea4_save_profile#GET (wire name ea4_save_profile; EasyApache Settings).
      *
@@ -347,13 +357,15 @@ final readonly class WebServer
      * @param string|list<string> $packages The packages that the profile contains.
      * @param string|null $desc The description of the profile. Null omits it.
      * @param bool|null $overwrite Whether to overwrite the file, if it exists. Null omits it.
-     * @param string|list<string>|null $tags Tags that are appropriate for the profile. Null omits it.
+     * @param string|list<string>|null $tags Tags that are appropriate for the profile. Null omits it. Empty list omits
+     *     it.
      * @param string|null $version The profile's version number. Null omits it.
      * @return Ea4SaveProfileResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
-     * @throws InvalidArgumentException If a list argument is empty or contains non-strings.
+     * @throws InvalidArgumentException If a non-omittable list argument is empty,
+     *     or any list is keyed or contains non-strings.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/easyapache-settings/ea4-ea4_save_profile
      */
     public function ea4SaveProfile(
@@ -529,7 +541,11 @@ final readonly class WebServer
      * explicit prose; both arguments may be omitted individually to support the documented alternatives. At least one
      * selector is required by the server, and systemDefault=false alone returns an error. Parked domains cannot be
      * supplied. Repeated domains retain their order; this operation does not validate these cross-argument conditions
-     * locally. Source prose may differ from a particular server; no live selector compatibility is established.
+     * locally. No local cross-argument guard is added.
+     *
+     * Observed: The PR 58 reviewer observed an API error for a no-argument call on cPanel 11.138.0.19. At least one
+     * domain or system_default selector must be supplied; the server error propagates as ApiErrorException without
+     * matching its text.
      *
      * API-map identity: whm1:php_get_impacted_domains#GET (wire name php_get_impacted_domains; PHP).
      *
@@ -633,16 +649,18 @@ final readonly class WebServer
      * you disable the [Web Server role](https://go.cpanel.net/howtouseserverprofiles#roles), the system **disables**
      * this function.
      *
-     * Documented: All row fields remain optional. The pinned PHP version source is a list of optional
-     * domain/system_default objects; its stray properties sibling alone does not establish an object variant. The
-     * separately observed map alternative is recorded below. FPM pool fields remain integers and flags remain strict
-     * integer 0/1. Pool configuration can contain sensitive values; treat returned configuration and failure payloads
-     * as sensitive.
+     * Documented: All row fields remain optional. The pinned PHP version source list has optional domain:string and
+     * system_default:integer fields. FPM pool fields remain integers and flags remain strict integer 0/1.
      *
-     * Observed: On cPanel 11.138.0.19 through WHM GET, phpversion_source was an object whose masked dynamic values were
-     * strings. Keep the pinned optional-field object list and this string-valued map as separate alternatives. Map keys
-     * and strings are preserved without inferring key identities or meanings; scalar string roots and non-string map
-     * values remain invalid.
+     * Observed: The immutable WHM GET capture on cPanel 11.138.0.19 records phpversion_source as an object with masked
+     * string children; those masked paths establish neither child names nor system_default integer behavior. The
+     * original failed capture and strict masked findings remain unchanged and unwaived.
+     *
+     * Documented: PR 58 source review reports the object form uses the same domain and system_default fields
+     * independently named by the pinned list schema. Accept both list and object forms with those exact optional
+     * fields; integer system_default stays strict and no arbitrary map contract is inferred.
+     *
+     * Policy: Pool configuration and failure payloads can contain sensitive values; do not log or serialize them.
      *
      * API-map identity: whm1:php_get_vhost_versions#GET (wire name php_get_vhost_versions; PHP).
      *
@@ -666,6 +684,8 @@ final readonly class WebServer
      * This function lists the virtual hosts that use a specified version of PHP.
      *
      * Documented: Requires EasyApache 4 and the WebServer role.
+     *
+     * Observed: The PR 58 reviewer observed that an unknown version returns an empty vhost list on cPanel 11.138.0.19.
      *
      * API-map identity: whm1:php_get_vhosts_by_version#GET (wire name php_get_vhosts_by_version; PHP).
      *
@@ -758,17 +778,21 @@ final readonly class WebServer
      * length of HTTP GET method calls, we **strongly** recommend that you use the HTTP POST method. **Important:** When
      * you disable the [Web Server role](https://go.cpanel.net/serverroles), the system **disables** this function.
      *
-     * Documented: content is sensitive caller-supplied text. The client form-encodes its exact bytes once; callers do
-     * not pre-encode them. This replaces the selected version's php.ini contents and can affect sites using it
-     * immediately. No retry or rollback is provided, and no server write/read round trip is established by offline
-     * coverage. The documented opaque object result is required; an absent or null data member is not inferred as
-     * success.
+     * Policy: content is sensitive caller-supplied text. The client form-encodes its exact bytes once; callers do not
+     * pre-encode them. This replaces the selected version's php.ini contents and can affect sites using it immediately.
+     * No retry or rollback is provided, and no server write/read round trip is established by offline coverage.
+     *
+     * Documented: The PR 58 PHP.pm source report places this write in the return {} family. A successful absent or null
+     * data member returns null; any present non-null payload retains its existing contract. This is source-only
+     * compatibility, unobserved for this POST.
+     *
+     * Returns null when the server sends no data.
      *
      * API-map identity: whm1:php_ini_set_content#POST (wire name php_ini_set_content; PHP).
      *
      * @param string $content The contents of the `php.ini` file that you wish to change.
      * @param string $version The version of PHP for which you wish to change the `php.ini` file.
-     * @return PhpIniSetContentResult
+     * @return PhpIniSetContentResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
@@ -778,8 +802,8 @@ final readonly class WebServer
         #[SensitiveParameter]
         string $content,
         string $version,
-    ): array {
-        /** @var PhpIniSetContentResult $result Validated against WebServerSpec::PHP_INI_SET_CONTENT. */
+    ): ?array {
+        /** @var PhpIniSetContentResult|null $result Validated against WebServerSpec::PHP_INI_SET_CONTENT. */
         $result = ($this->run)(WebServerSpec::PHP_INI_SET_CONTENT, ['content' => $content, 'version' => $version]);
 
         return $result;
@@ -794,17 +818,22 @@ final readonly class WebServer
      * **Note:** This document only applies to systems that run EasyApache 4. **Important:** When you disable the [Web
      * Server](https://go.cpanel.net/serverroles) role , the system **disables** this function.
      *
-     * Documented: Supply each directive as its literal name:value string. The source also shows an inconsistent equals
+     * Policy: Supply each directive as its literal name:value string. The source also shows an inconsistent equals
      * separator in one multiple example; the client forwards caller strings unchanged. Multiple entries repeat the
      * directive key. Values can contain secrets and remain sensitive. Changes affect the selected version's INI
-     * settings immediately, with no retry or rollback. An opaque object result is required; absent/null payloads are
-     * not accepted.
+     * settings immediately, with no retry or rollback.
+     *
+     * Documented: The PR 58 PHP.pm source report places this write in the return {} family. A successful absent or null
+     * data member returns null; any present non-null payload retains its existing contract. This is source-only
+     * compatibility, unobserved for this POST.
+     *
+     * Returns null when the server sends no data.
      *
      * API-map identity: whm1:php_ini_set_directives#GET (wire name php_ini_set_directives; PHP).
      *
      * @param string|list<string> $directives The name of a PHP directive and its value.
      * @param string $version PHP version on the system.
-     * @return PhpIniSetDirectivesResult
+     * @return PhpIniSetDirectivesResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
@@ -815,8 +844,8 @@ final readonly class WebServer
         #[SensitiveParameter]
         string|array $directives,
         string $version,
-    ): array {
-        /** @var PhpIniSetDirectivesResult $result Validated against WebServerSpec::PHP_INI_SET_DIRECTIVES. */
+    ): ?array {
+        /** @var PhpIniSetDirectivesResult|null $result Validated against WebServerSpec::PHP_INI_SET_DIRECTIVES. */
         $result = ($this->run)(WebServerSpec::PHP_INI_SET_DIRECTIVES, [
             'directives' => $directives,
             'version' => $version,
@@ -838,9 +867,17 @@ final readonly class WebServer
      * PHP-FPM on a server with less than the required RAM, your server may experience severe performance issues.
      *
      * Documented: This changes the default for new accounts and domains; it does not convert existing domains. Use
-     * convertAllDomainsToFpm separately to activate existing non-FPM domains. Explicit false is sent as 0. The source
-     * data schema is unconstrained, so preserve any present JSON result rather than inventing an object or void
-     * contract. No retry or rollback is provided.
+     * convertAllDomainsToFpm separately to activate existing non-FPM domains. The pinned source data schema is
+     * unconstrained.
+     *
+     * Documented: The PR 58 PHP.pm source report places this write in the return {} family. A successful absent or null
+     * data member returns null; any present non-null payload retains its existing contract. This is source-only
+     * compatibility, unobserved for this POST.
+     *
+     * Policy: Explicit false is sent as 0. Preserve any present JSON result without inventing an object or void
+     * contract; no retry or rollback is provided.
+     *
+     * Returns null when the server sends no data.
      *
      * API-map identity: whm1:php_set_default_accounts_to_fpm#GET (wire name php_set_default_accounts_to_fpm; PHP-FPM).
      *
@@ -874,9 +911,12 @@ final readonly class WebServer
      * Documented: The source documents no data payload. Configuration changes can affect existing PHP applications
      * immediately; the client performs one attempt with no retry or rollback.
      *
+     * Policy: handler remains an open string so values returned by phpGetHandlers(), including future installed
+     * handlers, can be supplied unchanged; the PHPDoc enum is suppressed without adding runtime enum validation.
+     *
      * API-map identity: whm1:php_set_handler#GET (wire name php_set_handler; PHP).
      *
-     * @param 'cgi'|'suphp'|'dso'|'none' $handler An installed PHP handler.
+     * @param string $handler An installed PHP handler.
      * @param string $version An installed PHP version.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/php/php-php_set_handler
@@ -984,14 +1024,16 @@ final readonly class WebServer
      * PHP-FPM if your server has at least 2 GB of RAM available, or at least 30 MB of RAM per domain. If you enable
      * PHP-FPM on a server with **less** than the required RAM, your server may experience severe performance issues.
      *
-     * Documented: version accepts custom PHP package names and inherit. Multiple vhosts use numbered fields vhost,
-     * vhost-1, and so on. Omitting phpFpm retains the documented default 0; explicit false is sent as 0.
-     * phpFpmPoolParms must be caller-supplied JSON text containing pm_max_children, pm_max_requests and
-     * pm_process_idle_timeout; the source declares those properties required and defaults them to 5, 20 and 10. The
-     * client sends the text once in the form field without JSON encoding or decoding, does not validate its inner
+     * Policy: Multiple vhosts use numbered fields vhost, vhost-1, and so on. Explicit false is sent as 0. The client
+     * sends phpFpmPoolParms once in the form field without JSON encoding or decoding, does not validate its inner
      * schema, and retains the existing string|int|null scalar boundary (whm-api-client-8x0.1.23). Treat this
-     * configuration text as sensitive. Version and FPM changes can affect existing sites immediately; no retry or
-     * rollback is provided.
+     * configuration text as sensitive. No retry or rollback is provided.
+     *
+     * Documented: The PR 58 PHP.pm source report says the operation loads current version/FPM state and changes
+     * supplied values: omitting phpFpm preserves the current FPM state. The pinned version prose accepts custom PHP
+     * package names and inherit. phpFpmPoolParms is caller-supplied JSON text containing pm_max_children,
+     * pm_max_requests and pm_process_idle_timeout; the pinned source declares those properties required and defaults
+     * them to 5, 20 and 10. Version and FPM changes can affect existing sites immediately.
      *
      * API-map identity: whm1:php_set_vhost_versions#GET (wire name php_set_vhost_versions; PHP).
      *

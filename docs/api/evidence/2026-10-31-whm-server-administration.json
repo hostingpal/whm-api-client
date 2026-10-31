@@ -1,0 +1,1029 @@
+{
+    "schema_version": 1,
+    "read_only_section": {
+        "recipe": "whm-server-administration-v1",
+        "status": "failed",
+        "probes": [
+            {
+                "operation": "whm1:version",
+                "variant": "whm1:version#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:03:30Z",
+                "revision": "4eecbe249c754341f454db573a1a475731dc8b9c",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "1dda092b79c26803903cb1fc8036bc9a0ff243b3",
+                "overlay_sha256": "c0da42c127902e3c26c78b70f33295306953ef3cf2c4718367bf9b75efc0eb43",
+                "effective_contract_sha256": "a3b55069b379516f20fcf82f959226d68b68ac515a7e55c0bde8842d39effd60",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.version": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.version": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_all_contact_importances",
+                "variant": "whm1:get_all_contact_importances#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:03:30Z",
+                "revision": "4eecbe249c754341f454db573a1a475731dc8b9c",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "1dda092b79c26803903cb1fc8036bc9a0ff243b3",
+                "overlay_sha256": "c0da42c127902e3c26c78b70f33295306953ef3cf2c4718367bf9b75efc0eb43",
+                "effective_contract_sha256": "a39db2c50f1690ac73d4f2c844d0845d1e965b8e482df2c7d0ade5407013feac",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "failed",
+                "probe_outcome": "failed",
+                "failure_kind": "payload_mismatch",
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.importances": [
+                        "list"
+                    ],
+                    "$.data.importances[]": [
+                        "object"
+                    ],
+                    "$.data.importances[].app": [
+                        "string"
+                    ],
+                    "$.data.importances[].event": [
+                        "string"
+                    ],
+                    "$.data.importances[].importance": [
+                        "numeric-string"
+                    ],
+                    "$.data.importances[].name": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.importances": [
+                        "list"
+                    ],
+                    "$.importances[]": [
+                        "object"
+                    ],
+                    "$.importances[].app": [
+                        "string"
+                    ],
+                    "$.importances[].event": [
+                        "string"
+                    ],
+                    "$.importances[].importance": [
+                        "numeric-string"
+                    ],
+                    "$.importances[].name": [
+                        "string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$.importances[].importance",
+                        "kind": "type_mismatch"
+                    }
+                ]
+            },
+            {
+                "operation": "whm1:get_available_profiles",
+                "variant": "whm1:get_available_profiles#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:03:31Z",
+                "revision": "4eecbe249c754341f454db573a1a475731dc8b9c",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "1dda092b79c26803903cb1fc8036bc9a0ff243b3",
+                "overlay_sha256": "c0da42c127902e3c26c78b70f33295306953ef3cf2c4718367bf9b75efc0eb43",
+                "effective_contract_sha256": "a2957044e00a9414d669c7734b144b561a9db0c65262374e1bef05a23a41e2a1",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.profiles": [
+                        "list"
+                    ],
+                    "$.data.profiles[]": [
+                        "object"
+                    ],
+                    "$.data.profiles[].code": [
+                        "string"
+                    ],
+                    "$.data.profiles[].description": [
+                        "string"
+                    ],
+                    "$.data.profiles[].disabled_roles": [
+                        "empty-list",
+                        "list"
+                    ],
+                    "$.data.profiles[].disabled_roles[]": [
+                        "object"
+                    ],
+                    "$.data.profiles[].disabled_roles[].description": [
+                        "string"
+                    ],
+                    "$.data.profiles[].disabled_roles[].module": [
+                        "string"
+                    ],
+                    "$.data.profiles[].disabled_roles[].name": [
+                        "string"
+                    ],
+                    "$.data.profiles[].enabled_roles": [
+                        "list"
+                    ],
+                    "$.data.profiles[].enabled_roles[]": [
+                        "object"
+                    ],
+                    "$.data.profiles[].enabled_roles[].description": [
+                        "string"
+                    ],
+                    "$.data.profiles[].enabled_roles[].module": [
+                        "string"
+                    ],
+                    "$.data.profiles[].enabled_roles[].name": [
+                        "string"
+                    ],
+                    "$.data.profiles[].experimental": [
+                        "int"
+                    ],
+                    "$.data.profiles[].name": [
+                        "string"
+                    ],
+                    "$.data.profiles[].optional_roles": [
+                        "empty-list",
+                        "list"
+                    ],
+                    "$.data.profiles[].optional_roles[]": [
+                        "object"
+                    ],
+                    "$.data.profiles[].optional_roles[].description": [
+                        "string"
+                    ],
+                    "$.data.profiles[].optional_roles[].module": [
+                        "string"
+                    ],
+                    "$.data.profiles[].optional_roles[].name": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.profiles": [
+                        "list"
+                    ],
+                    "$.profiles[]": [
+                        "object"
+                    ],
+                    "$.profiles[].code": [
+                        "string"
+                    ],
+                    "$.profiles[].description": [
+                        "string"
+                    ],
+                    "$.profiles[].disabled_roles": [
+                        "empty-list",
+                        "list"
+                    ],
+                    "$.profiles[].disabled_roles[]": [
+                        "object"
+                    ],
+                    "$.profiles[].disabled_roles[].description": [
+                        "string"
+                    ],
+                    "$.profiles[].disabled_roles[].module": [
+                        "string"
+                    ],
+                    "$.profiles[].disabled_roles[].name": [
+                        "string"
+                    ],
+                    "$.profiles[].enabled_roles": [
+                        "list"
+                    ],
+                    "$.profiles[].enabled_roles[]": [
+                        "object"
+                    ],
+                    "$.profiles[].enabled_roles[].description": [
+                        "string"
+                    ],
+                    "$.profiles[].enabled_roles[].module": [
+                        "string"
+                    ],
+                    "$.profiles[].enabled_roles[].name": [
+                        "string"
+                    ],
+                    "$.profiles[].experimental": [
+                        "int"
+                    ],
+                    "$.profiles[].name": [
+                        "string"
+                    ],
+                    "$.profiles[].optional_roles": [
+                        "empty-list",
+                        "list"
+                    ],
+                    "$.profiles[].optional_roles[]": [
+                        "object"
+                    ],
+                    "$.profiles[].optional_roles[].description": [
+                        "string"
+                    ],
+                    "$.profiles[].optional_roles[].module": [
+                        "string"
+                    ],
+                    "$.profiles[].optional_roles[].name": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:get_current_profile",
+                "variant": "whm1:get_current_profile#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:03:31Z",
+                "revision": "4eecbe249c754341f454db573a1a475731dc8b9c",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "1dda092b79c26803903cb1fc8036bc9a0ff243b3",
+                "overlay_sha256": "c0da42c127902e3c26c78b70f33295306953ef3cf2c4718367bf9b75efc0eb43",
+                "effective_contract_sha256": "3704f104e7452331f04caf8d2c9e2505302714519d622d655c661ee1e2ce1eb3",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.code": [
+                        "string"
+                    ],
+                    "$.data.description": [
+                        "string"
+                    ],
+                    "$.data.disabled_roles": [
+                        "empty-list"
+                    ],
+                    "$.data.enabled_roles": [
+                        "list"
+                    ],
+                    "$.data.enabled_roles[]": [
+                        "object"
+                    ],
+                    "$.data.enabled_roles[].description": [
+                        "string"
+                    ],
+                    "$.data.enabled_roles[].module": [
+                        "string"
+                    ],
+                    "$.data.enabled_roles[].name": [
+                        "string"
+                    ],
+                    "$.data.experimental": [
+                        "int"
+                    ],
+                    "$.data.name": [
+                        "string"
+                    ],
+                    "$.data.optional_roles": [
+                        "empty-list"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.code": [
+                        "string"
+                    ],
+                    "$.description": [
+                        "string"
+                    ],
+                    "$.disabled_roles": [
+                        "empty-list"
+                    ],
+                    "$.enabled_roles": [
+                        "list"
+                    ],
+                    "$.enabled_roles[]": [
+                        "object"
+                    ],
+                    "$.enabled_roles[].description": [
+                        "string"
+                    ],
+                    "$.enabled_roles[].module": [
+                        "string"
+                    ],
+                    "$.enabled_roles[].name": [
+                        "string"
+                    ],
+                    "$.experimental": [
+                        "int"
+                    ],
+                    "$.name": [
+                        "string"
+                    ],
+                    "$.optional_roles": [
+                        "empty-list"
+                    ]
+                },
+                "discrepancies": []
+            },
+            {
+                "operation": "whm1:getminimumpasswordstrengths",
+                "variant": "whm1:getminimumpasswordstrengths#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:03:31Z",
+                "revision": "4eecbe249c754341f454db573a1a475731dc8b9c",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "1dda092b79c26803903cb1fc8036bc9a0ff243b3",
+                "overlay_sha256": "c0da42c127902e3c26c78b70f33295306953ef3cf2c4718367bf9b75efc0eb43",
+                "effective_contract_sha256": "fc35a27df8c12b6994c70f3d08a7f35408edb0777e6272294479fa5539bddc2e",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "failed",
+                "probe_outcome": "failed",
+                "failure_kind": "payload_mismatch",
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.createacct": [
+                        "numeric-string"
+                    ],
+                    "$.data.default": [
+                        "numeric-string"
+                    ],
+                    "$.data.ftp": [
+                        "numeric-string"
+                    ],
+                    "$.data.list": [
+                        "numeric-string"
+                    ],
+                    "$.data.mysql": [
+                        "numeric-string"
+                    ],
+                    "$.data.passwd": [
+                        "numeric-string"
+                    ],
+                    "$.data.postgres": [
+                        "numeric-string"
+                    ],
+                    "$.data.sshkey": [
+                        "numeric-string"
+                    ],
+                    "$.data.virtual": [
+                        "numeric-string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.createacct": [
+                        "numeric-string"
+                    ],
+                    "$.default": [
+                        "numeric-string"
+                    ],
+                    "$.ftp": [
+                        "numeric-string"
+                    ],
+                    "$.list": [
+                        "numeric-string"
+                    ],
+                    "$.mysql": [
+                        "numeric-string"
+                    ],
+                    "$.passwd": [
+                        "numeric-string"
+                    ],
+                    "$.postgres": [
+                        "numeric-string"
+                    ],
+                    "$.sshkey": [
+                        "numeric-string"
+                    ],
+                    "$.virtual": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$.createacct",
+                        "kind": "type_mismatch"
+                    },
+                    {
+                        "path": "$.default",
+                        "kind": "type_mismatch"
+                    },
+                    {
+                        "path": "$.ftp",
+                        "kind": "type_mismatch"
+                    },
+                    {
+                        "path": "$.list",
+                        "kind": "type_mismatch"
+                    },
+                    {
+                        "path": "$.mysql",
+                        "kind": "type_mismatch"
+                    },
+                    {
+                        "path": "$.passwd",
+                        "kind": "type_mismatch"
+                    },
+                    {
+                        "path": "$.postgres",
+                        "kind": "type_mismatch"
+                    },
+                    {
+                        "path": "$.sshkey",
+                        "kind": "type_mismatch"
+                    },
+                    {
+                        "path": "$.virtual",
+                        "kind": "type_mismatch"
+                    }
+                ]
+            },
+            {
+                "operation": "whm1:installed_versions",
+                "variant": "whm1:installed_versions#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:03:31Z",
+                "revision": "4eecbe249c754341f454db573a1a475731dc8b9c",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "1dda092b79c26803903cb1fc8036bc9a0ff243b3",
+                "overlay_sha256": "c0da42c127902e3c26c78b70f33295306953ef3cf2c4718367bf9b75efc0eb43",
+                "effective_contract_sha256": "af7121ff8c80afecff93caf3c6dd3be2f1069b1176df2e60950ca0f34ecc2fa8",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.*": [
+                        "string"
+                    ],
+                    "$.data.apache": [
+                        "numeric-string"
+                    ],
+                    "$.data.apache_php_default_version": [
+                        "numeric-string"
+                    ],
+                    "$.data.apache_php_versions": [
+                        "list"
+                    ],
+                    "$.data.apache_php_versions[]": [
+                        "int"
+                    ],
+                    "$.data.bind": [
+                        "string"
+                    ],
+                    "$.data.clamav": [
+                        "numeric-string"
+                    ],
+                    "$.data.cpanel_and_whm": [
+                        "string"
+                    ],
+                    "$.data.cpanel_packages": [
+                        "missing"
+                    ],
+                    "$.data.cpanel_php": [
+                        "numeric-string"
+                    ],
+                    "$.data.cron": [
+                        "numeric-string"
+                    ],
+                    "$.data.cronie": [
+                        "string"
+                    ],
+                    "$.data.dovecot": [
+                        "numeric-string"
+                    ],
+                    "$.data.ea_4_packages": [
+                        "missing"
+                    ],
+                    "$.data.easyapache": [
+                        "numeric-string"
+                    ],
+                    "$.data.exim": [
+                        "missing"
+                    ],
+                    "$.data.linux_kernel": [
+                        "string"
+                    ],
+                    "$.data.mailman": [
+                        "string"
+                    ],
+                    "$.data.mariadb": [
+                        "numeric-string"
+                    ],
+                    "$.data.mariadb_build": [
+                        "missing"
+                    ],
+                    "$.data.munin": [
+                        "numeric-string"
+                    ],
+                    "$.data.mysql": [
+                        "numeric-string"
+                    ],
+                    "$.data.mysql_build": [
+                        "missing"
+                    ],
+                    "$.data.nscd": [
+                        "string"
+                    ],
+                    "$.data.openssh-server": [
+                        "string"
+                    ],
+                    "$.data.operating_system_name": [
+                        "string"
+                    ],
+                    "$.data.operating_system_version": [
+                        "numeric-string"
+                    ],
+                    "$.data.os_packages": [
+                        "missing"
+                    ],
+                    "$.data.p0f": [
+                        "numeric-string"
+                    ],
+                    "$.data.postgresql": [
+                        "numeric-string"
+                    ],
+                    "$.data.postgresql_build": [
+                        "missing"
+                    ],
+                    "$.data.powerdns": [
+                        "string"
+                    ],
+                    "$.data.proftpd": [
+                        "numeric-string"
+                    ],
+                    "$.data.pureftpd": [
+                        "numeric-string"
+                    ],
+                    "$.data.roundcube": [
+                        "numeric-string"
+                    ],
+                    "$.data.rsyslog": [
+                        "string"
+                    ],
+                    "$.data.spamd": [
+                        "numeric-string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.*": [
+                        "string"
+                    ],
+                    "$.apache": [
+                        "numeric-string"
+                    ],
+                    "$.apache_php_default_version": [
+                        "numeric-string"
+                    ],
+                    "$.apache_php_versions": [
+                        "list"
+                    ],
+                    "$.apache_php_versions[]": [
+                        "int"
+                    ],
+                    "$.bind": [
+                        "string"
+                    ],
+                    "$.clamav": [
+                        "numeric-string"
+                    ],
+                    "$.cpanel_and_whm": [
+                        "string"
+                    ],
+                    "$.cpanel_packages": [
+                        "missing"
+                    ],
+                    "$.cpanel_php": [
+                        "numeric-string"
+                    ],
+                    "$.cron": [
+                        "numeric-string"
+                    ],
+                    "$.cronie": [
+                        "string"
+                    ],
+                    "$.dovecot": [
+                        "numeric-string"
+                    ],
+                    "$.ea_4_packages": [
+                        "missing"
+                    ],
+                    "$.easyapache": [
+                        "numeric-string"
+                    ],
+                    "$.exim": [
+                        "missing"
+                    ],
+                    "$.linux_kernel": [
+                        "string"
+                    ],
+                    "$.mailman": [
+                        "string"
+                    ],
+                    "$.mariadb": [
+                        "numeric-string"
+                    ],
+                    "$.mariadb_build": [
+                        "missing"
+                    ],
+                    "$.munin": [
+                        "numeric-string"
+                    ],
+                    "$.mysql": [
+                        "numeric-string"
+                    ],
+                    "$.mysql_build": [
+                        "missing"
+                    ],
+                    "$.nscd": [
+                        "string"
+                    ],
+                    "$.openssh-server": [
+                        "string"
+                    ],
+                    "$.operating_system_name": [
+                        "string"
+                    ],
+                    "$.operating_system_version": [
+                        "numeric-string"
+                    ],
+                    "$.os_packages": [
+                        "missing"
+                    ],
+                    "$.p0f": [
+                        "numeric-string"
+                    ],
+                    "$.postgresql": [
+                        "numeric-string"
+                    ],
+                    "$.postgresql_build": [
+                        "missing"
+                    ],
+                    "$.powerdns": [
+                        "string"
+                    ],
+                    "$.proftpd": [
+                        "numeric-string"
+                    ],
+                    "$.pureftpd": [
+                        "numeric-string"
+                    ],
+                    "$.roundcube": [
+                        "numeric-string"
+                    ],
+                    "$.rsyslog": [
+                        "string"
+                    ],
+                    "$.spamd": [
+                        "numeric-string"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$.*",
+                        "kind": "unknown_field"
+                    }
+                ]
+            },
+            {
+                "operation": "whm1:servicestatus",
+                "variant": "whm1:servicestatus#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:03:32Z",
+                "revision": "4eecbe249c754341f454db573a1a475731dc8b9c",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "1dda092b79c26803903cb1fc8036bc9a0ff243b3",
+                "overlay_sha256": "c0da42c127902e3c26c78b70f33295306953ef3cf2c4718367bf9b75efc0eb43",
+                "effective_contract_sha256": "c6f0113531cb5d6b41d5e1a9c6c90eb22242103b939a2faad30aecf4f95479b9",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.service": [
+                        "list"
+                    ],
+                    "$.data.service[]": [
+                        "object"
+                    ],
+                    "$.data.service[].*": [
+                        "object"
+                    ],
+                    "$.data.service[].*.*": [
+                        "int",
+                        "string"
+                    ],
+                    "$.data.service[].display_name": [
+                        "string"
+                    ],
+                    "$.data.service[].enabled": [
+                        "int"
+                    ],
+                    "$.data.service[].installed": [
+                        "int"
+                    ],
+                    "$.data.service[].monitored": [
+                        "int"
+                    ],
+                    "$.data.service[].name": [
+                        "string"
+                    ],
+                    "$.data.service[].running": [
+                        "int",
+                        "missing"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.service": [
+                        "list"
+                    ],
+                    "$.service[]": [
+                        "object"
+                    ],
+                    "$.service[].*": [
+                        "object"
+                    ],
+                    "$.service[].*.*": [
+                        "int",
+                        "string"
+                    ],
+                    "$.service[].display_name": [
+                        "string"
+                    ],
+                    "$.service[].enabled": [
+                        "int"
+                    ],
+                    "$.service[].installed": [
+                        "int"
+                    ],
+                    "$.service[].monitored": [
+                        "int"
+                    ],
+                    "$.service[].name": [
+                        "string"
+                    ],
+                    "$.service[].running": [
+                        "int",
+                        "missing"
+                    ]
+                },
+                "discrepancies": [
+                    {
+                        "path": "$.service[].*",
+                        "kind": "unknown_field"
+                    }
+                ]
+            },
+            {
+                "operation": "whm1:wp_dashboard_get_hostname",
+                "variant": "whm1:wp_dashboard_get_hostname#GET",
+                "route": "whm",
+                "method": "GET",
+                "server_version": "11.138.0.19",
+                "observed_at": "2026-10-31T02:03:33Z",
+                "revision": "4eecbe249c754341f454db573a1a475731dc8b9c",
+                "source_sha256": "6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594",
+                "map_sha256": "f8de708127105351c0cbab815dd4139c38bcee3746d2151465674a0b9364f0b8",
+                "generator_tree": "1dda092b79c26803903cb1fc8036bc9a0ff243b3",
+                "overlay_sha256": "c0da42c127902e3c26c78b70f33295306953ef3cf2c4718367bf9b75efc0eb43",
+                "effective_contract_sha256": "6b52742c08ea3c78b4be8dd568c1efb678bc9e1ba2280ab1f0931f4430ca72b8",
+                "http_status": 200,
+                "api_outcome": "success",
+                "payload_validation": "passed",
+                "probe_outcome": "passed",
+                "failure_kind": null,
+                "response_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.data": [
+                        "object"
+                    ],
+                    "$.data.hostname": [
+                        "string"
+                    ],
+                    "$.metadata": [
+                        "object"
+                    ],
+                    "$.metadata.command": [
+                        "string"
+                    ],
+                    "$.metadata.reason": [
+                        "string"
+                    ],
+                    "$.metadata.result": [
+                        "int"
+                    ],
+                    "$.metadata.version": [
+                        "int"
+                    ]
+                },
+                "payload_paths": {
+                    "$": [
+                        "object"
+                    ],
+                    "$.hostname": [
+                        "string"
+                    ]
+                },
+                "discrepancies": []
+            }
+        ]
+    }
+}

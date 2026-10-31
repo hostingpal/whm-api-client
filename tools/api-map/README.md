@@ -119,6 +119,27 @@ Operation entries (all keys optional):
   reviewed description, preserving later sentences. Both settings require
   operation-level evidence; requiredness, sensitivity and optional null omission
   retain their existing rules.
+  `type: "true"` is a separate evidence-gated presence-only correction, used
+  where sending a key grants a privilege regardless of its value. It requires
+  an optional concrete scalar integer source with exactly `enum: [1]`; the
+  effective parameter must remain optional. Encoding must be absent or `bool`,
+  and a simultaneous wire-name correction is rejected. It generates `?true`
+  with a null default and the existing boolean encoder: true sends `1`, while
+  null omits the key. PHP rejects false, integers (including `1`) and strings
+  before dispatch, in both strict and weak callers. No singleton enum is
+  changed implicitly; ordinary zero/one flags still accept false and emit `0`.
+  Composite, nullable, required and omitted inputs cannot use this correction,
+  and it adds no response type. This guard does not make omission a partial
+  update: each operation's replacement semantics remain in its reviewed notes.
+  `omit_empty: true` is an explicit evidence-gated exception for optional
+  `repeat` parameters whose pinned source is a concrete, nonnullable array of
+  nonnullable strings. It omits exactly `[]`, alongside the existing null
+  omission, while strings and nonempty lists keep their existing encoding and
+  validation. Source-required, effectively required, omitted, scalar, composed
+  and other-encoding inputs are rejected; `true` is the only accepted present
+  value. The setting flows into the effective contract and generated runtime
+  spec. Only `ea4SaveProfile(tags: [])` selects it; required packages and other
+  list operations retain empty-list rejection.
 - `order`: wire names moved to the front of the signature in that order;
   required arguments always precede optional ones, so an order that lists an
   optional parameter before a required one, or an omitted parameter, is a problem.
@@ -141,7 +162,10 @@ Operation entries (all keys optional):
 - `notes`: docblock lines, each `{"kind", "text"}`. Kind `documented` restates
   the pinned documentation and renders as "Documented:"; kind `observed` records
   runtime behaviour, renders as "Observed:" and needs live operation-level
-  evidence. `probe` is stored, not read by the generator.
+  evidence. Kind `policy` renders as "Policy:" for client transport, sensitivity,
+  encoding or other client decisions, without claiming upstream or live evidence.
+  A policy note does not waive live evidence required by a separate observed note.
+  `probe` is stored, not read by the generator.
 - `response`: corrections keyed by payload path. A path is dot-separated field
   names; `[]` steps into list items and `{}` into map values, as in `acct`,
   `acct[]`, `data{}` or `acct[].uid`; the empty path is invalid. A backslash escapes

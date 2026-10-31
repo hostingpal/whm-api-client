@@ -77,7 +77,13 @@ final class WebServerSpec
                                 'not_on_server' => ['type' => 'list', 'items' => ['type' => 'string']],
                             ],
                         ],
-                        'version' => ['type' => 'string'],
+                        'version' => [
+                            'type' => 'union',
+                            'anyOf' => [
+                                ['type' => 'string'],
+                                ['type' => 'number'],
+                            ],
+                        ],
                     ],
                 ],
             ],
@@ -124,7 +130,13 @@ final class WebServerSpec
                                     'not_on_server' => ['type' => 'list', 'items' => ['type' => 'string']],
                                 ],
                             ],
-                            'version' => ['type' => 'string'],
+                            'version' => [
+                                'type' => 'union',
+                                'anyOf' => [
+                                    ['type' => 'string'],
+                                    ['type' => 'number'],
+                                ],
+                            ],
                         ],
                     ],
                 ],
@@ -202,7 +214,7 @@ final class WebServerSpec
             'packages' => ['name' => 'pkg', 'encoding' => 'repeat'],
             'desc' => ['name' => 'desc', 'encoding' => 'scalar'],
             'overwrite' => ['name' => 'overwrite', 'encoding' => 'bool'],
-            'tags' => ['name' => 'tag', 'encoding' => 'repeat'],
+            'tags' => ['name' => 'tag', 'encoding' => 'repeat', 'omit_empty' => true],
             'version' => ['name' => 'version', 'encoding' => 'scalar'],
         ],
         'returns' => [
@@ -400,7 +412,13 @@ final class WebServerSpec
                                             ],
                                         ],
                                     ],
-                                    ['type' => 'map', 'values' => ['type' => 'string']],
+                                    [
+                                        'type' => 'object',
+                                        'fields' => [
+                                            'domain' => ['type' => 'string'],
+                                            'system_default' => ['type' => 'int'],
+                                        ],
+                                    ],
                                 ],
                             ],
                             'version' => ['type' => 'string'],
@@ -483,6 +501,7 @@ final class WebServerSpec
             'version' => ['name' => 'version', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+        'optional' => true,
     ];
 
     public const PHP_INI_SET_DIRECTIVES = [
@@ -494,6 +513,7 @@ final class WebServerSpec
             'version' => ['name' => 'version', 'encoding' => 'scalar'],
         ],
         'returns' => ['type' => 'map', 'values' => ['type' => 'mixed']],
+        'optional' => true,
     ];
 
     public const PHP_SET_DEFAULT_ACCOUNTS_TO_FPM = [
@@ -504,6 +524,7 @@ final class WebServerSpec
             'defaultAccountsToFpm' => ['name' => 'default_accounts_to_fpm', 'encoding' => 'bool'],
         ],
         'returns' => ['type' => 'mixed'],
+        'optional' => true,
     ];
 
     public const PHP_SET_HANDLER = [
