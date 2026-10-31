@@ -2997,3 +2997,40 @@ The initial artifact and every earlier evidence file remain unchanged. Remaining
 committed populated/mutation evidence stays under `8x0.2.26`; no further read-only
 capture is outstanding from this review request. SHA-256:
 `8be0fe648505873d0f36221e0ef750954b5268469399ac2de804ef8c1e5d3b56`.
+
+## Security and access controls (2026-10-31)
+
+The security and access section exposes 24 compatible methods across `blockIp()`,
+`modSecurity()`, `clamScanner()`, `knownHosts()`, `externalAuthentication()`, `ssh()`
+and `lastLogin()`. Thirteen reads use GET and eleven mutations use form POST.
+ClamScanner JSON disinfection remains excluded under `8x0.1.18`; generic form
+calls cannot provide that body contract.
+
+IP block inputs retain documented address, hostname and range spellings. ModSecurity
+domain filters are caller-supplied comma-separated strings, encoded once; dependency
+lists identify other affected domains. Per-domain results and payload status flags
+remain separate from API status. Blocking/removing access and changing protection
+have no client retry or rollback.
+
+ClamScanner preserves source scan types, administrator availability, byte/megabyte
+units, integer counters and string start timestamps. `getScanPaths()` retains its
+pinned object shape. Disinfection log alternatives use the established generator
+merge, preserving common required `type` and all optional branch fields; no
+per-discriminator validation is inferred. Scanning is a POST operation and does
+not establish successful disinfection. The JSON disinfection operation is absent.
+
+KnownHosts calls may fetch host public keys and change the selected account's SSH
+trust file. `verify()` may contact the host and is excluded from routine capture.
+Its payload status is separate from the API status. Provider URLs/icons and public
+key/fingerprint strings remain payload data, without fetching or rendering.
+External account unlinking is a mutation; the pinned response's integer subject
+identifier and removal input's string remain distinct contracts. SSH access is a
+boolean capability, not proof of login, and last-login addresses remain a list.
+
+All 24 methods have offline contract coverage. The fixed live catalog performs
+25 GET observations: WHM version plus twelve parameterless scanner, ModSecurity,
+external-authentication, SSH and last-login reads through both account routes.
+No scan, disinfection, security-setting change, block change, external unlink,
+host-key verification, login or remote URL fetch occurs. Empty inventories do not
+prove populated row contracts, and API success does not prove security enforcement.
+Remaining behavior is tracked under `8x0.2.31`.

@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "LastLogin",
+  "accessor": "lastLogin",
+  "operations": {
+    "uapi:LastLogin/get_last_or_current_logged_in_ip": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.48 and later; returns the IP address of the user who most recently logged in using the selected account context. No request arguments or defaults are declared in the pinned operation."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned payload is a list of strings, rather than a scalar address. Preserve list order, duplicates and an empty list; do not infer nullable values or perform IP normalization. A missing data member is a payload mismatch."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    }
+  }
+}

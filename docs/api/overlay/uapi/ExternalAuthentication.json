@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "ExternalAuthentication",
+  "accessor": "externalAuthentication",
+  "operations": {
+    "uapi:ExternalAuthentication/configured_modules": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later; uses the selected account context. No request defaults are declared in the pinned operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns display information for the server available and configured identity-provider modules. Provider documentation and configuration URLs and icon bytes are returned payload data; the client neither follows URLs nor decodes or renders icons. Empty lists and omitted record fields remain distinct."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:ExternalAuthentication/get_authn_links": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later; uses the selected account context. No request defaults are declared in the pinned operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns identity-provider links for the current cPanel account. link_time is an optional integer Unix timestamp. The source declares subject_unique_identifier as an optional integer in this response, while removeAuthnLink requires a string input; no shared identifier format or lossless round trip is inferred. Omitted fields remain absent."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:ExternalAuthentication/has_external_auth_modules_configured": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 66 and later; uses the selected account context. No request defaults are declared in the pinned operation."
+        },
+        {
+          "kind": "documented",
+          "text": "The data payload is an integer 0/1 flag: 1 means the user enabled an external module and 0 means none is enabled. Payload zero is a successful result when the UAPI envelope status is 1; UAPI status=0 remains an API failure."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:ExternalAuthentication/remove_authn_link": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 54 and later; uses the selected account context. No request defaults are declared in the pinned operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Unlinks the specified external identity-provider account from the selected cPanel account. provider and subjectUniqueIdentifier are required strings; identifiers are forwarded unchanged without numeric conversion, truncation or assumptions about provider-specific formats."
+        },
+        {
+          "kind": "documented",
+          "text": "This mutation uses form POST. The source declares no rollback; the client performs no automatic retry or rollback. The result is a nullable object without pinned fields: preserve opaque object fields and explicit null, and reject an absent data member."
+        }
+      ],
+      "method": "POST",
+      "order": [
+        "provider",
+        "subject_unique_identifier"
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned cpanel.openapi.json SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc, /ExternalAuthentication/remove_authn_link: x-readonly=false and x-rollback=none. It unlinks an external account, so use form POST; request subject_unique_identifier remains a required string despite the integer declared by get_authn_links response."
+        }
+      ]
+    }
+  }
+}

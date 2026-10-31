@@ -989,3 +989,26 @@ The [DNS security capture](../../docs/api/evidence/2026-10-31-dns-security.json)
 with zero discrepancies. DS detail objects and the DDNS inventory are empty;
 populated fields and the other fifteen methods remain offline coverage. No DNS,
 key, registrar or DDNS state changed. Follow-up `8x0.2.26` remains open.
+
+## Security and access controls
+
+`security-access.php` binds `security-access-v1` to 25 exact GET observations:
+WHM version and twelve parameterless account reads, each direct and bridged for
+`npr`. It covers four ClamScanner status/path/infection reads, two ModSecurity reads,
+three ExternalAuthentication reads, both SSH reads and LastLogin. No host, identity,
+file or network target is guessed; KnownHosts/verify is excluded because it may
+contact the target SSH host.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/security-access.php \
+  --output=docs/api/evidence/security-access-new.json
+```
+
+Both tokens, committed inputs, verified TLS, exact URI/method/body guard, no retries
+and new-only output publication are required. Evidence stores structural paths and
+types only, wildcarding dynamic keys; file paths, identities, IPs, icons and URLs
+are not persisted as values. No scan, disinfection, blocking, protection changes,
+external-authentication unlink, host-key mutation/verification, login or URL fetch
+runs. Strict assessment accepts no discrepancies or acknowledgments. Follow-up
+`8x0.2.31` retains all unobserved methods, variants and enforcement behavior.

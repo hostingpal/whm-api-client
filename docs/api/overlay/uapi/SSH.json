@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "SSH",
+  "accessor": "ssh",
+  "class": "Ssh",
+  "operations": {
+    "uapi:SSH/get_port": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later; uses the selected account context. No request arguments or defaults are declared in the pinned operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns the server SSH port as an optional integer; no numeric-string coercion is inferred. Reading the port does not connect to SSH or establish SSH availability."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    },
+    "uapi:SSH/get_shell": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 11.42 and later; uses the selected account context. No request arguments or defaults are declared in the pinned operation."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns optional boolean has_terminal_access and optional string shell for the selected account. Preserve false and empty strings separately from omission; integer 0/1 flags are not booleans for this response. This read does not open a shell or establish successful SSH authentication."
+        }
+      ],
+      "probe": {
+        "phase": "read-only",
+        "arguments": {},
+        "routes": [
+          "direct-uapi",
+          "bridged-uapi"
+        ],
+        "expected": "success"
+      }
+    }
+  }
+}

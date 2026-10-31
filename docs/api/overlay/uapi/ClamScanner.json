@@ -1,0 +1,138 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "ClamScanner",
+  "accessor": "clamScanner",
+  "operations": {
+    "uapi:ClamScanner/check_disinfection_status": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. disinfectFiles is excluded pending JSON transport under whm-api-client-8x0.1.18."
+        },
+        {
+          "kind": "documented",
+          "text": "Omit lastId to return the entire disinfection log; supplying the last received record ID returns only subsequent records and is recommended for polling performance. The source specifies an integer minimum of 1; values are forwarded without client-side range enforcement."
+        },
+        {
+          "kind": "documented",
+          "text": "details preserves step, issue and done record fields: optional file, numeric id, message and state, with type required in every alternative. The pinned step/issue alternatives require state, while done requires only type. Existing object-union merging preserves all fields and common requiredness; it does not enforce a discriminator-dependent state rule. Numeric IDs may be integers or fractional numbers."
+        },
+        {
+          "kind": "documented",
+          "text": "The status prose lists done, none, queued and running, while its formal enum lists done, queued and running. Keep the string contract without inventing a closed runtime enum. log is the disinfection log path; results do not initiate disinfection or fetch any file."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ClamScanner/check_disinfection_status GET declares x-readonly=true. Preserve the read-only GET. Preserve the inline response schema, required fields, nullable data and exact scalar units/types; infer no response list from a plural operation name."
+        }
+      ]
+    },
+    "uapi:ClamScanner/get_scan_paths": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. disinfectFiles is excluded pending JSON transport under whm-api-client-8x0.1.18."
+        },
+        {
+          "kind": "documented",
+          "text": "Available scan types depend on the administrator settings in Configure ClamAV. The pinned data schema is one object with optional id and message, not a list. id documents home, mail, public_html and public_ftp; no list alternative is inferred from the plural name."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ClamScanner/get_scan_paths GET declares x-readonly=true. Preserve the read-only GET. Preserve the inline response schema, required fields, nullable data and exact scalar units/types; infer no response list from a plural operation name."
+        }
+      ]
+    },
+    "uapi:ClamScanner/get_scan_status": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. disinfectFiles is excluded pending JSON transport under whm-api-client-8x0.1.18."
+        },
+        {
+          "kind": "documented",
+          "text": "current_file is the current path and infected_files is a string list. scan_complete remains integer 0/1. scanned_file_count and total_file_count count files; scanned_file_size is bytes and total_file_size_MiB is the separately named total megabyte quantity. time_started is an epoch timestamp string, not an integer. Preserve omission separately from zero, empty lists and empty strings."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ClamScanner/get_scan_status GET declares x-readonly=true. Preserve the read-only GET. Preserve the inline response schema, required fields, nullable data and exact scalar units/types; infer no response list from a plural operation name."
+        }
+      ]
+    },
+    "uapi:ClamScanner/list_infected_files": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. disinfectFiles is excluded pending JSON transport under whm-api-client-8x0.1.18."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a list with optional absolute file path and virus_type in each row. Empty results remain an empty list. Paths and virus descriptions are payload data; the client does not open the files or take any action on them."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ClamScanner/list_infected_files GET declares x-readonly=true. Preserve the read-only GET. Preserve the inline response schema, required fields, nullable data and exact scalar units/types; infer no response list from a plural operation name."
+        }
+      ]
+    },
+    "uapi:ClamScanner/start_scan": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 94 and later. Operates on the selected account. The documented workflow starts a scan, polls getScanStatus until complete, lists infected files, lets the user choose each action, queues JSON disinfection and polls checkDisinfectionStatus. This client does not start or poll automatically. disinfectFiles is excluded pending JSON transport under whm-api-client-8x0.1.18."
+        },
+        {
+          "kind": "documented",
+          "text": "scanType is required: home scans the entire account home, mail the email directory, public_html the web directory and public_ftp the FTP directory. Availability depends on administrator configuration. Starts scanner work immediately; the source declares no rollback and the client neither retries nor rolls back."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a nullable object without pinned fields. Preserve opaque fields and explicit null; an absent data member is a payload mismatch. No task ID or successful scan completion is inferred from this result."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /ClamScanner/start_scan GET declares x-readonly=false. Use form POST because this starts scanner work and x-rollback=none. Preserve the inline response schema, required fields, nullable data and exact scalar units/types; infer no response list from a plural operation name."
+        }
+      ]
+    },
+    "uapi:ClamScanner/disinfect_files": {
+      "exclude": {
+        "reason": "Requires an application/json request body with a dynamic actions object mapping infected-file paths to disinfection choices. JSON transport remains under whm-api-client-8x0.1.18; generic GET/form POST calls cannot represent this body. This operation is not deprecated.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned /ClamScanner/disinfect_files POST requestBody/content/application~1json/schema/properties/actions is an object whose additionalProperties enum is cleanse_mailbox, delete, quarantine or ignore. The property names are absolute or account-home-relative file paths. x-readonly=false and x-rollback=none; preserve the JSON transport exclusion rather than inventing a scalar form serialization."
+          }
+        ]
+      }
+    }
+  }
+}
