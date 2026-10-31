@@ -871,7 +871,7 @@
             "kind": "doc",
             "version": "pinned 2026-10-13",
             "date": "2026-10-31",
-            "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /update_sql_config GET requestBody/content/application~1json specifies a JSON database configuration body; form encoding cannot represent the documented transport."
+            "note": "Pinned whm.openapi.json.gz SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. /update_sql_config POST requestBody/content/application~1json specifies a JSON database configuration body; form encoding cannot represent the documented transport."
           }
         ]
       }
