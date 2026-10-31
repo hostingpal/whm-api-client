@@ -1387,3 +1387,11 @@ Eight fixed GETs read version, WHM retention and selected-account settings/archi
 error-log metadata through both UAPI routes. Existing opt-in, committed-input,
 exact request guard, TLS and immutable structural-output rules apply. No existing
 log contents, archive deletion or settings mutation runs. Keep gaps under `8x0.2.55`.
+
+The corrected log metadata capture at dd5e626 on 11.138.0.19 passes eight GET
+checks and strict assessment with zero discrepancies. Only WHM default_retention
+and UAPI get_settings retention_days normalize canonical integer strings; only
+that UAPI read's archive_logs/prune_archive accept exact quoted flags. Siblings
+stay strict. Account/archive rows are populated, error-log lists empty. No log
+content, deletion or setting mutation ran. Initial e5476c1 evidence stays failed
+and immutable; remaining live work stays under 8x0.2.55.

@@ -1435,6 +1435,15 @@ and error-log metadata for designated npr.rs. It reads no existing log content,
 deletes no archive and changes no settings. Populated/lifecycle variants and
 actual retention behavior remain under `8x0.2.55`.
 
+
+The corrected log metadata capture at dd5e626 on 11.138.0.19 passes eight GET
+checks and strict assessment with zero discrepancies. Only WHM default_retention
+and UAPI get_settings retention_days normalize canonical integer strings; only
+that UAPI read's archive_logs/prune_archive accept exact quoted flags. Siblings
+stay strict. Account/archive rows are populated, error-log lists empty. No log
+content, deletion or setting mutation ran. Initial e5476c1 evidence stays failed
+and immutable; remaining live work stays under 8x0.2.55.
+
 ## Architecture and Conventions
 
 - Follow the [agreed PHP client interface](docs/superpowers/specs/2026-10-13-php-client-design.md):
