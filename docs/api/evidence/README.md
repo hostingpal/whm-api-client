@@ -879,6 +879,96 @@ operation or mutation compatibility, including the effective POST login-URL meth
 All remaining operations and variants stay under `8x0.2.40`. Immutable SHA-256:
 `79245a336ed4daacbc6ac02c1bc48a3c72f64dee68f42987b5ab1dafb6366c81`.
 
+## Site-builder domain-capability evidence
+
+The [site-builder capability capture](2026-10-31-site-builders.json) at
+`fcd979dfce9657c69ac92cb47ef17f3301fa03cb` on `11.138.0.19` records five
+HTTP-200 observations. Version and Sitejet capability on both routes pass; Nova
+capability returns API failure on both routes and its payload is not validated.
+Strict assessment remains failed with zero schema discrepancies. The artifact
+does not establish the failure cause; the documented AI App Builder prerequisite
+alone does not diagnose it. No contract is loosened or failure waived.
+
+Sitejet returns an integer capability value; this structural observation does not
+establish a particular value, successful domain creation or publication. No
+account/site creation, token retrieval, private content, SSO/OAuth, publishing,
+restoration or URL fetch ran. Remaining operations and variants stay under
+`8x0.2.57`. The failed artifact remains immutable. SHA-256:
+`4094bcd7f3addad45d9ccd76ee56d2d1b2eaa3cfc0a647a9169b37bb2c3fb1d3`.
+
+Separately, reviewer 5721328890 on `11.138.0.19` found `Cpanel::API::Nova`
+missing and all six Nova reads they called failing on both routes. All eleven
+Nova methods are unavailable for verification; writes were not executed and all
+Nova response shapes remain unobserved. Their Sitejet reads and local disposable
+account writes are attributed in the [source audit](../source-audit.md#nova-and-sitejet-site-builders); remote service calls,
+successful restoration and published metadata remain unobserved. The historical
+capture stays failed/not_checked without a waiver, and no corrected-head capture
+ran. Remaining gaps stay open under `8x0.2.57`.
+
+## Log administration live evidence
+
+The initial [log metadata capture](2026-10-31-log-administration.json)
+at `e5476c1b9fd2d8a94f371ab05caee86b46f4ab37` on `11.138.0.19` records eight
+HTTP/API successes and five payload/probe passes. Seven known-field discrepancies
+occur across three observations: WHM default_retention is a numeric string; UAPI
+get_settings archive_logs, prune_archive and retention_days are numeric strings
+on both routes. Those four original capture-bound corrections use: lossless canonical
+integer strings for the two retention fields, exact quoted 0/1 for the two flags.
+Sibling fields remain strict and public normalized values remain integers. The
+structural artifact does not prove both quoted flag values were observed. Initial
+SHA-256: `093432542f5f0dd5ac066707112c3f7e0ae8b5d76bfc29c4fefb3e96160a4550`.
+
+The [corrected capture](2026-10-31-log-administration-corrected.json) at
+`dd5e626ae11f0f6c59e353a17d51bee4868aaa96` on `11.138.0.19` passes all eight
+HTTP/API/payload/probe checks and strict assessment with zero discrepancies.
+WHM account rows and archive inventories are populated; account retention days
+are null and using_default is boolean. Error-log inventories are empty on both
+routes, leaving their populated rows unobserved. No existing log content was read,
+no archive was deleted and no setting changed. API metadata does not establish
+actual retention/rotation. The initial failed artifact remains immutable and
+remaining variants/lifecycle stay under `8x0.2.55`. Corrected SHA-256:
+`743a081ee25a8971df4052534a96c60b05cde3483d9ed624857ccd82912e7255`.
+
+Separate review [5721279104](https://github.com/hostingpal/whm-api-client/pull/68#pullrequestreview-5721279104)
+at `984c5c16e47c43741b50e817a6f87149eb2f86d5` on `11.138.0.19` exercised
+all seven methods with synthetic logs/archives on a disposable account, both UAPI
+routes and the single WHM route. Its token was revoked and account/home removed.
+It observed empty direct `view_error_log` with `log_content: []` and string
+`lines_read: "0"`; nonempty direct/bridged counts were integers. This separate
+review observation motivates only that leaf's integer-string compatibility and
+is absent from both committed captures. The review also observed stored false/zero
+settings, unchanged omitted flags after clearing retention, server rejection of
+1000 outside -1..999 and of an empty-argument settings call. Reviewer source
+inspection found WebServer/rawlog requirements in shared `%API`; neither is
+pinned or a disabled-role runtime test. Unreadable/symlink null metadata,
+php_fpm_error_log and actual rotation/pruning remain open under `8x0.2.55`.
+No corrected-head live run is claimed.
+
+## DAV service-status evidence
+
+The [DAV status capture](2026-10-31-dav-calendar.json) at
+`628c46eec9608e31a5bc32dedb1d374f25d6b1ac` on `11.138.0.19` records seven
+HTTP-200 observations. Version and is_dav_service_enabled on both routes pass;
+shared-global-addressbook and Horde status return API failures on both routes,
+so those payloads are not validated. There are zero schema discrepancies, but
+strict assessment remains failed because of those four API failures. The sanitized
+artifact does not establish their cause. No contract is loosened or failure waived.
+
+The successful service-state payload contains an integer enabled field; the
+structural artifact does not establish a particular value or client behavior.
+No private configuration, contacts, calendars or delegations were read and no
+setting/collection mutation or DAV-client authentication ran. The failed capture
+is immutable; remaining operations/variants stay under `8x0.2.56`. SHA-256:
+`e4cec00d478951bd22f0cc1e82609ebcdcac2041709111a08a8034007770b19a`.
+
+The separate PR 67 review 5721214794 at head `2db7f7e` attributes these
+failures on `11.138.0.19` to the shared-addressbook return-0 stub and missing
+`DAV/is_horde_enabled` handler. It separately inspected private config/listUsers
+reads and disposable-account writes; those operations are outside this capture.
+The fixed catalog remains diagnostic and strict API failures stay failures;
+removing two overlay success recipes does not waive this historical artifact.
+
+
 ## GPG public-key and two-factor status evidence
 
 The [GPG/two-factor capture](2026-10-31-gpg-two-factor.json) at

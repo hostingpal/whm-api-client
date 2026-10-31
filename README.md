@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 89 generated typed groups cover 1,086 documented operations (see
+The 99 generated typed groups cover 1,135 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -301,6 +301,41 @@ Generated coverage is separate from offline test results and live observations;
 an observation establishes only the route, server version and cases exercised.
 An empty live list does not verify the types of records it never returned.
 
+### WHM root-access restrictions
+
+`whm()->security()` exposes both pinned Security functions from cPanel 108.
+`restrictWhmRootAccess()` replaces the root password login allowlist: only listed
+sources may log in as root with a password. Include your own source and every
+existing pattern that must remain. Existing root sessions are not terminated and
+root resellers are not restricted. The API manages
+`/var/cpanel/authorized_whm_root_ips`; upstream warns that direct file modification
+with improper formatting can remove all cPanel and WHM root password access.
+
+Client policy accepts one CIDR string or a nonempty sequential string list and
+sends repeated `cidr` fields in a form POST body, encoded once without changing
+values or locally validating CIDRs. The pinned CLI/URL examples establish repeated
+keys only; the external reviewer reports repeated-form support in
+`Cpanel::Form::Param`.
+
+Source-based findings from the reviewer's inspection of
+`Whostmgr/API/1/RootIPAccess.pm` and `Utils.pm` on `11.138.0.19`: missing input
+raises `MissingParameter`; blank values, including list members, raise `Empty`.
+Each CIDR passes `Net::CIDR::cidrvalidate` before the file is written, so one invalid
+value leaves existing restrictions unchanged. Successful responses contain a
+reduced CIDR list; `Net::CIDR::cidradd` can merge ranges. These findings are
+reviewer-inspected implementation evidence, not locally pinned Perl or live
+verification. They do not specify exact serialized server error messages.
+
+The pinned/effective restriction payload remains an object with an optional
+`cidr` string list; absent/null data fails. Offline schema-compatibility fixtures
+for omitted fields and empty containers do not represent source-success examples.
+`allowAllWhmRootAccess()` removes the restrictions and returns void. Both methods
+send one request, with no automatic retry or rollback; a payload error after API
+success does not undo the change. No SSH/firewall behavior is inferred.
+
+No live root-access, allowlist, connectivity or session change ran. Both methods
+remain unobserved under `8x0.2.59`.
+
 ### WHM API 1
 
 | Handle and accessor | Methods |
@@ -310,8 +345,13 @@ An empty live list does not verify the types of records it never returned.
 | `whm()->webServer()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetHandlers()`, `phpGetDefaultAccountsToFpm()`, `phpGetOldFpmFlag()`, `isConversionInProgress()`, `phpGetVhostsByVersion()` |
 | `whm()->hostingPlans()` | `addOverrideFeaturesForUser()`, `addPackage()`, `addPackageExtension()`, `deleteFeaturelist()`, `deletePackage()`, `deletePackageExtension()`, `editPackage()`, `getAvailableApplications()`, `getFeatureMetadata()`, `getFeatureNames()`, `getFeaturelistData()`, `getFeaturelists()`, `getFeaturelistsByPackageTypes()`, `getPackageExtensionForm()`, `getPackageInfo()`, `getUsersFeaturesSettings()`, `listPackages()`, `matchPackages()`, `removeOverrideFeaturesForUser()`, `verifyUserHasFeature()` |
 | `whm()->dns()` | DNS zone inventory, DNSSEC keys, domains and server DNS administration (40); see [generated methods](src/Api/Whm/Dns.php). |
+| `whm()->security()` | Root password login allowlist replacement and removal (2); read the [root-access cautions](#whm-root-access-restrictions) before use. |
 | `whm()->authentication()` | SSH keys, providers, external-account links and two-factor authentication (30); see [generated methods](src/Api/Whm/Authentication.php). |
 | `whm()->ssl()` | WHM certificate, service SSL and AutoSSL operations (32); see [generated methods](src/Api/Whm/Ssl.php). |
+| `whm()->logs()` | `listAccountsRetention()`; see [log administration](#log-administration). |
+| `whm()->customizations()` | `retrieveCustomizations()`, `deleteCustomizations()`; see [interface data](#whm-interface-customization-and-scoped-data). |
+| `whm()->userData()` | `getScopedUserdata()`, `setScopedUserdata()`; see [interface data](#whm-interface-customization-and-scoped-data). |
+| `whm()->inProductSurvey()` | `getInProductSurveyUrl()`; see [interface data](#whm-interface-customization-and-scoped-data). |
 
 ### cPanel UAPI
 
@@ -338,9 +378,14 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->features()` | All 5 operations: `getFeatureMetadata()`, `hasFeature()`, `hasFeaturesLike()`, `listFeatures()`, `listFeaturesLike()` |
 | `uapi()->email()` | All 96 pinned functions, including mailbox lifecycle, quotas and suspension, forwarders, filters, MX routing, autoresponders, spam settings and delivery diagnostics; see [generated methods](src/Api/Uapi/Email.php). |
 | `uapi()->ssl()` | All 49 nondeprecated functions, including certificate/key/CSR inventory and lifecycle, installation, AutoSSL, SNI and redirects; see [generated methods](src/Api/Uapi/Ssl.php). |
+| `uapi()->logManager()` | `deleteArchive()`, `getSettings()`, `listArchives()`, `listErrorLogs()`, `setSettings()`, `viewErrorLog()`; see [log administration](#log-administration). |
+| `uapi()->nova()` | All 11 pinned functions; see [Nova and Sitejet site builders](#nova-and-sitejet-site-builders). |
+| `uapi()->sitejet()` | All 12 nondeprecated pinned functions; see [Nova and Sitejet site builders](#nova-and-sitejet-site-builders). |
 | `uapi()->quota()` | `getQuotaInfo()`, `getLocalQuotaInfo()` |
 | `uapi()->ftp()` | `addFtp()`, `allowsAnonymousFtp()`, `allowsAnonymousFtpIncoming()`, `changePassword()`, `deleteFtp()`, `ftpExists()`, `getFtpDaemonInfo()`, `getPort()`, `getQuota()`, `getWelcomeMessage()`, `killSession()`, `listFtp()`, `listFtpWithDisk()`, `listSessions()`, `serverName()`, `setAnonymousFtp()`, `setAnonymousFtpIncoming()`, `setHomedir()`, `setQuota()`, `setWelcomeMessage()` |
 | `uapi()->mysql()` | `listDatabases()`, `listUsers()`, `getPrivilegesOnDatabase()`, `getRestrictions()`, `getServerInformation()`, `createDatabase()`, `createUser()`, `setPrivilegesOnDatabase()`, `deleteUser()`, `deleteDatabase()`, `addHost()`, `addHostNote()`, `checkDatabase()`, `deleteHost()`, `dumpDatabaseSchema()`, `getHostNotes()`, `listRoutines()`, `locateServer()`, `renameDatabase()`, `renameUser()`, `repairDatabase()`, `revokeAccessToDatabase()`, `setPassword()`, `setupDbAndUser()`, `updatePrivileges()` |
+| `uapi()->dav()` | `getCalendarContactsConfig()`, `isDavServiceEnabled()`, `isHordeEnabled()`, `hasSharedGlobalAddressbook()`, `enableSharedGlobalAddressbook()`, `disableSharedGlobalAddressbook()`; see version-specific limitations below. |
+| `uapi()->cpDavd()` | `listUsers()`, `listDelegates()`, `addDelegate()`, `updateDelegate()`, `removeDelegate()`, `manageCollection()` |
 | `uapi()->postgresql()` | `createDatabase()`, `createUser()`, `deleteDatabase()`, `deleteUser()`, `getRestrictions()`, `grantAllPrivileges()`, `listDatabases()`, `listUsers()`, `renameDatabase()`, `renameUser()`, `renameUserNoPassword()`, `revokeAllPrivileges()`, `setPassword()`, `updatePrivileges()` |
 | `uapi()->dns()` | `lookup()`, `fetchCpanelGeneratedDomains()`, `parseZone()`, `hasLocalAuthority()`, `ensureDomainsResideOnlyLocally()`, `ensureDomainsUseRecognizedNameservers()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
 | `uapi()->dnssec()` | All 12 pinned functions: key lifecycle, DNSKEY/private-key exports, DS records and NSEC settings. `fetchDsRecords()` and `exportZoneDnskey()` use GET; the other ten use form POST, including private-key export. |
@@ -2164,6 +2209,275 @@ no route is inferred for the other reviewer operations. The committed five-GET
 capture, separate reviewer execution and corrected offline acceptance remain
 separate. Remaining routes, compatibility variants, committed mutation evidence,
 team configuration, login and cryptographic behavior stay under `8x0.2.54`.
+
+### DAV calendars, contacts and delegation
+
+`uapi()->dav()` and `uapi()->cpDavd()` each cover all six pinned functions:
+six reads use GET and six mutations use form POST. They operate on the selected
+cPanel account; identifiers and supplied values retain their exact wire encoding.
+The client sends one request per call, with no retry, rollback, DAV connection,
+synchronization or URL fetch. API success does not establish DAV authentication,
+access enforcement or synchronization.
+
+Review [5721214794](https://github.com/hostingpal/whm-api-client/pull/67#pullrequestreview-5721214794)
+inspected head `2db7f7e077d68a63f89fbb15647202f6da832dc7` on cPanel `11.138.0.19`.
+Its server implementation references are reviewer-inspected `Cpanel/API/DAV.pm`
+and `Cpanel/API/CPDAVD.pm`; this correction performed no new server inspection.
+The reviewer read `npr` through both routes and used a disposable `wrvdav` account,
+a mailbox and a temporary token for writes; account/home/token cleanup was confirmed.
+This report is separate from the immutable seven-GET capture.
+
+`addDelegate()`, `updateDelegate()`, `removeDelegate()` and `manageCollection()`
+accept successful missing/null data as `null`. A present object still validates
+the pinned optional strict integer `shared` flag; that field was not sent by the
+reviewed handlers. Earlier `PayloadMismatchException(outcomeConfirmed=true)`
+followed successful writes; callers must not retry or automatically undo them.
+Observed null successes cover collection create/delete through both routes,
+collection update bridged, and delegation add/update/remove direct. Populated
+`listDelegates()` was checked direct; bridged remove was checked only on empty state.
+
+`updateDelegate(calendar, delegatee, delegator, readonly)` requires an explicit
+nonnullable fourth boolean as client policy: false sends 0 and true sends 1.
+`addDelegate()` retains its optional boolean. The reviewer-inspected implementation
+defaults omission to 1, and an omitted update removed write access from a read-write
+share. Mailbox add/update worked direct but failed bridged with undefined
+`Cpanel::Email::Accounts::manage_email_accounts_db`; no fallback or retry occurs.
+This observation does not establish that every possible bridged form fails.
+
+`listUsers()` returns a map keyed by principal, then collection ID, preserving all
+five optional collection fields and exact local keys. `protected` accepts native
+0/1 and exact quoted "0"/"1", normalized to integers. Evidence paths wildcard both
+dynamic key levels; private names and content are not persisted. Configuration
+`no_ssl.port` and `ssl.port` accept canonical bounded integer strings observed direct
+and native integers observed bridged. `activesync.port` uses the same explicit
+source-family/offline policy; ActiveSync was disabled and its port unobserved.
+Other flags, sibling types, omission and null rules remain strict.
+
+On the reviewed version, shared-addressbook enable/disable are no-op stubs returning
+`shared=0`. `hasSharedGlobalAddressbook()` is a return-0 stub that raises
+`ApiErrorException` with empty `errors()`, with/without name and after enable;
+that failure is not a false/not-shared result. `isHordeEnabled()` fails on both
+routes because the server cannot find function `is_horde_enabled` in module `DAV`.
+The pinned Horde prose promises 0; the current integer-only validator also accepts
+1/-1 offline and adds no singleton-enum validation. These observed limitations
+remain prominent in generated PHPDoc; pinned sources are unchanged.
+
+Collection create requires name; update/delete require path, and create omission
+autogenerates `<collection_type>-<uuid>`. Update needs at least one of name,
+description or calendar-color. The reviewer-inspected source filters them by
+truthiness: empty strings and "0" alone error and are ignored beside another field,
+so they cannot clear a description. The client preserves supplied values and exact
+`calendar-color` encoding without adding cross-field validation or undoing deletion.
+
+The fixed seven-GET catalog is diagnostic, with unchanged account binding, order,
+URIs and guards; it is no availability guarantee. The two misleading overlay
+success recipes for shared-addressbook/Horde reads are removed, while the diagnostic
+catalog retains those known failures. Its original capture remains failed and
+unwaived. No new capture, live request or mutation ran for this correction.
+Remaining availability, route/action and enforcement gaps stay open in `8x0.2.56`.
+
+The immutable [seven-GET capture](docs/api/evidence/2026-10-31-dav-calendar.json)
+at `628c46eec9608e31a5bc32dedb1d374f25d6b1ac` on `11.138.0.19` has seven HTTP
+200 observations: version and both DAV service reads passed, while shared-addressbook
+and Horde failed through both routes with payload `not_checked`. Strict assessment
+is failed despite zero schema discrepancies, with no waiver. SHA-256:
+`e4cec00d478951bd22f0cc1e82609ebcdcac2041709111a08a8034007770b19a`.
+It includes no private reads, writes, DAV access or synchronization proof.
+
+
+### Log administration
+
+`uapi()->logManager()` covers all six pinned functions for the selected account;
+`whm()->logs()->listAccountsRetention()` is WHM account-retention inventory.
+Five reads use GET and two mutations use form POST. LogManager requires cPanel
+82+, with deleteArchive() at 136+ and the error-log methods at 138+; the WHM
+retention inventory requires 136+. Reviewer 5721279104 inspected the server's
+`Cpanel/API/LogManager.pm` on `11.138.0.19`: shared `%API` requirements are the
+WebServer role and rawlog feature for all six UAPI operations. The pinned snapshots
+declare neither requirement, and disabled-role/feature behavior was not tested.
+
+The pinned settings text uses current `~/.cpanel-logs` flag values when present,
+with `cpanel.config` defaults when absent. Client policy omits null arguments and
+transmits explicit false as 0 and explicit zero unchanged. The reviewer stored
+and read back false/zero flags; omitted flags kept their current values after
+`setSettings(retentionDays: -1)`. Here -1 clears the per-user retention override,
+while zero retains indefinitely. The pinned schema supplies a minimum of -1;
+the reviewer observed a server bound of -1..999 and an API error for 1000.
+Native optional bool/int inputs and server-side range/cross-field validation stay
+unchanged, including rejection of a call without arguments. No local maximum
+check is added. These observations do not establish rotation or pruning.
+
+Integer 0|1 UAPI flags, boolean WHM using_default, optional fields and nullable
+retention/error-log metadata retain their contracts. The existing four capture-bound
+conversions remain scoped to WHM default_retention and UAPI get_settings
+archive_logs, prune_archive and retention_days. Separately, the reviewer observed
+empty direct viewErrorLog() returning `log_content: []` and `lines_read: "0"`;
+nonempty direct and bridged counts were native integers. Only lines_read additionally
+accepts canonical signed decimal strings within PHP integer bounds, normalizing
+to int. Native integer/omitted counts and strict sibling mtime/size/flags remain.
+Neither immutable log-administration capture contains viewErrorLog().
+
+Log contents are private payload data; do not log them or explicitly accessible
+PayloadMismatchException payloads. The client forwards paths/selectors unchanged,
+performs no local filesystem access, and makes one request with no retry or undo.
+Deletion/settings can permanently affect archives. Mutations retain unconstrained
+present JSON payloads, including null, and reject absent data. All seven methods
+have offline contracts, including both UAPI routes; the private-log mismatch test
+uses the shared trace suite with argument capture and positive controls.
+Existing StatsManager coverage and its deferred JSON save operation are unchanged.
+
+The fixed eight-GET catalog observes version, WHM retention and selected-account
+settings/archive/error-log metadata. It reads no log contents and makes no writes.
+The initial `e5476c1` artifact remains failed and immutable; the corrected
+`dd5e626` artifact on `11.138.0.19` passes all eight checks and strict assessment
+with zero discrepancies. Account/archive rows are populated; error-log lists are
+empty. Separate reviewer observations at `984c5c1` cover all seven methods on a
+disposable account, including reads, writes and API-error cases through both UAPI
+routes and the single WHM route. The reviewer revoked its token and removed the
+account/home. They establish no live verification of the current corrected head.
+Unreadable/symlink error rows with null size/mtime, php_fpm_error_log and actual
+rotation/pruning remain unobserved under `8x0.2.55`.
+
+### Nova and Sitejet site builders
+
+`uapi()->nova()` covers eleven pinned functions and `uapi()->sitejet()` twelve
+nondeprecated functions: six GETs and seventeen conservative form POSTs. Missing
+`x-readonly` is a source fact; choosing POST is client policy. The two deprecated
+Sitejet template operations remain excluded. Pinned availability is cPanel 110+,
+except Sitejet restore-point/restoration at 120+; Nova requires AI App Builder.
+Only nine Nova descriptions say disabling that feature disables the operation;
+`accountExists()` and `getTier()` retain the feature requirement alone.
+
+[Reviewer 5721328890](https://github.com/hostingpal/whm-api-client/pull/69#pullrequestreview-5721328890)
+on `11.138.0.19` reports all six Nova reads they called failing on both routes
+because `Cpanel::API::Nova` could not load, and its file was absent. All eleven
+methods are unavailable for verification there. Write failures are expected from
+the missing module but were not executed; every Nova response, including overlay
+repairs, remains unobserved.
+
+`createWebsite()` preserves a native integer ID or the pinned object with optional
+integer `websiteID`. The reviewer inspected `Cpanel/API/Sitejet.pm` and
+`Cpanel/Sitejet/Connector.pm`: Connector returns `$ret->{websiteId}` and the handler
+sets data to that bare ID. This is a source-based container correction; remote
+creation and its scalar type were not observed. The bounded integer type comes
+from pinned `websiteID` and inventory `websiteId`, without string, null or float
+coercion. `websiteId` is the request parameter for `getPreviewUrl()` (which returns
+a string) and an inventory metadata key. Contact details, tokens, signatures,
+credential URLs and metadata remain sensitive. Metadata is caller-supplied JSON
+text encoded once as a form field; the client does not decode it or fetch URLs.
+
+Both publication `cleanup` arguments are optional nullable booleans: omit/null
+omits the field, false sends 0 and true sends 1, deleting previous document-root
+files. Nova pins default 0. Sitejet pins no default; the reviewer inspected
+`get('cleanup') || 0`, making omission zero on that server version. Remote
+publication was not executed. Strict PHP callers reject non-null, nonboolean cleanup before
+I/O; this follows the existing API surface without stronger weak-call guarantees.
+
+`createRestorePoint()` is destructive and is not an automatically reversible
+backup. The reviewer inferred deletion from `_clean_up(document_root, exclusions)`
+in server source; live deletion was not witnessed. They observed creation success
+and `restoreDocumentRoot()` refusal on both routes for a never-published domain
+without its `<domain>-files` tracking file. The archive remains at
+`~/<domain>_<time>.gz`, requiring manual recovery. Successful restoration remains
+unobserved. Calls make one request without automatic retry, polling or undo;
+a confirmed write with an invalid payload still throws `PayloadMismatchException`
+with its explicit payload and metadata. Do not retry site creation after that
+confirmed outcome.
+
+The reviewer separately reports `getAllUserSitejetInfo()` with and without domain
+passing quota/status and empty metadata, plus `canCreateDomains()`,
+`isPublishInProgress()` and `getPreviewUrl()` on both routes. Published metadata
+remains unobserved. Local writes on disposable `wrvsite` returned null for
+`createRestorePoint()`/`addApiToken()` and a string for `getApiToken()` after a valid
+stored token; missing-token and foreign-domain cases raised API errors. They
+revoked the temporary token and confirmed account/home removal. These attributed
+observations establish no unreported HTTP method, route variant or private value.
+`addApiToken()` malformed input exposed a generic failure/Error ID; inspected
+source uses `/^[a-z0-9]{32}\z/` and logs specific Invalid token text server-side.
+No local token validator or log access is added.
+
+The historical five-GET capability capture remains failed and immutable: version
+and both Sitejet probes pass, both Nova probes are API failures with payload
+`not_checked`; zero schema discrepancies do not waive those failures. The catalog
+and recipe are unchanged. No new capture or corrected-head live acceptance ran.
+Remote `createAccount()`, `createWebsite()`, `getSsoLink()` and `startPublish()`,
+successful restoration, Nova and published variants remain open under
+`8x0.2.57`.
+
+
+```php
+$builder = $client->uapi('npr')->sitejet();
+$canCreate = $builder->canCreateDomains(); // integer 0|1
+$inventory = $builder->getAllUserSitejetInfo(); // Account metadata; handle privately.
+$publishing = $builder->isPublishInProgress(domain: 'example.test');
+// Destructive calls require a deliberate account/domain decision:
+// $builder->startPublish(domain: 'example.test', cleanup: true);
+```
+
+### WHM interface customization and scoped data
+
+`whm()->customizations()`, `whm()->userData()` and `whm()->inProductSurvey()`
+provide five methods. `retrieveCustomizations()` uses GET; the other four use
+form POST as client policy following pinned `x-readonly=false`. Customizations
+requires cPanel 100 and Jupiter; scoped data and survey functions require 86.
+Application and theme remain exact supplied strings.
+
+`retrieveCustomizations()` preserves present data as opaque `mixed`, without
+inventing a branding field schema. The pinned response omits a data contract.
+[Review 5721307565](https://github.com/hostingpal/whm-api-client/pull/70#pullrequestreview-5721307565)
+on `11.138.0.19` reports the raw retrieval map and the old typed void result;
+this is reviewer runtime evidence, with no new local call or capture. Explicit
+null and other JSON variants are compatibility at the opaque boundary, not
+universal observations. Absent data still raises `PayloadMismatchException`.
+
+`deleteCustomizations(application, theme, path)` requires an explicit nonnullable
+selective dot path and still returns void. Reviewer-inspected
+`Whostmgr/API/1/Customizations.pm` and `Whostmgr/Customizations.pm` show that omitted
+path, `''` and `'0'` select the entire default customization section. The existing
+client guard rejects trimmed blanks and trimmed zero before HTTP; rejecting
+whitespace variants is additional conservative policy. Valid paths are forwarded
+without trimming. Missing/null arguments fail before the group callback and
+retain prior metadata; runner guard failures clear it. Deliberate whole-section
+deletion remains available through generic form POST. Deletion has no rollback.
+
+Scoped data belongs to root for any WHM caller, according to reviewer-inspected
+`UserData.pm`. `getScopedUserdata()` creates scope directories under
+`/var/cpanel/userdata/root/scope/` when absent, so it is not a pure read. Its
+pinned string-valued map remains strict; the reviewer separately observed typed
+and raw reads of existing `inproductsurvey`, including digit-string `start_time`.
+`setScopedUserdata(scope, key, value, json)` returns an object map with opaque
+values: inspected source assigns arbitrary JSON and returns the in-memory map
+after saving. This is a source-based write correction, not observed execution.
+Null/missing roots, scalars and nonempty root lists remain invalid; existing
+empty-container compatibility remains.
+
+Scope, key, value and pre-serialized JSON arguments stay sensitive strings. JSON
+text is form-encoded once; no JSON request body or PHP object input is added.
+The client forwards exact supplied strings without new cross-field validation.
+Empty key, value or json, missing write input and combining json with key/value
+raise upstream API errors. Zero is forwarded without inferring server acceptance.
+
+Survey `display` and `new_user` retain exact native/quoted 0|1 normalization.
+Only `link`, `max_dismiss` and `submit_event` additionally preserve null, omission
+and exact strings. Reviewer-inspected `InProductSurvey.pm` and
+`Cpanel/InProductSurvey.pm` plus undefined configuration support those nulls;
+no survey call was made. The function saves `start_time` and a generated `uuid`
+in root's `inproductsurvey` scope, and `last_survey_link` only when a link exists.
+Other fields remain strict; URLs are private payload data and are never fetched.
+
+`update_customizations` remains excluded: required `data` is application/json
+content in a query parameter, not a JSON request body. Its serialization is
+tracked under `8x0.1.22`, with field-JSON design under `8x0.29`.
+All five methods have offline contracts and issue one request without retries,
+rollback or interface-rendering guarantees. The three mutating methods remain
+unobserved under `8x0.2.58`; reviewer reads do not establish corrected-head live
+acceptance or other scope/application/theme variants.
+
+```php
+// Retrieve Jupiter branding without changing configuration or fetching its URLs.
+$customizations = $client->whm()->customizations()
+    ->retrieveCustomizations('cpanel', 'jupiter');
+```
 
 ### Generic calls
 

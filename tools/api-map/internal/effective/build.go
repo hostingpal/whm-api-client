@@ -208,6 +208,12 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	if ov.Void {
 		returns = nil
 	}
+	// A metadata-only schema can omit an actual retrieval payload. Restore only
+	// the narrowly evidenced opaque boundary; all other absent-payload
+	// corrections keep the ordinary documented-payload rejection below.
+	if restoreOpaqueRetrieval(op, v, ov, payload, node, result.Method) {
+		returns = &TypeSpec{Type: "mixed"}
+	}
 	if returns != nil {
 		for _, path := range sortedKeys(ov.Response) {
 			if err := applyCorrection(returns, path, ov.Response[path]); err != nil {

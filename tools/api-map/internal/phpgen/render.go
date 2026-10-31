@@ -184,7 +184,7 @@ func groupClass(g effective.Group) string {
 			uses = append(uses, rootNamespace+`\Exception\PayloadMismatchException`)
 		}
 		for _, p := range op.Params {
-			if isMultiple(p.Encoding) {
+			if isMultiple(p.Encoding) || p.RejectEmpty {
 				uses = append(uses, "InvalidArgumentException")
 			}
 			if p.Sensitive {
