@@ -19,6 +19,8 @@ trait WhmGroups
 
     private ?HostingPlans $hostingPlansGroup = null;
 
+    private ?Resellers $resellersGroup = null;
+
     private ?Server $serverGroup = null;
 
     private ?WebServer $webServerGroup = null;
@@ -51,6 +53,16 @@ trait WhmGroups
     public function hostingPlans(): HostingPlans
     {
         return $this->hostingPlansGroup ??= new HostingPlans($this->run(...));
+    }
+
+    /**
+     * Select the Resellers operations without making a request.
+     *
+     * WHM API 1 functions in the documented Resellers group.
+     */
+    public function resellers(): Resellers
+    {
+        return $this->resellersGroup ??= new Resellers($this->run(...));
     }
 
     /**

@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 40 generated typed groups cover 427 documented operations (see
+The 41 generated typed groups cover 448 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, read-only DNS zones
 and resolvers, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -1288,3 +1288,32 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
+
+## WHM reseller administration
+
+`whm()->resellers()` covers all 21 pinned functions: seven reads use GET and
+fourteen mutations use form POST. The group manages reseller privileges, ACL
+lists, resource/package limits, delegated IPs, nameservers, account enhancements
+and lifecycle operations. Each method retains its pinned version and role notes.
+
+`setupReseller()` grants reseller privileges; ownership changes follow its explicit
+`makeowner` option. Suspension and restoration retain the `reseller-only` option,
+while termination can remove the reseller and owned accounts. Read the individual
+method's destructive/default caveats before calling it. The client performs one
+request without retry or rollback; API success and account-level outcomes remain
+separate. Suspension reasons are sensitive inputs.
+
+ACL save and assignment have different documented flag sets and wire names. They
+remain separate signatures; `acl-all` grants root-level privileges. Omitted flags
+retain the source's server defaults, while explicit false and zero are sent.
+Named ACL lists, account limits, overselling and package limits retain their
+separate meanings. IP/nameserver lists use only the serialization documented for
+each method; the client does not infer or validate a new network configuration.
+
+All 21 functions have independent offline fixtures, including every documented
+ACL input flag and privilege response field. The bounded live catalog reads WHM
+version, default account counts, public contact details, default reseller IPs,
+ACL lists and reseller names. It supplies no guessed reseller identifier, changes
+no accounts, privileges, limits, contact details, IPs or nameservers, and does not
+fetch returned contact URLs. Empty inventories do not establish populated row
+contracts. Follow-up `8x0.2.36` retains the remaining live behavior and variants.

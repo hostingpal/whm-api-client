@@ -1018,3 +1018,19 @@ payload-schema evidence. All fourteen methods are offline-tested; separate
 reviewer lifecycle observations and their limits are recorded in the source audit.
 Committed lifecycle evidence remains under `8x0.2.27`. This capture changed no
 repository or application state.
+
+## WHM reseller inventory
+
+```sh
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+php tools/live-verify/whm-resellers.php \
+  --output=docs/api/evidence/YYYY-MM-DD-whm-resellers.json
+```
+
+The fixed six GET requests read WHM version, account counts, public contact data,
+reseller IPs, ACL lists and reseller names. Optional user arguments are omitted,
+so the documented authenticated defaults apply. The existing exact request guard,
+opt-in, committed-input checks, verified TLS and structural capture remain active.
+No reseller is selected by a guessed identifier and no account, privilege, limit,
+contact, IP or nameserver is changed. Returned URLs are not fetched. Keep remaining
+variants and lifecycle verification under `8x0.2.36`.
