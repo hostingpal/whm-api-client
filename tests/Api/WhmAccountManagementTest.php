@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HostingPal\WhmApiClient\Tests\Api;
 
+use Error;
 use HostingPal\WhmApiClient\Api\Whm\Accounts;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Exception\ApiErrorException;
@@ -76,8 +77,8 @@ final class WhmAccountManagementTest extends TestCase
                 . '"serveradmin":"admin@example","serveralias":"www.fixture.example",'
                 . '"servername":"fixture.example","usecanonicalname":"Off","user":"fixture","userdirprotect":""}}'];
         yield 'editquota' => ['editQuota', 'editquota',
-            'POST', [0, 'fixture'],
-            'quota=0&user=fixture',
+            'POST', ['fixture', 0],
+            'user=fixture&quota=0',
             null];
         yield 'forcepasswordchange' => ['forcePasswordChange', 'forcepasswordchange',
             'POST', ['{"fixture":1}', false],
@@ -99,7 +100,7 @@ final class WhmAccountManagementTest extends TestCase
         yield 'get_maximum_users' => ['getMaximumUsers', 'get_maximum_users',
             'GET', [],
             '',
-            '{"users":100}'];
+            '{"maximum_users":100}'];
         yield 'get_password_strength' => ['getPasswordStrength', 'get_password_strength',
             'POST', ['secret &=+'],
             'password=secret%20%26%3D%2B',
@@ -136,7 +137,7 @@ final class WhmAccountManagementTest extends TestCase
         yield 'list_account_enhancements' => ['listAccountEnhancements', 'list_account_enhancements',
             'GET', [],
             '',
-            '{"enhancements":{"id":"plugin-id","name":"extra"}}'];
+            '{"enhancements":[{"id":"plugin-id","name":"extra"},{"id":"other","name":"second"}]}'];
         yield 'list_users' => ['listUsers', 'list_users',
             'GET', [],
             '',
@@ -163,12 +164,12 @@ final class WhmAccountManagementTest extends TestCase
             '',
             '{"quota_enabled":0}'];
         yield 'set_digest_auth' => ['setDigestAuth', 'set_digest_auth',
-            'POST', [false, 'secret &=+', 'fixture', false],
-            'enabledigest=0&password=secret%20%26%3D%2B&user=fixture&digestauth=0',
+            'POST', ['fixture', 'secret &=+', false],
+            'user=fixture&password=secret%20%26%3D%2B&enabledigest=0',
             null];
         yield 'set_primary_domain_docroot' => ['setPrimaryDomainDocroot', 'set_primary_domain_docroot',
-            'POST', ['public_html/new root', 'fixture'],
-            'docroot=public_html%2Fnew%20root&username=fixture',
+            'POST', ['fixture', 'public_html/new root'],
+            'username=fixture&docroot=public_html%2Fnew%20root',
             '{"documentroot":"/home/fixture/public_html/new root"}'];
         yield 'showbw' => ['showBandwidth', 'showbw',
             'GET', [10, '^fixture$', 'user', 'owner', 2026],
@@ -181,8 +182,8 @@ final class WhmAccountManagementTest extends TestCase
             'account=fixture&name=extra',
             null];
         yield 'untrack_acct_id' => ['untrackAcctId', 'untrack_acct_id',
-            'POST', [false, false, 0, false, 0],
-            'check_exists=0&check_quota=0&gid=0&protect_system=0&uid=0',
+            'POST', [0, 0, false, false, false],
+            'uid=0&gid=0&check_exists=0&check_quota=0&protect_system=0',
             null];
         yield 'verify_new_username' => ['verifyNewUsername', 'verify_new_username',
             'GET', ['fixture'],
@@ -233,8 +234,8 @@ final class WhmAccountManagementTest extends TestCase
             '{"addon.example":{"docroot":null}}'];
         yield 'conversion list object' => ['convertAddonListConversions', 'convert_addon_list_conversions', [],
             '{"conversions":{}}'];
-        yield 'userdata port string' => ['domainUserData', 'domainuserdata', ['fixture.example'],
-            '{"userdata":{"port":"80"}}'];
+        yield 'userdata noncanonical port string' => ['domainUserData', 'domainuserdata', ['fixture.example'],
+            '{"userdata":{"port":"080"}}'];
         yield 'userdata nested log' => ['domainUserData', 'domainuserdata', ['fixture.example'],
             '{"userdata":{"customlog":[{"target":0}]}}'];
         yield 'forced update user' => ['forcePasswordChange', 'forcepasswordchange', ['{}'], '{"updated":[0]}'];
@@ -255,7 +256,7 @@ final class WhmAccountManagementTest extends TestCase
         yield 'bandwidth integer string' => [
             'limitBandwidth', 'limitbw', ['fixture'], '{"bwlimits":[{"bwlimit":"0"}]}'];
         yield 'enhancement name integer' => ['listAccountEnhancements', 'list_account_enhancements', [],
-            '{"enhancements":{"name":1}}'];
+            '{"enhancements":[{"name":1}]}'];
         yield 'user integer' => ['listUsers', 'list_users', [], '{"users":[1]}'];
         yield 'locked object' => ['listLockedAccounts', 'listlockedaccounts', [], '{"account":{}}'];
         yield 'suspension strict timestamp' => ['listSuspended', 'listsuspended', [], '{"account":[{"unixtime":"0"}]}'];
@@ -278,9 +279,43 @@ final class WhmAccountManagementTest extends TestCase
                 'quotaEnabled', 'quota_enabled', [], '{"quota_enabled":' . $flag . '}'];
         }
         yield 'docroot null' => ['setPrimaryDomainDocroot', 'set_primary_domain_docroot',
-            ['public_html/new', 'fixture'],
+            ['fixture', 'public_html/new'],
             '{"documentroot":null}'];
-        yield 'bandwidth strict usage' => ['showBandwidth', 'showbw', [], '{"acct":[{"bwusage":[{"usage":"0"}]}]}'];
+        yield 'bandwidth noncanonical usage' => ['showBandwidth', 'showbw', [],
+            '{"acct":[{"bwusage":[{"usage":"00"}]}]}'];
+        $invalidIntegers = ['null', 'true', 'false', '1.0', '1.5', '[]', '{}', '""', '"01"', '"-0"',
+            '"+1"', '"-01"', '" 1"', '"1 "', '"1.0"', '"1e3"',
+            '"' . PHP_INT_MAX . '0"', '"' . PHP_INT_MIN . '0"', (string) PHP_INT_MAX . '0'];
+        foreach ($invalidIntegers as $value) {
+            yield 'maximum invalid ' . $value => ['getMaximumUsers', 'get_maximum_users', [],
+                '{"maximum_users":' . $value . '}'];
+            yield 'total bandwidth invalid ' . $value => ['showBandwidth', 'showbw', [],
+                '{"totalused":' . $value . '}'];
+            yield 'domain bandwidth invalid ' . $value => ['showBandwidth', 'showbw', [],
+                '{"acct":[{"bwusage":[{"usage":' . $value . '}]}]}'];
+            yield 'port invalid ' . $value => ['domainUserData', 'domainuserdata', ['fixture.example'],
+                '{"userdata":{"port":' . $value . '}}'];
+        }
+        foreach (['hascgi', 'phpopenbasedirprotect'] as $field) {
+            foreach (
+                ['2', '"2"', '"01"', '"-0"', '"+1"', '" 1"', '"1.0"', 'true', 'false',
+                'null', '1.0', '[]', '{}'] as $value
+            ) {
+                yield $field . ' invalid ' . $value => ['domainUserData', 'domainuserdata', ['fixture.example'],
+                    '{"userdata":{"' . $field . '":' . $value . '}}'];
+            }
+        }
+        foreach (
+            ['null', '1', '"x"', '{"id":"id","name":"name"}', '[1]', '[{"id":null}]',
+            '[{"id":1}]', '[{"name":false}]'] as $value
+        ) {
+            yield 'enhancement list invalid ' . $value => ['listAccountEnhancements', 'list_account_enhancements', [],
+                '{"enhancements":' . $value . '}'];
+        }
+        yield 'maximum pinned users remains strict' => ['getMaximumUsers', 'get_maximum_users', [],
+            '{"maximum_users":"100","users":"100"}'];
+        yield 'bandwidth sibling totalbytes remains strict' => ['showBandwidth', 'showbw', [],
+            '{"totalused":"12","acct":[{"totalbytes":"12"}]}'];
     }
 
     /** @param array<array-key, mixed> $arguments */
@@ -357,8 +392,8 @@ final class WhmAccountManagementTest extends TestCase
         yield 'bandwidth zero' => ['limitBandwidth', 'limitbw', 'POST', ['fixture', 0], 'user=fixture&bwlimit=0', '{}'];
         yield 'bandwidth null omitted' => [
             'limitBandwidth', 'limitbw', 'POST', ['fixture', null], 'user=fixture', '{}'];
-        yield 'disk quota unlimited' => ['editQuota', 'editquota', 'POST', ['unlimited', 'fixture'],
-            'quota=unlimited&user=fixture', null];
+        yield 'disk quota unlimited' => ['editQuota', 'editquota', 'POST', ['fixture', 'unlimited'],
+            'user=fixture&quota=unlimited', null];
         yield 'password forcing default' => ['forcePasswordChange', 'forcepasswordchange', 'POST',
             ['usersJson' => '{ "fixture": 1 }'], 'users_json=%7B%20%22fixture%22%3A%201%20%7D', '{}'];
         yield 'password forcing stop' => ['forcePasswordChange', 'forcepasswordchange', 'POST',
@@ -372,11 +407,11 @@ final class WhmAccountManagementTest extends TestCase
         yield 'enhancement ID omission is documented no-op' => [
             'modifyAccountEnhancement', 'modify_account_enhancement', 'POST',
             ['extra'], 'name=extra', '{}'];
-        yield 'digest alias omitted' => ['setDigestAuth', 'set_digest_auth', 'POST', [true, 's e+c&r', 'fixture'],
-            'enabledigest=1&password=s%20e%2Bc%26r&user=fixture', null];
+        yield 'digest alias omitted' => ['setDigestAuth', 'set_digest_auth', 'POST', ['fixture', 's e+c&r', true],
+            'user=fixture&password=s%20e%2Bc%26r&enabledigest=1', null];
         yield 'docroot empty forwarded for server validation' => [
             'setPrimaryDomainDocroot', 'set_primary_domain_docroot', 'POST',
-            ['', 'fixture'], 'docroot=&username=fixture', '{}'];
+            ['fixture', ''], 'username=fixture&docroot=', '{}'];
         yield 'bandwidth date filter default' => ['showBandwidth', 'showbw', 'GET', [], '', '{}'];
         yield 'bandwidth named explicit date' => ['showBandwidth', 'showbw', 'GET', ['month' => 1, 'year' => 2026],
             'month=1&year=2026', '{}'];
@@ -480,7 +515,7 @@ final class WhmAccountManagementTest extends TestCase
                     if ($operation === 'get_password_strength') {
                         $client->whm()->accounts()->getPasswordStrength('private-password-fixture');
                     } else {
-                        $client->whm()->accounts()->setDigestAuth(false, 'private-password-fixture', 'fixture');
+                        $client->whm()->accounts()->setDigestAuth('fixture', 'private-password-fixture', false);
                     }
                     self::fail('Expected an API failure.');
                 } catch (ApiErrorException $error) {
@@ -582,6 +617,103 @@ final class WhmAccountManagementTest extends TestCase
         self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
         self::assertRequest($http, 'quota_enabled', 'GET', '');
         self::assertCount(1, $http->getRequests());
+    }
+
+    /** @return iterable<string, array{string, string, array<array-key, mixed>, string, array<array-key, mixed>}> */
+    public static function reviewedResponses(): iterable
+    {
+        foreach ([0, 80, 4294967296, PHP_INT_MIN, PHP_INT_MAX] as $value) {
+            foreach ([false, true] as $quoted) {
+                $wire = json_encode($quoted ? (string) $value : $value, JSON_THROW_ON_ERROR);
+                yield 'license maximum ' . $wire => ['getMaximumUsers', 'get_maximum_users', [],
+                    '{"maximum_users":' . $wire . ',"users":7}', ['maximum_users' => $value, 'users' => 7]];
+                yield 'bandwidth bytes ' . $wire => ['showBandwidth', 'showbw', [],
+                    '{"totalused":' . $wire . ',"acct":[{"user":"fixture","totalbytes":0,"bwusage":'
+                        . '[{"domain":"fixture.example","usage":' . $wire . '},{"usage":0},{}]}]}',
+                    ['totalused' => $value, 'acct' => [['user' => 'fixture', 'totalbytes' => 0, 'bwusage' => [
+                        ['domain' => 'fixture.example', 'usage' => $value], ['usage' => 0], [],
+                    ]]]]];
+                yield 'userdata port ' . $wire => ['domainUserData', 'domainuserdata', ['fixture.example'],
+                    '{"userdata":{"port":' . $wire . ',"userdirprotect":"0"}}',
+                    ['userdata' => ['port' => $value, 'userdirprotect' => '0']]];
+            }
+        }
+        foreach (['0' => 0, '1' => 1] as $wire => $expected) {
+            yield 'quoted userdata flags ' . $wire => ['domainUserData', 'domainuserdata', ['fixture.example'],
+                '{"userdata":{"hascgi":"' . $wire . '","phpopenbasedirprotect":"' . $wire . '"}}',
+                ['userdata' => ['hascgi' => $expected, 'phpopenbasedirprotect' => $expected]]];
+        }
+        yield 'observed maximum without pinned users' => ['getMaximumUsers', 'get_maximum_users', [],
+            '{"maximum_users":"100"}', ['maximum_users' => 100]];
+        yield 'pinned users without observed maximum' => ['getMaximumUsers', 'get_maximum_users', [],
+            '{"users":100}', ['users' => 100]];
+        yield 'enhancements two rows and partial fields' => ['listAccountEnhancements', 'list_account_enhancements', [],
+            '{"enhancements":[{"id":"001","name":"One"},{"id":"002","name":"Two"},{"id":"003"},{}]}',
+            ['enhancements' => [
+                ['id' => '001', 'name' => 'One'], ['id' => '002', 'name' => 'Two'], ['id' => '003'], [],
+            ]]];
+        yield 'enhancements empty list' => ['listAccountEnhancements', 'list_account_enhancements', [],
+            '{"enhancements":[]}', ['enhancements' => []]];
+        yield 'untyped bandwidth extra' => ['showBandwidth', 'showbw', [],
+            '{"totalused":"0","acct":[{"bwlimited":{"unreviewed":true}}]}',
+            ['totalused' => 0, 'acct' => [[]]]];
+        yield 'untyped userdata extra' => ['domainUserData', 'domainuserdata', ['fixture.example'],
+            '{"userdata":{"port":"80","phpversion":{"unreviewed":true}}}', ['userdata' => ['port' => 80]]];
+    }
+
+    /** @param array<array-key, mixed> $arguments
+     * @param array<array-key, mixed> $expected
+     */
+    #[DataProvider('reviewedResponses')]
+    public function testReviewedWireValuesPreserveKnownFields(
+        string $method,
+        string $operation,
+        array $arguments,
+        string $payload,
+        array $expected,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($operation, $payload)));
+        $result = $client->whm()->accounts()->{$method}(...$arguments);
+        self::assertSame(self::canonical($expected), self::canonical($result));
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertCount(1, $http->getRequests());
+    }
+
+    public function testDigestAliasCannotCompeteWithPrimaryFlag(): void
+    {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope('set_digest_auth', null)));
+        try {
+            $method = (new ReflectionMethod(Accounts::class, 'setDigestAuth'))->getName();
+            $client->whm()->accounts()->{$method}(
+                user: 'fixture',
+                password: 'synthetic password',
+                enabledigest: true,
+                digestauth: false,
+            );
+            self::fail('The omitted digestauth alias must not remain a callable named argument.');
+        } catch (Error $error) {
+            self::assertStringContainsString('Unknown named parameter $digestauth', $error->getMessage());
+        }
+        self::assertCount(0, $http->getRequests());
+    }
+
+    public function testResourceArgumentsPrecedeValuesAndPasswordRemainsSensitive(): void
+    {
+        foreach (
+            [
+            'editQuota' => ['user', 'quota'],
+            'setPrimaryDomainDocroot' => ['username', 'docroot'],
+            'setDigestAuth' => ['user', 'password', 'enabledigest'],
+            'untrackAcctId' => ['uid', 'gid', 'checkExists', 'checkQuota', 'protectSystem'],
+            ] as $method => $expected
+        ) {
+            $parameters = (new ReflectionMethod(Accounts::class, $method))->getParameters();
+            self::assertSame($expected, array_map(static fn ($parameter): string => $parameter->name, $parameters));
+        }
+        $parameters = (new ReflectionMethod(Accounts::class, 'setDigestAuth'))->getParameters();
+        self::assertCount(1, $parameters[1]->getAttributes(SensitiveParameter::class));
     }
 
     private static function canonical(mixed $value): mixed

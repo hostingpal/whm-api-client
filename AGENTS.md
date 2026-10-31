@@ -1046,6 +1046,62 @@ completion, remote trust or service enforcement. The initial failed artifact is
 unchanged; follow-up `8x0.2.33` owns the remaining variants. SHA-256:
 `b97b7f1bbf91bccc8d048026a1d99c38ecaa049730c165507fde5fe53b111ba1`.
 
+### Expanded WHM account management
+
+`whm()->accounts()` covers 45 of the 49 pinned functions. The expanded surface
+preserves the ten existing methods and adds 23 GET and twelve form POST methods
+for inventories, enhancements, conversion status, quota/bandwidth controls,
+password policy, Digest Authentication and document roots. Password-strength
+calculation uses POST because its password input is sensitive.
+
+JSON personalization calls remain under `8x0.1.18`. Conversion initiation and
+bulk modification remain excluded under `8x0.1.29`: their keyed database-copy and
+MX fields need explicit support. Omitting conversion copy fields copies no MySQL
+databases; the client does not silently drop them. Conversion status supports
+one integer job ID; contradictory indexed examples remain in `8x0.1.21`.
+
+`getMaximumUsers()` preserves the pinned optional `users` integer and the
+separately observed optional `maximum_users`, normalizing bounded canonical
+integer strings in the latter. Missing fields are not evidence of a zero or
+unlimited license limit. `showBandwidth()` normalizes only the observed
+`totalused` and nested `bwusage[].usage` integer strings; `domainUserData()`
+normalizes its observed port strings and exact quoted `hascgi` and
+`phpopenbasedirprotect` flags. Other numeric fields stay strict. Reported extras
+`bwlimited` and `phpversion` remain untyped pending field-contract evidence.
+
+`listAccountEnhancements()` returns an `enhancements` list of records with the
+pinned optional `id` and `name` fields. This repairs the source's missing
+container type; a populated list remains source/offline evidence. An observed
+empty list cannot establish item contracts. Privilege results preserve all 61
+named fields and opaque third-party ACL values. Omission and explicit null stay
+distinct, with each method's units, versions and defaults in generated PHPDoc.
+
+Key arguments come first in quota, document-root and Digest Authentication
+setters. Digest configuration exposes only `enabledigest`; its password remains
+sensitive. `untrackAcctId()` requires callers to supply `uid`, `gid` or both;
+the signature preserves optional selectors and does not add a combination guard.
+`forcePasswordChange()` takes serialized JSON object-map text such as
+`{"user1":1,"user2":1}`, not a JSON list. The client form-encodes it once and
+does not parse or validate the JSON structure.
+
+Enhancement, quota, password/digest and document-root writes can affect accounts
+immediately. API success and conversion status do not establish completed
+migration or hosting behavior. The client adds no retry, rollback, polling,
+purchase or notification. All twelve added POST methods and the login-link
+read remain unobserved in this review pass.
+
+The immutable nine-GET catalog reads version, user counts, disk usage, home roots,
+enhancement/user inventories, privileges and quota availability. The corrected
+capture at `af701b1` on `11.138.0.19` passes HTTP/API/payload/probe checks but stays
+strictly failed for a masked numeric-string unknown-field observation in
+`get_maximum_users`, with pinned `users` absent. The wildcard identifies neither
+a key name nor a field count. The separate reviewer observation of
+`maximum_users` supports its current contract; it does not identify or rewrite
+the historical masked finding. Both original artifacts remain unchanged and
+unwaived. No new capture, mutation or private-link/password read ran for these
+corrections. Remaining live behavior is tracked in `8x0.2.41`; empty-container
+evidence ambiguity remains `8x0.2.50`.
+
 Official API inputs and contract discrepancies are pinned under `docs/api/`. Do not invent
 endpoints, authentication rules, request payloads, or response schemas to fill
 gaps in those sources.
@@ -1498,45 +1554,3 @@ Beads block to `CLAUDE.md` (do not run `bd setup claude` to re-add one).
 Preserve the generated Beads blocks and keep project-specific additions outside
 them. If `bd setup` regenerates a Beads block with profile-neutral wording,
 re-apply the team-maintainer wording; the Git Workflow section is authoritative.
-
-## Expanded WHM account management
-
-`whm()->accounts()` adds 35 methods while preserving its ten existing contracts,
-covering 45 of the 49 pinned functions. The additions use 23 GET and twelve form
-POST requests for account inventories, enhancement management, conversion status,
-quota/bandwidth controls, password policy, digest settings and document roots.
-Password-strength calculation uses POST because its password input is sensitive.
-
-JSON personalization calls remain under `8x0.1.18`. Conversion initiation and
-bulk modification remain excluded under `8x0.1.29`: their keyed database-copy and
-MX fields cannot yet be represented. Omitting the conversion copy fields copies
-no MySQL databases; the client does not silently drop them. Conversion status
-supports one integer job ID; contradictory indexed examples remain in `8x0.1.21`.
-
-Privilege results preserve the source-described list of records, all 61 named
-fields and opaque third-party ACL values. Known fields retain strict source types.
-Omitted values, explicit null, empty results and opaque payloads remain distinct.
-Per-method availability, units, defaults and conditional requirements stay in
-generated PHPDoc. Existing account lifecycle contracts are unchanged.
-
-Enhancement, quota, password/digest and root changes may affect accounts immediately.
-API success and conversion status do not establish completed migration or hosting
-behavior. The client adds no retry, rollback, polling, purchase or notification.
-
-All additions have independent offline contracts. The nine-GET catalog reads
-version, current/maximum user counts, disk usage, home roots, enhancement/user
-inventories, privileges and quota availability. The optional disk-cache selector
-is omitted. It requests no password or private account-link data and makes no
-account, quota, root or configuration changes. `8x0.2.41` retains live gaps.
-
-
-The corrected account-inventory capture at `af701b1` on `11.138.0.19` records
-nine HTTP/API/payload/probe passes. Only `quota_enabled` gains exact quoted
-0/1 compatibility; other flags remain unchanged. Strict status remains failed
-for one masked numeric-string unknown field at `$.*` in `get_maximum_users`,
-whose pinned `users` field was absent. No unknown name or count is inferred,
-and no waiver is added. The first capture stays immutable. Inventories do not
-establish account mutations, quota enforcement or conversion behavior; no mutation
-or private-link/password read ran. Follow-up `8x0.2.41` remains open.
-Corrected artifact SHA-256:
-`f0fa73efb33994ec4c20e9250d0aec5e94ee99041c7940742c8810ef7f7ceb64`.

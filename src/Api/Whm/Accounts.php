@@ -211,6 +211,7 @@ use SensitiveParameter;
  *     }>,
  * }
  * @phpstan-type GetMaximumUsersResult array{
+ *     maximum_users?: int,
  *     users?: int,
  * }
  * @phpstan-type GetPasswordStrengthResult array{
@@ -267,10 +268,10 @@ use SensitiveParameter;
  *     }>,
  * }
  * @phpstan-type ListAccountEnhancementsResult array{
- *     enhancements?: array{
+ *     enhancements?: list<array{
  *         id?: string,
  *         name?: string,
- *     },
+ *     }>,
  * }
  * @phpstan-type ListAccountsResult list<array{
  *     backup?: 0|1,
@@ -972,8 +973,12 @@ final readonly class Accounts
      *
      * Documented: Available from cPanel 11.32.
      *
-     * Documented: Returns Apache domain userdata. userdirprotect remains a string, including the exact empty string;
-     * this method adds no observed numeric conversions.
+     * Documented: Returns Apache domain userdata. userdirprotect remains a string, including the exact empty string.
+     * The separately evidenced port and two flag conversions do not change other userdata fields.
+     *
+     * Observed: The independent 11.138.0.19 review observed a digit-string port and quoted hascgi/phpopenbasedirprotect
+     * flags. port normalizes canonical bounded integer strings; only exact quoted 0/1 flags are accepted for the two
+     * switches. phpversion remains outside the typed contract.
      *
      * API-map identity: whm1:domainuserdata#GET (wire name domainuserdata; Domain Information).
      *
@@ -1004,14 +1009,14 @@ final readonly class Accounts
      *
      * API-map identity: whm1:editquota#GET (wire name editquota; Bandwidth and Disk Quotas).
      *
-     * @param string|int $quota The account's new quota.
      * @param string $user The cPanel account username.
+     * @param string|int $quota The account's new quota.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/bandwidth-and-disk-quotas/accounts-editquota
      */
-    public function editQuota(string|int $quota, string $user): void
+    public function editQuota(string $user, string|int $quota): void
     {
-        ($this->run)(AccountsSpec::EDITQUOTA, ['quota' => $quota, 'user' => $user]);
+        ($this->run)(AccountsSpec::EDITQUOTA, ['user' => $user, 'quota' => $quota]);
     }
 
     /**
@@ -1021,13 +1026,18 @@ final readonly class Accounts
      *
      * Documented: Available from cPanel 11.32.
      *
-     * Documented: usersJson is already serialized JSON text, as established by the pinned string format=json example.
-     * It is form-encoded once, without object encoding or parsing. Omitted stopOnFailure defaults to 0; the updated
-     * list identifies users forced to change their password on their next login.
+     * Documented: The pinned users_json format=json example is a username-keyed object such as {"user1":1,"user2":1};
+     * pass already serialized object text, not a JSON list of usernames. Omitted stopOnFailure defaults to 0; the
+     * updated list identifies users forced to change their password on their next login.
+     *
+     * Documented: Client behavior: usersJson is form-encoded once as caller-supplied text; the client does not parse
+     * it, convert a PHP array to JSON or validate its object structure.
      *
      * API-map identity: whm1:forcepasswordchange#GET (wire name forcepasswordchange; Passwords).
      *
-     * @param string $usersJson The list of users.
+     * @param string $usersJson Already serialized JSON object mapping usernames to 1, for example
+     *     {"user1":1,"user2":1}. The pinned example is an object map, not a JSON list of usernames. The system forces
+     *     the named users to change their passwords at next login.
      * @param bool|null $stopOnFailure Whether to halt the function if it experiences an error. Null omits it.
      * @return ForcePasswordChangeResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
@@ -1184,8 +1194,17 @@ final readonly class Accounts
      *
      * Documented: Available from cPanel 78.
      *
-     * Documented: The license account limit is a native integer; 0 means unlimited. This read does not purchase or
+     * Documented: The pinned response describes optional users as a native integer account limit, with 0 meaning
+     * unlimited. The independently observed maximum_users field is retained separately. This read does not purchase or
      * change a license.
+     *
+     * Observed: The independent 11.138.0.19 review observed maximum_users as a string and no users field. maximum_users
+     * accepts canonical bounded integer strings and native integers, normalizing to int; users stays optional and
+     * strictly integer. This names a newly inspected response field and does not identify the field in any historical
+     * masked artifact.
+     *
+     * Documented: Client behavior: omitted users or maximum_users stays absent. Do not treat an absent limit field as
+     * zero or infer unlimited licensing from an empty result; inspect the returned fields explicitly.
      *
      * API-map identity: whm1:get_maximum_users#GET (wire name get_maximum_users; Account Creation).
      *
@@ -1389,8 +1408,9 @@ final readonly class Accounts
      *
      * Documented: Available from cPanel 98.
      *
-     * Documented: The pinned schema declares one enhancements object with optional id and name fields, not an inferred
-     * list or keyed map. Additional warnings remain in responseMeta()->whm output metadata.
+     * Documented: Returns a list of enhancements with optional id and name strings. This repairs the pinned node that
+     * omits its collection type; only an empty list was observed, so populated row types are source-backed and
+     * offline-tested. Additional warnings remain in responseMeta()->whm output metadata.
      *
      * API-map identity: whm1:list_account_enhancements#GET (wire name list_account_enhancements; Account Enhancements).
      *
@@ -1857,30 +1877,31 @@ final readonly class Accounts
      * Documented: Available from cPanel 11.
      *
      * Documented: Changes Digest Authentication immediately and requires the account password even when disabling it.
-     * digestauth is a documented alias for enabledigest. SSL on port 2078 with a recognized CA removes the documented
-     * need for Digest Authentication. The pinned envelope declares no data payload.
+     * The pin documents digestauth as an alias for enabledigest without defining conflicting-value precedence. SSL on
+     * port 2078 with a recognized CA removes the documented need for Digest Authentication. The pinned envelope
+     * declares no data payload.
+     *
+     * Documented: Client behavior: expose only enabledigest and omit the digestauth alias to prevent conflicting flags.
+     * Call setDigestAuth(user, password, enabledigest); password remains sensitive.
      *
      * API-map identity: whm1:set_digest_auth#GET (wire name set_digest_auth; Account Management).
      *
-     * @param bool $enabledigest Whether to enable Digest Authentication for the account.
-     * @param string $password The account's password.
      * @param string $user The account's username.
-     * @param bool|null $digestauth Whether to enable Digest Authentication for the account. Null omits it.
+     * @param string $password The account's password.
+     * @param bool $enabledigest Whether to enable Digest Authentication for the account.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/sys-set_digest_auth
      */
     public function setDigestAuth(
-        bool $enabledigest,
+        string $user,
         #[SensitiveParameter]
         string $password,
-        string $user,
-        ?bool $digestauth = null,
+        bool $enabledigest,
     ): void {
         ($this->run)(AccountsSpec::SET_DIGEST_AUTH, [
-            'enabledigest' => $enabledigest,
-            'password' => $password,
             'user' => $user,
-            'digestauth' => $digestauth,
+            'password' => $password,
+            'enabledigest' => $enabledigest,
         ]);
     }
 
@@ -1900,20 +1921,20 @@ final readonly class Accounts
      *
      * API-map identity: whm1:set_primary_domain_docroot#GET (wire name set_primary_domain_docroot; Account Management).
      *
-     * @param string $docroot The new document root as a path relative to the account's home directory.
      * @param string $username The cPanel account username whose primary domain's document root you want to change.
+     * @param string $docroot The new document root as a path relative to the account's home directory.
      * @return SetPrimaryDomainDocrootResult
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-set_primary_domain_docroot
      */
-    public function setPrimaryDomainDocroot(string $docroot, string $username): array
+    public function setPrimaryDomainDocroot(string $username, string $docroot): array
     {
         /** @var SetPrimaryDomainDocrootResult $result Validated against AccountsSpec::SET_PRIMARY_DOMAIN_DOCROOT. */
         $result = ($this->run)(AccountsSpec::SET_PRIMARY_DOMAIN_DOCROOT, [
-            'docroot' => $docroot,
             'username' => $username,
+            'docroot' => $docroot,
         ]);
 
         return $result;
@@ -1929,6 +1950,11 @@ final readonly class Accounts
      * Documented: Bandwidth limits, totals and domain usage are in bytes. Omitted month/year use the current values and
      * omitted showres queries all users. Both search and searchtype must be supplied for filtering; the search is a
      * PCRE string, encoded once.
+     *
+     * Observed: The independent 11.138.0.19 review observed digit strings for totalused and acct[].bwusage[].usage.
+     * These byte counts accept canonical strings within PHP integer bounds and normalize to int, including values
+     * larger than 32-bit integers. Other numeric fields remain strict; bwlimited has no typed contract from this
+     * review.
      *
      * API-map identity: whm1:showbw#GET (wire name showbw; Bandwidth and Disk Quotas).
      *
@@ -2040,34 +2066,37 @@ final readonly class Accounts
      *
      * Documented: Available from cPanel 58.
      *
-     * Documented: Supply uid, gid or both. Omitted checkExists, checkQuota and protectSystem default to 1. checkQuota
-     * applies only to UIDs and cannot check filesystems without quota tracking. Explicit false and integer zero are
-     * preserved; removing tracking is immediate.
+     * Documented: The pinned uid/gid descriptions require uid, gid or both, even though each formal parameter is
+     * optional. Supply at least one ID. Omitted checkExists, checkQuota and protectSystem default to 1. checkQuota
+     * applies only to UIDs and cannot check filesystems without quota tracking. Removing tracking is immediate.
+     *
+     * Documented: Client behavior: supply uid or gid explicitly before calling untrackAcctId(). The client preserves
+     * explicit zero and false and does not select a target ID automatically.
      *
      * API-map identity: whm1:untrack_acct_id#GET (wire name untrack_acct_id; Account Management).
      *
+     * @param int|null $uid The user ID to remove from the track list. Null omits it.
+     * @param int|null $gid The group ID to remove from the track list. Null omits it.
      * @param bool|null $checkExists Whether to prevent removal of user or group IDs currently in use. Null omits it.
      * @param bool|null $checkQuota Whether to prevent removal of the user ID if the quota system tracks associated
      *     files. Null omits it.
-     * @param int|null $gid The group ID to remove from the track list. Null omits it.
      * @param bool|null $protectSystem Whether to prevent removal of system user or group IDs. Null omits it.
-     * @param int|null $uid The user ID to remove from the track list. Null omits it.
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/account-management/accounts-untrack_acct_id
      */
     public function untrackAcctId(
+        ?int $uid = null,
+        ?int $gid = null,
         ?bool $checkExists = null,
         ?bool $checkQuota = null,
-        ?int $gid = null,
         ?bool $protectSystem = null,
-        ?int $uid = null,
     ): void {
         ($this->run)(AccountsSpec::UNTRACK_ACCT_ID, [
+            'uid' => $uid,
+            'gid' => $gid,
             'checkExists' => $checkExists,
             'checkQuota' => $checkQuota,
-            'gid' => $gid,
             'protectSystem' => $protectSystem,
-            'uid' => $uid,
         ]);
     }
 

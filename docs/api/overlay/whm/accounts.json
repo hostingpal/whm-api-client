@@ -267,7 +267,11 @@
         },
         {
           "kind": "documented",
-          "text": "Returns Apache domain userdata. userdirprotect remains a string, including the exact empty string; this method adds no observed numeric conversions."
+          "text": "Returns Apache domain userdata. userdirprotect remains a string, including the exact empty string. The separately evidenced port and two flag conversions do not change other userdata fields."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent 11.138.0.19 review observed a digit-string port and quoted hascgi/phpopenbasedirprotect flags. port normalizes canonical bounded integer strings; only exact quoted 0/1 flags are accepted for the two switches. phpversion remains outside the typed contract."
         }
       ],
       "evidence": [
@@ -276,8 +280,55 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned x-readonly is true. Use GET for this read."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET review of revision 2df933435e23c48c859bd6286546b64a26f19074 on cPanel 11.138.0.19 with type-only output: domainuserdata port was a digit string, and hascgi/phpopenbasedirprotect were quoted flags. Compatibility is confined to these three leaves; phpversion remains untyped. This review is separate evidence from historical masked captures; no raw payload is persisted here. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
         }
-      ]
+      ],
+      "response": {
+        "userdata.port": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET review of revision 2df933435e23c48c859bd6286546b64a26f19074 on cPanel 11.138.0.19 with type-only output: domainuserdata returned a digit string at userdata.port. Accept canonical bounded integer strings alongside native integers. Preserve optionality and all sibling fields; no type is inferred for the separately reported untyped phpversion field. This review is separate evidence from historical masked captures; no raw payload is persisted here. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
+            }
+          ]
+        },
+        "userdata.hascgi": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET review of revision 2df933435e23c48c859bd6286546b64a26f19074 on cPanel 11.138.0.19 with type-only output: domainuserdata returned a digit string at userdata.hascgi. Accept only exact quoted 0 and 1 alongside native integer flags. Preserve optionality and all sibling fields; no type is inferred for the separately reported untyped phpversion field. This review is separate evidence from historical masked captures; no raw payload is persisted here. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
+            }
+          ]
+        },
+        "userdata.phpopenbasedirprotect": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET review of revision 2df933435e23c48c859bd6286546b64a26f19074 on cPanel 11.138.0.19 with type-only output: domainuserdata returned a digit string at userdata.phpopenbasedirprotect. Accept only exact quoted 0 and 1 alongside native integer flags. Preserve optionality and all sibling fields; no type is inferred for the separately reported untyped phpversion field. This review is separate evidence from historical masked captures; no raw payload is persisted here. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
+            }
+          ]
+        }
+      }
     },
     "whm1:editquota": {
       "name": "editQuota",
@@ -298,9 +349,19 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned x-readonly is false. Use form POST for this mutation. The pinned success envelope declares metadata only and no data member."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /editquota parameter descriptions identify the target account or IDs independently of the setting values. Reviewed client signature order is user, quota, followed by remaining optional parameters. This puts the target before values without changing wire names, types, sensitivity or parameter omission. No mutation was run in this review. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
         }
       ],
-      "void": true
+      "void": true,
+      "order": [
+        "user",
+        "quota"
+      ]
     },
     "whm1:forcepasswordchange": {
       "name": "forcePasswordChange",
@@ -312,7 +373,11 @@
         },
         {
           "kind": "documented",
-          "text": "usersJson is already serialized JSON text, as established by the pinned string format=json example. It is form-encoded once, without object encoding or parsing. Omitted stopOnFailure defaults to 0; the updated list identifies users forced to change their password on their next login."
+          "text": "The pinned users_json format=json example is a username-keyed object such as {\"user1\":1,\"user2\":1}; pass already serialized object text, not a JSON list of usernames. Omitted stopOnFailure defaults to 0; the updated list identifies users forced to change their password on their next login."
+        },
+        {
+          "kind": "documented",
+          "text": "Client behavior: usersJson is form-encoded once as caller-supplied text; the client does not parse it, convert a PHP array to JSON or validate its object structure."
         }
       ],
       "evidence": [
@@ -321,8 +386,19 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned x-readonly is false. Use form POST for this mutation."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /forcepasswordchange users_json is string format=json with example {\"user1\":1,\"user2\":1,\"user3\":1}. Restore that username-keyed object format in the parameter description, rather than leaving only the ambiguous list-of-users text. No structured-input or JSON validation behavior is added. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
         }
-      ]
+      ],
+      "params": {
+        "users_json": {
+          "description": "Already serialized JSON object mapping usernames to 1, for example {\"user1\":1,\"user2\":1}. The pinned example is an object map, not a JSON list of usernames. The system forces the named users to change their passwords at next login."
+        }
+      }
     },
     "whm1:get_current_users_count": {
       "name": "getCurrentUsersCount",
@@ -400,7 +476,15 @@
         },
         {
           "kind": "documented",
-          "text": "The license account limit is a native integer; 0 means unlimited. This read does not purchase or change a license."
+          "text": "The pinned response describes optional users as a native integer account limit, with 0 meaning unlimited. The independently observed maximum_users field is retained separately. This read does not purchase or change a license."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent 11.138.0.19 review observed maximum_users as a string and no users field. maximum_users accepts canonical bounded integer strings and native integers, normalizing to int; users stays optional and strictly integer. This names a newly inspected response field and does not identify the field in any historical masked artifact."
+        },
+        {
+          "kind": "documented",
+          "text": "Client behavior: omitted users or maximum_users stays absent. Do not treat an absent limit field as zero or infer unlimited licensing from an empty result; inspect the returned fields explicitly."
         }
       ],
       "evidence": [
@@ -409,8 +493,40 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned x-readonly is true. Use GET for this read."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET review of revision 2df933435e23c48c859bd6286546b64a26f19074 on cPanel 11.138.0.19 with type-only output: get_maximum_users returned a separately inspected maximum_users string field, with pinned users absent. Preserve optional maximum_users as int accepting canonical bounded integer strings and retain optional users as a strict native int. The field name comes from this independent inspection, not inference from the earlier wildcard fingerprint. Do not rewrite, identify or waive the immutable historical masked discrepancy from this observation; accepted integer formats/boundaries are validation policy, not additional live findings. This review is separate evidence from historical masked captures; no raw payload is persisted here. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
         }
-      ]
+      ],
+      "response": {
+        "": {
+          "replace": {
+            "type": "object",
+            "fields": {
+              "maximum_users": {
+                "type": "int",
+                "accept": [
+                  "numeric-string"
+                ]
+              },
+              "users": {
+                "type": "int"
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET review of revision 2df933435e23c48c859bd6286546b64a26f19074 on cPanel 11.138.0.19 with type-only output: get_maximum_users returned a separately inspected maximum_users string field, with pinned users absent. Preserve optional maximum_users as int accepting canonical bounded integer strings and retain optional users as a strict native int. The field name comes from this independent inspection, not inference from the earlier wildcard fingerprint. Do not rewrite, identify or waive the immutable historical masked discrepancy from this observation; accepted integer formats/boundaries are validation policy, not additional live findings. This review is separate evidence from historical masked captures; no raw payload is persisted here. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
+            }
+          ]
+        }
+      }
     },
     "whm1:get_password_strength": {
       "name": "getPasswordStrength",
@@ -581,7 +697,7 @@
         },
         {
           "kind": "documented",
-          "text": "The pinned schema declares one enhancements object with optional id and name fields, not an inferred list or keyed map. Additional warnings remain in responseMeta()->whm output metadata."
+          "text": "Returns a list of enhancements with optional id and name strings. This repairs the pinned node that omits its collection type; only an empty list was observed, so populated row types are source-backed and offline-tested. Additional warnings remain in responseMeta()->whm output metadata."
         }
       ],
       "evidence": [
@@ -591,7 +707,33 @@
           "date": "2026-10-31",
           "note": "The pinned x-readonly is true. Use GET for this read."
         }
-      ]
+      ],
+      "response": {
+        "enhancements": {
+          "replace": {
+            "type": "list",
+            "items": {
+              "type": "object",
+              "fields": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "The /list_account_enhancements description promises all existing enhancements. Its enhancements node omits type and items while declaring id:string and name:string record properties. Repair it as a list of objects with those two optional fields, consistently with the reviewed collection contract. The capture observed only an empty list, which cannot establish populated item fields; these item types come from the pin and populated list behavior is offline-tested, not observed live. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
+            }
+          ]
+        }
+      }
     },
     "whm1:list_users": {
       "name": "listUsers",
@@ -1005,7 +1147,11 @@
         },
         {
           "kind": "documented",
-          "text": "Changes Digest Authentication immediately and requires the account password even when disabling it. digestauth is a documented alias for enabledigest. SSL on port 2078 with a recognized CA removes the documented need for Digest Authentication. The pinned envelope declares no data payload."
+          "text": "Changes Digest Authentication immediately and requires the account password even when disabling it. The pin documents digestauth as an alias for enabledigest without defining conflicting-value precedence. SSL on port 2078 with a recognized CA removes the documented need for Digest Authentication. The pinned envelope declares no data payload."
+        },
+        {
+          "kind": "documented",
+          "text": "Client behavior: expose only enabledigest and omit the digestauth alias to prevent conflicting flags. Call setDigestAuth(user, password, enabledigest); password remains sensitive."
         }
       ],
       "evidence": [
@@ -1014,14 +1160,34 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned x-readonly is false. Use form POST for this mutation. The pinned success envelope declares metadata only and no data member."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_digest_auth parameter descriptions identify the target account or IDs independently of the setting values. Reviewed client signature order is user, password, enabledigest, followed by remaining optional parameters. This puts the target before values without changing wire names, types, sensitivity or parameter omission. No mutation was run in this review. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned set_digest_auth describes digestauth as an optional alias of enabledigest but does not establish precedence for conflicting values. Omit the alias from the typed signature so one call sends only enabledigest. password remains SensitiveParameter and follows user; no alias precedence is inferred from other operations. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
         }
       ],
       "void": true,
       "params": {
         "password": {
           "sensitive": true
+        },
+        "digestauth": {
+          "omit": true
         }
-      }
+      },
+      "order": [
+        "user",
+        "password",
+        "enabledigest"
+      ]
     },
     "whm1:set_primary_domain_docroot": {
       "name": "setPrimaryDomainDocroot",
@@ -1042,7 +1208,17 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned x-readonly is false. Use form POST for this mutation."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /set_primary_domain_docroot parameter descriptions identify the target account or IDs independently of the setting values. Reviewed client signature order is username, docroot, followed by remaining optional parameters. This puts the target before values without changing wire names, types, sensitivity or parameter omission. No mutation was run in this review. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
         }
+      ],
+      "order": [
+        "username",
+        "docroot"
       ]
     },
     "whm1:showbw": {
@@ -1056,6 +1232,10 @@
         {
           "kind": "documented",
           "text": "Bandwidth limits, totals and domain usage are in bytes. Omitted month/year use the current values and omitted showres queries all users. Both search and searchtype must be supplied for filtering; the search is a PCRE string, encoded once."
+        },
+        {
+          "kind": "observed",
+          "text": "The independent 11.138.0.19 review observed digit strings for totalused and acct[].bwusage[].usage. These byte counts accept canonical strings within PHP integer bounds and normalize to int, including values larger than 32-bit integers. Other numeric fields remain strict; bwlimited has no typed contract from this review."
         }
       ],
       "evidence": [
@@ -1064,8 +1244,42 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned x-readonly is true. Use GET for this read."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Independent WHM GET review of revision 2df933435e23c48c859bd6286546b64a26f19074 on cPanel 11.138.0.19 with type-only output: showbw totalused and acct[].bwusage[].usage were digit strings. Only these two byte-count leaves gain integer-string compatibility; other fields keep their pinned contracts and bwlimited remains untyped. This review is separate evidence from historical masked captures; no raw payload is persisted here. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
         }
-      ]
+      ],
+      "response": {
+        "totalused": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET review of revision 2df933435e23c48c859bd6286546b64a26f19074 on cPanel 11.138.0.19 with type-only output: showbw returned digit strings at totalused despite its pinned integer byte-count schema. Apply canonical lossless integer-string normalization within PHP integer bounds only to this field, preserving native integers, non-nullability and optional presence. Values beyond a 32-bit range are supported within the running PHP integer range; malformed strings and overflow remain invalid. No type is inferred for the separately reported untyped bwlimited field. This review is separate evidence from historical masked captures; no raw payload is persisted here. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
+            }
+          ]
+        },
+        "acct[].bwusage[].usage": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Independent WHM GET review of revision 2df933435e23c48c859bd6286546b64a26f19074 on cPanel 11.138.0.19 with type-only output: showbw returned digit strings at acct[].bwusage[].usage despite its pinned integer byte-count schema. Apply canonical lossless integer-string normalization within PHP integer bounds only to this field, preserving native integers, non-nullability and optional presence. Values beyond a 32-bit range are supported within the running PHP integer range; malformed strings and overflow remain invalid. No type is inferred for the separately reported untyped bwlimited field. This review is separate evidence from historical masked captures; no raw payload is persisted here. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
+            }
+          ]
+        }
+      }
     },
     "whm1:unassign_account_enhancement": {
       "name": "unassignAccountEnhancement",
@@ -1100,7 +1314,11 @@
         },
         {
           "kind": "documented",
-          "text": "Supply uid, gid or both. Omitted checkExists, checkQuota and protectSystem default to 1. checkQuota applies only to UIDs and cannot check filesystems without quota tracking. Explicit false and integer zero are preserved; removing tracking is immediate."
+          "text": "The pinned uid/gid descriptions require uid, gid or both, even though each formal parameter is optional. Supply at least one ID. Omitted checkExists, checkQuota and protectSystem default to 1. checkQuota applies only to UIDs and cannot check filesystems without quota tracking. Removing tracking is immediate."
+        },
+        {
+          "kind": "documented",
+          "text": "Client behavior: supply uid or gid explicitly before calling untrackAcctId(). The client preserves explicit zero and false and does not select a target ID automatically."
         }
       ],
       "evidence": [
@@ -1109,9 +1327,25 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "The pinned x-readonly is false. Use form POST for this mutation. The pinned success envelope declares metadata only and no data member."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /untrack_acct_id parameter descriptions identify the target account or IDs independently of the setting values. Reviewed client signature order is uid, gid, followed by remaining optional parameters. This puts the target before values without changing wire names, types, sensitivity or parameter omission. No mutation was run in this review. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Both /untrack_acct_id uid and gid parameter descriptions explicitly require uid, gid or both. Retain optional scalar IDs while documenting this required combination and putting the two target IDs first; no new runtime combination validation is introduced. Pinned WHM source SHA-256 6edb13c51d53f3c2be1fa83cc93e31d3a81f4f8506b3b45284fa00b986041594. Review: https://github.com/hostingpal/whm-api-client/pull/55#pullrequestreview-5720788777."
         }
       ],
-      "void": true
+      "void": true,
+      "order": [
+        "uid",
+        "gid"
+      ]
     },
     "whm1:verify_new_username": {
       "name": "verifyNewUsername",

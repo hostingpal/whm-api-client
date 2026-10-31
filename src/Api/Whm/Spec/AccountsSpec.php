@@ -476,12 +476,12 @@ final class AccountsSpec
                         ],
                         'documentroot' => ['type' => 'string'],
                         'group' => ['type' => 'string'],
-                        'hascgi' => ['type' => 'flag'],
+                        'hascgi' => ['type' => 'flag', 'accept' => ['string-flag']],
                         'homedir' => ['type' => 'string'],
                         'ip' => ['type' => 'string'],
                         'owner' => ['type' => 'string'],
-                        'phpopenbasedirprotect' => ['type' => 'flag'],
-                        'port' => ['type' => 'int'],
+                        'phpopenbasedirprotect' => ['type' => 'flag', 'accept' => ['string-flag']],
+                        'port' => ['type' => 'int', 'accept' => ['numeric-string']],
                         'scriptalias' => [
                             'type' => 'list',
                             'items' => [
@@ -509,8 +509,8 @@ final class AccountsSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'quota' => ['name' => 'quota', 'encoding' => 'scalar'],
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
+            'quota' => ['name' => 'quota', 'encoding' => 'scalar'],
         ],
         'returns' => null,
     ];
@@ -649,6 +649,7 @@ final class AccountsSpec
         'returns' => [
             'type' => 'object',
             'fields' => [
+                'maximum_users' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'users' => ['type' => 'int'],
             ],
         ],
@@ -818,10 +819,13 @@ final class AccountsSpec
             'type' => 'object',
             'fields' => [
                 'enhancements' => [
-                    'type' => 'object',
-                    'fields' => [
-                        'id' => ['type' => 'string'],
-                        'name' => ['type' => 'string'],
+                    'type' => 'list',
+                    'items' => [
+                        'type' => 'object',
+                        'fields' => [
+                            'id' => ['type' => 'string'],
+                            'name' => ['type' => 'string'],
+                        ],
                     ],
                 ],
             ],
@@ -1258,10 +1262,9 @@ final class AccountsSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'enabledigest' => ['name' => 'enabledigest', 'encoding' => 'bool'],
-            'password' => ['name' => 'password', 'encoding' => 'scalar'],
             'user' => ['name' => 'user', 'encoding' => 'scalar'],
-            'digestauth' => ['name' => 'digestauth', 'encoding' => 'bool'],
+            'password' => ['name' => 'password', 'encoding' => 'scalar'],
+            'enabledigest' => ['name' => 'enabledigest', 'encoding' => 'bool'],
         ],
         'returns' => null,
     ];
@@ -1271,8 +1274,8 @@ final class AccountsSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
-            'docroot' => ['name' => 'docroot', 'encoding' => 'scalar'],
             'username' => ['name' => 'username', 'encoding' => 'scalar'],
+            'docroot' => ['name' => 'docroot', 'encoding' => 'scalar'],
         ],
         'returns' => [
             'type' => 'object',
@@ -1308,7 +1311,7 @@ final class AccountsSpec
                                     'fields' => [
                                         'deleted' => ['type' => 'flag'],
                                         'domain' => ['type' => 'string'],
-                                        'usage' => ['type' => 'int'],
+                                        'usage' => ['type' => 'int', 'accept' => ['numeric-string']],
                                     ],
                                 ],
                             ],
@@ -1324,7 +1327,7 @@ final class AccountsSpec
                 ],
                 'month' => ['type' => 'int'],
                 'reseller' => ['type' => 'string'],
-                'totalused' => ['type' => 'int'],
+                'totalused' => ['type' => 'int', 'accept' => ['numeric-string']],
                 'year' => ['type' => 'int'],
             ],
         ],
@@ -1370,11 +1373,11 @@ final class AccountsSpec
         'method' => 'POST',
         'outcome' => 'flag',
         'params' => [
+            'uid' => ['name' => 'uid', 'encoding' => 'scalar'],
+            'gid' => ['name' => 'gid', 'encoding' => 'scalar'],
             'checkExists' => ['name' => 'check_exists', 'encoding' => 'bool'],
             'checkQuota' => ['name' => 'check_quota', 'encoding' => 'bool'],
-            'gid' => ['name' => 'gid', 'encoding' => 'scalar'],
             'protectSystem' => ['name' => 'protect_system', 'encoding' => 'bool'],
-            'uid' => ['name' => 'uid', 'encoding' => 'scalar'],
         ],
         'returns' => null,
     ];
