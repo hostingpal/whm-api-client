@@ -111,11 +111,12 @@ trait WhmGroups
     /**
      * Select the Mail operations without making a request.
      *
-     * Server-wide mail operations, including Greylisting policy, trusted hosts, common providers and deferred triplets.
-     * Trust and configuration changes alter mail deferral policy. Returned triplets contain sender and recipient
-     * addresses; the client does not deliver mail or fetch returned addresses. The cPanel 11.138.0.19 review used GET
-     * reads with Greylisting disabled; all fifteen writes across the reviewed cPHulk and Greylisting slice remain
-     * unobserved.
+     * Server-wide mail authentication and DNS settings, incoming blocks, account outgoing-mail controls, mailbox and
+     * delivery diagnostics, mobile profiles, Exim and spamd configuration, and Greylisting. Mail, private-key,
+     * configuration and profile outputs can contain sensitive data. Mutations use form POST, including private-key
+     * export and raw Exim syntax validation. Per-domain failures remain separate from API status. No automatic
+     * delivery, expunge, retry or rollback is provided. Existing Greylisting service-state observations and exclusions
+     * remain unchanged.
      */
     public function mail(): Mail
     {
