@@ -99,8 +99,9 @@ Operation entries (all keys optional):
   absent or true keeps the pinned enum. It changes neither encoding nor native
   parameter types and does not resolve disputed upstream values.
   `type: "string|int"` is the only input type correction: it widens a documented
-  scalar string parameter with matching scalar encoding, for typed identifier
-  interoperability. It cannot target omitted, boolean, repeated or composite
+  scalar string or integer parameter with matching scalar encoding, for reviewed
+  identifier variants or comma-delimited values. It cannot target omitted,
+  boolean/flag, floating-point, repeated or composite
   inputs. `description` replaces the complete parameter text with a nonblank
   reviewed description, preserving later sentences. Both settings require
   operation-level evidence; requiredness, sensitivity and optional null omission

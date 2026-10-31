@@ -380,11 +380,11 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		if o.Encoding != "" {
 			param.PHPType, param.DocType, param.Encoding = encodingTypes(o.Encoding, param)
 		}
-		// The only input type correction widens a documented scalar string to
-		// string|int; it cannot replace boolean or multiple-value encodings.
+		// The only input type correction widens a documented scalar string or
+		// integer to string|int; it cannot replace boolean or multiple-value encodings.
 		if o.Type != "" {
-			if o.Type != "string|int" || spec.Type != "string" || param.Encoding != "scalar" || param.PHPType != "string" {
-				b.problem(op.ID + ": parameter " + p.Name + ": type correction requires string|int on a scalar string source")
+			if o.Type != "string|int" || (spec.Type != "string" && spec.Type != "int") || param.Encoding != "scalar" || param.PHPType != spec.Type {
+				b.problem(op.ID + ": parameter " + p.Name + ": type correction requires string|int on a scalar string or integer source")
 			} else {
 				param.PHPType, param.DocType = o.Type, o.Type
 			}
