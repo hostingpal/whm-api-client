@@ -15,6 +15,10 @@ trait UapiGroups
 {
     private ?AddonDomain $addonDomainGroup = null;
 
+    private ?Backup $backupGroup = null;
+
+    private ?BackupInfo $backupInfoGroup = null;
+
     private ?Bandwidth $bandwidthGroup = null;
 
     private ?BoxTrapper $boxTrapperGroup = null;
@@ -43,6 +47,8 @@ trait UapiGroups
 
     private ?EmailAuth $emailAuthGroup = null;
 
+    private ?ExtractInfo $extractInfoGroup = null;
+
     private ?Features $featuresGroup = null;
 
     private ?Fileman $filemanGroup = null;
@@ -65,6 +71,8 @@ trait UapiGroups
 
     private ?ResourceUsage $resourceUsageGroup = null;
 
+    private ?Restore $restoreGroup = null;
+
     private ?SpamAssassin $spamAssassinGroup = null;
 
     private ?Ssl $sslGroup = null;
@@ -83,6 +91,12 @@ trait UapiGroups
 
     private ?WebVhosts $webVhostsGroup = null;
 
+    private ?WebsiteBackup $websiteBackupGroup = null;
+
+    private ?WordPressBackup $wordPressBackupGroup = null;
+
+    private ?WordPressRestore $wordPressRestoreGroup = null;
+
     /**
      * Select the AddonDomain operations without making a request.
      *
@@ -91,6 +105,26 @@ trait UapiGroups
     public function addonDomain(): AddonDomain
     {
         return $this->addonDomainGroup ??= new AddonDomain($this->run(...));
+    }
+
+    /**
+     * Select the Backup operations without making a request.
+     *
+     * The Backup module for UAPI.
+     */
+    public function backup(): Backup
+    {
+        return $this->backupGroup ??= new Backup($this->run(...));
+    }
+
+    /**
+     * Select the BackupInfo operations without making a request.
+     *
+     * The BackupInfo module for UAPI.
+     */
+    public function backupInfo(): BackupInfo
+    {
+        return $this->backupInfoGroup ??= new BackupInfo($this->run(...));
     }
 
     /**
@@ -234,6 +268,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the ExtractInfo operations without making a request.
+     *
+     * The ExtractInfo module for UAPI.
+     */
+    public function extractInfo(): ExtractInfo
+    {
+        return $this->extractInfoGroup ??= new ExtractInfo($this->run(...));
+    }
+
+    /**
      * Select the Features operations without making a request.
      *
      * The Features module for UAPI.
@@ -344,6 +388,16 @@ trait UapiGroups
     }
 
     /**
+     * Select the Restore operations without making a request.
+     *
+     * UAPI Restore module functions.
+     */
+    public function restore(): Restore
+    {
+        return $this->restoreGroup ??= new Restore($this->run(...));
+    }
+
+    /**
      * Select the SpamAssassin operations without making a request.
      *
      * The SpamAssassin module for UAPI.
@@ -431,5 +485,35 @@ trait UapiGroups
     public function webVhosts(): WebVhosts
     {
         return $this->webVhostsGroup ??= new WebVhosts($this->run(...));
+    }
+
+    /**
+     * Select the WebsiteBackup operations without making a request.
+     *
+     * The WebsiteBackup module for UAPI.
+     */
+    public function websiteBackup(): WebsiteBackup
+    {
+        return $this->websiteBackupGroup ??= new WebsiteBackup($this->run(...));
+    }
+
+    /**
+     * Select the WordPressBackup operations without making a request.
+     *
+     * The WordPressBackup module for UAPI.
+     */
+    public function wordPressBackup(): WordPressBackup
+    {
+        return $this->wordPressBackupGroup ??= new WordPressBackup($this->run(...));
+    }
+
+    /**
+     * Select the WordPressRestore operations without making a request.
+     *
+     * The WordPressRestore module for UAPI.
+     */
+    public function wordPressRestore(): WordPressRestore
+    {
+        return $this->wordPressRestoreGroup ??= new WordPressRestore($this->run(...));
     }
 }

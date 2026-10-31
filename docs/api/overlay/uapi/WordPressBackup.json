@@ -1,0 +1,200 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "WordPressBackup",
+  "class": "WordPressBackup",
+  "accessor": "wordPressBackup",
+  "operations": {
+    "uapi:WordPressBackup/any_running": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires the WordPress Manager cPanel plugin, available from WordPress Manager 3.0. The site argument, where present, is the caller-selected WordPress URL without a protocol prefix and may contain a path. No site value is inferred. The client does not poll SSE paths or fetch archive URLs."
+        },
+        {
+          "kind": "documented",
+          "text": "All documented response object fields are optional. Omission is distinct from explicit null, empty lists and zero flags. Integer flags remain 0|1 without string or boolean normalization. This method is explicitly read-only in the pinned source and uses GET."
+        },
+        {
+          "kind": "documented",
+          "text": "anyRunning reports active backups on the selected account. sites is populated only while processing a backup. The source describes site id as unimplemented and null-only, but its formal schema is nullable string; retain that schema without inventing a concrete ID contract. sse_url is returned data and is not followed."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /WordPressBackup/any_running GET declares x-readonly=true; use GET for the explicitly read-only operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ]
+    },
+    "uapi:WordPressBackup/cancel": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires the WordPress Manager cPanel plugin, available from WordPress Manager 3.0. The site argument, where present, is the caller-selected WordPress URL without a protocol prefix and may contain a path. No site value is inferred. The client does not poll SSE paths or fetch archive URLs."
+        },
+        {
+          "kind": "documented",
+          "text": "All documented response object fields are optional. Omission is distinct from explicit null, empty lists and zero flags. Integer flags remain 0|1 without string or boolean normalization. This state-changing method uses one form POST with no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Cancels an active site backup. Payload ok=0 means cancellation was not possible or no backup was active; ok=1 means it was cancelled. Inspect this flag separately from API status. The source promises no rollback of the backup work already performed."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned site input is a string URL without a protocol prefix. Supply a string. The current generator loses the outer type across format-only anyOf alternatives, so the generated native input boundary remains string|int; this does not establish integer site semantics or validate domain/path formats. The input-narrowing limitation is tracked under whm-api-client-8x0.1.23. The optional response site field retains the known source string type and rejects null or non-string values."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /WordPressBackup/cancel GET declares x-readonly=false. Its x-rollback=none classification is retained; use form POST for this state-changing operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ],
+      "name": "cancel",
+      "response": {
+        "site": {
+          "replace": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /WordPressBackup/cancel GET responses.200.content.application/json.schema.properties.result.properties.data.properties.site declares outer type:string. Its oneOf children specify only domain or url-path format/examples and do not override the string type. Replace the effective mixed node with string; preserve optional absence and do not infer nullability, integer sites or format validation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:WordPressBackup/cleanup": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires the WordPress Manager cPanel plugin, available from WordPress Manager 3.0. The site argument, where present, is the caller-selected WordPress URL without a protocol prefix and may contain a path. No site value is inferred. The client does not poll SSE paths or fetch archive URLs."
+        },
+        {
+          "kind": "documented",
+          "text": "All documented response object fields are optional. Omission is distinct from explicit null, empty lists and zero flags. Integer flags remain 0|1 without string or boolean normalization. This state-changing method uses one form POST with no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Releases system resources from a previous site backup. ok=0 reports a backup still in progress and ok=1 reports resources released. The entire data value is nullable; explicit null is valid, while an absent data member is a mismatch. Do not interpret resource cleanup as deleting the backup archive."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /WordPressBackup/cleanup GET declares x-readonly=false. Its x-rollback=none classification is retained; use form POST for this state-changing operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ],
+      "name": "cleanup"
+    },
+    "uapi:WordPressBackup/get_available_backups": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires the WordPress Manager cPanel plugin, available from WordPress Manager 3.0. The site argument, where present, is the caller-selected WordPress URL without a protocol prefix and may contain a path. No site value is inferred. The client does not poll SSE paths or fetch archive URLs."
+        },
+        {
+          "kind": "documented",
+          "text": "All documented response object fields are optional. Omission is distinct from explicit null, empty lists and zero flags. Integer flags remain 0|1 without string or boolean normalization. This method is explicitly read-only in the pinned source and uses GET."
+        },
+        {
+          "kind": "documented",
+          "text": "available may be null or an empty list, or may be omitted. Backup rows preserve optional integer date and string file/path/site fields. The source describes file as tar.zip but gives a tar.gz example; forward the returned filename without inferring an extension rule. dir and row path are server-side paths."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /WordPressBackup/get_available_backups GET declares x-readonly=true; use GET for the explicitly read-only operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ]
+    },
+    "uapi:WordPressBackup/is_running": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires the WordPress Manager cPanel plugin, available from WordPress Manager 3.0. The site argument, where present, is the caller-selected WordPress URL without a protocol prefix and may contain a path. No site value is inferred. The client does not poll SSE paths or fetch archive URLs."
+        },
+        {
+          "kind": "documented",
+          "text": "All documented response object fields are optional. Omission is distinct from explicit null, empty lists and zero flags. Integer flags remain 0|1 without string or boolean normalization. This method is explicitly read-only in the pinned source and uses GET."
+        },
+        {
+          "kind": "documented",
+          "text": "action_id may be explicit null, omitted or a string. is_running=0 means no active backup. A process ID is not evidence of successful completion."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /WordPressBackup/is_running GET declares x-readonly=true; use GET for the explicitly read-only operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ]
+    },
+    "uapi:WordPressBackup/start": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires the WordPress Manager cPanel plugin, available from WordPress Manager 3.0. The site argument, where present, is the caller-selected WordPress URL without a protocol prefix and may contain a path. No site value is inferred. The client does not poll SSE paths or fetch archive URLs."
+        },
+        {
+          "kind": "documented",
+          "text": "All documented response object fields are optional. Omission is distinct from explicit null, empty lists and zero flags. Integer flags remain 0|1 without string or boolean normalization. This state-changing method uses one form POST with no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Starts a single WordPress site backup. backup_id and sse_url describe the background process; a successful API response does not establish completed backup creation. The returned SSE path is not followed."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned site input is a string URL without a protocol prefix. Supply a string. The current generator loses the outer type across format-only anyOf alternatives, so the generated native input boundary remains string|int; this does not establish integer site semantics or validate domain/path formats. The input-narrowing limitation is tracked under whm-api-client-8x0.1.23. The optional response site field retains the known source string type and rejects null or non-string values."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /WordPressBackup/start GET declares x-readonly=false. Its x-rollback=none classification is retained; use form POST for this state-changing operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ],
+      "name": "start",
+      "response": {
+        "site": {
+          "replace": {
+            "type": "string"
+          },
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "Pinned /WordPressBackup/start GET responses.200.content.application/json.schema.properties.result.properties.data.properties.site declares outer type:string. Its oneOf children specify only domain or url-path format/examples and do not override the string type. Replace the effective mixed node with string; preserve optional absence and do not infer nullability, integer sites or format validation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+            }
+          ]
+        }
+      }
+    }
+  }
+}

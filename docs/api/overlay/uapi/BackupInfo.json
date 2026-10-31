@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "BackupInfo",
+  "accessor": "backupInfo",
+  "operations": {
+    "uapi:BackupInfo/list": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later; lists account backup archives in the selected account's home directory. fullpath duplicates the archive name and is not a promise of an absolute local file path. Status comes from the on-disk marker; archive presence does not establish completion of an active run."
+        },
+        {
+          "kind": "documented",
+          "text": "sizeBytes is archive bytes and mtime is epoch seconds. startedAtEpoch alone is nullable; a null start time remains distinct from its omission. Empty archive lists remain empty."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload verification."
+        }
+      ],
+      "name": "listBackups"
+    },
+    "uapi:BackupInfo/progress": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later; returns selected-account backup progress. The hook confirms complete only after the final published archive exists; without it, marker-based progress is an estimate. estimatedPercent is numeric and should be labeled estimated while running. Zero estimates can mean disk usage is unavailable, rather than no work."
+        },
+        {
+          "kind": "documented",
+          "text": "Byte amounts and elapsed seconds remain integers. startedAtEpoch and finishedAtEpoch alone are nullable. A persistent complete state lasts until a new run or reset; this client neither waits nor resets it automatically."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload verification."
+        }
+      ],
+      "name": "progress"
+    },
+    "uapi:BackupInfo/reset": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later; clears the selected account's authoritative backup run-state record. It is idempotent and does not cancel a running backup, delete an archive or prove completion; progress then reports live state. The client does not invoke this cleanup automatically."
+        },
+        {
+          "kind": "documented",
+          "text": "cleared is a JSON boolean, not an integer 0/1 flag."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload verification."
+        }
+      ],
+      "name": "reset"
+    }
+  }
+}

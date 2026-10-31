@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "WordPressRestore",
+  "class": "WordPressRestore",
+  "accessor": "wordPressRestore",
+  "operations": {
+    "uapi:WordPressRestore/any_running": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires the WordPress Manager cPanel plugin, available from WordPress Manager 3.0. The site argument, where present, is the caller-selected WordPress URL without a protocol prefix and may contain a path. No site value is inferred. The client does not poll SSE paths or fetch archive URLs."
+        },
+        {
+          "kind": "documented",
+          "text": "All documented response object fields are optional. Omission is distinct from explicit null, empty lists and zero flags. Integer flags remain 0|1 without string or boolean normalization. This method is explicitly read-only in the pinned source and uses GET."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned formal data schema declares an optional items property containing RestoreInProgress or RestoreNotInProgress. Preserve that nesting and merge their optional object fields without discarding last_outcome. sites retains the documented list-of-records or opaque-object alternatives; empty objects/lists and unknown opaque fields are preserved. The source describes restore-process IDs as unimplemented/null-only, while the formal id schema remains nullable string. last_outcome.error is nullable string; status is text and have_outcome is an integer flag. No completed restoration is inferred from any_running=0 alone."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned full response examples place any_running, sites and last_outcome directly under data, while the formal schema nests these fields under data.items. This unresolved source discrepancy is tracked under whm-api-client-8x0.2.32. The generated contract follows the formal nesting and does not infer flat fields from the examples; successful API status alone does not establish compatibility with either live variant."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /WordPressRestore/any_running GET declares x-readonly=true; use GET for the explicitly read-only operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ],
+      "response": {
+        "items.any_running": {
+          "type": "flag",
+          "evidence": [
+            {
+              "kind": "doc",
+              "version": "pinned 2026-10-13",
+              "date": "2026-10-31",
+              "note": "The pinned /WordPressRestore/any_running result.data.items oneOf references RestoreInProgress.any_running integer enum [1] and RestoreNotInProgress.any_running integer enum [0]. Their combined field contract is exactly 0|1; retain that bounded flag after the generator merges optional object alternatives."
+            }
+          ]
+        }
+      }
+    },
+    "uapi:WordPressRestore/cleanup": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires the WordPress Manager cPanel plugin, available from WordPress Manager 3.0. The site argument, where present, is the caller-selected WordPress URL without a protocol prefix and may contain a path. No site value is inferred. The client does not poll SSE paths or fetch archive URLs."
+        },
+        {
+          "kind": "documented",
+          "text": "All documented response object fields are optional. Omission is distinct from explicit null, empty lists and zero flags. Integer flags remain 0|1 without string or boolean normalization. This state-changing method uses one form POST with no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Cleans temporary system resources after restoration. The data is an integer 0|1 flag, with 0 meaning unsuccessful cleanup. It is distinct from the UAPI envelope status. Null and absent payloads are mismatches; cleanup is not a promise to undo restored files or to delete archives."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /WordPressRestore/cleanup GET declares x-readonly=false. Its x-rollback=none classification is retained; use form POST for this state-changing operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ],
+      "name": "cleanup"
+    },
+    "uapi:WordPressRestore/start": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Requires the WordPress Manager cPanel plugin, available from WordPress Manager 3.0. The site argument, where present, is the caller-selected WordPress URL without a protocol prefix and may contain a path. No site value is inferred. The client does not poll SSE paths or fetch archive URLs."
+        },
+        {
+          "kind": "documented",
+          "text": "All documented response object fields are optional. Omission is distinct from explicit null, empty lists and zero flags. Integer flags remain 0|1 without string or boolean normalization. This state-changing method uses one form POST with no automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "backupPath is the path to an existing server-side backup archive, forwarded unchanged as backup_path, not a local file upload. Starts restoration of the selected site and returns an optional restore_id. The source declares no rollback. Restoration changes site state and its process ID alone does not establish completion."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /WordPressRestore/start GET declares x-readonly=false. Its x-rollback=none classification is retained; use form POST for this state-changing operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ],
+      "name": "start"
+    }
+  }
+}

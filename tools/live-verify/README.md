@@ -1018,3 +1018,25 @@ payload-schema evidence. All fourteen methods are offline-tested; separate
 reviewer lifecycle observations and their limits are recorded in the source audit.
 Committed lifecycle evidence remains under `8x0.2.27`. This capture changed no
 repository or application state.
+
+## Account backup and restoration
+
+`account-backup-restoration.php` binds `account-backup-restoration-v1` to nine
+exact GET observations: WHM version plus Backup/list_backups, Restore/get_users,
+WordPressBackup/any_running and WordPressRestore/any_running through direct UAPI
+and the WHM bridge for `npr`. All are explicitly source-readonly and parameterless;
+no site, backup ID, archive or path is guessed.
+
+```bash
+WHM_API_LIVE=1 WHM_API_LIVE_ACCOUNT=npr WHM_API_LIVE_DOMAIN=npr.rs \
+  php tools/live-verify/account-backup-restoration.php \
+  --output=docs/api/evidence/account-backup-restoration-new.json
+```
+
+The existing exact URI/method/body guard, committed inputs, both tokens, TLS,
+no retries and new-only output rules apply. Captures preserve structural paths
+and types only, masking dynamic keys and never fetching returned SSE URLs or files.
+No creation, remote transfer, extraction, restoration, cancel/cleanup, deletion,
+tracking reset or email notification runs. Fourteen newer operations with unknown
+source risk remain offline-tested and absent from this catalog. Strict assessment
+accepts no discrepancies or acknowledgments; `8x0.2.32` retains all source/live gaps.

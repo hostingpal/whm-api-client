@@ -1,0 +1,254 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Backup",
+  "class": "Backup",
+  "accessor": "backup",
+  "operations": {
+    "uapi:Backup/fullbackup_to_ftp": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 78. Starts a full backup for the selected cPanel account and returns an optional string pid. A process identifier is not evidence that the backup or transfer has completed. All response fields remain optional; null or absent data is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting homedir retains the documented include default. Supplying skip omits home-directory content. Omitting email sends no confirmation email; supplying an address requests a completion email. The client performs one request without automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Remote host, username or SSH-key selection, directory and transfer settings are sent to the server as form fields. These operations cause server-side remote transfers; archive paths are not local upload paths. Omitting directory retains the remote account default login directory."
+        },
+        {
+          "kind": "documented",
+          "text": "FTP directory is relative to the remote FTP login directory. Omitted port and variant retain server defaults 21 and active; passive remains an explicit option. The remote account password is sensitive."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Backup/fullbackup_to_ftp GET declares x-readonly=false. Its x-rollback=none classification is retained; use form POST for this state-changing operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ],
+      "order": [
+        "host",
+        "password",
+        "username",
+        "directory",
+        "email",
+        "homedir",
+        "port",
+        "variant"
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:Backup/fullbackup_to_homedir": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 78. Starts a full backup for the selected cPanel account and returns an optional string pid. A process identifier is not evidence that the backup or transfer has completed. All response fields remain optional; null or absent data is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting homedir retains the documented include default. Supplying skip omits home-directory content. Omitting email sends no confirmation email; supplying an address requests a completion email. The client performs one request without automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "The server creates the archive in the selected account home directory. This call creates backup data; it does not download an archive to the client."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Backup/fullbackup_to_homedir GET declares x-readonly=false. Its x-rollback=none classification is retained; use form POST for this state-changing operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ],
+      "order": [
+        "email",
+        "homedir"
+      ]
+    },
+    "uapi:Backup/fullbackup_to_scp_with_key": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 78. Starts a full backup for the selected cPanel account and returns an optional string pid. A process identifier is not evidence that the backup or transfer has completed. All response fields remain optional; null or absent data is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting homedir retains the documented include default. Supplying skip omits home-directory content. Omitting email sends no confirmation email; supplying an address requests a completion email. The client performs one request without automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Remote host, username or SSH-key selection, directory and transfer settings are sent to the server as form fields. These operations cause server-side remote transfers; archive paths are not local upload paths. Omitting directory retains the remote account default login directory."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting port retains 22. The pinned SCP parameter schema states a maximum port of 65335, which differs from the FTP maximum 65535; preserve this source caveat without inventing validation beyond the generated scalar contract."
+        },
+        {
+          "kind": "documented",
+          "text": "keyName selects an existing SSH key; it is not private-key content. keyPassphrase is required and sensitive. The pinned source requires at least four characters and does not document key generation/import as part of this operation."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Backup/fullbackup_to_scp_with_key GET declares x-readonly=false. Its x-rollback=none classification is retained; use form POST for this state-changing operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Backup/fullbackup_to_scp_with_key parameter key_name is described as 'The SSH key\u2019s name' and its example is examplesshkey, while key_passphrase is separately described as the SSH key password. key_name selects an existing key by name and contains no key material; keep this identifier non-sensitive and the password sensitive."
+        }
+      ],
+      "order": [
+        "host",
+        "key_name",
+        "key_passphrase",
+        "directory",
+        "email",
+        "homedir",
+        "port"
+      ],
+      "params": {
+        "key_passphrase": {
+          "sensitive": true
+        },
+        "key_name": {
+          "sensitive": false
+        }
+      }
+    },
+    "uapi:Backup/fullbackup_to_scp_with_password": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 78. Starts a full backup for the selected cPanel account and returns an optional string pid. A process identifier is not evidence that the backup or transfer has completed. All response fields remain optional; null or absent data is a payload mismatch."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting homedir retains the documented include default. Supplying skip omits home-directory content. Omitting email sends no confirmation email; supplying an address requests a completion email. The client performs one request without automatic retry or rollback."
+        },
+        {
+          "kind": "documented",
+          "text": "Remote host, username or SSH-key selection, directory and transfer settings are sent to the server as form fields. These operations cause server-side remote transfers; archive paths are not local upload paths. Omitting directory retains the remote account default login directory."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitting port retains 22. The pinned SCP parameter schema states a maximum port of 65335, which differs from the FTP maximum 65535; preserve this source caveat without inventing validation beyond the generated scalar contract."
+        },
+        {
+          "kind": "documented",
+          "text": "The remote account password is sensitive and is sent in the form body."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Backup/fullbackup_to_scp_with_password GET declares x-readonly=false. Its x-rollback=none classification is retained; use form POST for this state-changing operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ],
+      "order": [
+        "host",
+        "password",
+        "username",
+        "directory",
+        "email",
+        "homedir",
+        "port"
+      ],
+      "params": {
+        "password": {
+          "sensitive": true
+        }
+      }
+    },
+    "uapi:Backup/list_backups": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 11.42. Lists the selected account backup identifiers as strings, preserving empty lists; null or absent data is a payload mismatch. This read neither creates nor restores a backup."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13",
+          "date": "2026-10-31",
+          "note": "Pinned /Backup/list_backups GET declares x-readonly=true; use GET for the explicitly read-only operation. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        }
+      ]
+    },
+    "uapi:Backup/restore_databases": {
+      "exclude": {
+        "reason": "Binary multipart restore/upload contract is outside this slice; tracked under whm-api-client-8x0.1.19. Generic form calls do not supply binary multipart uploads.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned /Backup/restore_databases POST requestBody declares multipart/form-data object property file as type string, format binary. The source also documents server-side archive query paths and numbered file families, but this whole multipart operation remains excluded until reviewed transport/serialization support is provided. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+          }
+        ]
+      }
+    },
+    "uapi:Backup/restore_email_filters": {
+      "exclude": {
+        "reason": "Binary multipart restore/upload contract is outside this slice; tracked under whm-api-client-8x0.1.19. Generic form calls do not supply binary multipart uploads.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned /Backup/restore_email_filters POST requestBody declares multipart/form-data object property backup as type string, format binary. The source also documents server-side archive query paths and numbered file families, but this whole multipart operation remains excluded until reviewed transport/serialization support is provided. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+          }
+        ]
+      }
+    },
+    "uapi:Backup/restore_email_forwarders": {
+      "exclude": {
+        "reason": "Binary multipart restore/upload contract is outside this slice; tracked under whm-api-client-8x0.1.19. Generic form calls do not supply binary multipart uploads.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned /Backup/restore_email_forwarders POST requestBody declares multipart/form-data object property backup as type string, format binary. The source also documents server-side archive query paths and numbered file families, but this whole multipart operation remains excluded until reviewed transport/serialization support is provided. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+          }
+        ]
+      }
+    },
+    "uapi:Backup/restore_files": {
+      "exclude": {
+        "reason": "Binary multipart restore/upload contract is outside this slice; tracked under whm-api-client-8x0.1.19. Generic form calls do not supply binary multipart uploads.",
+        "evidence": [
+          {
+            "kind": "doc",
+            "version": "pinned 2026-10-13",
+            "date": "2026-10-31",
+            "note": "Pinned /Backup/restore_files POST requestBody declares multipart/form-data object property backup as type string, format binary. The source also documents server-side archive query paths and numbered file families, but this whole multipart operation remains excluded until reviewed transport/serialization support is provided. Source decompressed SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+          }
+        ]
+      }
+    }
+  }
+}

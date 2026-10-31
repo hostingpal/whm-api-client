@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "ExtractInfo",
+  "accessor": "extractInfo",
+  "operations": {
+    "uapi:ExtractInfo/finish": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later; idempotently clears the selected account's extraction progress marker, making progress report none. Call after the separate Fileman extraction finishes whether it succeeds or fails. This cleanup does not perform extraction, roll back files or establish success; the client never invokes it automatically."
+        },
+        {
+          "kind": "documented",
+          "text": "cleared is a JSON boolean, not an integer 0/1 flag."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload verification."
+        }
+      ],
+      "name": "finish"
+    },
+    "uapi:ExtractInfo/progress": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later; reports progress for the selected account's externally bracketed Fileman extraction. Destination-directory growth can contain noise; percent is numeric and at most 99 until finish clears the marker. A none state, including after finish, is not proof that extraction succeeded."
+        },
+        {
+          "kind": "documented",
+          "text": "totalBytes is integer uncompressed bytes. The gzip trailer wraps at 4 GiB, so larger archives use a best-effort estimate; totalBytesEstimated remains the pinned integer rather than an inferred closed flag. startedAtEpoch is nullable and omitted fields stay omitted."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload verification."
+        }
+      ],
+      "name": "progress"
+    },
+    "uapi:ExtractInfo/start": {
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available in cPanel 136 and later; records the selected account's archive size, destination baseline and progress marker and returns immediately. It extracts nothing. Call the separate Fileman extraction, poll progress while it runs, then finish; neither orchestration nor extraction is performed by this method."
+        },
+        {
+          "kind": "documented",
+          "text": "archive and directory are server-side paths which must resolve inside the selected account's home directory. The client forwards both unchanged and uploads no local archive. File extraction can change destination files; inspect the separate extraction operation before running it."
+        },
+        {
+          "kind": "documented",
+          "text": "started is a JSON boolean, not an integer 0/1 flag."
+        },
+        {
+          "kind": "documented",
+          "text": "All declared response fields are optional: omission stays distinct from zero, false, an empty string and explicit documented null. A missing or null data member is a payload mismatch. No general response-string enum or cross-field invariant validation is inferred."
+        },
+        {
+          "kind": "documented",
+          "text": "The pinned operation omits x-readonly. Risk remains unknown and the generated client conservatively uses form POST, including inventory and progress methods; no read-only GET override or live probe is inferred. This method has no committed live evidence; follow-up whm-api-client-8x0.2.32 retains transport and payload verification."
+        }
+      ],
+      "name": "start"
+    }
+  }
+}
