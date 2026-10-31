@@ -645,3 +645,11 @@ text or any of the thirty write/helper operations ran. These reports remain
 separate from the immutable five-GET capture, whose failed idle observation stays
 unwaived under `8x0.2.34`. All existing artifacts are preserved; no new capture was
 run to clear the failure.
+
+## WHM hosting plans, 2026-10-31
+
+`2026-10-31-whm-hosting-plans.json` at a5c08af on11.138.0.19 records two fixed
+GETs, both HTTP/API/payload/probe passes and strict pass with zero discrepancies.
+The package result was empty; populated fields and all other new methods remain
+unobserved under2.43. No mutation, private configuration read or URL fetch ran.
+SHA-256 `16cafa35a705d064dabd8e3885b326bcbf6c0defe5b53853fcdc4e21f333bcbb`.
