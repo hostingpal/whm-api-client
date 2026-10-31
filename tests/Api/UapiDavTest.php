@@ -141,7 +141,7 @@ final class UapiDavTest extends TestCase
                         $cases[] = '{"' . $section . '":{"' . $field . '":null}}';
                         $cases[] = '{"' . $section . '":{"' . $field . '":1}}';
                     }
-                    foreach (['null', '"2080"', '2080.5', 'false'] as $bad) {
+                    foreach (['null', '"02080"', '2080.5', 'false'] as $bad) {
                         $cases[] = '{"' . $section . '":{"port":' . $bad . '}}';
                     }
                 }
@@ -149,7 +149,7 @@ final class UapiDavTest extends TestCase
                     $cases[] = '{"activesync":{"' . $field . '":null}}';
                     $cases[] = '{"activesync":{"' . $field . '":1}}';
                 }
-                foreach (['null', '"2091"', '2091.5', 'false'] as $bad) {
+                foreach (['null', '"02091"', '2091.5', 'false'] as $bad) {
                     $cases[] = '{"activesync":{"port":' . $bad . '}}';
                 }
                 foreach (['null', '"0"', 'false', '2', '0.5'] as $bad) {

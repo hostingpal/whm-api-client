@@ -28,13 +28,13 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     delegator?: string,
  *     readonly?: 0|1,
  * }>
- * @phpstan-type ListUsersResult list<array<array-key, array<array-key, array{
+ * @phpstan-type ListUsersResult array<array-key, array<array-key, array{
  *     'calendar-color'?: string,
  *     description?: string,
  *     displayname?: string,
  *     protected?: 0|1,
  *     type?: string,
- * }>>>
+ * }>>
  * @phpstan-type ManageCollectionResult array{
  *     shared?: 0|1,
  * }
@@ -65,17 +65,30 @@ final readonly class CpDavd
      * Documented: Available in cPanel 120 and later; operates on the selected account. Calendar identifiers and
      * delegator/delegatee account addresses are forwarded unchanged.
      *
-     * Documented: Adds a share for the specified calendar; the delegator is its owner and the delegatee is the person
+     * Policy: Adds a share for the specified calendar; the delegator is its owner and the delegatee is the person
      * receiving access. This changes calendar access, declares no rollback, and is never retried or rolled back by the
      * client. An API result does not establish DAV client authentication or access enforcement.
      *
-     * Documented: Returns an object with optional integer shared: 1 means the requested sharing action succeeded, while
-     * 0 means it did not. Inspect it separately from UAPI status; status 0 remains an API failure. Omission, explicit
-     * null, booleans and quoted flags are not interchangeable.
+     * Documented: The pinned response is an object with optional integer shared (0/1), independently of UAPI status.
      *
-     * Documented: readonly is optional. Supply true for read-only access (sent as 1) or false (sent as 0); omission
-     * remains omission because the pinned source declares no default. No client-side account ownership or permission
-     * check is inferred.
+     * Observed: Review 5721214794 on cPanel 11.138.0.19: successful handlers returned null data after changing state;
+     * they did not send the pinned shared field. Earlier PayloadMismatchException(outcomeConfirmed=true) followed
+     * successful writes.
+     *
+     * Observed: Review 5721214794 on cPanel 11.138.0.19: the implementation defaults omitted readonly to 1. An omitted
+     * update changed a read-write share to read-only, removing write access.
+     *
+     * Policy: addDelegate keeps readonly optional; omission leaves upstream default 1 in effect. true sends 1; false
+     * sends 0. No local ownership or permission check is inferred.
+     *
+     * Observed: Review 5721214794 on cPanel 11.138.0.19: mailbox delegatees worked direct but add/update failed bridged
+     * with undefined subroutine Cpanel::Email::Accounts::manage_email_accounts_db. No automatic fallback or retry
+     * occurs; this report does not establish populated removeDelegate success through the bridge.
+     *
+     * Policy: The client accepts missing or null success data as null and validates a present object strictly; omitted
+     * shared stays omitted. Do not retry or automatically undo a mutation after outcomeConfirmed=true.
+     *
+     * Returns null when the server sends no data.
      *
      * API-map identity: uapi:CPDAVD/add_delegate#GET (wire name add_delegate).
      *
@@ -83,15 +96,15 @@ final readonly class CpDavd
      * @param string $delegatee The person to whom you will share the calendar.
      * @param string $delegator The owner of the calendar, who wishes to share it to another user.
      * @param bool|null $readonly If set, the provided access will be read-only. Null omits it.
-     * @return AddDelegateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @return AddDelegateResult|null
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/calendar-and-contacts-(dav)/cpdavd-add_delegate
      */
-    public function addDelegate(string $calendar, string $delegatee, string $delegator, ?bool $readonly = null): array
+    public function addDelegate(string $calendar, string $delegatee, string $delegator, ?bool $readonly = null): ?array
     {
-        /** @var AddDelegateResult $result Validated against CpDavdSpec::ADD_DELEGATE. */
+        /** @var AddDelegateResult|null $result Validated against CpDavdSpec::ADD_DELEGATE. */
         $result = ($this->run)(CpDavdSpec::ADD_DELEGATE, [
             'calendar' => $calendar,
             'delegatee' => $delegatee,
@@ -118,9 +131,9 @@ final readonly class CpDavd
      * API-map identity: uapi:CPDAVD/list_delegates#GET (wire name list_delegates).
      *
      * @return ListDelegatesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/calendar-and-contacts-(dav)/cpdavd-list_delegates
      */
     public function listDelegates(): array
@@ -139,22 +152,25 @@ final readonly class CpDavd
      * Documented: Available in cPanel 120 and later. Lists users available for CalDAV and CardDAV in the selected
      * account; no request arguments or defaults are declared.
      *
-     * Documented: Returns a list of maps keyed by principal name, then by collection ID. Both dynamic key levels follow
-     * the source additionalProperties schemas and retain their exact keys. Collection records have optional
-     * calendar-color, description, displayname, protected and type fields. Empty maps and omitted fields remain
-     * distinct; explicit null is not inferred.
+     * Observed: Review 5721214794 on cPanel 11.138.0.19: both routes return a map keyed by principal, then collection
+     * ID, rather than the pinned outer list. The reviewer observed quoted protected flags through both routes. Both
+     * dynamic key levels retain their keys locally; evidence paths must wildcard them. Collection records retain all
+     * five optional fields: calendar-color, description, displayname, protected and type. Empty maps and omitted fields
+     * remain distinct; null is not inferred.
      *
-     * Documented: protected is an integer 0/1 flag; 1 means the collection cannot be deleted through the API. The
-     * documented type values are VADDRESSBOOK, VCALENDAR and VTODO; the existing string contract does not impose a new
-     * closed enum. Private calendar/contact names, descriptions and principal IDs remain payload data. This read makes
-     * no DAV connection and proves no client authentication or access enforcement.
+     * Documented: The pinned protected field is integer 0/1; 1 means the collection cannot be deleted through the API.
+     * The documented type values are VADDRESSBOOK, VCALENDAR and VTODO.
+     *
+     * Policy: protected accepts native integer 0/1 and exact quoted "0"/"1", normalized to integers. The string type
+     * contract adds no closed enum. Private names, descriptions and IDs remain payload data. This read proves no DAV
+     * authentication or access enforcement.
      *
      * API-map identity: uapi:CPDAVD/list_users#GET (wire name list_users).
      *
      * @return ListUsersResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/calendar-and-contacts-(dav)/cpdavd-list_users
      */
     public function listUsers(): array
@@ -174,19 +190,27 @@ final readonly class CpDavd
      * collection_type are required. The documented actions are create, update and delete; collection types are
      * calendar, tasks and addressbook. No client-side closed-enum validation is added.
      *
-     * Documented: name is required when creating a collection. path is required for update and delete to identify an
-     * existing collection; for create, omitting path autogenerates <collection_type>-<uuid>. These conditional
-     * requirements remain documented rather than new cross-parameter validation. Optional calendar-color, description,
-     * name and path preserve omission; supplied empty strings are sent. The public calendarColor argument uses the
-     * exact calendar-color wire name.
+     * Observed: name is required for create. path is required for update/delete; create omission autogenerates
+     * <collection_type>-<uuid>. update needs at least one of name, description or calendar-color. Reviewer-inspected
+     * source on 11.138.0.19 filters these fields by truthiness: empty strings and "0" alone cause an API error and are
+     * ignored alongside another field, so they cannot clear a description. These conditional requirements remain
+     * server-side. The client sends supplied values unchanged, including empty strings and the exact calendar-color
+     * wire field, and adds no cross-field validator.
      *
-     * Documented: Account identifiers and collection paths are forwarded unchanged. This creates, changes or deletes
+     * Policy: Account identifiers and collection paths are forwarded unchanged. This creates, changes or deletes
      * calendars, task lists and address books. The source declares no rollback; the client does not retry, undo
      * deletion or contact any returned DAV URL.
      *
-     * Documented: Returns an object with optional integer shared: 1 means the operation succeeded and 0 means it did
-     * not. The shared field is distinct from UAPI status. Optional presence remains distinct from null, and boolean or
-     * quoted flags are not inferred.
+     * Documented: The pinned response is an object with optional integer shared (0/1), independently of UAPI status.
+     *
+     * Observed: Review 5721214794 on cPanel 11.138.0.19: successful handlers returned null data after changing state;
+     * they did not send the pinned shared field. Earlier PayloadMismatchException(outcomeConfirmed=true) followed
+     * successful writes.
+     *
+     * Policy: The client accepts missing or null success data as null and validates a present object strictly; omitted
+     * shared stays omitted. Do not retry or automatically undo a mutation after outcomeConfirmed=true.
+     *
+     * Returns null when the server sends no data.
      *
      * API-map identity: uapi:CPDAVD/manage_collection#GET (wire name manage_collection).
      *
@@ -197,10 +221,10 @@ final readonly class CpDavd
      * @param string|null $description The description of the collection. Null omits it.
      * @param string|null $name The name of the collection. Null omits it.
      * @param string|null $path The path to the collection. Null omits it.
-     * @return ManageCollectionResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @return ManageCollectionResult|null
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/calendar-and-contacts-(dav)/cpdavd-manage_collection
      */
     public function manageCollection(
@@ -211,8 +235,8 @@ final readonly class CpDavd
         ?string $description = null,
         ?string $name = null,
         ?string $path = null,
-    ): array {
-        /** @var ManageCollectionResult $result Validated against CpDavdSpec::MANAGE_COLLECTION. */
+    ): ?array {
+        /** @var ManageCollectionResult|null $result Validated against CpDavdSpec::MANAGE_COLLECTION. */
         $result = ($this->run)(CpDavdSpec::MANAGE_COLLECTION, [
             'account' => $account,
             'action' => $action,
@@ -234,28 +258,35 @@ final readonly class CpDavd
      * Documented: Available in cPanel 120 and later; operates on the selected account. Calendar identifiers and
      * delegator/delegatee account addresses are forwarded unchanged.
      *
-     * Documented: Removes the specified calendar share; the delegator is its owner and the delegatee is the person
-     * whose access is removed. This changes calendar access, declares no rollback, and is never retried or rolled back
-     * by the client. An API result does not establish DAV client authentication or access enforcement.
+     * Policy: Removes the specified calendar share; the delegator is its owner and the delegatee is the person whose
+     * access is removed. This changes calendar access, declares no rollback, and is never retried or rolled back by the
+     * client. An API result does not establish DAV client authentication or access enforcement.
      *
-     * Documented: Returns an object with optional integer shared: 1 means the requested sharing action succeeded, while
-     * 0 means it did not. Inspect it separately from UAPI status; status 0 remains an API failure. Omission, explicit
-     * null, booleans and quoted flags are not interchangeable.
+     * Documented: The pinned response is an object with optional integer shared (0/1), independently of UAPI status.
+     *
+     * Observed: Review 5721214794 on cPanel 11.138.0.19: successful handlers returned null data after changing state;
+     * they did not send the pinned shared field. Earlier PayloadMismatchException(outcomeConfirmed=true) followed
+     * successful writes.
+     *
+     * Policy: The client accepts missing or null success data as null and validates a present object strictly; omitted
+     * shared stays omitted. Do not retry or automatically undo a mutation after outcomeConfirmed=true.
+     *
+     * Returns null when the server sends no data.
      *
      * API-map identity: uapi:CPDAVD/remove_delegate#GET (wire name remove_delegate).
      *
      * @param string $calendar The calendar that was shared.
      * @param string $delegatee The person to whom the calendar was shared.
      * @param string $delegator The owner of the calendar, who wishes to remove the sharing.
-     * @return RemoveDelegateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @return RemoveDelegateResult|null
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/calendar-and-contacts-(dav)/cpdavd-remove_delegate
      */
-    public function removeDelegate(string $calendar, string $delegatee, string $delegator): array
+    public function removeDelegate(string $calendar, string $delegatee, string $delegator): ?array
     {
-        /** @var RemoveDelegateResult $result Validated against CpDavdSpec::REMOVE_DELEGATE. */
+        /** @var RemoveDelegateResult|null $result Validated against CpDavdSpec::REMOVE_DELEGATE. */
         $result = ($this->run)(CpDavdSpec::REMOVE_DELEGATE, [
             'calendar' => $calendar,
             'delegatee' => $delegatee,
@@ -273,37 +304,46 @@ final readonly class CpDavd
      * Documented: Available in cPanel 120 and later; operates on the selected account. Calendar identifiers and
      * delegator/delegatee account addresses are forwarded unchanged.
      *
-     * Documented: Updates the specified calendar share; the delegator is its owner and the delegatee is the person
+     * Policy: Updates the specified calendar share; the delegator is its owner and the delegatee is the person
      * receiving access. This changes calendar access, declares no rollback, and is never retried or rolled back by the
      * client. An API result does not establish DAV client authentication or access enforcement.
      *
-     * Documented: Returns an object with optional integer shared: 1 means the requested sharing action succeeded, while
-     * 0 means it did not. Inspect it separately from UAPI status; status 0 remains an API failure. Omission, explicit
-     * null, booleans and quoted flags are not interchangeable.
+     * Documented: The pinned response is an object with optional integer shared (0/1), independently of UAPI status.
      *
-     * Documented: readonly is optional. Supply true for read-only access (sent as 1) or false (sent as 0); omission
-     * remains omission because the pinned source declares no default. No client-side account ownership or permission
-     * check is inferred.
+     * Observed: Review 5721214794 on cPanel 11.138.0.19: successful handlers returned null data after changing state;
+     * they did not send the pinned shared field. Earlier PayloadMismatchException(outcomeConfirmed=true) followed
+     * successful writes.
+     *
+     * Observed: Review 5721214794 on cPanel 11.138.0.19: the implementation defaults omitted readonly to 1. An omitted
+     * update changed a read-write share to read-only, removing write access.
+     *
+     * Policy: updateDelegate requires an explicit nonnullable readonly boolean as its fourth argument to prevent
+     * accidental loss of write access. true sends 1; false sends 0. No local ownership or permission check is inferred.
+     *
+     * Observed: Review 5721214794 on cPanel 11.138.0.19: mailbox delegatees worked direct but add/update failed bridged
+     * with undefined subroutine Cpanel::Email::Accounts::manage_email_accounts_db. No automatic fallback or retry
+     * occurs; this report does not establish populated removeDelegate success through the bridge.
+     *
+     * Policy: The client accepts missing or null success data as null and validates a present object strictly; omitted
+     * shared stays omitted. Do not retry or automatically undo a mutation after outcomeConfirmed=true.
+     *
+     * Returns null when the server sends no data.
      *
      * API-map identity: uapi:CPDAVD/update_delegate#GET (wire name update_delegate).
      *
      * @param string $calendar The calendar to share.
      * @param string $delegatee The person to whom you will share the calendar.
      * @param string $delegator The owner of the calendar, who wishes to change the details of the sharing.
-     * @param bool|null $readonly If set, the provided access will be read-only. Null omits it.
-     * @return UpdateDelegateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @param bool $readonly If set, the provided access will be read-only.
+     * @return UpdateDelegateResult|null
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/calendar-and-contacts-(dav)/cpdavd-update_delegate
      */
-    public function updateDelegate(
-        string $calendar,
-        string $delegatee,
-        string $delegator,
-        ?bool $readonly = null,
-    ): array {
-        /** @var UpdateDelegateResult $result Validated against CpDavdSpec::UPDATE_DELEGATE. */
+    public function updateDelegate(string $calendar, string $delegatee, string $delegator, bool $readonly): ?array
+    {
+        /** @var UpdateDelegateResult|null $result Validated against CpDavdSpec::UPDATE_DELEGATE. */
         $result = ($this->run)(CpDavdSpec::UPDATE_DELEGATE, [
             'calendar' => $calendar,
             'delegatee' => $delegatee,

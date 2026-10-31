@@ -10,7 +10,7 @@ use HostingPal\WhmApiClient\Api\Whm\Spec\ServerSpec;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\UapiClient;
 
-/** Fixed DAV service/addressbook status; no configurations, contacts or calendar changes. */
+/** Fixed diagnostic DAV status catalog; availability/API failures remain strict failures. */
 final class DavCalendarProbes
 {
     /** @return list<Probe> */

@@ -30,6 +30,7 @@ final class CpDavdSpec
                 'shared' => ['type' => 'flag'],
             ],
         ],
+        'optional' => true,
     ];
 
     public const LIST_DELEGATES = [
@@ -60,20 +61,17 @@ final class CpDavdSpec
         'outcome' => 'flag',
         'params' => [],
         'returns' => [
-            'type' => 'list',
-            'items' => [
+            'type' => 'map',
+            'values' => [
                 'type' => 'map',
                 'values' => [
-                    'type' => 'map',
-                    'values' => [
-                        'type' => 'object',
-                        'fields' => [
-                            'calendar-color' => ['type' => 'string'],
-                            'description' => ['type' => 'string'],
-                            'displayname' => ['type' => 'string'],
-                            'protected' => ['type' => 'flag'],
-                            'type' => ['type' => 'string'],
-                        ],
+                    'type' => 'object',
+                    'fields' => [
+                        'calendar-color' => ['type' => 'string'],
+                        'description' => ['type' => 'string'],
+                        'displayname' => ['type' => 'string'],
+                        'protected' => ['type' => 'flag', 'accept' => ['string-flag']],
+                        'type' => ['type' => 'string'],
                     ],
                 ],
             ],
@@ -100,6 +98,7 @@ final class CpDavdSpec
                 'shared' => ['type' => 'flag'],
             ],
         ],
+        'optional' => true,
     ];
 
     public const REMOVE_DELEGATE = [
@@ -118,6 +117,7 @@ final class CpDavdSpec
                 'shared' => ['type' => 'flag'],
             ],
         ],
+        'optional' => true,
     ];
 
     public const UPDATE_DELEGATE = [
@@ -137,5 +137,6 @@ final class CpDavdSpec
                 'shared' => ['type' => 'flag'],
             ],
         ],
+        'optional' => true,
     ];
 }

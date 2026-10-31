@@ -66,22 +66,21 @@ final class UapiCpDavdTest extends TestCase
                         [['calendar' => '', 'calname' => '', 'delegatee' => '', 'delegator' => '']]]];
             } elseif ($function === 'list_users') {
                 $cases = [
-                ['[]', []], ['[{}]', [[]]], ['[[]]', [[]]],
-                    ['[{"owner@example.test":{"calendar":{"calendar-color":"#ff6c2c",'
+                    ['{}', []], ['[]', []],
+                    ['{"owner@example.test":{"calendar":{"calendar-color":"#ff6c2c",'
                         . '"description":"Private calendar","displayname":"Calendar","protected":1,"type":"VCALENDAR"},'
                         . '"contacts":{"description":"Contacts","displayname":"Address book",'
-                        . '"protected":0,"type":"VADDRESSBOOK"},'
-                        . '"tasks":{"type":"VTODO"}}}]',
-                        [['owner@example.test' => ['calendar' => ['calendar-color' => '#ff6c2c',
+                        . '"protected":0,"type":"VADDRESSBOOK"},"tasks":{"type":"VTODO"}}}',
+                        ['owner@example.test' => ['calendar' => ['calendar-color' => '#ff6c2c',
                             'description' => 'Private calendar', 'displayname' => 'Calendar',
                             'protected' => 1, 'type' => 'VCALENDAR'],
                             'contacts' => ['description' => 'Contacts', 'displayname' => 'Address book',
-                                'protected' => 0,
-                                'type' => 'VADDRESSBOOK'], 'tasks' => ['type' => 'VTODO']]]]],
-                    ['[{"owner+tag@example.test":{"id/one":{},"id/two":[]},"other@example.test":{}}]',
-                        [['owner+tag@example.test' => ['id/one' => [], 'id/two' => []], 'other@example.test' => []]]],
-                    ['[{"owner":{"calendar":{"type":"future-type","displayname":"","future":17}}}]',
-                        [['owner' => ['calendar' => ['displayname' => '', 'type' => 'future-type']]]]]];
+                                'protected' => 0, 'type' => 'VADDRESSBOOK'], 'tasks' => ['type' => 'VTODO']]]],
+                    ['{"owner+tag@example.test":{"id/one":{},"id/two":[]},"other@example.test":{}}',
+                        ['owner+tag@example.test' => ['id/one' => [], 'id/two' => []], 'other@example.test' => []]],
+                    ['{"owner":{"calendar":{"type":"future-type","displayname":"","future":17}}}',
+                        ['owner' => ['calendar' => ['displayname' => '', 'type' => 'future-type']]]],
+                ];
             } else {
                 $cases = [
                 ['{}', []], ['[]', []], ['{"shared":0}', ['shared' => 0]],
@@ -129,8 +128,12 @@ final class UapiCpDavdTest extends TestCase
     {
         foreach (self::operations() as $label => [$route, $function]) {
             $cases = [null, 'null', 'false', '1', '1.5', '"text"'];
+            if (!str_starts_with($function, 'list_')) {
+                $cases = ['false', '1', '1.5', '"text"'];
+            }
             if (str_starts_with($function, 'list_')) {
-                array_push($cases, '{}', '[null]', '[1]', '[false]', '["text"]');
+                array_push($cases, '[null]', '[1]', '[false]', '["text"]');
+                $cases[] = $function === 'list_delegates' ? '{}' : '[{}]';
                 if ($function === 'list_delegates') {
                     foreach (['calendar', 'calname', 'delegatee', 'delegator'] as $field) {
                         foreach (['null', '1', 'false', '[]'] as $bad) {
@@ -143,19 +146,19 @@ final class UapiCpDavdTest extends TestCase
                     $cases[] = '[{"calendar":"valid"},{"delegatee":null}]';
                 } else {
                     foreach (['null', '1', 'false', '[{}]'] as $bad) {
-                        $cases[] = '[{"owner":' . $bad . '}]';
-                        $cases[] = '[{"owner":{"collection":' . $bad . '}}]';
+                        $cases[] = '{"owner":' . $bad . '}';
+                        $cases[] = '{"owner":{"collection":' . $bad . '}}';
                     }
                     foreach (['calendar-color', 'description', 'displayname', 'type'] as $field) {
                         foreach (['null', '1', 'false', '[]'] as $bad) {
-                            $cases[] = '[{"owner":{"collection":{"' . $field . '":' . $bad . '}}}]';
+                            $cases[] = '{"owner":{"collection":{"' . $field . '":' . $bad . '}}}';
                         }
                     }
-                    foreach (['null', '"0"', 'false', '2', '0.5'] as $bad) {
-                        $cases[] = '[{"owner":{"collection":{"protected":' . $bad . '}}}]';
+                    foreach (['null', '"00"', 'false', '2', '0.5'] as $bad) {
+                        $cases[] = '{"owner":{"collection":{"protected":' . $bad . '}}}';
                     }
-                    $cases[] = '[{"owner":{"good":{"type":"VCALENDAR"},"bad":{"displayname":null}}}]';
-                    $cases[] = '[{"good":{}},{"bad":null}]';
+                    $cases[] = '{"owner":{"good":{"type":"VCALENDAR"},"bad":{"displayname":null}}}';
+                    $cases[] = '{"good":{},"bad":null}';
                 }
             } else {
                 $cases[] = '[{}]';
@@ -175,11 +178,12 @@ final class UapiCpDavdTest extends TestCase
         [$client, $http] = self::client($route);
         $dav = $client->uapi('npr')->cpDavd();
         foreach (['add_delegate', 'update_delegate'] as $function) {
-            foreach ([null, false, true] as $readonly) {
+            foreach ($function === 'add_delegate' ? [null, false, true] : [false, true] as $readonly) {
                 $http->addResponse(new Response(200, [], self::envelope($route, '{}')));
                 if ($function === 'add_delegate') {
                     $dav->addDelegate(calendar: '', delegatee: '', delegator: '', readonly: $readonly);
                 } else {
+                    self::assertIsBool($readonly);
                     $dav->updateDelegate(calendar: '', delegatee: '', delegator: '', readonly: $readonly);
                 }
                 self::assertRequest($http, $route, $function, 'POST', 'calendar=&delegatee=&delegator='
@@ -214,7 +218,7 @@ final class UapiCpDavdTest extends TestCase
             'POST',
             'account=&action=create&collection_type=calendar&calendar-color=&description=&name=&path=',
         );
-        self::assertCount(10, $http->getRequests());
+        self::assertCount(9, $http->getRequests());
     }
 
     #[DataProvider('operations')]

@@ -47,9 +47,9 @@ final readonly class DomainInfo
      *
      * @param bool|null $hideTemporaryDomains Whether to hide temporary domains. Null omits it.
      * @return ListDomainsResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-information/domaininfo-list_domains
      */
     public function listDomains(?bool $hideTemporaryDomains = null): array
@@ -66,9 +66,9 @@ final readonly class DomainInfo
      * API-map identity: uapi:DomainInfo/primary_domain#GET (wire name primary_domain).
      *
      * @return string|null
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/domain-information/domaininfo-primary_domain
      */
     public function primaryDomain(): ?string

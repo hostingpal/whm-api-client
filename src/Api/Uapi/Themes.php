@@ -48,9 +48,9 @@ final readonly class Themes
      *
      * @param bool|null $showMailThemes Whether to list the account's mail themes. Null omits it.
      * @return ListThemesResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/theme-settings/themes-list
      */
     public function listThemes(?bool $showMailThemes = null): array
@@ -77,9 +77,9 @@ final readonly class Themes
      *
      * @param string $theme The theme name.
      * @return UpdateResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/theme-settings/themes-update
      */
     public function update(string $theme): ?array

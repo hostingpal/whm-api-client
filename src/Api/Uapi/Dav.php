@@ -105,17 +105,19 @@ final readonly class Dav
      * shared/enabled. This flag is separate from UAPI status; status 0 remains an API failure. Omitted shared stays
      * omitted; explicit null and quoted or boolean flags are not inferred.
      *
-     * Documented: Changes shared global address book availability for the account's webmail accounts and can expose or
-     * withdraw shared contact access. The source declares no rollback. The client does not retry or roll back this
-     * change; API success and its shared flag do not establish DAV client authentication or access enforcement.
+     * Observed: Review 5721214794 on cPanel 11.138.0.19: the reviewer-inspected handler is a stub/no-op that returns
+     * shared=0 and changes no shared-addressbook availability. A successful response does not establish contact access
+     * or DAV enforcement.
+     *
+     * Policy: The client sends one form POST and does not retry or roll back this operation.
      *
      * API-map identity: uapi:DAV/disable_shared_global_addressbook#GET (wire name disable_shared_global_addressbook).
      *
      * @param string|null $name cPanel account username or a Webmail user's email address. Null omits it.
      * @return DisableSharedGlobalAddressbookResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/calendar-and-contacts-(dav)/dav-disable_shared_global_addressbook
      */
     public function disableSharedGlobalAddressbook(?string $name = null): array
@@ -142,17 +144,19 @@ final readonly class Dav
      * shared/enabled. This flag is separate from UAPI status; status 0 remains an API failure. Omitted shared stays
      * omitted; explicit null and quoted or boolean flags are not inferred.
      *
-     * Documented: Changes shared global address book availability for the account's webmail accounts and can expose or
-     * withdraw shared contact access. The source declares no rollback. The client does not retry or roll back this
-     * change; API success and its shared flag do not establish DAV client authentication or access enforcement.
+     * Observed: Review 5721214794 on cPanel 11.138.0.19: the reviewer-inspected handler is a stub/no-op that returns
+     * shared=0 and changes no shared-addressbook availability. A successful response does not establish contact access
+     * or DAV enforcement.
+     *
+     * Policy: The client sends one form POST and does not retry or roll back this operation.
      *
      * API-map identity: uapi:DAV/enable_shared_global_addressbook#GET (wire name enable_shared_global_addressbook).
      *
      * @param string|null $name cPanel account username or a Webmail user's email address. Null omits it.
      * @return EnableSharedGlobalAddressbookResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/calendar-and-contacts-(dav)/dav-enable_shared_global_addressbook
      */
     public function enableSharedGlobalAddressbook(?string $name = null): array
@@ -176,20 +180,24 @@ final readonly class Dav
      * explicitly string, for account usernames and email addresses. Supplied identifiers are forwarded unchanged.
      *
      * Documented: Returns optional ActiveSync, non-SSL and SSL connection settings, optional calendar/address-book
-     * lists and the selected user. Optional fields remain omitted, empty lists remain empty, and integer port and 0/1
-     * fields retain their source types. No nullable fields are inferred.
+     * lists and the selected user. Optional fields remain omitted and empty lists remain empty; no nullable fields are
+     * inferred.
      *
-     * Documented: Connection configuration, account identifiers, calendar/contact descriptions, names, paths and URLs
-     * may be private payload data. Returned URLs are not fetched and no CalDAV, CardDAV or ActiveSync connection is
-     * made. This read does not establish certificate trust, successful client authentication or access enforcement.
+     * Policy: Connection configuration, account identifiers, calendar/contact descriptions, names, paths and URLs may
+     * be private payload data. Returned URLs are not fetched and no CalDAV, CardDAV or ActiveSync connection is made.
+     * This read does not establish certificate trust, successful client authentication or access enforcement.
+     *
+     * Observed: Review 5721214794 on cPanel 11.138.0.19: no_ssl.port and ssl.port were canonical integer strings direct
+     * and native integers bridged. Both normalize to integers. activesync.port uses the same source-family/offline
+     * policy; ActiveSync was disabled and its port unobserved. Flags and sibling fields remain strict.
      *
      * API-map identity: uapi:DAV/get_calendar_contacts_config#GET (wire name get_calendar_contacts_config).
      *
      * @param string|null $user A cPanel account or valid email account user. Null omits it.
      * @return GetCalendarContactsConfigResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/calendar-and-contacts-(dav)/dav-get_calendar_contacts_config
      */
     public function getCalendarContactsConfig(?string $user = null): array
@@ -206,6 +214,10 @@ final readonly class Dav
      * This function checks whether the shared global address book is enabled on the current cPanel account's webmail
      * accounts.
      *
+     * Observed: Review 5721214794 on cPanel 11.138.0.19: the handler is a stub returning 0. With or without name,
+     * including after enable, it raises ApiErrorException with empty errors(); this is an API failure, not a
+     * false/not-shared result.
+     *
      * Documented: Available in cPanel 54 and later. Operates on the current cPanel account's webmail accounts. name
      * accepts a cPanel account username or a Webmail email address; omission selects the currently authenticated user.
      * Supplied names are forwarded unchanged, and an empty string is sent rather than omitted.
@@ -218,9 +230,9 @@ final readonly class Dav
      *
      * @param string|null $name cPanel account user name or a Webmail user's email address. Null omits it.
      * @return HasSharedGlobalAddressbookResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/calendar-and-contacts-(dav)/dav-has_shared_global_addressbook
      */
     public function hasSharedGlobalAddressbook(?string $name = null): array
@@ -246,9 +258,9 @@ final readonly class Dav
      * API-map identity: uapi:DAV/is_dav_service_enabled#GET (wire name is_dav_service_enabled).
      *
      * @return IsDavServiceEnabledResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/calendar-and-contacts-(dav)/dav-is_dav_service_enabled
      */
     public function isDavServiceEnabled(): array
@@ -265,20 +277,24 @@ final readonly class Dav
      * This function checks whether Horde is enabled. Since Horde is no longer installed with the product, the return
      * value will only ever be 0.
      *
+     * Observed: Review 5721214794 on cPanel 11.138.0.19: both routes fail because the system could not find function
+     * "is_horde_enabled" in module "DAV". The handler is absent on the reviewed server; no enabled value was observed.
+     *
      * Documented: Available in cPanel 11.50 and later. No request parameters or defaults are declared in the pinned
      * operation.
      *
-     * Documented: Horde is no longer installed with the product; the pinned enabled field is the integer literal 0.
-     * Omission remains distinct from the documented disabled value, and integer 1 is not inferred as a valid result.
-     * Explicit null, booleans and quoted flags remain invalid. This service-state read does not connect to DAV or
-     * establish client authentication or enforcement.
+     * Documented: The pinned enabled schema is integer and its prose promises only 0 because Horde is no longer
+     * installed.
+     *
+     * Policy: The current validator checks integer type, not this singleton enum: 1 and -1 remain accepted offline;
+     * null, booleans and quoted integers are rejected.
      *
      * API-map identity: uapi:DAV/is_horde_enabled#GET (wire name is_horde_enabled).
      *
      * @return IsHordeEnabledResult
-     * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
-     * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
-     *     any change the operation makes has already taken effect.
+     * @throws ApiException If transport, HTTP, the API envelope outcome, or payload validation fails.
+     * @throws PayloadMismatchException If the API envelope reported success but the payload differs from the contract;
+     *     the operation may already have changed state; do not retry automatically.
      * @see https://api.docs.cpanel.net/specifications/cpanel.openapi/calendar-and-contacts-(dav)/dav-is_horde_enabled
      */
     public function isHordeEnabled(): array

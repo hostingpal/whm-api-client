@@ -7,6 +7,7 @@ namespace HostingPal\WhmApiClient\Tests\Tools\LiveVerify;
 use HostingPal\WhmApiClient\Client;
 use HostingPal\WhmApiClient\Http\HttpTransport;
 use HostingPal\WhmApiClient\Tools\LiveVerify\DavCalendarProbes;
+use HostingPal\WhmApiClient\Tools\LiveVerify\ReadOnlySectionRunner;
 use HostingPal\WhmApiClient\Tools\LiveVerify\RequestGuard;
 use Http\Mock\Client as MockClient;
 use LogicException;
@@ -18,6 +19,42 @@ use Psr\Http\Message\RequestInterface;
 
 final class DavCalendarProbesTest extends TestCase
 {
+    public function testDiagnosticApiFailuresRemainUncheckedAndFailStrictAssessment(): void
+    {
+        $http = new MockClient();
+        $http->addResponse(new Response(200, [], '{"metadata":{"result":1},"data":{"version":"11.138.0.19"}}'));
+        foreach (range(0, 5) as $index) {
+            // Catalog order: shared direct/bridge, service direct/bridge, Horde direct/bridge.
+            $service = $index === 2 || $index === 3;
+            $result = $service ? '{"status":1,"data":{"enabled":1},"errors":null}'
+                : '{"status":0,"data":null,"errors":null}';
+            $http->addResponse(new Response(200, [], $index % 2 === 0 ? $result
+                : '{"metadata":{"result":1},"data":{"uapi":' . $result . '}}'));
+        }
+        $context = ['revision' => str_repeat('a', 40), 'source_hashes' => ['whm1' => str_repeat('b', 64),
+            'uapi' => str_repeat('c', 64)], 'map_sha256' => str_repeat('d', 64),
+            'generator_tree' => str_repeat('e', 40), 'overlay_sha256' => str_repeat('f', 64)];
+        $report = (new ReadOnlySectionRunner($http, $context))->run(
+            DavCalendarProbes::load(),
+            'dav-calendar-v1',
+            '1',
+            ['whm' => 'synthetic-whm', 'cpanel' => 'synthetic-cpanel'],
+        );
+        self::assertSame('failed', $report['status']);
+        self::assertCount(7, $http->getRequests());
+        foreach ([1, 2, 5, 6] as $index) {
+            self::assertSame('failure', $report['probes'][$index]['api_outcome']);
+            self::assertSame('not_checked', $report['probes'][$index]['payload_validation']);
+            self::assertSame('failed', $report['probes'][$index]['probe_outcome']);
+            self::assertSame('api_failure', $report['probes'][$index]['failure_kind']);
+            self::assertSame([], $report['probes'][$index]['discrepancies']);
+        }
+        foreach ([0, 3, 4] as $index) {
+            self::assertSame('passed', $report['probes'][$index]['probe_outcome']);
+        }
+    }
+
+    /** Pinned-success synthetic fixtures verify routing, not current server availability. */
     public function testCatalogExecutesOnlySevenExactAccountBoundGetRequests(): void
     {
         $probes = DavCalendarProbes::load();

@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	markdownLink = regexp.MustCompile(`\[([^\]]+)\]\([^)]*\)`)
+	markdownLink = regexp.MustCompile(`\[([^\]]+)\]\(`)
 	whitespace   = regexp.MustCompile(`\s+`)
 	blankLine    = regexp.MustCompile(`\n\s*\n`)
 	// reservedNames are the methods WhmClient and UapiClient declare or inherit
@@ -176,7 +176,7 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 		ID:          op.ID,
 		VariantID:   v.ID,
 		Family:      op.Family,
-		Function:    op.Function,
+		Function:    b.wireFunction(op, ov),
 		Outcome:     firstNonEmpty(ov.Outcome, "flag"),
 		Body:        ov.Body,
 		Summary:     sentence(text(node["summary"])),
@@ -235,6 +235,25 @@ func (b *builder) operation(op model.Operation, v model.Variant, ov overlay.Oper
 	}
 	result.Returns = returns
 	return result, b.groupOf(op, v, node), true
+}
+
+// wireFunction applies only a single namespace to a bare WHM canonical leaf.
+// Naming, documentation identities and source locators continue to use op.
+func (b *builder) wireFunction(op model.Operation, ov overlay.Operation) string {
+	if ov.Function == "" {
+		return op.Function
+	}
+	parts := strings.Split(ov.Function, "/")
+	if op.Family != "whm1" || !overlay.IsCorrectedWireName(op.Function) ||
+		len(parts) != 2 || !overlay.IsCorrectedWireName(parts[0]) ||
+		!overlay.IsCorrectedWireName(parts[1]) || parts[1] != op.Function || ov.Exclude != nil {
+		b.problem(op.ID + ": function correction requires Namespace/same_bare_function on WHM")
+		return op.Function
+	}
+	if len(ov.Evidence) == 0 {
+		b.problem(op.ID + ": function needs evidence")
+	}
+	return ov.Function
 }
 
 var constantName = regexp.MustCompile(`^[A-Z_][A-Z0-9_]*$`)
@@ -337,6 +356,12 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		documented[p.Name] = true
 		if o, ok := ov.Params[p.Name]; ok && o.Omit {
 			omitted[p.Name] = true
+			if o.RejectEmpty != nil {
+				b.problem(op.ID + ": omitted parameter " + p.Name + " cannot have reject_empty")
+			}
+			if o.OmitEmpty != nil {
+				b.problem(op.ID + ": omitted parameter " + p.Name + " cannot have omit_empty")
+			}
 			if o.Wire != "" {
 				b.problem(op.ID + ": omitted parameter " + p.Name + " cannot have wire corrections")
 			}
@@ -383,6 +408,23 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		if o.Encoding != "" {
 			param.PHPType, param.DocType, param.Encoding = encodingTypes(o.Encoding, param)
 		}
+		if o.RejectEmpty != nil {
+			if !*o.RejectEmpty || !param.Required || o.OmitEmpty != nil || o.Type != "" ||
+				(param.Encoding != "scalar" && param.Encoding != "repeat") ||
+				!b.schemas.targetString(p.Locator.SourceID, decl["schema"], param.Encoding == "repeat") {
+				b.problem(op.ID + ": parameter " + p.Name + ": reject_empty requires true on a required concrete nonnullable string or repeat string/list source without enums or composition")
+			} else {
+				param.RejectEmpty = true
+			}
+		}
+		if o.OmitEmpty != nil {
+			if !*o.OmitEmpty || decl["required"] == true || param.Required || param.Encoding != "repeat" ||
+				!b.schemas.stringList(p.Locator.SourceID, decl["schema"]) {
+				b.problem(op.ID + ": parameter " + p.Name + ": omit_empty requires true on an optional repeat-encoded string-list source and optional final requiredness")
+			} else {
+				param.OmitEmpty = true
+			}
+		}
 		if o.Wire != "" && (!overlay.IsCorrectedWireName(p.Name) || !overlay.IsCorrectedWireName(o.Wire) ||
 			param.Encoding != "scalar" || (spec.Type != "string" && spec.Type != "int" && spec.Type != "number")) {
 			b.problem(op.ID + ": parameter " + p.Name + ": wire correction requires simple names and a scalar string, integer or number source")
@@ -391,10 +433,10 @@ func (b *builder) params(op model.Operation, v model.Variant, ov overlay.Operati
 		// encoder, so no false or numeric value can reach the wire. This is an
 		// explicit reviewed correction, never inferred from other singleton enums.
 		if o.Type == "true" {
-			if decl["required"] == true || param.Required || spec.Type != "int" || spec.Nullable ||
+			if (decl["required"] == true) != param.Required || spec.Type != "int" || spec.Nullable ||
 				!b.schemas.presenceOnlyInteger(p.Locator.SourceID, decl["schema"]) || o.Wire != "" ||
 				(o.Encoding != "" && o.Encoding != "bool") {
-				b.problem(op.ID + ": parameter " + p.Name + ": true type correction requires an optional scalar integer source with exact enum [1], optional final requiredness, no wire correction and absent or bool encoding")
+				b.problem(op.ID + ": parameter " + p.Name + ": true type correction requires a concrete nonnullable scalar integer source with exact enum [1], unchanged requiredness, no wire correction and absent or bool encoding")
 			} else {
 				param.PHPType, param.DocType, param.Encoding = "true", "true", "bool"
 			}
@@ -897,8 +939,43 @@ func text(v any) string {
 	return s
 }
 
+// cleanMarkdownLinks removes only complete inline links, balancing URL parentheses.
+// Malformed links stay intact instead of dropping a partial URL from the prose.
+func cleanMarkdownLinks(s string) string {
+	var out strings.Builder
+	cursor := 0
+	for _, match := range markdownLink.FindAllStringSubmatchIndex(s, -1) {
+		if match[0] < cursor {
+			continue
+		}
+		depth := 1
+		end := match[1]
+		for end < len(s) && depth > 0 {
+			switch s[end] {
+			case '\\':
+				if end+1 < len(s) {
+					end++
+				}
+			case '(':
+				depth++
+			case ')':
+				depth--
+			}
+			end++
+		}
+		if depth != 0 {
+			continue
+		}
+		out.WriteString(s[cursor:match[0]])
+		out.WriteString(s[match[2]:match[3]])
+		cursor = end
+	}
+	out.WriteString(s[cursor:])
+	return out.String()
+}
+
 func clean(s string) string {
-	s = markdownLink.ReplaceAllString(s, "$1")
+	s = cleanMarkdownLinks(s)
 	s = strings.NewReplacer("**", "", "__", "").Replace(s)
 	return strings.TrimSpace(whitespace.ReplaceAllString(s, " "))
 }
