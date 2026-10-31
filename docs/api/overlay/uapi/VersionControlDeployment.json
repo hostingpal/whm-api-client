@@ -39,9 +39,9 @@
         },
         {
           "kind": "live",
-          "version": "not recorded in PR40 review 5720064601",
+          "version": "11.138.0.19",
           "date": "2026-10-31",
-          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. Deployment create on a deployable repository returned integer deploy_id and floating-point timestamps.queued after queuing; on a non-deployable repository it returned status 1 with explicit null data and nothing queued."
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The reviewer clarified in https://github.com/hostingpal/whm-api-client/pull/40#issuecomment-6536614693 that every result in the original review and the corrected lifecycle at 7b9f1f93ead92504052a31bffd452ade64f9a208 used cPanel 11.138.0.19 through both direct UAPI and the WHM bridge, with all test repositories and deployments cleaned. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. Deployment create on a deployable repository returned integer deploy_id and floating-point timestamps.queued after queuing; on a non-deployable repository it returned status 1 with explicit null data and nothing queued."
         }
       ],
       "response": {
@@ -78,9 +78,9 @@
           "evidence": [
             {
               "kind": "live",
-              "version": "not recorded in PR40 review 5720064601",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. create POST on a non-deployable repository returned status 1 with data:null and nothing queued. Make only the existing result object nullable; preserve its optional fields and continue rejecting absent data."
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The reviewer clarified in https://github.com/hostingpal/whm-api-client/pull/40#issuecomment-6536614693 that every result in the original review and the corrected lifecycle at 7b9f1f93ead92504052a31bffd452ade64f9a208 used cPanel 11.138.0.19 through both direct UAPI and the WHM bridge, with all test repositories and deployments cleaned. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. create POST on a non-deployable repository returned status 1 with data:null and nothing queued. Make only the existing result object nullable; preserve its optional fields and continue rejecting absent data."
             }
           ]
         },
@@ -99,9 +99,9 @@
           "evidence": [
             {
               "kind": "live",
-              "version": "not recorded in PR40 review 5720064601",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. create POST returned an integer deploy_id, unlike the pinned string field. Retain the documented string alternative unchanged and accept an integer; preserve optionality and reject null, boolean and fractional IDs. No new identifier format or range is inferred."
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The reviewer clarified in https://github.com/hostingpal/whm-api-client/pull/40#issuecomment-6536614693 that every result in the original review and the corrected lifecycle at 7b9f1f93ead92504052a31bffd452ade64f9a208 used cPanel 11.138.0.19 through both direct UAPI and the WHM bridge, with all test repositories and deployments cleaned. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. create POST returned an integer deploy_id, unlike the pinned string field. Retain the documented string alternative unchanged and accept an integer; preserve optionality and reject null, boolean and fractional IDs. No new identifier format or range is inferred."
             }
           ]
         },
@@ -120,9 +120,9 @@
           "evidence": [
             {
               "kind": "live",
-              "version": "not recorded in PR40 review 5720064601",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. create POST returned a floating-point queued timestamp after queuing the deployment. The pinned string alternative is retained verbatim, including fractional spelling; finite JSON numbers preserve their int/float value without a string/float conversion. Optionality and null rejection stay unchanged."
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The reviewer clarified in https://github.com/hostingpal/whm-api-client/pull/40#issuecomment-6536614693 that every result in the original review and the corrected lifecycle at 7b9f1f93ead92504052a31bffd452ade64f9a208 used cPanel 11.138.0.19 through both direct UAPI and the WHM bridge, with all test repositories and deployments cleaned. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. create POST returned a floating-point queued timestamp after queuing the deployment. The pinned string alternative is retained verbatim, including fractional spelling; finite JSON numbers preserve their int/float value without a string/float conversion. Optionality and null rejection stay unchanged."
             }
           ]
         }
@@ -154,9 +154,9 @@
         },
         {
           "kind": "live",
-          "version": "not recorded in PR40 review 5720064601",
+          "version": "11.138.0.19",
           "date": "2026-10-31",
-          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. The reviewer reports delete POST succeeded and returned null, and identifies a strict-types interoperability failure because retrieve returns integer deploy_id while delete's pinned parameter is string. Widen only this scalar parameter to string|int so returned IDs can be chained directly. The pinned parameter prose incorrectly calls deploy_id a Task Queue task ID, but create/retrieve expose separate deploy_id and task_id fields. Correct the parameter description to identify deploy_id; do not substitute task_id or change encoding."
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The reviewer clarified in https://github.com/hostingpal/whm-api-client/pull/40#issuecomment-6536614693 that every result in the original review and the corrected lifecycle at 7b9f1f93ead92504052a31bffd452ade64f9a208 used cPanel 11.138.0.19 through both direct UAPI and the WHM bridge, with all test repositories and deployments cleaned. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. The reviewer reports delete POST succeeded and returned null, and identifies a strict-types interoperability failure because retrieve returns integer deploy_id while delete's pinned parameter is string. Widen only this scalar parameter to string|int so returned IDs can be chained directly. The pinned parameter prose incorrectly calls deploy_id a Task Queue task ID, but create/retrieve expose separate deploy_id and task_id fields. Correct the parameter description to identify deploy_id; do not substitute task_id or change encoding."
         }
       ],
       "params": {
@@ -200,9 +200,9 @@
         },
         {
           "kind": "live",
-          "version": "not recorded in PR40 review 5720064601",
+          "version": "11.138.0.19",
           "date": "2026-10-31",
-          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. Populated deployment retrieve returned integer deploy_id and repository_state.date, which already match the pinned schemas, and floating-point active, queued and succeeded timestamps. Canceled and failed numeric timestamp variants were not reported."
+          "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The reviewer clarified in https://github.com/hostingpal/whm-api-client/pull/40#issuecomment-6536614693 that every result in the original review and the corrected lifecycle at 7b9f1f93ead92504052a31bffd452ade64f9a208 used cPanel 11.138.0.19 through both direct UAPI and the WHM bridge, with all test repositories and deployments cleaned. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. Populated deployment retrieve returned integer deploy_id and repository_state.date, which already match the pinned schemas, and floating-point active, queued and succeeded timestamps. Canceled and failed numeric timestamp variants were not reported."
         }
       ],
       "response": {
@@ -221,9 +221,9 @@
           "evidence": [
             {
               "kind": "live",
-              "version": "not recorded in PR40 review 5720064601",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. Populated retrieve POST returned a floating-point active timestamp. This correction is limited to the reviewer-named field. The pinned string alternative is retained verbatim, including fractional spelling; finite JSON numbers preserve their int/float value without a string/float conversion. Optionality and null rejection stay unchanged."
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The reviewer clarified in https://github.com/hostingpal/whm-api-client/pull/40#issuecomment-6536614693 that every result in the original review and the corrected lifecycle at 7b9f1f93ead92504052a31bffd452ade64f9a208 used cPanel 11.138.0.19 through both direct UAPI and the WHM bridge, with all test repositories and deployments cleaned. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. Populated retrieve POST returned a floating-point active timestamp. This correction is limited to the reviewer-named field. The pinned string alternative is retained verbatim, including fractional spelling; finite JSON numbers preserve their int/float value without a string/float conversion. Optionality and null rejection stay unchanged."
             }
           ]
         },
@@ -242,9 +242,9 @@
           "evidence": [
             {
               "kind": "live",
-              "version": "not recorded in PR40 review 5720064601",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. Populated retrieve POST returned a floating-point queued timestamp. This correction is limited to the reviewer-named field. The pinned string alternative is retained verbatim, including fractional spelling; finite JSON numbers preserve their int/float value without a string/float conversion. Optionality and null rejection stay unchanged."
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The reviewer clarified in https://github.com/hostingpal/whm-api-client/pull/40#issuecomment-6536614693 that every result in the original review and the corrected lifecycle at 7b9f1f93ead92504052a31bffd452ade64f9a208 used cPanel 11.138.0.19 through both direct UAPI and the WHM bridge, with all test repositories and deployments cleaned. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. Populated retrieve POST returned a floating-point queued timestamp. This correction is limited to the reviewer-named field. The pinned string alternative is retained verbatim, including fractional spelling; finite JSON numbers preserve their int/float value without a string/float conversion. Optionality and null rejection stay unchanged."
             }
           ]
         },
@@ -263,9 +263,9 @@
           "evidence": [
             {
               "kind": "live",
-              "version": "not recorded in PR40 review 5720064601",
+              "version": "11.138.0.19",
               "date": "2026-10-31",
-              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The report does not separately identify deployment-operation routes or record a server version. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. Populated retrieve POST returned a floating-point succeeded timestamp. This correction is limited to the reviewer-named field. The pinned string alternative is retained verbatim, including fractional spelling; finite JSON numbers preserve their int/float value without a string/float conversion. Optionality and null rejection stay unchanged."
+              "note": "Reviewer report https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601 against revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9, submitted 2026-10-31, on designated account npr. These operations use actual form POST. The reviewer clarified in https://github.com/hostingpal/whm-api-client/pull/40#issuecomment-6536614693 that every result in the original review and the corrected lifecycle at 7b9f1f93ead92504052a31bffd452ade64f9a208 used cPanel 11.138.0.19 through both direct UAPI and the WHM bridge, with all test repositories and deployments cleaned. These lifecycle observations and cleanup report are separate from the initial GET-only capture, which did not execute deployment operations. Populated retrieve POST returned a floating-point succeeded timestamp. This correction is limited to the reviewer-named field. The pinned string alternative is retained verbatim, including fractional spelling; finite JSON numbers preserve their int/float value without a string/float conversion. Optionality and null rejection stay unchanged."
             }
           ]
         }

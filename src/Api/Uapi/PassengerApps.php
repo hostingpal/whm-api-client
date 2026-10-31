@@ -305,7 +305,8 @@ final readonly class PassengerApps
      * inventory failure to account npr lacking the passengerapps feature and no Passenger packages being installed. All
      * seven PassengerApps methods remain without successful live observations there. This capability failure
      * establishes neither an empty application inventory nor a successful response shape. The reviewer did not install
-     * Passenger; the report does not specify the server version.
+     * Passenger. The subsequent clarification in PR40 comment 6536614693 confirms cPanel 11.138.0.19 and both direct
+     * and bridged routes for the original review.
      *
      * API-map identity: uapi:PassengerApps/list_applications#GET (wire name list_applications).
      *

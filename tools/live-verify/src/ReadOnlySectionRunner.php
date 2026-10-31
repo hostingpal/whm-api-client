@@ -49,6 +49,8 @@ final readonly class ReadOnlySectionRunner
      *
      * The input records intentionally accept arbitrary values so missing/malformed evidence fails
      * closed rather than relying on a PHPDoc assertion. This does not validate upstream payloads again.
+     * Repeated operations on one route require distinct explicit argument labels on every occurrence.
+     * Missing, extra or mismatched labels fail; historical unlabeled catalogs retain duplicate rejection.
      *
      * @param list<Probe> $probes
      * @param array<mixed> $records
@@ -77,10 +79,21 @@ final readonly class ReadOnlySectionRunner
                 return false;
             }
             $identity = $probe->operation . '|' . $probe->route;
-            if (isset($seen[$identity]) || $probe->unavailable !== null) {
+            $argumentVariant = $probe->argumentVariant ?? '';
+            if (
+                isset($seen[$identity][$argumentVariant]) || $probe->unavailable !== null
+                || (isset($seen[$identity]) && ($argumentVariant === '' || isset($seen[$identity][''])))
+            ) {
                 return false;
             }
-            $seen[$identity] = true;
+            $seen[$identity][$argumentVariant] = true;
+            if ($probe->argumentVariant === null) {
+                if (array_key_exists('argument_variant', $record)) {
+                    return false;
+                }
+            } elseif (($record['argument_variant'] ?? null) !== $probe->argumentVariant) {
+                return false;
+            }
             $expected = [
                 'operation' => $probe->operation, 'route' => $probe->route,
                 'variant' => $probe->sourceVariant ?? $probe->operation . '#GET',

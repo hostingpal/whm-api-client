@@ -133,7 +133,7 @@ bd prime                # Refresh Beads context
 
 `hostingpal/whm-api-client` is a standalone PHP Composer library in the
 `HostingPal\WhmApiClient` namespace. Its planned scope is the complete WHM API
-and cPanel UAPI surface. The 33 typed groups cover 399 documented operations:
+and cPanel UAPI surface. The 40 typed groups cover 427 documented operations:
 read-only server, domain, PHP and feature inventory, the WHM account lifecycle
 (`listaccts`, `accountsummary`, `listpkgs`, `createacct`, `suspendacct`,
 `unsuspendacct`, `removeacct`, `passwd`, `changepackage`, `modifyacct`), and the
@@ -323,6 +323,53 @@ argument from inconsistent upstream prose.
 The 2026-10-30 domain-management capture at `9db0cad` on `11.138.0.19`: All 27 GET observations passed HTTP, API, payload and probe checks. Strict assessment remains failed for two masked integer unknown-field observations at `$[].*` in `WebVhosts/list_ssl_capable_domains`, one per route. No acknowledgment or new typed field was added.
 Addon, parked and subdomain inventories were empty. Their row fields, true redirect-status variants and nullable proxy-subdomain variants are not established by this capture. Separate [Claude reviewer evidence](https://github.com/hostingpal/whm-api-client/pull/33#pullrequestreview-5717731712) reports seven mutation methods passing on both routes with cleanup; rename and temporary-domain conversion remain unobserved. Follow-up `8x0.2.20` remains open.
 
+The DNSSEC and Dynamic DNS groups cover all seventeen pinned functions.
+`dnssec()` exposes key lifecycle, DNSKEY/private-key export, DS records and NSEC
+settings; `dynamicDns()` exposes creation, inventory, ID replacement, description
+updates and deletion. DNSKEY/DS reads and Dynamic DNS inventory use GET; the other
+fourteen methods use form POST, including private-key export.
+
+DNSSEC requires the DNS role and retains each method's version and registrar
+requirements. Disabling DNSSEC destroys its keys and requires registrar record
+removal; the client provides no retry or rollback. Dynamic domain/key maps retain
+their returned keys, optional fields and per-domain results separately from the
+API envelope. Single-domain calls use the documented `domain` argument; the
+`domain-0`/`domain-1` family remains tracked under `8x0.1.21`.
+Omitting `keySetup` retains `classic` even with `algoNum: 13`; choose `simple`
+explicitly for the documented combined-key setup above algorithm 8. Key removal
+is irreversible and can break validation while registrar DS records reference it.
+Reviewed key identifiers normalize canonical in-range integer strings to integers
+for direct use in subsequent typed key methods. Digest algorithm identifiers also
+accept that narrow conversion; other flags and numeric fields remain strict.
+Export payloads expose an optional `success` flag, with no promised `error` field.
+
+Imported key material and Dynamic DNS input IDs are sensitive parameters.
+`exportZoneKey()` results and `PayloadMismatchException::$payload` can contain
+private keys; do not log either. `fetchDsRecords()` may also return private-key
+material, and Dynamic DNS IDs form part
+of update URLs; treat those result values as sensitive and do not fetch update
+URLs while inspecting inventory. `recreate()` replaces the DDNS identifier and
+invalidates its previous update URL; deletion also invalidates its update URL.
+`setDescription()` returns no payload. Deletion's source `number` enum `[0, 1]` becomes an integer `0|1` flag under
+the existing generator; zero means the identifier did not exist for deletion.
+Omitted timestamps and explicit null `last_update_time` remain distinct.
+
+The live catalog reads only DS records for `npr.rs`, Dynamic DNS inventory for
+`npr`, and WHM version. It makes no key, registrar, DNS-record or DDNS changes.
+Unobserved live variants remain tracked under `8x0.2.26`; API responses alone do
+not establish DNS propagation or DNSSEC validation by resolvers.
+The final integrated capture at `71e31f1` passes all five GETs and strict checks
+with zero discrepancies. Its DS objects and DDNS lists are empty; populated
+numeric fields and mutations remain separate reviewer/offline evidence. The
+original capture is unchanged; `docs/api/source-audit.md` records both hashes.
+
+
+The [DNS security capture](docs/api/evidence/2026-10-31-dns-security.json) at
+`372df78` on `11.138.0.19` passes all five GET observations and strict assessment
+with zero discrepancies. DS detail objects and the DDNS inventory are empty;
+populated fields and the other fifteen methods have no committed live evidence. No DNS,
+key, registrar or DDNS state changed. Follow-up `8x0.2.26` remains open.
+
 The directory groups cover all ten pinned functions, available from cPanel 88.
 Six reads use GET and four mutations use form POST. Directory paths are forwarded
 unchanged. Only `DirectoryProtection/list_directories` documents paths relative to
@@ -349,6 +396,69 @@ was an empty string, and the privacy-user list was empty. This capture made no
 indexing, password-protection or leech-protection changes and establishes no
 mutation or HTTP-enforcement coverage. Separate reviewer mutation observations
 are recorded in the source audit; they are not part of this artifact. Follow-up `8x0.2.22` remains open.
+
+The resource and web statistics slice exposes eleven GET operations across
+`bandwidth()`, `resourceUsage()`, `statsBar()`, `stats()` and `statsManager()`.
+Bandwidth protocols, retention and grouped queries complement resource limits,
+statistics-bar values, domain bandwidth, daily AwStats counters, error logs,
+report-file inventory and analyzer configuration. `StatsManager/save_configuration`
+requires a JSON request body and remains excluded under `8x0.1.18`; generic form
+calls do not provide that transport.
+
+Pipe-separated grouping, domain, protocol and display arguments are supplied as
+strings and encoded once. Omitted options preserve server defaults; explicit
+false flags are sent as zero. Keep bytes, timestamps, per-resource units and
+formatted display strings distinct. Resource `maximum: null` means unlimited;
+zero and omission remain separate. Dynamic domain/date/grouping keys remain keys
+in returned arrays and are wildcarded in structural evidence. The pinned
+Bandwidth grouping prose and response examples establish one to three dynamic
+key levels ending in integer or fractional byte values. The overlay repairs the
+formal schema's object-only leaves while retaining nullable second/third values
+and empty maps; numeric strings and opaque fourth-level leaves are not inferred.
+The result shape does not enforce correspondence with the supplied grouping.
+Resource maximum/usage, StatsBar percent and bandwidth month-start values accept
+lossless canonical integer strings only in their reviewed fields. A null
+resource URL remains distinct from omission; fractional strings are not rounded
+or silently coerced. StatsBar preserves observed null `count` values and string
+or object `role` values whose dynamic values are strings or string lists. The
+role map follows the final structural capture; it does not identify the map keys
+or their meaning. Other percentage and flag rules stay unchanged.
+`listSites()` normalizes only exact quoted `ssl` flags to integer 0/1, preserving
+omission and the native flags. These field corrections follow the
+[PR38 reviewer observations](https://github.com/hostingpal/whm-api-client/pull/38#pullrequestreview-5719939412)
+on cPanel `11.138.0.19`; they do not establish every display or analyzer variant.
+The live/error-log follow-up remains `8x0.2.25`.
+
+Statistics require the documented features, roles and analyzer availability.
+`getSiteErrors()` returns log text as payload data; report URLs are returned
+without being fetched. Analyzer configuration metadata stays in `responseMeta()`.
+The fixed live catalog targets only `npr`/`npr.rs`, bounds the bandwidth query to
+October 2026 UTC, and limits the error-log read to one entry. No configuration,
+statistics generation or log contents are changed by these reads.
+
+On `test.oblak.host` with cPanel `11.138.0.19`, the reviewer found that
+`getSiteErrors(log: 'error')` and the default failed because `npr` could not read
+the root-owned mode-0600 `/var/cpanel/cpanel.config`. The same operation with
+`log: 'suexec'` returned populated typed rows on both routes. This is an attributed
+environment observation, not a general API restriction. The server file was left
+unchanged and the earlier failed artifacts remain failed and unwaived.
+The subsequent 27-GET review capture passes every HTTP/API outcome and 25 payload
+checks, including all three query depths, Analog sites and populated `suexec`
+rows. Its two StatsBar role mismatches establish the bounded-map correction;
+two additional masked unknown-field findings remain strict and unwaived. The
+artifact stays failed. After Claude verified the corrected code, a separate
+27-GET capture at `023d2dd` passed all HTTP/API/payload/probe checks on that
+contract. It remains strictly failed only for the same two masked unknown-field
+findings, which are unwaived. See `docs/api/source-audit.md` for both immutable
+artifacts, exact revisions, hashes and coverage limits.
+
+The corrected [statistics capture](docs/api/evidence/2026-10-31-resource-statistics-corrected.json)
+at `a439c3c` on `11.138.0.19` records 23 HTTP-200 GETs. Twenty-one API/payload/probe
+checks pass with zero discrepancies; both `Stats/get_site_errors` API calls fail,
+so strict status remains failed. Ten new functions pass on both routes. Daily
+statistics, site/report lists and analyzer lists are empty; populated variants
+remain offline coverage. No settings or log content changed. Follow-up `8x0.2.25`
+retains the unresolved log errors and other unobserved variants.
 
 The repository, deployment and Passenger groups cover fourteen pinned functions.
 `versionControl()` manages cPanel Git repositories, `versionControlDeployment()`
@@ -404,8 +514,10 @@ The [application-management capture](docs/api/evidence/2026-10-31-application-de
 at `344fffc` on `11.138.0.19` records three HTTP-200 GETs. WHM version passes;
 both Passenger inventory calls fail at the API layer before payload validation,
 so strict assessment remains failed. This is no successful empty-inventory or
-payload-schema evidence. All fourteen methods remain offline-tested, with live
-work under `8x0.2.27`. No repository or application state changed.
+payload-schema evidence. All fourteen methods are offline-tested; separate
+reviewer lifecycle observations and their limits are recorded in the source audit.
+Committed lifecycle evidence remains under `8x0.2.27`. This capture changed no
+repository or application state.
 
 The Fileman group implements 13 of 14 pinned functions: directory autocomplete,
 file information, file content and directory listings use GET; content saving,

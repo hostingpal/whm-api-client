@@ -188,7 +188,7 @@
         },
         {
           "kind": "observed",
-          "text": "PR40 review 5720064601 of revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9 attributes the test-server inventory failure to account npr lacking the passengerapps feature and no Passenger packages being installed. All seven PassengerApps methods remain without successful live observations there. This capability failure establishes neither an empty application inventory nor a successful response shape. The reviewer did not install Passenger; the report does not specify the server version."
+          "text": "PR40 review 5720064601 of revision 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9 attributes the test-server inventory failure to account npr lacking the passengerapps feature and no Passenger packages being installed. All seven PassengerApps methods remain without successful live observations there. This capability failure establishes neither an empty application inventory nor a successful response shape. The reviewer did not install Passenger. The subsequent clarification in PR40 comment 6536614693 confirms cPanel 11.138.0.19 and both direct and bridged routes for the original review."
         }
       ],
       "evidence": [
@@ -200,9 +200,9 @@
         },
         {
           "kind": "live",
-          "version": "not reported in PR40 review 5720064601",
+          "version": "11.138.0.19",
           "date": "2026-10-31",
-          "note": "Claude review 5720064601 explicitly reviews commit 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9 and reports that npr lacks the passengerapps feature and the test server has no Passenger packages installed. It attributes the inventory API failure to this capability state and keeps all seven PassengerApps methods unobservable there. This is attributed reviewer evidence, not a successful payload observation or a new capture; no package installation or other server change is implied. The review does not give a server version. https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601"
+          "note": "Claude review 5720064601 explicitly reviews commit 9aa3a6c9fdeaf670b0de742c36ed7895d1a560a9 and reports that npr lacks the passengerapps feature and the test server has no Passenger packages installed. It attributes the inventory API failure to this capability state and keeps all seven PassengerApps methods unobservable there. This is attributed reviewer evidence, not a successful payload observation or a new capture; no package installation or other server change is implied. The subsequent clarification https://github.com/hostingpal/whm-api-client/pull/40#issuecomment-6536614693 confirms that every result in the original review used cPanel 11.138.0.19 through both direct UAPI and the WHM bridge. https://github.com/hostingpal/whm-api-client/pull/40#pullrequestreview-5720064601"
         }
       ]
     },

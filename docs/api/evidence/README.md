@@ -306,6 +306,78 @@ no resource was created or changed. Root-owned uid/gid forms are separate review
 evidence. Earlier captures remain immutable. SHA-256:
 `dfc4899b5e88df167ee361a081f5e682b54f20dd5005603023184ad98057993d`.
 
+### Initial resource/statistics capture
+
+The immutable [initial capture](2026-10-31-resource-statistics.json)
+at `fb4f9c9eb03e094d89a41806e927c4cbf0c60432` on `11.138.0.19` records 23 GET
+observations. All return HTTP 200; 21 API outcomes succeed, fourteen payload and
+probe checks pass, seven payload checks fail, and two error-log requests fail
+at the API layer. Both `Stats/get_site_errors` calls use the documented `log=error`
+and `maxlines=1`; their failure does not establish a log-row contract. No
+configuration or log content is changed. Follow-up `8x0.2.25` retains that gap.
+
+The two-level Bandwidth query returns integer leaves at `$.*.*` on both routes.
+ResourceUsage reports numeric strings for `maximum` and `usage`, and nullable
+`url`, on both routes. StatsBar reports numeric-string `percent` on both routes.
+Direct Stats bandwidth reports integer and numeric-string `month_start`; the
+bridge reports native integers. These are structural classifications, not raw
+values or proof of a particular numeric-string spelling. Preserve the original
+failed artifact, SHA-256
+`6114814a2c39e52080d34c90cf0790380c16b86d3dca87677cb00fea50a407f3`.
+
+### Corrected resource/statistics capture
+
+The immutable [corrected capture](2026-10-31-resource-statistics-corrected.json)
+at `a439c3c7791a16207437911c4dda93ee60105ac0` on `11.138.0.19` records all 23 GETs
+with HTTP 200. Twenty-one API, payload and probe checks pass with zero schema
+discrepancies. Both `Stats/get_site_errors` API requests still fail before payload
+validation, so the overall strict assessment remains failed; neither failure is
+waived or reclassified as a skip. The selector and bounds follow the pinned
+source, which supplies no diagnosed cause. Follow-up `8x0.2.25` remains open.
+
+The successful checks establish canonical integer-string compatibility for the
+selected resource rows, percentages and direct month-start timestamps, and
+integer leaves for the selected two-level bandwidth query. They do not establish
+fractional percentages or other grouping depths. Daily-stat maps, site lists,
+report-file lists and analyzer lists are empty, so their populated schemas remain
+offline-tested. Ten of the eleven new functions pass through both routes; error-log
+payloads remain unobserved. No settings, analyzer execution or log mutation ran.
+The original capture stays unchanged. Corrected artifact SHA-256:
+`904c85e93c2774646f68ddbbf38685355164f6bec9c1f19bc8e3d72e96438521`.
+
+### DNS inventory capture
+
+The immutable [DNS security capture](2026-10-31-dns-security.json) at
+`372df7834484b8ff696d677e764f3b114a1ed2ac` on `11.138.0.19` passes all five GET
+observations: WHM version and both `DNSSEC/fetch_ds_records` and `DynamicDNS/list`
+through direct UAPI and the WHM bridge. HTTP/API/payload/probe checks and strict
+assessment pass with zero discrepancies. The DS result contains an empty object
+for the selected domain, with `keys` and `nsec_details` absent; DDNS inventory is
+an empty list. This establishes neither populated key/DDNS row schemas nor the
+example-based quoted-number variants. No key, record, registrar or application
+state changed, and no update URL was fetched. The other fifteen methods remain
+offline-tested; follow-up `8x0.2.26` retains their live work. SHA-256:
+`70811e4a21e6be51745f22738020410062ad98cc756539265ea8003c576c73e6`.
+
+
+### Final integrated DNS inventory capture
+
+The immutable [reviewed DNS capture](2026-10-31-dns-security-reviewed.json)
+at `71e31f15379fd63a7ee19015421405cd2a93d1cc` follows normal integration of PR38.
+On cPanel `11.138.0.19`, all five GET observations pass HTTP/API/payload/probe and
+strict checks with zero discrepancies. DS results again contain an empty object
+for the selected domain, with `keys` and `nsec_details` absent; both DDNS lists
+are empty. This verifies the integrated read path, not the populated numeric
+fields, private-key exports or lifecycle mutations. Those remain covered by
+independent offline tests and the separately attributed reviewer report.
+
+The bounded recipe intentionally performs no DNSSEC enablement, registrar, key,
+record or DDNS change, as permitted by review 5720009405. No update URL was fetched.
+The initial artifact and every earlier evidence file remain unchanged. Remaining
+committed populated/mutation evidence stays under `8x0.2.26`; no further read-only
+capture is outstanding from this review request. SHA-256:
+`8be0fe648505873d0f36221e0ef750954b5268469399ac2de804ef8c1e5d3b56`.
+
 ### Application inventory capture
 
 The immutable [application-management capture](2026-10-31-application-deployment.json)
@@ -314,8 +386,9 @@ observations, all HTTP 200. WHM version passes. Both `PassengerApps/list_applica
 requests fail at the API layer with null payloads, so payload validation is not
 performed and strict assessment remains failed. The sanitized evidence does not
 diagnose the capability/configuration cause; neither failure is waived or treated
-as a successful empty inventory. All fourteen new methods retain offline-only
-successful-payload coverage under `8x0.2.27`.
+as a successful empty inventory. This artifact establishes no successful payload
+coverage for the fourteen new methods. Separate reviewer lifecycle observations
+are recorded in the source audit; committed lifecycle coverage stays under `8x0.2.27`.
 
 No repository, deployment, application configuration or dependency installation
 changed, and no returned URL was fetched. No contract was broadened from an API
