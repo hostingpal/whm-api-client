@@ -542,7 +542,8 @@ trait UapiGroups
     /**
      * Select the Market operations without making a request.
      *
-     * Read-only cPanel Market catalog, provider information and certificate request status.
+     * cPanel Market catalog and provider information, certificate request status, and session, cart and pending-queue
+     * actions.
      */
     public function market(): Market
     {

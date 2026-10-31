@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 96 generated typed groups cover 1,137 documented operations (see
+The 96 generated typed groups cover 1,145 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -343,7 +343,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->domainInfo()` | All 5 operations: `domainsData()`, `singleDomainData()`, `listDomains()`, `primaryDomain()`, `mainDomainBuiltinSubdomainAliases()` |
 | `uapi()->langPhp()` | All 11 operations: installed/default/vhost PHP versions, domain handlers and impacted domains, INI paths/basic directives/content reads, and `phpIniSetUserBasicDirectives()`, `phpIniSetUserContent()`, `phpSetVhostVersions()` |
 | `uapi()->features()` | All 5 operations: `getFeatureMetadata()`, `hasFeature()`, `hasFeaturesLike()`, `listFeatures()`, `listFeaturesLike()` |
-| `uapi()->market()` | Nine of nineteen pinned functions: read-only catalog, product/provider information, login/completion URLs, DCV constraints and certificate request status/availability; see [generated methods](src/Api/Uapi/Market.php). |
+| `uapi()->market()` | Seventeen of nineteen pinned functions: nine catalog/provider/certificate status GETs and eight session, cart, token and pending-queue form POST actions; see [generated methods](src/Api/Uapi/Market.php). |
 | `uapi()->email()` | All 96 pinned functions, including mailbox lifecycle, quotas and suspension, forwarders, filters, MX routing, autoresponders, spam settings and delivery diagnostics; see [generated methods](src/Api/Uapi/Email.php). |
 | `uapi()->ssl()` | All 49 nondeprecated functions, including certificate/key/CSR inventory and lifecycle, installation, AutoSSL, SNI and redirects; see [generated methods](src/Api/Uapi/Ssl.php). |
 | `uapi()->imageManager()` | `convertFile()`, `createThumbnails()`, `getDimensions()`, `resizeImage()` (complete pinned module). |
@@ -1453,8 +1453,8 @@ $client->whm()->modSecurity()->updateSettings(settings: [
 
 This emits `setting_id1=1&state1=On&setting_id2=2&state2=Off&remove2=0`;
 there is no `remove1`. Empty state strings, integer zero and string `'0'` remain
-values. The alias adds one public method, while canonical coverage is now 1,137
-operations (549 UAPI and 588 WHM), 96 groups and 195 generated files (194 PHP files plus the coverage document).
+values. The alias adds one public method, while canonical coverage is now 1,145
+operations (557 UAPI and 588 WHM), 96 groups and 195 generated files (194 PHP files plus the coverage document).
 
 The twelve source-backed empty-result mutations accept an omitted or null payload
 while retaining any returned mixed data; they are not weakened to void. Omitted
@@ -3523,3 +3523,66 @@ files plus coverage). Existing runtime/generator, earlier overlays/generated
 contracts, pinned sources, map checksum, historical evidence and audit prefix are
 unchanged. Required PHP 8.3 CI and inherited acceptance work remain external-owned
 and unwaived.
+
+
+### UAPI Market actions (2026-10-31)
+
+`uapi()->market()` now exposes seventeen of the nineteen pinned functions: the
+nine published GETs plus eight form POST actions, `cancelPendingSslCertificate()`,
+`createShoppingCartNonSsl()`, `getBuildCartUrl()`, `getLicenseInfo()`,
+`processSslPendingQueue()`, `setStatusOfPendingQueueItems()`,
+`setUrlAfterCheckout()` and `validateLoginToken()`. Non-SSL cart creation,
+build-cart URL and license information require cPanel 62; the other five require
+cPanel 56. All eight are documented mutations with no rollback, including the
+get-named methods that save session data. Queue processing acts on the account
+pending queue and can install certificates. Each call makes one form POST on
+direct UAPI or the WHM bridge, without an implicit read, merge, retry, session
+cache, restore or rollback.
+
+`setStatusOfPendingQueueItems(orderItemId, provider, status)` accepts a string or
+nonempty sequential string list. A scalar uses one literal `order_item_id`;
+every list, including a singleton, repeats that literal key in caller order,
+preserving duplicates, empty strings and exact bytes. Provider and status remain
+single fields. Empty, sparse, keyed, nested and non-string lists fail before HTTP
+after metadata reset; native signature errors precede reset. The pinned prose
+and examples expressly permit repeated keys as an alternative to numbered names.
+No caller numbering, bracket keys, sorting, deduplication or numeric conversion
+is introduced. The documented confirmed status denotes provider-confirmed payment;
+the client does not verify payment. Inspect payload `error_type` and missing
+integer `order_item_ids` separately from `responseMeta()` API status.
+
+Known response fields remain optional. Order, product and certificate IDs remain
+strings; input `setUrlAfterCheckout` orderId and returned missing order_item_ids
+remain integers. Flags stay native integer 0|1 and timestamps stay integers.
+Nullable certificate_pem and error_type preserve null versus omission; an empty
+last_status_message stays empty. Provider-specific order_items_ref objects and
+license objects preserve opaque fields. A validateLoginToken object without
+access_token is valid, while an absent root data member is a mismatch.
+
+Three source contradictions remain explicit. Cancellation retains the formal
+list of order records despite object prose; an actual object will fail strict
+validation. License information retains its formal nullable opaque object despite
+no-data prose and a null example; an omitted root data member will fail validation.
+Queue `deleted` prose says 0=deleted and 1=not deleted, opposite `expired`; both
+remain strict integer flags and their semantics need live/source confirmation.
+No union, void weakening or semantic correction is inferred.
+
+Access/login tokens remain sensitive parameters through generated and runner
+frames. Returned access tokens, checkout/session URLs, PEM/CSR, provider messages
+and identity data are sensitive payloads; do not log them or fetch returned URLs.
+Inputs retain exact bytes, optional null omits domain and an explicit empty domain
+remains supplied. Supply validateLoginToken with the caller's urlAfterLogin used
+for getLoginUrl; the client stores or verifies no session linkage. Cancellation
+removes the order/polling per source without a refund or reversibility promise.
+No live API/provider/login/cart/order/payment/queue/certificate call or URL fetch
+ran. Actual session, checkout, payment, installation and queue compatibility remain
+under OPEN `whm-api-client-8x0.2.64`; delivery is `whm-api-client-8x0.4.22`.
+
+Exactly eight canonical UAPI operations and zero groups are added over
+`9a3212839ebd07f1caad02f99e674a91f877b98b`: 1,145 operations (557 UAPI, 588 WHM),
+96 groups and 195 generated outputs (194 PHP files plus coverage). The published
+nine read contracts remain unchanged. `create_shopping_cart` and
+`request_ssl_certificates` remain deferred under `8x0.1.22` and `8x0.29.6`; their
+composed/content JSON values are form/query parameters, not JSON request bodies.
+This slice adds no runtime/generator or generic JSON-body capability. Required
+PHP 8.3 CI and the 55 inherited diagnostics remain visible and unwaived.
