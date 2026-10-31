@@ -6911,3 +6911,58 @@ remain deferred under `8x0.1.22` and taxonomy `8x0.29.6`; their JSON values are
 form/query parameters rather than JSON request bodies. No structured-input or
 generic JSON-body expansion occurred. Required PHP 8.3 CI and the 55 inherited
 diagnostics remain visible, external-owned and unwaived.
+
+
+### 2026-10-31 — UAPI Mailboxes complete generated module
+
+Delivery `whm-api-client-8x0.4.23` adds all five Mailboxes operations. Independent
+inspection of immutable `cpanel.openapi.json.gz` confirmed decompressed SHA-256
+`172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc`
+(compressed SHA-256
+`ba2ba938969c2e98f9bdb259f4072d182af215ba8a44402846de077ba6b85358`).
+Overlay evidence binds each `/paths/~1Mailboxes~1<function>/get` locator. All five
+selected source variants are GET; x-readonly=true selects runtime GET for
+get_mailbox_status_list and has_utf8_mailbox_names. x-readonly=false and
+x-rollback=none select form POST for both expunge operations and
+set_utf8_mailbox_names. Version floors are cPanel 64 and cPanel 78 respectively.
+
+Formal parameters and response data are retained from each operation's
+`/parameters` and `/responses/200/content/application~1json/schema/properties/result/properties/data`.
+Expunge account anyOf email/username branches are both strings; no format validator
+is added. Explicit query sensitivity protects arbitrary mail-search expressions.
+The mailbox-name parameter documents unescapable `*` wildcards and recommends GUID
+methods, with separate status inventory. Required queries are forwarded unchanged;
+no client query-safety or ownership claim, parsing, retry or rollback is introduced.
+
+The mailbox-name expunge data schema is literally `{}`, yielding mixed with a
+required present data member; all JSON roots including null remain accepted.
+GUID expunge data is literally type object/properties {}, yielding a required opaque
+object preserving provider fields and existing empty-array compatibility; null and
+absence fail. Status-list rows contain only optional string guid/mailbox and integer
+messages/vsize, the latter in bytes. Source minimum 0 remains documentation under
+the existing runtime, without new range validation. Optional enabled and success
+remain strict native integer 0|1 object fields, separate from API status. Required
+input enabled becomes native bool and is encoded 0/1. Optional user null omits while
+empty string is supplied. No response correction, normalization, unwrap, void or
+optional_payload override is introduced; no source contradiction requires one.
+
+Real-client/mock-HTTP fixtures cover each method on direct and bridge routes,
+literal paths/auth/method/query/body/content type and argument order, exact wildcard,
+account/GUID/UTF-8/search bytes, both boolean encodings, optional user omission/null/
+empty, mixed roots, opaque provider fields, empty/populated lists and objects,
+strict known fields, null/absent/wrong-root distinctions and zero flags independent
+of API status. API/outer-WHM/HTTP/JSON/transport/payload failures assert metadata
+ordering and one attempt. Strict native wrong types preserve prior metadata.
+Sensitive query reflection and actual-runner failures with exception args enabled
+verify library trace redaction without swallowing assertion failures.
+
+Baseline `3872d384a2e4f83a348758085808452230459d8c` contains 1,145 operations
+(557 UAPI, 588 WHM), 96 groups and 195 outputs. This adds exactly five operations,
+one group and two PHP outputs: 1,150 operations (562 UAPI, 588 WHM), 97 groups,
+197 outputs (196 PHP files plus coverage). Prior overlays/specs/methods, immutable
+source/evidence/map/checksum/runtime/generator files and this audit's prefix remain
+unchanged. No live API or URL call, mailbox creation, mail delivery, expunge or
+encoding change ran. Separate `whm-api-client-8x0.2.65` remains OPEN for owned live
+fixtures and cleanup; offline success establishes no mail-client or destructive
+operation compatibility. Required PHP 8.3 CI and 55 inherited diagnostics remain
+external-owned and unwaived.

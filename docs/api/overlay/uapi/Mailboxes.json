@@ -1,0 +1,188 @@
+{
+  "schema_version": "1.0",
+  "family": "uapi",
+  "group": "Mailboxes",
+  "accessor": "mailboxes",
+  "description": "Mailbox inventory, selected-message expunge and Roundcube mailbox-name encoding settings.",
+  "operations": {
+    "uapi:Mailboxes/expunge_mailbox_messages": {
+      "method": "POST",
+      "params": {
+        "query": {
+          "sensitive": true
+        }
+      },
+      "order": [
+        "account",
+        "mailbox",
+        "query"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 64."
+        },
+        {
+          "kind": "documented",
+          "text": "Marks selected messages as deleted; rollback is none. Use getMailboxStatusList(account) separately to inventory mailbox names and GUIDs."
+        },
+        {
+          "kind": "policy",
+          "text": "The required search query is sensitive and forwarded unchanged. The client does not parse, narrow or escape it, establish mailbox ownership, protect arbitrary mail from deletion, retry or roll back. Later live fixtures require separate ownership and cleanup."
+        },
+        {
+          "kind": "documented",
+          "text": "Mailbox wildcard characters such as * cannot be escaped; upstream recommends expungeMessagesForMailboxGuid() instead."
+        },
+        {
+          "kind": "documented",
+          "text": "The data member has an empty schema: any present JSON value, including null, is preserved as mixed. Missing data is a mismatch; no deletion count or per-message outcome is inferred."
+        },
+        {
+          "kind": "policy",
+          "text": "Scalar identifiers and names are forwarded and form-encoded once without email, domain, path, UUID or search-query validation, trimming or UTF-8 name conversion. Optional and absent known fields remain distinct from explicit null. No live compatibility is established."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Mailboxes~1expunge_mailbox_messages/get",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Mailboxes~1expunge_mailbox_messages/get x-readonly=false selects POST. Formal parameters, requiredness, order and response data schema at responses/200/content/application~1json/schema/properties/result/properties/data are preserved without replacement or normalization. Account anyOf email/username remains string. Source GET variant selection is independent from runtime form POST. Query sensitivity protects arbitrary private mail-search text."
+        }
+      ]
+    },
+    "uapi:Mailboxes/expunge_messages_for_mailbox_guid": {
+      "method": "POST",
+      "params": {
+        "query": {
+          "sensitive": true
+        }
+      },
+      "order": [
+        "account",
+        "mailbox_guid",
+        "query"
+      ],
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 64."
+        },
+        {
+          "kind": "documented",
+          "text": "Marks selected messages as deleted; rollback is none. Use getMailboxStatusList(account) separately to inventory mailbox names and GUIDs."
+        },
+        {
+          "kind": "policy",
+          "text": "The required search query is sensitive and forwarded unchanged. The client does not parse, narrow or escape it, establish mailbox ownership, protect arbitrary mail from deletion, retry or roll back. Later live fixtures require separate ownership and cleanup."
+        },
+        {
+          "kind": "documented",
+          "text": "The required opaque object payload preserves provider fields and empty-object compatibility; null and missing data are mismatches. No per-message outcome is inferred."
+        },
+        {
+          "kind": "policy",
+          "text": "Scalar identifiers and names are forwarded and form-encoded once without email, domain, path, UUID or search-query validation, trimming or UTF-8 name conversion. Optional and absent known fields remain distinct from explicit null. No live compatibility is established."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Mailboxes~1expunge_messages_for_mailbox_guid/get",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Mailboxes~1expunge_messages_for_mailbox_guid/get x-readonly=false selects POST. Formal parameters, requiredness, order and response data schema at responses/200/content/application~1json/schema/properties/result/properties/data are preserved without replacement or normalization. Account anyOf email/username remains string. Source GET variant selection is independent from runtime form POST. Query sensitivity protects arbitrary private mail-search text."
+        }
+      ]
+    },
+    "uapi:Mailboxes/get_mailbox_status_list": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 64."
+        },
+        {
+          "kind": "documented",
+          "text": "Returns a list with optional string guid/mailbox and integer messages/vsize fields; vsize is bytes. Empty lists and zero counts remain valid. Source minimum 0 is documentation, with no new runtime range validation or coercion."
+        },
+        {
+          "kind": "policy",
+          "text": "Scalar identifiers and names are forwarded and form-encoded once without email, domain, path, UUID or search-query validation, trimming or UTF-8 name conversion. Optional and absent known fields remain distinct from explicit null. No live compatibility is established."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Mailboxes~1get_mailbox_status_list/get",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Mailboxes~1get_mailbox_status_list/get x-readonly=true selects GET. Formal parameters, requiredness, order and response data schema at responses/200/content/application~1json/schema/properties/result/properties/data are preserved without replacement or normalization. Account anyOf email/username remains string. Source GET variant selection is independent from runtime form POST. Query sensitivity protects arbitrary private mail-search text."
+        }
+      ]
+    },
+    "uapi:Mailboxes/has_utf8_mailbox_names": {
+      "method": "GET",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 78."
+        },
+        {
+          "kind": "documented",
+          "text": "Omitted user defaults to the currently logged-in user. Null omits the optional user; an empty string remains supplied. The object contains optional integer enabled (0/1), distinct from UAPI status."
+        },
+        {
+          "kind": "policy",
+          "text": "Scalar identifiers and names are forwarded and form-encoded once without email, domain, path, UUID or search-query validation, trimming or UTF-8 name conversion. Optional and absent known fields remain distinct from explicit null. No live compatibility is established."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Mailboxes~1has_utf8_mailbox_names/get",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Mailboxes~1has_utf8_mailbox_names/get x-readonly=true selects GET. Formal parameters, requiredness, order and response data schema at responses/200/content/application~1json/schema/properties/result/properties/data are preserved without replacement or normalization. Account anyOf email/username remains string. Source GET variant selection is independent from runtime form POST. Query sensitivity protects arbitrary private mail-search text."
+        }
+      ]
+    },
+    "uapi:Mailboxes/set_utf8_mailbox_names": {
+      "method": "POST",
+      "notes": [
+        {
+          "kind": "documented",
+          "text": "Available from cPanel 78."
+        },
+        {
+          "kind": "documented",
+          "text": "Changes Roundcube mailbox-name UTF-8 encoding for the selected cPanel account email accounts; it does not change message-content charset. Native bool enabled sends integer 0/1."
+        },
+        {
+          "kind": "policy",
+          "text": "Inspect optional integer success (0/1) independently of UAPI status. A successful envelope does not establish mail-client behavior. No automatic inventory lookup, retry or rollback occurs."
+        },
+        {
+          "kind": "policy",
+          "text": "Scalar identifiers and names are forwarded and form-encoded once without email, domain, path, UUID or search-query validation, trimming or UTF-8 name conversion. Optional and absent known fields remain distinct from explicit null. No live compatibility is established."
+        }
+      ],
+      "evidence": [
+        {
+          "kind": "doc",
+          "version": "pinned 2026-10-13 (11.138.0.10)",
+          "date": "2026-10-31",
+          "source_sha256": "172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc",
+          "pointer": "/paths/~1Mailboxes~1set_utf8_mailbox_names/get",
+          "note": "Pinned cpanel.openapi.json decompressed SHA-256 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc; /paths/~1Mailboxes~1set_utf8_mailbox_names/get x-readonly=false selects POST. Formal parameters, requiredness, order and response data schema at responses/200/content/application~1json/schema/properties/result/properties/data are preserved without replacement or normalization. Account anyOf email/username remains string. Source GET variant selection is independent from runtime form POST. Query sensitivity protects arbitrary private mail-search text."
+        }
+      ]
+    }
+  }
+}

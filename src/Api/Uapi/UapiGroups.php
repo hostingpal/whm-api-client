@@ -89,6 +89,8 @@ trait UapiGroups
 
     private ?Locale $localeGroup = null;
 
+    private ?Mailboxes $mailboxesGroup = null;
+
     private ?Market $marketGroup = null;
 
     private ?Mime $mimeGroup = null;
@@ -537,6 +539,16 @@ trait UapiGroups
     public function locale(): Locale
     {
         return $this->localeGroup ??= new Locale($this->run(...));
+    }
+
+    /**
+     * Select the Mailboxes operations without making a request.
+     *
+     * Mailbox inventory, selected-message expunge and Roundcube mailbox-name encoding settings.
+     */
+    public function mailboxes(): Mailboxes
+    {
+        return $this->mailboxesGroup ??= new Mailboxes($this->run(...));
     }
 
     /**

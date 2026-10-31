@@ -3,7 +3,7 @@
 `hostingpal/whm-api-client` is a framework-independent PHP library intended to
 cover the WHM API and cPanel UAPI.
 
-The 96 generated typed groups cover 1,145 documented operations (see
+The 97 generated typed groups cover 1,150 documented operations (see
 [`docs/api/coverage.md`](docs/api/coverage.md)): WHM server identity, load, disk
 usage, domain inventory, PHP configuration, feature inventory, DNS zone and DNSSEC
 management, and the cPanel account lifecycle, plus cPanel domains, DNS, PHP and
@@ -344,6 +344,7 @@ An empty live list does not verify the types of records it never returned.
 | `uapi()->langPhp()` | All 11 operations: installed/default/vhost PHP versions, domain handlers and impacted domains, INI paths/basic directives/content reads, and `phpIniSetUserBasicDirectives()`, `phpIniSetUserContent()`, `phpSetVhostVersions()` |
 | `uapi()->features()` | All 5 operations: `getFeatureMetadata()`, `hasFeature()`, `hasFeaturesLike()`, `listFeatures()`, `listFeaturesLike()` |
 | `uapi()->market()` | Seventeen of nineteen pinned functions: nine catalog/provider/certificate status GETs and eight session, cart, token and pending-queue form POST actions; see [generated methods](src/Api/Uapi/Market.php). |
+| `uapi()->mailboxes()` | All five pinned functions: mailbox inventory and UTF-8 setting GETs, selected-message expunge and Roundcube mailbox-name setting form POSTs; see [generated methods](src/Api/Uapi/Mailboxes.php). |
 | `uapi()->email()` | All 96 pinned functions, including mailbox lifecycle, quotas and suspension, forwarders, filters, MX routing, autoresponders, spam settings and delivery diagnostics; see [generated methods](src/Api/Uapi/Email.php). |
 | `uapi()->ssl()` | All 49 nondeprecated functions, including certificate/key/CSR inventory and lifecycle, installation, AutoSSL, SNI and redirects; see [generated methods](src/Api/Uapi/Ssl.php). |
 | `uapi()->imageManager()` | `convertFile()`, `createThumbnails()`, `getDimensions()`, `resizeImage()` (complete pinned module). |
@@ -1453,8 +1454,8 @@ $client->whm()->modSecurity()->updateSettings(settings: [
 
 This emits `setting_id1=1&state1=On&setting_id2=2&state2=Off&remove2=0`;
 there is no `remove1`. Empty state strings, integer zero and string `'0'` remain
-values. The alias adds one public method, while canonical coverage is now 1,145
-operations (557 UAPI and 588 WHM), 96 groups and 195 generated files (194 PHP files plus the coverage document).
+values. The alias adds one public method, while canonical coverage is now 1,150
+operations (562 UAPI and 588 WHM), 97 groups and 197 generated files (196 PHP files plus the coverage document).
 
 The twelve source-backed empty-result mutations accept an omitted or null payload
 while retaining any returned mixed data; they are not weakened to void. Omitted
@@ -3586,3 +3587,48 @@ nine read contracts remain unchanged. `create_shopping_cart` and
 composed/content JSON values are form/query parameters, not JSON request bodies.
 This slice adds no runtime/generator or generic JSON-body capability. Required
 PHP 8.3 CI and the 55 inherited diagnostics remain visible and unwaived.
+
+
+### UAPI Mailboxes (2026-10-31)
+
+`uapi()->mailboxes()` covers all five pinned Mailboxes functions. The two inventory
+reads, `getMailboxStatusList(account)` and `hasUtf8MailboxNames(user: null)`, use
+GET. `expungeMailboxMessages(account, mailbox, query)`,
+`expungeMessagesForMailboxGuid(account, mailboxGuid, query)` and
+`setUtf8MailboxNames(enabled)` use form POST. Inventory and expunge require
+cPanel 64; UTF-8 mailbox-name settings require cPanel 78.
+
+The expunge operations mark selected messages as deleted and declare no rollback.
+Mailbox wildcard characters such as `*` cannot be escaped; upstream recommends
+GUID-based expunge. Obtain names and GUIDs separately with getMailboxStatusList.
+Required queries are sensitive and forwarded unchanged; the client does not parse,
+narrow or escape them, verify mailbox ownership, protect arbitrary mail from
+deletion, retry or roll back. Account, mailbox and GUID strings retain their exact
+bytes, without email, domain, path or UUID validation, trimming or name conversion.
+
+Mailbox-name expunge preserves any present JSON data as mixed, including null;
+missing data fails validation. GUID expunge preserves opaque object fields and
+existing empty-array object compatibility, while null and missing data fail. No
+message counts or per-message outcomes are invented. Status-list rows have optional
+string guid/mailbox and integer messages/vsize; vsize is bytes, zero remains zero
+and an empty list remains valid. Source minimum 0 is documentation under the
+existing runtime, with no new range validation or numeric-string coercion.
+
+Omitted or null user retains the current-user default; an explicit empty string
+is supplied. hasUtf8MailboxNames returns an object with optional integer enabled
+(0|1), rather than an unwrapped boolean. setUtf8MailboxNames requires a native bool
+and sends 0/1. It changes Roundcube mailbox-name encoding for the selected cPanel
+account's email accounts, not message-content charset. Inspect optional integer
+success (0|1) independently of API status; a successful envelope does not prove
+mail-client behavior. Known optional fields remain distinct from explicit null.
+
+This generated slice adds five canonical UAPI operations and one group over
+`3872d384a2e4f83a348758085808452230459d8c`: 1,150 operations (562 UAPI, 588 WHM),
+97 groups and 197 generated outputs (196 PHP files plus coverage). Prior contracts,
+pinned sources and the map checksum are preserved; no runtime or generator change
+is needed. Delivery is `whm-api-client-8x0.4.23`; separate live follow-up
+`whm-api-client-8x0.2.65` remains OPEN. Synthetic offline fixtures establish no live
+expunge, encoding or mail-client compatibility. No live API call, mailbox creation,
+mail delivery or settings change ran; later live work requires separately owned
+fixtures and cleanup. Required PHP 8.3 CI and the 55 inherited map diagnostics
+remain visible, external-owned and unwaived.
