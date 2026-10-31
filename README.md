@@ -1682,3 +1682,15 @@ version, current/maximum user counts, disk usage, home roots, enhancement/user
 inventories, privileges and quota availability. The optional disk-cache selector
 is omitted. It requests no password or private account-link data and makes no
 account, quota, root or configuration changes. `8x0.2.41` retains live gaps.
+
+
+The corrected account-inventory capture at `af701b1` on `11.138.0.19` records
+nine HTTP/API/payload/probe passes. Only `quota_enabled` gains exact quoted
+0/1 compatibility; other flags remain unchanged. Strict status remains failed
+for one masked numeric-string unknown field at `$.*` in `get_maximum_users`,
+whose pinned `users` field was absent. No unknown name or count is inferred,
+and no waiver is added. The first capture stays immutable. Inventories do not
+establish account mutations, quota enforcement or conversion behavior; no mutation
+or private-link/password read ran. Follow-up `8x0.2.41` remains open.
+Corrected artifact SHA-256:
+`f0fa73efb33994ec4c20e9250d0aec5e94ee99041c7940742c8810ef7f7ceb64`.

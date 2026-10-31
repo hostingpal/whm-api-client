@@ -606,3 +606,11 @@ create/update/delete/validate/activate ran. A running activation step's `end_tim
 and the location of partial-rename warnings remain unobserved under `8x0.2.33`.
 The corrected nine-GET artifact already passes; no new capture is needed merely
 to clear discrepancies, and the original failed artifact is preserved.
+
+## WHM account management, 2026-10-31
+
+- `2026-10-31-whm-account-management.json`: revision1149479, nine HTTP/API successes, eight payload/probe passes; quota flag mismatch and masked maximum-users unknown field. SHA-256 `ad4f89f9606d05366cba3078dbe8ac5c2c9f471a10c6dfdc44b1281f5e29def9`.
+- `2026-10-31-whm-account-management-corrected.json`: revisionaf701b1, nine HTTP/API/payload/probe passes; strict failure retains the masked unknown field, with no waiver. SHA-256 `f0fa73efb33994ec4c20e9250d0aec5e94ee99041c7940742c8810ef7f7ceb64`.
+
+Both use fixed GET-only inventory on11.138.0.19 and retain structural types only.
+No account/configuration mutation or private credential/link read ran;2.41 tracks gaps.
