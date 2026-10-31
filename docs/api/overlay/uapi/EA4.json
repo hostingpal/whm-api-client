@@ -32,6 +32,10 @@
         {
           "kind": "documented",
           "text": "Option recommended values are booleans. UI levels and action strings stay strings; no additional closed enum or inferred version support is imposed."
+        },
+        {
+          "kind": "observed",
+          "text": "Direct UAPI returned boolean and string outer recommendation url values on cPanel 11.138.0.19. Preserve bool|string without inferring a false-only sentinel; option-level URLs remain strings. The failed WHM bridge envelope establishes no successful bridged payload behavior."
         }
       ],
       "evidence": [
@@ -40,8 +44,39 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "/EA4/get_recommendations declares x-readonly: true and a GET operation. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "EA4/get_recommendations direct-uapi returned bool and string at $.*[].url, the outer recommendation URL. Preserve bool|string at only that leaf; the masked artifact does not establish a false-only sentinel. Option-level $.*[].options[].url remains string. The unknown wildcard field remains unresolved, and the bridged data.uapi:null request failure provides no payload compatibility evidence. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+          "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
         }
-      ]
+      ],
+      "response": {
+        "{}[].url": {
+          "replace": {
+            "type": "union",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "bool"
+              }
+            ]
+          },
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "EA4/get_recommendations direct-uapi returned bool and string at $.*[].url, the outer recommendation URL. Preserve bool|string at only that leaf; the masked artifact does not establish a false-only sentinel. Option-level $.*[].options[].url remains string. The unknown wildcard field remains unresolved, and the bridged data.uapi:null request failure provides no payload compatibility evidence. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        }
+      }
     }
   }
 }

@@ -61,6 +61,82 @@ final class UapiAccountEnvironmentTest extends TestCase
         self::assertArrayNotHasKey('data', $metadata->uapi ?? []);
     }
 
+    #[DataProvider('observedCompatibilityPayloads')]
+    public function testObservedCompatibilityPreservesPayloadAndMetadata(
+        string $route,
+        string $module,
+        string $function,
+        string $payload,
+        mixed $expected,
+    ): void {
+        [$client, $http] = self::client($route);
+        $account = $client->uapi('npr');
+        $http->addResponse(new Response(200, [], self::envelope($route, self::validCases($module, $function)[0][0])));
+        self::invoke($account, $module, $function);
+        $previous = $account->responseMeta();
+        $http->addResponse(new Response(200, [], self::envelope($route, $payload)));
+        try {
+            self::assertSame($expected, self::invoke($account, $module, $function));
+        } catch (PayloadMismatchException) {
+            self::fail('The evidenced field representation must satisfy its narrowed compatibility contract.');
+        }
+        $metadata = $account->responseMeta();
+        self::assertNotNull($metadata);
+        self::assertNotSame($previous, $metadata);
+        self::assertSame(1, $metadata->uapiStatus());
+        self::assertSame($route === 'bridge' ? 1 : null, $metadata->whmResult());
+        self::assertArrayNotHasKey('data', $metadata->uapi ?? []);
+        self::assertCount(2, $http->getRequests());
+        self::assertRequest($http, $route, $module, $function);
+    }
+
+    /** @return iterable<string, array{string, string, string, string, mixed}> */
+    public static function observedCompatibilityPayloads(): iterable
+    {
+        foreach (['direct', 'bare', 'bridge'] as $route) {
+            foreach (self::observedServerFields() as $field => $type) {
+                $cases = $type === 'flag'
+                    ? [['0', 0], ['1', 1]]
+                    : [
+                ['0', 0], ['123', 123], [(string) PHP_INT_MAX, PHP_INT_MAX],
+                        [(string) PHP_INT_MIN, PHP_INT_MIN]];
+                foreach ($cases as $index => [$wire, $value]) {
+                    yield "$route observed $field $index" => [$route, 'Variables', 'get_server_information',
+                        json_encode([$field => $wire], JSON_THROW_ON_ERROR), [$field => $value]];
+                }
+            }
+            yield "$route observed null session host" =>
+                [$route, 'Variables', 'get_session_information', '{"host":null}', ['host' => null]];
+            foreach ([false, true] as $index => $value) {
+                yield "$route observed boolean recommendation url $index" =>
+                    [$route, 'EA4', 'get_recommendations',
+                        json_encode(['fixture-package' => [['url' => $value]]], JSON_THROW_ON_ERROR),
+                        ['fixture-package' => [['url' => $value]]]];
+            }
+            yield "$route numeric strings in string fields remain strings" =>
+                [$route, 'Variables', 'get_server_information',
+                    '{"empty_trash_days":"7","mysql_version":"8.0","version":"5.14"}',
+                    ['empty_trash_days' => '7', 'mysql_version' => '8.0', 'version' => '5.14']];
+        }
+    }
+
+    /** @return array<string, string> */
+    private static function observedServerFields(): array
+    {
+        // Literal known paths from the original e7b14c3 artifact, not the effective specs.
+        $flags = 'allow_park_subdomain_on_hostname allow_remote_domains allow_reset_password '
+            . 'allow_reset_password_for_subaccounts allow_unregistered_domains api_shell awstats_browser_update '
+            . 'awstats_reverse_dns database_prefix_required disable_analog disable_awstats disable_boxtrapper '
+            . 'disable_mailman disable_roundcube disable_spamassassin disable_spambox disable_webalizer '
+            . 'display_cpanel_doclinks docroots_in_public_html_only enable_file_protect file_usage invite_sub '
+            . 'ipv6_listen is_mod_userdir_enabled php_open_basedir_home phpmyadmin_disable_search_info_schema '
+            . 'require_ssl skip_apache_clients_optimizer skip_bandwidth_limit_check skip_mailbox_warnings_check '
+            . 'use_information_schema use_mail_for_mailman_url';
+        $integers = 'file_upload_must_leave_bytes htaccess_check_recurse minimum_password_strength '
+            . 'php_maximum_execution_time php_post_maximum_size php_upload_maximum_filesize';
+        return array_fill_keys(explode(' ', $flags), 'flag') + array_fill_keys(explode(' ', $integers), 'int');
+    }
+
     /** @return iterable<string, array{string, string, string, string, mixed}> */
     public static function successfulPayloads(): iterable
     {
@@ -217,6 +293,8 @@ final class UapiAccountEnvironmentTest extends TestCase
                     }
                     foreach (['level', 'text', 'url'] as $field) {
                         $cases[] = '{"pkg":[{"options":[{"' . $field . '":0}]}]}';
+                        $cases[] = '{"pkg":[{"options":[{"' . $field . '":false}]}]}';
+                        $cases[] = '{"pkg":[{"options":[{"' . $field . '":true}]}]}';
                     }
                 } elseif ($function === 'get_information') {
                     array_push(
@@ -236,7 +314,7 @@ final class UapiAccountEnvironmentTest extends TestCase
                 } elseif ($module === 'Variables') {
                     array_push($cases, '1', '[{}]');
                     if ($function === 'get_session_information') {
-                        array_push($cases, '{"host":null}', '{"host":1}', '{"host":false}', '{"host":[]}');
+                        array_push($cases, '{"host":1}', '{"host":false}', '{"host":[]}');
                     } elseif ($function === 'get_user_information') {
                         foreach (['feature', 'mxcheck'] as $field) {
                             array_push(
@@ -266,7 +344,31 @@ final class UapiAccountEnvironmentTest extends TestCase
                     $badValues[] = 'null';
                 }
                 if (str_contains($type, 'flag') || str_contains($type, 'int')) {
-                    array_push($badValues, '"0"', '0.5');
+                    $badValues[] = '0.5';
+                    if ($function === 'get_server_information' && isset(self::observedServerFields()[$field])) {
+                        array_push(
+                            $badValues,
+                            '"00"',
+                            '"01"',
+                            '"-0"',
+                            '"+1"',
+                            '"1.0"',
+                            '"0.5"',
+                            '"1e3"',
+                            '" 1"',
+                            '"1 "',
+                            '""',
+                            '"unlimited"',
+                            '"999999999999999999999999999"',
+                            '"-999999999999999999999999999"',
+                            'true',
+                        );
+                        if (str_contains($type, 'flag')) {
+                            array_push($badValues, '"2"', '"-1"');
+                        }
+                    } else {
+                        $badValues[] = '"0"';
+                    }
                 }
                 if (str_contains($type, 'flag')) {
                     array_push($badValues, '2', '-1');

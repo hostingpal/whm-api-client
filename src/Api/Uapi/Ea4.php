@@ -31,7 +31,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *         text?: string,
  *         url?: string,
  *     }>,
- *     url?: string,
+ *     url?: string|bool,
  * }>>
  */
 final readonly class Ea4
@@ -80,6 +80,10 @@ final readonly class Ea4
      *
      * Documented: Option recommended values are booleans. UI levels and action strings stay strings; no additional
      * closed enum or inferred version support is imposed.
+     *
+     * Observed: Direct UAPI returned boolean and string outer recommendation url values on cPanel 11.138.0.19. Preserve
+     * bool|string without inferring a false-only sentinel; option-level URLs remain strings. The failed WHM bridge
+     * envelope establishes no successful bridged payload behavior.
      *
      * API-map identity: uapi:EA4/get_recommendations#GET (wire name get_recommendations).
      *

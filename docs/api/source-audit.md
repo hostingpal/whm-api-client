@@ -2773,6 +2773,14 @@ formal schema misplaced `additionalProperties`; only those field nodes are
 corrected. Server/session/user fields and opaque values are returned as data;
 recommendations do not install packages or change configuration.
 
+Only the 32 observed server flags accept exact quoted `0`/`1`; six observed integer
+quantities accept canonical lossless integer strings. Other string and integer
+fields keep their contracts. Session host additionally accepts null, observed
+through the bridge. Only outer EA4 recommendation URLs accept `bool|string`;
+option URLs stay strings. Boolean URL values are payload data with no inferred
+sentinel meaning. Unknown fields remain untyped, and failed EA4 calls do not
+establish a successful response contract.
+
 The live catalog selects twelve parameterless reads and the user-domain read
 `getUserInformation(name: 'domain')` through both routes, plus WHM version (27 GETs).
 The user selector requests only the documented domain field; the unfiltered user
@@ -2781,3 +2789,22 @@ Enhancement lookup by ID and token retrieval are also excluded. No contact, loca
 theme or preference settings change. Other user-field live coverage, successful
 payload variants and mutations remain tracked under `8x0.2.28`; structural captures
 never persist tokens, addresses or server/session/user values.
+
+The initial [account-environment capture](evidence/2026-10-31-account-environment.json)
+at `e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6` on `11.138.0.19` records 27 HTTP
+200 GETs: twenty API/payload/probe passes, four payload mismatches, two API failures
+and one bridge request failure. Its 83 discrepancies comprise 78 type mismatches
+and five masked unknown-field entries. Thirty-two server flags and six server
+integer quantities arrive as numeric strings on both routes; the bridge session
+host is null; direct EA4 recommendation URLs include booleans alongside strings.
+These observations support only those field corrections. The unknown preference,
+recommendation and server fields remain untyped and unwaived. Both PHP-recommendation
+reads fail at the API; the other EA4 bridge response has `data.uapi: null`, so no
+UAPI payload is available. The capture establishes no cause for these failures.
+
+The domain-selected user requests return only `domain`; other user fields, including
+`pushbullet_access_token`, are absent. Locale, theme, preference and server-information
+rows are populated; the enhancement list is empty. This read-only capture establishes
+no contact, locale, theme, preference or token mutation behavior. Follow-up `8x0.2.28`
+retains all failures, unknown fields and unobserved variants. Original SHA-256:
+`e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd`.

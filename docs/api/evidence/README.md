@@ -305,3 +305,24 @@ checks pass for its information and directory listing. No content was read and
 no resource was created or changed. Root-owned uid/gid forms are separate reviewer
 evidence. Earlier captures remain immutable. SHA-256:
 `dfc4899b5e88df167ee361a081f5e682b54f20dd5005603023184ad98057993d`.
+
+## Account environment and preferences
+
+The initial [account-environment capture](2026-10-31-account-environment.json)
+at `e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6` on `11.138.0.19` records 27 HTTP
+200 GETs: twenty API/payload/probe passes, four payload mismatches, two API failures
+and one bridge request failure. Its 83 discrepancies comprise 78 type mismatches
+and five masked unknown-field entries. Thirty-two server flags and six server
+integer quantities arrive as numeric strings on both routes; the bridge session
+host is null; direct EA4 recommendation URLs include booleans alongside strings.
+These observations support only those field corrections. The unknown preference,
+recommendation and server fields remain untyped and unwaived. Both PHP-recommendation
+reads fail at the API; the other EA4 bridge response has `data.uapi: null`, so no
+UAPI payload is available. The capture establishes no cause for these failures.
+
+The domain-selected user requests return only `domain`; other user fields, including
+`pushbullet_access_token`, are absent. Locale, theme, preference and server-information
+rows are populated; the enhancement list is empty. This read-only capture establishes
+no contact, locale, theme, preference or token mutation behavior. Follow-up `8x0.2.28`
+retains all failures, unknown fields and unobserved variants. Original SHA-256:
+`e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd`.

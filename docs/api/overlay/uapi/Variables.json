@@ -15,6 +15,10 @@
         {
           "kind": "documented",
           "text": "All documented configuration fields are optional and nullable. Preserve integer flags, integer quantities and strings separately from null and omission. Unit descriptions follow upstream: file_upload_maximum_bytes is documented in megabytes despite its name."
+        },
+        {
+          "kind": "observed",
+          "text": "Reviewed numeric-string observations on 32 flag fields and six integer fields normalize only exact quoted 0/1 flags and lossless canonical integer strings respectively. Existing nullability and omission remain distinct; other fields retain their source types."
         }
       ],
       "evidence": [
@@ -23,8 +27,549 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "/Variables/get_server_information declares x-readonly: true and a GET operation. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Variables/get_server_information returned numeric-string type mismatches at 38 known integer fields on both routes: 32 pinned 0/1 flags and six ordinary integers. Only those explicit fields gain bounded string compatibility. The unknown wildcard discrepancy remains unresolved and is not acknowledged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+          "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
         }
-      ]
+      ],
+      "response": {
+        "allow_park_subdomain_on_hostname": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.allow_park_subdomain_on_hostname has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "allow_remote_domains": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.allow_remote_domains has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "allow_reset_password": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.allow_reset_password has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "allow_reset_password_for_subaccounts": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.allow_reset_password_for_subaccounts has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "allow_unregistered_domains": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.allow_unregistered_domains has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "api_shell": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.api_shell has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "awstats_browser_update": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.awstats_browser_update has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "awstats_reverse_dns": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.awstats_reverse_dns has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "database_prefix_required": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.database_prefix_required has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "disable_analog": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.disable_analog has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "disable_awstats": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.disable_awstats has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "disable_boxtrapper": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.disable_boxtrapper has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "disable_mailman": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.disable_mailman has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "disable_roundcube": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.disable_roundcube has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "disable_spamassassin": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.disable_spamassassin has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "disable_spambox": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.disable_spambox has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "disable_webalizer": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.disable_webalizer has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "display_cpanel_doclinks": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.display_cpanel_doclinks has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "docroots_in_public_html_only": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.docroots_in_public_html_only has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "enable_file_protect": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.enable_file_protect has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "file_upload_must_leave_bytes": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.file_upload_must_leave_bytes has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer field supports only lossless canonical integer-string normalization within PHP integer bounds; fractions, noncanonical spellings and overflow remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "file_usage": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.file_usage has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "htaccess_check_recurse": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.htaccess_check_recurse has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer field supports only lossless canonical integer-string normalization within PHP integer bounds; fractions, noncanonical spellings and overflow remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "invite_sub": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.invite_sub has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "ipv6_listen": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.ipv6_listen has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "is_mod_userdir_enabled": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.is_mod_userdir_enabled has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "minimum_password_strength": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.minimum_password_strength has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer field supports only lossless canonical integer-string normalization within PHP integer bounds; fractions, noncanonical spellings and overflow remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "php_maximum_execution_time": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.php_maximum_execution_time has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer field supports only lossless canonical integer-string normalization within PHP integer bounds; fractions, noncanonical spellings and overflow remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "php_open_basedir_home": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.php_open_basedir_home has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "php_post_maximum_size": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.php_post_maximum_size has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer field supports only lossless canonical integer-string normalization within PHP integer bounds; fractions, noncanonical spellings and overflow remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "php_upload_maximum_filesize": {
+          "accept": [
+            "numeric-string"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.php_upload_maximum_filesize has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer field supports only lossless canonical integer-string normalization within PHP integer bounds; fractions, noncanonical spellings and overflow remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "phpmyadmin_disable_search_info_schema": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.phpmyadmin_disable_search_info_schema has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "require_ssl": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.require_ssl has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "skip_apache_clients_optimizer": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.skip_apache_clients_optimizer has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "skip_bandwidth_limit_check": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.skip_bandwidth_limit_check has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "skip_mailbox_warnings_check": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.skip_mailbox_warnings_check has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "use_information_schema": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.use_information_schema has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        },
+        "use_mail_for_mailman_url": {
+          "accept": [
+            "string-flag"
+          ],
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_server_information $.use_mail_for_mailman_url has numeric-string type mismatches on direct-uapi and bridged-uapi. The pinned integer enum 0/1 supports only exact quoted 0/1 normalization; other strings remain invalid. Optional presence and nullable values are unchanged. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        }
+      }
     },
     "uapi:Variables/get_session_information": {
       "method": "GET",
@@ -32,6 +577,10 @@
         {
           "kind": "documented",
           "text": "Available in cPanel 86 and later. Retrieves the web server hostname; host is the only documented selector and the server default. Omitting name leaves that default to the server. The returned host field may be absent but is not documented as nullable."
+        },
+        {
+          "kind": "observed",
+          "text": "The WHM bridge returned an explicit null host on cPanel 11.138.0.19. Preserve null separately from an omitted host and a string; this observation does not establish null on the direct route."
         }
       ],
       "evidence": [
@@ -40,8 +589,29 @@
           "version": "pinned 2026-10-13",
           "date": "2026-10-31",
           "note": "/Variables/get_session_information declares x-readonly: true and a GET operation. Pinned UAPI gzip SHA-256: 172660ce0d8e0868756dabf8e3243ea41399aac7bff06082d806c73f71a094fc."
+        },
+        {
+          "kind": "live",
+          "version": "11.138.0.19",
+          "date": "2026-10-31",
+          "note": "Variables/get_session_information returned $.host as null on bridged-uapi, while direct-uapi returned a string. Accept explicit null for this optional host field without changing missing-data behavior or claiming direct-route null evidence. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+          "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
         }
-      ]
+      ],
+      "response": {
+        "host": {
+          "nullable": true,
+          "evidence": [
+            {
+              "kind": "live",
+              "version": "11.138.0.19",
+              "date": "2026-10-31",
+              "note": "Variables/get_session_information returned $.host as null on bridged-uapi, while direct-uapi returned a string. Accept explicit null for this optional host field without changing missing-data behavior or claiming direct-route null evidence. Original GET capture at revision e7b14c3a2ec8b905f6f4fc0b6443538dea02d7e6; immutable artifact SHA-256 e51005094c0ac52c469b0c8e6535291f0fea0d3a07c6fa782679a7d22d5225cd. Structural evidence masks values and unknown key identities.",
+              "fingerprint": "docs/api/evidence/2026-10-31-account-environment.json"
+            }
+          ]
+        }
+      }
     },
     "uapi:Variables/get_user_information": {
       "method": "GET",

@@ -52,7 +52,13 @@ final class Ea4Spec
                                 ],
                             ],
                         ],
-                        'url' => ['type' => 'string'],
+                        'url' => [
+                            'type' => 'union',
+                            'anyOf' => [
+                                ['type' => 'string'],
+                                ['type' => 'bool'],
+                            ],
+                        ],
                     ],
                 ],
             ],

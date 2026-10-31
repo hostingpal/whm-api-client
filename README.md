@@ -482,6 +482,14 @@ formal schema misplaced `additionalProperties`; only those field nodes are
 corrected. Server/session/user fields and opaque values are returned as data;
 recommendations do not install packages or change configuration.
 
+Only the 32 observed server flags accept exact quoted `0`/`1`; six observed integer
+quantities accept canonical lossless integer strings. Other string and integer
+fields keep their contracts. Session host additionally accepts null, observed
+through the bridge. Only outer EA4 recommendation URLs accept `bool|string`;
+option URLs stay strings. Boolean URL values are payload data with no inferred
+sentinel meaning. Unknown fields remain untyped, and failed EA4 calls do not
+establish a successful response contract.
+
 The live catalog selects twelve parameterless reads and the user-domain read
 `getUserInformation(name: 'domain')` through both routes, plus WHM version (27 GETs).
 The user selector requests only the documented domain field; the unfiltered user

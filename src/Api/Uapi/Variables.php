@@ -79,7 +79,7 @@ use HostingPal\WhmApiClient\Exception\PayloadMismatchException;
  *     version?: string|null,
  * }
  * @phpstan-type GetSessionInformationResult array{
- *     host?: string,
+ *     host?: string|null,
  * }
  * @phpstan-type GetUserInformationResult array{
  *     backup_enabled?: 0|1,
@@ -178,6 +178,10 @@ final readonly class Variables
      * quantities and strings separately from null and omission. Unit descriptions follow upstream:
      * file_upload_maximum_bytes is documented in megabytes despite its name.
      *
+     * Observed: Reviewed numeric-string observations on 32 flag fields and six integer fields normalize only exact
+     * quoted 0/1 flags and lossless canonical integer strings respectively. Existing nullability and omission remain
+     * distinct; other fields retain their source types.
+     *
      * API-map identity: uapi:Variables/get_server_information#GET (wire name get_server_information).
      *
      * @param string|null $name The server configuration settings to return. Null omits it.
@@ -203,6 +207,9 @@ final readonly class Variables
      * Documented: Available in cPanel 86 and later. Retrieves the web server hostname; host is the only documented
      * selector and the server default. Omitting name leaves that default to the server. The returned host field may be
      * absent but is not documented as nullable.
+     *
+     * Observed: The WHM bridge returned an explicit null host on cPanel 11.138.0.19. Preserve null separately from an
+     * omitted host and a string; this observation does not establish null on the direct route.
      *
      * API-map identity: uapi:Variables/get_session_information#GET (wire name get_session_information).
      *
