@@ -3644,8 +3644,9 @@ named fields and opaque additional values; treat returned provider data as priva
 
 PEM, private-key, CA-bundle and passphrase inputs remain sensitive. Domain exclusion
 arrays use documented numbered names; deferred installation uses repeated fields
-whose list lengths callers must align. An empty bundle requests server-side bundle
-download. The metadata setter accepts caller-serialized JSON text encoded once as
+whose five lists callers must align by position, including each certificate and
+private key. Neither the client nor its type checks validate equal lengths or
+pairing. An empty bundle requests server-side bundle download. The metadata setter accepts caller-serialized JSON text encoded once as
 a form field; its current native `string|int` boundary does not establish integer
 semantics or automatic object encoding (`8x0.1.23`). This is not a JSON request body.
 
@@ -3654,9 +3655,29 @@ Service certificate installation requires a separate service restart; the client
 does not perform it. Exclusion replacement, disable/reset/install and background
 checks can alter hosting behavior; queued work or a PID does not establish
 issuance, renewal, installation or TLS delivery. No retry, rollback or polling is
-added. Certificate fields preserve optionality, literal dotted keys and pinned
-nullability. Only service-install modulus length gains a source-prose correction
-for non-RSA null; UAPI compatibility rules are not inferred for WHM endpoints.
+added. `installSsl()` returns its own `status` and `warning_domains` alongside
+the checked WHM envelope outcome. Callers must inspect those fields: a successful
+`metadata.result` does not imply nested `status: 1`, and nested failure is not
+converted into an exception. `listCertificates()` without `user` includes all
+accounts' certificate metadata; specify the intended account when isolation is
+required. Virtual-host deletion has no rollback and must not be retried simply
+because response validation failed after a confirmed outcome.
+
+Certificate fields preserve omission, native values and literal dotted keys.
+Separate WHM reviewer observations support string terms-of-service acceptance
+(despite the conflicting pinned flag), canonical integer strings in best-service
+expiry and FQDN certificate dates/length, exact quoted flags, and null FQDN
+verification-error/issuer-organization values. Vhost self-signed flags preserve
+the exact empty string without assigning it new meaning; deletion flags accept
+exact quoted 0/1. The five shared reset/install service-certificate leaves use
+source-family compatibility only; those writes were not observed.
+`fetchServiceSslComponents()` keeps its native integer contracts, and unconfirmed
+vhost `subject.commonName` variants stay unsupported.
+
+`rebuildInstalledSslDatabase()` is a documented no-op. It and deferred enqueue
+accept absent/null successful data as reviewed source-only compatibility, while
+present payloads keep their existing opaque-data validation. No missing/null
+response from either method was observed.
 
 All 32 methods have independent offline contracts. The bounded nine-GET catalog
 reads version, schedule, log catalog metadata, metadata flags, problems/exclusions
@@ -3694,3 +3715,29 @@ key, component PEM, provider payload or log content was read, and no URL was fet
 The original failed artifact stays unchanged; `8x0.2.39` retains unobserved behavior.
 Corrected SHA-256:
 `1e3117fc43dc790b0891b3571313b44f60953ce4b6e0d20305c0bc32ccacb498`.
+
+### PR53 independent review and correction boundaries
+
+[Claude review 5720639651](https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651)
+reports WHM observations on `11.138.0.19`, with type-only output and a disposable
+`wrvssl` account created and removed by the reviewer. The account-scoped
+exclusion cycle and install/delete operations used a locally generated
+self-signed certificate. Those reports remain separate from the committed
+nine-GET captures and do not expand their scope.
+
+The reported normal-data failures identify the exact terms-of-service string,
+best-service expiry, FQDN certificate fields, empty vhost self-signed flag and
+quoted deletion flag. The corresponding service reset/install family corrections
+are source/offline evidence; no server-wide write was run. The dismissed vhost
+`subject.commonName` remains unchanged. Nested install status and warning domains
+must be inspected independently of the checked metadata outcome.
+
+Only rebuild and deferred enqueue permit an omitted/null successful payload under
+the reviewed zero-property/opaque-object source contract. These response variants
+remain unobserved; present values are still validated. The client performs no
+automatic retry, rollback or alignment check for the five enqueue lists.
+
+No new live request, capture, credential/private-key read, server-wide write or
+URL fetch ran for these corrections. Both prior artifacts are immutable.
+Remaining operations, variants, TLS serving/trust, issuance and service-certificate
+changes stay open under `8x0.2.39`; input gaps `8x0.1.28` and `8x0.1.23` remain.

@@ -71,7 +71,7 @@ use SensitiveParameter;
  *         id?: string,
  *         is_self_signed?: 0|1,
  *         'issuer.commonName'?: string,
- *         'issuer.organizationName'?: string,
+ *         'issuer.organizationName'?: string|null,
  *         key?: string,
  *         key_algorithm?: string,
  *         modulus?: string|null,
@@ -82,7 +82,7 @@ use SensitiveParameter;
  *         'subject.commonName'?: string,
  *         users?: list<string>,
  *         validation_type?: string|null,
- *         verify_error?: string,
+ *         verify_error?: string|null,
  *     }>,
  * }
  * @phpstan-type FetchSslInfoResult array{
@@ -105,7 +105,7 @@ use SensitiveParameter;
  *             ecdsa_public?: string|null,
  *             encryption_algorithm?: string,
  *             id?: string,
- *             is_self_signed?: 0|1,
+ *             is_self_signed?: 0|1|'',
  *             'issuer.commonName'?: string,
  *             'issuer.organizationName'?: string,
  *             issuer_text?: string,
@@ -231,7 +231,7 @@ use SensitiveParameter;
  *         },
  *         x_account_id?: string,
  *         x_terms_of_service?: string,
- *         x_terms_of_service_accepted?: 0|1,
+ *         x_terms_of_service_accepted?: string,
  *         ...<array-key, mixed>
  *     }>,
  * }
@@ -257,7 +257,7 @@ use SensitiveParameter;
  *         ecdsa_public?: string|null,
  *         is_self_signed?: 0|1,
  *         'issuer.commonName'?: string|null,
- *         'issuer.organizationName'?: string,
+ *         'issuer.organizationName'?: string|null,
  *         issuer_text?: string,
  *         key_algorithm?: string,
  *         modulus?: string|null,
@@ -315,7 +315,7 @@ use SensitiveParameter;
  *         ecdsa_public?: string|null,
  *         is_self_signed?: 0|1,
  *         'issuer.commonName'?: string,
- *         'issuer.organizationName'?: string,
+ *         'issuer.organizationName'?: string|null,
  *         issuer_text?: string,
  *         key_algorithm?: string,
  *         modulus?: string|null,
@@ -378,6 +378,14 @@ final readonly class Ssl
      * Documented: Uses form POST under the documented non-read-only classification. Each call executes immediately; the
      * client provides no retries or rollback.
      *
+     * Observed: The independent disposable-account review on 11.138.0.19 observed a quoted removed_vhost_data[].is_ssl
+     * flag after successful removal. The old payload spec failed after the change had taken effect. The field now
+     * accepts exact strings 0 and 1 alongside native flags.
+     *
+     * Documented: Client behavior: treat SSL vhost deletion as irreversible; the client provides no rollback or
+     * automatic retry. An outcome-confirmed payload error can occur after removal has already taken effect and must not
+     * trigger an automatic retry.
+     *
      * API-map identity: whm1:delete_ssl_vhost#GET (wire name delete_ssl_vhost; cPanel Account Settings).
      *
      * @param string $host The hostname whose SSL virtual host you'd like to delete.
@@ -431,8 +439,19 @@ final readonly class Ssl
      * Documented: Returned certificate, private-key, CSR, CA-bundle or provider material is payload data and may be
      * sensitive. Do not log or persist secret-bearing results.
      *
-     * Documented: Supply the same number of items in cab, crt, key, username and vhostName. Empty cab strings request
-     * automatic CA-bundle download. Queue acceptance does not prove installation, service readiness or TLS behavior.
+     * Documented: Supply the same number of items in cab, crt, key, username and vhostName, with the corresponding
+     * account, vhost, certificate, private key and bundle at each position. Empty cab strings request automatic
+     * CA-bundle download. Queue acceptance does not prove installation, service readiness or TLS behavior.
+     *
+     * Documented: Client behavior: neither the parameter types nor the repeated-field encoder checks equal lengths or
+     * positional alignment across these five lists. Callers must align them before sending private keys for
+     * installation.
+     *
+     * Documented: Client behavior: accept an absent or null data payload for this reviewed unstructured response, while
+     * preserving present opaque object values. This source-backed compatibility is offline-tested; payload omission and
+     * this operation were not observed live.
+     *
+     * Returns null when the server sends no data.
      *
      * API-map identity: whm1:enqueue_deferred_ssl_installations#GET (wire name enqueue_deferred_ssl_installations;
      * cPanel Account Settings).
@@ -444,7 +463,7 @@ final readonly class Ssl
      *     installations.
      * @param string|list<string> $vhostName The name of the web virtual host (vhost) for which to install the
      *     certificate.
-     * @return EnqueueDeferredSslInstallationsResult
+     * @return EnqueueDeferredSslInstallationsResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
@@ -460,9 +479,9 @@ final readonly class Ssl
         string|array $key,
         string|array $username,
         string|array $vhostName,
-    ): array {
+    ): ?array {
         /**
-         * @var EnqueueDeferredSslInstallationsResult $result
+         * @var EnqueueDeferredSslInstallationsResult|null $result
          * Validated against SslSpec::ENQUEUE_DEFERRED_SSL_INSTALLATIONS.
          */
         $result = ($this->run)(SslSpec::ENQUEUE_DEFERRED_SSL_INSTALLATIONS, [
@@ -552,7 +571,13 @@ final readonly class Ssl
      * sensitive. Do not log or persist secret-bearing results.
      *
      * Documented: domains is caller-supplied comma-separated text, form-encoded once. Literal dotted issuer and subject
-     * keys remain literal payload keys. No UAPI SSL wire normalization is inferred.
+     * keys remain literal payload keys. The separately recorded WHM review establishes the narrow certificate-field
+     * compatibility corrections.
+     *
+     * Observed: The independent review on 11.138.0.19 observed digit strings for created, not_before, not_after and
+     * modulus_length, a quoted is_self_signed flag, and null verify_error and literal issuer.organizationName. Only
+     * these integer leaves use canonical bounded integer-string normalization; the quoted flag accepts exact 0 or 1.
+     * Null remains distinct from omission. Other certificate fields retain their existing contracts.
      *
      * API-map identity: whm1:fetch_ssl_certificates_for_fqdns#GET (wire name fetch_ssl_certificates_for_fqdns; cPanel
      * Account Settings).
@@ -622,6 +647,10 @@ final readonly class Ssl
      *
      * Documented: Uses form POST under the documented non-read-only classification. Each call executes immediately; the
      * client provides no retries or rollback.
+     *
+     * Observed: The independent review on 11.138.0.19 observed an exact empty string for vhosts[].crt.is_self_signed.
+     * This unset form is preserved as an empty string alongside native integer flags; no further meaning or conversion
+     * is assigned to it.
      *
      * API-map identity: whm1:fetch_ssl_vhosts#GET (wire name fetch_ssl_vhosts; cPanel Account Settings).
      *
@@ -892,7 +921,11 @@ final readonly class Ssl
      * Documented: Available from cPanel & WHM version 58.
      *
      * Documented: Provider-specific additional fields remain opaque and may contain provider account or credential
-     * material. Named fields retain their documented types. Returned URLs are data and are not fetched.
+     * material. Named fields retain their reviewed contracts. Returned URLs are data and are not fetched.
+     *
+     * Observed: The independent review on 11.138.0.19 observed x_terms_of_service_accepted as a string. This corrects a
+     * pinned contradiction: its formal schema is an integer flag, while the neighboring terms-of-service prose calls
+     * the accepted value a location. It remains string data, without boolean or numeric conversion.
      *
      * API-map identity: whm1:get_autossl_providers#GET (wire name get_autossl_providers; Auto-Generated Certificates).
      *
@@ -952,6 +985,11 @@ final readonly class Ssl
      * result preserves integer|null and omitted expiry separately; this observation does not establish a successful TLS
      * connection.
      *
+     * Observed: The independent review on 11.138.0.19 observed a digit-string cert_valid_not_after for cpanel. This
+     * expiry additionally accepts canonical, in-range integer strings and normalizes them to integers; the earlier null
+     * observation remains valid. Accepted integer boundaries are offline-tested policy, not additional live
+     * observations.
+     *
      * API-map identity: whm1:get_best_ssldomain_for_service#GET (wire name get_best_ssldomain_for_service; cPanel
      * Account Settings).
      *
@@ -987,6 +1025,11 @@ final readonly class Ssl
      * Installation can immediately change hosted TLS configuration.
      *
      * Documented: The selected service must be restarted after installation; the client does not restart it.
+     *
+     * Documented: The reviewed certificate_info family correction accepts canonical integer strings for not_before,
+     * not_after and modulus_length, exact quoted is_self_signed flags, and null for the literal issuer.organizationName
+     * key. It follows matching WHM FQDN fields observed on 11.138.0.19. This service write was not run; these variants
+     * are source-family compatibility with offline regressions, not live service-write coverage.
      *
      * API-map identity: whm1:install_service_ssl_certificate#GET (wire name install_service_ssl_certificate; cPanel
      * Account Settings).
@@ -1037,6 +1080,17 @@ final readonly class Ssl
      * Documented: Supply raw PEM strings. The client form-encodes them once; pre-encoded input is encoded again.
      * Installation can immediately change hosted TLS configuration.
      *
+     * Documented: The pinned payload has its own status, statusmsg and message. warning_domains lists domains
+     * associated with the main domain where the certificate was not installed; working_domains lists installations.
+     * Inspect these fields independently of WHM metadata.result.
+     *
+     * Observed: The independent disposable-account review on 11.138.0.19 saw installation status and non-empty
+     * warning_domains, and confirmed that envelope success can carry payload status:0.
+     *
+     * Documented: Client behavior: a valid payload status:0 or non-empty warning_domains does not by itself cause an
+     * exception. The operation outcome checks the WHM envelope; callers must assess the returned installation status
+     * and per-domain results.
+     *
      * API-map identity: whm1:installssl#GET (wire name installssl; cPanel Account Settings).
      *
      * @param string $crt The certificate's text.
@@ -1085,6 +1139,9 @@ final readonly class Ssl
      * normalize them to integers. Omission, null and empty lists remain distinct; flags and sibling operations retain
      * their existing contracts.
      *
+     * Documented: Omitting user returns certificates for all accounts on the server, including domains and owners.
+     * Supply an explicit user filter when the caller must limit this inventory to one account.
+     *
      * API-map identity: whm1:listcrts#GET (wire name listcrts; SSL Server Settings).
      *
      * @param bool|null $registered Whether to limit the results to certificates registered with a certificate authority
@@ -1117,17 +1174,23 @@ final readonly class Ssl
      * Documented: This is a documented no-op: it always succeeds without rebuilding or changing installed-certificate
      * state.
      *
+     * Documented: Client behavior: accept an absent or null data payload for this reviewed unstructured response, while
+     * preserving present opaque object values. This source-backed compatibility is offline-tested; payload omission and
+     * this operation were not observed live.
+     *
+     * Returns null when the server sends no data.
+     *
      * API-map identity: whm1:rebuildinstalledssldb#GET (wire name rebuildinstalledssldb; SSL Server Settings).
      *
-     * @return RebuildInstalledSslDatabaseResult
+     * @return RebuildInstalledSslDatabaseResult|null
      * @throws ApiException If transport, HTTP, the outcome, or the payload fails.
      * @throws PayloadMismatchException If the API reported success but the payload differs from the contract;
      *     any change the operation makes has already taken effect.
      * @see https://api.docs.cpanel.net/specifications/whm.openapi/ssl-server-settings/ssl-rebuildinstalledssldb
      */
-    public function rebuildInstalledSslDatabase(): array
+    public function rebuildInstalledSslDatabase(): ?array
     {
-        /** @var RebuildInstalledSslDatabaseResult $result Validated against SslSpec::REBUILDINSTALLEDSSLDB. */
+        /** @var RebuildInstalledSslDatabaseResult|null $result Validated against SslSpec::REBUILDINSTALLEDSSLDB. */
         $result = ($this->run)(SslSpec::REBUILDINSTALLEDSSLDB, []);
 
         return $result;
@@ -1198,6 +1261,11 @@ final readonly class Ssl
      *
      * Documented: Generates and assigns a new self-signed certificate to the selected service, changing its TLS
      * configuration immediately.
+     *
+     * Documented: The reviewed certificate_info family correction accepts canonical integer strings for not_before,
+     * not_after and modulus_length, exact quoted is_self_signed flags, and null for the literal issuer.organizationName
+     * key. It follows matching WHM FQDN fields observed on 11.138.0.19. This service write was not run; these variants
+     * are source-family compatibility with offline regressions, not live service-write coverage.
      *
      * API-map identity: whm1:reset_service_ssl_certificate#GET (wire name reset_service_ssl_certificate; SSL Server
      * Settings).

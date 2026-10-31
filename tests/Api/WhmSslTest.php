@@ -187,14 +187,16 @@ final class WhmSslTest extends TestCase
                 . '"HTTP_DCV_MAX_REDIRECTS":0,"MAX_DOMAINS_PER_CERTIFICATE":100,'
                 . '"RATE_LIMIT_CERTIFICATES_PER_REGISTERED_DOMAIN_PER_WEEK":50,"SUPPORTS_ANCESTOR_DCV":0,'
                 . '"SUPPORTS_WILDCARD":1,"VALIDITY_PERIOD":7776000},"x_account_id":"account-id",'
-                . '"x_terms_of_service":"https://terms.test","x_terms_of_service_accepted":0,'
+                . '"x_terms_of_service":"https://terms.test",'
+                . '"x_terms_of_service_accepted":"https://terms.test/accepted.pdf",'
                 . '"x_fixture":{"opaque":[true,null,7]}}]}',
             ['payload' => [['display_name' => 'Provider', 'enabled' => 1, 'module_name' => 'provider',
                 'specs' => ['AVERAGE_DELIVERY_TIME' => 5, 'DCV_METHODS' => ['dns', 'http'], 'DELIVERY_METHOD' => 'api',
                     'HTTP_DCV_MAX_REDIRECTS' => 0, 'MAX_DOMAINS_PER_CERTIFICATE' => 100,
                     'RATE_LIMIT_CERTIFICATES_PER_REGISTERED_DOMAIN_PER_WEEK' => 50, 'SUPPORTS_ANCESTOR_DCV' => 0,
                     'SUPPORTS_WILDCARD' => 1, 'VALIDITY_PERIOD' => 7776000], 'x_account_id' => 'account-id',
-                'x_terms_of_service' => 'https://terms.test', 'x_terms_of_service_accepted' => 0,
+                'x_terms_of_service' => 'https://terms.test',
+                'x_terms_of_service_accepted' => 'https://terms.test/accepted.pdf',
                 'x_fixture' => ['opaque' => [true, null, 7]]]]]];
         yield 'excluded domain list' => ['get_autossl_user_excluded_domains', 'GET',
             static fn (Ssl $s): mixed => $s->getAutoSslUserExcludedDomains('alice'), 'username=alice',
@@ -351,40 +353,22 @@ final class WhmSslTest extends TestCase
         yield 'FQDN row properties preserve typed object' => [
             static fn (Ssl $s): mixed => $s->fetchSslCertificatesForFqdns('one.test'),
             '{"payload":[true]}'];
-        yield 'FQDN leaf strict despite absent type' => [
+        yield 'FQDN leaf rejects noncanonical integer' => [
             static fn (Ssl $s): mixed => $s->fetchSslCertificatesForFqdns('one.test'),
-            '{"payload":[{"created":"1"}]}'];
+            '{"payload":[{"created":"01"}]}'];
         yield 'providers object rows' => [static fn (Ssl $s): mixed => $s->getAutoSslProviders(), '{"payload":[true]}'];
         yield 'provider known flag strict' => [static fn (Ssl $s): mixed => $s->getAutoSslProviders(),
             '{"payload":[{"enabled":"1"}]}'];
         yield 'provider known specs leaf strict' => [static fn (Ssl $s): mixed => $s->getAutoSslProviders(),
             '{"payload":[{"specs":{"VALIDITY_PERIOD":"5"}}]}'];
-        yield 'opaque queue null' => [
-            static fn (Ssl $s): mixed => $s->enqueueDeferredSslInstallations(
-                [''],
-                ['c'],
-                ['k'],
-                ['alice'],
-                ['one.test'],
-            ),
-            'null'];
-        yield 'opaque queue absent' => [
-            static fn (Ssl $s): mixed => $s->enqueueDeferredSslInstallations(
-                [''],
-                ['c'],
-                ['k'],
-                ['alice'],
-                ['one.test'],
-            ),
-            null];
         yield 'opaque rebuild scalar' => [static fn (Ssl $s): mixed => $s->rebuildInstalledSslDatabase(), 'true'];
         yield 'queued pid strict' => [
             static fn (Ssl $s): mixed => $s->startAutoSslCheckForOneUser('alice'), '{"pid":"123"}'];
         yield 'domain problems root strict' => [
             static fn (Ssl $s): mixed => $s->getAutoSslProblemsForDomain('one.test'), 'true'];
-        yield 'service install modulus quoted remains strict' => [
+        yield 'service install modulus noncanonical remains strict' => [
             static fn (Ssl $s): mixed => $s->installServiceSslCertificate('c', 'k', 'cpanel'),
-            '{"certificate_info":{"modulus_length":"2048"}}'];
+            '{"certificate_info":{"modulus_length":"02048"}}'];
     }
 
     /** @param SslCall $call */
@@ -410,8 +394,10 @@ final class WhmSslTest extends TestCase
             if ($operation[4] === null) {
                 continue;
             }
-            yield $name . ' absent' => [$operation[2], null];
-            yield $name . ' explicit null' => [$operation[2], 'null'];
+            if (!in_array($operation[0], ['enqueue_deferred_ssl_installations', 'rebuildinstalledssldb'], true)) {
+                yield $name . ' absent' => [$operation[2], null];
+                yield $name . ' explicit null' => [$operation[2], 'null'];
+            }
             yield $name . ' scalar' => [$operation[2], 'true'];
             yield $name . ' nonempty list' => [$operation[2], '[true]'];
         }
@@ -534,7 +520,7 @@ final class WhmSslTest extends TestCase
             '{"crt":[{"domain_owners":"alice"}]}'];
         yield 'expiration itself not nullable' => [static fn (Ssl $s): mixed => $s->listCertificates(),
             '{"crt":[{"not_after":null}]}'];
-        foreach (['0', '1601467200', true, false, 1.0, [], new stdClass()] as $index => $value) {
+        foreach (['00', '1601467200.0', true, false, 1.0, [], new stdClass()] as $index => $value) {
             yield 'best-domain expiry remains integer or null ' . $index => [
                 static fn (Ssl $s): mixed => $s->getBestSslDomainForService('cpanel'),
                 json_encode(['cert_valid_not_after' => $value], JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION)];
@@ -549,15 +535,6 @@ final class WhmSslTest extends TestCase
             static fn (Ssl $s): mixed => $s->listCertificates(), '{"crt":[{"domains":[null]}]}'];
         yield 'unrelated best-domain flag stays strict' => [
             static fn (Ssl $s): mixed => $s->getBestSslDomainForService('cpanel'), '{"is_currently_valid":"0"}'];
-        yield 'sibling FQDN expiration stays strict' => [
-            static fn (Ssl $s): mixed => $s->fetchSslCertificatesForFqdns('one.test'),
-            '{"payload":[{"not_after":"1601467200"}]}'];
-        yield 'sibling FQDN modulus stays strict' => [
-            static fn (Ssl $s): mixed => $s->fetchSslCertificatesForFqdns('one.test'),
-            '{"payload":[{"modulus_length":"2048"}]}'];
-        yield 'sibling FQDN issuer null stays strict' => [
-            static fn (Ssl $s): mixed => $s->fetchSslCertificatesForFqdns('one.test'),
-            '{"payload":[{"issuer.organizationName":null}]}'];
         yield 'sibling vhost expiration stays strict' => [static fn (Ssl $s): mixed => $s->fetchSslVhosts(),
             '{"vhosts":[{"crt":{"not_after":"1601467200"}}]}'];
     }
@@ -567,6 +544,262 @@ final class WhmSslTest extends TestCase
     public function testCertificateCompatibilityCorrectionsStayNarrow(Closure $call, ?string $payload): void
     {
         $this->testInvalidPayloadPreservesConfirmedOutcomeWithoutRetry($call, $payload);
+    }
+
+    /** @return iterable<string, array{SslCall, ?string, mixed}> */
+    public static function reviewedSuccessPayloads(): iterable
+    {
+        foreach (['', '0', '1', 'https://terms.test/accepted.pdf', 'opaque acceptance text'] as $index => $value) {
+            yield 'terms acceptance string ' . $index => [
+                static fn (Ssl $s): mixed => $s->getAutoSslProviders(),
+                json_encode(['payload' => [['x_terms_of_service_accepted' => $value]]], JSON_THROW_ON_ERROR),
+                ['payload' => [['x_terms_of_service_accepted' => $value]]]];
+        }
+        foreach (self::canonicalIntegerValues() as $label => [$wire, $expected]) {
+            yield 'best-domain expiry ' . $label => [
+                static fn (Ssl $s): mixed => $s->getBestSslDomainForService('cpanel'),
+                json_encode(['cert_valid_not_after' => $wire], JSON_THROW_ON_ERROR),
+                ['cert_valid_not_after' => $expected]];
+        }
+        foreach (self::reviewedCertificateFamilies() as $family => [$call, $wrap, $fields]) {
+            foreach ($fields as $field) {
+                foreach (self::canonicalIntegerValues() as $label => [$wire, $expected]) {
+                    yield $family . ' ' . $field . ' ' . $label => [$call,
+                        json_encode($wrap([$field => $wire]), JSON_THROW_ON_ERROR), $wrap([$field => $expected])];
+                }
+            }
+            foreach ([[0, 0], [1, 1], ['0', 0], ['1', 1]] as $index => [$wire, $expected]) {
+                yield $family . ' flag ' . $index => [$call,
+                    json_encode($wrap(['is_self_signed' => $wire]), JSON_THROW_ON_ERROR),
+                    $wrap(['is_self_signed' => $expected])];
+            }
+            foreach ([null, '', 'Organization'] as $index => $value) {
+                yield $family . ' organization ' . $index => [$call,
+                    json_encode($wrap(['issuer.organizationName' => $value]), JSON_THROW_ON_ERROR),
+                    $wrap(['issuer.organizationName' => $value])];
+            }
+            yield $family . ' nullable modulus retained' => [$call,
+                json_encode($wrap(['modulus_length' => null]), JSON_THROW_ON_ERROR), $wrap(['modulus_length' => null])];
+            yield $family . ' record omissions retained' => [$call,
+                json_encode($wrap(new stdClass()), JSON_THROW_ON_ERROR), $wrap([])];
+        }
+        foreach ([null, '', 'unrecognized issuer'] as $index => $value) {
+            yield 'FQDN verification text ' . $index => [
+                static fn (Ssl $s): mixed => $s->fetchSslCertificatesForFqdns('one.test'),
+                json_encode(['payload' => [['verify_error' => $value]]], JSON_THROW_ON_ERROR),
+                ['payload' => [['verify_error' => $value]]]];
+        }
+        yield 'FQDN complete certificate keeps every known field' => [
+            static fn (Ssl $s): mixed => $s->fetchSslCertificatesForFqdns('one.test'),
+            '{"payload":[{"cab":null,"created":"1700000000","crt":"CERT","domains":["one.test"],'
+                . '"ecdsa_curve_name":null,"ecdsa_public":null,"friendly_name":"fixture","id":"certificate-id",'
+                . '"is_self_signed":"0","issuer.commonName":"issuer","issuer.organizationName":null,"key":"KEY",'
+                . '"key_algorithm":"rsaEncryption","modulus":"abcd","modulus_length":"2048",'
+                . '"not_after":"1800000000","not_before":"1700000000","signature_algorithm":"sha256WithRSAEncryption",'
+                . '"subject.commonName":"one.test","users":["alice"],"validation_type":null,"verify_error":null}]}',
+            ['payload' => [['cab' => null, 'created' => 1700000000, 'crt' => 'CERT', 'domains' => ['one.test'],
+                'ecdsa_curve_name' => null, 'ecdsa_public' => null, 'friendly_name' => 'fixture',
+                'id' => 'certificate-id',
+                'is_self_signed' => 0, 'issuer.commonName' => 'issuer', 'issuer.organizationName' => null,
+                'key' => 'KEY',
+                'key_algorithm' => 'rsaEncryption', 'modulus' => 'abcd', 'modulus_length' => 2048,
+                'not_after' => 1800000000, 'not_before' => 1700000000,
+                'signature_algorithm' => 'sha256WithRSAEncryption',
+                'subject.commonName' => 'one.test', 'users' => ['alice'], 'validation_type' => null,
+                'verify_error' => null]]]];
+        foreach (['', 0, 1] as $index => $value) {
+            yield 'vhost self-signed unset or native flag ' . $index => [
+                static fn (Ssl $s): mixed => $s->fetchSslVhosts(),
+                json_encode(['vhosts' => [['crt' => ['is_self_signed' => $value]]]], JSON_THROW_ON_ERROR),
+                ['vhosts' => [['crt' => ['is_self_signed' => $value]]]]];
+        }
+        foreach ([[0, 0], [1, 1], ['0', 0], ['1', 1]] as $index => [$wire, $expected]) {
+            yield 'deleted vhost flag ' . $index => [static fn (Ssl $s): mixed => $s->deleteSslVhost('one.test'),
+                json_encode(['output' => ['removed'], 'removed_vhost_data' => [['is_ssl' => $wire,
+                    'primary_on_ip_port' => '1', 'servername' => 'one.test']]], JSON_THROW_ON_ERROR),
+                ['output' => ['removed'], 'removed_vhost_data' => [['is_ssl' => $expected,
+                    'primary_on_ip_port' => '1', 'servername' => 'one.test']]]];
+        }
+        foreach (
+            [
+            'enqueue' => static fn (Ssl $s): mixed => $s->enqueueDeferredSslInstallations(
+                [''],
+                ['CERT'],
+                ['KEY'],
+                ['alice'],
+                ['one.test'],
+            ),
+            'rebuild' => static fn (Ssl $s): mixed => $s->rebuildInstalledSslDatabase(),
+            ] as $name => $call
+        ) {
+            yield $name . ' absent payload' => [$call, null, null];
+            yield $name . ' null payload' => [$call, 'null', null];
+            yield $name . ' empty object' => [$call, '{}', []];
+            yield $name . ' opaque object preserved' => [$call, '{"opaque":{"values":[null,1,"text"]}}',
+                ['opaque' => ['values' => [null, 1, 'text']]]];
+        }
+        yield 'installation payload status zero and warning domains are returned' => [
+            static fn (Ssl $s): mixed => $s->installSsl('CERT', 'one.test', 'KEY'),
+            '{"action":"install","aliases":["mail.one.test"],"domain":"one.test",'
+                . '"extra_certificate_domains":["other.test"],"html":"details","ip":"192.0.2.1",'
+                . '"message":"check domains","servername":"one.test","status":0,"statusmsg":"partial",'
+                . '"user":"alice","warning_domains":["mail.one.test"],"working_domains":["one.test"]}',
+            ['action' => 'install', 'aliases' => ['mail.one.test'], 'domain' => 'one.test',
+                'extra_certificate_domains' => ['other.test'], 'html' => 'details', 'ip' => '192.0.2.1',
+                'message' => 'check domains', 'servername' => 'one.test', 'status' => 0, 'statusmsg' => 'partial',
+                'user' => 'alice', 'warning_domains' => ['mail.one.test'], 'working_domains' => ['one.test']]];
+    }
+
+    /** @param SslCall $call */
+    #[DataProvider('reviewedSuccessPayloads')]
+    public function testReviewedSuccessPayloadsDoNotBecomeFalseFailures(
+        Closure $call,
+        ?string $payload,
+        mixed $expected,
+    ): void {
+        [$client, $http] = self::client();
+        $http->addResponse(new Response(200, [], self::envelope($payload)));
+        self::assertSame($expected, $call($client->whm()->ssl()));
+        self::assertCount(1, $http->getRequests());
+        self::assertSame(1, $client->whm()->responseMeta()?->whmResult());
+        self::assertNull($client->uapi('alice')->responseMeta());
+    }
+
+    /** @return iterable<string, array{SslCall, ?string}> */
+    public static function rejectedReviewedPayloads(): iterable
+    {
+        foreach (self::noncanonicalIntegers() as $index => $value) {
+            yield 'best-domain noncanonical integer ' . $index => [
+                static fn (Ssl $s): mixed => $s->getBestSslDomainForService('cpanel'),
+                json_encode(['cert_valid_not_after' => $value], JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION)];
+        }
+        foreach (self::reviewedCertificateFamilies() as $family => [$call, $wrap, $fields]) {
+            foreach ($fields as $field) {
+                foreach (self::noncanonicalIntegers() as $index => $value) {
+                    yield $family . ' ' . $field . ' invalid ' . $index => [$call,
+                        json_encode($wrap([$field => $value]), JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION)];
+                }
+                if ($field !== 'modulus_length') {
+                    yield $family . ' ' . $field . ' remains nonnullable' => [$call,
+                        json_encode($wrap([$field => null]), JSON_THROW_ON_ERROR)];
+                }
+            }
+            foreach (
+                [null, '', '2', '01', '-0', '+1', 'true', 2, true, false, 1.0, [], new stdClass()] as $i => $value
+            ) {
+                yield $family . ' invalid flag ' . $i => [$call,
+                    json_encode(
+                        $wrap(['is_self_signed' => $value]),
+                        JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION,
+                    )];
+            }
+            foreach ([0, true, [], new stdClass()] as $index => $value) {
+                yield $family . ' organization remains text or null ' . $index => [$call,
+                    json_encode($wrap(['issuer.organizationName' => $value]), JSON_THROW_ON_ERROR)];
+            }
+            foreach (
+                ['domains' => [null], 'ecdsa_curve_name' => 1,
+                    'key_algorithm' => null, 'modulus' => 1] as $field => $value
+            ) {
+                yield $family . ' strict sibling ' . $field => [$call,
+                    json_encode($wrap([$field => $value]), JSON_THROW_ON_ERROR)];
+            }
+        }
+        foreach ([0, 1, true, false, null, [], new stdClass()] as $index => $value) {
+            yield 'terms acceptance must be string ' . $index => [
+                static fn (Ssl $s): mixed => $s->getAutoSslProviders(),
+                json_encode(['payload' => [['x_terms_of_service_accepted' => $value]]], JSON_THROW_ON_ERROR)];
+        }
+        foreach ([0, 1, true, [], new stdClass()] as $index => $value) {
+            yield 'FQDN verification must be text or null ' . $index => [
+                static fn (Ssl $s): mixed => $s->fetchSslCertificatesForFqdns('one.test'),
+                json_encode(['payload' => [['verify_error' => $value]]], JSON_THROW_ON_ERROR)];
+        }
+        foreach (['0', '1', 'false', ' ', null, true, false, 2, 1.0, [], new stdClass()] as $index => $value) {
+            yield 'vhost unset flag is only exact empty string ' . $index => [
+                static fn (Ssl $s): mixed => $s->fetchSslVhosts(),
+                json_encode(
+                    ['vhosts' => [['crt' => ['is_self_signed' => $value]]]],
+                    JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION,
+                )];
+        }
+        foreach ([null, '', '2', '01', '-0', '+1', 'true', 2, true, false, 1.0, [], new stdClass()] as $i => $value) {
+            yield 'delete flag remains bounded ' . $i => [static fn (Ssl $s): mixed => $s->deleteSslVhost('one.test'),
+                json_encode(
+                    ['removed_vhost_data' => [['is_ssl' => $value]]],
+                    JSON_THROW_ON_ERROR | JSON_PRESERVE_ZERO_FRACTION,
+                )];
+        }
+        foreach (
+            ['modulus_length' => '2048', 'not_before' => '1700000000', 'not_after' => '1800000000',
+            'is_self_signed' => '1', 'issuer.organizationName' => null] as $field => $value
+        ) {
+            yield 'service component native contract unchanged ' . $field => [
+                static fn (Ssl $s): mixed => $s->fetchServiceSslComponents(),
+                json_encode(['services' => [['certificate_info' => [$field => $value]]]], JSON_THROW_ON_ERROR)];
+        }
+        yield 'FQDN common name remains nonnullable string' => [
+            static fn (Ssl $s): mixed => $s->fetchSslCertificatesForFqdns('one.test'),
+            '{"payload":[{"issuer.commonName":null}]}'];
+        yield 'reset common name remains nonnullable string' => [
+            static fn (Ssl $s): mixed => $s->resetServiceSslCertificate('cpanel'),
+            '{"certificate_info":{"issuer.commonName":null}}'];
+        yield 'vhost common name retains documented object' => [static fn (Ssl $s): mixed => $s->fetchSslVhosts(),
+            '{"vhosts":[{"crt":{"subject.commonName":"one.test"}}]}'];
+        yield 'vhost common name inner leaf stays strict' => [static fn (Ssl $s): mixed => $s->fetchSslVhosts(),
+            '{"vhosts":[{"crt":{"subject.commonName":{"commonName":null}}}]}'];
+        yield 'delete sibling primary flag stays string' => [
+            static fn (Ssl $s): mixed => $s->deleteSslVhost('one.test'),
+            '{"removed_vhost_data":[{"primary_on_ip_port":1}]}'];
+        yield 'installation payload status stays native flag' => [
+            static fn (Ssl $s): mixed => $s->installSsl('CERT', 'one.test', 'KEY'), '{"status":"0"}'];
+        yield 'installation warnings stay string list' => [
+            static fn (Ssl $s): mixed => $s->installSsl('CERT', 'one.test', 'KEY'), '{"warning_domains":[null]}'];
+    }
+
+    /** @param SslCall $call */
+    #[DataProvider('rejectedReviewedPayloads')]
+    public function testReviewedCompatibilityDoesNotWidenOtherPayloads(Closure $call, ?string $payload): void
+    {
+        $this->testInvalidPayloadPreservesConfirmedOutcomeWithoutRetry($call, $payload);
+    }
+
+    /** @return iterable<string, array{int|string, int}> */
+    private static function canonicalIntegerValues(): iterable
+    {
+        yield 'native zero' => [0, 0];
+        yield 'native value' => [2048, 2048];
+        yield 'quoted zero' => ['0', 0];
+        yield 'quoted value' => ['2048', 2048];
+        yield 'quoted negative' => ['-1', -1];
+        yield 'quoted maximum' => ['9223372036854775807', PHP_INT_MAX];
+        yield 'quoted minimum' => ['-9223372036854775808', PHP_INT_MIN];
+    }
+
+    /** @return list<mixed> */
+    private static function noncanonicalIntegers(): array
+    {
+        return ['', '00', '01', '-0', '-01', '+1', '1.0', '1.5', '1e3', ' 1', '1 ',
+            '9223372036854775808', '-9223372036854775809', true, false, 1.0, 1.5, [], new stdClass()];
+    }
+
+    /**
+     * @return iterable<string, array{
+     *     SslCall, Closure(array<string, mixed>|stdClass): array<string, mixed>, list<string>
+     * }>
+     */
+    private static function reviewedCertificateFamilies(): iterable
+    {
+        yield 'FQDN' => [static fn (Ssl $s): mixed => $s->fetchSslCertificatesForFqdns('one.test'),
+            static fn (array|stdClass $record): array => ['payload' => [$record]],
+            ['created', 'not_before', 'not_after', 'modulus_length']];
+        yield 'service reset' => [static fn (Ssl $s): mixed => $s->resetServiceSslCertificate('cpanel'),
+            static fn (array|stdClass $record): array => ['certificate_info' => $record],
+            ['not_before', 'not_after', 'modulus_length']];
+        yield 'service install' => [
+            static fn (Ssl $s): mixed => $s->installServiceSslCertificate('CERT', 'KEY', 'cpanel'),
+            static fn (array|stdClass $record): array => ['certificate_info' => $record],
+            ['not_before', 'not_after', 'modulus_length']];
     }
 
     /** @return iterable<string, array{string, list<string>}> */

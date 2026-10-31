@@ -310,6 +310,7 @@ An empty live list does not verify the types of records it never returned.
 | `whm()->webServer()` | `phpGetInstalledVersions()`, `phpGetSystemDefaultVersion()`, `phpGetHandlers()`, `phpGetDefaultAccountsToFpm()`, `phpGetOldFpmFlag()`, `isConversionInProgress()`, `phpGetVhostsByVersion()` |
 | `whm()->hostingPlans()` | `listPackages()`, `getFeatureMetadata()`, `getFeatureNames()`, `getFeaturelistData()`, `getFeaturelists()`, `getFeaturelistsByPackageTypes()`, `getUsersFeaturesSettings()`, `verifyUserHasFeature()` |
 | `whm()->dns()` | `listZones()`, `parseDnsZone()`, `getZoneRecord()`, `listMxRecords()`, `exportZoneFiles()`, `resolveDomainName()`, `hasLocalAuthority()`, `fetchDsRecordsForDomains()`, `getNameserverConfig()`, `lookupNameserverIp()`, `lookupNameserverIps()`, `isAliasAvailable()`, `isHttpsAvailable()`, `isSvcbAvailable()` |
+| `whm()->ssl()` | WHM certificate, service SSL and AutoSSL operations (32); see [generated methods](src/Api/Whm/Ssl.php). |
 
 ### cPanel UAPI
 
@@ -1152,6 +1153,58 @@ was absent, so completed scans remain unobserved. Reviewer lifecycle reports are
 separate from immutable capture evidence; see the source audit. Format-only
 `scan_type` input correction remains tracked in `8x0.1.26` before release.
 
+### WHM SSL certificate management
+
+`whm()->ssl()` exposes 32 of the 34 pinned SSL Certificates operations: ten GET
+reads and 22 form POST calls, including source-classified POST fetch operations.
+Provider reset/selection remains excluded under `8x0.1.28` because `x_*` denotes
+dynamic input names, not a literal parameter. Provider inventories preserve strict
+named fields and opaque additional values; treat returned provider data as private.
+
+PEM, private-key, CA-bundle and passphrase inputs remain sensitive. Domain exclusion
+arrays use documented numbered names; deferred installation uses repeated fields
+whose five lists callers must align by position, including each certificate and
+private key. Neither the client nor its type checks validate equal lengths or
+pairing. An empty bundle requests server-side bundle download. The metadata setter accepts caller-serialized JSON text encoded once as
+a form field; its current native `string|int` boundary does not establish integer
+semantics or automatic object encoding (`8x0.1.23`). This is not a JSON request body.
+
+Generation stores key/CSR material even when certificate generation is skipped.
+Service certificate installation requires a separate service restart; the client
+does not perform it. Exclusion replacement, disable/reset/install and background
+checks can alter hosting behavior; queued work or a PID does not establish
+issuance, renewal, installation or TLS delivery. No retry, rollback or polling is
+added. `installSsl()` returns its own `status` and `warning_domains` alongside
+the checked WHM envelope outcome. Callers must inspect those fields: a successful
+`metadata.result` does not imply nested `status: 1`, and nested failure is not
+converted into an exception. `listCertificates()` without `user` includes all
+accounts' certificate metadata; specify the intended account when isolation is
+required. Virtual-host deletion has no rollback and must not be retried simply
+because response validation failed after a confirmed outcome.
+
+Certificate fields preserve omission, native values and literal dotted keys.
+Separate WHM reviewer observations support string terms-of-service acceptance
+(despite the conflicting pinned flag), canonical integer strings in best-service
+expiry and FQDN certificate dates/length, exact quoted flags, and null FQDN
+verification-error/issuer-organization values. Vhost self-signed flags preserve
+the exact empty string without assigning it new meaning; deletion flags accept
+exact quoted 0/1. The five shared reset/install service-certificate leaves use
+source-family compatibility only; those writes were not observed.
+`fetchServiceSslComponents()` keeps its native integer contracts, and unconfirmed
+vhost `subject.commonName` variants stay unsupported.
+
+`rebuildInstalledSslDatabase()` is a documented no-op. It and deferred enqueue
+accept absent/null successful data as reviewed source-only compatibility, while
+present payloads keep their existing opaque-data validation. No missing/null
+response from either method was observed.
+
+All 32 methods have independent offline contracts. The bounded nine-GET catalog
+reads version, schedule, log catalog metadata, metadata flags, problems/exclusions
+for designated `npr`/`npr.rs`, the best domain for the pinned `whostmgr` service
+example, and the account's certificate inventory. It reads no log contents,
+private-key/component PEM or unspecified provider values and makes no changes.
+Follow-up `8x0.2.39` retains remaining live behavior.
+
 ### Generic calls
 
 Use `call()` for functions whose parameters fit the supported GET query or
@@ -1533,34 +1586,3 @@ Project-authored code and documentation are licensed under the
 The bundled cPanel documentation snapshots retain their upstream terms and are
 not covered by the project's MIT license. See the
 [third-party documentation notice](docs/api/README.md#licensing).
-
-## WHM SSL certificate management
-
-`whm()->ssl()` exposes 32 of the 34 pinned SSL Certificates operations: ten GET
-reads and 22 form POST calls, including source-classified POST fetch operations.
-Provider reset/selection remains excluded under `8x0.1.28` because `x_*` denotes
-dynamic input names, not a literal parameter. Provider inventories preserve strict
-named fields and opaque additional values; treat returned provider data as private.
-
-PEM, private-key, CA-bundle and passphrase inputs remain sensitive. Domain exclusion
-arrays use documented numbered names; deferred installation uses repeated fields
-whose list lengths callers must align. An empty bundle requests server-side bundle
-download. The metadata setter accepts caller-serialized JSON text encoded once as
-a form field; its current native `string|int` boundary does not establish integer
-semantics or automatic object encoding (`8x0.1.23`). This is not a JSON request body.
-
-Generation stores key/CSR material even when certificate generation is skipped.
-Service certificate installation requires a separate service restart; the client
-does not perform it. Exclusion replacement, disable/reset/install and background
-checks can alter hosting behavior; queued work or a PID does not establish
-issuance, renewal, installation or TLS delivery. No retry, rollback or polling is
-added. Certificate fields preserve optionality, literal dotted keys and pinned
-nullability. Only service-install modulus length gains a source-prose correction
-for non-RSA null; UAPI compatibility rules are not inferred for WHM endpoints.
-
-All 32 methods have independent offline contracts. The bounded nine-GET catalog
-reads version, schedule, log catalog metadata, metadata flags, problems/exclusions
-for designated `npr`/`npr.rs`, the best domain for the pinned `whostmgr` service
-example, and the account's certificate inventory. It reads no log contents,
-private-key/component PEM or unspecified provider values and makes no changes.
-Follow-up `8x0.2.39` retains remaining live behavior.

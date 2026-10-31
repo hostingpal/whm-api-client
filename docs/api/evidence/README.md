@@ -561,3 +561,12 @@ key, component PEM, provider payload or log content was read, and no URL was fet
 The original failed artifact stays unchanged; `8x0.2.39` retains unobserved behavior.
 Corrected SHA-256:
 `1e3117fc43dc790b0891b3571313b44f60953ce4b6e0d20305c0bc32ccacb498`.
+
+### Separate WHM SSL review evidence
+
+[Claude review 5720639651](https://github.com/hostingpal/whm-api-client/pull/53#pullrequestreview-5720639651)
+records additional WHM reads and a disposable-account SSL lifecycle on
+`11.138.0.19`, with account cleanup reported. Those observations motivate narrow
+contract corrections and remain separate from the two immutable captures above.
+The service reset/install family and rebuild/enqueue missing-data variants are
+source/offline only. No new capture ran for review fixes; `8x0.2.39` remains open.
