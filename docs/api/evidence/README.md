@@ -394,3 +394,21 @@ No repository, deployment, application configuration or dependency installation
 changed, and no returned URL was fetched. No contract was broadened from an API
 failure, and no repeated capture was run merely to seek a passing status. SHA-256:
 `48b5b71e8feb9107310383e50f311f39d99301a3fb57c4179a00d12c97e44a64`.
+
+## WHM ModSecurity inventory capture
+
+The immutable [WHM ModSecurity capture](2026-10-31-whm-modsecurity.json) at
+`cd205ab2452ee9a8f215d579f4f9d69baa2c3e9a` on `11.138.0.19` records five HTTP 200
+observations. WHM version, configuration inventory, vendor inventory and
+installation status pass API, payload and probe checks. Both inventories are
+empty, so their populated rows remain unobserved. The pending-configuration read
+fails at the API layer; its cause is not established. There are zero payload
+discrepancies, while strict assessment remains failed for that API error.
+
+No raw rule/configuration text, audit logs or secret-bearing settings were read.
+No scan, policy, vendor, report, deployment or configuration change ran, and no
+returned URL was fetched. The other thirty-four methods remain offline-tested.
+Follow-up `8x0.2.34` retains the failed read and all unobserved behavior; this
+capture does not establish request blocking or enforcement. No repeated capture
+was run merely to obtain a passing result. SHA-256:
+`673fd065ffdf05bdb8a1c1dd5af5bcb770a8280aa556cc4a5f2d9fbbd516ab9c`.
